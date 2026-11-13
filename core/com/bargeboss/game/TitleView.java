@@ -14,17 +14,30 @@ public final class TitleView {
         // The original panoramic composition, repainted in the gameplay palette.
         // Register the painted waterline and keep the sunset visible beside the logo.
         float skyHeight=horizon/.89f,skyWidth=skyHeight*3;
-        float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyWidth);
-        strip(p,SpriteAtlas.TITLE_BACKDROP,skyWidth,skyHeight,0,g.layout.width,skyDrift);
+        float skyPeriod=skyWidth*.88f;
+        float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyPeriod);
+        sky(p,skyWidth,skyHeight,g.layout.width,skyDrift);
         WaveView.draw(p,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
-        float sun=scroll(skyWidth*.73f-skyDrift,skyWidth);
-        for(float x=sun-skyWidth;x<g.layout.width;x+=skyWidth) reflections(p,tick,x,horizon,g.layout.height);
+        float sun=scroll(skyWidth*.73f-skyDrift,skyPeriod);
+        for(float x=sun-skyPeriod;x<g.layout.width;x+=skyPeriod) reflections(p,tick,x,horizon,g.layout.height);
         // A separate transparent bridge/industrial shore passes in front of the
         // distant city. No close quay or bottom bank encloses the foreground water.
         float harborWidth=690,harborHeight=harborWidth/3;
         float harborDrift=scroll(harborWidth*.61f-(420+g.layout.offsetX)+tick*.19f,harborWidth);
         strip(p,SpriteAtlas.TITLE_HARBOR,harborWidth,harborHeight,horizon+40-harborHeight*.92f,
                 g.layout.width,harborDrift);
+    }
+    private static void sky(Painter p,float width,float height,float extent,float drift) {
+        float overlap=width*.12f,period=width-overlap,slice=overlap/SpriteAtlas.TITLE_SKY_FADE_SLICES;
+        // Overlap painted edges with registered alpha slices. This keeps
+        // clouds continuous without a hard repeat seam on wide displays.
+        for(float x=-drift-period;x<extent;x+=period) {
+            for(int i=0;i<SpriteAtlas.TITLE_SKY_FADE_SLICES;i++) {
+                float alpha=(i+.5f)/SpriteAtlas.TITLE_SKY_FADE_SLICES;alpha=alpha*alpha*(3-2*alpha);
+                p.sprite(SpriteAtlas.TITLE_BACKDROP,i+1,x+(i+.5f)*slice,height/2,slice,height,0,alpha);
+            }
+            p.sprite(SpriteAtlas.TITLE_BACKDROP,0,x+overlap+period/2,height/2,period,height,0,1);
+        }
     }
     private static void reflections(Painter p,int tick,float center,float top,float bottom) {
         for(int i=0;i<16;i++) {

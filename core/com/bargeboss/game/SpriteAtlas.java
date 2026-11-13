@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class SpriteAtlas {
     public static final int TUG=0, BARGE=1, STEEL=2, CONTAINER=3, BULK=4, WATER=5, NORTH_QUAY=6, SOUTH_QUAY=7, SCENERY=8, PIERS=9, BRIDGE=10,
             TITLE_BACKDROP=11, TITLE_HARBOR=12, TITLE_VESSELS=13, TITLE_WATER=14;
+    public static final int TITLE_SKY_FADE_SLICES=64;
     private static final String[] FILES={"tug-16.png","barge-arcade-v3-16.png","steel-16.png","container-16.png","bulk-16.png"};
     // Alpha-bound registration preserves the previous hull footprint and fixed world anchor.
     private static final float[] BARGE_V3_X={0.500000f,0.488854f,0.498454f,0.488851f,0.480892f,0.469745f,0.507987f,0.496827f,0.499906f,0.458599f,0.477670f,0.472824f,0.498381f,0.488826f,0.503195f,0.487221f,0.500000f,0.488853f,0.504792f,0.491974f,0.487262f,0.476101f,0.487221f,0.480830f,0.496815f,0.482414f,0.477636f,0.464913f,0.493631f,0.468101f,0.506390f,0.487249f};
@@ -64,7 +65,7 @@ public final class SpriteAtlas {
     public static float widthScale(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_SX[frame]; return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
     public static float heightScale(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_SY[frame]; return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
     public static int sourceFrame(int atlas,int frame) { return atlas>=WATER?frame:frame/2; }
-    public static int count(int atlas) { return atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
+    public static int count(int atlas) { return atlas==TITLE_BACKDROP?TITLE_SKY_FADE_SLICES+1:atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
     public static int columns(int atlas) { return atlas>=WATER?1:4; }
     public static int rows(int atlas) { return atlas>=WATER?1:4; }
     public static float pivotX(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_X[frame]; if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_X[frame]:atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
@@ -74,9 +75,9 @@ public final class SpriteAtlas {
     private static int[] region(int atlas,int frame) { return TERRAIN[atlas-WATER]; }
     private static boolean arcade(int atlas) { return atlas==SCENERY || atlas==PIERS || atlas==BRIDGE; }
     private static int arcadeCell(int atlas,int frame) { return frame+(atlas==PIERS?8:atlas==BRIDGE?10:0); }
-    public static float sourceLeft(int atlas,int frame) { if(atlas==WATER) return 0; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?200/1536f:0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
+    public static float sourceLeft(int atlas,int frame) { if(atlas==TITLE_BACKDROP) return frame==0?.12f:(frame-1)*.12f/TITLE_SKY_FADE_SLICES; if(atlas==WATER) return 0; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?200/1536f:0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
     public static float sourceTop(int atlas,int frame) { if(atlas==WATER) return 0; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_WATER?.88f:atlas==TITLE_VESSELS && frame==1?600/1024f:0; return atlas>=WATER?region(atlas,frame)[1]/908f:(sourceFrame(atlas,frame)/4)/4f; }
-    public static float sourceRight(int atlas,int frame) { if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4+1)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?1300/1536f:1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
+    public static float sourceRight(int atlas,int frame) { if(atlas==TITLE_BACKDROP) return frame==0?1:frame*.12f/TITLE_SKY_FADE_SLICES; if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4+1)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?1300/1536f:1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
     public static float sourceBottom(int atlas,int frame) { if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4+1)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
     public static float artWidth(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
     public static float artHeight(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
