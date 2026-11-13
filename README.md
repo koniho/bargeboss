@@ -103,11 +103,13 @@ build for compilation validation only. Store provisioning/distribution is not co
 ```sh
 ./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
 ./preview.sh     # Actual shared renderer PNGs in out/
+./check-art.sh   # Optional Termux check on the actual Android Java runtime
 ```
 
 GitHub Actions builds Android, desktop on three operating systems, and iOS on a
 Mac. The iOS job runs the same deterministic gameplay/drawing replay on the JVM
-and J2ObjC and rejects mismatches. Workflow artifacts contain the APK, JAR and
+and J2ObjC and rejects mismatches. An iPhone simulator test exercises native
+touch delivery, pause/resume and backgrounding. Workflow artifacts contain the APK, JAR and
 simulator app. Native touch/lifecycle acceptance still needs actual device play;
 headless checks are not a substitute for that.
 

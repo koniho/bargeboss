@@ -29,6 +29,8 @@ explicit shared Resume action. Process termination starts a fresh session.
   docking containment/speed, score ownership, shift expiry, collision momentum,
   bounded catch-up and identical 30/144 Hz state.
 - A bounded touch player must meet the quota during a complete shift.
+- `check-art.sh` runs the suite and canonical signature on Android ART from
+  Termux, using the same D8 compilation path as the APK.
 - `Parity` runs a scripted shift and hashes state plus emitted drawing commands,
   quantized to 0.01 logical units. CI compares JVM and translated Objective-C
   output and also pins the JVM signature to catch accidental replay changes.
@@ -36,6 +38,8 @@ explicit shared Resume action. Process termination starts a fresh session.
   does not silently alter the physics path.
 - CI compilation proves native API wiring; it does not prove visual pixel
   identity or physical-device responsiveness. Native antialiasing can differ.
+- The iPhone simulator smoke test delivers cargo using a real long press and
+  verifies pause/resume and background lifecycle transitions through UIKit.
 
 ## Device acceptance before release
 
