@@ -11,19 +11,16 @@ public final class FeederView {
             p.rect(f.x-42,790,84,46,(f.blocked?0x44000000:0x22000000)|(color&0xffffff));
             for(int side=-1;side<=1;side+=2) {
                 p.line(f.x+side*42,789,f.x+side*42,836,3,color);
-                p.circle(f.x+side*42,805,5,VisualStyle.OUTLINE);
-                p.circle(f.x+side*42,805,3,(g.visualTicks/18)%2==0?color:VisualStyle.CREAM);
+                float bob=g.water.height(f.x+side*42,805,g.visualTicks,null)*.8f/RiverCamera.DEPTH;
+                p.circle(f.x+side*42+bob,805,5,VisualStyle.OUTLINE);
+                p.circle(f.x+side*42+bob,805,3,(g.visualTicks/18)%2==0?color:VisualStyle.CREAM);
             }
             for(int j=0;j<3;j++) {
                 float y=798+j*15-(g.visualTicks%30)/2f;
                 p.line(f.x-8,y+5,f.x,y,2,color); p.line(f.x,y,f.x+8,y+5,2,color);
             }
             HarborView.badge(p,"FEED "+(i+1),f.x,820,7,color);
-            if(f.phase!=Feeder.IDLE) {
-                if(f.load!=null) VesselView.draw(g,p,f.load,false);
-                VesselView.draw(g,p,f.boat,true);
-                HarborView.badge(p,"DELIVERY",f.boat.x,f.boat.y+15,6,VisualStyle.CREAM);
-            }
+
         }
     }
     public static void callouts(Game g,Painter p) {

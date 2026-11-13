@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class DockView {
     private static final int GOLD=VisualStyle.GOLD,DARK=VisualStyle.OUTLINE,LIGHT=VisualStyle.CREAM;
     private DockView() {}
-    public static void draw(Game g,Painter p) {
+    public static void draw(Game g,Painter canvas) {
         for(int berth=0;berth<3;berth++) {
             Body load=null,mooring=null;
             boolean ready=false;
@@ -17,17 +17,19 @@ public final class DockView {
             boolean throwing=(g.ropePhase==1 || g.ropePhase==3) && g.ropeBody!=null && g.ropeBody.berth==berth;
             boolean celebrating=g.celebrationTicks>0 && Math.abs(g.celebrationY-Game.DOCK_Y[berth])<54;
             int tick=g.visualTicks;
-            float sign=berth==1?-1:1,base=berth==1?445:155,y=Game.DOCK_Y[berth];
-            // The warehouse apron is inlaid into the shore, clear of the playable water.
-            float yard=berth==1?433:143;
-            p.rect(yard,y-41,24,106,0xff686c7c); p.rect(yard+2,y-39,20,102,0xff9b9299);
-            for(int i=0;i<3;i++) p.line(yard+4+i*7,y-34,yard+4+i*7,y+56,1,0xff817d88);
-            p.rect(yard,y+62,24,6,DARK);
-            for(int i=0;i<3;i++) p.poly(new float[]{yard+i*8,y+62,yard+i*8+4,y+62,yard+i*8+8,y+68,yard+i*8+4,y+68},GOLD);
+            RiverCamera camera=g.layout.camera;
+            float anchorX=camera.screenX(berth==1?445:155,Game.DOCK_Y[berth]);
+            float anchorY=camera.screenY(berth==1?445:155,Game.DOCK_Y[berth]);
+            float scale=camera.scale*.55f;
+            float alpha=SceneryView.opacity(g,anchorX-24*scale,anchorY-90*scale,100*scale,122*scale);
+            Painter p=ScreenView.scaled(new OpacityPainter(canvas,alpha),anchorX,anchorY,scale);
+            float sign=berth==1?-1:1,base=0,y=0;
             float phase=working?(load.unloadingTicks%60)/60f:0;
             float lift=working?Physics.clamp((phase-.16f)/.62f,0,1):1;
-            float hookX=working?load.x+(base-load.x)*lift:base;
-            float hookY=working?load.y-14-24*(float)StrictMath.sin(lift*Math.PI):y-29;
+            float loadX=working?(camera.screenX(load.x,load.y)-anchorX)/scale:0;
+            float loadY=working?(camera.screenY(load.x,load.y)-anchorY)/scale:0;
+            float hookX=working?loadX*(1-lift):base+28;
+            float hookY=working?loadY*(1-lift)-14-24*(float)StrictMath.sin(lift*Math.PI):y-29;
             if(!working) hookX+=2*(float)StrictMath.sin(tick*.025+berth);
             crane(p,base,y,hookX,hookY,working||tying||throwing,tick);
             if(working && phase>.15f && phase<.91f) payload(p,hookX,hookY,berth);
@@ -52,10 +54,10 @@ public final class DockView {
             }
             int stateColor=working||celebrating?0xffa1f0cb:ready||throwing||tying?GOLD:0xffb7bcc2;
             String state=working?"WORK":tying?"TIE":throwing?"CATCH":ready?"READY":celebrating?"DONE":"IDLE";
-            HarborView.badge(p,state,base+4,y+86,7.5f,stateColor);
+            HarborView.badge(p,state,base+45,y+20,9,stateColor);
             if(working) {
-                p.rect(load.x-30,load.y+55,60,8,DARK);
-                p.rect(load.x-28,load.y+57,56*load.unloadingTicks/Game.UNLOAD_TICKS,4,GOLD);
+                p.rect(loadX-30,loadY+35,60,8,DARK);
+                p.rect(loadX-28,loadY+37,56*load.unloadingTicks/Game.UNLOAD_TICKS,4,GOLD);
                 for(int i=0;i<3;i++) {
                     float t=((tick+i*11)%32)/32f;
                     float xx=base-4+i*3,yy=y-11-t*19;

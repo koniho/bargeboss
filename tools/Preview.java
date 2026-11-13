@@ -41,9 +41,9 @@ public final class Preview {
         ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"aiming");
         ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,9); capture(g,"lasso");
         steps(g,9); capture(g,"bollard-hit"); steps(g,30); capture(g,"tying-up");
-        while(b.unloadingTicks==0) g.step(); capture(g,"line-snap");
-        while(b.unloadingTicks<85) g.step(); capture(g,"unloading");
-        while(g.delivered==0) g.step(); steps(g,12); capture(g,"delivery");
+        waitUnload(g,b,1); capture(g,"line-snap");
+        waitUnload(g,b,85); capture(g,"unloading");
+        waitUnload(g,b,Game.UNLOAD_TICKS); steps(g,12); capture(g,"delivery");
         steps(g,90); capture(g,"crew-idle");
         g.background(); capture(g,"pause"); g.pause();
         ReplayInput.tap(g,Layout.HELP); capture(g,"help"); ReplayInput.tap(g,Layout.START);
@@ -72,6 +72,10 @@ public final class Preview {
         sheet("assist-states",new String[]{"holding","aligning","steering"});
         sheet("mooring",new String[]{"ready-to-tie","lasso","tying-up","unloading","delivery","stage"});
         System.out.println("Shared renderer: control-states.png, tutorial.png and mooring.png in out/");
+    }
+    private static void waitUnload(Game g,Body b,int target) {
+        for(int i=0;i<1200 && b.unloadingTicks<target && g.mode==Game.PLAY;i++) g.step();
+        if(b.unloadingTicks<target) throw new IllegalStateException("Preview unloading stalled at "+b.unloadingTicks+" of "+target);
     }
     private static void capture(Game game,String name) throws Exception {
         BufferedImage image=new BufferedImage(Layout.WIDTH,Layout.HEIGHT,BufferedImage.TYPE_INT_RGB);

@@ -22,6 +22,7 @@ public final class CanvasPainter implements Painter {
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
     private final Map<Integer,Atlas> atlases=new HashMap<Integer,Atlas>();
+    private final Map<String,Bitmap> sourceImages=new HashMap<String,Bitmap>();
     private Canvas canvas;
     public CanvasPainter(AssetManager assets) {
         this.assets=assets;
@@ -31,10 +32,9 @@ public final class CanvasPainter implements Painter {
     private static final class Atlas {
         final Bitmap[] images;
         final Rect[] frames;
-        Atlas(int atlas,AssetManager assets) throws IOException {
-            int count=SpriteAtlas.count(atlas),columns=SpriteAtlas.columns(atlas),rows=SpriteAtlas.rows(atlas);
+        Atlas(int atlas,AssetManager assets,Map<String,Bitmap> sources) throws IOException {
+            int count=SpriteAtlas.count(atlas);
             images=new Bitmap[count]; frames=new Rect[count];
-            Map<String,Bitmap> sources=new HashMap<String,Bitmap>();
             for(int f=0;f<count;f++) {
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
                 Bitmap image=sources.get(path);
@@ -47,16 +47,15 @@ public final class CanvasPainter implements Painter {
                     sources.put(path,image);
                 }
                 images[f]=image;
-                int sourceFrame=SpriteAtlas.sourceFrame(atlas,f),col=sourceFrame%columns,row=sourceFrame/columns;
-                frames[f]=new Rect(Math.round(image.getWidth()*col/(float)columns),Math.round(image.getHeight()*row/(float)rows),
-                        Math.round(image.getWidth()*(col+1)/(float)columns),Math.round(image.getHeight()*(row+1)/(float)rows));
+                frames[f]=new Rect(Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,f)),
+                        Math.round(image.getWidth()*SpriteAtlas.sourceRight(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceBottom(atlas,f)));
             }
         }
     }
     private Atlas atlas(int id) {
         Atlas cached=atlases.get(id); if(cached!=null) return cached;
         try {
-            cached=new Atlas(id,assets); atlases.put(id,cached); return cached;
+            cached=new Atlas(id,assets,sourceImages); atlases.put(id,cached); return cached;
         } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas for asset "+id,e); }
     }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {

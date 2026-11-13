@@ -12,12 +12,7 @@ public final class MooringView {
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
             }
-            p.poly(new float[]{x-12,y+4,x-7,y-2,x+9,y-2,x+14,y+6,x+8,y+12,x-8,y+12},DARK);
-            p.poly(new float[]{x-9,y+3,x-5,y-1,x+7,y-1,x+10,y+5,x+6,y+9,x-6,y+9},0xff6a7381);
-            p.rect(x-5,y-9,11,14,DARK); p.rect(x-4,y-9,8,12,0xffbc7a27);
-            p.rect(x-4,y-9,3,11,VisualStyle.GOLD); p.rect(x-7,y-12,14,6,DARK);
-            p.rect(x-6,y-12,12,4,VisualStyle.GOLD); p.rect(x-4,y-12,8,1,HIGHLIGHT);
-            p.rect(x-9,y-7,18,3,DARK); p.rect(x-8,y-7,16,1,HIGHLIGHT);
+            bollard(g,p,x,y);
             if(ready) {
                 float pulse=2*(float)StrictMath.sin(tick*.11);
                 ControlView.ring(p,x,y,Game.TIE_RADIUS+pulse,1,0x665feac1,4);
@@ -64,6 +59,18 @@ public final class MooringView {
             if(g.ropePhase==1 || g.ropePhase==2) projectile(g,p);
             else if(g.ropePhase==3) hit(g,p);
         }
+    }
+    private static void bollard(Game g,Painter p,float x,float y) {
+        if(p instanceof RiverPainter) {
+            RiverPainter river=(RiverPainter)p; RiverCamera c=river.camera;
+            p=ScreenView.scaled(river.canvas(),c.screenX(x,y),c.screenY(x,y),c.scale*.8f); x=0;y=0;
+        }
+        p.poly(new float[]{x-12,y+4,x-7,y-2,x+9,y-2,x+14,y+6,x+8,y+12,x-8,y+12},DARK);
+        p.poly(new float[]{x-9,y+3,x-5,y-1,x+7,y-1,x+10,y+5,x+6,y+9,x-6,y+9},0xff6a7381);
+        p.rect(x-5,y-9,11,14,DARK); p.rect(x-4,y-9,8,12,0xffbc7a27);
+        p.rect(x-4,y-9,3,11,VisualStyle.GOLD); p.rect(x-7,y-12,14,6,DARK);
+        p.rect(x-6,y-12,12,4,VisualStyle.GOLD); p.rect(x-4,y-12,8,1,HIGHLIGHT);
+        p.rect(x-9,y-7,18,3,DARK); p.rect(x-8,y-7,16,1,HIGHLIGHT);
     }
     private static void aim(Game g,Painter p,Body b) {
         float x=g.aimX(b,g.pointerX,g.pointerY),y=g.aimY(b,g.pointerX,g.pointerY);

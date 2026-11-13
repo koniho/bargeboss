@@ -20,6 +20,8 @@ public final class Game {
     public static final String[] CARGO_NAMES={"STEEL", "FREIGHT", "BULK"};
     public final Body[] cargo=new Body[9];
     public Body tug;
+    public WaterSurface water=new WaterSurface();
+    public Body trafficBoat;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
     public int visualTicks;
     public int celebrationTicks, celebrationPoints, impactTicks;
@@ -43,6 +45,8 @@ public final class Game {
     private int pressTicks, held=-1, spawnIndex;
     public Feeder[] feeders;
     private int nextFeedTick;
+    private final float[] route=new float[2];
+    public static final float TRAFFIC_Y=420;
     private double accumulator, visualAccumulator;
 
     public Layout layout=Layout.DEFAULT;
@@ -96,10 +100,11 @@ public final class Game {
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;
+        water=new WaterSurface(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
-        tug=new Body(0,-1,376,620,(float)Math.PI);
+        tug=new Body(0,-1,330,650,(float)Math.PI);
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
         feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
         feeders[0].request(2); feeders[1].request(1); nextFeedTick=14*60;
@@ -171,7 +176,7 @@ public final class Game {
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
     private boolean tieEligible(Body b) {
-        return b!=null && b.active && !b.lineAttached && inDock(b) && b.speed()<24
+        return b!=null && b.active && !b.lineAttached && inDock(b) && b.speed()<4
                 && (tutorial==null || tutorial.lesson>=Tutorial.TIE);
     }
     public boolean overTiePoint(Body b,float x,float y) {
@@ -207,7 +212,6 @@ public final class Game {
         }
         for(int i=0;i<cargo.length;i++) if(cargo[i]!=null && cargo[i].active && cargo[i].hit(x,y,22)) {
             if(cargo[i].lineAttached || (ropePhase!=0 && cargo[i]==ropeBody)) { selected=i; return; }
-            cargo[i].awaitingPickup=false;
             held=selected=i; navigating=false; braking=true; control=HOLDING;
             ropeDragging=canTie(cargo[i]); haptic(HAPTIC_TICK); return;
         }
@@ -328,6 +332,7 @@ public final class Game {
         if(pointer) { pressTicks++; if(pressTicks>=12 && held!=-1 && !ropeDragging) { if(!pushing) haptic(HAPTIC_TICK); pushing=true; braking=false; } }
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) feeder.step(this);
+        water.step(this);
         updateRope();
         for(int i=0;i<cargo.length;i++) {
             Body b=cargo[i]; if(b==null || !b.active) continue;
@@ -423,7 +428,7 @@ public final class Game {
         }
         // Fender damping follows motion time; mooring confirmation uses real time.
         for(Body b:cargo) if(b!=null && b.active) {
-            if(inDock(b) && b.speed()<65) { b.vx*=.93f; b.vy*=.93f; b.spin*=.93f; }
+            if(inDock(b) && b.speed()<65) { b.vx*=.9985f; b.vy*=.9985f; b.spin*=.995f; }
         }
     }
     private void feederContact(Body obstacle) {
@@ -467,12 +472,18 @@ public final class Game {
         float dragX=pointerX-downX, dragY=pointerY-downY;
         boolean steering=manualSteering;
         if(steering) { gx=b.x+dragX*2; gy=b.y+dragY*2; }
+        // Holding assist deliberately settles a fitting load; released cargo keeps its own glide.
+        if(!steering && inDock(b)) { b.vx*=.93f;b.vy*=.93f;b.spin*=.94f; }
+        float finalDistance=Physics.length(gx-b.x,gy-b.y);
+        if(!steering) {
+            HarborGeometry.waypoint(b.x,b.y,gx,gy,b.half+b.radius+4,route); gx=route[0]; gy=route[1];
+        }
         float dx=gx-b.x, dy=gy-b.y, distance=Physics.length(dx,dy);
         pushX=dx/Math.max(1,distance); pushY=dy/Math.max(1,distance);
-        if(distance<8 && !steering) {
+        if(finalDistance<8 && !steering) {
             control=DOCKING;
             // Mooring assist only inside the correct berth; it never transports cargo.
-            b.vx*=.90f; b.vy*=.90f; b.spin*=.9f;
+            b.vx*=.97f; b.vy*=.97f; b.spin*=.98f;
             tug.vx*=.90f; tug.vy*=.90f; return;
         }
         float nx=dx/Math.max(1,distance), ny=dy/Math.max(1,distance);
@@ -486,15 +497,19 @@ public final class Game {
             if(along>-20) { sx-=ny*sideSign*78; sy+=nx*sideSign*78; }
             guideX=Physics.clamp(sx,198,402); guideY=Physics.clamp(sy,245,787);
             control=steering?STEERING:ALIGNING;
-            navigate(guideX,guideY,95);
+            if(!steering) {
+                HarborGeometry.waypoint(tug.x,tug.y,guideX,guideY,tug.half+tug.radius+2,route);
+                navigate(route[0],route[1],95);
+            } else navigate(guideX,guideY,95);
         } else {
+            if(Physics.touching(tug,b,3)) b.awaitingPickup=false;
             guideX=b.x-nx*reach; guideY=b.y-ny*reach;
             control=steering?STEERING:!Physics.touching(tug,b,3)?ALIGNING:inDock(b)?DOCKING:PUSHING;
             navigate(b.x+nx*26,b.y+ny*26,Math.min(76,18+distance*.85f));
             // A broad fender steadies the contact, while collisions still supply linear momentum.
             float heading=(float)StrictMath.atan2(ny,nx);
-            b.spin+=Physics.clamp(Physics.angle(heading-b.angle)*2.5f-b.spin*2,-2,2)*Physics.DT;
-            if(distance<43 && !steering) { b.vx*=.96f; b.vy*=.96f; }
+            b.spin+=Physics.clamp(Physics.angle(heading-b.angle)*1.25f-b.spin*1.1f,-.75f,.75f)*Physics.DT;
+            if(distance<43 && !steering) { b.vx*=.988f; b.vy*=.988f; }
         }
     }
     private void damage(float speed) {
@@ -510,10 +525,12 @@ public final class Game {
     public float trafficX() { return 110+(trafficPhase()-1080)*.95f*MOTION_STEPS; }
     private void traffic() {
         if(!trafficActive()) return;
-        Body ship=new Body(-1,-1,trafficX(),395,0); ship.vx=57;
+        Body ship=trafficBoat;ship.x=trafficX();ship.y=TRAFFIC_Y;ship.angle=0;ship.vx=57;ship.vy=0;
         float beforeX=ship.x, beforeY=ship.y;
         float hit=Physics.collide(ship,tug);
         for(Body b:cargo) if(b!=null && b.active) hit=Math.max(hit,Physics.collide(ship,b));
-        if(hit>25 || Math.abs(ship.x-beforeX)+Math.abs(ship.y-beforeY)>2) damage(90);
+        boolean collided=hit>25 || Math.abs(ship.x-beforeX)+Math.abs(ship.y-beforeY)>2;
+        ship.x=beforeX;ship.y=beforeY;
+        if(collided) damage(90);
     }
 }

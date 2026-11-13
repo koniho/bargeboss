@@ -5,22 +5,23 @@
 
 @interface BBNativePainter ()
 @property(nonatomic,strong) NSMutableDictionary<NSNumber *,NSArray<UIImage *> *> *spriteAtlases;
+@property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *spriteSources;
 - (NSArray<UIImage *> *)atlas:(jint)atlas;
 @end
 
 @implementation BBNativePainter
 - (instancetype)init {
     if((self=[super init])) {
-        self.spriteAtlases=[NSMutableDictionary dictionary];
+        self.spriteAtlases=[NSMutableDictionary dictionary]; self.spriteSources=[NSMutableDictionary dictionary];
         [self atlas:0]; [self atlas:1];
     }
     return self;
 }
 - (NSArray<UIImage *> *)atlas:(jint)atlas {
     NSArray<UIImage *> *cached=self.spriteAtlases[@(atlas)]; if(cached) return cached;
-    int count=[BBSpriteAtlas countWithInt:atlas],columns=[BBSpriteAtlas columnsWithInt:atlas],rows=[BBSpriteAtlas rowsWithInt:atlas];
+    int count=[BBSpriteAtlas countWithInt:atlas];
     NSMutableArray<UIImage *> *frames=[NSMutableArray arrayWithCapacity:count];
-    NSMutableDictionary<NSString *,UIImage *> *sources=[NSMutableDictionary dictionary];
+    NSMutableDictionary<NSString *,UIImage *> *sources=self.spriteSources;
     for(int f=0;f<count;f++) {
         NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:f];
         UIImage *image=sources[file];
@@ -31,9 +32,9 @@
             sources[file]=image;
         }
         float width=(float)CGImageGetWidth(image.CGImage),height=(float)CGImageGetHeight(image.CGImage);
-        int sourceFrame=[BBSpriteAtlas sourceFrameWithInt:atlas withInt:f],col=sourceFrame%columns,row=sourceFrame/columns;
-        float x=roundf(width*col/(float)columns),y=roundf(height*row/(float)rows);
-        float right=roundf(width*(col+1)/(float)columns),bottom=roundf(height*(row+1)/(float)rows);
+        int sourceFrame=[BBSpriteAtlas sourceFrameWithInt:atlas withInt:f];
+        float x=roundf(width*[BBSpriteAtlas sourceLeftWithInt:atlas withInt:f]),y=roundf(height*[BBSpriteAtlas sourceTopWithInt:atlas withInt:f]);
+        float right=roundf(width*[BBSpriteAtlas sourceRightWithInt:atlas withInt:f]),bottom=roundf(height*[BBSpriteAtlas sourceBottomWithInt:atlas withInt:f]);
         CGImageRef cropped=CGImageCreateWithImageInRect(image.CGImage,CGRectMake(x,y,right-x,bottom-y));
         if(!cropped) [NSException raise:@"InvalidSpriteAtlas" format:@"Invalid sprite cell %d in %@",sourceFrame,file];
         [frames addObject:[UIImage imageWithCGImage:cropped scale:1 orientation:UIImageOrientationUp]];

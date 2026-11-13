@@ -47,12 +47,12 @@ public final class CoreTest {
         g=playing(); g.down(-1,500); check(!g.pointer,"letterbox tap ignored");
         g=playing(); g.tug.x=415; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
         steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
-        g=playing(); g.ticks=1200; g.tug.x=g.trafficX()+31; g.tug.y=395; steps(g,1);
+        g=playing(); g.ticks=1200; g.tug.x=g.trafficX()+31; g.tug.y=Game.TRAFFIC_Y; steps(g,1);
         check(g.hull<100,"cross traffic is a physical hazard");
         Game low=playing(), high=playing(); low.down(low.tug.x,low.tug.y); low.move(low.downX,low.downY-100);
         high.down(high.tug.x,high.tug.y); high.move(high.downX,high.downY-100);
         for(int i=0;i<300;i++) low.advance(1.0/30); for(int i=0;i<1440;i++) high.advance(1.0/144);
-        check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y,"30 and 144 Hz identical state");
+        check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y && low.tug.heave==high.tug.heave && low.water.emitted==high.water.emitted,"30 and 144 Hz identical physics and water state");
         g=playing(); g.advance(Double.NaN); check(g.ticks==0,"invalid frame delta ignored");
         g.advance(10); check(g.ticks==15,"long stall has bounded catch-up");
         // A bounded player exercises arrivals and all three berths using the public touch contract.
@@ -73,7 +73,9 @@ public final class CoreTest {
         ResponsiveTest.run();
         CareerTest.run();
         FeederTest.run();
-        check(Parity.signature().equals("63af1951:12:9876"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        SceneryTest.run();
+        WaterPhysicsTest.run();
+        check(Parity.signature().equals("6f51f9f0:12:9542"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

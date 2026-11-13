@@ -15,12 +15,21 @@ public final class Physics {
         float c = (float) StrictMath.cos(b.angle), s = (float) StrictMath.sin(b.angle);
         float forward = b.vx * c + b.vy * s;
         float side = -b.vx * s + b.vy * c;
-        // Low forward drag, stronger lateral drag: heavy glide without uncontrollable skating.
-        forward *= 1f - .22f * DT;
-        side *= 1f - 1.5f * DT;
+        // Displacement barges glide along their keel but present a broad face to lateral flow.
+        boolean barge=b.berth>=0;
+        float forwardDrag=barge?.065f+.0012f*Math.abs(forward):.22f;
+        float sideDrag=barge?.8f+.022f*Math.abs(side):1.5f;
+        forward/=1+forwardDrag*DT;
+        side/=1+sideDrag*DT;
         b.vx = forward * c - side * s;
         b.vy = forward * s + side * c + .9f * DT;
-        b.spin *= 1f - 2.6f * DT;
+        if(barge) {
+            float flow=(float)StrictMath.atan2(side,forward);
+            if(flow>Math.PI/2) flow-=(float)Math.PI;
+            if(flow<-Math.PI/2) flow+=(float)Math.PI;
+            b.spin+=flow*Math.min(1,b.speed()/35)*.28f*DT;
+        }
+        b.spin/=1+(barge?.42f+.012f*Math.abs(forward):2.6f)*DT;
         b.x += b.vx * DT; b.y += b.vy * DT;
         b.angle = angle(b.angle + b.spin * DT);
     }
@@ -63,6 +72,6 @@ public final class Physics {
             if(y-r<TOP) { impact=Math.max(impact,-b.vy); b.y+=TOP-y+r; b.vy=Math.abs(b.vy)*.2f; }
             if(y+r>BOTTOM) { impact=Math.max(impact,b.vy); b.y-=y+r-BOTTOM; b.vy=-Math.abs(b.vy)*.2f; }
         }
-        return impact;
+        return Math.max(impact,HarborGeometry.collide(b));
     }
 }

@@ -21,7 +21,7 @@ public final class Layout {
         this.width=Math.max(WIDTH,width); this.height=Math.max(HEIGHT,height);
         offsetX=(this.width-WIDTH)/2; offsetY=(this.height-HEIGHT)/2;
         float scale=Math.min(this.width/688,this.height/320);
-        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*scale)/2,scale);
+        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*RiverCamera.DEPTH*scale)/2,scale);
     }
 
     /** Menu rectangles remain centered; live controls overlay the outer shore. */
@@ -33,8 +33,8 @@ public final class Layout {
         if(original==PRACTICE) return new Box(width-116,height-44,108,40);
         return new Box(original.x+offsetX,original.y+offsetY,original.w,original.h);
     }
-    public float statusX() { return 280; }
-    public float statusY() { return height-42; }
+    public float statusX() { return 401; }
+    public float statusY() { return height-41; }
     public float statusHintY() { return height-21; }
 
     public static final class Box {

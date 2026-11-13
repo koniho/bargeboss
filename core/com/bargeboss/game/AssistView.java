@@ -6,7 +6,7 @@ public final class AssistView {
     private AssistView() {}
     public static void draw(Game g,Painter p) {
         Layout layout=g.layout;
-        p.rect(0,layout.height-48,layout.width,48,0xda101c30);
+        VisualStyle.panel(p,192,layout.height-48,418,40,0xde101c30);
         ControlView.status(g,p);
         button(p,layout.box(Layout.BRAKE),"BRAKE",g.braking?VisualStyle.RED:0xff2b4156);
         button(p,layout.box(Layout.HELP),g.tutorial==null?"HELP":"RESET",0xff2b4156);

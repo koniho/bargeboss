@@ -22,6 +22,20 @@ public final class AnimationPreview {
         for(int tick=0;tick<360;tick++) { g.step(); if(tick%5==0) frame(g,"feeder",tick/5); }
         g.reset(); g.tug.x=260; g.tug.y=760;
         for(int tick=0;tick<360;tick++) { g.step(); if(tick%5==0) frame(g,"feeder-blocked",tick/5); }
+        g.reset(); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
+        g.tug.x=330;g.tug.y=740;g.tug.angle=-(float)Math.PI/2;g.addCargo(1,280,580);
+        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-100);
+        for(int tick=0;tick<420;tick++) {
+            if(tick==120) ReplayInput.up(g,g.pointerX,g.pointerY);
+            g.step();if(tick%5==0) frame(g,"water",tick/5);
+        }
+        g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
+        g.tug.x=348;g.tug.y=430;g.tug.angle=-(float)Math.PI/2;
+        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-100);
+        for(int tick=0;tick<240;tick++) {
+            if(tick==85) ReplayInput.up(g,g.pointerX,g.pointerY);
+            g.step();if(tick%5==0) frame(g,"scenery-fade",tick/5);
+        }
         ReplayInput.controlFixture(g); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
         int phase=0,age=0,frame=0; float ropeX=0,ropeY=0;
         for(int tick=0;tick<900;tick++) {

@@ -29,8 +29,8 @@
 - (XCUICoordinate *)river:(XCUIElement *)stage x:(double)x y:(double)y {
     CGSize size=[self logicalSize:stage];
     double scale=fmin(size.width/688,size.height/320);
-    double left=(size.width-688*scale)/2,top=(size.height-320*scale)/2;
-    return [self point:stage x:left+(y-148)*scale y:top+(460-x)*scale];
+    double left=(size.width-688*scale)/2,top=(size.height-320*0.75*scale)/2;
+    return [self point:stage x:left+(y-148)*scale y:top+(460-x)*scale*0.75];
 }
 - (void)tapMenu:(XCUIElement *)stage x:(double)x y:(double)y {
     CGSize size=[self logicalSize:stage];

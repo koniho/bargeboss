@@ -11,13 +11,18 @@ public final class ScreenView {
         Layout layout=g.layout;
         int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
         String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
-        p.rect(0,0,layout.width,48,0xda101c30);
-        text(p,g.challengeTitle(),14,9,12,GOLD);
-        text(p,"SCORE "+g.score,210,9,12,PAPER);
-        text(p,"LOADS "+g.delivered+"/"+g.quota(),364,9,12,GOLD);
-        text(p,"HULL "+g.hull+"%",508,9,12,g.hull<30?VisualStyle.RED:PAPER);
-        text(p,time,662,9,18,PAPER);
-        text(p,"KEEP THE TWO FEEDER SLOTS CLEAR",14,31,8,MUTED);
+        VisualStyle.panel(p,12,8,316,48,0xed101c30);
+        text(p,"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
+        text(p,g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
+        float timerX=layout.width/2-130;
+        VisualStyle.panel(p,timerX,8,104,48,0xed101c30);
+        center(p,time,timerX+52,20,23,seconds<30?GOLD:PAPER);
+        VisualStyle.panel(p,timerX+112,8,124,48,0xed101c30);
+        int rating=Challenges.stars(g.challengeId,g.delivered,g.lost,g.hull);
+        for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
+        VisualStyle.panel(p,12,layout.height-48,170,40,0xed101c30);
+        text(p,"SCORE",24,layout.height-39,8,MUTED);
+        text(p,""+g.score,81,layout.height-37,18,PAPER);
         haptics(g,p);
         Layout.Box pause=layout.box(Layout.PAUSE);
         VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);
@@ -252,6 +257,7 @@ public final class ScreenView {
         float size=Math.min(label.length()>18?14:18,(w-62)*7/Math.max(1,label.length()*6-1));
         center(p,label,x+w/2,y+(h-size)/2,size,primary?INK:PAPER);
     }
+    public static Painter scaled(Painter p,float x,float y,float scale) { return new Transform(p,x,y,scale,0); }
     public static Painter offset(Painter p,float x,float y) { return x==0 && y==0?p:new Transform(p,x,y,1,0); }
     public static Painter centered(Game g,Painter p) { return offset(p,g.layout.offsetX,g.layout.offsetY); }
     public static Painter menu(Game g,Painter p) {

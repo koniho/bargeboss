@@ -6,23 +6,12 @@ public final class ArcadeView {
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
         int tick=g.visualTicks;
-        // Broken blocks of teal give depth without adding a noisy moving grid.
-        for(int row=0;row<43;row++) for(int col=0;col<18;col++) {
-            int seed=(row*137+col*71+row*col*13)&1023;
-            float x=171+col*14+(seed%4),y=216+row*14+(seed%5);
-            float w=5+seed%8,h=2+(seed/8)%5;
-            if(x+w<430 && y+h<817) p.rect(x,y,w,h,WATER[seed%WATER.length]);
-            if(seed%13==0) {
-                float drift=(float)StrictMath.sin(tick*.025+seed)*2;
-                p.rect(x+drift,y+2,4+seed%5,1,0x667eb9b2);
-            }
-        }
         // Long, gently migrating ripples are much quieter than vessel foam.
         for(int row=0;row<22;row++) for(int col=0;col<4;col++) {
             float x=178+col*61+(row%2)*7,y=226+row*26;
             float wave=(float)StrictMath.sin(tick*.032+row*.7+col)*3;
-            int alpha=38+(int)(24*(1+StrictMath.sin(tick*.02+row+col)));
-            int color=(alpha<<24)|0x67b6bb;
+            int alpha=20+(int)(15*(1+StrictMath.sin(tick*.02+row+col)));
+            int color=(alpha<<24)|0x71aaa9;
             p.rect(x,y+wave,9,1,color); p.rect(x+8,y+wave+1,8,1,color);
             if((row+col)%3==0) p.rect(x+5,y+wave+4,7,1,0x337ad5cf);
         }
@@ -33,6 +22,7 @@ public final class ArcadeView {
             float flicker=(float)StrictMath.sin(tick*.08+i+dock);
             p.rect(x+flicker*2,y,2+(i%3)*2,1.5f,0x55ebbe64);
         }
+        g.water.draw(g,p);
     }
     public static void wake(Painter p,Body b,int ticks) {
         if(b.lineAttached) return;
@@ -44,9 +34,11 @@ public final class ArcadeView {
             p.rect(b.x+6,b.y+12-pulse,11,1,0x4478bfbf);
             return;
         }
-        float power=Math.min(1,speed/65),c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        float stern=-(b.half+b.radius);
-        for(int side=-1;side<=1;side+=2) {
+        float travel=(float)StrictMath.atan2(b.vy,b.vx);
+        float power=Math.min(1,speed/65),c=(float)StrictMath.cos(travel),s=(float)StrictMath.sin(travel);
+        float kick=b.floatingInitialized?b.wakeKickTicks/18f:(float)StrictMath.pow(Math.max(0,-StrictMath.sin(ticks*.048+b.x*.017+b.y*.009)),10);
+        float stern=-(b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(travel-b.angle)));
+        if(kick>0) for(int side=-1;side<=1;side+=2) {
             float lastX=b.x+c*stern-s*side*9,lastY=b.y+s*stern+c*side*9;
             for(int i=1;i<=10;i++) {
                 float age=(i+(ticks%10)/10f)/10f;
@@ -54,19 +46,19 @@ public final class ArcadeView {
                 float width=side*(9+age*(8+power*21));
                 width+=2*(float)StrictMath.sin(ticks*.17+i*1.4);
                 float x=b.x+c*back-s*width,y=b.y+s*back+c*width;
-                int alpha=(int)((1-age)*175+25);
+                int alpha=(int)(((1-age)*175+25)*kick);
                 int foam=(alpha<<24)|0xc8fff0;
-                p.line(lastX,lastY,x,y,2.5f+power*2.5f,0x5568c5ce);
+                p.line(lastX,lastY,x,y,2.5f+power*2.5f,((int)(85*kick)<<24)|0x68c5ce);
                 // Overlapping little steps read as pixel spray at gameplay size and title scale.
                 float size=(2.5f+power*2)*(1-age*.45f);
                 p.rect(x-size,y-size*.4f,size*2,size*.8f,foam);
                 p.rect(x-size*.45f,y-size,size*.9f,size*2,foam);
-                if(i%2==0) p.rect(x+side*3,y-3,2,2,0xbbf4fff5);
+                if(i%2==0) p.rect(x+side*3,y-3,2,2,((int)(187*kick)<<24)|0xf4fff5);
                 lastX=x; lastY=y;
             }
         }
         // Turbulent propeller trail is centered inside the spreading V.
-        for(int i=0;i<7;i++) {
+        if(b.berth<0) for(int i=0;i<7;i++) {
             float t=((ticks+i*7)%49)/49f;
             float back=stern-8-t*(25+power*22);
             float jitter=(float)StrictMath.sin(t*15+i)*4;
@@ -74,9 +66,9 @@ public final class ArcadeView {
             p.rect(x,y,2+3*(1-t),1.5f+power,0x88a5e9e2);
         }
         float bow=b.half+b.radius+3;
-        for(int side=-1;side<=1;side+=2) for(int i=0;i<4;i++) {
+        if(kick>0) for(int side=-1;side<=1;side+=2) for(int i=0;i<4;i++) {
             float xx=bow-i*1.5f,yy=side*(3+i*3);
-            p.rect(b.x+c*xx-s*yy-1,b.y+s*xx+c*yy-1,3,2,0xddeaffef);
+            p.rect(b.x+c*xx-s*yy-1,b.y+s*xx+c*yy-1,3,2,((int)(221*kick)<<24)|0xeaffef);
         }
     }
     public static void effects(Game g,Painter p) {

@@ -27,7 +27,7 @@ public final class ReplayInput {
             if(!g.pointer) { if(g.canTie(target)) lasso(g,target); else down(g,target.x,target.y); }
         } else {
             // Clear the arrival channel while the crew works, using the same drag gesture.
-            float dx=398-g.tug.x,dy=610-g.tug.y,len=Physics.length(dx,dy);
+            float dx=300-g.tug.x,dy=610-g.tug.y,len=Physics.length(dx,dy);
             if(len<22) {
                 if(g.pointer) up(g,g.pointerX,g.pointerY);
                 if(!g.braking) tap(g,Layout.BRAKE);

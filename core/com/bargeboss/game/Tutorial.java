@@ -18,7 +18,12 @@ public final class Tutorial {
             g.tug=new Body(0,-1,376,700,(float)Math.PI);
             g.addCargo(2,lesson==TIE?Game.DOCK_X[2]:292,700);
         }
+        if(lesson==TIE) park(g.cargo[0]);
         startX=g.tug.x; startY=g.tug.y;
+    }
+    private static void park(Body b) {
+        b.vx=b.vy=b.spin=0;b.awaitingPickup=true;
+        b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
     public void update(Game g) {
         if(lesson==MOVE && g.navigating && Physics.length(g.tug.x-startX,g.tug.y-startY)>30) {
@@ -33,8 +38,8 @@ public final class Tutorial {
             if(actionTicks>=12 && Physics.length(b.x-startX,b.y-startY)>3) {
                 lesson=DOCK; setup(g); g.haptic(Game.HAPTIC_TICK);
             }
-        } else if(lesson==DOCK && g.inDock(g.cargo[0]) && g.cargo[0].speed()<24) {
-            lesson=TIE; g.cancelInputs(); g.haptic(Game.HAPTIC_TICK);
+        } else if(lesson==DOCK && g.inDock(g.cargo[0]) && g.cargo[0].speed()<4) {
+            lesson=TIE; park(g.cargo[0]); g.cancelInputs(); g.haptic(Game.HAPTIC_TICK);
         } else if(lesson==TIE && g.delivered>0) { lesson=DONE; g.cancelInputs(); g.haptic(Game.HAPTIC_SUCCESS); }
     }
     public String title() {

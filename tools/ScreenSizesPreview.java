@@ -30,6 +30,9 @@ public final class ScreenSizesPreview {
         capture(g,1024,768,"tablet-stage");
         g=new Game(); g.restoreProgress("BB1|2|3,7000|3,7500|3,8800"); g.mode=Game.CHALLENGES;
         capture(g,1600,720,"wide-challenges-captain");
+        g=new Game(); g.reset(); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
+        g.tug.x=300;g.tug.y=450; capture(g,1600,720,"scenery-clear");
+        g.tug.x=350;g.tug.y=280; capture(g,1600,720,"scenery-faded");
         System.out.println("Responsive phone and tablet captures exported to out/");
     }
 }

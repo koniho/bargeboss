@@ -7,8 +7,15 @@ public final class Renderer {
         Game g=root.activeGame();
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
-        p.rect(0,0,g.layout.width,g.layout.height,0xff737582);
+        SceneryView.ground(g,p);
+        SceneryView.props(g,p,false);
         river(g,new RiverPainter(p,g.layout.camera));
+        SceneryView.props(g,p,true);
+        SceneryView.piers(g,p);
+        SceneryView.bridge(g,p);
+        ControlView.draw(g,new RiverPainter(p,g.layout.camera));
+        ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
+        HarborView.objective(g,p);
         FeederView.callouts(g,p);
         ScreenView.hud(g,p);
         AssistView.draw(g,p);
@@ -20,17 +27,29 @@ public final class Renderer {
     private static void river(Game g,Painter p) {
         HarborView.draw(g,p);
         if(g.trafficWarning() || g.trafficActive()) {
-            for(int x=173;x<426;x+=18) p.line(x,395,x+8,395,2,0x88ffc52f);
+            for(int x=173;x<426;x+=18) p.line(x,Game.TRAFFIC_Y,x+8,Game.TRAFFIC_Y,2,0x88ffc52f);
             if(g.trafficWarning()) RiverPainter.center(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
         }
-        if(g.trafficActive()) {
-            Body ship=new Body(-1,-1,g.trafficX(),395,0); ship.vx=57;
-            VesselView.draw(g,p,ship,true);
-        }
         FeederView.draw(g,p);
-        // Painted hulls share the enlarged physics footprint.
-        for(int i=0;i<g.cargo.length;i++) {
-            Body b=g.cargo[i]; if(b==null || !b.active) continue;
+        Body[] ordered=new Body[g.cargo.length+6]; int count=0;
+        for(Body b:g.cargo) if(b!=null && b.active) ordered[count++]=b;
+        ordered[count++]=g.tug;
+        if(g.tutorial==null) for(Feeder f:g.feeders) if(f.phase!=Feeder.IDLE) {
+            ordered[count++]=f.boat;if(f.load!=null) ordered[count++]=f.load;
+        }
+        if(g.trafficActive()) ordered[count++]=g.trafficBoat;
+        for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
+            while(j>=0 && ordered[j].x<b.x) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
+        }
+        for(int n=0;n<count;n++) {
+            Body b=ordered[n];
+            if(b.berth<0) {
+                VesselView.draw(g,p,b,true);
+                if(b!=g.tug && b.id==0) HarborView.badge(p,"DELIVERY",b.x,b.y+15,6,VisualStyle.CREAM);
+                continue;
+            }
+            if(b.id<0) { VesselView.draw(g,p,b,false);continue; }
+            int i=-1; for(int slot=0;slot<g.cargo.length;slot++) if(g.cargo[slot]==b) { i=slot;break; }
             int color=Game.COLORS[b.berth];
             if(g.selected==i && !b.lineAttached) {
                 p.circle(b.x,b.y,40,0x18fff0ce);
@@ -46,11 +65,9 @@ public final class Renderer {
                 p.rect(b.x-22,b.y+32,44*Math.max(0,1-b.age/68),2,b.age>48?VisualStyle.RED:color);
             }
         }
-        VesselView.draw(g,p,g.tug,true);
         if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);
-        DockView.draw(g,p);
-        ControlView.draw(g,p);
-        ArcadeView.effects(g,p);
+        DockView.draw(g,((RiverPainter)p).canvas());
+
     }
     private static void tag(Painter p,String text,float x,float y,float size,int color) {
         // Anchor labels beside the hull while keeping their glyphs horizontal.

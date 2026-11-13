@@ -39,7 +39,9 @@ public final class FeederTest {
         g.reset(); steps(g,165); Body waiting=g.cargo[0]; float px=waiting.x,py=waiting.y;
         steps(g,100); check(waiting.x==px && waiting.y==py && waiting.awaitingPickup,"slot fenders hold waiting cargo until pickup");
         ReplayInput.down(g,waiting.x,waiting.y);
-        check(!waiting.awaitingPickup && g.heldCargo()==waiting,"holding a staged barge releases its feeder fenders");
+        check(waiting.awaitingPickup && g.heldCargo()==waiting,"selection keeps the barge steady while the tug approaches");
+        for(int i=0;i<1200 && waiting.awaitingPickup;i++) g.step();
+        check(!waiting.awaitingPickup,"physical push contact releases feeder fenders");
         g.startTutorial(); Game practice=g.activeGame(); steps(g,240);
         check(practice.feeders[0].drops==0 && practice.feeders[1].drops==0,"practice does not feed extra cargo into lessons");
         g.reset(); check(g.feeders[0].drops==0 && !g.feeders[0].blocked && cargo(g)==0,"restart clears queues, warnings and old loads");

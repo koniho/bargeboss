@@ -3,14 +3,16 @@
 `Game` owns all state, gestures, transitions, the shift clock, incoming cargo,
 delivery rules and AI assistance. `Physics` uses 60 Hz semi-implicit integration.
 Each hull is three overlapping discs attached to one rigid body; impulses transfer
-linear and angular momentum, while low forward drag and higher sideways drag
-approximate a boat's inertia. Current adds a small downstream acceleration.
+linear and angular momentum, while speed-dependent keel and broadside drag
+model orientation-dependent resistance. Loaded barges have mass 5 versus the tug's 2,
+lower yaw damping and gradual flow alignment. Current adds a small downstream acceleration.
 
 The tug uses a touch-anchored direction/thrust drag with a neutral/braking ring.
 Holding cargo gives an assisted stern approach; dragging overrides its heading.
 Cargo receives propulsion through contact impulses. Near a berth, fender
-alignment and damping help it settle. A matching bollard accepts a rope drop
-only when the complete hull is inside its berth and speed is below the limit.
+alignment and active hold-assist damping help it settle; passive fenders no longer
+stop a released barge abruptly. A matching bollard accepts a rope drop
+only when the complete hull is inside its berth and speed is below 4 world units/second.
 Dragging an armed lasso shows a curved aiming guide; release starts an 18-tick
 flight. A hit attaches at impact and flashes for 24 ticks; a miss retracts for 18
 instead. These are real-time shared simulation phases. Aiming cancellation
@@ -22,10 +24,10 @@ counter, so pause/background freezes both. Equipment returns to idle afterward.
 
 The 2× pace comes from two original-size motion substeps for each 60 Hz real
 step. Steering, thrust, drag, current, fenders and collisions advance together,
-keeping original stopping distances and collision resolution. Contract, shift,
+preserving collision substeps; the new barge drag model intentionally extends coasting. Contract, shift,
 gesture, haptic, mooring and unloading clocks advance once per real step.
 Crossing boats cover their route twice as fast; warning and arrival cycles keep
-their original timing. Visual wakes, wave patterns and bursts do not affect physics.
+their original timing. Wake energy drives vertical heave; it does not add hidden horizontal forces.
 
 `Renderer` emits geometry and atlas sprite commands through `Painter`. Lettering
 is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
@@ -38,10 +40,13 @@ outside navigable water. The whole stage remains visible, with
 industrial scenery extending into the responsive margins rather than black bars.
 
 `RiverCamera` stores origin and uniform scale separately from the HUD. Its paired
-forward/inverse transform turns source coordinates x=140..460, y=148..836 into the
+forward/inverse transform projects source coordinates x=140..460, y=148..836 into the
 landscape board. The scale is min(canvasWidth/688, canvasHeight/320), centered on the full canvas.
-At the reference size, scale=960/688, left=0 and top=(600−320×scale)/2. Navigable water remains x=170..430, y=215..817.
-World labels remain upright. Hull dimensions are 1.25× their earlier values,
+The shared ground-depth factor is 0.75: screenY=top+(460−worldX)×scale×0.75,
+with the exact inverse for pointers. At the reference size, scale=960/688, left=0
+and top=(600−320×scale×0.75)/2. Navigable water remains x=170..430, y=215..817.
+World labels, buildings, cranes and bollards remain upright. Ground circles become
+ellipses, while vessel images keep uniform scale and their fixed 32-view anchors. Hull dimensions are 1.25× their earlier values,
 with recalculated collision inertia. Camera transformations never alter physics.
 This separation supports adding pan/zoom later; the current camera fits the whole
 stage and no pinch/follow controls are enabled. Android hides system bars with
@@ -84,8 +89,9 @@ clockwise from east in 11.25° steps. Each asset has two physical 4×4 sheets:
 even logical frames use the corrected 16-view base sheet, and odd frames use a
 new sheet of intermediate headings (11.25°, 33.75°, …, 348.75°).
 `file(atlas, frame)` chooses the sheet; `sourceFrame(atlas, frame)` maps to the
-physical cell. Each source PNG is decoded once when constructing the cached
-logical frame array. Shared Java chooses adjacent frames, their
+physical cell. Irregular scenery cells use shared normalized sourceLeft/Top/Right/Bottom
+bounds. All hosts cache source images by path across atlas IDs, then cache their
+logical frames. Shared Java chooses adjacent frames, their
 blend weight, scale, pivots, opacity and decorative animation from the same
 phase state on every platform. Both frames place their registered footprint at
 the same world point; the stage applies no residual bitmap rotation. Per-frame
@@ -232,7 +238,7 @@ backs out with its bow still facing the channel after handoff. Occupied approach
 or return paths wait and show a throttled HURRY UP call every 240 ticks.
 
 Before handoff, incoming hulls are NPC obstacles, never scored contracts. The
-slot fenders hold handed-off cargo until its first push gesture; contract age
+slot fenders hold handed-off cargo until actual tug contact during a push gesture; contract age
 starts at handoff. Pause, help, background and practice suspend the root feeder
 clocks. Tutorial fixtures use no NPC arrivals. `FeederView` draws markings,
 wakes, per-slot warnings, destination bubbles and berth pulses; calls are visual
@@ -241,3 +247,42 @@ Regression tests cover simultaneous arrival, independent blocked slots, retries,
 exactly-once handoff, expiration origin, fenders, pause/reset/practice and bounded
 completion of all three challenges. Native/JVM parity includes arrival, departure
 and blocked-call frames. iOS UI tests wait for real feeder handoff before pushing.
+
+
+## Layered harbor and occlusion
+
+The built-in image generator created an opaque terrain sheet and transparent
+prop/pier sheets plus a separate two-leaf bridge sprite. The source composition lives in `docs/reference/harbor-layout-source.png`;
+production sheets and exact prompts are in `assets/sprites` and `docs/art-prompts`.
+The source composition is not rendered as a full-screen screenshot. Separate atlas
+cells draw water, north/south quay strips, ten warehouse/storage clusters, two
+finger piers and two separately fading bridge leaves. Solid footprints belong to `HarborGeometry`, with the north pier
+relocated upstream to keep the feeder-to-freight approach navigable. Assisted
+pushes use a small visibility graph around expanded quay footprints; a hull
+inside a planning margin first escapes toward the open channel. Rendered sprites
+never define physics implicitly. All vessels, including NPC arrivals, are ordered
+by their projected ground depth. Unloading cranes and personnel remain independently
+animated in screen-upright coordinates.
+
+`SceneryView.opacity` eases each scenery object's opacity from 1 to 0.28 when its
+screen bounds overlap a vessel silhouette or sampled lasso arc. This includes
+warehouses, storage clusters, piers, bridge and crane groups. The fade uses spatial
+proximity, so it restores naturally as the action moves clear and cannot mutate
+simulation state during rendering. Target arrows, controls and bollards render
+above scenery. Faded solid piers retain a subtle ground outline.
+
+## Waves, heave and trough-triggered wake
+
+`WaterSurface` owns 64 bounded, persistent wake packets with a 210-tick lifetime.
+Ambient crossing waves plus nearby packet energy drive a filtered heave response
+for each hull; moored or staged loads respond more gently. Buoys sample the same
+field. Rise/fall offsets are in screen-vertical space and move hull and payload
+together without changing their horizontal collision footprint or rotational
+anchor. At a negative-to-positive heave-velocity crossing, an underway hull emits
+one wake packet and an 18-tick foam burst, with a cooldown preventing chatter.
+Wake heading follows actual travel direction, including astern motion. Packets
+expand from their emission positions and keep fading after their source stops.
+The small powered-boat prop wash is separate from the trough-triggered main wake.
+Water state advances at the same fixed 60 Hz on every platform and freezes with
+pause/background; drawing only samples state. Dedicated checks cover directional
+glide, reverse motion, yaw inertia, wake timing, local wave amplitude and render purity.

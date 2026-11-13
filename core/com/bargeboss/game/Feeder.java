@@ -41,6 +41,7 @@ public final class Feeder {
             if(load.y<=DROP_Y) {
                 for(int i=0;i<g.cargo.length;i++) if(g.cargo[i]==null || !g.cargo[i].active) {
                     Body delivered=new Body(g.nextId++,load.berth,load.x,load.y,load.angle);
+                    delivered.heave=load.heave;delivered.heaveVelocity=load.heaveVelocity;delivered.floatingInitialized=load.floatingInitialized;
                     delivered.awaitingPickup=true; delivered.tiedX=delivered.x; delivered.tiedY=delivered.y; delivered.tiedAngle=delivered.angle;
                     g.cargo[i]=delivered; drops++; phase=RETURNING;
                     call(g,"ZONE "+(char)('A'+load.berth)+"!"); g.haptic(Game.HAPTIC_TICK); break;

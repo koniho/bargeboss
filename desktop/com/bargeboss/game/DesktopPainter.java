@@ -24,14 +24,14 @@ import java.awt.geom.Rectangle2D;
 
 public final class DesktopPainter implements Painter {
     private static final Map<Integer,BufferedImage[]> ATLASES=new HashMap<Integer,BufferedImage[]>();
+    private static final Map<String,BufferedImage> SOURCE_IMAGES=new HashMap<String,BufferedImage>();
     private static final ThreadLocal<BufferedImage> BLEND_BUFFER=new ThreadLocal<BufferedImage>();
     private final Graphics2D g;
     public DesktopPainter(Graphics2D g) { this.g=g; }
     private static synchronized BufferedImage[] atlas(int id) {
         BufferedImage[] frames=ATLASES.get(id); if(frames!=null) return frames;
-        Map<String,BufferedImage> sources=new HashMap<String,BufferedImage>();
+        Map<String,BufferedImage> sources=SOURCE_IMAGES;
         frames=new BufferedImage[SpriteAtlas.count(id)];
-        int columns=SpriteAtlas.columns(id),rows=SpriteAtlas.rows(id);
         for(int f=0;f<frames.length;f++) {
             String path="assets/sprites/"+SpriteAtlas.file(id,f);
             BufferedImage image=sources.get(path);
@@ -42,9 +42,8 @@ public final class DesktopPainter implements Painter {
                 if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
                 sources.put(path,image);
             }
-            int sourceFrame=SpriteAtlas.sourceFrame(id,f),col=sourceFrame%columns,row=sourceFrame/columns;
-            int x=Math.round(image.getWidth()*col/(float)columns),y=Math.round(image.getHeight()*row/(float)rows);
-            int right=Math.round(image.getWidth()*(col+1)/(float)columns),bottom=Math.round(image.getHeight()*(row+1)/(float)rows);
+            int x=Math.round(image.getWidth()*SpriteAtlas.sourceLeft(id,f)),y=Math.round(image.getHeight()*SpriteAtlas.sourceTop(id,f));
+            int right=Math.round(image.getWidth()*SpriteAtlas.sourceRight(id,f)),bottom=Math.round(image.getHeight()*SpriteAtlas.sourceBottom(id,f));
             frames[f]=image.getSubimage(x,y,right-x,bottom-y);
         }
         ATLASES.put(id,frames); return frames;

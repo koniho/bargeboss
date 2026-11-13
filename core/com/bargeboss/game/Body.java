@@ -6,11 +6,14 @@ public final class Body {
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
     public int unloadingTicks,lineSnapTicks;
+    public float heave,heaveVelocity;
+    public int wakeKickTicks,wakeCooldown;
+    public boolean floatingInitialized;
     public float tiedX,tiedY,tiedAngle;
     public boolean active = true, lineAttached, awaitingPickup;
     public Body(int id, int berth, float x, float y, float angle) {
         this.id = id; this.berth = berth; this.x = x; this.y = y; this.angle = angle;
-        mass = id == 0 ? 2f : 4f;
+        mass = berth>=0?5f:id==0?2f:4f;
         half = id == 0 ? 12.5f : 21.25f;
         radius = id == 0 ? 15f : 17.5f;
         inertia = mass * (half * half + radius * radius) * .8f;

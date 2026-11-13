@@ -38,7 +38,18 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   raised wheelhouse and tire fenders, rust barges carrying steel, containers or
   bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
   A sunset harbor title, matching HUD and animated results complete the style.
-  Wakes are visual effects; they do not push cargo.
+  The play view uses a fixed 2.5D ground projection with independent painted
+  warehouses, stockpiles, container stacks, quays and solid finger piers. Foreground
+  scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline
+  keeps solid pier footprints visible while their artwork is translucent.
+- **Water motion:** floating hulls and feeder buoys rise and fall with local waves.
+  Passing wakes increase that motion nearby. Underway vessels emit the main foam
+  burst at the bottom of each fall; wake arcs then expand and fade in place. Wake
+  energy affects vertical motion, without secretly changing horizontal controls.
+- **Barge momentum:** loaded barges are heavier than the tug, glide along their keel,
+  resist broadside motion, and carry yaw inertia. Holding push assist deliberately
+  settles a load once it fits the berth; released cargo keeps gliding. A lasso-ready
+  cue now waits for a slower approach so the line has time to reach the bollard.
 - **Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
@@ -49,7 +60,7 @@ feeder is free. They back out after handoff. Animated comic calls shout **ZONE A
 **ZONE B!**, or **ZONE C!** and pulse the matching berth. A blocked captain waits,
 flashes the slot red, and calls **HURRY UP!** at four-second intervals. These are
 visual speech bubbles; there is no voice audio yet. Slot fenders hold waiting
-barges until you press one to push it. Contracts expire 68 seconds after handoff; an
+barges until the tug makes push contact. Contracts expire 68 seconds after handoff; an
 incoming NPC load never expires before it reaches you. Watch crossing traffic and
 avoid hard impacts. Pause is in the upper-right corner (Escape on desktop).
 
@@ -91,7 +102,7 @@ or separate JavaScript/Swift gameplay implementation.
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
 using 960×600 as the reference size. The river uses the largest uniform scale that
-keeps the whole stage visible, with compact HUD/control overlays along the shore. Sprites keep their
+keeps the whole stage visible, with compact HUD/control overlays along the shore. The ground plane is foreshortened to 75% depth; sprites retain their painted
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
 The complete river is visible at once, with a compact channel and larger boat
 footprints that make cargo, wakes and rope actions easier to read. The camera

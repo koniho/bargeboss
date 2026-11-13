@@ -37,7 +37,7 @@ public final class ResponsiveTest {
         }
         float xDistance=Physics.length(camera.screenX(330,500)-camera.screenX(300,500),camera.screenY(330,500)-camera.screenY(300,500));
         float yDistance=Physics.length(camera.screenX(300,530)-camera.screenX(300,500),camera.screenY(300,530)-camera.screenY(300,500));
-        check(near(xDistance,yDistance) && near(xDistance,30*camera.scale),"river camera never stretches world units");
+        check(near(xDistance,30*camera.scale*RiverCamera.DEPTH) && near(yDistance,30*camera.scale),"ground plane uses the same fixed depth projection on every host");
         for(Layout.Box original:BUTTONS) {
             Layout.Box box=layout.box(original);
             check(box.x>=0 && box.y>=0 && box.x+box.w<=layout.width && box.y+box.h<=layout.height,"all menu and control targets fit the canvas");
@@ -114,6 +114,6 @@ public final class ResponsiveTest {
         float x=302,y=519,sx=camera.screenX(x,y),sy=camera.screenY(x,y);
         check(near(camera.worldX(sx,sy),x) && near(camera.worldY(sx,sy),y),"translated and zoomed camera preserves exact input inverse");
         check(camera.contains(sx,sy) && !camera.contains(camera.left-1,camera.top),"camera containment follows its translated projection");
-        check(near(camera.width(),688*2.4f) && near(camera.height(),320*2.4f),"camera zoom scales both dimensions uniformly");
+        check(near(camera.width(),688*2.4f) && near(camera.height(),320*2.4f*RiverCamera.DEPTH),"camera zoom preserves the fixed ground depth ratio");
     }
 }

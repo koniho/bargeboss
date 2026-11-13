@@ -18,7 +18,7 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ScreenSizesPr
 if [ "${1:-}" = '--animations' ]; then
     java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.AnimationPreview
     if command -v ffmpeg >/dev/null; then
-        for sequence in title mooring results feeder feeder-blocked; do
+        for sequence in title mooring results feeder feeder-blocked water scenery-fade; do
             ffmpeg -hide_banner -loglevel error -y -framerate 12 \
                 -i "out/animation-frames/$sequence/%04d.png" \
                 -filter_complex '[0:v]scale=640:400:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer' \

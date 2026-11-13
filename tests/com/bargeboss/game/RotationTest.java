@@ -53,14 +53,14 @@ public final class RotationTest {
             Body b=new Body(kind<0?0:1,kind,300,550,0); b.lineAttached=true;
             Capture first=new Capture(); VesselView.draw(g,first,b,kind<0);
             float[] radius=new float[first.count];
-            for(int k=0;k<first.count;k++) radius[k]=Physics.length(first.draws[k].cx-b.x,first.draws[k].cy-b.y);
+            for(int k=0;k<first.count;k++) radius[k]=Physics.length(first.draws[k].cx-first.draws[0].cx,first.draws[k].cy-first.draws[0].cy);
             for(int i=0;i<=360;i++) {
                 b.angle=i*fullTurn/360;
                 int ticks=g.ticks,visual=g.visualTicks; float x=b.x,y=b.y,angle=b.angle;
                 Capture p=new Capture(); VesselView.draw(g,p,b,kind<0);
                 check(p.count==first.count,"turning cannot add or remove cargo layers");
-                check(p.draws[0].cx==b.x && p.draws[0].cy==b.y,"stationary hull stays on crosshair through the entire turn");
-                for(int k=0;k<p.count;k++) check(near(Physics.length(p.draws[k].cx-b.x,p.draws[k].cy-b.y),radius[k]),"cargo keeps its fixed distance from the hull center at every heading");
+                check(p.draws[0].cx==first.draws[0].cx && p.draws[0].cy==first.draws[0].cy,"stationary hull stays on crosshair through the entire turn");
+                for(int k=0;k<p.count;k++) check(near(Physics.length(p.draws[k].cx-p.draws[0].cx,p.draws[k].cy-p.draws[0].cy),radius[k]),"cargo keeps its fixed distance from the hull center at every heading");
                 check(g.ticks==ticks && g.visualTicks==visual && b.x==x && b.y==y && b.angle==angle,"rotation drawing never mutates clocks or pose");
             }
         }
