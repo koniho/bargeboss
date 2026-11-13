@@ -2,6 +2,7 @@ package com.bargeboss.game;
 
 /** Independent painted scenery cells, registered to the shared ground plane. */
 public final class SceneryView {
+    private static final float[] PIER_BODY_WIDTH={321/362f,247/362f};
     private SceneryView() {}
     private static float overlap(float x,float y,float w,float h,float fx,float fy,float rx,float above,float below,float margin) {
         float dx=Math.max(x-fx-rx,fx-rx-x-w),dy=Math.max(y-fy-below,fy-above-y-h);
@@ -35,55 +36,71 @@ public final class SceneryView {
         return alpha;
     }
     public static void ground(Game g,Painter p) {
-        RiverCamera c=g.layout.camera; float s=c.scale;
-        p.rect(0,0,g.layout.width,g.layout.height,0xff76677a);
-        float waterTop=c.screenY(Physics.RIGHT,492),waterBottom=c.screenY(Physics.LEFT,492);
-        float tw=SpriteAtlas.artWidth(SpriteAtlas.WATER,0)*s,th=SpriteAtlas.artHeight(SpriteAtlas.WATER,0)*s;
-        // Move the painted surface even in still water. Repeated cells wrap seamlessly;
-        // shore sprites cover the overscan, while hulls and wake packets keep their own anchors.
-        float drift=(g.visualTicks*.025f*s)%tw;
+        RiverCamera c=g.layout.camera;float s=c.scale;
+        float top=c.screenY(Physics.RIGHT,492),bottom=c.screenY(Physics.LEFT,492);
+        p.rect(0,0,g.layout.width,g.layout.height,0xff67788c);
+        float tile=300*s,drift=(g.visualTicks*.025f*s)%tile;
         float swell=(float)StrictMath.sin(g.visualTicks*.018)*1.2f*s;
-        for(float y=waterTop-th+swell;y<waterBottom;y+=th) for(float x=drift-tw;x<g.layout.width;x+=tw)
-            p.sprite(SpriteAtlas.WATER,0,x+tw/2,y+th/2,tw,th,0,1);
-        for(int side=0;side<2;side++) {
-            int atlas=side==0?SpriteAtlas.NORTH_QUAY:SpriteAtlas.SOUTH_QUAY;
-            float w=SpriteAtlas.artWidth(atlas,0)*s,h=SpriteAtlas.artHeight(atlas,0)*s;
-            float edge=side==0?waterTop:waterBottom;
-            for(float x=-w*.3f;x<g.layout.width;x+=w)
-                p.sprite(atlas,0,x+w/2,edge+(side==0?-h/2:h/2),w+.2f,h,0,1);
+        for(float y=top-tile+swell;y<bottom;y+=tile) for(float x=drift-tile;x<g.layout.width;x+=tile)
+            p.sprite(SpriteAtlas.WATER,0,x+tile/2,y+tile/2,tile,tile,0,1);
+        // Flat ground follows the same orthographic plane as physics. Broad planes,
+        // one lit rim and one shadow face replace the noisy painted pavement.
+        p.rect(0,0,g.layout.width,top,0xff7c8a99);
+        p.rect(0,bottom,g.layout.width,g.layout.height-bottom,0xff7c8a99);
+        p.rect(0,top-13*s,g.layout.width,13*s,0xff25394a);
+        p.rect(0,top-15*s,g.layout.width,4*s,0xffc3b89b);
+        p.rect(0,bottom,g.layout.width,7*s,0xffc3b89b);
+        p.rect(0,bottom+7*s,g.layout.width,5*s,0xff46586c);
+        for(float x=c.left-20*s;x<g.layout.width;x+=96*s) {
+            p.line(x,top-15*s,x-18*s,top-48*s,1.2f*s,0x5546576b);
+            p.line(x,bottom+12*s,x-18*s,bottom+52*s,1.2f*s,0x5546576b);
+            for(int i=0;i<3;i++) {
+                float xx=x+i*8*s;
+                p.poly(new float[]{xx,top-15*s,xx+4*s,top-15*s,xx+8*s,top-11*s,xx+4*s,top-11*s},0xffe4b859);
+                p.poly(new float[]{xx,bottom,xx+4*s,bottom,xx+8*s,bottom+7*s,xx+4*s,bottom+7*s},0xff233647);
+            }
         }
+        LightingView.quays(g,p);
     }
     public static void props(Game g,Painter p,boolean foreground) {
-        RiverCamera c=g.layout.camera; float s=c.scale;
-        float origin=c.screenY(foreground?Physics.LEFT:Physics.RIGHT,492)-(foreground?680:223)*688f/1732*s;
-        for(int f=foreground?5:0;f<(foreground?10:5);f++) {
-            float x=c.left+SpriteAtlas.artX(SpriteAtlas.SCENERY,f)*s,y=origin+SpriteAtlas.artY(SpriteAtlas.SCENERY,f)*s;
-            float w=SpriteAtlas.artWidth(SpriteAtlas.SCENERY,f)*s,h=SpriteAtlas.artHeight(SpriteAtlas.SCENERY,f)*s;
-            p.sprite(SpriteAtlas.SCENERY,f,x,y,w,h,0,opacity(g,x-w/2,y-h/2,w,h));
+        RiverCamera c=g.layout.camera;float s=c.scale;
+        int[] cells=foreground?new int[]{5,3,7,6}:new int[]{0,4,2,1};
+        float[] along={70,250,465,625};
+        float[] sizes=foreground?new float[]{82,80,76,94}:new float[]{100,84,91,100};
+        float edge=c.screenY(foreground?Physics.LEFT:Physics.RIGHT,492);
+        for(int i=0;i<cells.length;i++) {
+            float size=sizes[i]*s,x=c.left+along[i]*s;
+            float foot=edge+(foreground?83:-10)*s;
+            float y=foot-size*.47f;
+            float alpha=opacity(g,x-size/2,y-size/2,size,size);
+            LightingView.shadow(p,x,foot,size*.83f,size*.14f,alpha);
+            p.sprite(SpriteAtlas.SCENERY,cells[i],x,y,size,size,0,alpha);
         }
     }
     public static void bridge(Game g,Painter p) {
-        RiverCamera c=g.layout.camera;float scale=c.scale;
-        float cx=c.screenX(300,178),cy=c.screenY(300,178);
+        RiverCamera c=g.layout.camera;float s=c.scale;
+        float x=c.screenX(300,178),middle=c.screenY(300,178);
         for(int frame=0;frame<2;frame++) {
-            float w=SpriteAtlas.artWidth(SpriteAtlas.BRIDGE,frame)*scale,h=SpriteAtlas.artHeight(SpriteAtlas.BRIDGE,frame)*scale;
-            float y=cy+(frame==0?-70:70)*scale;
-            float alpha=opacity(g,cx-w/2,y-h/2,w,h);
-            p.sprite(SpriteAtlas.BRIDGE,frame,cx,y,w,h,0,alpha);
+            float size=108*s,y=middle+(frame==0?-86:86)*s;
+            float alpha=opacity(g,x-size/2,y-size/2,size,size);
+            LightingView.shadow(p,x,y+size*.36f,size*.8f,size*.13f,alpha);
+            p.sprite(SpriteAtlas.BRIDGE,frame,x,y,size,size,0,alpha);
         }
     }
     public static void piers(Game g,Painter p) {
-        RiverCamera c=g.layout.camera; float s=c.scale;
+        RiverCamera c=g.layout.camera;float s=c.scale;
         for(int f=0;f<2;f++) {
-            float origin=c.screenY(f==0?Physics.RIGHT:Physics.LEFT,492)-(f==0?223:680)*688f/1732*s;
-            float x=c.left+(SpriteAtlas.artX(SpriteAtlas.PIERS,f)+HarborGeometry.PIER_SHIFT[f])*s,y=origin+SpriteAtlas.artY(SpriteAtlas.PIERS,f)*s;
-            float w=SpriteAtlas.artWidth(SpriteAtlas.PIERS,f)*s,h=SpriteAtlas.artHeight(SpriteAtlas.PIERS,f)*s;
-            float alpha=opacity(g,x-w/2,y-h/2,w,h);
-            p.sprite(SpriteAtlas.PIERS,f,x,y,w,h,0,alpha);
+            float[] r=HarborGeometry.PIERS[f];
+            float left=c.screenX(r[0],r[1]),right=c.screenX(r[0],r[3]);
+            float top=c.screenY(r[2],r[1]),bottom=c.screenY(r[0],r[1]);
+            // Registered opaque bounds of the two cells, preserving uniform sprite scale.
+            float size=(right-left)/PIER_BODY_WIDTH[f];
+            float x=(left+right)/2-(182.5f/362-.5f)*size,y=bottom-(351/362f-.5f)*size;
+            float alpha=opacity(g,x-size/2,y-size/2,size,size);
+            LightingView.shadow(p,x,bottom,(right-left),8*s,alpha);
+            p.sprite(SpriteAtlas.PIERS,f,x,y,size,size,0,alpha);
+            // The visible edge remains registered to the solid footprint beneath the prop.
             if(alpha<.95f) {
-                float[] r=HarborGeometry.PIERS[f];
-                float left=c.screenX(r[0],r[1]),right=c.screenX(r[0],r[3]);
-                float top=c.screenY(r[2],r[1]),bottom=c.screenY(r[0],r[1]);
                 p.line(left,top,right,top,1.5f,0x99ffce65);p.line(left,bottom,right,bottom,1.5f,0x99ffce65);
                 p.line(left,top,left,bottom,1.5f,0x99ffce65);p.line(right,top,right,bottom,1.5f,0x99ffce65);
             }

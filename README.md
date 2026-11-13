@@ -42,6 +42,10 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   warehouses, stockpiles, container stacks, quays and solid finger piers. Foreground
   scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline
   keeps solid pier footprints visible while their artwork is translucent.
+- **Arcade scenery:** one fixed overhead perspective, exaggerated industrial
+  proportions, bold outlines and broad color blocks replace the dense surface
+  texture. Matching upper-left lighting, cast shadows and warm dock lamps give
+  the quieter water and concrete clear depth without hiding the action.
 - **Water motion:** floating hulls and feeder buoys rise and fall with local waves.
   The painted surface drifts gently under soft traveling ripples and shimmering
   dock-light reflections, keeping the river alive even when boats are idle.

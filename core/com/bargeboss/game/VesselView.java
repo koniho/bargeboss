@@ -10,6 +10,7 @@ public final class VesselView {
         float hullX=b.x+(river?bob/RiverCamera.DEPTH:0),hullY=b.y-(river?0:bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         ArcadeView.wake(p,b,tick);
+        if(river) LightingView.hull(p,b);
         float size=2*(b.half+b.radius)/(tug?.84f:.89f);
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size*(tug?1.05f:1.2f),1);
         if(tug) {

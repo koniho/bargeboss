@@ -48,32 +48,30 @@ public final class SpriteAtlas {
     private SpriteAtlas() {}
     public static String file(int atlas) {
         if(atlas>=TITLE_BACKDROP) return atlas==TITLE_HARBOR?"title-harbor-v1.png":atlas==TITLE_VESSELS?"title-vessels-v1.png":"title-backdrop-v1.png";
+        if(atlas==WATER) return "water-arcade-v2.png";
+        if(atlas==SCENERY || atlas==PIERS || atlas==BRIDGE) return "harbor-arcade-v2.png";
         return atlas==BRIDGE?"bridge-v1.png":atlas==SCENERY?"harbor-props-v1.png":atlas==PIERS?"harbor-piers-v1.png":atlas>=WATER?"harbor-base-v1.png":FILES[atlas];
     }
     public static String file(int atlas,int frame) { return atlas>=WATER?file(atlas):frame%2==0?FILES[atlas]:HALF_FILES[atlas]; }
     public static float widthScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
     public static float heightScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
     public static int sourceFrame(int atlas,int frame) { return atlas>=WATER?frame:frame/2; }
-    public static int count(int atlas) { return atlas==SCENERY?10:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
+    public static int count(int atlas) { return atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
     public static int columns(int atlas) { return atlas>=WATER?1:4; }
     public static int rows(int atlas) { return atlas>=WATER?1:4; }
     public static float pivotX(int atlas,int frame) { if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_X[frame]:atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
     public static float pivotY(int atlas,int frame) { if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PY[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_Y[frame]:atlas==BARGE?BARGE_Y[frame]:atlas==STEEL?STEEL_Y[frame]:atlas==CONTAINER?CONTAINER_Y[frame]:BULK_Y[frame]; }
     // Irregular cells from the painted source sheets. Hosts use these same normalized crop bounds.
     private static final int[][] TERRAIN={{130,340,1640,570},{120,0,1000,223},{630,680,1150,908}};
-    private static final int[][] PROPS={{0,0,425,172},{425,0,735,172},{930,0,1298,172},
-        {1298,0,1524,172},{1524,0,1732,172},{0,658,340,908},{470,690,735,908},
-        {735,690,1000,908},{1000,690,1205,908},{1350,658,1732,908}};
-    private static final int[][] PIER_RECTS={{988,140,1210,330},{455,570,638,740}};
-    private static int[] region(int atlas,int frame) { return atlas==SCENERY?PROPS[frame]:atlas==PIERS?PIER_RECTS[frame]:TERRAIN[atlas-WATER]; }
-    public static float sourceLeft(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?200/1536f:0; if(atlas==BRIDGE) return 0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
-    public static float sourceTop(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_WATER?.88f:atlas==TITLE_VESSELS && frame==1?600/1024f:0; if(atlas==BRIDGE) return frame*.5f; return atlas>=WATER?region(atlas,frame)[1]/908f:(sourceFrame(atlas,frame)/4)/4f; }
-    public static float sourceRight(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?1300/1536f:1; if(atlas==BRIDGE) return 1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
-    public static float sourceBottom(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; if(atlas==BRIDGE) return (frame+1)*.5f; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
-    public static float artWidth(int atlas,int frame) { if(atlas==BRIDGE) return 280/3f; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
-    public static float artHeight(int atlas,int frame) { if(atlas==BRIDGE) return 140; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
-    public static float artX(int atlas,int frame) { int[] r=region(atlas,frame); return (r[0]+r[2])*.5f*688/1732; }
-    public static float artY(int atlas,int frame) { int[] r=region(atlas,frame); return (r[1]+r[3])*.5f*688/1732; }
+    private static int[] region(int atlas,int frame) { return TERRAIN[atlas-WATER]; }
+    private static boolean arcade(int atlas) { return atlas==SCENERY || atlas==PIERS || atlas==BRIDGE; }
+    private static int arcadeCell(int atlas,int frame) { return frame+(atlas==PIERS?8:atlas==BRIDGE?10:0); }
+    public static float sourceLeft(int atlas,int frame) { if(atlas==WATER) return 0; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?200/1536f:0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
+    public static float sourceTop(int atlas,int frame) { if(atlas==WATER) return 0; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_WATER?.88f:atlas==TITLE_VESSELS && frame==1?600/1024f:0; return atlas>=WATER?region(atlas,frame)[1]/908f:(sourceFrame(atlas,frame)/4)/4f; }
+    public static float sourceRight(int atlas,int frame) { if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)%4+1)/4f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?1300/1536f:1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
+    public static float sourceBottom(int atlas,int frame) { if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4+1)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
+    public static float artWidth(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
+    public static float artHeight(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
     public static int direction(float angle) { return (Math.round(angle/STEP)%32+32)%32; }
     public static float turn(float angle,int frame) { return Physics.angle(angle-frame*STEP); }
     public static void draw(Painter p,int atlas,float angle,float cx,float cy,float width,float height,float alpha) {

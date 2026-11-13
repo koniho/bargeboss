@@ -261,13 +261,20 @@ and blocked-call frames. iOS UI tests wait for real feeder handoff before pushin
 
 ## Layered harbor and occlusion
 
-The built-in image generator created an opaque terrain sheet and transparent
-prop/pier sheets plus a separate two-leaf bridge sprite. The source composition lives in `docs/reference/harbor-layout-source.png`;
-production sheets and exact prompts are in `assets/sprites` and `docs/art-prompts`.
-The source composition is not rendered as a full-screen screenshot. Separate atlas
-cells draw water, north/south quay strips, ten warehouse/storage clusters, two
-finger piers and two separately fading bridge leaves. Solid footprints belong to `HarborGeometry`, with the north pier
-relocated upstream to keep the feeder-to-freight approach navigable. Assisted
+The current scenery uses one transparent 4×3 `harbor-arcade-v2.png` atlas: eight
+chunky industrial props, two finger piers and two raised bridge halves. All cells
+share the same high orthographic camera, parallel ground axes, bold silhouettes
+and upper-left lighting. A projection correction removes tapering pier footprints;
+registered opaque bounds place the visible pier walls on the existing colliders.
+The built-in image generator produced this atlas and the quiet, seamless
+`water-arcade-v2.png` tile; exact generation/edit prompts live in `docs/art-prompts`.
+Earlier painted v1 sheets are retained as source history but no longer draw scenery.
+
+`SceneryView` draws broad concrete quay planes with the same shared camera,
+placing four independent props on each bank. `LightingView` adds consistent
+lower-right cast shadows, hull contact shadows and warm animated lamp pools.
+Sparse pavement seams and broad water color clusters keep detail below the boats,
+berth markers and lasso. Solid footprints belong to `HarborGeometry`; assisted
 pushes use a small visibility graph around expanded quay footprints; a hull
 inside a planning margin first escapes toward the open channel. Rendered sprites
 never define physics implicitly. All vessels, including NPC arrivals, are ordered

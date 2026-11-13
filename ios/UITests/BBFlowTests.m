@@ -52,42 +52,32 @@
     [[self river:stage x:230 y:700] pressForDuration:0.15 thenDragToCoordinate:[self river:stage x:x y:y]
                                    withVelocity:300 thenHoldForDuration:0.1];
 }
-- (void)testNativeLassoUnloadingAndLifecycle {
-    XCUIApplication *app=[[XCUIApplication alloc] init];
+- (XCUIElement *)startAndDockFirstLoad:(XCUIApplication *)app {
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
     [self tapMenu:stage x:770 y:446];
-    XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
     [self waitFor:@"feeder drops 2;" on:stage];
     [[self river:stage x:260 y:730] pressForDuration:8];
     [self waitFor:@"ready to tie 2" on:stage];
-    XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"Entering berth cannot score without a line");
+    return stage;
+}
+- (void)testNativeMissRetractsWithoutScoring {
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    XCUIElement *stage=[self startAndDockFirstLoad:app];
     [self throwLine:stage toX:310 toY:640];
-    // Let the miss finish retracting. An unmoored load can drift out of its berth
-    // during simulator accessibility waits, so use normal push assistance to recover.
     [self waitFor:@"Working; delivered 0;" on:stage after:1];
-    XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"A missed throw must retract without scoring");
-    XCTAssertFalse([(NSString *)stage.value containsString:@"rope "],@"Missed line finishes retracting");
-    if(![(NSString *)stage.value containsString:@"ready to tie 2"]) {
-        [[self river:stage x:230 y:700] pressForDuration:3];
-        [self waitFor:@"ready to tie 2" on:stage];
-    }
-    // A readiness snapshot can become stale while XCTest transports the gesture.
-    // Retry real push/throw gestures if the moving load slips out before the catch.
-    BOOL caught=NO;
-    for(int attempt=0;attempt<3 && !caught;attempt++) {
-        [self throwLine:stage toX:176 toY:700];
-        [self waitFor:@"Working; delivered 0;" on:stage after:0.75];
-        NSString *status=(NSString *)stage.value;
-        caught=[status containsString:@"securing load"] || [status containsString:@"drawing alongside"] || [status containsString:@"unloading"];
-        if(!caught && attempt<2) {
-            [[self river:stage x:230 y:700] pressForDuration:3];
-            [self waitFor:@"ready to tie 2" on:stage];
-        }
-    }
-    XCTAssertTrue(caught,@"A real lasso retry must secure the drifting load: %@",stage.value);
+    NSString *status=(NSString *)stage.value;
+    XCTAssertFalse([status containsString:@"rope "],@"Missed line finishes retracting");
+    XCTAssertFalse([status containsString:@"securing load"] || [status containsString:@"drawing alongside"] || [status containsString:@"unloading"],@"A miss cannot secure or unload cargo");
+}
+- (void)testNativeLassoUnloadingAndLifecycle {
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    // Each outcome gets its own real feeder/push sequence. A previous miss must
+    // not leave this test aiming at stale coordinates as unmoored cargo coasts.
+    XCUIElement *stage=[self startAndDockFirstLoad:app];
+    [self throwLine:stage toX:176 toY:700];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];

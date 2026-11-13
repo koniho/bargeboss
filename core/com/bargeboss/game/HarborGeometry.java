@@ -4,7 +4,6 @@ package com.bargeboss.game;
 public final class HarborGeometry {
     // left, top, right, bottom. North finger pier and south finger pier.
     public static final float[][] PIERS={{381,248,430,322},{170,345,212,390}};
-    public static final float[] PIER_SHIFT={-300,0};
     private HarborGeometry() {}
     public static float collide(Body b) {
         float impact=0;
