@@ -15,3 +15,6 @@ xcodebuild -project "$IOS_ROOT/BargeBoss.xcodeproj" -scheme BargeBoss -configura
     -destination "platform=iOS Simulator,id=$device" -derivedDataPath "$IOS_ROOT/build/DerivedData" \
     -resultBundlePath "$IOS_ROOT/build/Smoke-$(date +%s).xcresult" "J2OBJC_HOME=$J2OBJC_HOME" \
     CODE_SIGNING_ALLOWED=NO test -only-testing:BargeBossUITests
+xcrun simctl launch --terminate-running-process "$device" com.bargeboss.game.ios
+sleep 3
+xcrun simctl io "$device" screenshot "$IOS_ROOT/build/native-title.png"

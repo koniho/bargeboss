@@ -107,4 +107,6 @@ jobs:
         if: always()
         with:
           name: ios-native-smoke
-          path: ios/build/Smoke-*.xcresult
+          path: |
+            ios/build/Smoke-*.xcresult
+            ios/build/native-title.png
