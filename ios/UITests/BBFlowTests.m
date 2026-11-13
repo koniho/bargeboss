@@ -48,6 +48,10 @@
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
                                   withVelocity:100 thenHoldForDuration:hold];
 }
+- (void)throwLine:(XCUIElement *)stage toX:(double)x toY:(double)y {
+    [[self river:stage x:230 y:700] pressForDuration:0.15 thenDragToCoordinate:[self river:stage x:x y:y]
+                                   withVelocity:300 thenHoldForDuration:0.1];
+}
 - (void)testNativeLassoUnloadingAndLifecycle {
     XCUIApplication *app=[[XCUIApplication alloc] init];
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
@@ -60,11 +64,17 @@
     [[self river:stage x:260 y:730] pressForDuration:8];
     [self waitFor:@"ready to tie 2" on:stage];
     XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"Entering berth cannot score without a line");
-    [self riverDrag:stage x:230 y:700 toX:310 toY:640 hold:0.2];
-    // A full throw/reel cycle precedes the ready assertion, preventing stale accessibility values.
-    [self waitFor:@"ready to tie 2" on:stage after:1];
+    [self throwLine:stage toX:310 toY:640];
+    // Let the miss finish retracting. An unmoored load can drift out of its berth
+    // during simulator accessibility waits, so use normal push assistance to recover.
+    [self waitFor:@"Working; delivered 0;" on:stage after:1];
     XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"A missed throw must retract without scoring");
-    [self riverDrag:stage x:230 y:700 toX:176 toY:700 hold:0.2];
+    XCTAssertFalse([(NSString *)stage.value containsString:@"rope "],@"Missed line finishes retracting");
+    if(![(NSString *)stage.value containsString:@"ready to tie 2"]) {
+        [[self river:stage x:230 y:700] pressForDuration:3];
+        [self waitFor:@"ready to tie 2" on:stage];
+    }
+    [self throwLine:stage toX:176 toY:700];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
