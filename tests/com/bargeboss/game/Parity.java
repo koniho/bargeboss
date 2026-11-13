@@ -10,17 +10,17 @@ public final class Parity implements Painter {
     public void poly(float[] xy,int c) { add(3); for(float f:xy) value(f); add(c); }
     public void line(float x,float y,float xx,float yy,float w,int c) { add(4); value(x); value(y); value(xx); value(yy); value(w); add(c); }
     public static String signature() {
-        Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p); g.reset(); g.helm.enabled=false;
+        Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p); g.reset();
         for(int i=0;i<Game.SHIFT_TICKS;i++) {
-            if(!g.pointer) for(Body b:g.cargo) if(b!=null && b.active) { g.down(b.x,b.y); break; }
+            ReplayInput.work(g);
             if(i==300) { g.background(); Renderer.draw(g,p); g.pause(); }
-            if(i==1200) { g.cancel(); g.down(385,600); g.up(385,600); }
+            if(i==1200) { g.cancel(); g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-90); }
             if(i==1260) g.cancel();
             g.step();
             if(i%60==0) {
                 p.add(g.ticks); p.add(g.score); p.add(g.delivered); p.add(g.hull);
                 p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle);
-                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); }
+                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.unloadingTicks); }
             }
             if(i%600==0) Renderer.draw(g,p);
         }
@@ -32,20 +32,10 @@ public final class Parity implements Painter {
         Game root=new Game(); tap(root,300,608);
         for(int i=0;i<2400;i++) {
             Game g=root.activeGame();
-            switch(g.tutorial.lesson) {
-                case Tutorial.THROTTLE: if(g.helm.throttle==0) tap(root,110,831); break;
-                case Tutorial.WHEEL: if(g.helm.rudder==0) root.pointerDown(1,510,865); break;
-                case Tutorial.STOP:
-                    root.pointerUp(1,510,865); if(!g.braking) tap(root,290,908); break;
-                case Tutorial.REVERSE:
-                    if(!g.tutorial.reversed && g.helm.throttle==0) tap(root,110,900);
-                    else if(g.tutorial.reversed && !g.braking) tap(root,290,908);
-                    break;
-                case Tutorial.DOCK: if(g.helm.throttle==0) tap(root,110,831); break;
-                default: Renderer.draw(root,p); return;
-            }
+            if(g.tutorial.lesson==Tutorial.DONE) { Renderer.draw(root,p); return; }
+            ReplayInput.tutorial(root);
             root.step(); p.add(g.tutorial.lesson); p.add(g.control); p.add(root.pollHaptic());
-            p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.helm.throttle); p.value(g.helm.rudder);
+            p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.add(g.ropeDragging?1:0);
             if(i%30==0) Renderer.draw(root,p);
         }
         throw new IllegalStateException("Tutorial replay did not finish");

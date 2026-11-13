@@ -15,41 +15,35 @@ public final class Preview {
     public static void main(String[] args) throws Exception {
         new File("out").mkdirs();
         Game g=new Game(); capture(g,"title"); g.reset(); capture(g,"stage");
-        tap(g,110,831); steps(g,40); capture(g,"forward");
-        g.pointerDown(1,510,865); steps(g,45); capture(g,"turning"); g.pointerUp(1,510,865);
-        tap(g,110,864); steps(g,6); capture(g,"coasting");
-        tap(g,290,908); steps(g,4); capture(g,"braking");
-        g.reset(); tap(g,110,900); steps(g,55); capture(g,"reverse");
-        g.reset(); tap(g,110,831);
-        for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.PUSHING) { capture(g,"push"); break; } }
-        for(int i=0;i<1200;i++) { g.step(); if(g.cargo[0].dockTime>.3f) { capture(g,"docking"); break; } }
-        g.background(); capture(g,"pause");
-        g.reset(); tap(g,290,790); g.down(g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
+        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
+        steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
+        steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,110,910); steps(g,4); capture(g,"braking");
+        g.reset(); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.ALIGNING) { capture(g,"aligning"); break; } }
-        g.move(g.downX-65,g.downY-65); steps(g,25); capture(g,"steering");
-        g=new Game(); tap(g,300,608); capture(g,"tutorial-0");
+        for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.PUSHING) { capture(g,"push"); break; } }
+        ReplayInput.move(g,g.downX-65,g.downY-65); steps(g,20); capture(g,"steering");
+        g.reset(); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
+        for(int i=0;i<1200 && !g.canTie(b);i++) g.step();
+        if(!g.canTie(b)) throw new IllegalStateException("Preview cargo never reached berth");
+        ReplayInput.up(g,g.pointerX,g.pointerY); capture(g,"ready-to-tie");
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"lasso");
+        ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,30); capture(g,"tying-up");
+        while(b.unloadingTicks<85) g.step(); capture(g,"unloading");
+        while(g.delivered==0) g.step(); steps(g,12); capture(g,"delivery");
+        g.background(); capture(g,"pause");
+        g=new Game(); ReplayInput.tap(g,300,608); capture(g,"tutorial-0");
         int previous=0;
-        for(int i=0;i<2400;i++) {
-            Game a=g.activeGame();
-            switch(a.tutorial.lesson) {
-                case Tutorial.THROTTLE: if(a.helm.throttle==0) tap(g,110,831); break;
-                case Tutorial.WHEEL: if(a.helm.rudder==0) g.pointerDown(1,510,865); break;
-                case Tutorial.STOP: g.pointerUp(1,510,865); if(!a.braking) tap(g,290,908); break;
-                case Tutorial.REVERSE:
-                    if(!a.tutorial.reversed && a.helm.throttle==0) tap(g,110,900);
-                    else if(a.tutorial.reversed && !a.braking) tap(g,290,908); break;
-                case Tutorial.DOCK: if(a.helm.throttle==0) tap(g,110,831); break;
-                default: break;
-            }
-            g.step();
+        for(int i=0;i<3000;i++) {
+            Game a=g.activeGame(); ReplayInput.tutorial(g); g.step();
             if(a.tutorial.lesson!=previous) { previous=a.tutorial.lesson; capture(g,"tutorial-"+previous); }
             if(previous==Tutorial.DONE) break;
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
-        sheet("control-states",new String[]{"forward","turning","reverse","coasting","push","docking"});
-        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5"});
+        sheet("control-states",new String[]{"driving","holding","steering","lasso","unloading","delivery"});
+        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6"});
         sheet("assist-states",new String[]{"holding","aligning","steering"});
-        System.out.println("Shared renderer: control-states.png, tutorial.png and assist-states.png in out/");
+        sheet("mooring",new String[]{"ready-to-tie","lasso","tying-up","unloading","delivery","stage"});
+        System.out.println("Shared renderer: control-states.png, tutorial.png and mooring.png in out/");
     }
     private static void capture(Game game,String name) throws Exception {
         BufferedImage image=new BufferedImage(600,960,BufferedImage.TYPE_INT_RGB);

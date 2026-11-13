@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Fits the complete river above the helm without changing its physics coordinates. */
+/** Fits the complete river above the controls without changing its physics coordinates. */
 public final class RiverPainter implements Painter {
     public static final float SCALE=.82f, LEFT=54, TOP=148;
     private final Painter painter;

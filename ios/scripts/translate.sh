@@ -2,6 +2,7 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 [ -x "$J2OBJC_HOME/j2objc" ] || { echo 'Run ios/scripts/bootstrap.sh or set J2OBJC_HOME to DDDumpling’s existing J2ObjC 3.1 dist.' >&2; exit 1; }
+rm -rf "$IOS_ROOT/build/generated"
 mkdir -p "$IOS_ROOT/build/generated"
 find "$REPO_ROOT/core" -name '*.java' | sort > "$IOS_ROOT/build/sources.txt"
 "$J2OBJC_HOME/j2objc" --prefixes "$IOS_ROOT/prefixes.properties" -sourcepath "$REPO_ROOT/core" -d "$IOS_ROOT/build/generated" @"$IOS_ROOT/build/sources.txt"

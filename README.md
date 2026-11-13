@@ -8,28 +8,34 @@ an original gameplay layout, not a navigational map of the real river.
 
 ## Play
 
-Choose **Learn to Drive** for five hands-on lessons with no timer, traffic or
-hull damage: throttle, wheel, stopping, reverse and a first delivery. The tutorial
-advances when you perform the action. **Reset Lesson** gives another attempt;
-**Exit Practice** restores your existing shift if entered through Help.
+Choose **Learn to Drive** for six hands-on lessons without a timer, traffic or
+hull damage: driving, braking, pushing, steering, docking and throwing a mooring
+line. Lessons advance only after the action. **Reset Lesson** gives another try;
+**Exit Practice** restores your suspended shift.
 
-- **Throttle:** slide the left lever upward for forward thrust, to **N** for
-  neutral/coasting, or below N for reverse. The setting stays when released.
-- **Wheel:** hold/drag its left or right side to turn. Release to center the rudder.
-  Two fingers can work the throttle and wheel together; a mouse can set throttle
-  first and then steer. Momentum and turning inertia remain physical.
-- **Brake:** cuts thrust and actively slows the tug. Backgrounding, pausing or
-  cancelled input also neutralizes the relevant controls.
-- Push cargo into **A / steel**, **B / freight**, or **C / bulk**. Berth fenders
-  help settle a controlled approach; the whole cargo hull must fit, slow down,
-  and remain there for 1.2 seconds. Delivery cuts tug thrust automatically.
-- **Tap Assist** offers the original tap-water/hold-cargo controls. A hold ring,
-  approach marker, heading arrow, steering dead zone and mooring progress show
-  what the tug is doing. Release ends the push without resuming an old route.
-- **Haptics ON/OFF** in the header controls detent ticks, initial cargo contact,
-  hard impacts and delivery feedback. Android/iOS use native feedback where
-  supported and permitted by system settings; desktop play has the same visual
-  cues but no mouse vibration.
+- **Drive:** press the tug and drag in the direction you want to travel. Pull
+  farther for more thrust. The control ring stays at your original touch point;
+  there is no need to chase the boat. Bring your finger into the ring to brake,
+  or release to coast. Tapping the water does not set a route.
+- **Push:** hold a cargo barge to line up behind it and push toward its matching
+  berth. Keep your finger still for assistance; drag outside the ring to steer.
+- **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
+- **Tie up:** once the entire barge fits its matching **A / steel**, **B / freight**,
+  or **C / bulk** zone and has slowed, its bank bollard glows. Lift your finger,
+  then drag from the barge to that bollard. A slack rope and lasso loop follow your
+  finger. Drop the loop over the bollard to attach it; dropping elsewhere cancels.
+- The line tightens for **1.2 seconds**, then a crane, forklift and dock crew
+  unload the barge for **3 seconds**. The barge stays secured while you work on
+  another load. Scoring happens once unloading finishes, with a floating score
+  and burst of stars. The crew and equipment then return to idle.
+- Movement, turning, pushing and passing workboats run at **2× the original
+  pace**, using two original-size physics steps per real tick. Hold gestures,
+  the shift clock, contracts, mooring and unloading retain their real durations.
+- Brighter water, animated waves, foamy V-shaped wakes and impact rings emphasize
+  motion. Wakes are visual effects; they do not push cargo.
+- **Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
+  Android/iOS use native feedback when supported and allowed by system settings;
+  desktop play has the same visual cues without mouse vibration.
 
 Deliver **6 loads in 3 minutes**. Contracts expire after 68 seconds; new loads
 arrive every 18 seconds when the entry area is clear. Watch crossing traffic and
@@ -51,8 +57,8 @@ or separate JavaScript/Swift gameplay implementation.
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
 Every host fits the same 600x960 interface within safe bounds. The complete
-river is scaled uniformly above the helm; its world coordinates are unchanged. Touch/mouse gestures,
-throttle/wheel handling, hold thresholds, haptic event timing, tutorial, physics,
+river is scaled uniformly above the control panel; its world coordinates are unchanged. Touch/mouse gestures,
+drag handling, hold thresholds, haptic event timing, tutorial, physics,
 scoring, traffic, HUD, menus and vector glyphs live in
 shared code. Rendering differences at antialiased edges remain native-specific.
 See [architecture and parity](docs/architecture.md).
@@ -126,7 +132,7 @@ build for compilation validation only. Store provisioning/distribution is not co
 GitHub Actions builds Android, desktop on three operating systems, and iOS on a
 Mac. The iOS job runs the same deterministic gameplay/drawing replay on the JVM
 and J2ObjC and rejects mismatches. An iPhone simulator test exercises native
-throttle-driven delivery, the complete interactive tutorial, pause/resume and backgrounding. Workflow artifacts contain the APK, JAR and
+drag controls, lasso attachment, crew unloading, the complete interactive tutorial, pause/resume and backgrounding. Workflow artifacts contain the APK, JAR and
 simulator app. Native touch/lifecycle acceptance still needs actual device play;
 headless checks are not a substitute for that.
 

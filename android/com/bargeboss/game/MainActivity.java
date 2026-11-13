@@ -44,7 +44,7 @@ public final class MainActivity extends Activity {
         private Viewport viewport=new Viewport(600,960);
         private long last;
         private boolean running;
-        GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Slide the throttle and hold the wheel to steer."); }
+        GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up."); }
         void start() { if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
         void stop() { running=false; last=0; game.background(); Choreographer.getInstance().removeFrameCallback(this); }
         public void doFrame(long now) {

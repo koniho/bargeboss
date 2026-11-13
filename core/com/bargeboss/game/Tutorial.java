@@ -1,57 +1,63 @@
 package com.bargeboss.game;
 
-/** Real helm practice, with no clock, damage or traffic. Each lesson needs a real action. */
+/** Drag-control practice with action gates and no clock, damage or traffic. */
 public final class Tutorial {
-    public static final int THROTTLE=0, WHEEL=1, STOP=2, REVERSE=3, DOCK=4, DONE=5;
-    public int lesson=THROTTLE, actionTicks;
-    public boolean reversed, exitRequested, resumeShift;
-    private float heading;
+    public static final int MOVE=0, STOP=1, HOLD=2, STEER=3, DOCK=4, TIE=5, DONE=6;
+    public int lesson=MOVE, actionTicks;
+    public boolean exitRequested, resumeShift;
+    private float startX,startY;
     public void setup(Game g) {
-        g.cancelInputs(); g.helm.enabled=true; g.braking=false;
-        g.tug=new Body(0,-1,350,650,-(float)Math.PI/2);
+        g.cancelInputs(); g.braking=false;
+        g.tug=new Body(0,-1,350,700,-(float)Math.PI/2);
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
-        g.delivered=g.score=0; g.nextId=1; g.selected=-1; actionTicks=0; reversed=false;
-        if(lesson==STOP) { g.helm.throttle=.4f; g.tug.vy=-25; }
-        if(lesson==DOCK) {
+        g.delivered=g.score=0; g.nextId=1; g.selected=-1; actionTicks=0;
+        if(lesson==STOP) g.tug.vy=-40;
+        if(lesson>=HOLD) {
             g.tug=new Body(0,-1,376,700,(float)Math.PI);
-            g.addCargo(2,292,700); g.selected=0;
+            g.addCargo(2,lesson==TIE?Game.DOCK_X[2]:292,700);
         }
-        heading=g.tug.angle;
+        startX=g.tug.x; startY=g.tug.y;
     }
     public void update(Game g) {
-        if(lesson==THROTTLE && g.helm.throttle>.15f && g.tug.speed()>20) {
-            lesson=WHEEL; heading=g.tug.angle; g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==WHEEL && Math.abs(g.helm.rudder)>.35f && Math.abs(Physics.angle(g.tug.angle-heading))>.28f) {
+        if(lesson==MOVE && g.navigating && Physics.length(g.tug.x-startX,g.tug.y-startY)>30) {
             lesson=STOP; g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==STOP && g.helm.throttle==0 && g.tug.speed()<10) {
-            lesson=REVERSE; g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==REVERSE) {
-            float forward=g.tug.vx*(float)StrictMath.cos(g.tug.angle)+g.tug.vy*(float)StrictMath.sin(g.tug.angle);
-            if(g.helm.throttle<-.15f && forward< -12) reversed=true;
-            if(reversed && g.helm.throttle==0 && g.tug.speed()<10) { lesson=DOCK; setup(g); g.haptic(Game.HAPTIC_TICK); }
-        } else if(lesson==DOCK && g.delivered>0) { lesson=DONE; g.cancelInputs(); g.haptic(Game.HAPTIC_SUCCESS); }
+        } else if(lesson==STOP && g.braking && !g.navigating && g.tug.speed()<10) {
+            lesson=HOLD; setup(g); g.haptic(Game.HAPTIC_TICK);
+        } else if(lesson==HOLD && g.pushing && g.control==Game.PUSHING) {
+            lesson=STEER; startX=g.cargo[0].x; startY=g.cargo[0].y; g.haptic(Game.HAPTIC_TICK);
+        } else if(lesson==STEER) {
+            Body b=g.cargo[0];
+            if(g.pushing && g.manualSteering) actionTicks++; else actionTicks=0;
+            if(actionTicks>=12 && Physics.length(b.x-startX,b.y-startY)>3) {
+                lesson=DOCK; setup(g); g.haptic(Game.HAPTIC_TICK);
+            }
+        } else if(lesson==DOCK && g.inDock(g.cargo[0]) && g.cargo[0].speed()<24) {
+            lesson=TIE; g.cancelInputs(); g.haptic(Game.HAPTIC_TICK);
+        } else if(lesson==TIE && g.delivered>0) { lesson=DONE; g.cancelInputs(); g.haptic(Game.HAPTIC_SUCCESS); }
     }
     public String title() {
-        return new String[]{"SET YOUR THROTTLE","TURN THE WHEEL","COME TO A STOP","TRY REVERSE","DOCK YOUR FIRST LOAD","READY FOR YOUR SHIFT"}[lesson];
+        return new String[]{"DRAG TO DRIVE","COME TO A STOP","HOLD TO PUSH","DRAG TO STEER","DOCK YOUR FIRST LOAD","THROW YOUR LINE","READY FOR YOUR SHIFT"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
-            case THROTTLE: return "SLIDE THE LEVER UP FOR FORWARD.";
-            case WHEEL: return "HOLD EITHER SIDE OF THE WHEEL.";
-            case STOP: return "CENTER THE LEVER, OR TAP BRAKE.";
-            case REVERSE: return reversed?"NOW TAP BRAKE TO STOP AGAIN.":"SLIDE BELOW N TO BACK UP.";
-            case DOCK: return "EASE FORWARD TO PUSH CARGO TO C.";
-            default: return "YOU DROVE, TURNED AND DELIVERED.";
+            case MOVE: return "PRESS THE TUG, THEN DRAG UP.";
+            case STOP: return "LIFT YOUR FINGER. TAP BRAKE.";
+            case HOLD: return "PRESS CARGO C AND KEEP HOLDING.";
+            case STEER: return "KEEP HOLDING. DRAG UP AND LEFT.";
+            case DOCK: return "LIFT, THEN HOLD CARGO C AGAIN.";
+            case TIE: return "DRAG CARGO TO THE GLOWING BOLLARD.";
+            default: return "YOU MOVED, STEERED AND TIED UP.";
         }
     }
     public String secondLine() {
         switch(lesson) {
-            case THROTTLE: return "SPEED STAYS SET WHEN YOU LET GO.";
-            case WHEEL: return "RELEASE TO CENTER THE RUDDER.";
-            case STOP: return "NEUTRAL COASTS. BRAKE STOPS FASTER.";
-            case REVERSE: return "REVERSE THRUST SLOWS, THEN BACKS UP.";
-            case DOCK: return "BERTH FENDERS HELP YOU SETTLE IN.";
-            default: return "THE SAME HELM WORKS IN YOUR SHIFT.";
+            case MOVE: return "PULL FARTHER FOR MORE THRUST.";
+            case STOP: return "RELEASING COASTS. BRAKE STOPS.";
+            case HOLD: return "THE TUG LINES UP AUTOMATICALLY.";
+            case STEER: return "DRAG OUTSIDE THE RING TO TURN.";
+            case DOCK: return "HOLD STILL TO ENTER THE C ZONE.";
+            case TIE: return "DROP THE LOOP OVER IT TO TIE UP.";
+            default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }
     }
 }

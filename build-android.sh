@@ -6,6 +6,7 @@ SDK_JAR=${ANDROID_JAR:-${ANDROID_HOME:-sdk}/platforms/android-36/android.jar}
 if [ ! -f "$SDK_JAR" ]; then echo 'Set ANDROID_JAR to android.jar, or ANDROID_HOME to an Android SDK with API 36.' >&2; exit 1; fi
 for tool in javac aapt2 d8 apksigner zip keytool; do command -v "$tool" >/dev/null || { echo "Missing $tool" >&2; exit 1; }; done
 ./check.sh
+rm -rf build/android/classes
 mkdir -p build/android/classes build/android/gen build/android/dex
 aapt2 compile --dir res -o build/android/resources.zip
 aapt2 link -o build/android/base.apk -I "$SDK_JAR" --manifest AndroidManifest.xml --java build/android/gen --min-sdk-version 24 --target-sdk-version 36 build/android/resources.zip

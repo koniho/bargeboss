@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class ControlView {
     public static final int BLUE=0xff86d4ed, GREEN=0xffa5deb5, AMBER=0xffefb651, PURPLE=0xffd2b2f3;
     private static final int PAPER=0xffeee7d4, INK=0xff101e25;
-    private static final String[] LABELS={"READY","MOVING TO TARGET","KEEP HOLDING","LINING UP","PUSHING",
+    private static final String[] LABELS={"READY","DRIVING","KEEP HOLDING","LINING UP","PUSHING",
             "MANUAL STEERING","DOCKING","COASTING","BRAKING"};
     private ControlView() {}
     public static int color(Game g) {
@@ -15,14 +15,12 @@ public final class ControlView {
         return g.control==Game.IDLE || g.control==Game.COASTING?PAPER:AMBER;
     }
     public static String hint(Game g) {
-        if(g.helm.enabled) {
-            if(g.control==Game.PUSHING) return "PUSHING CARGO / EASE OFF TO DOCK";
-            if(g.control==Game.DOCKING) return "SETTLING INTO BERTH / HOLD YOUR COURSE";
-            if(g.control==Game.BRAKING) return "THROTTLE NEUTRAL / ENGINES BRAKING";
-            return "THROTTLE STAYS SET / RELEASE WHEEL TO CENTER";
-        }
+        if(g.ropeDragging) return "DROP THE LOOP OVER THE HIGHLIGHTED BOLLARD";
+        for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
+        for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, THEN DRAG CARGO TO ITS BOLLARD";
+        if(g.holdingTug()) return "DRAG FARTHER FOR THRUST / CENTER TO BRAKE";
         switch(g.control) {
-            case Game.MOVING: return "TAP A NEW TARGET / BRAKE TO STOP";
+            case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
             case Game.HOLDING: return "FILL THE RING TO ENGAGE THE TUG";
             case Game.ALIGNING: return "KEEP YOUR FINGER STILL / TUG APPROACHING";
             case Game.PUSHING: return "HOLD STILL FOR ASSIST / DRAG TO STEER";
@@ -30,13 +28,13 @@ public final class ControlView {
             case Game.DOCKING: return "KEEP HOLDING / SLOW AND STEADY";
             case Game.COASTING: return "THRUST OFF / TAP BRAKE TO STOP THE TUG";
             case Game.BRAKING: return "ENGINES REVERSED / SHEDDING SPEED";
-            default: return "TAP WATER TO MOVE / HOLD CARGO TO PUSH";
+            default: return "DRAG TUG TO DRIVE / HOLD CARGO TO PUSH";
         }
     }
     public static void status(Game g,Painter p) {
-        String label=LABELS[g.control];
-        if(g.helm.enabled && g.control==Game.MOVING) label=g.helm.throttle<0?"REVERSE THRUST":"FORWARD THRUST";
-        if(g.helm.enabled && Math.abs(g.helm.rudder)>.12f) label+=(g.helm.rudder<0?" / LEFT":" / RIGHT");
+        String label=g.ropeDragging?"THROW YOUR LINE":LABELS[g.control];
+        if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
+            if(b!=null && b.active && b.unloadingTicks>0) { label="CREW UNLOADING"; break; }
         Lettering.center(p,label,300,721,14,color(g));
         Lettering.center(p,hint(g),300,741,10,PAPER);
     }
@@ -60,15 +58,18 @@ public final class ControlView {
     }
     public static void draw(Game g,Painter p) {
         int color=color(g);
-        if(g.navigating) {
-            ring(p,g.targetX,g.targetY,17,1,BLUE,2);
-            path(p,g.tug.x,g.tug.y,g.targetX,g.targetY,BLUE);
-            label(p,"TARGET",g.targetX,g.targetY-32,BLUE);
+        if(g.holdingTug()) {
+            dragRing(g,p,BLUE);
+            if(!g.pushing) ring(p,g.tug.x,g.tug.y,31,g.holdProgress(),AMBER,4);
+            else if(g.manualSteering) {
+                float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
+                arrow(p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
+            }
         }
         Body b=g.workingCargo();
-        if(b!=null) {
+        if(b!=null && !g.ropeDragging) {
             ring(p,b.x,b.y,39,1,0x668eaaa9,2);
-            if(!g.pushing && !g.helm.enabled) ring(p,b.x,b.y,39,g.holdProgress(),AMBER,5);
+            if(!g.pushing) ring(p,b.x,b.y,39,g.holdProgress(),AMBER,5);
             else {
                 ring(p,b.x,b.y,39,1,color,2);
                 float bx=Game.DOCK_X[b.berth],by=Game.DOCK_Y[b.berth];
@@ -80,23 +81,14 @@ public final class ControlView {
                 }
                 if(g.control!=Game.DOCKING) arrow(p,b.x+g.pushX*40,b.y+g.pushY*40,
                         Physics.clamp(b.x+g.pushX*95,115,485),Physics.clamp(b.y+g.pushY*95,220,809),color);
-                // The origin stays where the finger first landed: moving cargo need not be chased.
-                if(!g.helm.enabled) {
-                ring(p,g.downX,g.downY,42,1,0x77eee7d4,1.5f);
-                p.circle(g.downX,g.downY,3,PAPER);
-                float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
-                float scale=Math.min(1,75/Math.max(1,len));
-                if(len>8) {
-                    p.line(g.downX,g.downY,g.downX+dx*scale,g.downY+dy*scale,2,PURPLE);
-                    p.circle(g.downX+dx*scale,g.downY+dy*scale,8,PURPLE);
-                }
-                }
+                dragRing(g,p,PURPLE);
                 if(g.control==Game.DOCKING) {
                     ring(p,b.x,b.y,44,Math.min(1,b.dockTime/1.2f),GREEN,5);
                     label(p,"MOORING",b.x,b.y-67,GREEN);
                 }
             }
         }
+        MooringView.draw(g,p);
         ring(p,g.tug.x,g.tug.y,27,1,color,2);
         if(g.control==Game.COASTING || g.control==Game.BRAKING) {
             float speed=g.tug.speed();
@@ -106,6 +98,16 @@ public final class ControlView {
                 || g.notice.startsWith("CONTRACT"))) {
             p.rect(117,216,366,29,0xee101e25);
             Lettering.center(p,g.notice,300,224,11,PAPER);
+        }
+    }
+    private static void dragRing(Game g,Painter p,int color) {
+        ring(p,g.downX,g.downY,42,1,0x99eee7d4,1.5f);
+        p.circle(g.downX,g.downY,3,PAPER);
+        float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
+        float scale=Math.min(1,90/Math.max(1,len));
+        if(len>8) {
+            p.line(g.downX,g.downY,g.downX+dx*scale,g.downY+dy*scale,2,color);
+            p.circle(g.downX+dx*scale,g.downY+dy*scale,8,color);
         }
     }
     private static void label(Painter p,String text,float x,float y,int color) {

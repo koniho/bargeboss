@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Every stage feature, HUD, menu and glyph is shared. Native hosts draw primitives only. */
 public final class Renderer {
-    private static final int INK=0xff101e25, PAPER=0xffeee7d4, MUTED=0xff8eaaa9, WATER=0xff244c54;
+    private static final int INK=0xff101e25, PAPER=0xffeee7d4, MUTED=0xff8eaaa9, WATER=0xff166b88;
     private Renderer() {}
     private static void text(Painter p,String s,float x,float y,float size,int color) { Lettering.draw(p,s,x,y,size,color); }
     private static void center(Painter p,String s,float x,float y,float size,int color) { Lettering.center(p,s,x,y,size,color); }
@@ -21,14 +21,14 @@ public final class Renderer {
         text(p,g.tutorial==null?"SHIFT":"PRACTICE",488,99,12,MUTED);
         text(p,g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE",488,116,20,PAPER);
         river(g,new RiverPainter(p));
-        HelmView.draw(g,p);
+        AssistView.draw(g,p);
         if(g.mode==Game.TITLE || g.mode==Game.HELP) title(g,p);
         if(g.mode==Game.PAUSE) pause(p);
         if(g.mode==Game.FINISH) finish(g,p);
         if(g.mode==Game.PLAY && g.tutorial!=null) TutorialView.draw(g,p);
     }
     private static void river(Game g,Painter p) {
-        p.rect(0,148,600,688,0xff424b49);
+        p.rect(0,148,600,688,0xff28465b);
         // Bank service roads and parallel freight rail.
         for(int side=0;side<2;side++) {
             float ox=side==0?0:492;
@@ -42,10 +42,7 @@ public final class Renderer {
             }
         }
         p.rect(103,148,394,688,0xff202f33); p.rect(110,148,380,688,WATER);
-        for(int y=151;y<830;y+=24) for(int x=117;x<484;x+=37) {
-            float wave=(float)StrictMath.sin((g.ticks/60f)+x*.04+y*.07)*4;
-            p.line(x,y+wave,x+12,y+wave,1,0xff38606a);
-        }
+        ArcadeView.water(g,p);
         // Main current arrows, kept faint beneath the working berths.
         for(int y=252;y<810;y+=105) {
             p.line(302,y,302,y+18,1.5f,0xff47767a); p.line(297,y+13,302,y+18,1.5f,0xff47767a);
@@ -73,14 +70,6 @@ public final class Renderer {
         if(g.trafficActive()) {
             Body ship=new Body(-1,-1,g.trafficX(),395,0); hull(p,ship,0xff9bac9f,false,g.ticks);
         }
-        if(g.navigating && !g.pushing) {
-            for(int i=1;i<12;i++) {
-                float t=i/12f; p.circle(g.tug.x+(g.targetX-g.tug.x)*t,g.tug.y+(g.targetY-g.tug.y)*t,1.3f,0x99eee7d4);
-            }
-            p.circle(g.targetX,g.targetY,8,0x99eee7d4); p.circle(g.targetX,g.targetY,5,WATER);
-            p.line(g.targetX-13,g.targetY,g.targetX+13,g.targetY,1,PAPER);
-            p.line(g.targetX,g.targetY-13,g.targetX,g.targetY+13,1,PAPER);
-        }
         for(int i=0;i<g.cargo.length;i++) {
             Body b=g.cargo[i]; if(b==null || !b.active) continue;
             int color=Game.COLORS[b.berth];
@@ -94,11 +83,13 @@ public final class Renderer {
             center(p,""+(char)('A'+b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-49,13,PAPER);
             p.rect(b.x-25,b.y+39,50,3,0xff18343c);
             p.rect(b.x-25,b.y+39,50*Math.max(0,1-b.age/68),3,b.age>48?Game.COLORS[2]:color);
-            if(b.dockTime>0) { p.rect(b.x-25,b.y+45,50*b.dockTime/1.2f,4,PAPER); }
+            if(b.dockTime>0) { p.rect(b.x-25,b.y+45,50*Math.min(1,b.dockTime/1.2f),4,PAPER); }
         }
         hull(p,g.tug,Game.COLORS[0],true,g.ticks);
         if(g.ticks<600) { center(p,"YOU",g.tug.x,g.tug.y+35,12,PAPER); }
+        DockView.draw(g,p);
         ControlView.draw(g,p);
+        ArcadeView.effects(g,p);
         p.rect(110,817,380,19,0xff1b3b43); center(p,"SOUTH REACH / CURRENT  v",300,823,8,MUTED);
     }
     private static void dock(Painter p,int index,int ticks) {
@@ -131,12 +122,7 @@ public final class Renderer {
         float len=b.half+b.radius;
         float[] silhouette={-len,-11,len-7,-14,len,0,len-7,14,-len,11};
         p.poly(shape(b,silhouette,4,5),0x55091219);
-        if(b.speed()>12) for(int i=0;i<3;i++) {
-            float behind=-len-7-i*9-(tick%18)*.3f;
-            float[] wake=shape(b,new float[]{behind,-8-i*3,behind-6,-5-i*3,behind-6,5+i*3,behind,8+i*3},0,0);
-            p.line(wake[0],wake[1],wake[2],wake[3],1.4f,0x7782b2b4);
-            p.line(wake[4],wake[5],wake[6],wake[7],1.4f,0x7782b2b4);
-        }
+        ArcadeView.wake(p,b,tick);
         p.poly(shape(b,silhouette,0,0),0xff13272c);
         block(p,b,-len+4,-10,len*2-12,20,0xffa4a68c);
         if(tug) {
@@ -146,9 +132,14 @@ public final class Renderer {
             float[] light=shape(b,new float[]{14,-10,14,10},0,0);
             p.circle(light[0],light[1],2,0xff80d9a2); p.circle(light[2],light[3],2,0xffee796a);
         } else {
-            block(p,b,-24,-10,46,20,color);
-            for(int i=-20;i<22;i+=6) block(p,b,i,-8,1.3f,16,0x440c1b20);
-            block(p,b,-2,-10,2,20,0xff293d40);
+            int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
+            for(int i=0;i<remaining;i++) {
+                float x=-24+i*16;
+                block(p,b,x,-10,14,20,0xff122b40);
+                block(p,b,x+1,-11,12,18,color);
+                block(p,b,x+2,-10,10,2,0xfff6eabd);
+                for(int j=4;j<13;j+=4) block(p,b,x+j,-7,1,12,0x66314253);
+            }
         }
     }
     private static void button(Painter p,float x,float y,float w,float h,String label,int bg,int fg) {
@@ -163,10 +154,10 @@ public final class Renderer {
         text(p,"01 / CALUMET REACH",75,290,12,Game.COLORS[0]);
         text(p,"HEAVY CARGO.",75,329,29,PAPER); text(p,"TIGHT WATER.",75,370,29,PAPER);
         text(p,"A THREE-MINUTE INDUSTRIAL RIVER SHIFT",75,417,10,MUTED);
-        text(p,"01",75,451,15,ControlView.BLUE); text(p,"SLIDE THROTTLE FORWARD OR BACK",119,452,14,PAPER);
-        text(p,"02",75,486,15,Game.COLORS[0]); text(p,"HOLD THE WHEEL LEFT OR RIGHT",119,487,14,PAPER);
-        text(p,"03",75,521,15,ControlView.PURPLE); text(p,"PUSH CARGO INTO MATCHING BERTHS",119,522,14,PAPER);
-        center(p,"LEARN WITH REAL CONTROLS. NO TIME LIMIT.",300,552,11,MUTED);
+        text(p,"01",75,451,15,ControlView.BLUE); text(p,"DRAG THE TUG TO DRIVE",119,452,14,PAPER);
+        text(p,"02",75,486,15,Game.COLORS[0]); text(p,"HOLD CARGO TO LINE UP AND PUSH",119,487,14,PAPER);
+        text(p,"03",75,521,15,ControlView.PURPLE); text(p,"DRAG TO A BOLLARD TO TIE UP",119,522,14,PAPER);
+        center(p,"2X MOVEMENT / THREE-MINUTE SHIFTS",300,552,11,MUTED);
         button(p,100,576,400,64,"LEARN TO DRIVE",Game.COLORS[0],INK);
         button(p,100,650,400,76,g.mode==Game.HELP?"RESUME SHIFT":"START SHIFT",0xff30464b,PAPER);
     }

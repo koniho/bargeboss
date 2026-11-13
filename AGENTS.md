@@ -20,3 +20,8 @@ the same `Painter`. Do not add a second game implementation for any platform.
 - Preserve unrelated work. Do not modify the sibling DDDumpling repository.
 - Report native/device validation limits. Shared logic does not prove identical
   antialiasing, touch latency, safe areas or lifecycle behavior on real devices.
+
+After each completed development round, run the relevant checks, build the Android
+APK and install it on the connected development phone, then launch it. The user
+has requested this as the ongoing workflow. Reuse the existing debug signing key
+and authorized Shizuku/rish installation path when adb is unavailable.
