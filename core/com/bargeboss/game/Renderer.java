@@ -11,18 +11,18 @@ public final class Renderer {
         p.rect(0,0,600,5,Game.COLORS[0]);
         text(p,"BARGE BOSS",24,23,23,PAPER); text(p,"CALUMET / SHIFT 01",25,60,10,MUTED);
         p.rect(508,18,68,67,0xff2c3c41); p.rect(531,39,6,24,PAPER); p.rect(547,39,6,24,PAPER);
-        text(p,"SCORE",25,99,9,MUTED); text(p,""+g.score,25,116,16,PAPER);
-        text(p,"DELIVERIES",192,99,9,MUTED); text(p,g.delivered+" / "+Game.QUOTA,192,116,16,PAPER);
-        text(p,"HULL",354,99,9,MUTED); text(p,g.hull+"%",354,116,16,g.hull<30?Game.COLORS[2]:PAPER);
+        text(p,"SCORE",25,99,12,MUTED); text(p,""+g.score,25,116,20,PAPER);
+        text(p,"DELIVERIES",192,99,12,MUTED); text(p,g.delivered+" / "+Game.QUOTA,192,116,20,PAPER);
+        text(p,"HULL",354,99,12,MUTED); text(p,g.hull+"%",354,116,20,g.hull<30?Game.COLORS[2]:PAPER);
         int seconds=Math.max(0,(Game.SHIFT_TICKS-g.ticks+59)/60);
-        text(p,"SHIFT",488,99,9,MUTED); text(p,(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60),488,116,16,PAPER);
+        text(p,"SHIFT",488,99,12,MUTED); text(p,(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60),488,116,20,PAPER);
         river(g,p);
         p.rect(0,836,600,124,INK); p.rect(24,836,552,1,0xff476064);
         String status=g.pushing?"PUSH ASSIST / DRAG TO STEER":g.noticeTicks>0?g.notice:"TAP WATER TO MOVE / HOLD CARGO TO PUSH";
-        center(p,status,300,850,10,g.pushing?Game.COLORS[0]:PAPER);
-        button(p,30,876,168,51,"BRAKE",0xff30464b,PAPER);
-        button(p,216,876,168,51,"PAUSE",0xff30464b,PAPER);
-        button(p,402,876,168,51,"HELP",0xff30464b,PAPER);
+        center(p,status,300,850,12,g.pushing?Game.COLORS[0]:PAPER);
+        button(p,30,872,168,68,"BRAKE",0xff30464b,PAPER);
+        button(p,216,872,168,68,"PAUSE",0xff30464b,PAPER);
+        button(p,402,872,168,68,"HELP",0xff30464b,PAPER);
         center(p,"INDUSTRIAL CORRIDOR / PROTOTYPE 0.1",300,943,8,MUTED);
         if(g.mode==Game.TITLE || g.mode==Game.HELP) title(g,p);
         if(g.mode==Game.PAUSE) pause(p);
@@ -92,13 +92,13 @@ public final class Renderer {
                 }
             }
             hull(p,b,color,false,g.ticks);
-            center(p,""+(char)('A'+b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-49,9,PAPER);
+            center(p,""+(char)('A'+b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-49,13,PAPER);
             p.rect(b.x-25,b.y+39,50,3,0xff18343c);
             p.rect(b.x-25,b.y+39,50*Math.max(0,1-b.age/68),3,b.age>48?Game.COLORS[2]:color);
             if(b.dockTime>0) { p.rect(b.x-25,b.y+45,50*b.dockTime/1.2f,4,PAPER); }
         }
         hull(p,g.tug,Game.COLORS[0],true,g.ticks);
-        if(g.ticks<600) { center(p,"YOU",g.tug.x,g.tug.y+35,9,PAPER); }
+        if(g.ticks<600) { center(p,"YOU",g.tug.x,g.tug.y+35,12,PAPER); }
         p.rect(110,817,380,19,0xff1b3b43); center(p,"SOUTH REACH / CURRENT  v",300,823,8,MUTED);
     }
     private static void dock(Painter p,int index,int ticks) {
@@ -109,8 +109,8 @@ public final class Renderer {
         }
         for(int k=0;k<106;k+=16) { p.rect(x,y+k,2,9,color); p.rect(x+108,y+k,2,9,color); }
         center(p,""+(char)('A'+index),x+55,y+20,27,(color&0xffffff)|0x88000000);
-        center(p,Game.CARGO_NAMES[index],x+55,y+60,10,color);
-        center(p,"BERTH "+(char)('A'+index),x+55,y-17,9,color);
+        center(p,Game.CARGO_NAMES[index],x+55,y+60,13,color);
+        center(p,"BERTH "+(char)('A'+index),x+55,y-19,12,color);
         float edge=index==1?488:106;
         for(int k=0;k<5;k++) { p.rect(edge,y+k*23,6,12,0xff131f23); p.rect(edge,y+k*23,6,4,color); }
     }
@@ -152,7 +152,7 @@ public final class Renderer {
         }
     }
     private static void button(Painter p,float x,float y,float w,float h,String label,int bg,int fg) {
-        p.rect(x,y,w,h,bg); center(p,label,x+w/2,y+(h-13)/2,13,fg);
+        p.rect(x,y,w,h,bg); center(p,label,x+w/2,y+(h-18)/2,18,fg);
     }
     private static void panel(Painter p,float top,float height) {
         p.rect(0,148,600,812,0xbb0b1820); p.rect(40,top,520,height,INK);
@@ -163,11 +163,11 @@ public final class Renderer {
         text(p,"01 / CALUMET REACH",75,290,12,Game.COLORS[0]);
         text(p,"HEAVY CARGO.",75,329,29,PAPER); text(p,"TIGHT WATER.",75,370,29,PAPER);
         text(p,"A THREE-MINUTE INDUSTRIAL RIVER SHIFT",75,423,10,MUTED);
-        text(p,"01",75,466,15,Game.COLORS[0]); text(p,"TAP WATER TO MOVE YOUR TUG",119,467,11,PAPER);
-        text(p,"02",75,506,15,Game.COLORS[0]); text(p,"HOLD CARGO TO LINE UP AND PUSH",119,507,11,PAPER);
-        text(p,"03",75,546,15,Game.COLORS[0]); text(p,"DRAG WHILE HOLDING TO STEER",119,547,11,PAPER);
-        text(p,"MATCH BERTH LETTERS. SLOW DOWN TO DOCK.",75,595,10,MUTED);
-        text(p,"DELIVER 6 LOADS. WATCH THE CROSS TRAFFIC.",75,615,10,MUTED);
+        text(p,"01",75,466,15,Game.COLORS[0]); text(p,"TAP WATER TO MOVE YOUR TUG",119,467,15,PAPER);
+        text(p,"02",75,506,15,Game.COLORS[0]); text(p,"HOLD CARGO TO LINE UP AND PUSH",119,507,15,PAPER);
+        text(p,"03",75,546,15,Game.COLORS[0]); text(p,"DRAG WHILE HOLDING TO STEER",119,547,15,PAPER);
+        text(p,"MATCH BERTH LETTERS. SLOW DOWN TO DOCK.",75,595,12,MUTED);
+        text(p,"DELIVER 6 LOADS. WATCH THE CROSS TRAFFIC.",75,615,12,MUTED);
         button(p,100,650,400,76,g.mode==Game.HELP?"RESUME SHIFT":"START SHIFT",Game.COLORS[0],INK);
     }
     private static void pause(Painter p) {
