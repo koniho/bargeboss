@@ -180,5 +180,8 @@ public final class ScreenView {
         public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
             p.sprite(atlas,frame,x+cx*scale,y+cy*scale,width*scale,height*scale,rotation,alpha);
         }
+        public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,float rotation,float blend,float alpha) {
+            p.spriteBlend(atlas,frameA,frameB,x+cx*scale,y+cy*scale,width*scale,height*scale,rotation,blend,alpha);
+        }
     }
 }

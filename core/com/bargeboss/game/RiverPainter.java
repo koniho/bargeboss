@@ -26,7 +26,11 @@ public final class RiverPainter implements Painter {
         painter.line(screenX(x,y),screenY(x,y),screenX(xx,yy),screenY(xx,yy),w*SCALE,c);
     }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
-        painter.sprite(atlas,(frame+6)%8,screenX(cx,cy),screenY(cx,cy),width*SCALE,height*SCALE,rotation,alpha);
+        painter.sprite(atlas,(frame+12)%16,screenX(cx,cy),screenY(cx,cy),width*SCALE,height*SCALE,rotation,alpha);
+    }
+    public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,float rotation,float blend,float alpha) {
+        painter.spriteBlend(atlas,(frameA+12)%16,(frameB+12)%16,screenX(cx,cy),screenY(cx,cy),
+                width*SCALE,height*SCALE,rotation,blend,alpha);
     }
     /** UI labels stay upright instead of inheriting the world's quarter-turn. */
     public static void center(Painter p,String value,float x,float y,float size,int color) {

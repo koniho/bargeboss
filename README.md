@@ -69,9 +69,13 @@ rotates the shared world into the board; it does not scroll or crop the stage.
 Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring,
 traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
 
-The same PNG atlases are bundled on Android, iOS and desktop. Shared code selects
-the directional frame, placement and animation; native hosts decode and draw it.
-Native antialiasing and bitmap sampling can still differ slightly.
+The same PNG atlases are bundled on Android, iOS and desktop. Every rotating
+boat and payload has **16 headings in a 4×4 sheet**, spaced 22.5° apart. Shared
+code selects adjacent drawings and aligns their hull or payload anchors before
+blending them. Native hosts sum their weighted premultiplied colors in one layer,
+so an opaque boat stays opaque between headings. This smooths transitions between
+painted views; it is not skeletal animation or a live 3D model. Native
+antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
 
 ## Build and run
@@ -137,7 +141,8 @@ build for compilation validation only. Store provisioning/distribution is not co
 ```sh
 ./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
 ./preview.sh     # Real phase, title/menu and tutorial contact sheets in out/
-./preview.sh --animations # 12 fps sequences; GIFs when ffmpeg is installed
+./preview.sh --animations # Phase sequences plus rotation; GIFs when ffmpeg is installed
+./preview.sh --rotation   # 20 fps turns with fixed crosshairs for boats and payloads
 ./check-art.sh   # Optional Termux check on the actual Android Java runtime
 ```
 

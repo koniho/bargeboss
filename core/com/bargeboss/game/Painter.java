@@ -4,6 +4,9 @@ package com.bargeboss.game;
 public interface Painter {
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);
+    /** Additively blend registered atlas cells in a transparent layer, then composite once. */
+    void spriteBlend(int atlas, int frameA, int frameB, float cx, float cy, float width, float height,
+                     float rotation, float blend, float alpha);
     void rect(float x, float y, float width, float height, int argb);
     void circle(float x, float y, float radius, int argb);
     void poly(float[] xy, int argb);

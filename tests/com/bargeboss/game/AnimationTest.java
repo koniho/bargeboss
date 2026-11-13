@@ -5,6 +5,8 @@ public final class AnimationTest {
     private static int assertions;
     private static void check(boolean ok,String message) { assertions++; if(!ok) throw new AssertionError(message); }
     public static void run() {
+        check(Parity.filenameHash("tug.png")==-977540543 && Parity.filenameHash("barge.png")==1651763948,
+                "sprite filename trace uses portable UTF-16 constants, independent of native NSString.hash");
         Viewport landscape=new Viewport(1440,900),portrait=new Viewport(900,1440);
         check(landscape.x==0 && landscape.y==0 && landscape.scale==1.5f,"landscape stage fills a matching display");
         check(portrait.x==0 && portrait.y>0 && portrait.scale==900f/Layout.WIDTH,"portrait window letterboxes the whole landscape stage");

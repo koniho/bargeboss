@@ -4,13 +4,12 @@ package com.bargeboss.game;
 public final class VesselView {
     private VesselView() {}
     public static void draw(Game g,Painter p,Body b,boolean tug) {
-        int tick=g.visualTicks,frame=SpriteAtlas.direction(b.angle);
-        float turn=SpriteAtlas.turn(b.angle,frame);
+        int tick=g.visualTicks;
         float bob=b.lineAttached?0:(float)StrictMath.sin(tick*.055+b.id*1.7)*(tug?.55f:.35f);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         ArcadeView.wake(p,b,tick);
         float size=2*(b.half+b.radius)/(tug?.84f:.89f);
-        p.sprite(tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,frame,b.x,b.y+bob,size,size*(tug?1.05f:1.2f),turn,1);
+        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,b.x,b.y+bob,size,size*(tug?1.05f:1.2f),1);
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING);
@@ -32,7 +31,7 @@ public final class VesselView {
             for(int i=0;i<remaining;i++) {
                 float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
                 float cargoSize=b.berth==0?58:b.berth==2?27:26;
-                p.sprite(atlas,frame,b.x+c*xx-s*yy,b.y+s*xx+c*yy+bob,cargoSize,cargoSize,turn,1);
+                SpriteAtlas.draw(p,atlas,b.angle,b.x+c*xx-s*yy,b.y+s*xx+c*yy+bob,cargoSize,cargoSize,1);
             }
             if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
                 float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;

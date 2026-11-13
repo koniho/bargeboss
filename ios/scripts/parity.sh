@@ -14,8 +14,11 @@ java -cp ios/build/parity/classes com.bargeboss.game.Parity > ios/build/parity/j
 cat > ios/build/parity/main.m <<'OBJC'
 #import <Foundation/Foundation.h>
 #import "com/bargeboss/game/Parity.h"
-int main(void) {
-    @autoreleasepool { printf("%s\n",[[BBParity signature] UTF8String]); }
+int main(int argc,char **argv) {
+    @autoreleasepool {
+        if(argc>1) [BBParity diagnostic];
+        else printf("%s\n",[[BBParity signature] UTF8String]);
+    }
     return 0;
 }
 OBJC
@@ -26,5 +29,12 @@ clang -fno-objc-arc -ffp-contract=off -I"$J2OBJC_HOME/include" -Iios/build/parit
     "${mapfile_compat[@]}" ios/build/parity/main.m -L"$J2OBJC_HOME/lib/macosx" \
     -ObjC -ljre_emul -liconv -lz -framework Foundation -framework Security -o ios/build/parity/native
 ios/build/parity/native > ios/build/parity/native.txt
-diff -u ios/build/parity/java.txt ios/build/parity/native.txt
+if ! diff -u ios/build/parity/java.txt ios/build/parity/native.txt; then
+    echo 'Parity mismatch: exporting every quantized trace value to locate the first difference.' >&2
+    java -cp ios/build/parity/classes com.bargeboss.game.Parity --trace > ios/build/parity/java-trace.txt
+    ios/build/parity/native --trace > ios/build/parity/native-trace.txt
+    diff -u ios/build/parity/java-trace.txt ios/build/parity/native-trace.txt > ios/build/parity/trace-diff.txt || true
+    head -100 ios/build/parity/trace-diff.txt
+    exit 1
+fi
 echo "JVM / J2ObjC gameplay and drawing parity passed: $(cat ios/build/parity/java.txt)"

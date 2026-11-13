@@ -28,9 +28,20 @@ prompts are [tug-atlas.txt](art-prompts/tug-atlas.txt) and
 pilothouse and tire fenders; the empty barge provides a common deck for separately
 animated steel, freight and bulk loads.
 
-Each directional atlas uses a shared eight-heading cell layout. The game chooses
-headings, registration points and phase effects in pure Java, then native hosts
-draw the same assets. Smoke, wakes, aiming guides, thrown/retracting ropes,
+The current production files are `tug-16.png`, `barge-16.png`, `steel-16.png`,
+`container-16.png` and `bulk-16.png`. Each contains 16 drawings in a 4×4 grid,
+with clockwise headings from east at 22.5° intervals. The corresponding
+[tug](art-prompts/tug-16-atlas.txt), [barge](art-prompts/barge-16-atlas.txt),
+[steel](art-prompts/steel-16-atlas.txt), [container](art-prompts/container-16-atlas.txt)
+and [bulk](art-prompts/bulk-16-atlas.txt) generation prompts are retained, along
+with correction/extraction prompts. Earlier eight-heading prompts remain as
+provenance; superseded PNGs are recoverable through Git history.
+
+The game chooses headings, per-frame registration points and phase effects in
+pure Java, then native hosts draw the same assets. Adjacent registered drawings
+are blended with weighted premultiplied colors and alpha, keeping their shared
+footprint anchor fixed and avoiding an opacity dip. This is interpolation
+between painted views, not a skeletal rig or a live 3D rendering pipeline. Smoke, wakes, aiming guides, thrown/retracting ropes,
 line-tightening effects, unloading equipment and score celebrations are shared
 runtime animations rather than alternate platform-specific asset sequences.
 The title screen also uses the production boat art within its animated harbor.
