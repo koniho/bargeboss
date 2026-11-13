@@ -78,6 +78,11 @@ public final class Preview {
             for(Body load:g.cargo) if(load!=null && load.active && load.unloadingTicks>30) { capture(g,"bridge-destination");dock=true;break; }
         }
         if(!wait || !opening || !open || !dock) throw new IllegalStateException("Bridge preview did not complete passage");
+        g=new Game();g.reset();for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
+        b=new Body(1,2,Physics.LEFT+17.5f,g.dockY(2),(float)Math.PI/2);g.cargo[0]=b;
+        g.tug.x=300;g.tug.y=b.y+120;g.layout=new Layout(960,600,148,380,1.25f);
+        capture(g,"shore-ready-to-tie");ReplayInput.lasso(g,b);steps(g,Game.ROPE_FLIGHT_TICKS+5);
+        capture(g,"shore-lasso-catch");
         sheet("bridge-progression",new String[]{"first-watch-overview","docking-zoom","bridge-wait","bridge-opening","bridge-open","bridge-destination"});
         sheet("lasso-phases",new String[]{"aim-miss","retracting","aiming","lasso","bollard-hit","line-snap"});
         sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});

@@ -86,7 +86,13 @@ public final class ControlsTest {
         steps(g,Game.ROPE_FLIGHT_TICKS);
         check(!b.lineAttached && g.ropePhase==2,"cargo drifting out of rope reach misses and retracts");
         g=ready(); b=g.cargo[0]; b.x+=40; ReplayInput.down(g,b.x,b.y);
-        check(!g.ropeDragging,"whole hull must fit before tying");
+        check(g.ropeDragging && !g.inDock(b),"center inside assigned berth can arm before the full hull fits");
+        g=ready();b=g.cargo[0];b.x+=70;ReplayInput.down(g,b.x,b.y);
+        check(!g.ropeDragging,"cargo outside its assigned berth cannot arm");
+        g=ready();b=g.cargo[0];b.y=Game.DOCK_Y[0];ReplayInput.down(g,b.x,b.y);
+        check(!g.ropeDragging,"cargo in another berth cannot arm");
+        g=ready();b=g.cargo[0];b.awaitingPickup=true;ReplayInput.down(g,b.x,b.y);
+        check(!g.ropeDragging,"load still secured in feeder slot must be picked up first");
         g=game(); g.haptic(Game.HAPTIC_TICK); check(g.pollHaptic()==Game.HAPTIC_TICK,"semantic haptic drains once");
         check(g.pollHaptic()==0,"haptics do not repeat without event");
         g.haptic(Game.HAPTIC_TICK); check(g.pollHaptic()==0,"ticks are rate limited");

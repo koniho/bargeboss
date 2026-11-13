@@ -67,6 +67,7 @@ public final class CoreTest {
         float tx=g.tug.x, ty=g.tug.y; ticks=g.ticks; score=g.score;
         Renderer.draw(g,new Parity()); Renderer.draw(g,new Parity());
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
+        MooringAccessTest.run();
         ControlsTest.run();
         MooringEngineTest.run();
         AnimationTest.run();
@@ -77,7 +78,7 @@ public final class CoreTest {
         SceneryTest.run();
         WaterPhysicsTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("35f75780:8:5808"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("6ffb8098:11:8984"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

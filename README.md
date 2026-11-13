@@ -20,7 +20,7 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - **Push:** hold a cargo barge to line up behind it and push toward its matching
   berth. Keep your finger still for assistance; drag outside the ring to steer.
 - **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
-- **Tie up:** once the entire barge fits its matching **A / steel**, **B / freight**,
+- **Tie up:** once the barge center enters its matching **A / steel**, **B / freight**,
   or **C / bulk** zone, the hull and its bank bollard glow with a **READY TO TIE**
   badge. Moving barges are eligible too. Lift your finger,
   then drag from the barge to aim. A curved trajectory guide and landing marker
@@ -59,7 +59,10 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - **Barge momentum:** loaded barges are heavier than the tug, glide along their keel,
   resist broadside motion, and carry yaw inertia. Holding push assist deliberately
   settles a load once it fits the berth; released cargo keeps gliding. A lasso-ready
-  cue requires the hull to fit its assigned berth, with no speed restriction.
+  cue requires the center to enter its assigned berth, with no speed or heading
+  restriction. A hull against the shore remains eligible even when its ends
+  extend outside the berth. Full-hull fit is required only after winching, before
+  unloading.
   During flight a moving hull can drift within 105 world units of the berth center
   on each axis; beyond that the throw misses and retracts.
 - **Automatic berthing:** a caught line snaps taut immediately and the dock

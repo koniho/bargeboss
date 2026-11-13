@@ -237,8 +237,15 @@ public final class Game {
     }
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
+    boolean inTieArea(Body b) {
+        return Math.abs(b.x-DOCK_X[b.berth])<=55 && Math.abs(b.y-dockY(b.berth))<=53;
+    }
     private boolean tieEligible(Body b) {
-        return b!=null && b.active && !b.lineAttached && inDock(b)
+        // The winch aligns the hull after a catch. Requiring the complete hull to
+        // fit here rejects vessels touching the bank or arriving at an angle.
+        return b!=null && b.active && !b.lineAttached
+                && (!b.awaitingPickup || tutorial!=null) // Practice parks the teaching hull in place.
+                && inTieArea(b)
                 && (tutorial==null || tutorial.lesson>=Tutorial.TIE);
     }
     private boolean ropeWithinReach(Body b) {

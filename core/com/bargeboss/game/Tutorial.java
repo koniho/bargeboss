@@ -38,7 +38,7 @@ public final class Tutorial {
             if(actionTicks>=12 && Physics.length(b.x-startX,b.y-startY)>3) {
                 lesson=DOCK; setup(g); g.haptic(Game.HAPTIC_TICK);
             }
-        } else if(lesson==DOCK && g.inDock(g.cargo[0]) && g.cargo[0].speed()<4) {
+        } else if(lesson==DOCK && g.inTieArea(g.cargo[0])) {
             lesson=TIE; park(g.cargo[0]); g.cancelInputs(); g.haptic(Game.HAPTIC_TICK);
         } else if(lesson==TIE && g.delivered>0) { lesson=DONE; g.cancelInputs(); g.haptic(Game.HAPTIC_SUCCESS); }
     }
