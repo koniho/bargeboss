@@ -20,6 +20,7 @@ public final class ControlView {
         if(g.ropePhase==2) return "MISSED / REELING BACK FOR ANOTHER THROW";
         if(g.ropePhase==3) return "BOLLARD CAUGHT / PULLING THE LINE TIGHT";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
+        for(Body b:g.cargo) if(b!=null && b.active && Mooring.aligning(b)) return "WINCHING ALONGSIDE / LINING UP WITH SHORE";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.holdingTug()) return "DRAG FARTHER FOR THRUST / CENTER TO BRAKE";
@@ -38,7 +39,7 @@ public final class ControlView {
     public static void status(Game g,Painter p) {
         String label=g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
         if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
-            if(b!=null && b.active && b.unloadingTicks>0) { label="CREW UNLOADING"; break; }
+            if(b!=null && b.active && b.lineAttached) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
         Layout layout=g.layout;
         Lettering.center(p,label,layout.statusX(),layout.statusY(),14,color(g));
         Lettering.center(p,hint(g),layout.statusX(),layout.statusHintY(),10,PAPER);

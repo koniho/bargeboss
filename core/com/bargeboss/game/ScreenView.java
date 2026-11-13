@@ -35,7 +35,7 @@ public final class ScreenView {
         center(p,g.hapticsEnabled?"ON":"OFF",b.centerX(),b.y+23,11,g.hapticsEnabled?GOLD:PAPER);
     }
     public static void title(Game g,Painter p) {
-        harbor(g,p); haptics(g,p);
+        TitleView.background(g,p); TitleView.voyage(g,p); haptics(g,p);
         p=centered(g,p);
         text(p,"A CALUMET RIVER ARCADE",25,23,11,PAPER);
         p.poly(new float[]{44,132,125,110,143,66,533,66,492,238,133,270,151,240,32,246,78,169},INK);
@@ -45,11 +45,6 @@ public final class ScreenView {
         float lamp=1+(float)StrictMath.sin(g.visualTicks*.065)*.25f;
         p.rect(99,263,15*lamp,4,GOLD); p.rect(496,91,5,19*lamp,PAPER);
         center(p,"HEAVY CARGO. BIG PAYDAY.",302,292,15,PAPER);
-        Body cargo=new Body(1,2,0,0,-.12f); cargo.vx=28;
-        VesselView.draw(g,new Transform(p,455,431,3.2f,0),cargo,false);
-        Body tug=new Body(0,-1,0,0,-.12f); tug.vx=32;
-        VesselView.draw(g,new Transform(p,219,460,3.7f,0),tug,true);
-        p.line(306,417,351,421,4,0xffd9bf7d);
         VisualStyle.panel(p,608,96,324,452,0xf5101c30);
         center(p,"SHIFT 0"+(g.challengeId+1),770,118,11,GOLD);
         center(p,g.challengeTitle(),770,147,22,PAPER);
@@ -60,11 +55,10 @@ public final class ScreenView {
         button(g,p,Layout.LEARN,"LEARN TO DRIVE",false);
         button(g,p,Layout.START,"START SHIFT",true);
         button(g,p,Layout.CHALLENGES,"CHALLENGES",false);
-        VisualStyle.panel(p,28,499,380,65,0xe8101c30);
-        captainBadge(p,61,530,.66f,g.career.stripes());
-        text(p,g.career.rankTitle(),98,515,18,PAPER);
-        text(p,g.career.totalStars()+" / 9 CAREER STARS",99,543,11,GOLD);
-        text(p,"CALUMET HARBOR AUTHORITY",24,580,9,MUTED);
+        VisualStyle.panel(p,28,558,545,34,0xe8101c30);
+        captainBadge(p,52,575,.37f,g.career.stripes());
+        text(p,g.career.rankTitle(),77,569,13,PAPER);
+        text(p,g.career.totalStars()+" / 9 CAREER STARS",367,570,10,GOLD);
         text(p,"DRAG / PUSH / THROW / UNLOAD",709,580,9,GOLD);
     }
     private static void logo(Painter p,String word,float x,float y,float size,int fill) {

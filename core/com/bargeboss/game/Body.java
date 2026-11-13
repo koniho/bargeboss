@@ -6,6 +6,9 @@ public final class Body {
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
     public int unloadingTicks,lineSnapTicks;
+    public int mooringTicks;
+    public float mooringX,mooringY,mooringAngle;
+    public float engineLoad;
     public float heave,heaveVelocity;
     public int wakeKickTicks,wakeCooldown;
     public boolean floatingInitialized;

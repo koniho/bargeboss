@@ -15,7 +15,7 @@ public final class VesselView {
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
-            exhaust(p,b,tick,working?1:.35f,pushing,bob);
+            exhaust(p,b,tick,b.engineLoad,bob);
             if(pushing) for(int i=0;i<4;i++) {
                 float t=((tick+i*9)%30)/30f,xx=b.half+b.radius+t*9,yy=(i%2==0?-1:1)*(6+t*10);
                 p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+t*2,1.5f,0xbbe5ffff);
@@ -41,19 +41,28 @@ public final class VesselView {
             }
         }
     }
-    private static void exhaust(Painter p,Body b,int tick,float power,boolean strain,float bob) {
+    private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         // Chimney smoke rises in screen space, independently of the river rotation.
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        boolean river=p instanceof RiverPainter;
-        float sx=b.x-c*14+(river?bob/RiverCamera.DEPTH:0),sy=b.y-s*14-(river?0:bob);
-        for(int i=5;i>=0;i--) {
-            float t=((tick*(strain?2:1)+i*13)%84)/84f,r=1.3f+t*(3+power*3);
-            float dx=-5-t*(12+power*12)+(float)StrictMath.sin(t*7)*2;
-            float dy=-19-t*(13+power*16);
-            float x=sx+(river?-dy:dx),y=sy+(river?dx:dy);
-            int alpha=(int)((1-t)*(strain?155:105));
-            int color=(alpha<<24)|(strain?0x708493:0xc4d2d2);
+        float sx=b.x-c*14,sy=b.y-s*14-bob,scale=1,trailX=b.vx;
+        if(p instanceof RiverPainter) {
+            RiverPainter river=(RiverPainter)p;scale=river.camera.scale;
+            sx=river.camera.screenX(b.x-c*14,b.y-s*14);
+            sy=river.camera.screenY(b.x-c*14,b.y-s*14)-bob*scale;
+            trailX=b.vy;p=river.canvas();
+        }
+        power=Physics.clamp(power,0,1);
+        for(int i=13;i>=0;i--) {
+            float density=Physics.clamp(3+11*power-i,0,1);if(density==0) continue;
+            float t=((tick+i*37)%120)/120f;
+            float r=(1.2f+t*(3+power*4))*scale;
+            float x=sx+(-4-t*(15+power*14)-trailX*t*.12f+2*(float)StrictMath.sin(t*9+i))*scale;
+            float y=sy-(19+t*(20+power*25))*scale;
+            int alpha=(int)((1-t)*(1-t)*density*(65+125*power));
+            int shade=(int)(176-80*power),color=(alpha<<24)|(shade<<16)|((shade+9)<<8)|(shade+20);
             p.circle(x,y,r,color);
+            p.circle(x-r*.6f,y+r*.15f,r*.7f,color);
+            p.circle(x+r*.5f,y-r*.25f,r*.65f,((alpha*2/3)<<24)|0xa6b1bc);
         }
     }
 }

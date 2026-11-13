@@ -16,9 +16,12 @@ only when the complete hull is inside its berth and speed is below 4 world units
 Dragging an armed lasso shows a curved aiming guide; release starts an 18-tick
 flight. A hit attaches at impact and flashes for 24 ticks; a miss retracts for 18
 instead. These are real-time shared simulation phases. Aiming cancellation
-never launches a rope. Tightening emits an 18-tick tension pulse and quiver as
-unloading begins.
-Attached lines anchor the hull during tightening and three seconds of unloading;
+never launches a rope. After 72 ticks of tightening, the line emits an 18-tick
+tension pulse and quiver. `Mooring` then eases the hull alongside over 72 ticks,
+using the shortest turn to a heading parallel to shore. Its changing footprint
+stays within the berth and ends ten units clear of the bank. Unloading starts
+only once that translation and rotation finish.
+Attached lines anchor the hull during tightening, winching and three seconds of unloading;
 only completed unloading scores. Unloading and crew animation share the same
 counter, so pause/background freezes both. Equipment returns to idle afterward.
 
@@ -28,6 +31,13 @@ preserving collision substeps; the new barge drag model intentionally extends co
 gesture, haptic, mooring and unloading clocks advance once per real step.
 Crossing boats cover their route twice as fast; warning and arrival cycles keep
 their original timing. Wake energy drives vertical heave; it does not add hidden horizontal forces.
+
+`Body.engineLoad` smooths the controller's requested thrust and acceleration effort,
+with higher load during cargo contact and reverse braking. Releasing thrust lets
+the exhaust settle toward idle even while the hull coasts. NPC feeder loads depend
+on hauling versus empty return; blocked feeders idle. `VesselView` draws 3–14
+overlapping smoke puffs, increasing their size, density and darkness with load.
+Stack anchors follow vessel heading and heave, with smoke rising in screen space.
 
 `Renderer` emits geometry and atlas sprite commands through `Painter`. Lettering
 is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
@@ -292,3 +302,22 @@ The small powered-boat prop wash is separate from the trough-triggered main wake
 Water state advances at the same fixed 60 Hz on every platform and freezes with
 pause/background; drawing only samples state. Dedicated checks cover directional
 glide, reverse motion, yaw inertia, wake timing, local wave amplitude and render purity.
+
+## Cinematic title voyage
+
+`TitleView` recreates the concept's low-angle sunset title with three generated
+source images: `title-backdrop-v1.png`, `title-harbor-v1.png`, and
+`title-vessels-v1.png`. Their exact prompts are in `docs/art-prompts`; all three
+were generated with the built-in image generator from the top-left reference panel.
+The harbor and independently cropped tug/barge preserve their transparent alpha.
+`SpriteAtlas` supplies the same normalized crop bounds to every native painter.
+
+The skyline pans slowly, the bridge and shore pass faster, and cropped water
+strips move at increasing speeds toward the foreground. Repeated tiles keep the
+voyage going indefinitely. Tug and barge have independent heave and slight pitch;
+the connecting rope follows their anchors. Registered smokestack puffs rise,
+expand, drift astern and dissolve, while waterline foam and bow spray continue
+around the hulls. Every phase is a pure function of `visualTicks`, so presentation
+cannot alter game state and matches at different display refresh rates. Existing
+menu hit targets remain fixed. `./preview.sh --title` exports eight seconds of the
+actual renderer to `out/concept-title.gif`.

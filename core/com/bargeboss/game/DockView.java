@@ -53,7 +53,7 @@ public final class DockView {
                 worker(p,wx,wy,sign,walk,arms,i==0?0xffe66b32:0xffd2ab55);
             }
             int stateColor=working||celebrating?0xffa1f0cb:ready||throwing||tying?GOLD:0xffb7bcc2;
-            String state=working?"WORK":tying?"TIE":throwing?"CATCH":ready?"READY":celebrating?"DONE":"IDLE";
+            String state=working?"WORK":tying?(Mooring.aligning(mooring)?"WINCH":"TIE"):throwing?"CATCH":ready?"READY":celebrating?"DONE":"IDLE";
             HarborView.badge(p,state,base+45,y+20,9,stateColor);
             if(working) {
                 p.rect(loadX-30,loadY+35,60,8,DARK);

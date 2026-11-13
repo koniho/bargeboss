@@ -52,6 +52,12 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   resist broadside motion, and carry yaw inertia. Holding push assist deliberately
   settles a load once it fits the berth; released cargo keeps gliding. A lasso-ready
   cue now waits for a slower approach so the line has time to reach the bollard.
+- **Automatic berthing:** a caught line tightens and snaps taut, then the dock
+  winch draws the barge alongside and turns it parallel to shore over 1.2 seconds.
+  The crew's three-second unloading cycle begins only after alignment finishes.
+- **Engine smoke:** idle boats give off a light trail; acceleration, reverse thrust
+  and pushing cargo increase the number, density and size of smokestack puffs.
+  Feeder boats produce more exhaust with a load than on their empty return trip.
 - **Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.

@@ -74,7 +74,20 @@
         [[self river:stage x:230 y:700] pressForDuration:3];
         [self waitFor:@"ready to tie 2" on:stage];
     }
-    [self throwLine:stage toX:176 toY:700];
+    // A readiness snapshot can become stale while XCTest transports the gesture.
+    // Retry real push/throw gestures if the moving load slips out before the catch.
+    BOOL caught=NO;
+    for(int attempt=0;attempt<3 && !caught;attempt++) {
+        [self throwLine:stage toX:176 toY:700];
+        [self waitFor:@"Working; delivered 0;" on:stage after:0.75];
+        NSString *status=(NSString *)stage.value;
+        caught=[status containsString:@"securing load"] || [status containsString:@"drawing alongside"] || [status containsString:@"unloading"];
+        if(!caught && attempt<2) {
+            [[self river:stage x:230 y:700] pressForDuration:3];
+            [self waitFor:@"ready to tie 2" on:stage];
+        }
+    }
+    XCTAssertTrue(caught,@"A real lasso retry must secure the drifting load: %@",stage.value);
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];

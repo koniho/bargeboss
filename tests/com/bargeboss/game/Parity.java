@@ -49,8 +49,8 @@ public final class Parity implements Painter {
             g.step();
             if(i%60==0) {
                 p.add(g.ticks); p.add(g.score); p.add(g.delivered); p.add(g.hull); p.add(g.ropePhase); p.add(g.ropeTicks);
-                p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.add(g.water.emitted);
-                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.unloadingTicks); p.add(b.lineSnapTicks); p.value(b.heave); p.add(b.wakeKickTicks); }
+                p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.value(g.tug.engineLoad); p.add(g.water.emitted);
+                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.mooringTicks); p.add(b.unloadingTicks); p.add(b.lineSnapTicks); p.value(b.heave); p.add(b.wakeKickTicks); }
             }
             if(i%600==0) Renderer.draw(g,p);
         }

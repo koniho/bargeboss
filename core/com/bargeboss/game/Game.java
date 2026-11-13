@@ -46,6 +46,7 @@ public final class Game {
     public Feeder[] feeders;
     private int nextFeedTick;
     private final float[] route=new float[2];
+    private float engineDemand;
     public static final float TRAFFIC_Y=420;
     private double accumulator, visualAccumulator;
 
@@ -89,6 +90,8 @@ public final class Game {
         if(practice!=null) return practice.status();
         String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
         String activity=ropePhase==1?"; rope flying":ropePhase==2?"; rope retracting":ropePhase==3?"; bollard hit":"";
+        for(Body b:cargo) if(b!=null && b.active && b.lineAttached) activity="; securing load";
+        for(Body b:cargo) if(b!=null && b.active && Mooring.aligning(b)) activity="; drawing alongside";
         for(Body b:cargo) if(b!=null && b.active && b.unloadingTicks>0) activity="; unloading";
         for(Body b:cargo) if(canTie(b)) { activity="; ready to tie "+b.berth; break; }
         return state+"; delivered "+delivered+"; score "+score+(tutorial==null?"":"; lesson "+tutorial.lesson)
@@ -331,19 +334,19 @@ public final class Game {
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
         if(pointer) { pressTicks++; if(pressTicks>=12 && held!=-1 && !ropeDragging) { if(!pushing) haptic(HAPTIC_TICK); pushing=true; braking=false; } }
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
-        if(tutorial==null) for(Feeder feeder:feeders) feeder.step(this);
+        if(tutorial==null) for(Feeder feeder:feeders) {
+            feeder.step(this);
+            float load=feeder.phase==Feeder.IDLE || feeder.blocked?0:feeder.phase==Feeder.INBOUND?.9f:.45f;
+            feeder.boat.engineLoad+=(load-feeder.boat.engineLoad)*.08f;
+        }
         water.step(this);
         updateRope();
         for(int i=0;i<cargo.length;i++) {
             Body b=cargo[i]; if(b==null || !b.active) continue;
             if(b.lineSnapTicks>0) b.lineSnapTicks--;
             if(tutorial==null && !b.lineAttached) b.age+=Physics.DT;
-            if(b.lineAttached && inDock(b) && b.speed()<24) b.dockTime+=Physics.DT;
+            if(b.lineAttached && inDock(b) && b.speed()<24) Mooring.step(this,b);
             else { b.dockTime=0; b.lineAttached=false; }
-            if(b.dockTime>=1.2f) {
-                if(b.unloadingTicks==0) { b.lineSnapTicks=18; haptic(HAPTIC_CONTACT); }
-                b.unloadingTicks++;
-            }
             if(b.unloadingTicks>=UNLOAD_TICKS) {
                 b.active=false; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
@@ -376,8 +379,7 @@ public final class Game {
         if(ropePhase==1 && ropeTicks>=ROPE_FLIGHT_TICKS) {
             if(ropeTargeted && tieEligible(ropeBody)) {
                 Body b=ropeBody;
-                b.lineAttached=true; b.dockTime=0; b.tiedX=b.x; b.tiedY=b.y; b.tiedAngle=b.angle;
-                b.vx=b.vy=b.spin=0; ropePhase=3; ropeTicks=0; haptic(HAPTIC_CONTACT);
+                Mooring.attach(b);ropePhase=3;ropeTicks=0;haptic(HAPTIC_CONTACT);
             } else { ropePhase=2; ropeTicks=0; }
         } else if((ropePhase==2 && ropeTicks>=ROPE_RETURN_TICKS)
                 || (ropePhase==3 && ropeTicks>=ROPE_HIT_TICKS)) {
@@ -385,6 +387,7 @@ public final class Game {
         }
     }
     private void motionStep() {
+        engineDemand=0;
         if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) pushCargo(cargo[held]);
         else if(pushing && held==-2) {
             float dx=pointerX-downX,dy=pointerY-downY,len=Physics.length(dx,dy);
@@ -423,6 +426,9 @@ public final class Game {
             impactX=(tug.x+contact.x)/2; impactY=(tug.y+contact.y)/2; impactTicks=30;
         }
         contactId=currentContact;
+        if(contact!=null && pushing && engineDemand>0) engineDemand=Math.max(engineDemand,.88f);
+        if(braking) engineDemand=Math.max(engineDemand,Math.min(.6f,tug.speed()/75));
+        tug.engineLoad+=(engineDemand-tug.engineLoad)*(engineDemand>tug.engineLoad?.08f:.025f);
         for(Body b:cargo) if(b!=null && b.active && (b.lineAttached || b.awaitingPickup)) {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
@@ -463,6 +469,7 @@ public final class Game {
         speed*=Math.max(.1f,1-Math.abs(error)*.45f);
         float dvx=dx/distance*speed-tug.vx, dvy=dy/distance*speed-tug.vy;
         float force=Physics.length(dvx,dvy), maxChange=82*Physics.DT;
+        engineDemand=Physics.clamp(.15f+.4f*speed/95+.45f*Math.min(1,force/maxChange),0,1);
         if(force>maxChange) { dvx*=maxChange/force; dvy*=maxChange/force; }
         tug.vx+=dvx; tug.vy+=dvy;
     }
@@ -526,6 +533,7 @@ public final class Game {
     private void traffic() {
         if(!trafficActive()) return;
         Body ship=trafficBoat;ship.x=trafficX();ship.y=TRAFFIC_Y;ship.angle=0;ship.vx=57;ship.vy=0;
+        ship.engineLoad=.55f;
         float beforeX=ship.x, beforeY=ship.y;
         float hit=Physics.collide(ship,tug);
         for(Body b:cargo) if(b!=null && b.active) hit=Math.max(hit,Physics.collide(ship,b));

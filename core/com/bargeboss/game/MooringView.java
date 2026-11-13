@@ -54,6 +54,10 @@ public final class MooringView {
                 p.line(x+5,y+2,x+10,y+10,2,ROPE);
             }
             if(progress<1) ControlView.ring(p,b.x,b.y,42,progress,GREEN,3);
+            if(Mooring.aligning(b)) {
+                float t=(b.mooringTicks-Mooring.TIGHTEN_TICKS)/(float)Mooring.ALIGN_TICKS;
+                ControlView.ring(p,b.x,b.y,43,t,GREEN,2);
+            }
         }
         if(g.ropeBody!=null && g.ropeBody.active) {
             if(g.ropePhase==1 || g.ropePhase==2) projectile(g,p);

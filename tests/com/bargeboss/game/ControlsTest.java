@@ -57,8 +57,11 @@ public final class ControlsTest {
         steps(g,Game.ROPE_FLIGHT_TICKS-1); check(!b.lineAttached,"line cannot attach before reaching bollard");
         g.step(); check(g.ropePhase==3 && b.lineAttached && g.pollHaptic()==Game.HAPTIC_CONTACT,"bollard hit attaches with visual event and contact feedback");
         float x=b.x,y=b.y; steps(g,60); check(g.delivered==0 && b.unloadingTicks==0,"line tightens before unloading");
-        while(b.unloadingTicks==0) g.step();
-        check(b.lineSnapTicks==18 && g.pollHaptic()==Game.HAPTIC_CONTACT,"taut line emits one snap highlight and feedback before unloading");
+        while(b.mooringTicks<Mooring.TIGHTEN_TICKS) g.step();
+        check(b.lineSnapTicks==18 && g.pollHaptic()==Game.HAPTIC_CONTACT && b.unloadingTicks==0,"taut line emits snap and feedback before drawing alongside");
+        steps(g,Mooring.ALIGN_TICKS);
+        check(b.unloadingTicks==1 && Math.abs(StrictMath.cos(b.angle))<.0001,"crew starts only after the hull is parallel to shore");
+        x=b.x;y=b.y;
         g.background(); int pausedUnload=b.unloadingTicks; steps(g,60);
         check(b.unloadingTicks==pausedUnload && g.delivered==0,"background freezes crew and unloading clock");
         g.pause(); g.tug.x=b.x+40; g.tug.y=b.y; g.tug.vx=-70;

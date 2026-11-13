@@ -2,7 +2,8 @@ package com.bargeboss.game;
 
 /** Shared atlas layout, per-view registration and continuous heading interpolation. */
 public final class SpriteAtlas {
-    public static final int TUG=0, BARGE=1, STEEL=2, CONTAINER=3, BULK=4, WATER=5, NORTH_QUAY=6, SOUTH_QUAY=7, SCENERY=8, PIERS=9, BRIDGE=10;
+    public static final int TUG=0, BARGE=1, STEEL=2, CONTAINER=3, BULK=4, WATER=5, NORTH_QUAY=6, SOUTH_QUAY=7, SCENERY=8, PIERS=9, BRIDGE=10,
+            TITLE_BACKDROP=11, TITLE_HARBOR=12, TITLE_VESSELS=13, TITLE_WATER=14;
     private static final String[] FILES={"tug-16.png","barge-16.png","steel-16.png","container-16.png","bulk-16.png"};
     private static final float[] BARGE_X={.498408f,.511182f,.488854f,.500000f,.500000f,.490415f,.495223f,.496805f,.498408f,.514377f,.498408f,.477636f,.495223f,.482428f,.500000f,.500000f};
     private static final float[] BARGE_Y={.628726f,.625541f,.622357f,.606433f,.541182f,.544377f,.547572f,.553962f,.588917f,.587325f,.568217f,.549108f,.542780f,.547572f,.545974f,.563546f};
@@ -46,13 +47,14 @@ public final class SpriteAtlas {
     private static final float STEP=(float)(Math.PI/16);
     private SpriteAtlas() {}
     public static String file(int atlas) {
+        if(atlas>=TITLE_BACKDROP) return atlas==TITLE_HARBOR?"title-harbor-v1.png":atlas==TITLE_VESSELS?"title-vessels-v1.png":"title-backdrop-v1.png";
         return atlas==BRIDGE?"bridge-v1.png":atlas==SCENERY?"harbor-props-v1.png":atlas==PIERS?"harbor-piers-v1.png":atlas>=WATER?"harbor-base-v1.png":FILES[atlas];
     }
     public static String file(int atlas,int frame) { return atlas>=WATER?file(atlas):frame%2==0?FILES[atlas]:HALF_FILES[atlas]; }
     public static float widthScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
     public static float heightScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
     public static int sourceFrame(int atlas,int frame) { return atlas>=WATER?frame:frame/2; }
-    public static int count(int atlas) { return atlas==SCENERY?10:atlas==PIERS || atlas==BRIDGE?2:atlas>=WATER?1:32; }
+    public static int count(int atlas) { return atlas==SCENERY?10:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
     public static int columns(int atlas) { return atlas>=WATER?1:4; }
     public static int rows(int atlas) { return atlas>=WATER?1:4; }
     public static float pivotX(int atlas,int frame) { if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_X[frame]:atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
@@ -64,10 +66,10 @@ public final class SpriteAtlas {
         {735,690,1000,908},{1000,690,1205,908},{1350,658,1732,908}};
     private static final int[][] PIER_RECTS={{988,140,1210,330},{455,570,638,740}};
     private static int[] region(int atlas,int frame) { return atlas==SCENERY?PROPS[frame]:atlas==PIERS?PIER_RECTS[frame]:TERRAIN[atlas-WATER]; }
-    public static float sourceLeft(int atlas,int frame) { if(atlas==BRIDGE) return 0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
-    public static float sourceTop(int atlas,int frame) { if(atlas==BRIDGE) return frame*.5f; return atlas>=WATER?region(atlas,frame)[1]/908f:(sourceFrame(atlas,frame)/4)/4f; }
-    public static float sourceRight(int atlas,int frame) { if(atlas==BRIDGE) return 1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
-    public static float sourceBottom(int atlas,int frame) { if(atlas==BRIDGE) return (frame+1)*.5f; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
+    public static float sourceLeft(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?200/1536f:0; if(atlas==BRIDGE) return 0; return atlas>=WATER?region(atlas,frame)[0]/1732f:(sourceFrame(atlas,frame)%4)/4f; }
+    public static float sourceTop(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_WATER?.88f:atlas==TITLE_VESSELS && frame==1?600/1024f:0; if(atlas==BRIDGE) return frame*.5f; return atlas>=WATER?region(atlas,frame)[1]/908f:(sourceFrame(atlas,frame)/4)/4f; }
+    public static float sourceRight(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?1300/1536f:1; if(atlas==BRIDGE) return 1; return atlas>=WATER?region(atlas,frame)[2]/1732f:(sourceFrame(atlas,frame)%4+1)/4f; }
+    public static float sourceBottom(int atlas,int frame) { if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; if(atlas==BRIDGE) return (frame+1)*.5f; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
     public static float artWidth(int atlas,int frame) { if(atlas==BRIDGE) return 280/3f; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
     public static float artHeight(int atlas,int frame) { if(atlas==BRIDGE) return 140; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
     public static float artX(int atlas,int frame) { int[] r=region(atlas,frame); return (r[0]+r[2])*.5f*688/1732; }

@@ -52,7 +52,7 @@ public final class CoreTest {
         Game low=playing(), high=playing(); low.down(low.tug.x,low.tug.y); low.move(low.downX,low.downY-100);
         high.down(high.tug.x,high.tug.y); high.move(high.downX,high.downY-100);
         for(int i=0;i<300;i++) low.advance(1.0/30); for(int i=0;i<1440;i++) high.advance(1.0/144);
-        check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y && low.tug.heave==high.tug.heave && low.water.emitted==high.water.emitted,"30 and 144 Hz identical physics and water state");
+        check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y && low.tug.heave==high.tug.heave && low.tug.engineLoad==high.tug.engineLoad && low.water.emitted==high.water.emitted,"30 and 144 Hz identical physics, exhaust load and water state");
         g=playing(); g.advance(Double.NaN); check(g.ticks==0,"invalid frame delta ignored");
         g.advance(10); check(g.ticks==15,"long stall has bounded catch-up");
         // A bounded player exercises arrivals and all three berths using the public touch contract.
@@ -68,6 +68,7 @@ public final class CoreTest {
         Renderer.draw(g,new Parity()); Renderer.draw(g,new Parity());
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
         ControlsTest.run();
+        MooringEngineTest.run();
         AnimationTest.run();
         RotationTest.run();
         ResponsiveTest.run();
@@ -75,7 +76,7 @@ public final class CoreTest {
         FeederTest.run();
         SceneryTest.run();
         WaterPhysicsTest.run();
-        check(Parity.signature().equals("36e56caf:12:9542"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("5be7f753:12:9846"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
