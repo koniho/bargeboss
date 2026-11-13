@@ -55,7 +55,7 @@ public final class SpriteAtlas {
     private static final float STEP=(float)(Math.PI/16);
     private SpriteAtlas() {}
     public static String file(int atlas) {
-        if(atlas>=TITLE_BACKDROP) return atlas==TITLE_HARBOR?"title-harbor-v1.png":atlas==TITLE_VESSELS?"title-vessels-v1.png":"title-backdrop-v1.png";
+        if(atlas>=TITLE_BACKDROP) return atlas==TITLE_HARBOR?"title-harbor-v2.png":atlas==TITLE_VESSELS?"title-vessels-v1.png":"title-backdrop-v2.png";
         if(atlas==WATER) return "water-arcade-v2.png";
         if(atlas==SCENERY || atlas==PIERS || atlas==BRIDGE) return "harbor-arcade-v2.png";
         return atlas==BRIDGE?"bridge-v1.png":atlas==SCENERY?"harbor-props-v1.png":atlas==PIERS?"harbor-piers-v1.png":atlas>=WATER?"harbor-base-v1.png":FILES[atlas];

@@ -39,7 +39,12 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - The supplied concept guides the pixel-styled harbor: a red/cream tug with
   raised wheelhouse and tire fenders, charcoal-blue steel barges with orange coamings carrying steel, containers or
   bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
-  The title reuses the gameplay scenery and vessels, with a matching HUD and animated results.
+  The title restores the panoramic sunset, sculpted clouds, distant skyline and
+  raised bridge in the current cartoon style. Skyline, bridge and curved water
+  waves scroll at different speeds behind a larger gameplay tug and barge, with
+  bobbing, engine smoke and warm wave reflections across open foreground water.
+  Title artwork prompts are in `docs/art-prompts/title-backdrop-v2.txt` and
+  `docs/art-prompts/title-harbor-v2.txt`.
   The play view uses a fixed 2.5D ground projection with independent painted
   warehouses, stockpiles, container stacks, quays and solid finger piers. Foreground
   scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline

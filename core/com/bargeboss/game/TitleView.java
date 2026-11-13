@@ -4,36 +4,44 @@ package com.bargeboss.game;
 public final class TitleView {
     private TitleView() {}
     private static float sine(double value) { return (float)StrictMath.sin(value); }
-    public static void background(Game g,Painter p) {
-        int tick=g.visualTicks;float shore=330+g.layout.offsetY,bottom=g.layout.height-18;
-        WaveView.draw(p,tick,0,shore,g.layout.width,bottom-shore,1.65f,-tick*.25f);
-        p.rect(0,0,g.layout.width,shore,0xff7c8a99);
-        // Smaller distant buildings and larger quay props pan at different rates,
-        // but retain the gameplay atlas's fixed projection and warm key light.
-        props(g,p,shore-74,98,.085f,true);
-        props(g,p,shore-10,148,.30f,false);
-        p.rect(0,shore-13,g.layout.width,13,0xff25394a);
-        p.rect(0,shore-15,g.layout.width,4,0xffc3b89b);
-        p.rect(0,bottom,g.layout.width,18,0xff7c8a99);
-        p.rect(0,bottom,g.layout.width,6,0xffc3b89b);
-        for(float x=-(tick*.3f)%96;x<g.layout.width;x+=96) {
-            p.line(x,shore-15,x-18,shore-45,1.2f,0x5546576b);
-            for(int i=0;i<3;i++) p.poly(new float[]{x+i*8,shore-15,x+i*8+4,shore-15,x+i*8+8,shore-11,x+i*8+4,shore-11},VisualStyle.GOLD);
-        }
+    private static float scroll(float value,float period) { return (value%period+period)%period; }
+    private static void strip(Painter p,int atlas,float width,float height,float top,float extent,float drift) {
+        for(float x=-drift;x<extent;x+=width)
+            p.sprite(atlas,0,x+width/2,top+height/2,width,height,0,1);
     }
-    private static void props(Game g,Painter p,float foot,float size,float speed,boolean distant) {
-        float period=220,drift=(g.visualTicks*speed)%period;
-        int[] cells=distant?new int[]{1,4,0,2}:new int[]{0,4,2,1};
-        for(int i=-1;i<g.layout.width/period+2;i++) {
-            float x=i*period-drift+80;
-            LightingView.shadow(p,x,foot,size*.83f,size*.14f,1);
-            p.sprite(SpriteAtlas.SCENERY,cells[(i+8)%4],x,foot-size*.47f,size,size,0,distant?.72f:1);
+    public static void background(Game g,Painter p) {
+        int tick=g.visualTicks;float horizon=310+g.layout.offsetY;
+        // The original panoramic composition, repainted in the gameplay palette.
+        // Register the painted waterline and keep the sunset visible beside the logo.
+        float skyHeight=horizon/.89f,skyWidth=skyHeight*3;
+        float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyWidth);
+        strip(p,SpriteAtlas.TITLE_BACKDROP,skyWidth,skyHeight,0,g.layout.width,skyDrift);
+        WaveView.draw(p,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
+        float sun=scroll(skyWidth*.73f-skyDrift,skyWidth);
+        for(float x=sun-skyWidth;x<g.layout.width;x+=skyWidth) reflections(p,tick,x,horizon,g.layout.height);
+        // A separate transparent bridge/industrial shore passes in front of the
+        // distant city. No close quay or bottom bank encloses the foreground water.
+        float harborWidth=690,harborHeight=harborWidth/3;
+        float harborDrift=scroll(harborWidth*.61f-(420+g.layout.offsetX)+tick*.19f,harborWidth);
+        strip(p,SpriteAtlas.TITLE_HARBOR,harborWidth,harborHeight,horizon+40-harborHeight*.92f,
+                g.layout.width,harborDrift);
+    }
+    private static void reflections(Painter p,int tick,float center,float top,float bottom) {
+        for(int i=0;i<16;i++) {
+            float y=top+9+i*17+sine(tick*.024+i)*3;if(y>bottom) continue;
+            float span=13+i*3.4f,x=center+sine(i*2.3)*(15+i*3)+sine(tick*.017+i)*5;
+            int alpha=(int)((.55f+.45f*sine(tick*.035+i))*(76-i*2));
+            for(int part=1;part<=8;part++) {
+                float a=(part-1)/8f,b=part/8f;
+                p.line(x+(a-.5f)*span,y-sine(a*Math.PI)*(2+i*.2f),
+                        x+(b-.5f)*span,y-sine(b*Math.PI)*(2+i*.2f),1.5f+i*.06f,(alpha<<24)|0xffcc87);
+            }
         }
     }
     public static void voyage(Game g,Painter canvas) {
         int tick=g.visualTicks;
         Painter centered=ScreenView.centered(g,canvas);
-        RiverCamera c=new RiverCamera(0,154,2.3f);
+        RiverCamera c=new RiverCamera(-110,85,3.4f);
         Painter p=new RiverPainter(centered,c);
         Body tug=new Body(0,-1,300,230,(float)Math.PI/2);
         Body barge=new Body(1,1,300,300,(float)Math.PI/2);
