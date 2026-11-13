@@ -68,7 +68,8 @@ public final class CoreTest {
         Renderer.draw(g,new Parity()); Renderer.draw(g,new Parity());
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
         ControlsTest.run();
-        check(Parity.signature().equals("64265234:10:8176"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        AnimationTest.run();
+        check(Parity.signature().equals("6a6df3f7:10:8166"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

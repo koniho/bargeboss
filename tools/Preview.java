@@ -14,7 +14,9 @@ public final class Preview {
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     public static void main(String[] args) throws Exception {
         new File("out").mkdirs();
-        Game g=new Game(); capture(g,"title"); g.reset(); capture(g,"stage");
+        Game g=new Game(); capture(g,"title");
+        for(int i=0;i<90;i++) g.advance(1.0/60); capture(g,"title-animated");
+        g.reset(); capture(g,"stage");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
         steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,110,910); steps(g,4); capture(g,"braking");
@@ -26,11 +28,26 @@ public final class Preview {
         for(int i=0;i<1200 && !g.canTie(b);i++) g.step();
         if(!g.canTie(b)) throw new IllegalStateException("Preview cargo never reached berth");
         ReplayInput.up(g,g.pointerX,g.pointerY); capture(g,"ready-to-tie");
-        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"lasso");
-        ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,30); capture(g,"tying-up");
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,b.x+65,b.y-60); capture(g,"aim-miss");
+        ReplayInput.up(g,b.x+65,b.y-60); steps(g,Game.ROPE_FLIGHT_TICKS+8); capture(g,"retracting");
+        steps(g,Game.ROPE_RETURN_TICKS-8);
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"aiming");
+        ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,9); capture(g,"lasso");
+        steps(g,9); capture(g,"bollard-hit"); steps(g,30); capture(g,"tying-up");
+        while(b.unloadingTicks==0) g.step(); capture(g,"line-snap");
         while(b.unloadingTicks<85) g.step(); capture(g,"unloading");
         while(g.delivered==0) g.step(); steps(g,12); capture(g,"delivery");
-        g.background(); capture(g,"pause");
+        steps(g,90); capture(g,"crew-idle");
+        g.background(); capture(g,"pause"); g.pause();
+        ReplayInput.tap(g,300,910); capture(g,"help"); ReplayInput.tap(g,300,680);
+        g.tug.x=479; g.tug.vx=100; g.step(); capture(g,"impact");
+        g.reset(); g.ticks=1000; capture(g,"traffic-warning");
+        g.ticks=1200; capture(g,"traffic");
+        g.reset();
+        for(int i=0;i<Game.SHIFT_TICKS;i++) { ReplayInput.work(g); g.step(); }
+        capture(g,"shift-complete");
+        for(int i=0;i<60;i++) g.advance(1.0/60); capture(g,"results-animated");
+        g.reset(); steps(g,Game.SHIFT_TICKS); capture(g,"shift-ended");
         g=new Game(); ReplayInput.tap(g,300,608); capture(g,"tutorial-0");
         int previous=0;
         for(int i=0;i<3000;i++) {
@@ -39,6 +56,9 @@ public final class Preview {
             if(previous==Tutorial.DONE) break;
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
+        sheet("lasso-phases",new String[]{"aim-miss","retracting","aiming","lasso","bollard-hit","line-snap"});
+        sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});
+        sheet("all-phases",new String[]{"stage","driving","coasting","braking","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});
         sheet("control-states",new String[]{"driving","holding","steering","lasso","unloading","delivery"});
         sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6"});
         sheet("assist-states",new String[]{"holding","aligning","steering"});

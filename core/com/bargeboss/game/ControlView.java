@@ -2,8 +2,8 @@ package com.bargeboss.game;
 
 /** Feedback for the actual controller state, shared by all native renderers. */
 public final class ControlView {
-    public static final int BLUE=0xff86d4ed, GREEN=0xffa5deb5, AMBER=0xffefb651, PURPLE=0xffd2b2f3;
-    private static final int PAPER=0xffeee7d4, INK=0xff101e25;
+    public static final int BLUE=0xff83c8d5, GREEN=0xffb9df9c, AMBER=0xffffc52f, PURPLE=0xffb7a2df;
+    private static final int PAPER=VisualStyle.CREAM, INK=VisualStyle.NAVY;
     private static final String[] LABELS={"READY","DRIVING","KEEP HOLDING","LINING UP","PUSHING",
             "MANUAL STEERING","DOCKING","COASTING","BRAKING"};
     private ControlView() {}
@@ -15,9 +15,13 @@ public final class ControlView {
         return g.control==Game.IDLE || g.control==Game.COASTING?PAPER:AMBER;
     }
     public static String hint(Game g) {
-        if(g.ropeDragging) return "DROP THE LOOP OVER THE HIGHLIGHTED BOLLARD";
+        if(g.ropeDragging) return "AIM THE ARC / RELEASE TO THROW THE LASSO";
+        if(g.ropePhase==1) return "LINE AWAY / WATCH THE BOLLARD";
+        if(g.ropePhase==2) return "MISSED / REELING BACK FOR ANOTHER THROW";
+        if(g.ropePhase==3) return "BOLLARD CAUGHT / PULLING THE LINE TIGHT";
+        for(Body b:g.cargo) if(b!=null && b.active && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
-        for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, THEN DRAG CARGO TO ITS BOLLARD";
+        for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.holdingTug()) return "DRAG FARTHER FOR THRUST / CENTER TO BRAKE";
         switch(g.control) {
             case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
@@ -32,7 +36,7 @@ public final class ControlView {
         }
     }
     public static void status(Game g,Painter p) {
-        String label=g.ropeDragging?"THROW YOUR LINE":LABELS[g.control];
+        String label=g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
         if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
             if(b!=null && b.active && b.unloadingTicks>0) { label="CREW UNLOADING"; break; }
         Lettering.center(p,label,300,721,14,color(g));
@@ -84,7 +88,7 @@ public final class ControlView {
                 dragRing(g,p,PURPLE);
                 if(g.control==Game.DOCKING) {
                     ring(p,b.x,b.y,44,Math.min(1,b.dockTime/1.2f),GREEN,5);
-                    label(p,"MOORING",b.x,b.y-67,GREEN);
+                    label(p,"SETTLING",b.x,b.y-67,GREEN);
                 }
             }
         }

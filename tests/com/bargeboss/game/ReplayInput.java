@@ -12,6 +12,7 @@ public final class ReplayInput {
         up(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
     }
     public static void work(Game g) {
+        if(g.ropePhase!=0) return;
         Body target=null;
         for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached) { target=b; break; }
         if(target!=null) {
@@ -47,7 +48,7 @@ public final class ReplayInput {
             case Tutorial.DOCK:
                 if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y); break;
             case Tutorial.TIE:
-                if(!g.cargo[0].lineAttached) lasso(root,g.cargo[0]); break;
+                if(!g.cargo[0].lineAttached && g.ropePhase==0) lasso(root,g.cargo[0]); break;
             default: break;
         }
     }

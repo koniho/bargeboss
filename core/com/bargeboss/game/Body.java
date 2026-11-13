@@ -5,7 +5,7 @@ public final class Body {
     public final int id, berth;
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
-    public int unloadingTicks;
+    public int unloadingTicks,lineSnapTicks;
     public float tiedX,tiedY,tiedAngle;
     public boolean active = true, lineAttached;
     public Body(int id, int berth, float x, float y, float angle) {

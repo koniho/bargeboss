@@ -22,17 +22,23 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
 - **Tie up:** once the entire barge fits its matching **A / steel**, **B / freight**,
   or **C / bulk** zone and has slowed, its bank bollard glows. Lift your finger,
-  then drag from the barge to that bollard. A slack rope and lasso loop follow your
-  finger. Drop the loop over the bollard to attach it; dropping elsewhere cancels.
-- The line tightens for **1.2 seconds**, then a crane, forklift and dock crew
+  then drag from the barge to aim. A curved trajectory guide and landing marker
+  show the throw while the rope stays coiled. **Release to throw**: the lasso
+  flies out, flashes on a bollard hit, or retracts after a miss. The guide turns
+  green when aimed at the matching bollard.
+- The line tightens for **1.2 seconds**, flashes and recoils as it snaps taut,
+  then a crane, forklift and dock crew
   unload the barge for **3 seconds**. The barge stays secured while you work on
   another load. Scoring happens once unloading finishes, with a floating score
   and burst of stars. The crew and equipment then return to idle.
 - Movement, turning, pushing and passing workboats run at **2× the original
   pace**, using two original-size physics steps per real tick. Hold gestures,
   the shift clock, contracts, mooring and unloading retain their real durations.
-- Brighter water, animated waves, foamy V-shaped wakes and impact rings emphasize
-  motion. Wakes are visual effects; they do not push cargo.
+- The supplied concept guides the pixel-styled harbor: a red/cream tug with
+  raised wheelhouse and tire fenders, rust barges carrying steel, containers or
+  bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
+  A sunset harbor title, matching HUD and animated results complete the style.
+  Wakes are visual effects; they do not push cargo.
 - **Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
@@ -125,7 +131,8 @@ build for compilation validation only. Store provisioning/distribution is not co
 
 ```sh
 ./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
-./preview.sh     # Real control-state and tutorial contact sheets in out/
+./preview.sh     # Real phase, title/menu and tutorial contact sheets in out/
+./preview.sh --animations # 12 fps sequences; GIFs when ffmpeg is installed
 ./check-art.sh   # Optional Termux check on the actual Android Java runtime
 ```
 
@@ -136,6 +143,7 @@ drag controls, lasso attachment, crew unloading, the complete interactive tutori
 simulator app. Native touch/lifecycle acceptance still needs actual device play;
 headless checks are not a substitute for that.
 
-All game artwork and lettering are procedural and authored in this repository.
+Game art is implemented as shared procedural geometry, guided by the user-supplied
+[concept reference](docs/reference/barge-boss-concept.png). Lettering is authored here.
 No artwork, audio, game content, credentials or signing keys were imported from
 DDDumpling. See [provenance](docs/provenance.md).

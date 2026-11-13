@@ -45,7 +45,7 @@ public final class Tutorial {
             case HOLD: return "PRESS CARGO C AND KEEP HOLDING.";
             case STEER: return "KEEP HOLDING. DRAG UP AND LEFT.";
             case DOCK: return "LIFT, THEN HOLD CARGO C AGAIN.";
-            case TIE: return "DRAG CARGO TO THE GLOWING BOLLARD.";
+            case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
             default: return "YOU MOVED, STEERED AND TIED UP.";
         }
     }
@@ -56,7 +56,7 @@ public final class Tutorial {
             case HOLD: return "THE TUG LINES UP AUTOMATICALLY.";
             case STEER: return "DRAG OUTSIDE THE RING TO TURN.";
             case DOCK: return "HOLD STILL TO ENTER THE C ZONE.";
-            case TIE: return "DROP THE LOOP OVER IT TO TIE UP.";
+            case TIE: return "RELEASE TO THROW. MISSES REEL BACK.";
             default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }
     }

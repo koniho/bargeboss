@@ -1,42 +1,179 @@
 package com.bargeboss.game;
 
-/** A slack rope and lasso follow the pointer, then tighten around a bank bollard. */
+/** Aim with a coiled rope; release launches a loop that catches or reels back to the barge. */
 public final class MooringView {
-    private static final int ROPE=0xffe5cc91;
+    private static final int ROPE=0xffd3a65f, HIGHLIGHT=0xffffe3a1,DARK=VisualStyle.OUTLINE,GREEN=0xff92ecc2;
     private MooringView() {}
     public static void draw(Game g,Painter p) {
+        int tick=g.visualTicks;
         for(int berth=0;berth<3;berth++) {
             float x=Game.TIE_X[berth],y=Game.DOCK_Y[berth];
-            boolean ready=false;
-            for(Body b:g.cargo) if(b!=null && b.berth==berth && (g.canTie(b) || (b.active && b.lineAttached))) ready=true;
-            p.circle(x,y,10,0xff13272c); p.circle(x,y,6,0xffa4a68c);
-            p.line(x-8,y,x+8,y,4,0xffeee7d4);
+            boolean ready=false,tied=false;
+            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
+                ready|=g.canTie(b); tied|=b.lineAttached;
+            }
+            p.poly(new float[]{x-12,y+4,x-7,y-2,x+9,y-2,x+14,y+6,x+8,y+12,x-8,y+12},DARK);
+            p.poly(new float[]{x-9,y+3,x-5,y-1,x+7,y-1,x+10,y+5,x+6,y+9,x-6,y+9},0xff6a7381);
+            p.rect(x-5,y-9,11,14,DARK); p.rect(x-4,y-9,8,12,0xffbc7a27);
+            p.rect(x-4,y-9,3,11,VisualStyle.GOLD); p.rect(x-7,y-12,14,6,DARK);
+            p.rect(x-6,y-12,12,4,VisualStyle.GOLD); p.rect(x-4,y-12,8,1,HIGHLIGHT);
+            p.rect(x-9,y-7,18,3,DARK); p.rect(x-8,y-7,16,1,HIGHLIGHT);
             if(ready) {
-                float pulse=2*(float)StrictMath.sin(g.ticks*.1);
-                ControlView.ring(p,x,y,Game.TIE_RADIUS+pulse,1,ControlView.GREEN,2);
-                Lettering.center(p,"TIE",x+(berth==1?-25:25),y-43,10,ControlView.GREEN);
+                float pulse=2*(float)StrictMath.sin(tick*.11);
+                ControlView.ring(p,x,y,Game.TIE_RADIUS+pulse,1,0x665feac1,4);
+                ControlView.ring(p,x,y,Game.TIE_RADIUS,1,GREEN,1.5f);
+                float top=y-48+3*(float)StrictMath.sin(tick*.11);
+                p.poly(new float[]{x-4,top,x+4,top,x+4,top+9,x+9,top+9,x,top+18,x-9,top+9,x-4,top+9},DARK);
+                p.poly(new float[]{x-2,top+2,x+2,top+2,x+2,top+11,x+5,top+11,x,top+15,x-5,top+11,x-2,top+11},VisualStyle.GOLD);
+                Lettering.center(p,"TIE HERE",x+(berth==1?-18:18),y-59,8,GREEN);
+            } else if(tied) {
+                p.rect(x-3,y-11,6,2,GREEN);
+                ControlView.ring(p,x,y,17,1,0x6688e2bb,1);
             }
         }
         for(Body b:g.cargo) if(b!=null && b.active) {
-            boolean throwing=g.ropeDragging && g.heldCargo()==b;
-            if(!throwing && !b.lineAttached) {
-                if(g.canTie(b)) ControlView.ring(p,b.x,b.y,38,1,ControlView.GREEN,2);
+            if(g.ropeDragging && g.heldCargo()==b) {
+                aim(g,p,b); continue;
+            }
+            if(!b.lineAttached) {
+                if(g.canTie(b) && g.ropeBody!=b) {
+                    float pulse=1+(float)StrictMath.sin(tick*.09);
+                    ControlView.ring(p,b.x,b.y,37+pulse,1,0x8892ecc2,2);
+                }
                 continue;
             }
-            float x=throwing?g.pointerX:Game.TIE_X[b.berth],y=throwing?g.pointerY:Game.DOCK_Y[b.berth];
-            boolean onPoint=throwing && g.overTiePoint(b,x,y) && g.canTie(b);
-            int color=onPoint?ControlView.GREEN:ROPE;
-            float progress=Math.min(1,b.dockTime/1.2f),slack=throwing?24:24*(1-progress);
-            float lastX=b.x,lastY=b.y;
-            for(int i=1;i<=18;i++) {
-                float t=i/18f,xx=b.x+(x-b.x)*t,yy=b.y+(y-b.y)*t+4*t*(1-t)*slack;
-                p.line(lastX,lastY,xx,yy,3,color); lastX=xx; lastY=yy;
+            float x=Game.TIE_X[b.berth],y=Game.DOCK_Y[b.berth];
+            float progress=Math.min(1,b.dockTime/1.2f);
+            // Take up the loose line slowly, then pull its final slack out decisively.
+            float slack=23*(1-progress*progress*progress);
+            if(b.lineSnapTicks>0) {
+                float snap=Physics.clamp(1-b.lineSnapTicks/18f,0,1);
+                float shake=4.5f*(1-snap)*(1-snap);
+                rope(p,b.x,b.y,x,y,0,ROPE,shake,snap);
+                snapRings(p,b.x,b.y,x,y,snap);
+            } else rope(p,b.x,b.y,x,y,slack,ROPE);
+            float rx=17-8*progress,ry=14-7*progress;
+            lasso(p,x,y,rx,ry,0,ROPE);
+            if(progress>.75f) {
+                p.line(x-6,y+3,x+6,y-3,3,ROPE); p.line(x-5,y-3,x+6,y+3,2,HIGHLIGHT);
+                p.line(x+5,y+2,x+10,y+10,2,ROPE);
             }
-            ControlView.ring(p,x,y,throwing?(onPoint?18:22):18-8*progress,1,color,3);
-            if(b.lineAttached) {
-                ControlView.ring(p,b.x,b.y,43,progress,ControlView.GREEN,4);
-                Lettering.center(p,b.unloadingTicks>0?"UNLOADING":"TYING UP",b.x,b.y-64,12,ControlView.GREEN);
+            if(progress<1) ControlView.ring(p,b.x,b.y,42,progress,GREEN,3);
+        }
+        if(g.ropeBody!=null && g.ropeBody.active) {
+            if(g.ropePhase==1 || g.ropePhase==2) projectile(g,p);
+            else if(g.ropePhase==3) hit(g,p);
+        }
+    }
+    private static void aim(Game g,Painter p,Body b) {
+        float x=g.aimX(b,g.pointerX,g.pointerY),y=g.aimY(b,g.pointerX,g.pointerY);
+        boolean onPoint=g.canTie(b) && g.overTiePoint(b,g.pointerX,g.pointerY);
+        int color=onPoint?GREEN:VisualStyle.GOLD;
+        // This thin continuous trajectory is a guide; the rope remains coiled on deck.
+        float lastX=b.x,lastY=b.y;
+        for(int i=1;i<=32;i++) {
+            float t=i/32f,xx=b.x+(x-b.x)*t,yy=b.y+(y-b.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+            p.line(lastX,lastY,xx,yy,3,0x990b1424);
+            p.line(lastX,lastY,xx,yy,1.25f,(color&0xffffff)|0xcc000000);
+            lastX=xx; lastY=yy;
+        }
+        for(int i=0;i<4;i++) {
+            float t=((g.visualTicks%48)/48f+i*.25f)%1;
+            float xx=b.x+(x-b.x)*t,yy=b.y+(y-b.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+            p.rect(xx-2,yy-2,4,4,DARK); p.rect(xx-1,yy-1,3,3,onPoint?HIGHLIGHT:color);
+        }
+        float radius=onPoint?14:11;
+        for(int sx=-1;sx<=1;sx+=2) for(int sy=-1;sy<=1;sy+=2) {
+            p.line(x+sx*radius,y+sy*radius,x+sx*(radius-5),y+sy*radius,2,color);
+            p.line(x+sx*radius,y+sy*radius,x+sx*radius,y+sy*(radius-5),2,color);
+        }
+        p.rect(x-1,y-1,3,3,color);
+        // The rope stays visibly coiled on deck until the finger lifts.
+        for(int i=0;i<3;i++) {
+            loop(p,b.x+1,b.y+5-i*2,10-i,6-i*.5f,0,DARK,4);
+            loop(p,b.x,b.y+3-i*2,10-i,6-i*.5f,0,i==1?HIGHLIGHT:ROPE,2);
+        }
+    }
+    private static void projectile(Game g,Painter p) {
+        boolean returning=g.ropePhase==2;
+        float t=Physics.clamp(g.ropeTicks/(float)(returning?Game.ROPE_RETURN_TICKS:Game.ROPE_FLIGHT_TICKS),0,1);
+        float eased=1-(1-t)*(1-t),distance=returning?1-eased:eased;
+        float startX=returning?g.ropeBody.x:g.ropeStartX,startY=returning?g.ropeBody.y:g.ropeStartY;
+        float x=startX+(g.ropeEndX-startX)*distance;
+        float y=startY+(g.ropeEndY-startY)*distance-30*(float)StrictMath.sin(distance*Math.PI);
+        float slack=(returning?10:18)*(float)StrictMath.sin(distance*Math.PI);
+        rope(p,g.ropeBody.x,g.ropeBody.y,x,y,slack,ROPE);
+        float radius=returning?8+14*distance:8+14*eased;
+        lasso(p,x,y,radius,radius*.72f,.3f*(float)StrictMath.sin(g.ropeTicks*.34),ROPE);
+        // Short fading twine streaks emphasize launch and the recoil of a miss.
+        if(t>.08f && t<.85f) {
+            float dx=g.ropeEndX-startX,dy=g.ropeEndY-startY,len=Math.max(1,Physics.length(dx,dy));
+            float sign=returning?-1:1;
+            p.line(x-sign*dx/len*(radius+4),y-sign*dy/len*(radius+4),
+                    x-sign*dx/len*(radius+12),y-sign*dy/len*(radius+12),1.5f,0xaae8c581);
+        }
+    }
+    private static void hit(Game g,Painter p) {
+        float t=Physics.clamp(g.ropeTicks/(float)Game.ROPE_HIT_TICKS,0,1);
+        float x=g.ropeEndX,y=g.ropeEndY,radius=10+32*t;
+        int alpha=(int)(220*(1-t));
+        ControlView.ring(p,x,y,radius,1,(alpha<<24)|0x9bffe0,3*(1-t)+1);
+        for(int i=0;i<8;i++) {
+            double a=i*Math.PI/4;
+            float xx=x+(float)StrictMath.cos(a)*radius,yy=y+(float)StrictMath.sin(a)*radius;
+            float arm=4*(1-t)+1;
+            int color=(alpha<<24)|(i%2==0?0xffe38d:0xc5fff0);
+            p.line(xx-arm,yy,xx+arm,yy,2,color); p.line(xx,yy-arm,xx,yy+arm,2,color);
+        }
+        if(t<.5f) {
+            float size=14*(1-t*2);
+            p.poly(new float[]{x,y-size,x+3,y-3,x+size,y,x+3,y+3,x,y+size,x-3,y+3,x-size,y,x-3,y-3},HIGHLIGHT);
+        }
+    }
+    private static void snapRings(Painter p,float startX,float startY,float endX,float endY,float t) {
+        int alpha=(int)(200*(1-t)*(1-t));
+        float radius=5+17*t;
+        ControlView.ring(p,startX,startY,radius,1,(alpha<<24)|0xffe5a8,2*(1-t)+1);
+        ControlView.ring(p,endX,endY,radius+3,1,(alpha<<24)|0xa1ffe3,2*(1-t)+1);
+        if(t<.35f) {
+            float size=4*(1-t/.35f);
+            p.line(endX-size,endY-size,endX+size,endY+size,2,HIGHLIGHT);
+            p.line(endX-size,endY+size,endX+size,endY-size,2,HIGHLIGHT);
+        }
+    }
+    private static void rope(Painter p,float startX,float startY,float x,float y,float slack,int color) {
+        rope(p,startX,startY,x,y,slack,color,0,-1);
+    }
+    private static void rope(Painter p,float startX,float startY,float x,float y,float slack,int color,float shake,float snapTime) {
+        float dx=x-startX,dy=y-startY,len=Math.max(1,Physics.length(dx,dy));
+        float normalX=-dy/len,normalY=dx/len,lastX=startX,lastY=startY;
+        for(int i=1;i<=24;i++) {
+            float t=i/24f;
+            float quiver=shake*(float)StrictMath.sin(t*Math.PI)*(float)StrictMath.sin(t*Math.PI*4-snapTime*20);
+            float xx=startX+dx*t+normalX*quiver,yy=startY+dy*t+4*t*(1-t)*slack+normalY*quiver;
+            p.line(lastX+1,lastY+2,xx+1,yy+2,4.5f,DARK);
+            p.line(lastX,lastY,xx,yy,3,color);
+            if(i%2==0) p.line(lastX,lastY-1,xx,yy-1,1,HIGHLIGHT);
+            if(snapTime>=0 && Math.abs(t-(1-snapTime*1.4f))<.14f) {
+                int alpha=(int)(240*(1-snapTime));
+                p.line(lastX,lastY,xx,yy,7,((alpha/3)<<24)|0xffe8aa);
+                p.line(lastX,lastY,xx,yy,3,(alpha<<24)|0xfff7df);
             }
+            lastX=xx; lastY=yy;
+        }
+    }
+    private static void lasso(Painter p,float x,float y,float rx,float ry,float rotation,int color) {
+        loop(p,x+1,y+2,rx,ry,rotation,DARK,5);
+        loop(p,x,y,rx,ry,rotation,color,3);
+        loop(p,x,y-1,rx-1,ry-1,rotation,HIGHLIGHT,1);
+    }
+    private static void loop(Painter p,float x,float y,float rx,float ry,float rotation,int color,float width) {
+        float c=(float)StrictMath.cos(rotation),s=(float)StrictMath.sin(rotation);
+        for(int i=0;i<24;i++) {
+            double a=i*Math.PI*2/24,b=(i+1)*Math.PI*2/24;
+            float ax=rx*(float)StrictMath.cos(a),ay=ry*(float)StrictMath.sin(a);
+            float bx=rx*(float)StrictMath.cos(b),by=ry*(float)StrictMath.sin(b);
+            p.line(x+ax*c-ay*s,y+ax*s+ay*c,x+bx*c-by*s,y+bx*s+by*c,width,color);
         }
     }
 }

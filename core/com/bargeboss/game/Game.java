@@ -11,11 +11,17 @@ public final class Game {
     public static final float[] DOCK_X={178,422,178}, DOCK_Y={290,488,700};
     public static final float[] TIE_X={116,484,116};
     public static final float TIE_RADIUS=30;
+    public static final int ROPE_FLIGHT_TICKS=18, ROPE_RETURN_TICKS=18, ROPE_HIT_TICKS=24;
+    public int ropePhase,ropeTicks;
+    public Body ropeBody;
+    public float ropeStartX,ropeStartY,ropeEndX,ropeEndY;
+    private boolean ropeTargeted;
     public static final int[] COLORS={0xffefa94a,0xff62c8bd,0xffde7965};
     public static final String[] CARGO_NAMES={"STEEL", "FREIGHT", "BULK"};
     public final Body[] cargo=new Body[9];
     public Body tug;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
+    public int visualTicks;
     public int celebrationTicks, celebrationPoints, impactTicks;
     public float celebrationX,celebrationY,impactX,impactY;
     public int noticeTicks, damageCooldown, nextId=1;
@@ -35,12 +41,12 @@ public final class Game {
     private Game practice;
     private boolean returnToShift;
     private int pressTicks, held=-1, spawnIndex;
-    private double accumulator;
+    private double accumulator, visualAccumulator;
 
     public Game() { reset(); mode=TITLE; }
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
-        cancelInputs(); accumulator=0;
+        cancelInputs(); accumulator=0; visualAccumulator=0;
         returnToShift=mode!=TITLE && mode!=FINISH;
         practice=new Game(); practice.reset(); practice.tutorial=new Tutorial();
         practice.hapticsEnabled=hapticsEnabled;
@@ -51,7 +57,7 @@ public final class Game {
     public String status() {
         if(practice!=null) return practice.status();
         String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":"Finished";
-        String activity="";
+        String activity=ropePhase==1?"; rope flying":ropePhase==2?"; rope retracting":ropePhase==3?"; bollard hit":"";
         for(Body b:cargo) if(b!=null && b.active && b.unloadingTicks>0) activity="; unloading";
         for(Body b:cargo) if(canTie(b)) { activity="; ready to tie "+b.berth; break; }
         return state+"; delivered "+delivered+"; score "+score+(tutorial==null?"":"; lesson "+tutorial.lesson)
@@ -61,6 +67,7 @@ public final class Game {
         practice=null; tutorial=null; pushing=false; ropeDragging=false; braking=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
+        visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
         tug=new Body(0,-1,376,700,(float)Math.PI);
@@ -124,18 +131,25 @@ public final class Game {
         pointer=false; mapPointer=-1; pushing=false; ropeDragging=false; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
-    public boolean canTie(Body b) {
+    public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
+    private boolean tieEligible(Body b) {
         return b!=null && b.active && !b.lineAttached && inDock(b) && b.speed()<24
                 && (tutorial==null || tutorial.lesson>=Tutorial.TIE);
     }
     public boolean overTiePoint(Body b,float x,float y) {
         return Physics.length(x-TIE_X[b.berth],y-DOCK_Y[b.berth])<=TIE_RADIUS;
     }
+    public float aimX(Body b,float x,float y) {
+        return overTiePoint(b,x,y)?TIE_X[b.berth]:Physics.clamp(x,20,580);
+    }
+    public float aimY(Body b,float x,float y) {
+        return overTiePoint(b,x,y)?DOCK_Y[b.berth]:Physics.clamp(y,168,816);
+    }
     public Body heldCargo() { return held>=0 && cargo[held]!=null && cargo[held].active?cargo[held]:null; }
     public Body workingCargo() { return heldCargo(); }
     public float holdProgress() { return pointer && held!=-1?Math.min(1,pressTicks/12f):0; }
-    public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; if(mode==PLAY) mode=PAUSE; }
-    public void pause() { if(practice!=null) { practice.pause(); return; } cancelInputs(); accumulator=0; if(mode==PLAY) mode=PAUSE; else if(mode==PAUSE) mode=PLAY; }
+    public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
+    public void pause() { if(practice!=null) { practice.pause(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; else if(mode==PAUSE) mode=PLAY; }
     public void down(float x,float y) {
         if(practice!=null) { practice.down(x,y); return; }
         if(pointer || x<0 || x>600 || y<0 || y>960) return;
@@ -145,7 +159,7 @@ public final class Game {
             held=-2; braking=true; control=HOLDING; haptic(HAPTIC_TICK); return;
         }
         for(int i=0;i<cargo.length;i++) if(cargo[i]!=null && cargo[i].active && cargo[i].hit(x,y,22)) {
-            if(cargo[i].lineAttached) { selected=i; return; }
+            if(cargo[i].lineAttached || (ropePhase!=0 && cargo[i]==ropeBody)) { selected=i; return; }
             held=selected=i; navigating=false; braking=true; control=HOLDING;
             ropeDragging=canTie(cargo[i]); haptic(HAPTIC_TICK); return;
         }
@@ -170,9 +184,11 @@ public final class Game {
         if(!pointer) return;
         if(ropeDragging) {
             Body b=heldCargo();
-            if(canTie(b) && overTiePoint(b,x,y)) {
-                b.lineAttached=true; b.dockTime=0; b.tiedX=b.x; b.tiedY=b.y; b.tiedAngle=b.angle;
-                b.vx=b.vy=b.spin=0; haptic(HAPTIC_CONTACT);
+            if(b!=null && ropePhase==0) {
+                ropeBody=b; ropePhase=1; ropeTicks=0;
+                ropeStartX=b.x; ropeStartY=b.y; ropeTargeted=overTiePoint(b,x,y);
+                ropeEndX=aimX(b,x,y); ropeEndY=aimY(b,x,y);
+                haptic(HAPTIC_TICK);
             }
             cancel(); return;
         }
@@ -213,26 +229,46 @@ public final class Game {
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */
     public void advance(double seconds) {
         if(practice!=null) { practice.advance(seconds); return; }
-        if(mode!=PLAY) { accumulator=0; return; }
         if(Double.isNaN(seconds) || seconds<=0) return;
+        if(mode!=PLAY) {
+            accumulator=0;
+            if(mode==TITLE || mode==FINISH) {
+                visualAccumulator+=Math.min(.25,seconds);
+                while(visualAccumulator+1e-10>=1.0/60.0) {
+                    visualAccumulator-=1.0/60.0; visualTicks++;
+                }
+            } else visualAccumulator=0;
+            return;
+        }
+        visualAccumulator=0;
         accumulator+=Math.min(.25,seconds);
         while(accumulator+1e-10>=1.0/60.0) { accumulator-=1.0/60.0; step(); if(mode!=PLAY) { accumulator=0; break; } }
     }
     public void step() {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
-        if(tutorial!=null && tutorial.lesson==Tutorial.DONE) return;
+        visualTicks++;
+        if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
+            if(celebrationTicks>0) celebrationTicks--;
+            if(impactTicks>0) impactTicks--;
+            return;
+        }
         ticks++; if(celebrationTicks>0) celebrationTicks--; if(impactTicks>0) impactTicks--;
         if(noticeTicks>0) noticeTicks--; if(damageCooldown>0) damageCooldown--;
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
         if(pointer) { pressTicks++; if(pressTicks>=12 && held!=-1 && !ropeDragging) { if(!pushing) haptic(HAPTIC_TICK); pushing=true; braking=false; } }
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
+        updateRope();
         for(int i=0;i<cargo.length;i++) {
             Body b=cargo[i]; if(b==null || !b.active) continue;
+            if(b.lineSnapTicks>0) b.lineSnapTicks--;
             if(tutorial==null && !b.lineAttached) b.age+=Physics.DT;
             if(b.lineAttached && inDock(b) && b.speed()<24) b.dockTime+=Physics.DT;
             else { b.dockTime=0; b.lineAttached=false; }
-            if(b.dockTime>=1.2f) b.unloadingTicks++;
+            if(b.dockTime>=1.2f) {
+                if(b.unloadingTicks==0) { b.lineSnapTicks=18; haptic(HAPTIC_CONTACT); }
+                b.unloadingTicks++;
+            }
             if(b.unloadingTicks>=UNLOAD_TICKS) {
                 b.active=false; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
@@ -249,6 +285,21 @@ public final class Game {
         else {
             if(ticks%1080==0 && ticks<SHIFT_TICKS-1800) spawn();
             if(ticks>=SHIFT_TICKS || hull<=0) { mode=FINISH; cancel(); }
+        }
+    }
+    /** Rope flight, catch and recoil are real-time events, independent of 2x boat motion. */
+    private void updateRope() {
+        if(ropePhase==0 || ropeBody==null) return;
+        ropeTicks++;
+        if(ropePhase==1 && ropeTicks>=ROPE_FLIGHT_TICKS) {
+            if(ropeTargeted && tieEligible(ropeBody)) {
+                Body b=ropeBody;
+                b.lineAttached=true; b.dockTime=0; b.tiedX=b.x; b.tiedY=b.y; b.tiedAngle=b.angle;
+                b.vx=b.vy=b.spin=0; ropePhase=3; ropeTicks=0; haptic(HAPTIC_CONTACT);
+            } else { ropePhase=2; ropeTicks=0; }
+        } else if((ropePhase==2 && ropeTicks>=ROPE_RETURN_TICKS)
+                || (ropePhase==3 && ropeTicks>=ROPE_HIT_TICKS)) {
+            ropePhase=ropeTicks=0; ropeBody=null;
         }
     }
     private void motionStep() {

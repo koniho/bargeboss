@@ -1,63 +1,131 @@
 package com.bargeboss.game;
 
-/** Readable foam and short-lived payoff effects; rendering never changes physics. */
+/** Pixel water, churn and arcade rewards. Deterministic drawing only; no wake forces. */
 public final class ArcadeView {
+    private static final int[] WATER={0x3322767e,0x33306272,0x332c8c8e,0x33223957,0x33132640};
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
-        for(int row=0;row<26;row++) {
-            float y=218+row*23;
-            for(int col=0;col<7;col++) {
-                float x=116+col*54+(row%2)*6;
-                float phase=g.ticks*.045f+row*.8f+col;
-                float lastY=y+3*(float)StrictMath.sin(phase);
-                for(int i=1;i<=4;i++) {
-                    float yy=y+3*(float)StrictMath.sin(phase+i*.8);
-                    p.line(x+(i-1)*7,lastY,x+i*7,yy,1.5f,0x5559d7e2); lastY=yy;
-                }
+        int tick=g.visualTicks;
+        // Broken blocks of teal give depth without adding a noisy moving grid.
+        for(int row=0;row<43;row++) for(int col=0;col<27;col++) {
+            int seed=(row*137+col*71+row*col*13)&1023;
+            float x=111+col*14+(seed%4),y=216+row*14+(seed%5);
+            float w=5+seed%8,h=2+(seed/8)%5;
+            if(x+w<490 && y+h<817) p.rect(x,y,w,h,WATER[seed%WATER.length]);
+            if(seed%13==0) {
+                float drift=(float)StrictMath.sin(tick*.025+seed)*2;
+                p.rect(x+drift,y+2,4+seed%5,1,0x667eb9b2);
             }
+        }
+        // Long, gently migrating ripples are much quieter than vessel foam.
+        for(int row=0;row<22;row++) for(int col=0;col<6;col++) {
+            float x=118+col*61+(row%2)*7,y=226+row*26;
+            float wave=(float)StrictMath.sin(tick*.032+row*.7+col)*3;
+            int alpha=38+(int)(24*(1+StrictMath.sin(tick*.02+row+col)));
+            int color=(alpha<<24)|0x67b6bb;
+            p.rect(x,y+wave,9,1,color); p.rect(x+8,y+wave+1,8,1,color);
+            if((row+col)%3==0) p.rect(x+5,y+wave+4,7,1,0x337ad5cf);
+        }
+        // Small pools of moving golden reflections beneath the industrial lamps.
+        for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) for(int i=0;i<7;i++) {
+            float x=(side==0?117:479)+(side==0?1:-1)*(4+(i*7)%18);
+            float y=Game.DOCK_Y[dock]-20+i*7;
+            float flicker=(float)StrictMath.sin(tick*.08+i+dock);
+            p.rect(x+flicker*2,y,2+(i%3)*2,1.5f,0x55ebbe64);
         }
     }
     public static void wake(Painter p,Body b,int ticks) {
-        if(b.speed()<5 || b.lineAttached) return;
-        float power=Math.min(1,b.speed()/65),c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
+        if(b.lineAttached) return;
+        float speed=b.speed();
+        if(speed<4) {
+            // Resting hulls gently disturb the surface instead of sitting on a flat decal.
+            float pulse=(float)StrictMath.sin(ticks*.04+b.id)*1.5f;
+            p.rect(b.x-15,b.y+10+pulse,13,1,0x338cceca);
+            p.rect(b.x+6,b.y+12-pulse,11,1,0x4478bfbf);
+            return;
+        }
+        float power=Math.min(1,speed/65),c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         float stern=-(b.half+b.radius);
         for(int side=-1;side<=1;side+=2) {
             float lastX=b.x+c*stern-s*side*9,lastY=b.y+s*stern+c*side*9;
-            for(int i=1;i<=7;i++) {
-                float back=stern-i*(5+power*3),width=side*(9+i*(1+power*1.4f));
-                width+=2*(float)StrictMath.sin(ticks*.19+i);
+            for(int i=1;i<=10;i++) {
+                float age=(i+(ticks%10)/10f)/10f;
+                float back=stern-age*(24+power*52);
+                float width=side*(9+age*(8+power*21));
+                width+=2*(float)StrictMath.sin(ticks*.17+i*1.4);
                 float x=b.x+c*back-s*width,y=b.y+s*back+c*width;
-                p.line(lastX,lastY,x,y,Math.max(1,4-i*.4f)*power,0xaaaffff3);
-                if(i%2==0) p.circle(x,y,1.5f+power,0xaaffffed);
+                int alpha=(int)((1-age)*175+25);
+                int foam=(alpha<<24)|0xc8fff0;
+                p.line(lastX,lastY,x,y,2.5f+power*2.5f,0x5568c5ce);
+                // Overlapping little steps read as pixel spray at gameplay size and title scale.
+                float size=(2.5f+power*2)*(1-age*.45f);
+                p.rect(x-size,y-size*.4f,size*2,size*.8f,foam);
+                p.rect(x-size*.45f,y-size,size*.9f,size*2,foam);
+                if(i%2==0) p.rect(x+side*3,y-3,2,2,0xbbf4fff5);
                 lastX=x; lastY=y;
             }
         }
+        // Turbulent propeller trail is centered inside the spreading V.
+        for(int i=0;i<7;i++) {
+            float t=((ticks+i*7)%49)/49f;
+            float back=stern-8-t*(25+power*22);
+            float jitter=(float)StrictMath.sin(t*15+i)*4;
+            float x=b.x+c*back-s*jitter,y=b.y+s*back+c*jitter;
+            p.rect(x,y,2+3*(1-t),1.5f+power,0x88a5e9e2);
+        }
         float bow=b.half+b.radius+3;
-        p.line(b.x+c*bow-s*8,b.y+s*bow+c*8,b.x+c*(bow+4),b.y+s*(bow+4),2.5f,0xddedffef);
-        p.line(b.x+c*bow+s*8,b.y+s*bow-c*8,b.x+c*(bow+4),b.y+s*(bow+4),2.5f,0xddedffef);
+        for(int side=-1;side<=1;side+=2) for(int i=0;i<4;i++) {
+            float xx=bow-i*1.5f,yy=side*(3+i*3);
+            p.rect(b.x+c*xx-s*yy-1,b.y+s*xx+c*yy-1,3,2,0xddeaffef);
+        }
     }
     public static void effects(Game g,Painter p) {
         if(g.impactTicks>0) {
             float t=1-g.impactTicks/45f;
-            ControlView.ring(p,g.impactX,g.impactY,12+48*t,1,0x99bcfff3,3*(1-t)+1);
-            for(int i=0;i<8;i++) {
-                double a=i*Math.PI/4; float r=15+30*t;
-                p.circle(g.impactX+(float)StrictMath.cos(a)*r,g.impactY+(float)StrictMath.sin(a)*r,2.5f*(1-t)+1,0xccf6ffe7);
+            ring(p,g.impactX,g.impactY,10+40*t,0x99b8f9e8,1.4f);
+            for(int i=0;i<10;i++) {
+                double a=i*Math.PI/5;
+                float r=12+37*t;
+                float x=g.impactX+(float)StrictMath.cos(a)*r,y=g.impactY+(float)StrictMath.sin(a)*r-12*(float)StrictMath.sin(t*Math.PI);
+                float size=3*(1-t)+1;
+                p.rect(x-size,y,size*2,size,0xddfff5d0);
+                p.rect(x,y-size,size,size*2,0xaad7fff2);
             }
         }
         if(g.celebrationTicks>0) {
             float t=1-g.celebrationTicks/90f;
-            if(t<.6f) ControlView.ring(p,g.celebrationX,g.celebrationY,20+100*t,1,0x99a5ffb5,4*(1-t));
-            for(int i=0;i<16;i++) {
-                double a=i*Math.PI*2/16; float r=20+90*t;
-                float x=g.celebrationX+(float)StrictMath.cos(a)*r,y=g.celebrationY+(float)StrictMath.sin(a)*r+30*t*t;
-                int color=i%2==0?0xffffd259:0xff9affd2;
-                p.line(x-3,y-3,x+3,y+3,3,color); p.line(x-3,y+3,x+3,y-3,3,color);
+            if(t<.6f) ring(p,g.celebrationX,g.celebrationY,15+95*t,0xbb8bffd0,3*(1-t));
+            for(int i=0;i<12;i++) {
+                double a=i*Math.PI*2/12;
+                float r=12+79*t;
+                float x=g.celebrationX+(float)StrictMath.cos(a)*r,y=g.celebrationY+(float)StrictMath.sin(a)*r+26*t*t;
+                if(i%3==0) star(p,x,y,4.5f*(1-t*.4f),VisualStyle.GOLD);
+                else {
+                    p.rect(x,y,3+(i%2)*2,2,i%2==0?0xffffc65b:0xffa0ffd2);
+                    if(t<.7f) p.rect(x+2,y-3,1,2,0xfffff3c9);
+                }
             }
-            float y=g.celebrationY-20-35*t;
-            Lettering.center(p,"+"+g.celebrationPoints,g.celebrationX+2,y+2,24,0xff102b40);
-            Lettering.center(p,"+"+g.celebrationPoints,g.celebrationX,y,24,0xffffe58c);
-            Lettering.center(p,"UNLOADED!",g.celebrationX,y+33,12,0xffd7ffe7);
+            float y=g.celebrationY-25-25*t;
+            String points="+"+g.celebrationPoints;
+            Lettering.center(p,points,g.celebrationX+2,y+3,25,VisualStyle.OUTLINE);
+            Lettering.center(p,points,g.celebrationX,y,25,0xffffda64);
+            Lettering.center(p,"LOAD CLEARED!",g.celebrationX+1,y+34,10,VisualStyle.OUTLINE);
+            Lettering.center(p,"LOAD CLEARED!",g.celebrationX,y+33,10,VisualStyle.CREAM);
+        }
+    }
+    public static void star(Painter p,float x,float y,float radius,int color) {
+        float[] points=new float[20];
+        for(int i=0;i<10;i++) {
+            double a=-Math.PI/2+i*Math.PI/5;float r=i%2==0?radius:radius*.47f;
+            points[i*2]=x+(float)StrictMath.cos(a)*r;points[i*2+1]=y+(float)StrictMath.sin(a)*r;
+        }
+        p.poly(points,color);
+    }
+    private static void ring(Painter p,float x,float y,float radius,int color,float size) {
+        for(int i=0;i<24;i++) {
+            double a=i*Math.PI/12;
+            float xx=x+(float)StrictMath.cos(a)*radius,yy=y+(float)StrictMath.sin(a)*radius*.65f;
+            p.rect(xx,yy,3+size,size,color);
         }
     }
 }

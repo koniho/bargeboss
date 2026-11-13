@@ -24,6 +24,9 @@
     [[stage coordinateWithNormalizedOffset:CGVectorMake(293.44/600,600.64/960)] pressForDuration:4];
     [self waitFor:@"ready to tie 2" on:stage];
     XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"Entering berth cannot score without a line");
+    [self drag:stage x:200 y:601 toX:280 toY:530 hold:0.2];
+    [self waitFor:@"ready to tie 2" on:stage];
+    XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"A missed throw must retract without scoring");
     [self drag:stage x:200 y:601 toX:149 toY:601 hold:0.2];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
