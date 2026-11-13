@@ -22,7 +22,7 @@ mapfile_compat=()
 while IFS= read -r source; do mapfile_compat+=("$source"); done < ios/build/parity/objc.txt
 clang -fno-objc-arc -ffp-contract=off -I"$J2OBJC_HOME/include" -Iios/build/parity/generated \
     "${mapfile_compat[@]}" ios/build/parity/main.m -L"$J2OBJC_HOME/lib/macosx" \
-    -ljre_emul -liconv -lz -framework Foundation -framework Security -o ios/build/parity/native
+    -ObjC -ljre_emul -liconv -lz -framework Foundation -framework Security -o ios/build/parity/native
 ios/build/parity/native > ios/build/parity/native.txt
 diff -u ios/build/parity/java.txt ios/build/parity/native.txt
 echo "JVM / J2ObjC gameplay and drawing parity passed: $(cat ios/build/parity/java.txt)"

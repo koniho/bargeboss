@@ -10,7 +10,7 @@ public final class Viewport {
     }
     public float worldX(float screenX) { return (screenX - x) / scale; }
     public float worldY(float screenY) { return (screenY - y) / scale; }
-    public float scale() { return scale; }
+    public float zoomFactor() { return scale; }
     public float offsetX() { return x; }
     public float offsetY() { return y; }
 }

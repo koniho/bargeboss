@@ -27,6 +27,10 @@ public final class MainActivity extends Activity {
         });
         gameView=new GameView(); root.addView(gameView,new FrameLayout.LayoutParams(-1,-1)); setContentView(root);
         root.requestApplyInsets();
+        if(android.os.Build.VERSION.SDK_INT>=33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->gameView.game.pause());
+        }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
     protected void onPause() { gameView.stop(); super.onPause(); }

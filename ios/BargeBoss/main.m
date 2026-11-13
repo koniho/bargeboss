@@ -22,6 +22,8 @@
     if((self=[super initWithFrame:frame])) {
         self.backgroundColor=[UIColor colorWithRed:16/255.0 green:30/255.0 blue:37/255.0 alpha:1];
         self.multipleTouchEnabled=YES;
+        self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
+        self.accessibilityLabel=@"Barge Boss river game";
         self.game=[[BBGame alloc] init]; self.painter=[[BBNativePainter alloc] init];
         self.viewport=[[BBViewport alloc] initWithFloat:600 withFloat:960];
         self.displayLink=[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)];
@@ -38,16 +40,16 @@
 }
 - (void)frame:(CADisplayLink *)link {
     if(self.lastTime>0) [self.game advanceWithDouble:link.timestamp-self.lastTime];
-    self.lastTime=link.timestamp; [self setNeedsDisplay];
+    self.lastTime=link.timestamp; self.accessibilityValue=[self.game status]; [self setNeedsDisplay];
 }
-- (void)suspend { [self.game background]; self.primary=nil; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
+- (void)suspend { [self.game background]; self.accessibilityValue=[self.game status]; self.primary=nil; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
 - (void)resume { self.lastTime=0; self.displayLink.paused=NO; }
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;
     UIEdgeInsets insets=self.safeAreaInsets;
     CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx,insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY]);
-    CGContextScaleCTM(ctx,[self.viewport scale],[self.viewport scale]);
+    CGContextScaleCTM(ctx,[self.viewport zoomFactor],[self.viewport zoomFactor]);
     CGContextClipToRect(ctx,CGRectMake(0,0,600,960)); self.painter.context=ctx;
     [self.game renderWithBBPainter:self.painter]; self.painter.context=NULL;
     CGContextRestoreGState(ctx);
@@ -56,6 +58,11 @@
     CGPoint point=[touch locationInView:self]; UIEdgeInsets insets=self.safeAreaInsets;
     return CGPointMake([self.viewport worldXWithFloat:(jfloat)(point.x-insets.left)],
                        [self.viewport worldYWithFloat:(jfloat)(point.y-insets.top)]);
+}
+- (CGRect)accessibilityFrame {
+    UIEdgeInsets insets=self.safeAreaInsets; CGFloat scale=[self.viewport zoomFactor];
+    CGRect stage=CGRectMake(insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY],600*scale,960*scale);
+    return UIAccessibilityConvertFrameToScreenCoordinates(stage,self);
 }
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     if(self.primary) return; self.primary=touches.anyObject; CGPoint p=[self position:self.primary];

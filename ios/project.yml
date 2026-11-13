@@ -38,8 +38,21 @@ targets:
       - sdk: QuartzCore.framework
       - sdk: CoreGraphics.framework
       - sdk: Security.framework
+  BargeBossUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bargeboss.game.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: BargeBoss
 schemes:
   BargeBoss:
     build:
       targets:
         BargeBoss: all
+        BargeBossUITests: [test]
+    test:
+      targets: [BargeBossUITests]

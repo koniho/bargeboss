@@ -19,6 +19,10 @@ public final class Game {
 
     public Game() { reset(); mode=TITLE; }
     public void render(Painter painter) { Renderer.draw(this,painter); }
+    public String status() {
+        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":"Finished";
+        return state+"; delivered "+delivered+"; score "+score;
+    }
     public void reset() {
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         damageCooldown=0; accumulator=0; selected=-1;
