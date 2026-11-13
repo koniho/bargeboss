@@ -17,6 +17,11 @@ public final class AnimationPreview {
     }
     public static void main(String[] args) throws Exception {
         Game g=new Game();
+        if(args.length>0 && args[0].equals("idle-water")) {
+            g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
+            for(int tick=0;tick<360;tick++) { g.step();if(tick%5==0) frame(g,"idle-water",tick/5); }
+            System.out.println("Idle water: six seconds at 12 fps in out/animation-frames/idle-water/");return;
+        }
         for(int tick=0;tick<180;tick++) { g.advance(1.0/60); if(tick%5==0) frame(g,"title",tick/5); }
         g.reset();
         for(int tick=0;tick<360;tick++) { g.step(); if(tick%5==0) frame(g,"feeder",tick/5); }

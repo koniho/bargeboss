@@ -39,7 +39,11 @@ public final class SceneryView {
         p.rect(0,0,g.layout.width,g.layout.height,0xff76677a);
         float waterTop=c.screenY(Physics.RIGHT,492),waterBottom=c.screenY(Physics.LEFT,492);
         float tw=SpriteAtlas.artWidth(SpriteAtlas.WATER,0)*s,th=SpriteAtlas.artHeight(SpriteAtlas.WATER,0)*s;
-        for(float y=waterTop;y<waterBottom;y+=th) for(float x=0;x<g.layout.width;x+=tw)
+        // Move the painted surface even in still water. Repeated cells wrap seamlessly;
+        // shore sprites cover the overscan, while hulls and wake packets keep their own anchors.
+        float drift=(g.visualTicks*.025f*s)%tw;
+        float swell=(float)StrictMath.sin(g.visualTicks*.018)*1.2f*s;
+        for(float y=waterTop-th+swell;y<waterBottom;y+=th) for(float x=drift-tw;x<g.layout.width;x+=tw)
             p.sprite(SpriteAtlas.WATER,0,x+tw/2,y+th/2,tw,th,0,1);
         for(int side=0;side<2;side++) {
             int atlas=side==0?SpriteAtlas.NORTH_QUAY:SpriteAtlas.SOUTH_QUAY;

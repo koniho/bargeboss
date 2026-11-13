@@ -273,6 +273,12 @@ above scenery. Faded solid piers retain a subtle ground outline.
 
 ## Waves, heave and trough-triggered wake
 
+The painted water tiles drift downstream and sway vertically on the shared visual
+clock. Shore art covers their overscan. Broken ambient crests and dock-light
+reflections vary independently in position and brightness, so idle water stays
+animated without creating wake packets or applying forces. Pause freezes these
+effects too. `./preview.sh --idle-water` exports a six-second idle animation.
+
 `WaterSurface` owns 64 bounded, persistent wake packets with a 210-tick lifetime.
 Ambient crossing waves plus nearby packet energy drive a filtered heave response
 for each hull; moored or staged loads respond more gently. Buoys sample the same

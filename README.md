@@ -43,6 +43,8 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline
   keeps solid pier footprints visible while their artwork is translucent.
 - **Water motion:** floating hulls and feeder buoys rise and fall with local waves.
+  The painted surface drifts gently under soft traveling ripples and shimmering
+  dock-light reflections, keeping the river alive even when boats are idle.
   Passing wakes increase that motion nearby. Underway vessels emit the main foam
   burst at the bottom of each fall; wake arcs then expand and fade in place. Wake
   energy affects vertical motion, without secretly changing horizontal controls.

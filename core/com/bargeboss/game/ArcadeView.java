@@ -2,25 +2,32 @@ package com.bargeboss.game;
 
 /** Pixel water, churn and arcade rewards. Deterministic drawing only; no wake forces. */
 public final class ArcadeView {
-    private static final int[] WATER={0x3322767e,0x33306272,0x332c8c8e,0x33223957,0x33132640};
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
         int tick=g.visualTicks;
-        // Long, gently migrating ripples are much quieter than vessel foam.
-        for(int row=0;row<22;row++) for(int col=0;col<4;col++) {
-            float x=178+col*61+(row%2)*7,y=226+row*26;
-            float wave=(float)StrictMath.sin(tick*.032+row*.7+col)*3;
-            int alpha=20+(int)(15*(1+StrictMath.sin(tick*.02+row+col)));
-            int color=(alpha<<24)|0x71aaa9;
-            p.rect(x,y+wave,9,1,color); p.rect(x+8,y+wave+1,8,1,color);
-            if((row+col)%3==0) p.rect(x+5,y+wave+4,7,1,0x337ad5cf);
+        // Broken, screen-horizontal crests travel downstream and breathe at different phases.
+        // Gentle ambient motion remains visible with every vessel idle; foam stays brighter.
+        for(int row=0;row<17;row++) for(int col=0;col<5;col++) {
+            int seed=row*137+col*71+row*col*13;
+            float phase=tick*.025f+seed;
+            float x=184+col*47+seed%15+(float)StrictMath.sin(phase)*2;
+            float y=Physics.TOP+((row*35+seed%23+tick*.025f)%(Physics.BOTTOM-Physics.TOP));
+            float length=9+seed%17;
+            float edge=Math.min(1,Math.min((y-Physics.TOP)/18,(Physics.BOTTOM-y)/30));
+            float shimmer=.5f+.5f*(float)StrictMath.sin(phase*.73f);
+            int alpha=(int)((25+55*shimmer)*edge);
+            float end=Math.min(Physics.BOTTOM,y+length);
+            p.line(x-2,y,x-2,end,2.5f,((int)(alpha*.45f)<<24)|0x073846);
+            p.line(x,y,x+.6f,end,1.2f,(alpha<<24)|0x89d5cd);
+            if(seed%3==0) p.line(x+2,y+3,x+2,Math.min(end,y+length*.6f),.8f,((alpha/2)<<24)|0xc1e6d5);
         }
         // Small pools of moving golden reflections beneath the industrial lamps.
         for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) for(int i=0;i<7;i++) {
             float x=(side==0?177:419)+(side==0?1:-1)*(4+(i*7)%18);
             float y=Game.DOCK_Y[dock]-20+i*7;
             float flicker=(float)StrictMath.sin(tick*.08+i+dock);
-            p.rect(x+flicker*2,y,2+(i%3)*2,1.5f,0x55ebbe64);
+            int alpha=40+(int)(35*(1+StrictMath.sin(tick*.035+i*1.8+dock)));
+            p.rect(x+flicker*2,y,1.2f,3+(i%3)*2+flicker,(alpha<<24)|0xebbe64);
         }
         g.water.draw(g,p);
     }

@@ -75,7 +75,7 @@ public final class CoreTest {
         FeederTest.run();
         SceneryTest.run();
         WaterPhysicsTest.run();
-        check(Parity.signature().equals("6f51f9f0:12:9542"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("36e56caf:12:9542"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
