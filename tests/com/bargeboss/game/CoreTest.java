@@ -5,7 +5,7 @@ public final class CoreTest {
     private static void check(boolean condition,String message) {
         assertions++; if(!condition) throw new AssertionError(message);
     }
-    private static Game playing() { Game g=new Game(); g.reset(); return g; }
+    private static Game playing() { Game g=new Game(); ReplayInput.controlFixture(g); return g; }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
@@ -55,8 +55,8 @@ public final class CoreTest {
         check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y,"30 and 144 Hz identical state");
         g=playing(); g.advance(Double.NaN); check(g.ticks==0,"invalid frame delta ignored");
         g.advance(10); check(g.ticks==15,"long stall has bounded catch-up");
-        // A bounded player exercises all three berths using only the public touch contract.
-        g=playing();
+        // A bounded player exercises arrivals and all three berths using the public touch contract.
+        g=new Game(); g.reset();
         for(int i=0;i<Game.SHIFT_TICKS && g.mode==Game.PLAY;i++) {
             ReplayInput.work(g);
             g.step();
@@ -72,7 +72,8 @@ public final class CoreTest {
         RotationTest.run();
         ResponsiveTest.run();
         CareerTest.run();
-        check(Parity.signature().equals("ca4bf3f4:10:7702"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        FeederTest.run();
+        check(Parity.signature().equals("63af1951:12:9876"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

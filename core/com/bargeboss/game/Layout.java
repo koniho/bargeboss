@@ -16,37 +16,26 @@ public final class Layout {
     public static final Box[] CHALLENGE_CARDS={new Box(60,184,260,236),new Box(360,184,260,236),new Box(660,184,260,236)};
     public static final Layout DEFAULT=new Layout(WIDTH,HEIGHT);
     public final float width,height,offsetX,offsetY;
-    public final boolean rails;
     public final RiverCamera camera;
     public Layout(float width,float height) {
         this.width=Math.max(WIDTH,width); this.height=Math.max(HEIGHT,height);
         offsetX=(this.width-WIDTH)/2; offsetY=(this.height-HEIGHT)/2;
-        rails=this.width/this.height>=2.1f;
-        if(this.width==WIDTH && this.height==HEIGHT) camera=RiverCamera.DEFAULT;
-        else {
-            float availableWidth=this.width-(rails?324:32),availableHeight=this.height-(rails?32:168);
-            float scale=Math.min(availableWidth/688,availableHeight/320);
-            camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*scale)/2,scale);
-        }
+        float scale=Math.min(this.width/688,this.height/320);
+        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*scale)/2,scale);
     }
-    /** Menu rectangles remain centered; live controls reflow into side rails on wide screens. */
+
+    /** Menu rectangles remain centered; live controls overlay the outer shore. */
     public Box box(Box original) {
-        if(rails) {
-            if(original==HAPTICS) return new Box(12,height-82,138,64);
-            if(original==PAUSE) return new Box(width-150,18,138,60);
-            if(original==BRAKE) return new Box(width-150,height-210,138,60);
-            if(original==HELP) return new Box(width-150,height-138,138,54);
-            if(original==PRACTICE) return new Box(width-150,height-72,138,54);
-        } else {
-            if(original==HAPTICS || original==PAUSE) return new Box(original.x+offsetX,original.y,original.w,original.h);
-            if(original==BRAKE || original==HELP || original==PRACTICE)
-                return new Box(original.x+offsetX,original.y+height-HEIGHT,original.w,original.h);
-        }
+        if(original==HAPTICS) return new Box(width-158,4,94,40);
+        if(original==PAUSE) return new Box(width-56,4,48,40);
+        if(original==BRAKE) return new Box(width-332,height-44,100,40);
+        if(original==HELP) return new Box(width-224,height-44,100,40);
+        if(original==PRACTICE) return new Box(width-116,height-44,108,40);
         return new Box(original.x+offsetX,original.y+offsetY,original.w,original.h);
     }
-    public float statusX() { return rails?width-81:STATUS_CENTER_X+offsetX; }
-    public float statusY() { return rails?106:STATUS_LABEL_Y+height-HEIGHT; }
-    public float statusHintY() { return rails?140:STATUS_HINT_Y+height-HEIGHT; }
+    public float statusX() { return 280; }
+    public float statusY() { return height-42; }
+    public float statusHintY() { return height-21; }
 
     public static final class Box {
         public final float x,y,w,h;

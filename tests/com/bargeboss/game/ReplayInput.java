@@ -3,6 +3,11 @@ package com.bargeboss.game;
 /** Deterministic user gestures shared by tests and real-renderer captures. */
 public final class ReplayInput {
     private ReplayInput() {}
+    /** Stable local cargo fixture for isolated control/art tests, separate from feeder replays. */
+    public static void controlFixture(Game g) {
+        g.reset(); g.tug=new Body(0,-1,376,700,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
+        g.addCargo(2,292,700); g.addCargo(1,320,480);
+    }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
     public static void tap(Game g,Layout.Box box) { box=g.activeGame().layout.box(box); tap(g,box.centerX(),box.centerY()); }
     public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }

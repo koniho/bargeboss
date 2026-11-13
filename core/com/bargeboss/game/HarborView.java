@@ -6,6 +6,17 @@ public final class HarborView {
     private HarborView() {}
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
+        // Extend the industrial shore to the viewport edges without distorting the river.
+        RiverCamera c=g.layout.camera;
+        float minX=c.worldX(0,g.layout.height),maxX=c.worldX(0,0);
+        float minY=c.worldY(0,0),maxY=c.worldY(g.layout.width,0);
+        p.rect(minX,minY,maxX-minX,maxY-minY,0xff536374);
+        for(int row=(int)(minX/30)-1;row<maxX/30+1;row++)
+            for(int col=(int)(minY/40)-1;col<maxY/40+1;col++) {
+                p.rect(row*30+1,col*40+1,28,38,(row+col)%3==0?0xff697382:0xff606c7a);
+                p.rect(row*30+3,col*40+3,24,1,0xff7b8490);
+            }
+        p.rect(170,minY,260,maxY-minY,VisualStyle.TEAL);
         p.rect(140,148,320,688,0xff343f52);
         p.rect(167,148,266,688,0xff082e40);
         p.rect(170,148,260,688,VisualStyle.TEAL);
@@ -33,8 +44,7 @@ public final class HarborView {
             for(int y=235;y<810;y+=57) pylon(p,x,y,side==0?1:-1,tick);
         }
         for(int i=0;i<3;i++) lamp(p,i==1?428:172,Game.DOCK_Y[i]-42,tick+i*31);
-        p.rect(170,817,260,19,0xff123b48); p.rect(170,817,260,2,0xff4e9a96);
-        for(int i=0;i<7;i++) p.rect(187+i*34,825,18,3,0xff88b3b5);
+        // The channel stays open at the edge for the two feeder lanes.
     }
     private static void quay(Painter p,float x,float y,float w,float h,boolean right,int tick) {
         p.rect(x,y,w,h,0xff737582);

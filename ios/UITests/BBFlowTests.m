@@ -27,10 +27,9 @@
     return [stage coordinateWithNormalizedOffset:CGVectorMake(x/size.width,y/size.height)];
 }
 - (XCUICoordinate *)river:(XCUIElement *)stage x:(double)x y:(double)y {
-    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
-    double scale=fmin((size.width-(rails?324:32))/688,(size.height-(rails?32:168))/320);
+    CGSize size=[self logicalSize:stage];
+    double scale=fmin(size.width/688,size.height/320);
     double left=(size.width-688*scale)/2,top=(size.height-320*scale)/2;
-    if(fabs(size.width-960)<.01 && fabs(size.height-600)<.01) { left=16; top=84; scale=1.35; }
     return [self point:stage x:left+(y-148)*scale y:top+(460-x)*scale];
 }
 - (void)tapMenu:(XCUIElement *)stage x:(double)x y:(double)y {
@@ -38,12 +37,12 @@
     [[self point:stage x:x+(size.width-960)/2 y:y+(size.height-600)/2] tap];
 }
 - (void)tapPause:(XCUIElement *)stage {
-    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
-    [[self point:stage x:rails?size.width-81:917+(size.width-960)/2 y:rails?48:40] tap];
+    CGSize size=[self logicalSize:stage];
+    [[self point:stage x:size.width-32 y:24] tap];
 }
 - (void)tapBrake:(XCUIElement *)stage {
-    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
-    [[self point:stage x:rails?size.width-81:661+(size.width-960)/2 y:rails?size.height-180:size.height-41] tap];
+    CGSize size=[self logicalSize:stage];
+    [[self point:stage x:size.width-282 y:size.height-24] tap];
 }
 - (void)riverDrag:(XCUIElement *)stage x:(double)x y:(double)y toX:(double)xx toY:(double)yy hold:(double)hold {
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
@@ -57,7 +56,8 @@
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
     [self tapMenu:stage x:770 y:446];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
-    [[self river:stage x:292 y:700] pressForDuration:4];
+    [self waitFor:@"feeder drops 2;" on:stage];
+    [[self river:stage x:260 y:730] pressForDuration:8];
     [self waitFor:@"ready to tie 2" on:stage];
     XCTAssertTrue([(NSString *)stage.value containsString:@"delivered 0;"],@"Entering berth cannot score without a line");
     [self riverDrag:stage x:230 y:700 toX:310 toY:640 hold:0.2];

@@ -3,7 +3,7 @@ package com.bargeboss.game;
 public final class ControlsTest {
     private static int count;
     private static void check(boolean ok,String message) { count++; if(!ok) throw new AssertionError(message); }
-    private static Game game() { Game g=new Game(); g.reset(); return g; }
+    private static Game game() { Game g=new Game(); ReplayInput.controlFixture(g); return g; }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static Game ready() {
         Game g=game(); Body b=g.cargo[0]; b.x=Game.DOCK_X[2]; b.y=Game.DOCK_Y[2]; return g;

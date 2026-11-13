@@ -11,42 +11,23 @@ public final class ScreenView {
         Layout layout=g.layout;
         int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
         String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
-        if(layout.rails) {
-            p.rect(0,0,162,layout.height,NAVY); p.rect(layout.width-162,0,162,layout.height,NAVY);
-            p.rect(158,12,3,layout.height-24,GOLD); p.rect(layout.width-161,12,3,layout.height-24,GOLD);
-            center(p,"BARGE",81,22,25,PAPER); center(p,"BOSS",81,55,27,GOLD);
-            center(p,g.challengeTitle(),81,96,10,MUTED);
-            railMetric(p,"SCORE",""+g.score,137,PAPER);
-            railMetric(p,"LOADS",g.delivered+" / "+g.quota(),225,GOLD);
-            railMetric(p,"HULL",g.hull+"%",313,g.hull<30?VisualStyle.RED:PAPER);
-            railMetric(p,g.tutorial==null?"SHIFT":"PRACTICE",time,401,seconds<30?GOLD:PAPER);
-        } else {
-            p.rect(0,0,layout.width,Layout.HEADER_HEIGHT,NAVY); p.rect(0,0,layout.width,3,GOLD);
-            Painter ui=offset(p,layout.offsetX,0);
-            VisualStyle.panel(ui,16,10,258,60,0xff203047);
-            text(ui,"BARGE BOSS",28,20,24,PAPER); text(ui,(g.challengeId+1)+" / "+g.challengeTitle(),29,53,9,GOLD);
-            metric(ui,"SCORE",""+g.score,294,PAPER);
-            metric(ui,"LOADS",g.delivered+" / "+g.quota(),430,GOLD);
-            metric(ui,"HULL",g.hull+"%",555,g.hull<30?VisualStyle.RED:PAPER);
-            metric(ui,g.tutorial==null?"SHIFT":"PRACTICE",time,674,seconds<30?GOLD:PAPER);
-            p.rect(16,77,layout.width-32,3,0xff53617a);
-        }
+        p.rect(0,0,layout.width,48,0xda101c30);
+        text(p,g.challengeTitle(),14,9,12,GOLD);
+        text(p,"SCORE "+g.score,210,9,12,PAPER);
+        text(p,"LOADS "+g.delivered+"/"+g.quota(),364,9,12,GOLD);
+        text(p,"HULL "+g.hull+"%",508,9,12,g.hull<30?VisualStyle.RED:PAPER);
+        text(p,time,662,9,18,PAPER);
+        text(p,"KEEP THE TWO FEEDER SLOTS CLEAR",14,31,8,MUTED);
         haptics(g,p);
         Layout.Box pause=layout.box(Layout.PAUSE);
         VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);
-        p.rect(pause.centerX()-11,pause.y+17,6,26,PAPER); p.rect(pause.centerX()+4,pause.y+17,6,26,PAPER);
-    }
-    private static void railMetric(Painter p,String label,String value,float y,int color) {
-        center(p,label,81,y,11,MUTED); center(p,value,81,y+23,25,color);
-    }
-    private static void metric(Painter p,String label,String value,float x,int color) {
-        text(p,label,x,17,10,MUTED); text(p,value,x,37,23,color);
+        p.rect(pause.centerX()-10,pause.y+10,6,20,PAPER); p.rect(pause.centerX()+4,pause.y+10,6,20,PAPER);
     }
     private static void haptics(Game g,Painter p) {
         Layout.Box b=g.layout.box(Layout.HAPTICS);
         VisualStyle.panel(p,b.x,b.y,b.w,b.h,0xff203047);
-        center(p,"HAPTICS",b.centerX(),b.y+13,10,MUTED);
-        center(p,g.hapticsEnabled?"ON":"OFF",b.centerX(),b.y+34,13,g.hapticsEnabled?GOLD:PAPER);
+        center(p,"HAPTICS",b.centerX(),b.y+7,9,MUTED);
+        center(p,g.hapticsEnabled?"ON":"OFF",b.centerX(),b.y+23,11,g.hapticsEnabled?GOLD:PAPER);
     }
     public static void title(Game g,Painter p) {
         harbor(g,p); haptics(g,p);

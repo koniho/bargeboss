@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Rotate the full river into a landscape board; physics keeps its world axes. */
 public final class RiverPainter implements Painter {
-    public static final float SCALE=1.35f, LEFT=16, TOP=84;
+    public static final float SCALE=960f/688, LEFT=0, TOP=(600-320*SCALE)/2;
     public static final float WORLD_LEFT=140, WORLD_RIGHT=460, WORLD_TOP=148, WORLD_BOTTOM=836;
     private final Painter painter;
     public final RiverCamera camera;

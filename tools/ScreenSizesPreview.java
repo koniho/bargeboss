@@ -22,6 +22,7 @@ public final class ScreenSizesPreview {
         capture(g,1600,720,"wide-title");
         g.mode=Game.CHALLENGES; capture(g,1600,720,"wide-challenges-locked"); g.reset();
         capture(g,1600,720,"wide-stage");
+        for(int i=0;i<165;i++) g.step(); capture(g,1600,720,"wide-feeder-dropoff");
         g.background(); capture(g,1600,720,"wide-pause");
         g.mode=Game.HELP; capture(g,1600,720,"wide-help");
         g.startTutorial(); capture(g,1600,720,"wide-tutorial");

@@ -44,9 +44,9 @@ public final class ResponsiveTest {
         }
         for(Layout.Box original:LIVE_BUTTONS) {
             Layout.Box box=layout.box(original);
-            boolean overlaps=box.x<camera.left+camera.width() && box.x+box.w>camera.left
-                    && box.y<camera.top+camera.height() && box.y+box.h>camera.top;
-            check(!overlaps,"live controls cannot consume river gestures");
+            // Controls overlay only the shore and outer apron, never navigable water.
+            float waterTop=camera.screenY(Physics.RIGHT,Physics.TOP),waterBottom=camera.screenY(Physics.LEFT,Physics.TOP);
+            check(box.y+box.h<=waterTop || box.y>=waterBottom,"live controls leave the navigable channel clear");
         }
     }
     private static void menuAndGestureRouting(Game game) {

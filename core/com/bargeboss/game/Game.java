@@ -41,6 +41,8 @@ public final class Game {
     private Game practice;
     private boolean returnToShift;
     private int pressTicks, held=-1, spawnIndex;
+    public Feeder[] feeders;
+    private int nextFeedTick;
     private double accumulator, visualAccumulator;
 
     public Layout layout=Layout.DEFAULT;
@@ -87,7 +89,7 @@ public final class Game {
         for(Body b:cargo) if(canTie(b)) { activity="; ready to tie "+b.berth; break; }
         return state+"; delivered "+delivered+"; score "+score+(tutorial==null?"":"; lesson "+tutorial.lesson)
                 +"; drag controls"+activity+"; challenge "+challengeId+"; career stars "+career.totalStars()
-                +"; rank "+career.rankTitle()+"; stripes "+career.stripes()+"; challenge name "+challengeTitle();
+                +"; feeder drops "+(feeders[0].drops+feeders[1].drops)+"; rank "+career.rankTitle()+"; stripes "+career.stripes()+"; challenge name "+challengeTitle();
     }
     public void reset() {
         practice=null; tutorial=null; pushing=false; ropeDragging=false; braking=false; manualSteering=false; control=IDLE;
@@ -97,11 +99,12 @@ public final class Game {
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
-        tug=new Body(0,-1,376,700,(float)Math.PI);
+        tug=new Body(0,-1,376,620,(float)Math.PI);
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
-        addCargo(2,292,700); addCargo(1,320,480);
+        feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
+        feeders[0].request(2); feeders[1].request(1); nextFeedTick=14*60;
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
-        mode=PLAY; tell("HOLD BULK 01 TO PUSH INTO BERTH C");
+        mode=PLAY; tell("DELIVERY PUSHERS INBOUND - KEEP BOTH SLOTS CLEAR");
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
@@ -128,6 +131,7 @@ public final class Game {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(mapPointer!=-1 || pointer || x<0 || x>layout.width || y<0 || y>layout.height) return;
         boolean river=liveRiverInput() && layout.camera.contains(x,y);
+        if(river && liveButton(x,y)) river=false;
         if(river) beginDown(layout.camera.worldX(x,y),layout.camera.worldY(x,y),true);
         else beginDown(x,y,false);
         if(pointer) mapPointer=id;
@@ -142,6 +146,11 @@ public final class Game {
         if(id!=mapPointer) return;
         mapPointer=-1;
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
+    }
+    private boolean liveButton(float x,float y) {
+        return layout.box(Layout.HAPTICS).contains(x,y) || layout.box(Layout.PAUSE).contains(x,y)
+                || layout.box(Layout.BRAKE).contains(x,y) || layout.box(Layout.HELP).contains(x,y)
+                || layout.box(Layout.PRACTICE).contains(x,y);
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
@@ -198,6 +207,7 @@ public final class Game {
         }
         for(int i=0;i<cargo.length;i++) if(cargo[i]!=null && cargo[i].active && cargo[i].hit(x,y,22)) {
             if(cargo[i].lineAttached || (ropePhase!=0 && cargo[i]==ropeBody)) { selected=i; return; }
+            cargo[i].awaitingPickup=false;
             held=selected=i; navigating=false; braking=true; control=HOLDING;
             ropeDragging=canTie(cargo[i]); haptic(HAPTIC_TICK); return;
         }
@@ -317,6 +327,7 @@ public final class Game {
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
         if(pointer) { pressTicks++; if(pressTicks>=12 && held!=-1 && !ropeDragging) { if(!pushing) haptic(HAPTIC_TICK); pushing=true; braking=false; } }
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
+        if(tutorial==null) for(Feeder feeder:feeders) feeder.step(this);
         updateRope();
         for(int i=0;i<cargo.length;i++) {
             Body b=cargo[i]; if(b==null || !b.active) continue;
@@ -342,7 +353,7 @@ public final class Game {
         }
         if(tutorial!=null) tutorial.update(this);
         else {
-            if(ticks%1080==0 && ticks<shiftTicks()-1800) spawn();
+            if(ticks>=nextFeedTick && ticks<shiftTicks()-1800 && spawn()) nextFeedTick=ticks+14*60;
             if(ticks>=shiftTicks() || hull<=0) {
                 mode=FINISH; cancel();
                 if(ticks>=shiftTicks() && hull>0) {
@@ -386,13 +397,17 @@ public final class Game {
             control=pointer && held!=-1?HOLDING:tug.speed()>3?(braking?BRAKING:COASTING):IDLE;
         }
         Physics.integrate(tug); damage(Physics.banks(tug));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached) { Physics.integrate(b); damage(Physics.banks(b)); }
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); damage(Physics.banks(b)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;
                 damage(Physics.collide(tug,a));
                 for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null) damage(Physics.collide(a,cargo[j]));
             }
+        }
+        if(tutorial==null) for(Feeder f:feeders) if(f.phase!=Feeder.IDLE) {
+            feederContact(f.boat);
+            if(f.load!=null) feederContact(f.load);
         }
         traffic();
         Body contact=null;
@@ -403,7 +418,7 @@ public final class Game {
             impactX=(tug.x+contact.x)/2; impactY=(tug.y+contact.y)/2; impactTicks=30;
         }
         contactId=currentContact;
-        for(Body b:cargo) if(b!=null && b.active && b.lineAttached) {
+        for(Body b:cargo) if(b!=null && b.active && (b.lineAttached || b.awaitingPickup)) {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
         // Fender damping follows motion time; mooring confirmation uses real time.
@@ -411,18 +426,28 @@ public final class Game {
             if(inDock(b) && b.speed()<65) { b.vx*=.93f; b.vy*=.93f; b.spin*=.93f; }
         }
     }
+    private void feederContact(Body obstacle) {
+        float x=obstacle.x,y=obstacle.y,vx=obstacle.vx,vy=obstacle.vy,spin=obstacle.spin;
+        damage(Physics.collide(tug,obstacle));
+        obstacle.x=x; obstacle.y=y; obstacle.vx=vx; obstacle.vy=vy; obstacle.spin=spin;
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) {
+            Physics.collide(b,obstacle);
+            obstacle.x=x; obstacle.y=y; obstacle.vx=vx; obstacle.vy=vy; obstacle.spin=spin;
+        }
+    }
     public boolean inDock(Body b) {
         for(int i=0;i<3;i++) if(Math.abs(b.discX(i)-DOCK_X[b.berth])+b.radius>55
                 || Math.abs(b.discY(i)-DOCK_Y[b.berth])+b.radius>53) return false;
         return true;
     }
-    private void spawn() {
-        float[] ys={270,710,570,340,640,450};
-        float y=ys[spawnIndex%ys.length];
-        boolean clear=!tug.hit(302,y,55);
-        for(Body b:cargo) if(b!=null && b.active && b.hit(302,y,55)) clear=false;
-        if(clear) { addCargo(spawnIndex%3,302,y); spawnIndex++; tell("INBOUND CARGO - NEW CONTRACT"); }
-        else tell("ENTRY BLOCKED - CLEAR THE CENTER CHANNEL");
+    private boolean spawn() {
+        for(int i=0;i<feeders.length;i++) {
+            Feeder feeder=feeders[(spawnIndex+i)%feeders.length];
+            if(feeder.phase==Feeder.IDLE) {
+                feeder.request(spawnIndex%3); spawnIndex++; return true;
+            }
+        }
+        return false;
     }
     private void navigate(float x,float y,float topSpeed) {
         float dx=x-tug.x, dy=y-tug.y, distance=Physics.length(dx,dy);

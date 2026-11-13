@@ -43,8 +43,14 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
 
-First Watch asks you to deliver **6 loads in 3 minutes**. Contracts expire after 68 seconds; new loads
-arrive every 18 seconds when the entry area is clear. Watch crossing traffic and
+First Watch asks you to deliver **6 loads in 3 minutes**. Each challenge has two feeder slots at the river's right edge. NPC pushers bring
+in the first pair of barges, then dispatch another load every 14 seconds while a
+feeder is free. They back out after handoff. Animated comic calls shout **ZONE A!**,
+**ZONE B!**, or **ZONE C!** and pulse the matching berth. A blocked captain waits,
+flashes the slot red, and calls **HURRY UP!** at four-second intervals. These are
+visual speech bubbles; there is no voice audio yet. Slot fenders hold waiting
+barges until you press one to push it. Contracts expire 68 seconds after handoff; an
+incoming NPC load never expires before it reaches you. Watch crossing traffic and
 avoid hard impacts. Pause is in the upper-right corner (Escape on desktop).
 
 Open **Challenges** from the title or results screen to build your captain career:
@@ -84,8 +90,8 @@ or separate JavaScript/Swift gameplay implementation.
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
-using 960×600 as the reference size. Wide screens put the HUD and controls in side
-panels; other aspect ratios retain top and bottom controls. Sprites keep their
+using 960×600 as the reference size. The river uses the largest uniform scale that
+keeps the whole stage visible, with compact HUD/control overlays along the shore. Sprites keep their
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
 The complete river is visible at once, with a compact channel and larger boat
 footprints that make cargo, wakes and rope actions easier to read. The camera

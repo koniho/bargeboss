@@ -18,14 +18,20 @@ public final class Preview {
         g.mode=Game.CHALLENGES; capture(g,"challenges-locked"); g.mode=Game.TITLE;
         for(int i=0;i<90;i++) g.advance(1.0/60); capture(g,"title-animated");
         g.reset(); capture(g,"stage");
+        steps(g,120); capture(g,"feeder-inbound");
+        steps(g,45); capture(g,"feeder-dropoff");
+        steps(g,65); capture(g,"feeder-return");
+        g.reset(); g.tug.x=260; g.tug.y=760; steps(g,180); capture(g,"feeder-blocked");
+        sheet("feeder-phases",new String[]{"feeder-inbound","feeder-dropoff","feeder-return","feeder-blocked"});
+        g.reset();
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
         steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,Layout.BRAKE); steps(g,4); capture(g,"braking");
-        g.reset(); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
+        ReplayInput.controlFixture(g); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.ALIGNING) { capture(g,"aligning"); break; } }
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.PUSHING) { capture(g,"push"); break; } }
         ReplayInput.move(g,g.downX-65,g.downY-65); steps(g,20); capture(g,"steering");
-        g.reset(); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
+        ReplayInput.controlFixture(g); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
         for(int i=0;i<1200 && !g.canTie(b);i++) g.step();
         if(!g.canTie(b)) throw new IllegalStateException("Preview cargo never reached berth");
         ReplayInput.up(g,g.pointerX,g.pointerY); capture(g,"ready-to-tie");

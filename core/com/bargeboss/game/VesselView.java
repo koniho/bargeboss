@@ -12,7 +12,7 @@ public final class VesselView {
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,b.x,b.y+bob,size,size*(tug?1.05f:1.2f),1);
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
-            boolean pushing=working && (g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING);
+            boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
             exhaust(p,b,tick,working?1:.35f,pushing);
             if(pushing) for(int i=0;i<4;i++) {
                 float t=((tick+i*9)%30)/30f,xx=b.half+b.radius+t*9,yy=(i%2==0?-1:1)*(6+t*10);

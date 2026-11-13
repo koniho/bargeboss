@@ -59,7 +59,20 @@ public final class Parity implements Painter {
         tutorial(p);
         responsive(p);
         progression(p);
+        feeders(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    private static void feeders(Parity p) {
+        Game g=new Game(); g.reset();
+        for(int i=0;i<350;i++) {
+            g.step();
+            if(i%30==0) { Renderer.draw(g,p); for(Feeder f:g.feeders) {
+                p.add(f.phase); p.add(f.drops); p.add(f.shoutTicks); p.add(f.blocked?1:0); p.value(f.boat.y);
+            } }
+        }
+        g.reset(); g.tug.x=260; g.tug.y=760;
+        for(int i=0;i<410;i++) g.step();
+        Renderer.draw(g,p); p.add(g.feeders[0].blockedTicks);
     }
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
     private static void tutorial(Parity p) {

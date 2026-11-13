@@ -18,7 +18,11 @@ public final class AnimationPreview {
     public static void main(String[] args) throws Exception {
         Game g=new Game();
         for(int tick=0;tick<180;tick++) { g.advance(1.0/60); if(tick%5==0) frame(g,"title",tick/5); }
-        g.reset(); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
+        g.reset();
+        for(int tick=0;tick<360;tick++) { g.step(); if(tick%5==0) frame(g,"feeder",tick/5); }
+        g.reset(); g.tug.x=260; g.tug.y=760;
+        for(int tick=0;tick<360;tick++) { g.step(); if(tick%5==0) frame(g,"feeder-blocked",tick/5); }
+        ReplayInput.controlFixture(g); Body b=g.cargo[0]; ReplayInput.down(g,b.x,b.y);
         int phase=0,age=0,frame=0; float ropeX=0,ropeY=0;
         for(int tick=0;tick<900;tick++) {
             if(phase==0 && g.canTie(b)) { ReplayInput.up(g,g.pointerX,g.pointerY); phase=1; age=0; }

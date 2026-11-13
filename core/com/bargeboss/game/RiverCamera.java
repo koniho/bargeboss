@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Immutable world projection, independent of HUD layout and simulation state. */
 public final class RiverCamera {
-    public static final RiverCamera DEFAULT=new RiverCamera(16,84,1.35f);
+    public static final RiverCamera DEFAULT=new RiverCamera(0,(600-320*(960f/688))/2,960f/688);
     public final float left,top,scale;
     public RiverCamera(float left,float top,float scale) {
         this.left=left; this.top=top; this.scale=Math.max(.001f,scale);

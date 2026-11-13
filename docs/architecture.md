@@ -32,14 +32,15 @@ is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
 are no native menus overlaying the game. `Viewport` exposes a full logical canvas
 at a uniform pixel scale, with 960×600 as the reference size. Each `Game` owns an
 immutable `Layout` and `RiverCamera`; resizing cancels active gestures and updates
-practice too. Screens wider than 2.1:1 place stats and controls in side rails.
-Other ratios retain top/bottom controls. The whole stage remains visible, with
+practice too. Compact top/bottom HUD overlays replace reserved side rails.
+Buttons receive input priority over the projected world, and their targets stay
+outside navigable water. The whole stage remains visible, with
 industrial scenery extending into the responsive margins rather than black bars.
 
 `RiverCamera` stores origin and uniform scale separately from the HUD. Its paired
 forward/inverse transform turns source coordinates x=140..460, y=148..836 into the
-landscape board. At the reference size it maps screenX=16+(worldY−148)×1.35 and
-screenY=84+(460−worldX)×1.35. Navigable water remains x=170..430, y=215..817.
+landscape board. The scale is min(canvasWidth/688, canvasHeight/320), centered on the full canvas.
+At the reference size, scale=960/688, left=0 and top=(600−320×scale)/2. Navigable water remains x=170..430, y=215..817.
 World labels remain upright. Hull dimensions are 1.25× their earlier values,
 with recalculated collision inertia. Camera transformations never alter physics.
 This separation supports adding pan/zoom later; the current camera fits the whole
@@ -218,3 +219,25 @@ through the real UI to trigger a save, then terminate and relaunch without fixtu
 arguments. Shared career tests separately verify earned rewards and complete the
 harder challenges with the bounded player. JVM/J2ObjC parity includes completed
 career results, snapshot round trips, challenge screens and responsive layouts.
+
+
+## Two edge feeders
+
+Every challenge owns two `Feeder` state machines at world x=260 and x=360.
+Their loads enter from beyond y=836, move to y=730 and hand off a fresh `Body`
+into a free cargo slot. Initial arrivals are simultaneous; subsequent requests
+alternate slots every 14 real seconds until the final 30 seconds. Busy slots
+retain their current load; dispatch retries rather than overwriting it. An NPC
+backs out with its bow still facing the channel after handoff. Occupied approach
+or return paths wait and show a throttled HURRY UP call every 240 ticks.
+
+Before handoff, incoming hulls are NPC obstacles, never scored contracts. The
+slot fenders hold handed-off cargo until its first push gesture; contract age
+starts at handoff. Pause, help, background and practice suspend the root feeder
+clocks. Tutorial fixtures use no NPC arrivals. `FeederView` draws markings,
+wakes, per-slot warnings, destination bubbles and berth pulses; calls are visual
+only, with no platform speech engine. Render methods never advance these states.
+Regression tests cover simultaneous arrival, independent blocked slots, retries,
+exactly-once handoff, expiration origin, fenders, pause/reset/practice and bounded
+completion of all three challenges. Native/JVM parity includes arrival, departure
+and blocked-call frames. iOS UI tests wait for real feeder handoff before pushing.
