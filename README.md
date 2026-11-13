@@ -43,12 +43,33 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
 
-Deliver **6 loads in 3 minutes**. Contracts expire after 68 seconds; new loads
+First Watch asks you to deliver **6 loads in 3 minutes**. Contracts expire after 68 seconds; new loads
 arrive every 18 seconds when the entry area is clear. Watch crossing traffic and
 avoid hard impacts. Pause is in the upper-right corner (Escape on desktop).
 
-The prototype is offline and silent. Scores are per shift; persistence, audio,
-additional stages and store releases are future work.
+Open **Challenges** from the title or results screen to build your captain career:
+
+| Challenge | Target | Unlock |
+| --- | --- | --- |
+| First Watch | 6 loads in 3:00 | Available immediately |
+| Quick Turn | 6 loads in 2:30 | Complete First Watch |
+| Heavy Shift | 8 loads in 3:00 | Complete Quick Turn |
+
+Survive until the shift timer ends and meet its quota to earn one star. Earn an
+additional star for no expired loads, and another for finishing with at least
+80% hull. Each challenge saves its best stars and best successful score. Replays
+can improve records; duplicate stars do not count again. Practice earns no career
+rewards and leaves your suspended shift intact.
+
+Unique stars earn gold captain stripes and playful ranks: **Deck Duck** (0),
+**Line Tamer** (1), **Wake Wrangler** (3), **Harbor Hero** (6), and **Captain Quack**
+(9). The challenge board and results show your badge, promotions and next unlock.
+Progress and selected challenge are saved locally on each device; there is no
+cloud synchronization. Android/iOS use native preference storage; desktop uses
+`~/.bargeboss/progress.dat`.
+
+The prototype is offline and silent. Audio, more stages, fleet/upgrades and store
+releases remain future work, tracked in the [concept backlog](https://github.com/koniho/bargeboss/issues).
 
 ## One game on every platform
 

@@ -15,6 +15,7 @@ public final class Preview {
     public static void main(String[] args) throws Exception {
         new File("out").mkdirs();
         Game g=new Game(); capture(g,"title");
+        g.mode=Game.CHALLENGES; capture(g,"challenges-locked"); g.mode=Game.TITLE;
         for(int i=0;i<90;i++) g.advance(1.0/60); capture(g,"title-animated");
         g.reset(); capture(g,"stage");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
@@ -47,6 +48,7 @@ public final class Preview {
         for(int i=0;i<Game.SHIFT_TICKS;i++) { ReplayInput.work(g); g.step(); }
         capture(g,"shift-complete");
         for(int i=0;i<60;i++) g.advance(1.0/60); capture(g,"results-animated");
+        g.mode=Game.CHALLENGES; capture(g,"challenges-unlocked");
         g.reset(); steps(g,Game.SHIFT_TICKS); capture(g,"shift-ended");
         g=new Game(); ReplayInput.tap(g,Layout.LEARN); capture(g,"tutorial-0");
         int previous=0;

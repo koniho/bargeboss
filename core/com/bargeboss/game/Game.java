@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** All gameplay, timers, gestures and lifecycle behavior live here, never in native hosts. */
 public final class Game {
-    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4;
+    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5;
     public static final int SHIFT_TICKS=180*60, QUOTA=6;
     // Two original-size motion steps per real tick: 2x travel/turning with the
     // same collision resolution, stopping distances and impact thresholds.
@@ -44,7 +44,22 @@ public final class Game {
     private double accumulator, visualAccumulator;
 
     public Layout layout=Layout.DEFAULT;
+    public final Career career=new Career();
+    public int challengeId,earnedStars;
+    public boolean rankPromoted;
     public Game() { reset(); mode=TITLE; }
+    public int quota() { return Challenges.quota(challengeId); }
+    public int shiftTicks() { return Challenges.shiftTicks(challengeId); }
+    public String challengeTitle() { return Challenges.title(challengeId); }
+    public void restoreProgress(String value) {
+        if(career.restore(value)) challengeId=career.selectedChallenge();
+    }
+    public String saveProgress() { return career.save(); }
+    public int progressVersion() { return career.version(); }
+    public boolean selectChallenge(int id) {
+        if(!career.select(id)) return false;
+        challengeId=id; return true;
+    }
     /** Hosts supply available logical bounds; resizing never advances physics or clocks. */
     public void configureCanvas(float width,float height) {
         if(Math.abs(layout.width-width)<.01f && Math.abs(layout.height-height)<.01f) return;
@@ -55,8 +70,9 @@ public final class Game {
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
         cancelInputs(); accumulator=0; visualAccumulator=0;
-        returnToShift=mode!=TITLE && mode!=FINISH;
+        returnToShift=mode!=TITLE && mode!=FINISH && mode!=CHALLENGES;
         practice=new Game(); practice.reset(); practice.tutorial=new Tutorial();
+        practice.restoreProgress(saveProgress());
         practice.layout=layout;
         practice.hapticsEnabled=hapticsEnabled;
         practice.tutorial.setup(practice);
@@ -65,17 +81,19 @@ public final class Game {
     public void render(Painter painter) { Renderer.draw(this,painter); }
     public String status() {
         if(practice!=null) return practice.status();
-        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":"Finished";
+        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
         String activity=ropePhase==1?"; rope flying":ropePhase==2?"; rope retracting":ropePhase==3?"; bollard hit":"";
         for(Body b:cargo) if(b!=null && b.active && b.unloadingTicks>0) activity="; unloading";
         for(Body b:cargo) if(canTie(b)) { activity="; ready to tie "+b.berth; break; }
         return state+"; delivered "+delivered+"; score "+score+(tutorial==null?"":"; lesson "+tutorial.lesson)
-                +"; drag controls"+activity;
+                +"; drag controls"+activity+"; challenge "+challengeId+"; career stars "+career.totalStars()
+                +"; rank "+career.rankTitle()+"; stripes "+career.stripes()+"; challenge name "+challengeTitle();
     }
     public void reset() {
         practice=null; tutorial=null; pushing=false; ropeDragging=false; braking=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
+        earnedStars=0; rankPromoted=false;
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
@@ -230,8 +248,17 @@ public final class Game {
         } else if(mode==TITLE) {
             if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
             if(tap && tapped(Layout.START,x,y)) reset();
+            else if(tap && tapped(Layout.CHALLENGES,x,y)) mode=CHALLENGES;
+        } else if(mode==CHALLENGES) {
+            if(tap && tapped(Layout.BACK,x,y)) mode=TITLE;
+            else if(tap && tapped(Layout.CHALLENGE_START,x,y)) reset();
+            else if(tap) for(int i=0;i<Challenges.COUNT;i++) {
+                if(tapped(Layout.CHALLENGE_CARDS[i],x,y) && selectChallenge(i)) haptic(HAPTIC_TICK);
+            }
         } else if(mode==FINISH) {
             if(tap && tapped(Layout.AGAIN,x,y)) reset();
+            else if(tap && tapped(Layout.FINISH_CHALLENGES,x,y)) mode=CHALLENGES;
+            else if(tap && tapped(Layout.NEXT_CHALLENGE,x,y) && selectChallenge(challengeId+1)) reset();
         } else if(mode==PAUSE) {
             if(tap && tapped(Layout.RESUME,x,y)) pause();
             else if(tap && tapped(Layout.RESTART,x,y)) {
@@ -264,7 +291,7 @@ public final class Game {
         if(Double.isNaN(seconds) || seconds<=0) return;
         if(mode!=PLAY) {
             accumulator=0;
-            if(mode==TITLE || mode==FINISH) {
+            if(mode==TITLE || mode==FINISH || mode==CHALLENGES) {
                 visualAccumulator+=Math.min(.25,seconds);
                 while(visualAccumulator+1e-10>=1.0/60.0) {
                     visualAccumulator-=1.0/60.0; visualTicks++;
@@ -304,7 +331,7 @@ public final class Game {
             if(b.unloadingTicks>=UNLOAD_TICKS) {
                 b.active=false; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
-                score+=points; tell("DELIVERED +"+points+" / "+delivered+" OF "+QUOTA);
+                score+=points; tell("DELIVERED +"+points+" / "+delivered+" OF "+quota());
                 haptic(HAPTIC_SUCCESS);
                 if(selected==i) selected=-1;
                 if(held==i) { cancel(); navigating=false; }
@@ -315,8 +342,15 @@ public final class Game {
         }
         if(tutorial!=null) tutorial.update(this);
         else {
-            if(ticks%1080==0 && ticks<SHIFT_TICKS-1800) spawn();
-            if(ticks>=SHIFT_TICKS || hull<=0) { mode=FINISH; cancel(); }
+            if(ticks%1080==0 && ticks<shiftTicks()-1800) spawn();
+            if(ticks>=shiftTicks() || hull<=0) {
+                mode=FINISH; cancel();
+                if(ticks>=shiftTicks() && hull>0) {
+                    earnedStars=Challenges.stars(challengeId,delivered,lost,hull);
+                    int before=career.rank(); career.record(challengeId,earnedStars,score);
+                    rankPromoted=career.rank()>before;
+                }
+            }
         }
     }
     /** Rope flight, catch and recoil are real-time events, independent of 2x boat motion. */

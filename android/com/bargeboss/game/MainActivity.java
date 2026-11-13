@@ -61,9 +61,28 @@ public final class MainActivity extends Activity {
         private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
         private long last;
         private boolean running;
-        GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up."); }
+        private android.content.SharedPreferences progress;
+        private int savedVersion,attemptedVersion;
+        GameView() {
+            super(MainActivity.this);
+            setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up.");
+            try {
+                progress=getSharedPreferences("captain-progress",MODE_PRIVATE);
+                game.restoreProgress(progress.getString("snapshot",null));
+            } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not read captain progress",e); }
+            savedVersion=attemptedVersion=game.progressVersion();
+        }
+        void saveProgress(boolean flush) {
+            int version=game.progressVersion();
+            if(progress==null || version==savedVersion || (!flush && version==attemptedVersion)) return;
+            attemptedVersion=version;
+            try {
+                if(progress.edit().putString("snapshot",game.saveProgress()).commit()) savedVersion=version;
+                else android.util.Log.w("BargeBoss","Could not save captain progress");
+            } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not save captain progress",e); }
+        }
         void start() { if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { running=false; last=0; game.background(); Choreographer.getInstance().removeFrameCallback(this); }
+        void stop() { running=false; last=0; game.background(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); }
         public void doFrame(long now) {
             if(!running) return; if(last!=0) game.advance((now-last)/1e9); last=now;
             int event=game.pollHaptic();
@@ -73,7 +92,7 @@ public final class MainActivity extends Activity {
                 if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
                 performHapticFeedback(feedback);
             }
-            invalidate(); Choreographer.getInstance().postFrameCallback(this);
+            saveProgress(false); invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }
         protected void onSizeChanged(int w,int h,int oldW,int oldH) {
             viewport=new Viewport(w,h);

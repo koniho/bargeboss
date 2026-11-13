@@ -10,7 +10,7 @@ public final class ResponsiveTest {
     private static boolean near(float a,float b) { return Math.abs(a-b)<.002f; }
     private static void tap(Game game,Layout.Box box) { ReplayInput.tap(game,box); }
     public static void run() {
-        float[][] windows={{960,600},{1920,1080},{2400,1080},{2732,2048},{3840,1080},{900,1440},{600,600},{720,360}};
+        float[][] windows={{960,600},{1920,1080},{2400,1080},{2732,2048},{3840,1080},{900,1440},{600,600},{720,360},{1259,600},{1261,600}};
         for(float[] window:windows) {
             Viewport viewport=new Viewport(window[0],window[1]);
             check(viewport.x==0 && viewport.y==0,"responsive viewport has no letterbox offsets");

@@ -54,7 +54,7 @@ The original touch point remains fixed as the hull moves. Releasing removes
 thrust and coasts; returning to the ring brakes. Rope cancellation never attaches
 a line; release launches it and impact checks the correct bollard.
 Backgrounding pauses the shift, releases gestures and removes thrust; returning requires an
-explicit shared Resume action. Process termination starts a fresh session.
+explicit shared Resume action. Process termination starts a fresh shift; completed career records and challenge selection persist.
 
 `Tutorial` runs a separate shared `Game` instance, leaving any suspended shift
 intact. Six lessons require actual tug dragging, braking, cargo pushing, steering,
@@ -194,3 +194,27 @@ and OS settings. Simulator events do not establish physical vibration quality.
 
 This first prototype has one stage, no saved progress and no audio. Native
 screen-reader navigation is not implemented; letters supplement berth colors.
+
+## Challenge career and local saves
+
+`Challenges` defines three Calumet contracts with per-shift targets and timers.
+`Career` owns unlocked challenges, selected challenge, best successful scores,
+best stars and captain rank. Total stars sum each challenge's maximum, so repeated
+runs do not farm rank. `Game` records a result exactly once at a successful timer
+expiry; abandoned shifts, wrecks and practice cannot award progress.
+
+Hosts restore an opaque versioned string before their first draw, then observe
+`progressVersion()` and persist `saveProgress()` only when it changes. Shared Java
+validates and restores the bounded snapshot atomically. Android SharedPreferences,
+iOS NSUserDefaults and desktop atomic file replacement transport the same data;
+no native adapter interprets unlocks or awards. A failed write leaves gameplay
+running and can be retried on a later change or lifecycle flush. Saves are local,
+not synchronized between devices.
+
+Desktop storage is `~/.bargeboss/progress.dat`. Its regression tests exercise
+replacement, bounded reads, Unicode transport and failure behavior. Native iOS
+smoke tests use test-only reset/opaque fixture launch arguments, select a challenge
+through the real UI to trigger a save, then terminate and relaunch without fixture
+arguments. Shared career tests separately verify earned rewards and complete the
+harder challenges with the bounded player. JVM/J2ObjC parity includes completed
+career results, snapshot round trips, challenge screens and responsive layouts.

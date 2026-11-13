@@ -9,24 +9,24 @@ public final class ScreenView {
     private static void center(Painter p,String s,float x,float y,float size,int c) { Lettering.center(p,s,x,y,size,c); }
     public static void hud(Game g,Painter p) {
         Layout layout=g.layout;
-        int seconds=Math.max(0,(Game.SHIFT_TICKS-g.ticks+59)/60);
+        int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
         String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
         if(layout.rails) {
             p.rect(0,0,162,layout.height,NAVY); p.rect(layout.width-162,0,162,layout.height,NAVY);
             p.rect(158,12,3,layout.height-24,GOLD); p.rect(layout.width-161,12,3,layout.height-24,GOLD);
             center(p,"BARGE",81,22,25,PAPER); center(p,"BOSS",81,55,27,GOLD);
-            center(p,"CALUMET REACH",81,96,10,MUTED);
+            center(p,g.challengeTitle(),81,96,10,MUTED);
             railMetric(p,"SCORE",""+g.score,137,PAPER);
-            railMetric(p,"LOADS",g.delivered+" / "+Game.QUOTA,225,GOLD);
+            railMetric(p,"LOADS",g.delivered+" / "+g.quota(),225,GOLD);
             railMetric(p,"HULL",g.hull+"%",313,g.hull<30?VisualStyle.RED:PAPER);
             railMetric(p,g.tutorial==null?"SHIFT":"PRACTICE",time,401,seconds<30?GOLD:PAPER);
         } else {
             p.rect(0,0,layout.width,Layout.HEADER_HEIGHT,NAVY); p.rect(0,0,layout.width,3,GOLD);
             Painter ui=offset(p,layout.offsetX,0);
             VisualStyle.panel(ui,16,10,258,60,0xff203047);
-            text(ui,"BARGE BOSS",28,20,24,PAPER); text(ui,"01 / CALUMET INDUSTRIAL REACH",29,53,9,GOLD);
+            text(ui,"BARGE BOSS",28,20,24,PAPER); text(ui,(g.challengeId+1)+" / "+g.challengeTitle(),29,53,9,GOLD);
             metric(ui,"SCORE",""+g.score,294,PAPER);
-            metric(ui,"LOADS",g.delivered+" / "+Game.QUOTA,430,GOLD);
+            metric(ui,"LOADS",g.delivered+" / "+g.quota(),430,GOLD);
             metric(ui,"HULL",g.hull+"%",555,g.hull<30?VisualStyle.RED:PAPER);
             metric(ui,g.tutorial==null?"SHIFT":"PRACTICE",time,674,seconds<30?GOLD:PAPER);
             p.rect(16,77,layout.width-32,3,0xff53617a);
@@ -64,16 +64,20 @@ public final class ScreenView {
         Body tug=new Body(0,-1,0,0,-.12f); tug.vx=32;
         VesselView.draw(g,new Transform(p,219,460,3.7f,0),tug,true);
         p.line(306,417,351,421,4,0xffd9bf7d);
-        VisualStyle.panel(p,608,96,324,414,0xf5101c30);
-        center(p,"SHIFT 01",770,118,11,GOLD);
-        center(p,"CALUMET REACH",770,147,22,PAPER);
-        center(p,"6 LOADS. 3 MINUTES.",770,190,13,GOLD);
+        VisualStyle.panel(p,608,96,324,452,0xf5101c30);
+        center(p,"SHIFT 0"+(g.challengeId+1),770,118,11,GOLD);
+        center(p,g.challengeTitle(),770,147,22,PAPER);
+        center(p,g.quota()+" LOADS / "+time(g.shiftTicks()),770,190,13,GOLD);
         center(p,"DRAG TUG. HOLD CARGO.",770,234,12,PAPER);
         center(p,"AIM LINE. RELEASE TO THROW.",770,260,11,PAPER);
         center(p,"CREWS UNLOAD IN 3 SECONDS.",770,286,11,MUTED);
         button(g,p,Layout.LEARN,"LEARN TO DRIVE",false);
         button(g,p,Layout.START,"START SHIFT",true);
-        center(p,"ONE BUSY RIVER. ONE GOOD CAPTAIN.",475,548,15,PAPER);
+        button(g,p,Layout.CHALLENGES,"CHALLENGES",false);
+        VisualStyle.panel(p,28,499,380,65,0xe8101c30);
+        captainBadge(p,61,530,.66f,g.career.stripes());
+        text(p,g.career.rankTitle(),98,515,18,PAPER);
+        text(p,g.career.totalStars()+" / 9 CAREER STARS",99,543,11,GOLD);
         text(p,"CALUMET HARBOR AUTHORITY",24,580,9,MUTED);
         text(p,"DRAG / PUSH / THROW / UNLOAD",709,580,9,GOLD);
     }
@@ -148,16 +152,97 @@ public final class ScreenView {
     }
     public static void finish(Game g,Painter p) {
         p=menu(g,p);
-        overlay(p,102,434);
-        boolean complete=g.delivered>=Game.QUOTA;
-        center(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"SHIFT COMPLETE":"SHIFT ENDED",480,133,26,PAPER);
-        int earned=complete?1+(g.lost==0?1:0)+(g.hull>=80?1:0):0;
-        for(int i=0;i<3;i++) star(p,400+i*80,206+(earned>i?2*(float)StrictMath.sin(g.visualTicks*.05+i):0),25,earned>i?GOLD:0xff465366);
-        center(p,""+g.score,480,252,43,GOLD); center(p,"POINTS EARNED",480,309,10,MUTED);
-        center(p,g.delivered+" DELIVERED / "+g.lost+" EXPIRED",480,350,13,PAPER);
-        center(p,"HULL REMAINING "+g.hull+"%",480,377,12,MUTED);
-        center(p,complete?"GOOD WORK, CAPTAIN.":"THE NEXT SHIFT IS YOURS.",480,416,13,PAPER);
-        button(g,p,Layout.AGAIN,"ANOTHER SHIFT",true);
+        overlay(p,82,454);
+        boolean complete=g.delivered>=g.quota() && g.hull>0;
+        center(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"SHIFT COMPLETE":"SHIFT ENDED",480,106,26,PAPER);
+        center(p,g.challengeTitle(),480,148,12,MUTED);
+        int earned=g.earnedStars;
+        for(int i=0;i<3;i++) star(p,400+i*80,200+(earned>i?2*(float)StrictMath.sin(g.visualTicks*.05+i):0),25,earned>i?GOLD:0xff465366);
+        center(p,earned==3?"GOLD SHIFT":earned==2?"SILVER SHIFT":earned==1?"BRONZE SHIFT":"KEEP PRACTICING",480,238,11,earned>0?GOLD:MUTED);
+        center(p,""+g.score,480,271,38,GOLD);
+        center(p,g.delivered+" DELIVERED / "+g.lost+" EXPIRED / HULL "+g.hull+"%",480,323,12,PAPER);
+        if(g.rankPromoted) for(int i=0;i<6;i++) {
+            double angle=i*Math.PI/3+g.visualTicks*.008;
+            star(p,174+(float)StrictMath.cos(angle)*70,211+(float)StrictMath.sin(angle)*65,
+                    3+2*(float)StrictMath.sin(g.visualTicks*.06+i),GOLD);
+        }
+        captainBadge(p,174,211,1.1f,g.career.stripes());
+        center(p,g.career.rankTitle(),174,280,14,PAPER);
+        center(p,g.rankPromoted?"PROMOTED, CAPTAIN!":"CAPTAIN'S RANK",174,306,10,g.rankPromoted?GOLD:MUTED);
+        center(p,g.career.totalStars()+" / 9 CAREER STARS",174,329,10,GOLD);
+        center(p,"PERSONAL BEST",784,183,11,MUTED);
+        center(p,""+g.career.bestScore(g.challengeId),784,207,26,GOLD);
+        for(int i=0;i<3;i++) star(p,748+i*36,264,12,g.career.bestStars(g.challengeId)>i?GOLD:0xff465366);
+        center(p,g.rankPromoted?"NEW STRIPES. SAME GOOD TUG.":complete?"GOOD WORK, CAPTAIN.":"THE NEXT SHIFT IS YOURS.",480,378,14,PAPER);
+        boolean next=g.challengeId+1<Challenges.COUNT && g.career.unlocked(g.challengeId+1);
+        if(next) center(p,"NEXT: "+Challenges.title(g.challengeId+1),480,409,11,GOLD);
+        else center(p,"REPLAY TO IMPROVE YOUR STARS AND BEST SCORE",480,409,10,MUTED);
+        button(g,p,Layout.FINISH_CHALLENGES,"CHALLENGES",false);
+        button(g,p,Layout.AGAIN,"REPLAY SHIFT",!next);
+        if(next) button(g,p,Layout.NEXT_CHALLENGE,"NEXT SHIFT",true);
+    }
+    private static String time(int ticks) {
+        int seconds=ticks/60;
+        return seconds/60+":"+(seconds%60<10?"0":"")+(seconds%60);
+    }
+    /** Persistent career board; selecting a card never starts the clock. */
+    public static void challenges(Game g,Painter p) {
+        harbor(g,p); p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
+        Painter screen=p; p=centered(g,p);
+        center(p,"CAPTAIN'S CHALLENGES",480,37,28,PAPER);
+        center(p,"ONE INDUSTRIAL REACH. THREE WAYS TO MASTER IT.",480,79,11,MUTED);
+        captainBadge(p,85,130,.7f,g.career.stripes());
+        text(p,g.career.rankTitle(),125,109,19,GOLD);
+        text(p,g.career.totalStars()+" / 9 UNIQUE STARS",126,140,11,PAPER);
+        text(p,"BRONZE OPENS THE NEXT SHIFT",529,113,12,GOLD);
+        text(p,"BETTER STARS EARN CAPTAIN STRIPES",529,140,10,MUTED);
+        for(int i=0;i<Challenges.COUNT;i++) {
+            Layout.Box card=Layout.CHALLENGE_CARDS[i];
+            boolean open=g.career.unlocked(i),selected=g.challengeId==i;
+            VisualStyle.panel(p,card.x,card.y,card.w,card.h,selected?0xff294656:open?0xff1c3045:0xff162334);
+            p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
+            center(p,"0"+(i+1)+(open?" / CALUMET":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
+            center(p,Challenges.title(i),card.centerX(),card.y+47,20,open?PAPER:MUTED);
+            center(p,Challenges.quota(i)+" LOADS / "+time(Challenges.shiftTicks(i)),card.centerX(),card.y+84,13,open?GOLD:MUTED);
+            if(open) {
+                for(int j=0;j<3;j++) star(p,card.centerX()-42+j*42,card.y+132,17,g.career.bestStars(i)>j?GOLD:0xff465366);
+                center(p,"BEST "+g.career.bestScore(i),card.centerX(),card.y+165,12,MUTED);
+                center(p,selected?"READY TO SAIL":"TAP TO SELECT",card.centerX(),card.y+205,12,selected?GOLD:PAPER);
+                if(selected) p.rect(card.x+19+(g.visualTicks%120)/120f*(card.w-60),card.y+230,20,2,PAPER);
+            } else {
+                lock(p,card.centerX(),card.y+132);
+                center(p,"EARN BRONZE IN",card.centerX(),card.y+170,11,MUTED);
+                center(p,Challenges.title(i-1),card.centerX(),card.y+193,12,PAPER);
+            }
+        }
+        center(p,Challenges.description(g.challengeId),480,444,13,PAPER);
+        center(p,"BRONZE: QUOTA / SILVER: NO LOST LOADS OR 80% HULL / GOLD: BOTH",480,475,10,MUTED);
+        button(g,p,Layout.BACK,"BACK",false);
+        button(g,p,Layout.CHALLENGE_START,"START SHIFT",true);
+        haptics(g,screen);
+    }
+    private static void lock(Painter p,float x,float y) {
+        ControlView.ring(p,x,y-6,13,1,0xff718092,5);
+        VisualStyle.panel(p,x-19,y-5,38,27,0xff43566a);
+        p.circle(x,y+7,3,GOLD); p.rect(x-1.5f,y+7,3,7,GOLD);
+    }
+    /** A tiny uniform badge: a cheerful duck above braided gold captain bands. */
+    private static void captainBadge(Painter p,float x,float y,float scale,int stripes) {
+        p=new Transform(p,x,y,scale,0);
+        p.poly(new float[]{-38,-45,38,-45,35,29,0,47,-35,29},INK);
+        p.poly(new float[]{-34,-41,34,-41,31,26,0,42,-31,26},GOLD);
+        p.poly(new float[]{-30,-37,30,-37,27,24,0,37,-27,24},NAVY);
+        p.circle(-5,-18,12,PAPER); p.circle(7,-25,9,PAPER);
+        p.poly(new float[]{14,-28,25,-23,14,-19},0xfff39b38);
+        p.circle(10,-27,1.8f,INK);
+        p.poly(new float[]{-17,-20,-24,-26,-21,-14,-9,-7,7,-9,13,-17},PAPER);
+        p.rect(-2,-37,18,5,PAPER); p.rect(-3,-32,20,3,INK); p.rect(4,-37,5,3,GOLD);
+        if(stripes==0) { p.circle(0,15,8,0xff617287); p.circle(0,15,4,NAVY); }
+        for(int i=0;i<stripes;i++) {
+            float yy=1+i*7;
+            p.rect(-23,yy,46,4,GOLD); p.rect(-23,yy,46,1,0xffffec96);
+            for(int j=0;j<8;j++) p.line(-22+j*6,yy+4,-18+j*6,yy,1,0xffb17a27);
+        }
     }
     public static void star(Painter p,float x,float y,float r,int color) {
         float[] points=new float[20];

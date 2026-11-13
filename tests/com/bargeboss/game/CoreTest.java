@@ -71,7 +71,8 @@ public final class CoreTest {
         AnimationTest.run();
         RotationTest.run();
         ResponsiveTest.run();
-        check(Parity.signature().equals("9d4ff499:10:7702"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        CareerTest.run();
+        check(Parity.signature().equals("ca4bf3f4:10:7702"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

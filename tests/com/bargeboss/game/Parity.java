@@ -58,6 +58,7 @@ public final class Parity implements Painter {
         for(int i=0;i<60;i++) { g.advance(1.0/60); if(i%20==0) Renderer.draw(g,p); }
         tutorial(p);
         responsive(p);
+        progression(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
     }
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
@@ -82,6 +83,17 @@ public final class Parity implements Painter {
         g.background(); Renderer.draw(g,p);
         g.configureCanvas(960,720); Renderer.draw(g,p);
         g.pause(); g.startTutorial(); Renderer.draw(g,p);
+    }
+    private static void progression(Parity p) {
+        Game g=new Game(); g.restoreProgress("BB1|0|3,7000|0,0|0,0");
+        g.mode=Game.CHALLENGES; Renderer.draw(g,p);
+        g.selectChallenge(1); g.reset();
+        g.ticks=g.shiftTicks()-1; g.delivered=g.quota(); g.hull=95; g.lost=0; g.score=7500;
+        g.step(); p.add(g.earnedStars); p.add(g.career.rank()); p.add(g.progressVersion());
+        p.add(filenameHash(g.saveProgress())); Renderer.draw(g,p);
+        Game restored=new Game(); restored.restoreProgress(g.saveProgress());
+        restored.configureCanvas(1333.3334f,600); restored.mode=Game.CHALLENGES;
+        p.add(filenameHash(restored.saveProgress())); Renderer.draw(restored,p);
     }
     public static void diagnostic() {
         tracing=true;

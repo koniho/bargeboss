@@ -19,8 +19,11 @@
 @property(nonatomic,strong) UIImpactFeedbackGenerator *impact;
 @property(nonatomic,strong) UINotificationFeedbackGenerator *delivery;
 @property(nonatomic) CFTimeInterval lastTime;
+@property(nonatomic) jint savedProgressVersion;
+@property(nonatomic) jint attemptedProgressVersion;
 - (void)suspend;
 - (void)resume;
+- (void)saveProgress:(BOOL)flush;
 @end
 
 @implementation BBGameView
@@ -31,6 +34,19 @@
         self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
         self.accessibilityLabel=@"Barge Boss river game";
         self.game=[[BBGame alloc] init]; self.painter=[[BBNativePainter alloc] init];
+        @try {
+            NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;
+            // CI isolation only; normal launches never remove saved progress.
+            NSArray<NSString *> *arguments=NSProcessInfo.processInfo.arguments;
+            if([arguments containsObject:@"--reset-progress-for-ui-tests"]) {
+                [defaults removeObjectForKey:@"captain-progress"]; [defaults synchronize];
+            }
+            [self.game restoreProgressWithNSString:[defaults stringForKey:@"captain-progress"]];
+            NSUInteger fixture=[arguments indexOfObject:@"--progress-fixture-for-ui-tests"];
+            if(fixture!=NSNotFound && fixture+1<arguments.count)
+                [self.game restoreProgressWithNSString:arguments[fixture+1]];
+        } @catch(NSException *exception) { NSLog(@"Could not read captain progress: %@",exception); }
+        self.savedProgressVersion=self.attemptedProgressVersion=[self.game progressVersion];
         self.touches=[NSMutableArray array]; self.touchIDs=[NSMutableArray array];
         self.selection=[[UISelectionFeedbackGenerator alloc] init];
         self.contact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
@@ -59,9 +75,20 @@
         case 4: [self.delivery notificationOccurred:UINotificationFeedbackTypeSuccess]; break;
         default: break;
     }
-    self.lastTime=link.timestamp; self.accessibilityValue=[self.game status]; [self setNeedsDisplay];
+    [self saveProgress:NO]; self.lastTime=link.timestamp; self.accessibilityValue=[self.game status]; [self setNeedsDisplay];
 }
-- (void)suspend { [self.game background]; self.accessibilityValue=[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
+- (void)saveProgress:(BOOL)flush {
+    jint version=[self.game progressVersion];
+    if(version==self.savedProgressVersion || (!flush && version==self.attemptedProgressVersion)) return;
+    self.attemptedProgressVersion=version;
+    @try {
+        NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;
+        [defaults setObject:[self.game saveProgress] forKey:@"captain-progress"];
+        if([defaults synchronize]) self.savedProgressVersion=version;
+        else NSLog(@"Could not save captain progress");
+    } @catch(NSException *exception) { NSLog(@"Could not save captain progress: %@",exception); }
+}
+- (void)suspend { [self.game background]; [self saveProgress:YES]; self.accessibilityValue=[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
 - (void)resume { self.lastTime=0; self.displayLink.paused=NO; }
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;

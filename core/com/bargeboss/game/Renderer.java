@@ -6,6 +6,7 @@ public final class Renderer {
     public static void draw(Game root,Painter p) {
         Game g=root.activeGame();
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
+        if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         p.rect(0,0,g.layout.width,g.layout.height,VisualStyle.NAVY);
         if(g.layout.width!=Layout.WIDTH || g.layout.height!=Layout.HEIGHT) {
             // Responsive margins are part of the industrial apron, not letterbox bars.

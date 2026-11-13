@@ -50,7 +50,8 @@
                                   withVelocity:100 thenHoldForDuration:hold];
 }
 - (void)testNativeLassoUnloadingAndLifecycle {
-    XCUIApplication *app=[[XCUIApplication alloc] init]; [app launch];
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
@@ -76,7 +77,8 @@
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Paused; delivered 1;"],@"Background pauses without resetting delivery");
 }
 - (void)testInteractiveDragAndLassoTutorial {
-    XCUIApplication *app=[[XCUIApplication alloc] init]; [app launch];
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self tapMenu:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
@@ -96,5 +98,34 @@
     [self tapMenu:stage x:770 y:446];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
     XCTAssertFalse([(NSString *)stage.value containsString:@"lesson"]);
+}
+- (void)testChallengeBoardAndSavedCaptainProgress {
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests",@"--progress-fixture-for-ui-tests",@"BB1|0|3,1200|0,0|0,0"];
+    [app launch]; XCUIElement *stage=app.otherElements[@"river-stage"];
+    XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
+    [self waitFor:@"rank WAKE WRANGLER" on:stage];
+    XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
+    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    // Third challenge remains locked; the board must preserve the prior selection.
+    [self tapMenu:stage x:790 y:302];
+    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 0;"]);
+    [self tapMenu:stage x:490 y:302]; [self waitFor:@"challenge 1;" on:stage];
+    // The frame publishes status only after the native version-change save has run.
+    [app terminate]; app.launchArguments=@[]; [app launch];
+    stage=app.otherElements[@"river-stage"]; XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
+    [self waitFor:@"Ready;" on:stage];
+    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 1;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"rank WAKE WRANGLER;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
+    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
+    image.name=@"native-saved-captain-challenges"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
+    [self tapMenu:stage x:150 y:544]; [self waitFor:@"Ready;" on:stage];
+    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    [self tapMenu:stage x:790 y:544]; [self waitFor:@"Working;" on:stage];
+    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 1;"]);
 }
 @end

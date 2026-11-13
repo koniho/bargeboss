@@ -19,13 +19,16 @@ public final class ScreenSizesPreview {
     }
     public static void main(String[] args) throws Exception {
         new File("out").mkdirs(); Game g=new Game();
-        capture(g,1600,720,"wide-title"); g.reset();
+        capture(g,1600,720,"wide-title");
+        g.mode=Game.CHALLENGES; capture(g,1600,720,"wide-challenges-locked"); g.reset();
         capture(g,1600,720,"wide-stage");
         g.background(); capture(g,1600,720,"wide-pause");
         g.mode=Game.HELP; capture(g,1600,720,"wide-help");
         g.startTutorial(); capture(g,1600,720,"wide-tutorial");
         g=new Game();g.reset(); capture(g,1280,720,"standard-stage");
         capture(g,1024,768,"tablet-stage");
+        g=new Game(); g.restoreProgress("BB1|2|3,7000|3,7500|3,8800"); g.mode=Game.CHALLENGES;
+        capture(g,1600,720,"wide-challenges-captain");
         System.out.println("Responsive phone and tablet captures exported to out/");
     }
 }

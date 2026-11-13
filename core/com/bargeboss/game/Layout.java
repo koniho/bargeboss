@@ -10,6 +10,10 @@ public final class Layout {
     public static final Box LEARN=new Box(632,330,276,64), START=new Box(632,410,276,72);
     public static final Box RESUME=new Box(340,300,280,64), RESTART=new Box(340,382,280,64),
             AGAIN=new Box(340,450,280,64);
+    public static final Box CHALLENGES=new Box(632,492,276,42),
+            BACK=new Box(40,516,220,56), CHALLENGE_START=new Box(660,516,260,56),
+            FINISH_CHALLENGES=new Box(60,450,240,64), NEXT_CHALLENGE=new Box(660,450,240,64);
+    public static final Box[] CHALLENGE_CARDS={new Box(60,184,260,236),new Box(360,184,260,236),new Box(660,184,260,236)};
     public static final Layout DEFAULT=new Layout(WIDTH,HEIGHT);
     public final float width,height,offsetX,offsetY;
     public final boolean rails;
