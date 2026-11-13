@@ -62,7 +62,10 @@ or separate JavaScript/Swift gameplay implementation.
 | iOS 15+ | UIKit / Core Graphics / CADisplayLink | the same `core/`, translated by J2ObjC 3.1 |
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
-Every host fits the same **960×600 landscape interface** within safe bounds.
+Every host fills its safe display bounds with the same **responsive landscape layout**,
+using 960×600 as the reference size. Wide screens put the HUD and controls in side
+panels; other aspect ratios retain top and bottom controls. Sprites keep their
+proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
 The complete river is visible at once, with a compact channel and larger boat
 footprints that make cargo, wakes and rope actions easier to read. The camera
 rotates the shared world into the board; it does not scroll or crop the stage.
@@ -70,9 +73,9 @@ Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring
 traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
 
 The same PNG atlases are bundled on Android, iOS and desktop. Every rotating
-boat and payload has **16 headings in a 4×4 sheet**, spaced 22.5° apart. Shared
-code selects adjacent drawings and aligns their hull or payload anchors before
-blending them. Native hosts sum their weighted premultiplied colors in one layer,
+boat and payload has **32 headings**, spaced 11.25° apart, interleaved from two
+4×4 sheets. Shared code calibrates each frame’s X/Y size and footprint anchor.
+It holds each drawing crisp, then blends across a brief 2.25° transition. Native hosts sum their weighted premultiplied colors in one layer,
 so an opaque boat stays opaque between headings. This smooths transitions between
 painted views; it is not skeletal animation or a live 3D model. Native
 antialiasing and bitmap sampling can still differ slightly.
@@ -142,7 +145,7 @@ build for compilation validation only. Store provisioning/distribution is not co
 ./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
 ./preview.sh     # Real phase, title/menu and tutorial contact sheets in out/
 ./preview.sh --animations # Phase sequences plus rotation; GIFs when ffmpeg is installed
-./preview.sh --rotation   # 20 fps turns with fixed crosshairs for boats and payloads
+./preview.sh --rotation   # 240 frames at 30 fps; fixed crosshairs for boats and payloads
 ./check-art.sh   # Optional Termux check on the actual Android Java runtime
 ```
 

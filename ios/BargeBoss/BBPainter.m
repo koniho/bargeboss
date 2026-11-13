@@ -18,19 +18,24 @@
 }
 - (NSArray<UIImage *> *)atlas:(jint)atlas {
     NSArray<UIImage *> *cached=self.spriteAtlases[@(atlas)]; if(cached) return cached;
-    NSString *file=[BBSpriteAtlas fileWithInt:atlas];
-    NSString *path=[NSBundle.mainBundle pathForResource:file ofType:nil inDirectory:@"assets/sprites"];
-    UIImage *image=path?[UIImage imageWithContentsOfFile:path]:nil;
-    if(!image.CGImage) [NSException raise:@"MissingSpriteAtlas" format:@"Missing or unreadable sprite atlas: assets/sprites/%@",file];
-    float width=(float)CGImageGetWidth(image.CGImage),height=(float)CGImageGetHeight(image.CGImage);
     int count=[BBSpriteAtlas countWithInt:atlas],columns=[BBSpriteAtlas columnsWithInt:atlas],rows=[BBSpriteAtlas rowsWithInt:atlas];
     NSMutableArray<UIImage *> *frames=[NSMutableArray arrayWithCapacity:count];
+    NSMutableDictionary<NSString *,UIImage *> *sources=[NSMutableDictionary dictionary];
     for(int f=0;f<count;f++) {
-        int col=f%columns,row=f/columns;
+        NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:f];
+        UIImage *image=sources[file];
+        if(!image) {
+            NSString *path=[NSBundle.mainBundle pathForResource:file ofType:nil inDirectory:@"assets/sprites"];
+            image=path?[UIImage imageWithContentsOfFile:path]:nil;
+            if(!image.CGImage) [NSException raise:@"MissingSpriteAtlas" format:@"Missing or unreadable sprite atlas: assets/sprites/%@",file];
+            sources[file]=image;
+        }
+        float width=(float)CGImageGetWidth(image.CGImage),height=(float)CGImageGetHeight(image.CGImage);
+        int sourceFrame=[BBSpriteAtlas sourceFrameWithInt:atlas withInt:f],col=sourceFrame%columns,row=sourceFrame/columns;
         float x=roundf(width*col/(float)columns),y=roundf(height*row/(float)rows);
         float right=roundf(width*(col+1)/(float)columns),bottom=roundf(height*(row+1)/(float)rows);
         CGImageRef cropped=CGImageCreateWithImageInRect(image.CGImage,CGRectMake(x,y,right-x,bottom-y));
-        if(!cropped) [NSException raise:@"InvalidSpriteAtlas" format:@"Invalid sprite cell %d in %@",f,file];
+        if(!cropped) [NSException raise:@"InvalidSpriteAtlas" format:@"Invalid sprite cell %d in %@",sourceFrame,file];
         [frames addObject:[UIImage imageWithCGImage:cropped scale:1 orientation:UIImageOrientationUp]];
         CGImageRelease(cropped);
     }
@@ -39,6 +44,8 @@
 - (void)spriteWithInt:(jint)atlas withInt:(jint)frame withFloat:(jfloat)cx withFloat:(jfloat)cy
            withFloat:(jfloat)width withFloat:(jfloat)height withFloat:(jfloat)rotation withFloat:(jfloat)alpha {
     if(frame<0 || frame>=[BBSpriteAtlas countWithInt:atlas]) [NSException raise:@"InvalidSpriteFrame" format:@"Invalid sprite frame: %d",frame];
+    width*=[BBSpriteAtlas widthScaleWithInt:atlas withInt:frame];
+    height*=[BBSpriteAtlas heightScaleWithInt:atlas withInt:frame];
     UIImage *image=[self atlas:atlas][frame];
     CGContextRef ctx=self.context;
     CGContextSaveGState(ctx);
@@ -71,19 +78,24 @@
                   withFloat:width withFloat:height withFloat:rotation withFloat:alpha]; return;
     }
     NSArray<UIImage *> *frames=[self atlas:atlas];
-    float ax=-[BBSpriteAtlas pivotXWithInt:atlas withInt:frameA]*width;
-    float ay=-[BBSpriteAtlas pivotYWithInt:atlas withInt:frameA]*height;
-    float bx=-[BBSpriteAtlas pivotXWithInt:atlas withInt:frameB]*width;
-    float by=-[BBSpriteAtlas pivotYWithInt:atlas withInt:frameB]*height;
-    CGRect bounds=CGRectMake(fminf(ax,bx)-2,fminf(ay,by)-2,fabsf(ax-bx)+width+4,fabsf(ay-by)+height+4);
+    float aw=width*[BBSpriteAtlas widthScaleWithInt:atlas withInt:frameA];
+    float ah=height*[BBSpriteAtlas heightScaleWithInt:atlas withInt:frameA];
+    float bw=width*[BBSpriteAtlas widthScaleWithInt:atlas withInt:frameB];
+    float bh=height*[BBSpriteAtlas heightScaleWithInt:atlas withInt:frameB];
+    float ax=-[BBSpriteAtlas pivotXWithInt:atlas withInt:frameA]*aw;
+    float ay=-[BBSpriteAtlas pivotYWithInt:atlas withInt:frameA]*ah;
+    float bx=-[BBSpriteAtlas pivotXWithInt:atlas withInt:frameB]*bw;
+    float by=-[BBSpriteAtlas pivotYWithInt:atlas withInt:frameB]*bh;
+    CGRect bounds=CGRectMake(fminf(ax,bx)-2,fminf(ay,by)-2,
+            fmaxf(ax+aw,bx+bw)-fminf(ax,bx)+4,fmaxf(ay+ah,by+bh)-fminf(ay,by)+4);
     CGContextRef ctx=self.context; CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx,cx,cy); CGContextRotateCTM(ctx,rotation);
     // Group alpha applies once when the layer is composited; inside, sum premultiplied cells.
     CGContextSetAlpha(ctx,fmaxf(0,fminf(1,alpha)));
     CGContextSetBlendMode(ctx,kCGBlendModeNormal); CGContextBeginTransparencyLayerWithRect(ctx,bounds,NULL);
-    [self cell:frames[frameA] x:ax y:ay width:width height:height alpha:(255-weight)/255.0f];
+    [self cell:frames[frameA] x:ax y:ay width:aw height:ah alpha:(255-weight)/255.0f];
     CGContextSetBlendMode(ctx,kCGBlendModePlusLighter);
-    [self cell:frames[frameB] x:bx y:by width:width height:height alpha:weight/255.0f];
+    [self cell:frames[frameB] x:bx y:by width:bw height:bh alpha:weight/255.0f];
     CGContextEndTransparencyLayer(ctx); CGContextRestoreGState(ctx);
 }
 - (void)color:(jint)argb {

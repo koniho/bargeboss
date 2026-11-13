@@ -29,20 +29,22 @@ their original timing. Visual wakes, wave patterns and bursts do not affect phys
 
 `Renderer` emits geometry and atlas sprite commands through `Painter`. Lettering
 is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
-are no native menus overlaying the game. `Viewport` fits the same **960×600
-landscape interface** within each host's safe bounds, using letterboxing where
-necessary. The entire playable stage remains visible; there is no following
-camera or platform-specific crop.
+are no native menus overlaying the game. `Viewport` exposes a full logical canvas
+at a uniform pixel scale, with 960×600 as the reference size. Each `Game` owns an
+immutable `Layout` and `RiverCamera`; resizing cancels active gestures and updates
+practice too. Screens wider than 2.1:1 place stats and controls in side rails.
+Other ratios retain top/bottom controls. The whole stage remains visible, with
+industrial scenery extending into the responsive margins rather than black bars.
 
-`RiverPainter` turns the source river a quarter-turn into the landscape board:
-`screenX = 16 + (worldY - 148) × 1.35` and
-`screenY = 84 + (460 - worldX) × 1.35`. The full source rectangle is
-`x=140..460, y=148..836`; navigable water is `x=170..430, y=215..817`.
-The paired inverse transform maps native pointer coordinates back to that same
-world. World-label helpers retain upright text after rotation. Hull dimensions
-are 1.25× their earlier values, and collision inertia is recalculated with those
-dimensions. These shared layout and geometry choices make the boats larger
-while preserving the complete stage on every platform.
+`RiverCamera` stores origin and uniform scale separately from the HUD. Its paired
+forward/inverse transform turns source coordinates x=140..460, y=148..836 into the
+landscape board. At the reference size it maps screenX=16+(worldY−148)×1.35 and
+screenY=84+(460−worldX)×1.35. Navigable water remains x=170..430, y=215..817.
+World labels remain upright. Hull dimensions are 1.25× their earlier values,
+with recalculated collision inertia. Camera transformations never alter physics.
+This separation supports adding pan/zoom later; the current camera fits the whole
+stage and no pinch/follow controls are enabled. Android hides system bars with
+transient swipe access while all native hosts retain safe cutout bounds.
 
 Platform hosts forward stable pointer IDs, cancel on interruptions, feed elapsed
 time into `Game.advance`, and implement four geometry primitives plus the shared
@@ -76,13 +78,25 @@ source instructions in [docs/art-prompts](art-prompts/). These are production
 source assets, not screenshots or generated build output.
 
 `SpriteAtlas` owns filenames, grid dimensions and per-frame hull/payload
-registration points. All five rotating assets use 16 views in a 4×4 grid, ordered
-clockwise from east in 22.5° steps. Shared Java chooses adjacent frames, their
+registration points. All five rotating assets use 32 logical views, ordered
+clockwise from east in 11.25° steps. Each asset has two physical 4×4 sheets:
+even logical frames use the corrected 16-view base sheet, and odd frames use a
+new sheet of intermediate headings (11.25°, 33.75°, …, 348.75°).
+`file(atlas, frame)` chooses the sheet; `sourceFrame(atlas, frame)` maps to the
+physical cell. Each source PNG is decoded once when constructing the cached
+logical frame array. Shared Java chooses adjacent frames, their
 blend weight, scale, pivots, opacity and decorative animation from the same
 phase state on every platform. Both frames place their registered footprint at
-the same world point; the stage applies no residual bitmap rotation. The atlas
+the same world point; the stage applies no residual bitmap rotation. Per-frame
+`widthScale` and `heightScale` calibrate drawing size before applying each pivot.
+The base views use scale one; intermediate views match the average normalized
+ink bounds of their neighboring base drawings. This compensates for different
+padding and drawing sizes across the two sheets. Each native blend layer covers
+the union of both independently scaled cells. The atlas
 camera and painted lighting stay fixed. Crossfading smooths transitions between
 adjacent drawings, rather than generating skeletal motion or true 3D geometry.
+Turning holds a crisp drawing through most of each 11.25° sector; a smooth blend
+covers only the central 2.25°, limiting doubled contours.
 Silhouette and perspective differences in the painted source views can remain
 visible during a turn.
 
@@ -95,7 +109,7 @@ opacity is applied once when compositing the layer. This preserves opaque
 overlaps midway between frames. Android uses PorterDuff ADD, iOS uses Core Graphics
 PlusLighter, and desktop uses an equivalent Java2D composite. Hosts do not choose
 independent frames or animation states. Drawing replay parity includes both
-frames, pivots, grid dimensions and blend weight; pixel raster output remains a
+frames, source files/cells, pivots, X/Y calibration, grid dimensions and blend weight; pixel raster output remains a
 native validation boundary.
 
 `VisualStyle` sets the palette; `VesselView`, `HarborView`, `DockView`,
@@ -133,9 +147,9 @@ there is no host-specific timing, randomness or state mutation in drawing.
 `./preview.sh --animations` exports 12 fps title, mooring and results frames and,
 when FFmpeg is available, looping GIFs. The mooring sequence preserves the real
 flight, tightening, unloading and celebration durations. It also includes the
-rotation export. `./preview.sh --rotation` exports 20 fps turns for isolated
+rotation export. `./preview.sh --rotation` exports 240 frames at 30 fps for isolated
 assets, the tug, and empty/loaded barges against stationary crosshairs, with a
-contact sheet and `out/concept-rotation.gif` when FFmpeg is installed. Each preview
+32-heading contact sheet and `out/concept-rotation.gif` when FFmpeg is installed. Each preview
 run first checks the desktop blend primitive with synthetic opaque and
 transparent pixels.
 
@@ -157,7 +171,8 @@ transparent pixels.
   NSString hash differences. A mismatch exports individual trace values and a
   diff under `ios/build/parity/` without relaxing numeric quantization.
 - Desktop pixel tests verify full opacity during overlaps, premultiplied
-  transparent edges, overall group alpha and exact frame endpoints. These do
+  transparent edges, overall group alpha, exact frame endpoints and fixed centers
+  for calibrated footprint markers. These do
   not replace native Android/iOS blend inspection.
 - Native builds use `-ffp-contract=off` so compiler-specific fused arithmetic
   does not silently alter the physics path.
@@ -171,7 +186,7 @@ transparent pixels.
 On Android and iPhone/iPad: complete a shift; test tug dragging, neutral, release, brake, cargo steering and lasso throws;
 add/remove/cancel an extra finger while holding a drag; cancel via an OS gesture; background
 and resume; inspect landscape notches and home indicators; verify the whole stage and all controls remain visible.
-On Windows/macOS/Linux: resize and letterbox the game, move the window between
+On Windows/macOS/Linux: resize the game and verify responsive reflow, move the window between
 different pixel-density monitors, lose focus while holding and resume.
 Compare corresponding native captures with the shared renderer previews. Feel
 gesture, contact, impact and delivery on real phones, and verify the haptic toggle
@@ -179,7 +194,3 @@ and OS settings. Simulator events do not establish physical vibration quality.
 
 This first prototype has one stage, no saved progress and no audio. Native
 screen-reader navigation is not implemented; letters supplement berth colors.
-
-Turning holds a crisp source view through most of each 22.5-degree sector. A smooth
-blend operates only across the central 4.5 degrees, limiting doubled contours.
-Per-frame footprint pivots compensate for the source drawings' unequal padding.

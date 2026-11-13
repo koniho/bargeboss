@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 /** Real atlas rendering: one full turn around stationary, always-visible crosshairs. */
 public final class RotationPreview {
-    private static final int FRAMES=120;
+    private static final int FRAMES=240;
     private static final String[] NAMES={"TUG","EMPTY BARGE","STEEL LOAD","CONTAINER LOAD","BULK LOAD","LOADED BARGE"};
     private RotationPreview() {}
     public static void main(String[] args) throws Exception {
@@ -20,15 +20,15 @@ public final class RotationPreview {
             ImageIO.write(image,"png",new File(directory,String.format("%04d.png",i)));
             if(i==0) ImageIO.write(image,"png",new File("out/rotation-centers.png"));
         }
-        // Quarter-size snapshots make all sixteen exact source headings reviewable.
-        BufferedImage sheet=new BufferedImage(960,600,BufferedImage.TYPE_INT_RGB);
+        // Quarter-size snapshots make all thirty-two exact source headings reviewable.
+        BufferedImage sheet=new BufferedImage(1920,600,BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics=sheet.createGraphics();
-        for(int i=0;i<16;i++) {
-            BufferedImage image=render(g,(float)(i*Math.PI*2/16));
-            graphics.drawImage(image,(i%4)*240,(i/4)*150,240,150,null);
+        for(int i=0;i<32;i++) {
+            BufferedImage image=render(g,(float)(i*Math.PI*2/32));
+            graphics.drawImage(image,(i%8)*240,(i/8)*150,240,150,null);
         }
         graphics.dispose(); ImageIO.write(sheet,"png",new File("out/rotation-headings.png"));
-        System.out.println("Stationary 360-degree sprite preview: "+FRAMES+" frames at20fps in out/animation-frames/rotation/");
+        System.out.println("Stationary 360-degree sprite preview: "+FRAMES+" frames at 30fps in out/animation-frames/rotation/");
     }
     private static BufferedImage render(Game g,float angle) {
         BufferedImage image=new BufferedImage(Layout.WIDTH,Layout.HEIGHT,BufferedImage.TYPE_INT_RGB);
@@ -36,7 +36,7 @@ public final class RotationPreview {
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         DesktopPainter painter=new DesktopPainter(graphics);
         painter.rect(0,0,Layout.WIDTH,Layout.HEIGHT,VisualStyle.NAVY);
-        Lettering.draw(painter,"FIXED PIVOT / 360-DEGREE TURN / 16 HEADINGS",22,14,15,VisualStyle.CREAM);
+        Lettering.draw(painter,"FIXED PIVOT / 360-DEGREE TURN / 32 HEADINGS",22,14,15,VisualStyle.CREAM);
         Lettering.draw(painter,String.format("%03d DEG",Math.round(angle*180/Math.PI)),814,15,13,VisualStyle.GOLD);
         for(int panel=0;panel<6;panel++) {
             float x=16+(panel%3)*312,y=48+(panel/3)*259,cx=x+148,cy=y+153;

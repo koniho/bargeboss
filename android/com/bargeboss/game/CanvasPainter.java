@@ -29,13 +29,25 @@ public final class CanvasPainter implements Painter {
         atlas(0); atlas(1);
     }
     private static final class Atlas {
-        final Bitmap image;
+        final Bitmap[] images;
         final Rect[] frames;
-        Atlas(Bitmap image,int atlas) {
-            this.image=image; frames=new Rect[SpriteAtlas.count(atlas)];
-            int columns=SpriteAtlas.columns(atlas),rows=SpriteAtlas.rows(atlas);
-            for(int f=0;f<frames.length;f++) {
-                int col=f%columns,row=f/columns;
+        Atlas(int atlas,AssetManager assets) throws IOException {
+            int count=SpriteAtlas.count(atlas),columns=SpriteAtlas.columns(atlas),rows=SpriteAtlas.rows(atlas);
+            images=new Bitmap[count]; frames=new Rect[count];
+            Map<String,Bitmap> sources=new HashMap<String,Bitmap>();
+            for(int f=0;f<count;f++) {
+                String path="sprites/"+SpriteAtlas.file(atlas,f);
+                Bitmap image=sources.get(path);
+                if(image==null) {
+                    try(InputStream input=assets.open(path)) {
+                        BitmapFactory.Options options=new BitmapFactory.Options(); options.inScaled=false;
+                        image=BitmapFactory.decodeStream(input,null,options);
+                    }
+                    if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
+                    sources.put(path,image);
+                }
+                images[f]=image;
+                int sourceFrame=SpriteAtlas.sourceFrame(atlas,f),col=sourceFrame%columns,row=sourceFrame/columns;
                 frames[f]=new Rect(Math.round(image.getWidth()*col/(float)columns),Math.round(image.getHeight()*row/(float)rows),
                         Math.round(image.getWidth()*(col+1)/(float)columns),Math.round(image.getHeight()*(row+1)/(float)rows));
             }
@@ -43,21 +55,18 @@ public final class CanvasPainter implements Painter {
     }
     private Atlas atlas(int id) {
         Atlas cached=atlases.get(id); if(cached!=null) return cached;
-        String path="sprites/"+SpriteAtlas.file(id);
-        try(InputStream input=assets.open(path)) {
-            BitmapFactory.Options options=new BitmapFactory.Options(); options.inScaled=false;
-            Bitmap bitmap=BitmapFactory.decodeStream(input,null,options);
-            if(bitmap==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
-            cached=new Atlas(bitmap,id); atlases.put(id,cached); return cached;
-        } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas: "+path,e); }
+        try {
+            cached=new Atlas(id,assets); atlases.put(id,cached); return cached;
+        } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas for asset "+id,e); }
     }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
+        width*=SpriteAtlas.widthScale(id,frame); height*=SpriteAtlas.heightScale(id,frame);
         Atlas atlas=atlas(id);
         float left=-SpriteAtlas.pivotX(id,frame)*width,top=-SpriteAtlas.pivotY(id,frame)*height;
         canvas.save(); canvas.translate(cx,cy); canvas.rotate(rotation*180f/(float)Math.PI);
         spritePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
-        canvas.drawBitmap(atlas.image,atlas.frames[frame],new RectF(left,top,left+width,top+height),spritePaint);
+        canvas.drawBitmap(atlas.images[frame],atlas.frames[frame],new RectF(left,top,left+width,top+height),spritePaint);
         canvas.restore();
     }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
@@ -69,15 +78,17 @@ public final class CanvasPainter implements Painter {
         if(weight==0 || frameA==frameB) { sprite(id,frameA,cx,cy,width,height,rotation,alpha); return; }
         if(weight==255) { sprite(id,frameB,cx,cy,width,height,rotation,alpha); return; }
         Atlas atlas=atlas(id);
-        float ax=-SpriteAtlas.pivotX(id,frameA)*width,ay=-SpriteAtlas.pivotY(id,frameA)*height;
-        float bx=-SpriteAtlas.pivotX(id,frameB)*width,by=-SpriteAtlas.pivotY(id,frameB)*height;
+        float aw=width*SpriteAtlas.widthScale(id,frameA),ah=height*SpriteAtlas.heightScale(id,frameA);
+        float bw=width*SpriteAtlas.widthScale(id,frameB),bh=height*SpriteAtlas.heightScale(id,frameB);
+        float ax=-SpriteAtlas.pivotX(id,frameA)*aw,ay=-SpriteAtlas.pivotY(id,frameA)*ah;
+        float bx=-SpriteAtlas.pivotX(id,frameB)*bw,by=-SpriteAtlas.pivotY(id,frameB)*bh;
         canvas.save(); canvas.translate(cx,cy); canvas.rotate(rotation*180f/(float)Math.PI);
         canvas.saveLayerAlpha(Math.min(ax,bx)-2,Math.min(ay,by)-2,
-                Math.max(ax,bx)+width+2,Math.max(ay,by)+height+2,Math.round(Math.max(0,Math.min(1,alpha))*255));
+                Math.max(ax+aw,bx+bw)+2,Math.max(ay+ah,by+bh)+2,Math.round(Math.max(0,Math.min(1,alpha))*255));
         spritePaint.setAlpha(255-weight);
-        canvas.drawBitmap(atlas.image,atlas.frames[frameA],new RectF(ax,ay,ax+width,ay+height),spritePaint);
+        canvas.drawBitmap(atlas.images[frameA],atlas.frames[frameA],new RectF(ax,ay,ax+aw,ay+ah),spritePaint);
         spritePaint.setAlpha(weight); spritePaint.setXfermode(ADD);
-        canvas.drawBitmap(atlas.image,atlas.frames[frameB],new RectF(bx,by,bx+width,by+height),spritePaint);
+        canvas.drawBitmap(atlas.images[frameB],atlas.frames[frameB],new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }

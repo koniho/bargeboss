@@ -9,6 +9,7 @@ public final class Desktop extends JPanel {
     private final Game game=new Game();
     private long last=System.nanoTime();
     private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
+    private int canvasWidth=-1,canvasHeight=-1;
     private Desktop() {
         setPreferredSize(new Dimension(Layout.WIDTH,Layout.HEIGHT)); setBackground(new Color(0x101e25));
         MouseAdapter mouse=new MouseAdapter() {
@@ -17,16 +18,22 @@ public final class Desktop extends JPanel {
             public void mouseReleased(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.pointerUp(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
         };
         addMouseListener(mouse); addMouseMotionListener(mouse);
-        addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { game.cancelInputs(); } });
+        addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { updateViewport(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
         getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.pause(); } });
         new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); last=now; repaint(); }).start();
     }
+    private void updateViewport() {
+        int width=getWidth(),height=getHeight();
+        if(width==canvasWidth && height==canvasHeight) return;
+        canvasWidth=width; canvasHeight=height; viewport=new Viewport(width,height);
+        game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight()); game.cancelInputs();
+    }
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics); Graphics2D g=(Graphics2D)graphics.create();
-        viewport=new Viewport(getWidth(),getHeight());
+        updateViewport();
         g.translate(viewport.x,viewport.y); g.scale(viewport.scale,viewport.scale);
-        g.clipRect(0,0,Layout.WIDTH,Layout.HEIGHT); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        g.clip(new java.awt.geom.Rectangle2D.Float(0,0,viewport.logicalWidth(),viewport.logicalHeight())); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         Renderer.draw(game,new DesktopPainter(g)); g.dispose();
     }
     public static void main(String[] args) {

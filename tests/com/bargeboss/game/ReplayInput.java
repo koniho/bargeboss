@@ -4,10 +4,10 @@ package com.bargeboss.game;
 public final class ReplayInput {
     private ReplayInput() {}
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
-    public static void tap(Game g,Layout.Box box) { tap(g,box.centerX(),box.centerY()); }
-    public static void down(Game g,float x,float y) { g.pointerDown(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
-    public static void move(Game g,float x,float y) { g.pointerMove(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
-    public static void up(Game g,float x,float y) { g.pointerUp(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
+    public static void tap(Game g,Layout.Box box) { box=g.activeGame().layout.box(box); tap(g,box.centerX(),box.centerY()); }
+    public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }
+    public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
+    public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void lasso(Game root,Body b) {
         down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
         up(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);

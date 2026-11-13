@@ -29,26 +29,29 @@ public final class DesktopPainter implements Painter {
     public DesktopPainter(Graphics2D g) { this.g=g; }
     private static synchronized BufferedImage[] atlas(int id) {
         BufferedImage[] frames=ATLASES.get(id); if(frames!=null) return frames;
-        String path="assets/sprites/"+SpriteAtlas.file(id);
-        try {
-            BufferedImage image;
-            try(InputStream input=DesktopPainter.class.getResourceAsStream("/"+path)) {
-                image=input==null?ImageIO.read(new File(path)):ImageIO.read(input);
+        Map<String,BufferedImage> sources=new HashMap<String,BufferedImage>();
+        frames=new BufferedImage[SpriteAtlas.count(id)];
+        int columns=SpriteAtlas.columns(id),rows=SpriteAtlas.rows(id);
+        for(int f=0;f<frames.length;f++) {
+            String path="assets/sprites/"+SpriteAtlas.file(id,f);
+            BufferedImage image=sources.get(path);
+            if(image==null) {
+                try(InputStream input=DesktopPainter.class.getResourceAsStream("/"+path)) {
+                    image=input==null?ImageIO.read(new File(path)):ImageIO.read(input);
+                } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas: "+path,e); }
+                if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
+                sources.put(path,image);
             }
-            if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
-            frames=new BufferedImage[SpriteAtlas.count(id)];
-            int columns=SpriteAtlas.columns(id),rows=SpriteAtlas.rows(id);
-            for(int f=0;f<frames.length;f++) {
-                int col=f%columns,row=f/columns;
-                int x=Math.round(image.getWidth()*col/(float)columns),y=Math.round(image.getHeight()*row/(float)rows);
-                int right=Math.round(image.getWidth()*(col+1)/(float)columns),bottom=Math.round(image.getHeight()*(row+1)/(float)rows);
-                frames[f]=image.getSubimage(x,y,right-x,bottom-y);
-            }
-            ATLASES.put(id,frames); return frames;
-        } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas: "+path,e); }
+            int sourceFrame=SpriteAtlas.sourceFrame(id,f),col=sourceFrame%columns,row=sourceFrame/columns;
+            int x=Math.round(image.getWidth()*col/(float)columns),y=Math.round(image.getHeight()*row/(float)rows);
+            int right=Math.round(image.getWidth()*(col+1)/(float)columns),bottom=Math.round(image.getHeight()*(row+1)/(float)rows);
+            frames[f]=image.getSubimage(x,y,right-x,bottom-y);
+        }
+        ATLASES.put(id,frames); return frames;
     }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
+        width*=SpriteAtlas.widthScale(id,frame); height*=SpriteAtlas.heightScale(id,frame);
         BufferedImage image=atlas(id)[frame]; Graphics2D sprite=(Graphics2D)g.create();
         sprite.translate(cx,cy); sprite.rotate(rotation);
         sprite.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,Math.max(0,Math.min(1,alpha))));
@@ -67,13 +70,15 @@ public final class DesktopPainter implements Painter {
         if(weight==0 || frameA==frameB) { sprite(id,frameA,cx,cy,width,height,rotation,alpha); return; }
         if(weight==255) { sprite(id,frameB,cx,cy,width,height,rotation,alpha); return; }
         BufferedImage[] frames=atlas(id);
-        float ax=-SpriteAtlas.pivotX(id,frameA)*width,ay=-SpriteAtlas.pivotY(id,frameA)*height;
-        float bx=-SpriteAtlas.pivotX(id,frameB)*width,by=-SpriteAtlas.pivotY(id,frameB)*height;
+        float aw=width*SpriteAtlas.widthScale(id,frameA),ah=height*SpriteAtlas.heightScale(id,frameA);
+        float bw=width*SpriteAtlas.widthScale(id,frameB),bh=height*SpriteAtlas.heightScale(id,frameB);
+        float ax=-SpriteAtlas.pivotX(id,frameA)*aw,ay=-SpriteAtlas.pivotY(id,frameA)*ah;
+        float bx=-SpriteAtlas.pivotX(id,frameB)*bw,by=-SpriteAtlas.pivotY(id,frameB)*bh;
         double scale=Math.max(.25,StrictMath.sqrt(Math.abs(g.getTransform().getDeterminant())));
         float left=(float)(StrictMath.floor(Math.min(ax,bx)*scale)/scale-2);
         float top=(float)(StrictMath.floor(Math.min(ay,by)*scale)/scale-2);
-        int pixelsW=(int)StrictMath.ceil((Math.max(ax,bx)+width-left+2)*scale);
-        int pixelsH=(int)StrictMath.ceil((Math.max(ay,by)+height-top+2)*scale);
+        int pixelsW=(int)StrictMath.ceil((Math.max(ax+aw,bx+bw)-left+2)*scale);
+        int pixelsH=(int)StrictMath.ceil((Math.max(ay+ah,by+bh)-top+2)*scale);
         BufferedImage buffer=BLEND_BUFFER.get();
         if(buffer==null || buffer.getWidth()<pixelsW || buffer.getHeight()<pixelsH) {
             buffer=new BufferedImage(Math.max(pixelsW,buffer==null?0:buffer.getWidth()),
@@ -85,9 +90,9 @@ public final class DesktopPainter implements Painter {
         layer.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         layer.scale(scale,scale); layer.translate(-left,-top);
         layer.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,(255-weight)/255f));
-        drawCell(layer,frames[frameA],ax,ay,width,height);
+        drawCell(layer,frames[frameA],ax,ay,aw,ah);
         layer.setComposite(new AdditiveComposite(weight/255f));
-        drawCell(layer,frames[frameB],bx,by,width,height); layer.dispose();
+        drawCell(layer,frames[frameB],bx,by,bw,bh); layer.dispose();
         Graphics2D target=(Graphics2D)g.create(); target.translate(cx,cy); target.rotate(rotation);
         target.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,Math.max(0,Math.min(1,alpha))));
         target.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);

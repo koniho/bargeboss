@@ -9,7 +9,8 @@ public final class AnimationTest {
                 "sprite filename trace uses portable UTF-16 constants, independent of native NSString.hash");
         Viewport landscape=new Viewport(1440,900),portrait=new Viewport(900,1440);
         check(landscape.x==0 && landscape.y==0 && landscape.scale==1.5f,"landscape stage fills a matching display");
-        check(portrait.x==0 && portrait.y>0 && portrait.scale==900f/Layout.WIDTH,"portrait window letterboxes the whole landscape stage");
+        check(portrait.x==0 && portrait.y==0 && portrait.scale==900f/Layout.WIDTH
+                && portrait.logicalHeight()>Layout.HEIGHT,"portrait window exposes a full responsive canvas");
         float screenX=RiverPainter.screenX(310,540),screenY=RiverPainter.screenY(310,540);
         check(Math.abs(RiverPainter.riverX(screenX,screenY)-310)<.0001f && Math.abs(RiverPainter.riverY(screenX,screenY)-540)<.0001f,
                 "quarter-turn river input is the inverse of drawing");

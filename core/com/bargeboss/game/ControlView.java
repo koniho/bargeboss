@@ -39,8 +39,17 @@ public final class ControlView {
         String label=g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
         if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
             if(b!=null && b.active && b.unloadingTicks>0) { label="CREW UNLOADING"; break; }
-        Lettering.center(p,label,Layout.STATUS_CENTER_X,Layout.STATUS_LABEL_Y,14,color(g));
-        Lettering.center(p,hint(g),Layout.STATUS_CENTER_X,Layout.STATUS_HINT_Y,10,PAPER);
+        Layout layout=g.layout;
+        float size=layout.rails?Math.min(13,128*7f/Math.max(1,label.length()*6-1)):14;
+        Lettering.center(p,label,layout.statusX(),layout.statusY(),size,color(g));
+        if(layout.rails) {
+            String[] words=hint(g).split(" "); String line=""; float y=layout.statusHintY();
+            for(String word:words) {
+                if(line.length()+word.length()>19) { Lettering.center(p,line,layout.statusX(),y,9,PAPER); y+=15; line=""; }
+                line+=(line.length()==0?"":" ")+word;
+            }
+            if(line.length()>0) Lettering.center(p,line,layout.statusX(),y,9,PAPER);
+        } else Lettering.center(p,hint(g),layout.statusX(),layout.statusHintY(),10,PAPER);
     }
     public static void ring(Painter p,float x,float y,float radius,float fraction,int color,float width) {
         int segments=40;

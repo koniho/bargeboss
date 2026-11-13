@@ -43,12 +43,21 @@ public final class Game {
     private int pressTicks, held=-1, spawnIndex;
     private double accumulator, visualAccumulator;
 
+    public Layout layout=Layout.DEFAULT;
     public Game() { reset(); mode=TITLE; }
+    /** Hosts supply available logical bounds; resizing never advances physics or clocks. */
+    public void configureCanvas(float width,float height) {
+        if(Math.abs(layout.width-width)<.01f && Math.abs(layout.height-height)<.01f) return;
+        cancel();
+        layout=new Layout(width,height);
+        if(practice!=null) practice.configureCanvas(width,height);
+    }
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
         cancelInputs(); accumulator=0; visualAccumulator=0;
         returnToShift=mode!=TITLE && mode!=FINISH;
         practice=new Game(); practice.reset(); practice.tutorial=new Tutorial();
+        practice.layout=layout;
         practice.hapticsEnabled=hapticsEnabled;
         practice.tutorial.setup(practice);
         practice.tutorial.resumeShift=returnToShift;
@@ -99,22 +108,22 @@ public final class Game {
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
-        if(mapPointer!=-1 || pointer || x<0 || x>Layout.WIDTH || y<0 || y>Layout.HEIGHT) return;
-        boolean river=liveRiverInput() && RiverPainter.inBoard(x,y);
-        if(river) beginDown(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y),true);
+        if(mapPointer!=-1 || pointer || x<0 || x>layout.width || y<0 || y>layout.height) return;
+        boolean river=liveRiverInput() && layout.camera.contains(x,y);
+        if(river) beginDown(layout.camera.worldX(x,y),layout.camera.worldY(x,y),true);
         else beginDown(x,y,false);
         if(pointer) mapPointer=id;
     }
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(id!=mapPointer) return;
-        if(mapInRiver) move(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y)); else move(x,y);
+        if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(id!=mapPointer) return;
         mapPointer=-1;
-        if(mapInRiver) up(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y)); else up(x,y);
+        if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
@@ -163,7 +172,7 @@ public final class Game {
         if(pointer) return;
         if(river) {
             if(x<RiverPainter.WORLD_LEFT || x>RiverPainter.WORLD_RIGHT || y<RiverPainter.WORLD_TOP || y>RiverPainter.WORLD_BOTTOM) return;
-        } else if(x<0 || x>Layout.WIDTH || y<0 || y>Layout.HEIGHT) return;
+        } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
         pointer=true; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
         if(!river) return;
         if(tug.hit(x,y,8)) {
@@ -246,6 +255,7 @@ public final class Game {
         cancel();
     }
     private boolean tapped(Layout.Box box,float x,float y) {
+        box=layout.box(box);
         return box.contains(downX,downY) && box.contains(x,y);
     }
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */

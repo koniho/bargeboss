@@ -47,6 +47,7 @@
     [super layoutSubviews]; UIEdgeInsets insets=self.safeAreaInsets;
     self.viewport=[[BBViewport alloc] initWithFloat:(jfloat)(self.bounds.size.width-insets.left-insets.right)
                                         withFloat:(jfloat)(self.bounds.size.height-insets.top-insets.bottom)];
+    [self.game configureCanvasWithFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
     [self.game cancelInputs]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects];
 }
 - (void)frame:(CADisplayLink *)link {
@@ -68,7 +69,7 @@
     CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx,insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY]);
     CGContextScaleCTM(ctx,[self.viewport zoomFactor],[self.viewport zoomFactor]);
-    CGContextClipToRect(ctx,CGRectMake(0,0,960,600)); self.painter.context=ctx;
+    CGContextClipToRect(ctx,CGRectMake(0,0,[self.viewport logicalWidth],[self.viewport logicalHeight])); self.painter.context=ctx;
     [self.game renderWithBBPainter:self.painter]; self.painter.context=NULL;
     CGContextRestoreGState(ctx);
 }
@@ -79,7 +80,7 @@
 }
 - (CGRect)accessibilityFrame {
     UIEdgeInsets insets=self.safeAreaInsets; CGFloat scale=[self.viewport zoomFactor];
-    CGRect stage=CGRectMake(insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY],960*scale,600*scale);
+    CGRect stage=CGRectMake(insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY],[self.viewport logicalWidth]*scale,[self.viewport logicalHeight]*scale);
     return UIAccessibilityConvertFrameToScreenCoordinates(stage,self);
 }
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {

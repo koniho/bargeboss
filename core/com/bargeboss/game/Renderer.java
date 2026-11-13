@@ -6,8 +6,17 @@ public final class Renderer {
     public static void draw(Game root,Painter p) {
         Game g=root.activeGame();
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
-        p.rect(0,0,Layout.WIDTH,Layout.HEIGHT,VisualStyle.NAVY);
-        river(g,new RiverPainter(p));
+        p.rect(0,0,g.layout.width,g.layout.height,VisualStyle.NAVY);
+        if(g.layout.width!=Layout.WIDTH || g.layout.height!=Layout.HEIGHT) {
+            // Responsive margins are part of the industrial apron, not letterbox bars.
+            p.rect(0,0,g.layout.width,g.layout.height,0xff566578);
+            for(int row=0;row<g.layout.height/32;row++) for(int col=0;col<g.layout.width/48;col++) {
+                float x=col*48+(row%2)*24,y=row*32;
+                p.rect(x+1,y+1,46,30,(row+col)%3==0?0xff657282:0xff5c6b7c);
+                p.rect(x+3,y+3,42,1,0xff76808b);
+            }
+        }
+        river(g,new RiverPainter(p,g.layout.camera));
         ScreenView.hud(g,p);
         AssistView.draw(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);

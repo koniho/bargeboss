@@ -8,12 +8,13 @@ the same `Painter`. Do not add a second game implementation for any platform.
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area
   bounds, bitmap decoding/caching and drawing primitives only. All hosts use `Viewport`, the shared pointer router and `Game.advance`.
   Native haptic adapters consume shared semantic events; they never alter gameplay.
-- Keep the interface at 960x600 in landscape and fit it inside available bounds. Never crop a
-  platform's playable area or change its physics based on screen size/frame rate.
-- Show the whole stage on every platform. `RiverPainter` rotates the river into
-  the landscape board; use its paired forward/inverse transforms for input.
+- Use a responsive landscape canvas with a 960x600 reference size. Fill the available
+  display using per-game Layout and RiverCamera; never stretch sprites or crop the
+  playable stage, or change physics based on screen size/frame rate.
+- Show the whole stage on every platform. `RiverCamera` rotates the river into
+  the landscape board; use each game's paired forward/inverse transforms for input.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in
-  shared Java. Native hosts decode the same PNGs and execute `Painter.sprite`;
+  shared Java. Native hosts decode the same PNGs and execute `Painter.sprite` / `Painter.spriteBlend`;
   they must not infer gameplay phases or select different artwork.
 - Fixed 60 Hz steps, ordered cargo slots and `StrictMath` keep replays repeatable.
   Rendering must not mutate gameplay or use wall-clock time/randomness.

@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <math.h>
 
 @interface BBFlowTests : XCTestCase
 @end
@@ -16,14 +17,34 @@
     [self waitForExpectationsWithTimeout:18 handler:nil];
 }
 - (void)waitFor:(NSString *)value on:(XCUIElement *)stage { [self waitFor:value on:stage after:0]; }
+// Mirror the small shared Viewport/Layout contract, not fixed device dimensions.
+- (CGSize)logicalSize:(XCUIElement *)stage {
+    CGSize pixels=stage.frame.size; double scale=fmin(pixels.width/960,pixels.height/600);
+    return CGSizeMake(fmax(960,pixels.width/scale),fmax(600,pixels.height/scale));
+}
 - (XCUICoordinate *)point:(XCUIElement *)stage x:(double)x y:(double)y {
-    return [stage coordinateWithNormalizedOffset:CGVectorMake(x/960,y/600)];
+    CGSize size=[self logicalSize:stage];
+    return [stage coordinateWithNormalizedOffset:CGVectorMake(x/size.width,y/size.height)];
 }
 - (XCUICoordinate *)river:(XCUIElement *)stage x:(double)x y:(double)y {
-    // Same quarter-turn as the shared RiverPainter; physics keeps its original axes.
-    return [self point:stage x:16+(y-148)*1.35 y:84+(460-x)*1.35];
+    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
+    double scale=fmin((size.width-(rails?324:32))/688,(size.height-(rails?32:168))/320);
+    double left=(size.width-688*scale)/2,top=(size.height-320*scale)/2;
+    if(fabs(size.width-960)<.01 && fabs(size.height-600)<.01) { left=16; top=84; scale=1.35; }
+    return [self point:stage x:left+(y-148)*scale y:top+(460-x)*scale];
 }
-- (void)tap:(XCUIElement *)stage x:(double)x y:(double)y { [[self point:stage x:x y:y] tap]; }
+- (void)tapMenu:(XCUIElement *)stage x:(double)x y:(double)y {
+    CGSize size=[self logicalSize:stage];
+    [[self point:stage x:x+(size.width-960)/2 y:y+(size.height-600)/2] tap];
+}
+- (void)tapPause:(XCUIElement *)stage {
+    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
+    [[self point:stage x:rails?size.width-81:917+(size.width-960)/2 y:rails?48:40] tap];
+}
+- (void)tapBrake:(XCUIElement *)stage {
+    CGSize size=[self logicalSize:stage]; BOOL rails=size.width/size.height>=2.1;
+    [[self point:stage x:rails?size.width-81:661+(size.width-960)/2 y:rails?size.height-180:size.height-41] tap];
+}
 - (void)riverDrag:(XCUIElement *)stage x:(double)x y:(double)y toX:(double)xx toY:(double)yy hold:(double)hold {
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
                                   withVelocity:100 thenHoldForDuration:hold];
@@ -33,7 +54,7 @@
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
-    [self tap:stage x:770 y:446];
+    [self tapMenu:stage x:770 y:446];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
     [[self river:stage x:292 y:700] pressForDuration:4];
     [self waitFor:@"ready to tie 2" on:stage];
@@ -47,9 +68,9 @@
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
     [self waitFor:@"delivered 1;" on:stage];
-    [self tap:stage x:917 y:40];
+    [self tapPause:stage];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Paused; delivered 1;"]);
-    [self tap:stage x:480 y:332];
+    [self tapMenu:stage x:480 y:332];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 1;"]);
     [XCUIDevice.sharedDevice pressButton:XCUIDeviceButtonHome]; [app activate];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Paused; delivered 1;"],@"Background pauses without resetting delivery");
@@ -58,10 +79,10 @@
     XCUIApplication *app=[[XCUIApplication alloc] init]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
-    [self tap:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
+    [self tapMenu:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
     [self riverDrag:stage x:350 y:700 toX:350 toY:600 hold:0.6];
     [self waitFor:@"lesson 1" on:stage];
-    [self tap:stage x:661 y:559]; [self waitFor:@"lesson 2" on:stage];
+    [self tapBrake:stage]; [self waitFor:@"lesson 2" on:stage];
     [[self river:stage x:292 y:700] pressForDuration:3];
     [self waitFor:@"lesson 3" on:stage];
     [self riverDrag:stage x:230 y:700 toX:165 toY:635 hold:0.8];
@@ -72,7 +93,7 @@
     [self waitFor:@"lesson 6" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
-    [self tap:stage x:770 y:446];
+    [self tapMenu:stage x:770 y:446];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
     XCTAssertFalse([(NSString *)stage.value containsString:@"lesson"]);
 }

@@ -33,13 +33,38 @@ public final class DesktopPainterTest {
             BufferedImage endpoint=render(0,1,false),single=render(0,1,true);
             for(int y=0;y<128;y++) for(int x=0;x<128;x++)
                 check(endpoint.getRGB(x,y)==single.getRGB(x,y),"blend endpoint matches one sprite");
-            System.out.println("Desktop sprite pixels passed: opaque blend, premultiplied edges, group alpha, endpoints");
+            cells[0]=footprintMarker(0); cells[1]=footprintMarker(1);
+            for(float blend:new float[]{0,.25f,.5f,.75f,1}) checkMarker(render(blend,1,false));
+            System.out.println("Desktop sprite pixels passed: opaque blend, premultiplied edges, group alpha, endpoints, calibrated anchors");
         } finally { if(old==null) cache.remove(SpriteAtlas.TUG); else cache.put(SpriteAtlas.TUG,old); }
     }
     private static BufferedImage cell(int color) {
         BufferedImage image=new BufferedImage(8,8,BufferedImage.TYPE_INT_ARGB);
         for(int y=0;y<8;y++) for(int x=0;x<8;x++) image.setRGB(x,y,color);
         return image;
+    }
+    /** A 20-unit footprint centered on each source view's registration point. */
+    private static BufferedImage footprintMarker(int frame) {
+        int size=512; BufferedImage image=new BufferedImage(size,size,BufferedImage.TYPE_INT_ARGB);
+        float px=SpriteAtlas.pivotX(SpriteAtlas.TUG,frame),py=SpriteAtlas.pivotY(SpriteAtlas.TUG,frame);
+        float sx=64*SpriteAtlas.widthScale(SpriteAtlas.TUG,frame),sy=64*SpriteAtlas.heightScale(SpriteAtlas.TUG,frame);
+        for(int y=0;y<size;y++) for(int x=0;x<size;x++) {
+            float dx=((x+.5f)/size-px)*sx,dy=((y+.5f)/size-py)*sy;
+            if(dx*dx+dy*dy<=100) image.setRGB(x,y,0xffffffff);
+        }
+        return image;
+    }
+    private static void checkMarker(BufferedImage image) {
+        double sum=0,xsum=0,ysum=0; int left=128,top=128,right=0,bottom=0;
+        for(int y=0;y<128;y++) for(int x=0;x<128;x++) {
+            int alpha=image.getRGB(x,y)>>>24; if(alpha==0) continue;
+            sum+=alpha; xsum+=(x+.5)*alpha; ysum+=(y+.5)*alpha;
+            if(alpha>=64) { left=Math.min(left,x); top=Math.min(top,y); right=Math.max(right,x); bottom=Math.max(bottom,y); }
+        }
+        check(sum>0 && Math.abs(xsum/sum-64)<1 && Math.abs(ysum/sum-64)<1,
+                "calibrated footprint anchor stays at the requested center throughout blending");
+        check(Math.abs(right-left+1-20)<=2 && Math.abs(bottom-top+1-20)<=2,
+                "each frame's independent X/Y calibration preserves footprint size");
     }
     private static BufferedImage render(float blend,float alpha,boolean single) {
         BufferedImage image=new BufferedImage(128,128,BufferedImage.TYPE_INT_ARGB);

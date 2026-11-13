@@ -21,15 +21,20 @@ public final class Parity implements Painter {
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         mark("sprite"); add(5); add(atlas); add(frame); value(cx); value(cy); value(width); value(height); value(rotation); value(alpha);
         // Registration and file choice are part of the shared renderer contract too.
-        add(filenameHash(SpriteAtlas.file(atlas))); value(SpriteAtlas.pivotX(atlas,frame)); value(SpriteAtlas.pivotY(atlas,frame));
+        add(filenameHash(SpriteAtlas.file(atlas,frame))); add(SpriteAtlas.sourceFrame(atlas,frame)); value(SpriteAtlas.pivotX(atlas,frame)); value(SpriteAtlas.pivotY(atlas,frame));
+        value(SpriteAtlas.widthScale(atlas,frame)); value(SpriteAtlas.heightScale(atlas,frame));
     }
     public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,
                             float rotation,float blend,float alpha) {
         mark("spriteBlend"); add(6); add(atlas); add(frameA); add(frameB);
         value(cx); value(cy); value(width); value(height); value(rotation); value(blend); value(alpha);
-        add(filenameHash(SpriteAtlas.file(atlas))); add(SpriteAtlas.columns(atlas)); add(SpriteAtlas.rows(atlas)); add(SpriteAtlas.count(atlas));
+        add(filenameHash(SpriteAtlas.file(atlas,frameA))); add(SpriteAtlas.sourceFrame(atlas,frameA));
+        add(filenameHash(SpriteAtlas.file(atlas,frameB))); add(SpriteAtlas.sourceFrame(atlas,frameB));
+        add(SpriteAtlas.columns(atlas)); add(SpriteAtlas.rows(atlas)); add(SpriteAtlas.count(atlas));
         value(SpriteAtlas.pivotX(atlas,frameA)); value(SpriteAtlas.pivotY(atlas,frameA));
+        value(SpriteAtlas.widthScale(atlas,frameA)); value(SpriteAtlas.heightScale(atlas,frameA));
         value(SpriteAtlas.pivotX(atlas,frameB)); value(SpriteAtlas.pivotY(atlas,frameB));
+        value(SpriteAtlas.widthScale(atlas,frameB)); value(SpriteAtlas.heightScale(atlas,frameB));
     }
     public static int frame(Game g) { Parity p=new Parity(); Renderer.draw(g,p); return p.hash; }
     public static String signature() {
@@ -52,6 +57,7 @@ public final class Parity implements Painter {
         Renderer.draw(g,p);
         for(int i=0;i<60;i++) { g.advance(1.0/60); if(i%20==0) Renderer.draw(g,p); }
         tutorial(p);
+        responsive(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
     }
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
@@ -66,6 +72,16 @@ public final class Parity implements Painter {
             if(i%30==0) Renderer.draw(root,p);
         }
         throw new IllegalStateException("Tutorial replay did not finish");
+    }
+    private static void responsive(Parity p) {
+        Game g=new Game(); g.configureCanvas(1333.3334f,600); Renderer.draw(g,p);
+        ReplayInput.tap(g,Layout.START); Renderer.draw(g,p);
+        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
+        for(int i=0;i<45;i++) g.step();
+        p.value(g.tug.x); p.value(g.tug.y); Renderer.draw(g,p);
+        g.background(); Renderer.draw(g,p);
+        g.configureCanvas(960,720); Renderer.draw(g,p);
+        g.pause(); g.startTutorial(); Renderer.draw(g,p);
     }
     public static void diagnostic() {
         tracing=true;
