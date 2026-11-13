@@ -44,6 +44,9 @@ public final class SpriteAtlas {
         {1.124161f,0.976303f,0.954955f,0.978304f,0.970183f,0.946667f,0.946512f,0.882418f,1.080128f,1.000000f,0.997758f,0.957222f,0.983721f,0.954751f,0.951691f,0.874496f},
         {1.114583f,1.084821f,1.057692f,1.015583f,0.985915f,0.941176f,1.009009f,0.993536f,1.059140f,1.028302f,1.053719f,1.008707f,0.993007f,0.988550f,0.957265f,1.018800f},
     };
+    // Pixel-registered chimney openings, in the same frame order as the hull.
+    private static final float[] STACK_X={0.379585f,0.373206f,0.409888f,0.400319f,0.344498f,0.389155f,0.339713f,0.397129f,0.497500f,0.525000f,0.607656f,0.623604f,0.660287f,0.688995f,0.690590f,0.703349f,0.666667f,0.688995f,0.626794f,0.629984f,0.577352f,0.596491f,0.448166f,0.454545f,0.500800f,0.503987f,0.352472f,0.362041f,0.360447f,0.370016f,0.288676f,0.298246f};
+    private static final float[] STACK_Y={0.354067f,0.347687f,0.267943f,0.271132f,0.216906f,0.236045f,0.213716f,0.229665f,0.200000f,0.200000f,0.314195f,0.336523f,0.189793f,0.212121f,0.247209f,0.269537f,0.354067f,0.363636f,0.331738f,0.341308f,0.331738f,0.354067f,0.370016f,0.389155f,0.390000f,0.386000f,0.339713f,0.355662f,0.330144f,0.346093f,0.314195f,0.320574f};
     private static final float STEP=(float)(Math.PI/16);
     private SpriteAtlas() {}
     public static String file(int atlas) {
@@ -72,6 +75,14 @@ public final class SpriteAtlas {
     public static float sourceBottom(int atlas,int frame) { if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4+1)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
     public static float artWidth(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
     public static float artHeight(int atlas,int frame) { if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
+    public static float stackOffset(float angle,boolean river,boolean vertical) {
+        float heading=angle/STEP;int whole=(int)StrictMath.floor(heading);
+        int a=((whole+(river?24:0))%32+32)%32,b=(a+1)%32;
+        float blend=Physics.clamp((heading-whole-.4f)*5,0,1);blend=blend*blend*(3-2*blend);
+        float first=vertical?(STACK_Y[a]-pivotY(TUG,a))*heightScale(TUG,a):(STACK_X[a]-pivotX(TUG,a))*widthScale(TUG,a);
+        float next=vertical?(STACK_Y[b]-pivotY(TUG,b))*heightScale(TUG,b):(STACK_X[b]-pivotX(TUG,b))*widthScale(TUG,b);
+        return first+(next-first)*blend;
+    }
     public static int direction(float angle) { return (Math.round(angle/STEP)%32+32)%32; }
     public static float turn(float angle,int frame) { return Physics.angle(angle-frame*STEP); }
     public static void draw(Painter p,int atlas,float angle,float cx,float cy,float width,float height,float alpha) {

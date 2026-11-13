@@ -55,7 +55,7 @@
                                   withVelocity:100 thenHoldForDuration:hold];
 }
 - (void)throwLine:(XCUIElement *)stage toX:(double)x toY:(double)y {
-    [[self river:stage x:230 y:700] pressForDuration:0.15 thenDragToCoordinate:[self river:stage x:x y:y]
+    [[self river:stage x:230 y:290] pressForDuration:0.15 thenDragToCoordinate:[self river:stage x:x y:y]
                                    withVelocity:300 thenHoldForDuration:0.1];
 }
 - (XCUIElement *)startAndDockFirstLoad:(XCUIApplication *)app {
@@ -65,14 +65,14 @@
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
     [self tapMenu:stage x:770 y:446];
     [self waitFor:@"feeder drops 1;" on:stage];
-    [[self river:stage x:260 y:730] pressForDuration:8];
+    [[self river:stage x:260 y:730] pressForDuration:15];
     [self waitFor:@"ready to tie 2" on:stage];
     return stage;
 }
 - (void)testNativeMissRetractsWithoutScoring {
     XCUIApplication *app=[[XCUIApplication alloc] init];
     XCUIElement *stage=[self startAndDockFirstLoad:app];
-    [self throwLine:stage toX:310 toY:640];
+    [self throwLine:stage toX:310 toY:350];
     [self waitFor:@"Working; delivered 0;" on:stage after:1];
     NSString *status=(NSString *)stage.value;
     XCTAssertFalse([status containsString:@"rope "],@"Missed line finishes retracting");
@@ -83,7 +83,7 @@
     // Each outcome gets its own real feeder/push sequence. A previous miss must
     // not leave this test aiming at stale coordinates as unmoored cargo coasts.
     XCUIElement *stage=[self startAndDockFirstLoad:app];
-    [self throwLine:stage toX:176 toY:700];
+    [self throwLine:stage toX:176 toY:290];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];

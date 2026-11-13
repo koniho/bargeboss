@@ -4,6 +4,7 @@ cd "$(dirname "$0")"
 rm -rf build/preview
 mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
+echo tools/EffectsPreview.java >> build/preview/sources.txt
 echo tools/Preview.java >> build/preview/sources.txt
 echo tools/AnimationPreview.java >> build/preview/sources.txt
 echo tools/ScreenSizesPreview.java >> build/preview/sources.txt
@@ -26,6 +27,7 @@ if [ "${1:-}" = '--idle-water' ] || [ "${1:-}" = '--title' ]; then
 fi
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.Preview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ScreenSizesPreview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.EffectsPreview
 
 if [ "${1:-}" = '--animations' ]; then
     java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.AnimationPreview

@@ -10,7 +10,7 @@ public final class Body {
     public float mooringX,mooringY,mooringAngle;
     public float engineLoad;
     public float heave,heaveVelocity;
-    public int wakeKickTicks,wakeCooldown;
+    public int wakeKickTicks,wakeCooldown,wakeTrailTicks;
     public boolean floatingInitialized;
     public float tiedX,tiedY,tiedAngle;
     public boolean active = true, lineAttached, awaitingPickup;

@@ -62,7 +62,7 @@ public final class Game {
     public boolean bridgeStage() { return challengeId==1 && tutorial==null; }
     public boolean berthEnabled(int berth) { return challengeId==2 || berth==2; }
     public char berthLetter(int berth) { return challengeId==2?(char)('A'+berth):'A'; }
-    public float dockY(int berth) { return bridgeStage()?-400:DOCK_Y[berth]; }
+    public float dockY(int berth) { return bridgeStage()?-400:challengeId==0 && tutorial==null && berth==2?290:DOCK_Y[berth]; }
     public float channelTop() { return bridgeStage()?-520:Physics.TOP; }
     public int contractSeconds() { return bridgeStage()?130:68; }
     public int feedInterval() { return bridgeStage()?30*60:14*60; }

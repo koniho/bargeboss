@@ -37,7 +37,7 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - The supplied concept guides the pixel-styled harbor: a red/cream tug with
   raised wheelhouse and tire fenders, rust barges carrying steel, containers or
   bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
-  A sunset harbor title, matching HUD and animated results complete the style.
+  The title reuses the gameplay scenery and vessels, with a matching HUD and animated results.
   The play view uses a fixed 2.5D ground projection with independent painted
   warehouses, stockpiles, container stacks, quays and solid finger piers. Foreground
   scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline
@@ -47,10 +47,12 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   texture. Matching upper-left lighting, cast shadows and warm dock lamps give
   the quieter water and concrete clear depth without hiding the action.
 - **Water motion:** floating hulls and feeder buoys rise and fall with local waves.
-  The painted surface drifts gently under soft traveling ripples and shimmering
-  dock-light reflections, keeping the river alive even when boats are idle.
+  Curved waves travel, rise and fade across the water, with shimmering dock-light
+  reflections. Title and gameplay share this wave renderer instead of water strips.
   Passing wakes increase that motion nearby. Underway vessels emit the main foam
-  burst at the bottom of each fall; wake arcs then expand and fade in place. Wake
+  burst at the bottom of each fall, with a continuous trail between bursts. Emitted
+  waves stay behind in the river and spread outward for five seconds, even after
+  the boat stops or turns. Wake
   energy affects vertical motion, without secretly changing horizontal controls.
 - **Barge momentum:** loaded barges are heavier than the tug, glide along their keel,
   resist broadside motion, and carry yaw inertia. Holding push assist deliberately
@@ -67,7 +69,7 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   desktop play has the same visual cues without mouse vibration.
 
 First Watch asks you to deliver **6 loads in 3 minutes**, with **one feeder and one
-berth**, both close together. Hold a load to push it toward berth A; the camera
+berth at the far left end**, opposite the feeder on the right. Hold a load to push it toward berth A; the camera
 smoothly moves into a **1.4× docking view** as the tug brings it close. The camera
 holds still during lasso aiming and flight, then eases back out after delivery.
 Barges retain keel momentum, but stronger forward, sideways and turning resistance

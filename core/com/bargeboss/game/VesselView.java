@@ -43,27 +43,29 @@ public final class VesselView {
         }
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
-        // Chimney smoke rises in screen space, independently of the river rotation.
-        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        float sx=b.x-c*14,sy=b.y-s*14-bob,scale=1,trailX=b.vx;
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;scale=river.camera.scale;
-            sx=river.camera.screenX(b.x-c*14,b.y-s*14);
-            sy=river.camera.screenY(b.x-c*14,b.y-s*14)-bob*scale;
-            trailX=b.vy;p=river.canvas();
-        }
+        boolean river=p instanceof RiverPainter;
+        float size=2*(b.half+b.radius)/.84f;
+        float scale=river?((RiverPainter)p).camera.scale:1;
+        float sx=river?((RiverPainter)p).camera.screenX(b.x,b.y):b.x;
+        float sy=river?((RiverPainter)p).camera.screenY(b.x,b.y):b.y;
+        sx+=SpriteAtlas.stackOffset(b.angle,river,false)*size*scale;
+        sy+=(SpriteAtlas.stackOffset(b.angle,river,true)*size*1.05f-bob)*scale;
+        float trailX=river?b.vy:b.vx;
+        if(river) p=((RiverPainter)p).canvas();
         power=Physics.clamp(power,0,1);
-        for(int i=13;i>=0;i--) {
-            float density=Physics.clamp(3+11*power-i,0,1);if(density==0) continue;
-            float t=((tick+i*37)%120)/120f;
-            float r=(1.2f+t*(3+power*4))*scale;
-            float x=sx+(-4-t*(15+power*14)-trailX*t*.12f+2*(float)StrictMath.sin(t*9+i))*scale;
-            float y=sy-(19+t*(20+power*25))*scale;
-            int alpha=(int)((1-t)*(1-t)*density*(65+125*power));
-            int shade=(int)(176-80*power),color=(alpha<<24)|(shade<<16)|((shade+9)<<8)|(shade+20);
+        // A small throat plume closes the gap between discrete puffs and the mouth.
+        p.circle(sx,sy,(1.8f+power)*scale,0xbb7b8495);
+        for(int i=19;i>=0;i--) {
+            float density=Physics.clamp(5+15*power-i,0,1);if(density==0) continue;
+            float t=((tick+i*31)%150)/150f;
+            float r=(1.8f+t*(4+power*6))*scale;
+            float x=sx+(-t*(12+power*18)-trailX*t*.16f+3*t*(float)StrictMath.sin(t*9+i))*scale;
+            float y=sy-t*(32+power*36)*scale;
+            int alpha=(int)((1-t)*(1-t)*density*(135+95*power));
+            int shade=(int)(166-75*power),color=(alpha<<24)|(shade<<16)|((shade+9)<<8)|(shade+20);
             p.circle(x,y,r,color);
             p.circle(x-r*.6f,y+r*.15f,r*.7f,color);
-            p.circle(x+r*.5f,y-r*.25f,r*.65f,((alpha*2/3)<<24)|0xa6b1bc);
+            p.circle(x+r*.5f,y-r*.25f,r*.65f,((alpha*2/3)<<24)|0xc1c9d2);
         }
     }
 }

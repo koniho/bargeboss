@@ -11,9 +11,11 @@ public final class StageCameraTest {
         check(g.feeders.length==1 && g.berthEnabled(2) && !g.berthEnabled(0) && !g.berthEnabled(1),"first watch has one feeder and one berth");
         steps(g,180);Body b=g.cargo[0];
         check(g.feederDrops()==1 && b.berth==2 && g.berthLetter(b.berth)=='A',"first feeder announces its sole berth A");
+        check(Feeder.DROP_Y-g.dockY(2)>400,"first berth is at the far end opposite the feeder");
         check(g.layout.camera.zoom==1,"waiting feeder cargo does not trigger docking zoom");
         ReplayInput.down(g,b.x,b.y);float px=g.layout.camera.screenX(g.downX,g.downY),py=g.layout.camera.screenY(g.downX,g.downY);
-        steps(g,480);
+        for(int i=0;i<1800 && !g.canTie(b);i++) g.step();
+        steps(g,180);
         check(g.canTie(b) && g.layout.camera.zoom>1.39f,"real assisted arrival settles at berth and smoothly zooms in");
         check(!g.manualSteering && Math.abs(px-g.layout.camera.screenX(g.downX,g.downY))<.05f
                 && Math.abs(py-g.layout.camera.screenY(g.downX,g.downY))<.05f,"camera cannot move a resting finger or steer its barge");

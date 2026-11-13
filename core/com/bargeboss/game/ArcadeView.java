@@ -5,22 +5,6 @@ public final class ArcadeView {
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
         int tick=g.visualTicks;
-        // Broken, screen-horizontal crests travel downstream and breathe at different phases.
-        // Gentle ambient motion remains visible with every vessel idle; foam stays brighter.
-        for(int row=0;row<(g.bridgeStage()?38:17);row++) for(int col=0;col<5;col++) {
-            int seed=row*137+col*71+row*col*13;
-            float phase=tick*.025f+seed;
-            float x=184+col*47+seed%15+(float)StrictMath.sin(phase)*2;
-            float y=g.channelTop()+((row*35+seed%23+tick*.025f)%(Physics.BOTTOM-g.channelTop()));
-            float length=9+seed%17;
-            float edge=Math.min(1,Math.min((y-g.channelTop())/18,(Physics.BOTTOM-y)/30));
-            float shimmer=.5f+.5f*(float)StrictMath.sin(phase*.73f);
-            int alpha=(int)((25+55*shimmer)*edge);
-            float end=Math.min(Physics.BOTTOM,y+length);
-            p.line(x-2,y,x-2,end,2.5f,((int)(alpha*.45f)<<24)|0x073846);
-            p.line(x,y,x+.6f,end,1.2f,(alpha<<24)|0x89d5cd);
-            if(seed%3==0) p.line(x+2,y+3,x+2,Math.min(end,y+length*.6f),.8f,((alpha/2)<<24)|0xc1e6d5);
-        }
         // Small pools of moving golden reflections beneath the industrial lamps.
         for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) if(g.berthEnabled(dock)) for(int i=0;i<7;i++) {
             float x=(side==0?177:419)+(side==0?1:-1)*(4+(i*7)%18);
@@ -45,22 +29,23 @@ public final class ArcadeView {
         float power=Math.min(1,speed/65),c=(float)StrictMath.cos(travel),s=(float)StrictMath.sin(travel);
         float kick=b.floatingInitialized?b.wakeKickTicks/18f:(float)StrictMath.pow(Math.max(0,-StrictMath.sin(ticks*.048+b.x*.017+b.y*.009)),10);
         float stern=-(b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(travel-b.angle)));
-        if(kick>0) for(int side=-1;side<=1;side+=2) {
+        float wash=.25f+.75f*kick;
+        for(int side=-1;side<=1;side+=2) {
             float lastX=b.x+c*stern-s*side*9,lastY=b.y+s*stern+c*side*9;
             for(int i=1;i<=10;i++) {
                 float age=(i+(ticks%10)/10f)/10f;
-                float back=stern-age*(24+power*52);
-                float width=side*(9+age*(8+power*21));
+                float back=stern-age*(10+power*15);
+                float width=side*(9+age*(4+power*8));
                 width+=2*(float)StrictMath.sin(ticks*.17+i*1.4);
                 float x=b.x+c*back-s*width,y=b.y+s*back+c*width;
-                int alpha=(int)(((1-age)*175+25)*kick);
+                int alpha=(int)(((1-age)*130+25)*wash);
                 int foam=(alpha<<24)|0xc8fff0;
-                p.line(lastX,lastY,x,y,2.5f+power*2.5f,((int)(85*kick)<<24)|0x68c5ce);
+                p.line(lastX,lastY,x,y,2.5f+power*2.5f,((int)(65*wash)<<24)|0x68c5ce);
                 // Overlapping little steps read as pixel spray at gameplay size and title scale.
                 float size=(2.5f+power*2)*(1-age*.45f);
                 p.rect(x-size,y-size*.4f,size*2,size*.8f,foam);
                 p.rect(x-size*.45f,y-size,size*.9f,size*2,foam);
-                if(i%2==0) p.rect(x+side*3,y-3,2,2,((int)(187*kick)<<24)|0xf4fff5);
+                if(i%2==0) p.rect(x+side*3,y-3,2,2,((int)(150*wash)<<24)|0xf4fff5);
                 lastX=x; lastY=y;
             }
         }

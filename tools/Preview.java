@@ -67,7 +67,7 @@ public final class Preview {
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
         g=new Game();g.reset();steps(g,180);capture(g,"first-watch-overview");
-        ReplayInput.down(g,260,730);steps(g,480);capture(g,"docking-zoom");
+        ReplayInput.down(g,260,730);for(int i=0;i<1800 && !g.canTie(g.cargo[0]);i++) g.step();steps(g,180);capture(g,"docking-zoom");
         g=new Game();g.challengeId=1;g.reset();capture(g,"bridge-start");
         boolean wait=false,opening=false,open=false,dock=false;
         for(int i=0;i<9000 && !dock;i++) {

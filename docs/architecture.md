@@ -34,9 +34,11 @@ their original timing. Wake energy drives vertical heave; it does not add hidden
 `Body.engineLoad` smooths the controller's requested thrust and acceleration effort,
 with higher load during cargo contact and reverse braking. Releasing thrust lets
 the exhaust settle toward idle even while the hull coasts. NPC feeder loads depend
-on hauling versus empty return; blocked feeders idle. `VesselView` draws 3–14
+on hauling versus empty return; blocked feeders idle. `VesselView` draws 5–20
 overlapping smoke puffs, increasing their size, density and darkness with load.
-Stack anchors follow vessel heading and heave, with smoke rising in screen space.
+Each of the 32 source views has a calibrated chimney-mouth anchor. The anchor
+uses the same pivot, scale corrections and blend as its hull, including the river
+projection. A throat puff connects the stack to the brighter drifting plume.
 
 `Renderer` emits geometry and atlas sprite commands through `Painter`. Lettering
 is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
@@ -65,7 +67,8 @@ tutorial uses its own stable overview. Hosts contain no camera rules or gameplay
 exceptions; iOS automation reads the shared projection to aim real native touches.
 Android hides system bars with transient swipe access and hosts retain safe cutout bounds.
 
-First Watch has one feeder/berth and no piers or crossing hazard. Bridge Run has
+First Watch has one feeder at y=730 and its sole berth at y=290, opposite ends
+of the visible river, with no piers or crossing hazard. Bridge Run has
 two feeders, one upstream berth and a shared `Bridge` state machine: approach
 requests a six-second wait, two-second opening, at least twelve seconds open,
 then two-second closing once all hulls clear. Closing reverses for an occupied
@@ -168,7 +171,7 @@ there is no host-specific timing, randomness or state mutation in drawing.
 | Unloading | Three payload groups disappear with the lifts | Three-second crane/forklift/worker cycle and progress bar |
 | Delivered | Cargo clears once | Stars, floating score, crew salute then idle |
 | Hard impact | Hull flash and spray | Surface shock ring and impact feedback |
-| Title | Enlarged shared tug/barge with exhaust and wake | Sunset skyline, clouds, reflections, bridge lights, pulsing start cue |
+| Title | Enlarged gameplay tug/barge with registered exhaust and wake | Gameplay scenery in two scrolling layers, curved waves, pulsing start cue |
 | Tutorial/results | Same gameplay art and animated focus cues | Lesson progress; result stars reflect quota, losses and hull |
 | Pause/help | World frozen in place | Matching cabinet-style panels and existing button hitboxes |
 
@@ -279,14 +282,15 @@ chunky industrial props, two finger piers and two raised bridge halves. All cell
 share the same high orthographic camera, parallel ground axes, bold silhouettes
 and upper-left lighting. A projection correction removes tapering pier footprints;
 registered opaque bounds place the visible pier walls on the existing colliders.
-The built-in image generator produced this atlas and the quiet, seamless
-`water-arcade-v2.png` tile; exact generation/edit prompts live in `docs/art-prompts`.
+The built-in image generator produced this atlas; exact generation/edit prompts
+live in `docs/art-prompts`. The previous `water-arcade-v2.png` tile and title-only
+images remain source history; the live water and title no longer render them.
 Earlier painted v1 sheets are retained as source history but no longer draw scenery.
 
 `SceneryView` draws broad concrete quay planes with the same shared camera,
 placing four independent props on each bank. `LightingView` adds consistent
 lower-right cast shadows, hull contact shadows and warm animated lamp pools.
-Sparse pavement seams and broad water color clusters keep detail below the boats,
+Sparse pavement seams and softly curved water waves keep detail below the boats,
 berth markers and lasso. Solid footprints belong to `HarborGeometry`; assisted
 pushes use a small visibility graph around expanded quay footprints; a hull
 inside a planning margin first escapes toward the open channel. Rendered sprites
@@ -303,19 +307,23 @@ above scenery. Faded solid piers retain a subtle ground outline.
 
 ## Waves, heave and trough-triggered wake
 
-The painted water tiles drift downstream and sway vertically on the shared visual
-clock. Shore art covers their overscan. Broken ambient crests and dock-light
-reflections vary independently in position and brightness, so idle water stays
-animated without creating wake packets or applying forces. Pause freezes these
-effects too. `./preview.sh --idle-water` exports a six-second idle animation.
+`WaveView` fills the river with curved, tapered wavelets. Each crest travels,
+rises, changes thickness and fades on the shared presentation clock. The title
+uses the same renderer; no cropped image strips form its water. Shore art covers
+overscan. Dock-light reflections remain independent, so idle water stays animated
+without wake emissions or hidden horizontal forces. Pause freezes these effects.
+`./preview.sh --idle-water` exports a six-second idle animation.
 
-`WaterSurface` owns 64 bounded, persistent wake packets with a 210-tick lifetime.
+`WaterSurface` owns 192 bounded, persistent wake packets with a 300-tick lifetime.
 Ambient crossing waves plus nearby packet energy drive a filtered heave response
 for each hull; moored or staged loads respond more gently. Buoys sample the same
 field. Rise/fall offsets are in screen-vertical space and move hull and payload
 together without changing their horizontal collision footprint or rotational
 anchor. At a negative-to-positive heave-velocity crossing, an underway hull emits
-one wake packet and an 18-tick foam burst, with a cooldown preventing chatter.
+one strong wake packet and an 18-tick foam burst, with a cooldown preventing
+chatter. A weaker stern packet every eight ticks maintains a continuous underway
+trail between troughs. Local hull wash stays short; the long wake belongs to the
+persistent water field.
 Wake heading follows actual travel direction, including astern motion. Packets
 expand from their emission positions and keep fading after their source stops.
 The small powered-boat prop wash is separate from the trough-triggered main wake.
@@ -323,21 +331,16 @@ Water state advances at the same fixed 60 Hz on every platform and freezes with
 pause/background; drawing only samples state. Dedicated checks cover directional
 glide, reverse motion, yaw inertia, wake timing, local wave amplitude and render purity.
 
-## Cinematic title voyage
+## Shared-style title voyage
 
-`TitleView` recreates the concept's low-angle sunset title with three generated
-source images: `title-backdrop-v1.png`, `title-harbor-v1.png`, and
-`title-vessels-v1.png`. Their exact prompts are in `docs/art-prompts`; all three
-were generated with the built-in image generator from the top-left reference panel.
-The harbor and independently cropped tug/barge preserve their transparent alpha.
-`SpriteAtlas` supplies the same normalized crop bounds to every native painter.
-
-The skyline pans slowly, the bridge and shore pass faster, and cropped water
-strips move at increasing speeds toward the foreground. Repeated tiles keep the
-voyage going indefinitely. Tug and barge have independent heave and slight pitch;
-the connecting rope follows their anchors. Registered smokestack puffs rise,
-expand, drift astern and dissolve, while waterline foam and bow spray continue
-around the hulls. Every phase is a pure function of `visualTicks`, so presentation
-cannot alter game state and matches at different display refresh rates. Existing
-menu hit targets remain fixed. `./preview.sh --title` exports eight seconds of the
-actual renderer to `out/concept-title.gif`.
+`TitleView` reuses `harbor-arcade-v2.png` and the gameplay tug, barge and cargo
+atlases. Scenery retains the gameplay projection and lighting. Two rows of quay
+props pan at different speeds for an endless voyage; menu hit targets stay fixed.
+The tug pushes its barge while both bob independently, with the same registered
+chimney smoke and short hull wash used in play. `WaveView` supplies moving curved
+waves beneath them. Every phase is a pure function of `visualTicks`, so drawing
+cannot alter game state and animation matches across display refresh rates.
+The previous low-angle title assets remain in source history but are not drawn.
+`./preview.sh --title` exports eight seconds to `out/concept-title.gif`.
+`./preview.sh` also exports all 32 smoke headings and a seven-second wake trail
+sequence showing outward propagation after the tug stops.

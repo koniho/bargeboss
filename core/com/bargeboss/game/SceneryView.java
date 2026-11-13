@@ -39,10 +39,7 @@ public final class SceneryView {
         RiverCamera c=g.layout.camera;float s=c.scale;
         float top=c.screenY(Physics.RIGHT,492),bottom=c.screenY(Physics.LEFT,492);
         p.rect(0,0,g.layout.width,g.layout.height,0xff67788c);
-        float tile=300*s,drift=(g.visualTicks*.025f*s+c.screenX(300,148))%tile;
-        float swell=(float)StrictMath.sin(g.visualTicks*.018)*1.2f*s;
-        for(float y=top-tile+swell;y<bottom;y+=tile) for(float x=drift-tile;x<g.layout.width;x+=tile)
-            p.sprite(SpriteAtlas.WATER,0,x+tile/2,y+tile/2,tile,tile,0,1);
+        WaveView.draw(p,g.visualTicks,0,top,g.layout.width,bottom-top,s,c.screenX(300,148));
         // Flat ground follows the same orthographic plane as physics. Broad planes,
         // one lit rim and one shadow face replace the noisy painted pavement.
         p.rect(0,0,g.layout.width,top,0xff7c8a99);
