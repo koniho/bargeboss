@@ -5,11 +5,12 @@ public final class CoreTest {
     private static void check(boolean condition,String message) {
         assertions++; if(!condition) throw new AssertionError(message);
     }
-    private static Game playing() { Game g=new Game(); g.reset(); return g; }
+    private static Game playing() { Game g=new Game(); g.reset(); g.helm.enabled=false; return g; }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static void tap(Game g,float x,float y) { g.down(x,y); g.up(x,y); }
     public static void main(String[] args) {
         Game g=new Game(); tap(g,300,680); check(g.mode==Game.PLAY,"start button");
+        g.helm.enabled=false;
         tap(g,350,600); check(g.navigating,"water tap sets course"); steps(g,180);
         check(Physics.length(g.tug.x-350,g.tug.y-600)<35,"tug reaches target");
         g.background(); int ticks=g.ticks; g.advance(1); check(g.ticks==ticks,"background freezes shift");
@@ -68,7 +69,8 @@ public final class CoreTest {
         float tx=g.tug.x, ty=g.tug.y; ticks=g.ticks; score=g.score;
         Renderer.draw(g,new Parity()); Renderer.draw(g,new Parity());
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
-        check(Parity.signature().equals("aae8bbfc:9:6942"),"canonical replay changed; review parity before updating baseline");
+        HelmTest.run();
+        check(Parity.signature().equals("71f6475b:10:7668"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

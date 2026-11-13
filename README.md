@@ -8,17 +8,32 @@ an original gameplay layout, not a navigational map of the real river.
 
 ## Play
 
-- **Tap water** to navigate the tug to that position.
-- **Hold a cargo barge** for 0.2 seconds: the tug approaches its stern and pushes
-  toward the matching berth. Match **A / steel**, **B / freight**, **C / bulk**.
-- **Drag while holding** to override the assisted direction. Release to coast.
-- **Hold the tug** after setting a destination for extra thrust.
-- **Brake** reverses the engines. Slow below the docking threshold and keep the
-  entire barge inside its berth for 1.2 seconds to deliver it.
-- Deliver at least **6 loads in 3 minutes**. Cargo contracts expire after 68 seconds;
-  incoming loads arrive every 18 seconds when their entry area is clear.
-- Avoid hard impacts and heed crossing-traffic warnings. Pause, help and restart
-  are available in the shared interface. Desktop also accepts Escape to pause.
+Choose **Learn to Drive** for five hands-on lessons with no timer, traffic or
+hull damage: throttle, wheel, stopping, reverse and a first delivery. The tutorial
+advances when you perform the action. **Reset Lesson** gives another attempt;
+**Exit Practice** restores your existing shift if entered through Help.
+
+- **Throttle:** slide the left lever upward for forward thrust, to **N** for
+  neutral/coasting, or below N for reverse. The setting stays when released.
+- **Wheel:** hold/drag its left or right side to turn. Release to center the rudder.
+  Two fingers can work the throttle and wheel together; a mouse can set throttle
+  first and then steer. Momentum and turning inertia remain physical.
+- **Brake:** cuts thrust and actively slows the tug. Backgrounding, pausing or
+  cancelled input also neutralizes the relevant controls.
+- Push cargo into **A / steel**, **B / freight**, or **C / bulk**. Berth fenders
+  help settle a controlled approach; the whole cargo hull must fit, slow down,
+  and remain there for 1.2 seconds. Delivery cuts tug thrust automatically.
+- **Tap Assist** offers the original tap-water/hold-cargo controls. A hold ring,
+  approach marker, heading arrow, steering dead zone and mooring progress show
+  what the tug is doing. Release ends the push without resuming an old route.
+- **Haptics ON/OFF** in the header controls detent ticks, initial cargo contact,
+  hard impacts and delivery feedback. Android/iOS use native feedback where
+  supported and permitted by system settings; desktop play has the same visual
+  cues but no mouse vibration.
+
+Deliver **6 loads in 3 minutes**. Contracts expire after 68 seconds; new loads
+arrive every 18 seconds when the entry area is clear. Watch crossing traffic and
+avoid hard impacts. Pause is in the upper-right corner (Escape on desktop).
 
 The prototype is offline and silent. Scores are per shift; persistence, audio,
 additional stages and store releases are future work.
@@ -35,8 +50,10 @@ or separate JavaScript/Swift gameplay implementation.
 | iOS 15+ | UIKit / Core Graphics / CADisplayLink | the same `core/`, translated by J2ObjC 3.1 |
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
-Every host fits the same 600x960 stage within safe bounds. Touch/mouse gestures,
-hold thresholds, physics, scoring, traffic, HUD, menus and vector glyphs live in
+Every host fits the same 600x960 interface within safe bounds. The complete
+river is scaled uniformly above the helm; its world coordinates are unchanged. Touch/mouse gestures,
+throttle/wheel handling, hold thresholds, haptic event timing, tutorial, physics,
+scoring, traffic, HUD, menus and vector glyphs live in
 shared code. Rendering differences at antialiased edges remain native-specific.
 See [architecture and parity](docs/architecture.md).
 
@@ -102,14 +119,14 @@ build for compilation validation only. Store provisioning/distribution is not co
 
 ```sh
 ./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
-./preview.sh     # Actual shared renderer PNGs in out/
+./preview.sh     # Real control-state and tutorial contact sheets in out/
 ./check-art.sh   # Optional Termux check on the actual Android Java runtime
 ```
 
 GitHub Actions builds Android, desktop on three operating systems, and iOS on a
 Mac. The iOS job runs the same deterministic gameplay/drawing replay on the JVM
 and J2ObjC and rejects mismatches. An iPhone simulator test exercises native
-touch delivery, pause/resume and backgrounding. Workflow artifacts contain the APK, JAR and
+throttle-driven delivery, the complete interactive tutorial, pause/resume and backgrounding. Workflow artifacts contain the APK, JAR and
 simulator app. Native touch/lifecycle acceptance still needs actual device play;
 headless checks are not a substitute for that.
 

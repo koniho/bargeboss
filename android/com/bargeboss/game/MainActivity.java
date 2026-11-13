@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.graphics.Canvas;
 import android.view.Choreographer;
 import android.view.MotionEvent;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
@@ -41,32 +42,37 @@ public final class MainActivity extends Activity {
         private final Game game=new Game();
         private final CanvasPainter painter=new CanvasPainter();
         private Viewport viewport=new Viewport(600,960);
-        private int activePointer=-1;
         private long last;
         private boolean running;
-        GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Tap water to move. Hold cargo to push."); }
+        GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Slide the throttle and hold the wheel to steer."); }
         void start() { if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { running=false; last=0; activePointer=-1; game.background(); Choreographer.getInstance().removeFrameCallback(this); }
+        void stop() { running=false; last=0; game.background(); Choreographer.getInstance().removeFrameCallback(this); }
         public void doFrame(long now) {
             if(!running) return; if(last!=0) game.advance((now-last)/1e9); last=now;
+            int event=game.pollHaptic();
+            if(event!=0) {
+                int feedback=event==Game.HAPTIC_IMPACT?HapticFeedbackConstants.LONG_PRESS:
+                    event==Game.HAPTIC_CONTACT?HapticFeedbackConstants.VIRTUAL_KEY:HapticFeedbackConstants.CLOCK_TICK;
+                if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
+                performHapticFeedback(feedback);
+            }
             invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }
-        protected void onSizeChanged(int w,int h,int oldW,int oldH) { viewport=new Viewport(w,h); game.cancel(); activePointer=-1; }
+        protected void onSizeChanged(int w,int h,int oldW,int oldH) { viewport=new Viewport(w,h); game.cancelInputs(); }
         protected void onDraw(Canvas canvas) {
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,600,960); painter.bind(canvas); game.render(painter); canvas.restore();
         }
         public boolean onTouchEvent(MotionEvent event) {
             int action=event.getActionMasked(), index=event.getActionIndex();
-            if(action==MotionEvent.ACTION_DOWN) {
-                activePointer=event.getPointerId(index);
-                game.down(viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index)));
-            } else if(action==MotionEvent.ACTION_MOVE && activePointer!=-1) {
-                int i=event.findPointerIndex(activePointer);
-                if(i>=0) game.move(viewport.worldX(event.getX(i)),viewport.worldY(event.getY(i)));
-            } else if((action==MotionEvent.ACTION_UP || action==MotionEvent.ACTION_POINTER_UP) && event.getPointerId(index)==activePointer) {
-                game.up(viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index))); activePointer=-1; performClick();
-            } else if(action==MotionEvent.ACTION_CANCEL) { activePointer=-1; game.cancel(); }
+            if(action==MotionEvent.ACTION_DOWN || action==MotionEvent.ACTION_POINTER_DOWN) {
+                game.pointerDown(event.getPointerId(index),viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index)));
+            } else if(action==MotionEvent.ACTION_MOVE) {
+                for(int i=0;i<event.getPointerCount();i++)
+                    game.pointerMove(event.getPointerId(i),viewport.worldX(event.getX(i)),viewport.worldY(event.getY(i)));
+            } else if(action==MotionEvent.ACTION_UP || action==MotionEvent.ACTION_POINTER_UP) {
+                game.pointerUp(event.getPointerId(index),viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index))); performClick();
+            } else if(action==MotionEvent.ACTION_CANCEL) game.cancelInputs();
             return true;
         }
         public boolean performClick() { super.performClick(); return true; }

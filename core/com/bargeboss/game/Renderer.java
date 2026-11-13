@@ -7,26 +7,25 @@ public final class Renderer {
     private static void text(Painter p,String s,float x,float y,float size,int color) { Lettering.draw(p,s,x,y,size,color); }
     private static void center(Painter p,String s,float x,float y,float size,int color) { Lettering.center(p,s,x,y,size,color); }
     public static void draw(Game g,Painter p) {
+        g=g.activeGame();
         p.rect(0,0,600,960,INK);
         p.rect(0,0,600,5,Game.COLORS[0]);
         text(p,"BARGE BOSS",24,23,23,PAPER); text(p,"CALUMET / SHIFT 01",25,60,10,MUTED);
+        p.rect(380,18,116,67,0xff2c3c41);
+        center(p,"HAPTICS",438,35,10,MUTED); center(p,g.hapticsEnabled?"ON":"OFF",438,55,12,PAPER);
         p.rect(508,18,68,67,0xff2c3c41); p.rect(531,39,6,24,PAPER); p.rect(547,39,6,24,PAPER);
         text(p,"SCORE",25,99,12,MUTED); text(p,""+g.score,25,116,20,PAPER);
         text(p,"DELIVERIES",192,99,12,MUTED); text(p,g.delivered+" / "+Game.QUOTA,192,116,20,PAPER);
         text(p,"HULL",354,99,12,MUTED); text(p,g.hull+"%",354,116,20,g.hull<30?Game.COLORS[2]:PAPER);
         int seconds=Math.max(0,(Game.SHIFT_TICKS-g.ticks+59)/60);
-        text(p,"SHIFT",488,99,12,MUTED); text(p,(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60),488,116,20,PAPER);
-        river(g,p);
-        p.rect(0,836,600,124,INK); p.rect(24,836,552,1,0xff476064);
-        String status=g.pushing?"PUSH ASSIST / DRAG TO STEER":g.noticeTicks>0?g.notice:"TAP WATER TO MOVE / HOLD CARGO TO PUSH";
-        center(p,status,300,850,12,g.pushing?Game.COLORS[0]:PAPER);
-        button(p,30,872,168,68,"BRAKE",0xff30464b,PAPER);
-        button(p,216,872,168,68,"PAUSE",0xff30464b,PAPER);
-        button(p,402,872,168,68,"HELP",0xff30464b,PAPER);
-        center(p,"INDUSTRIAL CORRIDOR / PROTOTYPE 0.1",300,943,8,MUTED);
+        text(p,g.tutorial==null?"SHIFT":"PRACTICE",488,99,12,MUTED);
+        text(p,g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE",488,116,20,PAPER);
+        river(g,new RiverPainter(p));
+        HelmView.draw(g,p);
         if(g.mode==Game.TITLE || g.mode==Game.HELP) title(g,p);
         if(g.mode==Game.PAUSE) pause(p);
         if(g.mode==Game.FINISH) finish(g,p);
+        if(g.mode==Game.PLAY && g.tutorial!=null) TutorialView.draw(g,p);
     }
     private static void river(Game g,Painter p) {
         p.rect(0,148,600,688,0xff424b49);
@@ -99,6 +98,7 @@ public final class Renderer {
         }
         hull(p,g.tug,Game.COLORS[0],true,g.ticks);
         if(g.ticks<600) { center(p,"YOU",g.tug.x,g.tug.y+35,12,PAPER); }
+        ControlView.draw(g,p);
         p.rect(110,817,380,19,0xff1b3b43); center(p,"SOUTH REACH / CURRENT  v",300,823,8,MUTED);
     }
     private static void dock(Painter p,int index,int ticks) {
@@ -162,13 +162,13 @@ public final class Renderer {
         panel(p,258,500);
         text(p,"01 / CALUMET REACH",75,290,12,Game.COLORS[0]);
         text(p,"HEAVY CARGO.",75,329,29,PAPER); text(p,"TIGHT WATER.",75,370,29,PAPER);
-        text(p,"A THREE-MINUTE INDUSTRIAL RIVER SHIFT",75,423,10,MUTED);
-        text(p,"01",75,466,15,Game.COLORS[0]); text(p,"TAP WATER TO MOVE YOUR TUG",119,467,15,PAPER);
-        text(p,"02",75,506,15,Game.COLORS[0]); text(p,"HOLD CARGO TO LINE UP AND PUSH",119,507,15,PAPER);
-        text(p,"03",75,546,15,Game.COLORS[0]); text(p,"DRAG WHILE HOLDING TO STEER",119,547,15,PAPER);
-        text(p,"MATCH BERTH LETTERS. SLOW DOWN TO DOCK.",75,595,12,MUTED);
-        text(p,"DELIVER 6 LOADS. WATCH THE CROSS TRAFFIC.",75,615,12,MUTED);
-        button(p,100,650,400,76,g.mode==Game.HELP?"RESUME SHIFT":"START SHIFT",Game.COLORS[0],INK);
+        text(p,"A THREE-MINUTE INDUSTRIAL RIVER SHIFT",75,417,10,MUTED);
+        text(p,"01",75,451,15,ControlView.BLUE); text(p,"SLIDE THROTTLE FORWARD OR BACK",119,452,14,PAPER);
+        text(p,"02",75,486,15,Game.COLORS[0]); text(p,"HOLD THE WHEEL LEFT OR RIGHT",119,487,14,PAPER);
+        text(p,"03",75,521,15,ControlView.PURPLE); text(p,"PUSH CARGO INTO MATCHING BERTHS",119,522,14,PAPER);
+        center(p,"LEARN WITH REAL CONTROLS. NO TIME LIMIT.",300,552,11,MUTED);
+        button(p,100,576,400,64,"LEARN TO DRIVE",Game.COLORS[0],INK);
+        button(p,100,650,400,76,g.mode==Game.HELP?"RESUME SHIFT":"START SHIFT",0xff30464b,PAPER);
     }
     private static void pause(Painter p) {
         panel(p,358,378); center(p,"SHIFT PAUSED",300,399,26,PAPER);

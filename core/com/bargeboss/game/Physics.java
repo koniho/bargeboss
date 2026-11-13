@@ -47,6 +47,12 @@ public final class Physics {
         }
         return impact;
     }
+    public static boolean touching(Body a,Body b,float padding) {
+        float reach=a.radius+b.radius+padding;
+        for(int i=0;i<3;i++) for(int j=0;j<3;j++)
+            if(length(a.discX(i)-b.discX(j),a.discY(i)-b.discY(j))<=reach) return true;
+        return false;
+    }
     public static float banks(Body b) {
         float impact=0;
         for(int i=0;i<3;i++) {

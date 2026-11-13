@@ -11,7 +11,13 @@
 @property(nonatomic,strong) BBViewport *viewport;
 @property(nonatomic,strong) BBNativePainter *painter;
 @property(nonatomic,strong) CADisplayLink *displayLink;
-@property(nonatomic,strong) UITouch *primary;
+@property(nonatomic,strong) NSMutableArray<UITouch *> *touches;
+@property(nonatomic,strong) NSMutableArray<NSNumber *> *touchIDs;
+@property(nonatomic) jint nextTouchID;
+@property(nonatomic,strong) UISelectionFeedbackGenerator *selection;
+@property(nonatomic,strong) UIImpactFeedbackGenerator *contact;
+@property(nonatomic,strong) UIImpactFeedbackGenerator *impact;
+@property(nonatomic,strong) UINotificationFeedbackGenerator *delivery;
 @property(nonatomic) CFTimeInterval lastTime;
 - (void)suspend;
 - (void)resume;
@@ -25,6 +31,11 @@
         self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
         self.accessibilityLabel=@"Barge Boss river game";
         self.game=[[BBGame alloc] init]; self.painter=[[BBNativePainter alloc] init];
+        self.touches=[NSMutableArray array]; self.touchIDs=[NSMutableArray array];
+        self.selection=[[UISelectionFeedbackGenerator alloc] init];
+        self.contact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
+        self.impact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+        self.delivery=[[UINotificationFeedbackGenerator alloc] init];
         self.viewport=[[BBViewport alloc] initWithFloat:600 withFloat:960];
         self.displayLink=[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)];
         self.displayLink.preferredFramesPerSecond=60;
@@ -36,13 +47,20 @@
     [super layoutSubviews]; UIEdgeInsets insets=self.safeAreaInsets;
     self.viewport=[[BBViewport alloc] initWithFloat:(jfloat)(self.bounds.size.width-insets.left-insets.right)
                                         withFloat:(jfloat)(self.bounds.size.height-insets.top-insets.bottom)];
-    [self.game cancel]; self.primary=nil;
+    [self.game cancelInputs]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects];
 }
 - (void)frame:(CADisplayLink *)link {
     if(self.lastTime>0) [self.game advanceWithDouble:link.timestamp-self.lastTime];
+    switch([self.game pollHaptic]) {
+        case 1: [self.selection selectionChanged]; break;
+        case 2: [self.contact impactOccurred]; break;
+        case 3: [self.impact impactOccurred]; break;
+        case 4: [self.delivery notificationOccurred:UINotificationFeedbackTypeSuccess]; break;
+        default: break;
+    }
     self.lastTime=link.timestamp; self.accessibilityValue=[self.game status]; [self setNeedsDisplay];
 }
-- (void)suspend { [self.game background]; self.accessibilityValue=[self.game status]; self.primary=nil; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
+- (void)suspend { [self.game background]; self.accessibilityValue=[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
 - (void)resume { self.lastTime=0; self.displayLink.paused=NO; }
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;
@@ -65,20 +83,37 @@
     return UIAccessibilityConvertFrameToScreenCoordinates(stage,self);
 }
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    if(self.primary) return; self.primary=touches.anyObject; CGPoint p=[self position:self.primary];
-    [self.game downWithFloat:(jfloat)p.x withFloat:(jfloat)p.y];
+    [self.selection prepare]; [self.contact prepare]; [self.impact prepare]; [self.delivery prepare];
+    for(UITouch *touch in touches) {
+        jint identifier=self.nextTouchID++;
+        [self.touches addObject:touch]; [self.touchIDs addObject:@(identifier)];
+        CGPoint p=[self position:touch];
+        [self.game pointerDownWithInt:identifier withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
+    }
 }
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    if(!self.primary || ![touches containsObject:self.primary]) return; CGPoint p=[self position:self.primary];
-    [self.game moveWithFloat:(jfloat)p.x withFloat:(jfloat)p.y];
+    for(UITouch *touch in touches) {
+        NSUInteger index=[self.touches indexOfObjectIdenticalTo:touch]; if(index==NSNotFound) continue;
+        CGPoint p=[self position:touch];
+        [self.game pointerMoveWithInt:self.touchIDs[index].intValue withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
+    }
 }
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    if(!self.primary || ![touches containsObject:self.primary]) return; CGPoint p=[self position:self.primary];
-    [self.game upWithFloat:(jfloat)p.x withFloat:(jfloat)p.y]; self.primary=nil;
+    for(UITouch *touch in touches) {
+        NSUInteger index=[self.touches indexOfObjectIdenticalTo:touch]; if(index==NSNotFound) continue;
+        CGPoint p=[self position:touch];
+        [self.game pointerUpWithInt:self.touchIDs[index].intValue withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
+        [self.touches removeObjectAtIndex:index]; [self.touchIDs removeObjectAtIndex:index];
+    }
 }
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    if(self.primary && [touches containsObject:self.primary]) { [self.game cancel]; self.primary=nil; }
+    for(UITouch *touch in touches) {
+        NSUInteger index=[self.touches indexOfObjectIdenticalTo:touch]; if(index==NSNotFound) continue;
+        [self.game pointerCancelWithInt:self.touchIDs[index].intValue];
+        [self.touches removeObjectAtIndex:index]; [self.touchIDs removeObjectAtIndex:index];
+    }
 }
+
 @end
 
 @interface BBController : UIViewController

@@ -6,8 +6,9 @@ Android Canvas, iOS Core Graphics via J2ObjC 3.1, and desktop Java2D implement
 the same `Painter`. Do not add a second game implementation for any platform.
 
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area
-  bounds and drawing primitives only. All hosts use `Viewport` and `Game.advance`.
-- Keep the stage at 600x960 and fit it inside available bounds. Never crop a
+  bounds and drawing primitives only. All hosts use `Viewport`, the shared pointer router and `Game.advance`.
+  Native haptic adapters consume shared semantic events; they never alter gameplay.
+- Keep the interface at 600x960 and fit it inside available bounds. Never crop a
   platform's playable area or change its physics based on screen size/frame rate.
 - Fixed 60 Hz steps, ordered cargo slots and `StrictMath` keep replays repeatable.
   Rendering must not mutate gameplay or use wall-clock time/randomness.

@@ -10,7 +10,7 @@ public final class Parity implements Painter {
     public void poly(float[] xy,int c) { add(3); for(float f:xy) value(f); add(c); }
     public void line(float x,float y,float xx,float yy,float w,int c) { add(4); value(x); value(y); value(xx); value(yy); value(w); add(c); }
     public static String signature() {
-        Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p); g.reset();
+        Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p); g.reset(); g.helm.enabled=false;
         for(int i=0;i<Game.SHIFT_TICKS;i++) {
             if(!g.pointer) for(Body b:g.cargo) if(b!=null && b.active) { g.down(b.x,b.y); break; }
             if(i==300) { g.background(); Renderer.draw(g,p); g.pause(); }
@@ -24,7 +24,31 @@ public final class Parity implements Painter {
             }
             if(i%600==0) Renderer.draw(g,p);
         }
-        Renderer.draw(g,p); return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+        Renderer.draw(g,p); tutorial(p);
+        return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
+    private static void tutorial(Parity p) {
+        Game root=new Game(); tap(root,300,608);
+        for(int i=0;i<2400;i++) {
+            Game g=root.activeGame();
+            switch(g.tutorial.lesson) {
+                case Tutorial.THROTTLE: if(g.helm.throttle==0) tap(root,110,831); break;
+                case Tutorial.WHEEL: if(g.helm.rudder==0) root.pointerDown(1,510,865); break;
+                case Tutorial.STOP:
+                    root.pointerUp(1,510,865); if(!g.braking) tap(root,290,908); break;
+                case Tutorial.REVERSE:
+                    if(!g.tutorial.reversed && g.helm.throttle==0) tap(root,110,900);
+                    else if(g.tutorial.reversed && !g.braking) tap(root,290,908);
+                    break;
+                case Tutorial.DOCK: if(g.helm.throttle==0) tap(root,110,831); break;
+                default: Renderer.draw(root,p); return;
+            }
+            root.step(); p.add(g.tutorial.lesson); p.add(g.control); p.add(root.pollHaptic());
+            p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.helm.throttle); p.value(g.helm.rudder);
+            if(i%30==0) Renderer.draw(root,p);
+        }
+        throw new IllegalStateException("Tutorial replay did not finish");
     }
     public static void main(String[] args) { System.out.println(signature()); }
 }

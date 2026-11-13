@@ -12,14 +12,15 @@ public final class Desktop extends JPanel {
     private Desktop() {
         setPreferredSize(new Dimension(600,960)); setBackground(new Color(0x101e25));
         MouseAdapter mouse=new MouseAdapter() {
-            public void mousePressed(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.down(viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
-            public void mouseDragged(MouseEvent e) { game.move(viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
-            public void mouseReleased(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.up(viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
+            public void mousePressed(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.pointerDown(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
+            public void mouseDragged(MouseEvent e) { game.pointerMove(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
+            public void mouseReleased(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.pointerUp(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
         };
         addMouseListener(mouse); addMouseMotionListener(mouse);
+        addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { game.cancelInputs(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
         getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.pause(); } });
-        new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); last=now; repaint(); }).start();
+        new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); last=now; repaint(); }).start();
     }
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics); Graphics2D g=(Graphics2D)graphics.create();
