@@ -66,23 +66,37 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
 
-First Watch asks you to deliver **6 loads in 3 minutes**. Each challenge has two feeder slots at the river's right edge. NPC pushers bring
-in the first pair of barges, then dispatch another load every 14 seconds while a
-feeder is free. They back out after handoff. Animated comic calls shout **ZONE A!**,
-**ZONE B!**, or **ZONE C!** and pulse the matching berth. A blocked captain waits,
-flashes the slot red, and calls **HURRY UP!** at four-second intervals. These are
-visual speech bubbles; there is no voice audio yet. Slot fenders hold waiting
-barges until the tug makes push contact. Contracts expire 68 seconds after handoff; an
-incoming NPC load never expires before it reaches you. Watch crossing traffic and
-avoid hard impacts. Pause is in the upper-right corner (Escape on desktop).
+First Watch asks you to deliver **6 loads in 3 minutes**, with **one feeder and one
+berth**, both close together. Hold a load to push it toward berth A; the camera
+smoothly moves into a **1.4× docking view** as the tug brings it close. The camera
+holds still during lasso aiming and flight, then eases back out after delivery.
+Barges retain keel momentum, but stronger forward, sideways and turning resistance
+make released loads settle sooner. Gentle berth fender damping helps with aiming.
+
+NPC pushers bring loads in from the right edge, call **ZONE A!**, **ZONE B!**, or
+**ZONE C!**, and back out. A blocked captain calls **HURRY UP!** at four-second
+intervals. Queued deliveries wait outside the tug's pickup approach. These calls
+are visual speech bubbles; there is no voice audio yet. Slot fenders hold waiting
+barges until physical push contact. First Watch and Heavy Shift dispatch every
+14 seconds; Bridge Run uses 30 seconds between dispatches. Contract life is
+68 seconds after handoff, or 130 seconds on the longer bridge route.
 
 Open **Challenges** from the title or results screen to build your captain career:
 
-| Challenge | Target | Unlock |
-| --- | --- | --- |
-| First Watch | 6 loads in 3:00 | Available immediately |
-| Quick Turn | 6 loads in 2:30 | Complete First Watch |
-| Heavy Shift | 8 loads in 3:00 | Complete Quick Turn |
+| Challenge | Target | Stage | Unlock |
+| --- | --- | --- | --- |
+| First Watch | 6 loads in 3:00 | One feeder, one berth | Available immediately |
+| Bridge Run | 4 loads in 4:00 | Two feeders, scrolling river, one upstream berth | Complete First Watch |
+| Heavy Shift | 8 loads in 3:00 | Two feeders, three berths, piers and crossing traffic | Complete Bridge Run |
+
+Bridge Run extends the river beyond one screen. The camera follows the tug.
+Approaching its closed bridge requests an opening: **wait six seconds**, then
+watch the leaves rise over two seconds. Holding cargo keeps the tug and load in
+the waiting area until the signal turns green. The bridge stays open for at
+least twelve seconds, and waits for the channel underneath to clear before
+closing. A vessel entering during closing makes it reopen. Dragging manually
+still requires you to stop for the red signal. Pause is in the upper-right
+corner (Escape on desktop).
 
 Survive until the shift timer ends and meet its quota to earn one star. Earn an
 additional star for no expired loads, and another for finishing with at least
@@ -114,7 +128,7 @@ or separate JavaScript/Swift gameplay implementation.
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
 using 960×600 as the reference size. The river uses the largest uniform scale that
-keeps the whole stage visible, with compact HUD/control overlays along the shore. The ground plane is foreshortened to 75% depth; sprites retain their painted
+fits the introductory stage, follows the tug on the longer bridge stage, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane is foreshortened to 75% depth; sprites retain their painted
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
 The complete river is visible at once, with a compact channel and larger boat
 footprints that make cargo, wakes and rope actions easier to read. The camera

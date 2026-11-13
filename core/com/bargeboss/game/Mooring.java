@@ -23,12 +23,12 @@ public final class Mooring {
         b.angle=Physics.angle(b.mooringAngle+Physics.angle(heading-b.mooringAngle)*eased);
         float targetX=b.berth==1?Physics.RIGHT-b.radius-10:Physics.LEFT+b.radius+10;
         b.x=b.mooringX+(targetX-b.mooringX)*eased;
-        b.y=b.mooringY+(Game.DOCK_Y[b.berth]-b.mooringY)*eased;
+        b.y=b.mooringY+(g.dockY(b.berth)-b.mooringY)*eased;
         // Keep the complete rotating hull in the berth, even when caught near its edge.
         float ex=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(b.angle));
         float ey=b.radius+b.half*(float)StrictMath.abs(StrictMath.sin(b.angle));
         b.x=Physics.clamp(b.x,Math.max(Physics.LEFT+ex,Game.DOCK_X[b.berth]-55+ex),Math.min(Physics.RIGHT-ex,Game.DOCK_X[b.berth]+55-ex));
-        b.y=Physics.clamp(b.y,Game.DOCK_Y[b.berth]-53+ey,Game.DOCK_Y[b.berth]+53-ey);
+        b.y=Physics.clamp(b.y,g.dockY(b.berth)-53+ey,g.dockY(b.berth)+53-ey);
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;
         if(b.mooringTicks>=TIGHTEN_TICKS+ALIGN_TICKS) b.unloadingTicks++;
     }

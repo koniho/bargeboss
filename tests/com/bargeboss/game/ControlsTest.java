@@ -12,11 +12,11 @@ public final class ControlsTest {
         Game g=game(); ReplayInput.tap(g,RiverPainter.screenX(360,580),RiverPainter.screenY(360,580));
         check(!g.navigating,"water taps no longer set a route");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
-        float originY=g.downY; steps(g,60);
+        float originY=g.downY,screenOrigin=g.layout.camera.screenX(g.downX,g.downY); steps(g,60);
         check(g.navigating && g.tug.y<originY-50,"held drag drives tug");
-        check(g.downY==originY,"drag origin stays anchored as boat moves");
+        check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f,"drag origin stays anchored as boat moves");
         g.pointerDown(2,200,400); g.pointerMove(2,100,400); g.pointerUp(2,100,400);
-        check(g.downY==originY && g.pointer,"second finger cannot steal drag");
+        check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f && g.pointer,"second finger cannot steal drag");
         ReplayInput.move(g,g.downX,g.downY); steps(g,30);
         check(g.braking && g.tug.speed()<5,"centering drag brakes");
         ReplayInput.move(g,g.downX,g.downY-100); steps(g,30); ReplayInput.up(g,g.pointerX,g.pointerY);

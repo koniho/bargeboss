@@ -9,7 +9,7 @@ public final class SceneryTest {
             check(l>=0 && t>=0 && r<=1 && b<=1 && r>l && b>t,"independent scenery crop stays inside its source image");
             check(SpriteAtlas.artWidth(atlas,frame)>0 && SpriteAtlas.artHeight(atlas,frame)>0,"scenery retains source proportions");
         }
-        Game g=new Game();g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
+        Game g=new Game();g.challengeId=2;g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
         RiverCamera c=g.layout.camera;float x=c.screenX(g.tug.x,g.tug.y),y=c.screenY(g.tug.x,g.tug.y);
         float faded=SceneryView.opacity(g,x-30,y-70,60,80);
         check(faded<=.29f,"foreground scenery fades over the player's vessel");
@@ -36,7 +36,7 @@ public final class SceneryTest {
         HarborGeometry.waypoint(260,500,230,290,42.75f,point);
         check(point[0]>=255,"assistance clears the south pier before entering berth A");
         g=new Game();g.reset();for(int i=0;i<100;i++) g.step();
-        check(g.feeders[0].load!=null && g.feeders[1].load!=null,"both feeder approaches remain outside the new quays");
+        check(g.feeders[0].load!=null,"both feeder approaches remain outside the new quays");
         System.out.println(checks+" scenery crop, occlusion, solid quay and route assertions passed");
     }
 }

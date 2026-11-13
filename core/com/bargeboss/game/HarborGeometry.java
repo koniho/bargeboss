@@ -42,6 +42,9 @@ public final class HarborGeometry {
     }
     /** Tiny visibility graph; returns the first reachable corner on the shortest clear route. */
     public static void waypoint(float x,float y,float tx,float ty,float pad,float[] out) {
+        waypoint(x,y,tx,ty,pad,Physics.TOP,Physics.BOTTOM,out);
+    }
+    public static void waypoint(float x,float y,float tx,float ty,float pad,float top,float bottom,float[] out) {
         out[0]=tx;out[1]=ty;
         // A hull can be physically clear while inside the conservative planning margin.
         // Escape toward the channel before building a route; never deadlock against that margin.
@@ -62,7 +65,7 @@ public final class HarborGeometry {
             if(a<0 || cost[a]==Float.MAX_VALUE) break;
             used[a]=true;if(a==1) break;
             for(int b=1;b<n;b++) if(!used[b] && xs[b]>=Physics.LEFT+pad && xs[b]<=Physics.RIGHT-pad
-                    && ys[b]>=Physics.TOP+pad && ys[b]<=Physics.BOTTOM-pad && clear(xs[a],ys[a],xs[b],ys[b],pad)) {
+                    && ys[b]>=top+pad && ys[b]<=bottom-pad && clear(xs[a],ys[a],xs[b],ys[b],pad)) {
                 float distance=cost[a]+Physics.length(xs[b]-xs[a],ys[b]-ys[a]);
                 if(distance<cost[b]) { cost[b]=distance;previous[b]=a; }
             }

@@ -6,6 +6,7 @@ public final class DockView {
     private DockView() {}
     public static void draw(Game g,Painter canvas) {
         for(int berth=0;berth<3;berth++) {
+            if(!g.berthEnabled(berth)) continue;
             Body load=null,mooring=null;
             boolean ready=false;
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
@@ -15,11 +16,11 @@ public final class DockView {
             }
             boolean working=load!=null,tying=mooring!=null;
             boolean throwing=(g.ropePhase==1 || g.ropePhase==3) && g.ropeBody!=null && g.ropeBody.berth==berth;
-            boolean celebrating=g.celebrationTicks>0 && Math.abs(g.celebrationY-Game.DOCK_Y[berth])<54;
+            boolean celebrating=g.celebrationTicks>0 && Math.abs(g.celebrationY-g.dockY(berth))<54;
             int tick=g.visualTicks;
             RiverCamera camera=g.layout.camera;
-            float anchorX=camera.screenX(berth==1?445:155,Game.DOCK_Y[berth]);
-            float anchorY=camera.screenY(berth==1?445:155,Game.DOCK_Y[berth]);
+            float anchorX=camera.screenX(berth==1?445:155,g.dockY(berth));
+            float anchorY=camera.screenY(berth==1?445:155,g.dockY(berth));
             float scale=camera.scale*.55f;
             float alpha=SceneryView.opacity(g,anchorX-24*scale,anchorY-90*scale,100*scale,122*scale);
             Painter p=ScreenView.scaled(new OpacityPainter(canvas,alpha),anchorX,anchorY,scale);

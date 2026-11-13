@@ -10,7 +10,7 @@ public final class CareerTest {
     }
     private static void challengeRules() {
         check(Challenges.COUNT==3 && Challenges.quota(0)==Game.QUOTA && Challenges.shiftTicks(0)==Game.SHIFT_TICKS,"first watch preserves original rules");
-        check(Challenges.quota(1)==6 && Challenges.shiftTicks(1)==150*60,"quick turn requires six loads in150seconds");
+        check(Challenges.quota(1)==4 && Challenges.shiftTicks(1)==240*60,"bridge run requires four loads in240seconds");
         check(Challenges.quota(2)==8 && Challenges.shiftTicks(2)==180*60,"heavy shift requires eight loads in180seconds");
         check(Challenges.stars(0,5,0,100)==0 && Challenges.stars(0,6,0,0)==0,"quota failure or wreck earns no stars");
         check(Challenges.stars(0,6,1,79)==1 && Challenges.stars(0,6,0,79)==2
@@ -66,7 +66,7 @@ public final class CareerTest {
         version=game.progressVersion(); String saved=game.saveProgress();
         game.step(); game.advance(.25);
         check(game.progressVersion()==version && game.saveProgress().equals(saved),"results animation cannot award again");
-        game.reset(); check(game.challengeId==1 && game.shiftTicks()==9000 && game.earnedStars==0 && !game.rankPromoted,"replay keeps challenge and clears only current result");
+        game.reset(); check(game.challengeId==1 && game.shiftTicks()==14400 && game.earnedStars==0 && !game.rankPromoted,"replay keeps challenge and clears only current result");
         finishFixture(game,6,1,70,400);
         check(game.earnedStars==1 && game.career.bestStars(1)==3 && game.progressVersion()==version,"weaker replay displays earned star without farming or reducing best result");
         Game failed=new Game(); failed.reset(); finishFixture(failed,5,0,100,5000);
@@ -95,7 +95,7 @@ public final class CareerTest {
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[1]); check(game.challengeId==0,"locked card cannot replace active selection");
         ReplayInput.tap(game,Layout.CHALLENGE_START); check(game.mode==Game.PLAY && game.challengeId==0,"challenge start launches selected first watch");
         finishFixture(game,6,0,100,1000); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
-        check(game.mode==Game.PLAY && game.challengeId==1 && game.quota()==6 && game.shiftTicks()==9000,"results next starts the unlocked challenge");
+        check(game.mode==Game.PLAY && game.challengeId==1 && game.quota()==4 && game.shiftTicks()==14400,"results next starts the unlocked challenge");
         finishFixture(game,6,0,100,1100); ReplayInput.tap(game,Layout.FINISH_CHALLENGES);
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[2]); ReplayInput.tap(game,Layout.CHALLENGE_START);
         check(game.challengeId==2 && game.quota()==8 && game.mode==Game.PLAY,"board card selection starts heavy shift");

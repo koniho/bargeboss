@@ -7,7 +7,8 @@ public final class MooringView {
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
         for(int berth=0;berth<3;berth++) {
-            float x=Game.TIE_X[berth],y=Game.DOCK_Y[berth];
+            if(!g.berthEnabled(berth)) continue;
+            float x=Game.TIE_X[berth],y=g.dockY(berth);
             boolean ready=false,tied=false;
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
@@ -37,7 +38,7 @@ public final class MooringView {
                 }
                 continue;
             }
-            float x=Game.TIE_X[b.berth],y=Game.DOCK_Y[b.berth];
+            float x=Game.TIE_X[b.berth],y=g.dockY(b.berth);
             float progress=Math.min(1,b.dockTime/1.2f);
             // Take up the loose line slowly, then pull its final slack out decisively.
             float slack=23*(1-progress*progress*progress);

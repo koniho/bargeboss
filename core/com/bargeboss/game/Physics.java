@@ -17,8 +17,8 @@ public final class Physics {
         float side = -b.vx * s + b.vy * c;
         // Displacement barges glide along their keel but present a broad face to lateral flow.
         boolean barge=b.berth>=0;
-        float forwardDrag=barge?.065f+.0012f*Math.abs(forward):.22f;
-        float sideDrag=barge?.8f+.022f*Math.abs(side):1.5f;
+        float forwardDrag=barge?.16f+.0025f*Math.abs(forward):.22f;
+        float sideDrag=barge?1.2f+.03f*Math.abs(side):1.5f;
         forward/=1+forwardDrag*DT;
         side/=1+sideDrag*DT;
         b.vx = forward * c - side * s;
@@ -29,7 +29,7 @@ public final class Physics {
             if(flow<-Math.PI/2) flow+=(float)Math.PI;
             b.spin+=flow*Math.min(1,b.speed()/35)*.28f*DT;
         }
-        b.spin/=1+(barge?.42f+.012f*Math.abs(forward):2.6f)*DT;
+        b.spin/=1+(barge?.8f+.015f*Math.abs(forward):2.6f)*DT;
         b.x += b.vx * DT; b.y += b.vy * DT;
         b.angle = angle(b.angle + b.spin * DT);
     }
@@ -63,15 +63,17 @@ public final class Physics {
             if(length(a.discX(i)-b.discX(j),a.discY(i)-b.discY(j))<=reach) return true;
         return false;
     }
-    public static float banks(Body b) {
+    public static float banks(Body b) { return banks(b,TOP,BOTTOM); }
+    public static float banks(Body b,float top,float bottom) { return banks(b,top,bottom,true); }
+    public static float banks(Body b,float top,float bottom,boolean piers) {
         float impact=0;
         for(int i=0;i<3;i++) {
             float x=b.discX(i), y=b.discY(i), r=b.radius;
             if(x-r<LEFT) { impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; b.vx=Math.abs(b.vx)*.2f; b.spin*=.8f; }
             if(x+r>RIGHT) { impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; b.vx=-Math.abs(b.vx)*.2f; b.spin*=.8f; }
-            if(y-r<TOP) { impact=Math.max(impact,-b.vy); b.y+=TOP-y+r; b.vy=Math.abs(b.vy)*.2f; }
-            if(y+r>BOTTOM) { impact=Math.max(impact,b.vy); b.y-=y+r-BOTTOM; b.vy=-Math.abs(b.vy)*.2f; }
+            if(y-r<top) { impact=Math.max(impact,-b.vy); b.y+=top-y+r; b.vy=Math.abs(b.vy)*.2f; }
+            if(y+r>bottom) { impact=Math.max(impact,b.vy); b.y-=y+r-bottom; b.vy=-Math.abs(b.vy)*.2f; }
         }
-        return Math.max(impact,HarborGeometry.collide(b));
+        return Math.max(impact,piers?HarborGeometry.collide(b):0);
     }
 }

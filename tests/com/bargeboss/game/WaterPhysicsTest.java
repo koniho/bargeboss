@@ -8,7 +8,7 @@ public final class WaterPhysicsTest {
         Body along=new Body(1,0,300,450,0),sideways=new Body(2,0,300,450,(float)Math.PI/2),reverse=new Body(3,0,300,450,0);
         along.vx=sideways.vx=60;reverse.vx=-60;
         for(int i=0;i<120;i++) { Physics.integrate(along);Physics.integrate(sideways);Physics.integrate(reverse); }
-        check(along.vx>40 && along.x-300>95,"unpowered barge keeps meaningful forward momentum for two physics seconds");
+        check(along.vx>30 && along.vx<40 && along.x-300>85,"unpowered barge keeps meaningful forward momentum for two physics seconds");
         check(along.vx>sideways.vx*2 && along.x-300>(sideways.x-300)*1.5f,"broadside drag depends on hull orientation relative to motion");
         check(Math.abs(along.vx+reverse.vx)<.1f,"reverse keel motion retains symmetric water resistance");
         Body barge=new Body(1,0,300,450,0),tug=new Body(0,-1,300,450,0);barge.spin=tug.spin=1;
@@ -16,7 +16,7 @@ public final class WaterPhysicsTest {
         check(barge.spin>tug.spin*3,"barge yaw carries inertia longer than the small tug");
         Game dock=isolated();Body load=new Body(1,2,230,700,0);load.vx=15;dock.cargo[0]=load;
         for(int i=0;i<30;i++) dock.step();
-        check(load.speed()>8,"an unmoored barge does not snap to a stop just for entering a berth");
+        check(load.speed()>6 && load.speed()<10,"an unmoored barge does not snap to a stop just for entering a berth");
         Game g=isolated();g.tug.vx=40;int emissions=0;
         for(int i=0;i<500;i++) {
             float before=g.tug.heaveVelocity;int count=g.water.emitted;g.visualTicks++;g.water.step(g);

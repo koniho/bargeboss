@@ -18,10 +18,13 @@ public final class Layout {
     public final float width,height,offsetX,offsetY;
     public final RiverCamera camera;
     public Layout(float width,float height) {
+        this(width,height,148,460,1);
+    }
+    public Layout(float width,float height,float worldTop,float worldRight,float zoom) {
         this.width=Math.max(WIDTH,width); this.height=Math.max(HEIGHT,height);
         offsetX=(this.width-WIDTH)/2; offsetY=(this.height-HEIGHT)/2;
         float scale=Math.min(this.width/688,this.height/320);
-        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*RiverCamera.DEPTH*scale)/2,scale);
+        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*RiverCamera.DEPTH*scale)/2,scale*zoom,worldTop,worldRight,zoom);
     }
 
     /** Menu rectangles remain centered; live controls overlay the outer shore. */

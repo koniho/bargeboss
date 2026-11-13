@@ -7,13 +7,13 @@ public final class ArcadeView {
         int tick=g.visualTicks;
         // Broken, screen-horizontal crests travel downstream and breathe at different phases.
         // Gentle ambient motion remains visible with every vessel idle; foam stays brighter.
-        for(int row=0;row<17;row++) for(int col=0;col<5;col++) {
+        for(int row=0;row<(g.bridgeStage()?38:17);row++) for(int col=0;col<5;col++) {
             int seed=row*137+col*71+row*col*13;
             float phase=tick*.025f+seed;
             float x=184+col*47+seed%15+(float)StrictMath.sin(phase)*2;
-            float y=Physics.TOP+((row*35+seed%23+tick*.025f)%(Physics.BOTTOM-Physics.TOP));
+            float y=g.channelTop()+((row*35+seed%23+tick*.025f)%(Physics.BOTTOM-g.channelTop()));
             float length=9+seed%17;
-            float edge=Math.min(1,Math.min((y-Physics.TOP)/18,(Physics.BOTTOM-y)/30));
+            float edge=Math.min(1,Math.min((y-g.channelTop())/18,(Physics.BOTTOM-y)/30));
             float shimmer=.5f+.5f*(float)StrictMath.sin(phase*.73f);
             int alpha=(int)((25+55*shimmer)*edge);
             float end=Math.min(Physics.BOTTOM,y+length);
@@ -22,9 +22,9 @@ public final class ArcadeView {
             if(seed%3==0) p.line(x+2,y+3,x+2,Math.min(end,y+length*.6f),.8f,((alpha/2)<<24)|0xc1e6d5);
         }
         // Small pools of moving golden reflections beneath the industrial lamps.
-        for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) for(int i=0;i<7;i++) {
+        for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) if(g.berthEnabled(dock)) for(int i=0;i<7;i++) {
             float x=(side==0?177:419)+(side==0?1:-1)*(4+(i*7)%18);
-            float y=Game.DOCK_Y[dock]-20+i*7;
+            float y=g.dockY(dock)-20+i*7;
             float flicker=(float)StrictMath.sin(tick*.08+i+dock);
             int alpha=40+(int)(35*(1+StrictMath.sin(tick*.035+i*1.8+dock)));
             p.rect(x+flicker*2,y,1.2f,3+(i%3)*2+flicker,(alpha<<24)|0xebbe64);

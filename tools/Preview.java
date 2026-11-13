@@ -66,6 +66,19 @@ public final class Preview {
             if(previous==Tutorial.DONE) break;
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
+        g=new Game();g.reset();steps(g,180);capture(g,"first-watch-overview");
+        ReplayInput.down(g,260,730);steps(g,480);capture(g,"docking-zoom");
+        g=new Game();g.challengeId=1;g.reset();capture(g,"bridge-start");
+        boolean wait=false,opening=false,open=false,dock=false;
+        for(int i=0;i<9000 && !dock;i++) {
+            ReplayInput.work(g);g.step();
+            if(!wait && g.bridge.phase==Bridge.WAITING && g.bridge.ticks>240) { capture(g,"bridge-wait");wait=true; }
+            if(!opening && g.bridge.phase==Bridge.OPENING && g.bridge.ticks>60) { capture(g,"bridge-opening");opening=true; }
+            if(!open && g.bridge.phase==Bridge.OPEN && Math.abs(g.tug.y-Bridge.Y)<100) { capture(g,"bridge-open");open=true; }
+            for(Body load:g.cargo) if(load!=null && load.active && load.unloadingTicks>30) { capture(g,"bridge-destination");dock=true;break; }
+        }
+        if(!wait || !opening || !open || !dock) throw new IllegalStateException("Bridge preview did not complete passage");
+        sheet("bridge-progression",new String[]{"first-watch-overview","docking-zoom","bridge-wait","bridge-opening","bridge-open","bridge-destination"});
         sheet("lasso-phases",new String[]{"aim-miss","retracting","aiming","lasso","bollard-hit","line-snap"});
         sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});
         sheet("all-phases",new String[]{"stage","driving","coasting","braking","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});

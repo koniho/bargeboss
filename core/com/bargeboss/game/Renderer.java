@@ -55,14 +55,14 @@ public final class Renderer {
                 p.circle(b.x,b.y,40,0x18fff0ce);
                 for(int j=1;j<10;j++) {
                     float t=j/10f;
-                    p.circle(b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(Game.DOCK_Y[b.berth]-b.y)*t,1.5f,(color&0xffffff)|0x77000000);
+                    p.circle(b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,(color&0xffffff)|0x77000000);
                 }
             }
             VesselView.draw(g,p,b,false);
-            tag(p,""+(char)('A'+b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-44,10,color);
+            tag(p,""+g.berthLetter(b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-44,10,color);
             if(!b.lineAttached) {
                 p.rect(b.x-23,b.y+31,46,4,VisualStyle.OUTLINE);
-                p.rect(b.x-22,b.y+32,44*Math.max(0,1-b.age/68),2,b.age>48?VisualStyle.RED:color);
+                p.rect(b.x-22,b.y+32,44*Math.max(0,1-b.age/g.contractSeconds()),2,b.age>g.contractSeconds()-20?VisualStyle.RED:color);
             }
         }
         if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);

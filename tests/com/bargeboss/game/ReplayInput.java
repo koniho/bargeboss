@@ -5,7 +5,7 @@ public final class ReplayInput {
     private ReplayInput() {}
     /** Stable local cargo fixture for isolated control/art tests, separate from feeder replays. */
     public static void controlFixture(Game g) {
-        g.reset(); g.tug=new Body(0,-1,376,700,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
+        g.challengeId=2;g.reset(); g.tug=new Body(0,-1,376,700,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
         g.addCargo(2,292,700); g.addCargo(1,320,480);
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
@@ -14,13 +14,17 @@ public final class ReplayInput {
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void lasso(Game root,Body b) {
-        down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
-        up(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
+        down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
+        up(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
     }
     public static void work(Game g) {
         if(g.ropePhase!=0) return;
         Body target=null;
         for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached) { target=b; break; }
+        if(target!=null && (!g.pointer || g.holdingTug()) && !g.layout.camera.contains(g.layout.camera.screenX(target.x,target.y),g.layout.camera.screenY(target.x,target.y))) {
+            drive(g,300,target.y);return;
+        }
+        if(target!=null && g.holdingTug() && Math.abs(target.y-g.tug.y)>220) { drive(g,300,target.y);return; }
         if(target!=null) {
             if(g.holdingTug()) up(g,g.pointerX,g.pointerY);
             if(g.pointer && g.canTie(g.heldCargo())) up(g,g.pointerX,g.pointerY);
@@ -36,6 +40,13 @@ public final class ReplayInput {
                 move(g,g.downX+dx/len*90,g.downY+dy/len*90);
             }
         }
+    }
+    private static void drive(Game g,float x,float y) {
+        if(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(g.tug.y,y)) y=Bridge.Y+(g.tug.y>Bridge.Y?90:-90);
+        float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
+        if(!g.pointer) down(g,g.tug.x,g.tug.y);
+        if(len<25) move(g,g.downX,g.downY);
+        else move(g,g.downX+dx/len*90,g.downY+dy/len*90);
     }
     public static void tutorial(Game root) {
         Game g=root.activeGame();

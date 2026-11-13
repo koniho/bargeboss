@@ -30,7 +30,13 @@
     CGSize size=[self logicalSize:stage];
     double scale=fmin(size.width/688,size.height/320);
     double left=(size.width-688*scale)/2,top=(size.height-320*0.75*scale)/2;
-    return [self point:stage x:left+(y-148)*scale y:top+(460-x)*scale*0.75];
+    double worldTop=148,worldRight=460;
+    NSArray<NSString *> *sections=[(NSString *)stage.value componentsSeparatedByString:@"; camera "];
+    if(sections.count==2) {
+        NSArray<NSString *> *values=[sections[1] componentsSeparatedByString:@","];
+        if(values.count==5) { left=values[0].doubleValue;top=values[1].doubleValue;scale=values[2].doubleValue;worldTop=values[3].doubleValue;worldRight=values[4].doubleValue; }
+    }
+    return [self point:stage x:left+(y-worldTop)*scale y:top+(worldRight-x)*scale*0.75];
 }
 - (void)tapMenu:(XCUIElement *)stage x:(double)x y:(double)y {
     CGSize size=[self logicalSize:stage];
@@ -58,7 +64,7 @@
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
     [self tapMenu:stage x:770 y:446];
-    [self waitFor:@"feeder drops 2;" on:stage];
+    [self waitFor:@"feeder drops 1;" on:stage];
     [[self river:stage x:260 y:730] pressForDuration:8];
     [self waitFor:@"ready to tie 2" on:stage];
     return stage;

@@ -9,8 +9,8 @@ public final class LightingView {
     }
     public static void quays(Game g,Painter p) {
         RiverCamera c=g.layout.camera;float s=c.scale;
-        for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) {
-            float x=c.screenX(300,Game.DOCK_Y[dock]);
+        for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) if(g.berthEnabled(dock)) {
+            float x=c.screenX(300,g.dockY(dock));
             float y=c.screenY(side==0?Physics.RIGHT:Physics.LEFT,492)+(side==0?-16:15)*s;
             float pulse=1+.04f*(float)StrictMath.sin(g.visualTicks*.035+dock);
             for(int ring=12;ring>=1;ring--) {

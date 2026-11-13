@@ -39,7 +39,7 @@ public final class SceneryView {
         RiverCamera c=g.layout.camera;float s=c.scale;
         float top=c.screenY(Physics.RIGHT,492),bottom=c.screenY(Physics.LEFT,492);
         p.rect(0,0,g.layout.width,g.layout.height,0xff67788c);
-        float tile=300*s,drift=(g.visualTicks*.025f*s)%tile;
+        float tile=300*s,drift=(g.visualTicks*.025f*s+c.screenX(300,148))%tile;
         float swell=(float)StrictMath.sin(g.visualTicks*.018)*1.2f*s;
         for(float y=top-tile+swell;y<bottom;y+=tile) for(float x=drift-tile;x<g.layout.width;x+=tile)
             p.sprite(SpriteAtlas.WATER,0,x+tile/2,y+tile/2,tile,tile,0,1);
@@ -51,7 +51,7 @@ public final class SceneryView {
         p.rect(0,top-15*s,g.layout.width,4*s,0xffc3b89b);
         p.rect(0,bottom,g.layout.width,7*s,0xffc3b89b);
         p.rect(0,bottom+7*s,g.layout.width,5*s,0xff46586c);
-        for(float x=c.left-20*s;x<g.layout.width;x+=96*s) {
+        for(float x=c.screenX(300,128)-(float)StrictMath.ceil(c.screenX(300,128)/(96*s))*96*s;x<g.layout.width;x+=96*s) {
             p.line(x,top-15*s,x-18*s,top-48*s,1.2f*s,0x5546576b);
             p.line(x,bottom+12*s,x-18*s,bottom+52*s,1.2f*s,0x5546576b);
             for(int i=0;i<3;i++) {
@@ -68,8 +68,11 @@ public final class SceneryView {
         float[] along={70,250,465,625};
         float[] sizes=foreground?new float[]{82,80,76,94}:new float[]{100,84,91,100};
         float edge=c.screenY(foreground?Physics.LEFT:Physics.RIGHT,492);
-        for(int i=0;i<cells.length;i++) {
-            float size=sizes[i]*s,x=c.left+along[i]*s;
+        for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++) for(int i=0;i<cells.length;i++) {
+            float worldY=148+along[i]+segment*688;
+            if(g.bridgeStage() && Math.abs(worldY-Bridge.Y)<95) continue;
+            float size=sizes[i]*s,x=c.screenX(300,worldY);
+            if(x+size<0 || x-size>g.layout.width) continue;
             float foot=edge+(foreground?83:-10)*s;
             float y=foot-size*.47f;
             float alpha=opacity(g,x-size/2,y-size/2,size,size);
@@ -78,6 +81,8 @@ public final class SceneryView {
         }
     }
     public static void bridge(Game g,Painter p) {
+        if(g.challengeId==0) return;
+        if(g.bridgeStage()) { BridgeView.draw(g,p);return; }
         RiverCamera c=g.layout.camera;float s=c.scale;
         float x=c.screenX(300,178),middle=c.screenY(300,178);
         for(int frame=0;frame<2;frame++) {
@@ -88,6 +93,7 @@ public final class SceneryView {
         }
     }
     public static void piers(Game g,Painter p) {
+        if(g.challengeId!=2) return;
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int f=0;f<2;f++) {
             float[] r=HarborGeometry.PIERS[f];

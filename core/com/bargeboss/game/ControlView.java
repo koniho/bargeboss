@@ -5,7 +5,7 @@ public final class ControlView {
     public static final int BLUE=0xff83c8d5, GREEN=0xffb9df9c, AMBER=0xffffc52f, PURPLE=0xffb7a2df;
     private static final int PAPER=VisualStyle.CREAM, INK=VisualStyle.NAVY;
     private static final String[] LABELS={"READY","DRIVING","KEEP HOLDING","LINING UP","PUSHING",
-            "MANUAL STEERING","DOCKING","COASTING","BRAKING"};
+            "MANUAL STEERING","DOCKING","COASTING","BRAKING","WAITING FOR BRIDGE"};
     private ControlView() {}
     public static int color(Game g) {
         if(g.control==Game.MOVING) return BLUE;
@@ -23,6 +23,7 @@ public final class ControlView {
         for(Body b:g.cargo) if(b!=null && b.active && Mooring.aligning(b)) return "WINCHING ALONGSIDE / LINING UP WITH SHORE";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
+        if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
         if(g.holdingTug()) return "DRAG FARTHER FOR THRUST / CENTER TO BRAKE";
         switch(g.control) {
             case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
@@ -79,16 +80,17 @@ public final class ControlView {
             if(!g.pushing) ring(p,b.x,b.y,46,g.holdProgress(),AMBER,5);
             else {
                 ring(p,b.x,b.y,46,1,color,2);
-                float bx=Game.DOCK_X[b.berth],by=Game.DOCK_Y[b.berth];
+                float bx=Game.DOCK_X[b.berth],by=g.dockY(b.berth);
                 ring(p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
                     path(p,g.tug.x,g.tug.y,g.guideX,g.guideY,AMBER);
                     ring(p,g.guideX,g.guideY,15,1,AMBER,2);
                     label(p,"APPROACH",g.guideX,g.guideY+26,AMBER);
                 }
-                if(g.control!=Game.DOCKING) arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,
-                        Physics.clamp(b.x+g.pushX*108,Physics.LEFT+5,Physics.RIGHT-5),Physics.clamp(b.y+g.pushY*108,Physics.TOP+5,Physics.BOTTOM-5),color);
+                if(g.control!=Game.DOCKING && g.control!=Game.WAITING_BRIDGE) arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,
+                        Physics.clamp(b.x+g.pushX*108,Physics.LEFT+5,Physics.RIGHT-5),Physics.clamp(b.y+g.pushY*108,g.channelTop()+5,Physics.BOTTOM-5),color);
                 dragRing(g,p,PURPLE);
+                if(g.control==Game.WAITING_BRIDGE) label(p,"WAIT FOR GREEN",b.x,b.y-67,AMBER);
                 if(g.control==Game.DOCKING) {
                     ring(p,b.x,b.y,51,Math.min(1,b.dockTime/1.2f),GREEN,5);
                     label(p,"SETTLING",b.x,b.y-67,GREEN);
@@ -103,7 +105,7 @@ public final class ControlView {
         }
         if(g.noticeTicks>0 && (g.notice.startsWith("DELIVERED") || g.notice.startsWith("HARD IMPACT")
                 || g.notice.startsWith("CONTRACT"))) {
-            label(p,g.notice,454,(RiverPainter.WORLD_TOP+RiverPainter.WORLD_BOTTOM)/2,PAPER);
+            label(p,g.notice,454,g.layout.camera.worldTop+344/g.layout.camera.zoom,PAPER);
         }
     }
     private static void dragRing(Game g,Painter p,int color) {
@@ -120,8 +122,9 @@ public final class ControlView {
         float size=10,w=Lettering.width(text,size)+10;
         if(p instanceof RiverPainter) {
             // The board rotates, but the label and its backing remain screen-upright.
-            x=Physics.clamp(x,RiverPainter.WORLD_LEFT+size+4,RiverPainter.WORLD_RIGHT-3);
-            y=Physics.clamp(y,RiverPainter.WORLD_TOP+w/2+3,RiverPainter.WORLD_BOTTOM-w/2-3);
+            RiverCamera c=((RiverPainter)p).camera;
+            x=Physics.clamp(x,c.worldRight-320/c.zoom+size+4,c.worldRight-3);
+            y=Physics.clamp(y,c.worldTop+w/2+3,c.worldTop+688/c.zoom-w/2-3);
             p.rect(x-size-3,y-w/2,size+6,w,0xee101e25);
         } else {
             x=Physics.clamp(x,w/2+4,Layout.WIDTH-w/2-4);

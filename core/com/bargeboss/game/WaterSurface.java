@@ -68,8 +68,8 @@ public final class WaterSurface {
                 float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
                 float xx=x[i]+r*(float)StrictMath.cos(a),yy=y[i]+r*(float)StrictMath.sin(a);
                 float bx=x[i]+r*(float)StrictMath.cos(b),by=y[i]+r*(float)StrictMath.sin(b);
-                if(xx>=Physics.LEFT && xx<=Physics.RIGHT && yy>=Physics.TOP && yy<=Physics.BOTTOM
-                        && bx>=Physics.LEFT && bx<=Physics.RIGHT && by>=Physics.TOP && by<=Physics.BOTTOM)
+                if(xx>=Physics.LEFT && xx<=Physics.RIGHT && yy>=g.channelTop() && yy<=Physics.BOTTOM
+                        && bx>=Physics.LEFT && bx<=Physics.RIGHT && by>=g.channelTop() && by<=Physics.BOTTOM)
                     p.line(xx,yy,bx,by,1.5f+strength[i],(alpha<<24)|0xb9f6eb);
             }
         }

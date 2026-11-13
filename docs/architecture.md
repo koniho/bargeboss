@@ -5,13 +5,12 @@ delivery rules and AI assistance. `Physics` uses 60 Hz semi-implicit integration
 Each hull is three overlapping discs attached to one rigid body; impulses transfer
 linear and angular momentum, while speed-dependent keel and broadside drag
 model orientation-dependent resistance. Loaded barges have mass 5 versus the tug's 2,
-lower yaw damping and gradual flow alignment. Current adds a small downstream acceleration.
+gradual flow alignment and stronger directional/yaw damping than the earlier glide tuning. Current adds a small downstream acceleration.
 
 The tug uses a touch-anchored direction/thrust drag with a neutral/braking ring.
 Holding cargo gives an assisted stern approach; dragging overrides its heading.
 Cargo receives propulsion through contact impulses. Near a berth, fender
-alignment and active hold-assist damping help it settle; passive fenders no longer
-stop a released barge abruptly. A matching bollard accepts a rope drop
+alignment and active hold-assist damping help it settle; passive fenders gently resist drift without snapping the hull to a stop. A matching bollard accepts a rope drop
 only when the complete hull is inside its berth and speed is below 4 world units/second.
 Dragging an armed lasso shows a curved aiming guide; release starts an 18-tick
 flight. A hit attaches at impact and flashes for 24 ticks; a miss retracts for 18
@@ -27,7 +26,7 @@ counter, so pause/background freezes both. Equipment returns to idle afterward.
 
 The 2× pace comes from two original-size motion substeps for each 60 Hz real
 step. Steering, thrust, drag, current, fenders and collisions advance together,
-preserving collision substeps; the new barge drag model intentionally extends coasting. Contract, shift,
+preserving collision substeps and orientation-dependent coasting. Contract, shift,
 gesture, haptic, mooring and unloading clocks advance once per real step.
 Crossing boats cover their route twice as fast; warning and arrival cycles keep
 their original timing. Wake energy drives vertical heave; it does not add hidden horizontal forces.
@@ -45,22 +44,35 @@ are no native menus overlaying the game. `Viewport` exposes a full logical canva
 at a uniform pixel scale, with 960×600 as the reference size. Each `Game` owns an
 immutable `Layout` and `RiverCamera`; resizing cancels active gestures and updates
 practice too. Compact top/bottom HUD overlays replace reserved side rails.
-Buttons receive input priority over the projected world, and their targets stay
-outside navigable water. The whole stage remains visible, with
-industrial scenery extending into the responsive margins rather than black bars.
+Buttons receive input priority over the projected world. Industrial scenery fills
+responsive margins. HUD targets stay fixed while the river camera moves.
 
-`RiverCamera` stores origin and uniform scale separately from the HUD. Its paired
-forward/inverse transform projects source coordinates x=140..460, y=148..836 into the
-landscape board. The scale is min(canvasWidth/688, canvasHeight/320), centered on the full canvas.
-The shared ground-depth factor is 0.75: screenY=top+(460−worldX)×scale×0.75,
-with the exact inverse for pointers. At the reference size, scale=960/688, left=0
-and top=(600−320×scale×0.75)/2. Navigable water remains x=170..430, y=215..817.
-World labels, buildings, cranes and bollards remain upright. Ground circles become
-ellipses, while vessel images keep uniform scale and their fixed 32-view anchors. Hull dimensions are 1.25× their earlier values,
-with recalculated collision inertia. Camera transformations never alter physics.
-This separation supports adding pan/zoom later; the current camera fits the whole
-stage and no pinch/follow controls are enabled. Android hides system bars with
-transient swipe access while all native hosts retain safe cutout bounds.
+`RiverCamera` stores the viewport origin, uniform scale, world origin and zoom.
+The overview spans world x=140..460, y=148..836. Base scale is
+min(canvasWidth/688, canvasHeight/320), multiplied by docking zoom. The fixed
+ground-depth factor is 0.75: screenY=top+(worldRight-worldX)*scale*0.75 and
+screenX=left+(worldY-worldTop)*scale. Input uses the exact inverse. Sprites retain
+uniform scale, fixed 32-view anchors and upright scenery; physics never changes
+with camera transforms. Navigable water is x=170..430. Normal stages span
+y=215..817; Bridge Run extends upstream to y=-520, with berth A at y=-400.
+
+`Game.updateCamera` runs once per simulation tick. It eases toward the tug on
+Bridge Run and toward the tug/load/berth group when a nearby picked-up barge
+approaches its destination. Zoom reaches 1.4×. Both drag endpoints are reprojected
+so a stationary physical finger remains stationary on screen. Rope aim and flight
+freeze the camera. Pause freezes it too; restart restores the overview. The
+tutorial uses its own stable overview. Hosts contain no camera rules or gameplay
+exceptions; iOS automation reads the shared projection to aim real native touches.
+Android hides system bars with transient swipe access and hosts retain safe cutout bounds.
+
+First Watch has one feeder/berth and no piers or crossing hazard. Bridge Run has
+two feeders, one upstream berth and a shared `Bridge` state machine: approach
+requests a six-second wait, two-second opening, at least twelve seconds open,
+then two-second closing once all hulls clear. Closing reverses for an occupied
+passage. A closed deck is a physical barrier to all three hull discs. Cargo
+assistance waits before the gate and resumes after clearance. Heavy Shift keeps
+the original piers, three berths and crossing traffic. Queued feeder loads stay
+outside the river until their slot's pickup approach is free.
 
 Platform hosts forward stable pointer IDs, cancel on interruptions, feed elapsed
 time into `Game.advance`, and implement four geometry primitives plus the shared
@@ -202,7 +214,7 @@ transparent pixels.
 
 On Android and iPhone/iPad: complete a shift; test tug dragging, neutral, release, brake, cargo steering and lasso throws;
 add/remove/cancel an extra finger while holding a drag; cancel via an OS gesture; background
-and resume; inspect landscape notches and home indicators; verify the whole stage and all controls remain visible.
+and resume; inspect landscape notches and home indicators; verify docking zoom, bridge follow, lasso targeting and visible HUD controls.
 On Windows/macOS/Linux: resize the game and verify responsive reflow, move the window between
 different pixel-density monitors, lose focus while holding and resume.
 Compare corresponding native captures with the shared renderer previews. Feel

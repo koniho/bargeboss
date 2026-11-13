@@ -14,6 +14,7 @@
 @property(nonatomic,strong) NSMutableArray<UITouch *> *touches;
 @property(nonatomic,strong) NSMutableArray<NSNumber *> *touchIDs;
 @property(nonatomic) jint nextTouchID;
+@property(nonatomic) BOOL automation;
 @property(nonatomic,strong) UISelectionFeedbackGenerator *selection;
 @property(nonatomic,strong) UIImpactFeedbackGenerator *contact;
 @property(nonatomic,strong) UIImpactFeedbackGenerator *impact;
@@ -38,7 +39,8 @@
             NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;
             // CI isolation only; normal launches never remove saved progress.
             NSArray<NSString *> *arguments=NSProcessInfo.processInfo.arguments;
-            if([arguments containsObject:@"--reset-progress-for-ui-tests"]) {
+            self.automation=[arguments containsObject:@"--reset-progress-for-ui-tests"];
+            if(self.automation) {
                 [defaults removeObjectForKey:@"captain-progress"]; [defaults synchronize];
             }
             [self.game restoreProgressWithNSString:[defaults stringForKey:@"captain-progress"]];
@@ -75,7 +77,7 @@
         case 4: [self.delivery notificationOccurred:UINotificationFeedbackTypeSuccess]; break;
         default: break;
     }
-    [self saveProgress:NO]; self.lastTime=link.timestamp; self.accessibilityValue=[self.game status]; [self setNeedsDisplay];
+    [self saveProgress:NO]; self.lastTime=link.timestamp; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self setNeedsDisplay];
 }
 - (void)saveProgress:(BOOL)flush {
     jint version=[self.game progressVersion];
@@ -88,7 +90,7 @@
         else NSLog(@"Could not save captain progress");
     } @catch(NSException *exception) { NSLog(@"Could not save captain progress: %@",exception); }
 }
-- (void)suspend { [self.game background]; [self saveProgress:YES]; self.accessibilityValue=[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
+- (void)suspend { [self.game background]; [self saveProgress:YES]; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
 - (void)resume { self.lastTime=0; self.displayLink.paused=NO; }
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;

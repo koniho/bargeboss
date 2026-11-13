@@ -8,11 +8,13 @@ public final class Feeder {
     public final Body boat;
     public Body load;
     public int phase,shoutTicks,blockedTicks,drops;
+    public int destination;
     public boolean blocked;
     public String shout="";
     public Feeder(float x) { this.x=x; boat=new Body(0,-1,x,START_Y+GAP,-(float)Math.PI/2); }
     public void request(int berth) {
         if(phase!=IDLE) return;
+        destination=berth;
         load=new Body(-2,berth,x,START_Y,-(float)Math.PI/2);
         boat.x=x; boat.y=START_Y+GAP; boat.angle=-(float)Math.PI/2;
         phase=INBOUND; blocked=false; blockedTicks=0;
@@ -30,8 +32,14 @@ public final class Feeder {
         if(phase==INBOUND) {
             float previous=load.y;
             load.y=Math.max(DROP_Y,load.y-SPEED*Physics.DT); boat.y=load.y+GAP;
-            boolean room=false; for(Body b:g.cargo) if(b==null || !b.active) room=true;
-            blocked=!room || !clear(g,load,5) || !clear(g,boat,5);
+            boolean room=false,slotReserved=false;
+            for(Body b:g.cargo) {
+                if(b==null || !b.active) room=true;
+                else if(Math.abs(b.x-x)<55 && b.y>DROP_Y-80) slotReserved=true;
+            }
+            // Keep queued deliveries outside the viewport so the tug can get behind
+            // a waiting load. Nose-to-tail queues otherwise seal its pickup approach.
+            blocked=(slotReserved && previous>Physics.BOTTOM+45) || !room || !clear(g,load,5) || !clear(g,boat,5);
             if(blocked) {
                 load.y=previous; boat.y=old;
                 if(blockedTicks%240==0) call(g,"HURRY UP!");
@@ -44,7 +52,7 @@ public final class Feeder {
                     delivered.heave=load.heave;delivered.heaveVelocity=load.heaveVelocity;delivered.floatingInitialized=load.floatingInitialized;
                     delivered.awaitingPickup=true; delivered.tiedX=delivered.x; delivered.tiedY=delivered.y; delivered.tiedAngle=delivered.angle;
                     g.cargo[i]=delivered; drops++; phase=RETURNING;
-                    call(g,"ZONE "+(char)('A'+load.berth)+"!"); g.haptic(Game.HAPTIC_TICK); break;
+                    call(g,"ZONE "+g.berthLetter(load.berth)+"!"); g.haptic(Game.HAPTIC_TICK); break;
                 }
                 load=null;
             }

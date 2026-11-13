@@ -60,7 +60,19 @@ public final class Parity implements Painter {
         responsive(p);
         progression(p);
         feeders(p);
+        bridge(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    private static void bridge(Parity p) {
+        Game g=new Game();g.challengeId=1;g.reset();
+        for(int i=0;i<3000;i++) {
+            ReplayInput.work(g);g.step();
+            if(i%30==0) {
+                p.value(g.tug.x);p.value(g.tug.y);p.add(g.bridge.phase);p.add(g.bridge.ticks);
+                p.value(g.layout.camera.zoom);p.value(g.layout.camera.worldTop);p.value(g.layout.camera.worldRight);
+            }
+            if(i%120==0) Renderer.draw(g,p);
+        }
     }
     private static void feeders(Parity p) {
         Game g=new Game(); g.reset();

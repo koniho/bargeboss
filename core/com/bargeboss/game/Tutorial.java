@@ -49,9 +49,9 @@ public final class Tutorial {
         switch(lesson) {
             case MOVE: return "PRESS THE TUG, THEN DRAG LEFT.";
             case STOP: return "LIFT YOUR FINGER. TAP BRAKE.";
-            case HOLD: return "PRESS CARGO C AND KEEP HOLDING.";
+            case HOLD: return "PRESS THE BARGE AND KEEP HOLDING.";
             case STEER: return "KEEP HOLDING. DRAG DOWN AND LEFT.";
-            case DOCK: return "LIFT, THEN HOLD CARGO C AGAIN.";
+            case DOCK: return "LIFT, THEN HOLD THE BARGE AGAIN.";
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
             default: return "YOU MOVED, STEERED AND TIED UP.";
         }
@@ -62,7 +62,7 @@ public final class Tutorial {
             case STOP: return "RELEASING COASTS. BRAKE STOPS.";
             case HOLD: return "THE TUG LINES UP AUTOMATICALLY.";
             case STEER: return "DRAG OUTSIDE THE RING TO TURN.";
-            case DOCK: return "HOLD STILL TO ENTER THE C ZONE.";
+            case DOCK: return "HOLD STILL TO ENTER THE BERTH.";
             case TIE: return "RELEASE TO THROW. MISSES REEL BACK.";
             default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }

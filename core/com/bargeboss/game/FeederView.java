@@ -28,8 +28,11 @@ public final class FeederView {
         RiverCamera c=g.layout.camera;
         for(Feeder f:g.feeders) if(f.shoutTicks>0) {
             boolean hurry=f.shout.equals("HURRY UP!");
-            int color=hurry?VisualStyle.RED:Game.COLORS[f.phase==Feeder.INBOUND && f.load!=null?f.load.berth:zone(f.shout)];
+            int color=hurry?VisualStyle.RED:Game.COLORS[f.destination];
             float anchorX=c.screenX(f.boat.x,f.boat.y),anchorY=c.screenY(f.boat.x,f.boat.y);
+            if(anchorX>g.layout.width+100 || anchorX<-100) {
+                Lettering.center(p,"FEED "+(f==g.feeders[0]?1:2)+" / "+f.shout,g.layout.width-150,58+(f==g.feeders[0]?0:20),10,color);continue;
+            }
             float x=Physics.clamp(anchorX-220,8,g.layout.width-238),y=Physics.clamp(anchorY-78,60,g.layout.height-112);
             float pulse=f.shoutTicks>132?(150-f.shoutTicks)%6:0;
             p.poly(new float[]{x+174,y+48,x+216,y+48,Math.min(g.layout.width-8,anchorX),anchorY},VisualStyle.OUTLINE);
@@ -39,11 +42,10 @@ public final class FeederView {
             p.line(x+12,y+44-pulse,x+214,y+44-pulse,3,color);
             for(int j=0;j<3;j++) p.line(x-8-j*3,y+12+j*12,x-16-j*4,y+7+j*16,2,color);
             if(!hurry) {
-                int zone=zone(f.shout);
-                float tx=c.screenX(Game.DOCK_X[zone],Game.DOCK_Y[zone]),ty=c.screenY(Game.DOCK_X[zone],Game.DOCK_Y[zone]);
+                int zone=f.destination;
+                float tx=c.screenX(Game.DOCK_X[zone],g.dockY(zone)),ty=c.screenY(Game.DOCK_X[zone],g.dockY(zone));
                 ControlView.ring(p,tx,ty,38+(150-f.shoutTicks)%30,1,color,3);
             }
         }
     }
-    private static int zone(String shout) { return shout.length()>5?Math.max(0,Math.min(2,shout.charAt(5)-'A')):0; }
 }

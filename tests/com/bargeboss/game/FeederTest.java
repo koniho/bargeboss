@@ -8,20 +8,20 @@ public final class FeederTest {
     public static void run() {
         for(int id=0;id<Challenges.COUNT;id++) {
             Game g=new Game(); g.restoreProgress("BB1|0|3,1|3,1|3,1"); g.selectChallenge(id); g.reset();
-            check(g.feeders.length==2 && cargo(g)==0,"each challenge begins with two edge feeders, not teleported cargo");
+            check(g.feeders.length==(id==0?1:2) && cargo(g)==0,"challenge begins with its configured edge feeders and no teleported cargo");
             float previous=g.feeders[0].load.y;
             steps(g,60);
             check(g.feeders[0].load.y<previous && g.feeders[0].load.y>Feeder.DROP_Y,"cargo visibly moves in from the boundary");
             check(cargo(g)==0,"NPC cargo cannot score or age before handoff");
             steps(g,105);
-            check(cargo(g)==2 && g.feeders[0].drops==1 && g.feeders[1].drops==1,"both slots hand off exactly one barge");
-            check(g.feeders[0].shout.equals("ZONE C!") && g.feeders[1].shout.equals("ZONE B!"),"each captain calls the actual destination");
-            check(g.cargo[0].age<.1f && g.cargo[1].age<.1f,"contract age starts at handoff");
+            check(cargo(g)==g.feeders.length && g.feederDrops()==g.feeders.length,"both slots hand off exactly one barge");
+            check(g.feeders[0].shout.equals(id==2?"ZONE C!":"ZONE A!") && (id==0 || g.feeders[1].shout.equals(id==2?"ZONE B!":"ZONE A!")),"each captain calls the actual destination");
+            check(g.cargo[0].age<.1f && (id==0 || g.cargo[1].age<.1f),"contract age starts at handoff");
             float y=g.feeders[0].boat.y; steps(g,30);
             check(g.feeders[0].boat.y>y && g.feeders[0].drops==1,"pusher backs out without dropping duplicates");
             steps(g,180); check(g.feeders[0].phase==Feeder.IDLE,"delivery pusher leaves the play area");
         }
-        Game g=new Game(); g.reset(); g.tug.x=260; g.tug.y=760;
+        Game g=new Game();g.challengeId=2; g.reset(); g.tug.x=260; g.tug.y=760;
         steps(g,165); Feeder f=g.feeders[0];
         check(f.blocked && f.drops==0 && f.shout.equals("HURRY UP!"),"blocked slot waits and captain shouts hurry up");
         check(g.feeders[1].drops==1,"other feeder works while one lane is blocked");
@@ -43,8 +43,11 @@ public final class FeederTest {
         for(int i=0;i<1200 && waiting.awaitingPickup;i++) g.step();
         check(!waiting.awaitingPickup,"physical push contact releases feeder fenders");
         g.startTutorial(); Game practice=g.activeGame(); steps(g,240);
-        check(practice.feeders[0].drops==0 && practice.feeders[1].drops==0,"practice does not feed extra cargo into lessons");
+        check(practice.feederDrops()==0,"practice does not feed extra cargo into lessons");
         g.reset(); check(g.feeders[0].drops==0 && !g.feeders[0].blocked && cargo(g)==0,"restart clears queues, warnings and old loads");
+        g=new Game();g.challengeId=1;g.reset();steps(g,2100);
+        check(g.feeders[0].blocked && g.feeders[0].load!=null && g.feeders[0].load.y>Physics.BOTTOM+45,
+                "queued feeder waits outside the tug's stern approach to an uncollected load");
         System.out.println(assertions+" feeder entry, handoff, blockage, callout and lifecycle assertions passed");
     }
 }
