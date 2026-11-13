@@ -249,12 +249,13 @@ harder challenges with the bounded player. JVM/J2ObjC parity includes completed
 career results, snapshot round trips, challenge screens and responsive layouts.
 
 
-## Two edge feeders
+## Edge feeders
 
-Every challenge owns two `Feeder` state machines at world x=260 and x=360.
+First Watch owns one `Feeder` at world x=260; later challenges add a second at x=360.
 Their loads enter from beyond y=836, move to y=730 and hand off a fresh `Body`
-into a free cargo slot. Initial arrivals are simultaneous; subsequent requests
-alternate slots every 14 real seconds until the final 30 seconds. Busy slots
+into a free cargo slot. Two-slot stages start with simultaneous arrivals; later
+requests rotate through available slots every 14 real seconds, or 30 seconds on
+Bridge Run, until the final 30 seconds. Busy slots
 retain their current load; dispatch retries rather than overwriting it. An NPC
 backs out with its bow still facing the channel after handoff. Occupied approach
 or return paths wait and show a throttled HURRY UP call every 240 ticks.
