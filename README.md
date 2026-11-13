@@ -1,6 +1,6 @@
 # Barge Boss
 
-A top-down industrial river action game. Drive a heavy tug, push container barges
+A landscape industrial river action game with a top-down harbor and shaded arcade boats. Drive a heavy tug, push container barges
 into matching berths and manage incoming cargo before a three-minute shift ends.
 Stage 01 is a stylized **Calumet River industrial corridor** with steel yards,
 freight rail, bulk storage, cranes, a lift bridge and crossing workboats. It is
@@ -62,11 +62,16 @@ or separate JavaScript/Swift gameplay implementation.
 | iOS 15+ | UIKit / Core Graphics / CADisplayLink | the same `core/`, translated by J2ObjC 3.1 |
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
-Every host fits the same 600x960 interface within safe bounds. The complete
-river is scaled uniformly above the control panel; its world coordinates are unchanged. Touch/mouse gestures,
-drag handling, hold thresholds, haptic event timing, tutorial, physics,
-scoring, traffic, HUD, menus and vector glyphs live in
-shared code. Rendering differences at antialiased edges remain native-specific.
+Every host fits the same **960×600 landscape interface** within safe bounds.
+The complete river is visible at once, with a compact channel and larger boat
+footprints that make cargo, wakes and rope actions easier to read. The camera
+rotates the shared world into the board; it does not scroll or crop the stage.
+Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring,
+traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
+
+The same PNG atlases are bundled on Android, iOS and desktop. Shared code selects
+the directional frame, placement and animation; native hosts decode and draw it.
+Native antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
 
 ## Build and run
@@ -143,7 +148,18 @@ drag controls, lasso attachment, crew unloading, the complete interactive tutori
 simulator app. Native touch/lifecycle acceptance still needs actual device play;
 headless checks are not a substitute for that.
 
-Game art is implemented as shared procedural geometry, guided by the user-supplied
-[concept reference](docs/reference/barge-boss-concept.png). Lettering is authored here.
+The visual update combines generated directional sprite atlases with shared
+procedural scenery, lettering and effects. The built-in `image_gen` tool created
+the boat and cargo artwork from the user-supplied
+[concept reference](docs/reference/barge-boss-concept.png). Production PNGs live
+in [assets/sprites](assets/sprites/), and their generation instructions are retained
+in [docs/art-prompts](docs/art-prompts/). Title, gameplay, tutorial and results use
+the same art and phase-driven animation.
+
 No artwork, audio, game content, credentials or signing keys were imported from
 DDDumpling. See [provenance](docs/provenance.md).
+
+After each completed development round, run the relevant checks, build the
+Android APK, install it on the connected development phone using the existing
+debug signing key, and launch it. This is the user's requested development loop;
+the authorized Shizuku/rish path is available when adb is unavailable.

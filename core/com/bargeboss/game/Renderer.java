@@ -6,9 +6,9 @@ public final class Renderer {
     public static void draw(Game root,Painter p) {
         Game g=root.activeGame();
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
-        p.rect(0,0,600,960,VisualStyle.NAVY);
-        ScreenView.hud(g,p);
+        p.rect(0,0,Layout.WIDTH,Layout.HEIGHT,VisualStyle.NAVY);
         river(g,new RiverPainter(p));
+        ScreenView.hud(g,p);
         AssistView.draw(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);
@@ -18,14 +18,14 @@ public final class Renderer {
     private static void river(Game g,Painter p) {
         HarborView.draw(g,p);
         if(g.trafficWarning() || g.trafficActive()) {
-            for(int x=113;x<486;x+=18) p.line(x,395,x+8,395,2,0x88ffc52f);
-            if(g.trafficWarning()) Lettering.center(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
+            for(int x=173;x<426;x+=18) p.line(x,395,x+8,395,2,0x88ffc52f);
+            if(g.trafficWarning()) RiverPainter.center(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
         }
         if(g.trafficActive()) {
             Body ship=new Body(-1,-1,g.trafficX(),395,0); ship.vx=57;
             VesselView.draw(g,p,ship,true);
         }
-        // Shadows and depth remain decorative; every boat retains its original world hitbox.
+        // Painted hulls share the enlarged physics footprint.
         for(int i=0;i<g.cargo.length;i++) {
             Body b=g.cargo[i]; if(b==null || !b.active) continue;
             int color=Game.COLORS[b.berth];
@@ -50,9 +50,7 @@ public final class Renderer {
         ArcadeView.effects(g,p);
     }
     private static void tag(Painter p,String text,float x,float y,float size,int color) {
-        float width=Lettering.width(text,size)+9;
-        x=Physics.clamp(x,110+width/2,490-width/2);
-        p.rect(x-width/2,y-3,width,size+6,0xdd0b1424);
-        Lettering.center(p,text,x,y,size,color);
+        // Anchor labels beside the hull while keeping their glyphs horizontal.
+        RiverPainter.center(p,text,x,y,size,color);
     }
 }

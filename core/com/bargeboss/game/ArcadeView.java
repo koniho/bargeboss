@@ -7,19 +7,19 @@ public final class ArcadeView {
     public static void water(Game g,Painter p) {
         int tick=g.visualTicks;
         // Broken blocks of teal give depth without adding a noisy moving grid.
-        for(int row=0;row<43;row++) for(int col=0;col<27;col++) {
+        for(int row=0;row<43;row++) for(int col=0;col<18;col++) {
             int seed=(row*137+col*71+row*col*13)&1023;
-            float x=111+col*14+(seed%4),y=216+row*14+(seed%5);
+            float x=171+col*14+(seed%4),y=216+row*14+(seed%5);
             float w=5+seed%8,h=2+(seed/8)%5;
-            if(x+w<490 && y+h<817) p.rect(x,y,w,h,WATER[seed%WATER.length]);
+            if(x+w<430 && y+h<817) p.rect(x,y,w,h,WATER[seed%WATER.length]);
             if(seed%13==0) {
                 float drift=(float)StrictMath.sin(tick*.025+seed)*2;
                 p.rect(x+drift,y+2,4+seed%5,1,0x667eb9b2);
             }
         }
         // Long, gently migrating ripples are much quieter than vessel foam.
-        for(int row=0;row<22;row++) for(int col=0;col<6;col++) {
-            float x=118+col*61+(row%2)*7,y=226+row*26;
+        for(int row=0;row<22;row++) for(int col=0;col<4;col++) {
+            float x=178+col*61+(row%2)*7,y=226+row*26;
             float wave=(float)StrictMath.sin(tick*.032+row*.7+col)*3;
             int alpha=38+(int)(24*(1+StrictMath.sin(tick*.02+row+col)));
             int color=(alpha<<24)|0x67b6bb;
@@ -28,7 +28,7 @@ public final class ArcadeView {
         }
         // Small pools of moving golden reflections beneath the industrial lamps.
         for(int side=0;side<2;side++) for(int dock=0;dock<3;dock++) for(int i=0;i<7;i++) {
-            float x=(side==0?117:479)+(side==0?1:-1)*(4+(i*7)%18);
+            float x=(side==0?177:419)+(side==0?1:-1)*(4+(i*7)%18);
             float y=Game.DOCK_Y[dock]-20+i*7;
             float flicker=(float)StrictMath.sin(tick*.08+i+dock);
             p.rect(x+flicker*2,y,2+(i%3)*2,1.5f,0x55ebbe64);
@@ -107,10 +107,10 @@ public final class ArcadeView {
             }
             float y=g.celebrationY-25-25*t;
             String points="+"+g.celebrationPoints;
-            Lettering.center(p,points,g.celebrationX+2,y+3,25,VisualStyle.OUTLINE);
-            Lettering.center(p,points,g.celebrationX,y,25,0xffffda64);
-            Lettering.center(p,"LOAD CLEARED!",g.celebrationX+1,y+34,10,VisualStyle.OUTLINE);
-            Lettering.center(p,"LOAD CLEARED!",g.celebrationX,y+33,10,VisualStyle.CREAM);
+            RiverPainter.center(p,points,g.celebrationX+2,y+3,25,VisualStyle.OUTLINE);
+            RiverPainter.center(p,points,g.celebrationX,y,25,0xffffda64);
+            RiverPainter.center(p,"LOAD CLEARED!",g.celebrationX+1,y+34,10,VisualStyle.OUTLINE);
+            RiverPainter.center(p,"LOAD CLEARED!",g.celebrationX,y+33,10,VisualStyle.CREAM);
         }
     }
     public static void star(Painter p,float x,float y,float radius,int color) {

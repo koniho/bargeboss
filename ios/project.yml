@@ -21,6 +21,9 @@ targets:
       - path: BargeBoss
       - path: build/generated
         compilerFlags: '-fno-objc-arc'
+      - path: ../assets
+        type: folder
+        buildPhase: resources
       - path: build/ThirdPartyNotices.txt
         buildPhase: resources
     settings:

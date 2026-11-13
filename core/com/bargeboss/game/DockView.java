@@ -17,38 +17,32 @@ public final class DockView {
             boolean throwing=(g.ropePhase==1 || g.ropePhase==3) && g.ropeBody!=null && g.ropeBody.berth==berth;
             boolean celebrating=g.celebrationTicks>0 && Math.abs(g.celebrationY-Game.DOCK_Y[berth])<54;
             int tick=g.visualTicks;
-            float sign=berth==1?-1:1,base=berth==1?518:82,y=Game.DOCK_Y[berth];
+            float sign=berth==1?-1:1,base=berth==1?445:155,y=Game.DOCK_Y[berth];
             // The warehouse apron is inlaid into the shore, clear of the playable water.
-            float yard=berth==1?506:18;
-            p.rect(yard,y-41,76,92,0xff686c7c); p.rect(yard+2,y-39,72,88,0xff9b9299);
-            for(int i=0;i<5;i++) p.line(yard+5+i*14,y-34,yard+5+i*14,y+43,1,0xff817d88);
-            p.rect(yard,y+47,76,6,DARK);
-            for(int i=0;i<7;i++) p.poly(new float[]{yard+i*11,y+47,yard+i*11+5,y+47,yard+i*11+11,y+53,yard+i*11+6,y+53},GOLD);
+            float yard=berth==1?433:143;
+            p.rect(yard,y-41,24,106,0xff686c7c); p.rect(yard+2,y-39,20,102,0xff9b9299);
+            for(int i=0;i<3;i++) p.line(yard+4+i*7,y-34,yard+4+i*7,y+56,1,0xff817d88);
+            p.rect(yard,y+62,24,6,DARK);
+            for(int i=0;i<3;i++) p.poly(new float[]{yard+i*8,y+62,yard+i*8+4,y+62,yard+i*8+8,y+68,yard+i*8+4,y+68},GOLD);
             float phase=working?(load.unloadingTicks%60)/60f:0;
             float lift=working?Physics.clamp((phase-.16f)/.62f,0,1):1;
-            float hookX=working?load.x+(base-sign*28-load.x)*lift:base-sign*26;
+            float hookX=working?load.x+(base-load.x)*lift:base;
             float hookY=working?load.y-14-24*(float)StrictMath.sin(lift*Math.PI):y-29;
             if(!working) hookX+=2*(float)StrictMath.sin(tick*.025+berth);
             crane(p,base,y,hookX,hookY,working||tying||throwing,tick);
             if(working && phase>.15f && phase<.91f) payload(p,hookX,hookY,berth);
             else { p.line(hookX,hookY-3,hookX,hookY+3,2,LIGHT); p.line(hookX,hookY+3,hookX+4,hookY+3,2,LIGHT); }
-            float truckX=base-sign*32+(working?sign*13*(float)StrictMath.sin(phase*Math.PI*2):0);
-            forklift(p,truckX,y+21,sign,working,phase,tick);
-            // The banks retain stacked loads as part of the port environment.
+            float truckY=y+22+(working?10*(float)StrictMath.sin(phase*Math.PI*2):0);
+            forklift(p,base,truckY,sign,working,phase,tick);
             for(int i=0;i<2;i++) {
-                float xx=base-sign*(i==0?53:40);
-                p.rect(xx-6,y-29-i*12,14,9,DARK); p.rect(xx-6,y-32-i*12,13,8,berth==1?0xff497f9d:0xffa56b42);
-                p.rect(xx-5,y-32-i*12,11,2,0xffd1b28c);
-            }
-            for(int i=0;i<2;i++) {
-                float wx=base-sign*(i==0?4:48),wy=y+6+i*27;
+                float wx=base+sign*(i==0?4:-4),wy=y-10+i*66;
                 float walk=0,arms=0;
                 if(working) {
                     walk=(float)StrictMath.sin(phase*Math.PI*2+i);
-                    wx+=sign*7*walk; wy+=3*(float)StrictMath.cos(phase*Math.PI*2+i);
+                    wx+=sign*1.5f*walk; wy+=3*(float)StrictMath.cos(phase*Math.PI*2+i);
                     arms=i==0?(float)StrictMath.sin(phase*Math.PI*2):.3f;
                 } else if(tying || throwing) {
-                    if(i==0) wx=base+sign*13;
+                    if(i==0) wx=base+sign*4;
                     walk=(float)StrictMath.sin(tick*.22); arms=.6f+.3f*walk;
                 } else if(celebrating) {
                     arms=1; wy-=2*(float)StrictMath.abs(StrictMath.sin(tick*.2+i));
@@ -57,16 +51,14 @@ public final class DockView {
                 worker(p,wx,wy,sign,walk,arms,i==0?0xffe66b32:0xffd2ab55);
             }
             int stateColor=working||celebrating?0xffa1f0cb:ready||throwing||tying?GOLD:0xffb7bcc2;
-            String state=working?"UNLOADING":tying?"SECURING":throwing?"CATCH LINE":ready?"READY":celebrating?"JOB DONE":"CREW IDLE";
-            float labelX=berth==1?548:53;
-            VisualStyle.panel(p,labelX-41,y+58,82,17,VisualStyle.NAVY);
-            Lettering.center(p,state,labelX,y+63,7.5f,stateColor);
+            String state=working?"WORK":tying?"TIE":throwing?"CATCH":ready?"READY":celebrating?"DONE":"IDLE";
+            HarborView.badge(p,state,base+4,y+86,7.5f,stateColor);
             if(working) {
                 p.rect(load.x-30,load.y+55,60,8,DARK);
                 p.rect(load.x-28,load.y+57,56*load.unloadingTicks/Game.UNLOAD_TICKS,4,GOLD);
                 for(int i=0;i<3;i++) {
                     float t=((tick+i*11)%32)/32f;
-                    float xx=base-sign*27+sign*i*4,yy=y-11-t*19;
+                    float xx=base-4+i*3,yy=y-11-t*19;
                     p.rect(xx,yy,3+3*t,3+3*t,((int)(90*(1-t))<<24)|0xd6c2a2);
                 }
             }

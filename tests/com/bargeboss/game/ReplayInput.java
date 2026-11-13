@@ -4,9 +4,10 @@ package com.bargeboss.game;
 public final class ReplayInput {
     private ReplayInput() {}
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
-    public static void down(Game g,float x,float y) { g.pointerDown(0,RiverPainter.screenX(x),RiverPainter.screenY(y)); }
-    public static void move(Game g,float x,float y) { g.pointerMove(0,RiverPainter.screenX(x),RiverPainter.screenY(y)); }
-    public static void up(Game g,float x,float y) { g.pointerUp(0,RiverPainter.screenX(x),RiverPainter.screenY(y)); }
+    public static void tap(Game g,Layout.Box box) { tap(g,box.centerX(),box.centerY()); }
+    public static void down(Game g,float x,float y) { g.pointerDown(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
+    public static void move(Game g,float x,float y) { g.pointerMove(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
+    public static void up(Game g,float x,float y) { g.pointerUp(0,RiverPainter.screenX(x,y),RiverPainter.screenY(x,y)); }
     public static void lasso(Game root,Body b) {
         down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
         up(root,Game.TIE_X[b.berth],Game.DOCK_Y[b.berth]);
@@ -21,10 +22,10 @@ public final class ReplayInput {
             if(!g.pointer) { if(g.canTie(target)) lasso(g,target); else down(g,target.x,target.y); }
         } else {
             // Clear the arrival channel while the crew works, using the same drag gesture.
-            float dx=445-g.tug.x,dy=610-g.tug.y,len=Physics.length(dx,dy);
+            float dx=398-g.tug.x,dy=610-g.tug.y,len=Physics.length(dx,dy);
             if(len<22) {
                 if(g.pointer) up(g,g.pointerX,g.pointerY);
-                if(!g.braking) tap(g,110,910);
+                if(!g.braking) tap(g,Layout.BRAKE);
             } else {
                 if(!g.pointer) down(g,g.tug.x,g.tug.y);
                 move(g,g.downX+dx/len*90,g.downY+dy/len*90);
@@ -39,7 +40,7 @@ public final class ReplayInput {
                 move(root,g.downX,g.downY-100); break;
             case Tutorial.STOP:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
-                if(!g.braking) tap(root,110,910); break;
+                if(!g.braking) tap(root,Layout.BRAKE); break;
             case Tutorial.HOLD:
                 if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y); break;
             case Tutorial.STEER:

@@ -25,7 +25,7 @@ public final class MooringView {
                 float top=y-48+3*(float)StrictMath.sin(tick*.11);
                 p.poly(new float[]{x-4,top,x+4,top,x+4,top+9,x+9,top+9,x,top+18,x-9,top+9,x-4,top+9},DARK);
                 p.poly(new float[]{x-2,top+2,x+2,top+2,x+2,top+11,x+5,top+11,x,top+15,x-5,top+11,x-2,top+11},VisualStyle.GOLD);
-                Lettering.center(p,"TIE HERE",x+(berth==1?-18:18),y-59,8,GREEN);
+                RiverPainter.center(p,"TIE",x+(berth==1?-12:12),y-38,8,GREEN);
             } else if(tied) {
                 p.rect(x-3,y-11,6,2,GREEN);
                 ControlView.ring(p,x,y,17,1,0x6688e2bb,1);

@@ -1,45 +1,47 @@
 package com.bargeboss.game;
 
-/** Field-guide cards and animated cues follow actual lesson progress. */
+/** Compact field-guide cards and upright cues on the rotated landscape board. */
 public final class TutorialView {
-    private static final int INK=VisualStyle.OUTLINE,PAPER=VisualStyle.CREAM,MUTED=VisualStyle.MUTED;
+    private static final int PAPER=VisualStyle.CREAM,MUTED=VisualStyle.MUTED;
     private TutorialView() {}
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
         if(t.lesson==Tutorial.DONE) {
-            ScreenView.overlay(p,343,406);
-            ScreenView.star(p,300,387+2*(float)StrictMath.sin(g.visualTicks*.06),26,VisualStyle.GOLD);
-            Lettering.center(p,"PRACTICE COMPLETE",300,431,23,PAPER);
-            Lettering.center(p,"YOUR FIRST LOAD IS UNLOADED.",300,479,13,ControlView.GREEN);
-            Lettering.center(p,"DRAG TUG. HOLD CARGO.",300,529,14,PAPER);
-            Lettering.center(p,"AIM. RELEASE. UNLOAD.",300,559,13,MUTED);
-            ScreenView.button(g,p,100,650,400,76,t.resumeShift?"BACK TO YOUR SHIFT":"START SHIFT",true);
+            ScreenView.overlay(p,104,412);
+            Lettering.center(p,"PRACTICE COMPLETE",480,141,27,PAPER);
+            ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
+            Lettering.center(p,"YOUR FIRST LOAD",302,323,20,PAPER);
+            Lettering.center(p,"IS UNLOADED.",302,355,20,ControlView.GREEN);
+            Lettering.center(p,"DRAG TUG. HOLD CARGO.",770,241,12,PAPER);
+            Lettering.center(p,"AIM. RELEASE. UNLOAD.",770,272,12,MUTED);
+            ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO SHIFT":"START SHIFT",true);
             return;
         }
-        VisualStyle.panel(p,95,204,410,150,VisualStyle.NAVY);
-        p.rect(103,211,394,3,VisualStyle.GOLD);
-        Lettering.draw(p,"CAPTAIN'S PRACTICE",113,225,10,VisualStyle.GOLD);
-        Lettering.draw(p,(t.lesson+1)+" / 6",438,225,10,MUTED);
-        Lettering.draw(p,t.title(),113,247,19,PAPER);
-        Lettering.draw(p,t.firstLine(),113,285,12,PAPER);
-        Lettering.draw(p,t.secondLine(),113,307,11,MUTED);
+        VisualStyle.panel(p,36,98,432,124,VisualStyle.NAVY);
+        p.rect(44,105,416,3,VisualStyle.GOLD);
+        Lettering.draw(p,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
+        Lettering.draw(p,(t.lesson+1)+" / 6",403,116,10,MUTED);
+        Lettering.draw(p,t.title(),54,137,19,PAPER);
+        Lettering.draw(p,t.firstLine(),54,168,12,PAPER);
+        Lettering.draw(p,t.secondLine(),54,187,11,MUTED);
         for(int i=0;i<6;i++) {
-            p.rect(113+i*63,335,52,5,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
-            if(i==t.lesson) p.rect(113+i*63+(g.visualTicks%60)/60f*45,333,7,2,PAPER);
+            p.rect(54+i*66,210,55,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
+            if(i==t.lesson) p.rect(54+i*66+(g.visualTicks%60)/60f*48,208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p);
         float pulse=2*(float)StrictMath.sin(g.visualTicks*.10);
         if(t.lesson==Tutorial.MOVE) {
-            ControlView.ring(river,g.tug.x,g.tug.y,31+pulse,1,VisualStyle.GOLD,3);
+            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             float x=g.holdingTug()?g.downX:g.tug.x,y=g.holdingTug()?g.downY:g.tug.y;
             ControlView.arrow(river,x,y-25,x,y-100-pulse,VisualStyle.GOLD);
-            Lettering.center(river,"DRAG UP",x,y-121,11,PAPER);
+            RiverPainter.center(river,"DRAG LEFT",x+22,y-72,10,PAPER);
         } else if(t.lesson==Tutorial.STOP) {
-            p.rect(30,880,168,4,VisualStyle.GOLD); p.rect(30,936,168,4,VisualStyle.GOLD);
-            p.poly(new float[]{102,869-pulse,126,869-pulse,114,878-pulse},VisualStyle.GOLD);
+            Layout.Box b=Layout.BRAKE;
+            p.rect(b.x,b.y,b.w,3,VisualStyle.GOLD); p.rect(b.x,b.y+b.h-3,b.w,3,VisualStyle.GOLD);
+            p.poly(new float[]{b.centerX()-10,b.y-10-pulse,b.centerX()+10,b.y-10-pulse,b.centerX(),b.y-2-pulse},VisualStyle.GOLD);
         } else if(g.cargo[0]!=null && g.cargo[0].active) {
             Body b=g.cargo[0];
-            if(!b.lineAttached) ControlView.ring(river,b.x,b.y,42+pulse,1,VisualStyle.GOLD,3);
+            if(!b.lineAttached) ControlView.ring(river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
             if(t.lesson==Tutorial.STEER) {
                 float x=g.pointer?g.downX:b.x,y=g.pointer?g.downY:b.y;
                 ControlView.arrow(river,x-15,y-15,x-65-pulse,y-65-pulse,VisualStyle.GOLD);
@@ -49,8 +51,8 @@ public final class TutorialView {
                     ControlView.ring(river,Game.TIE_X[b.berth],b.y,20+pulse,1,PAPER,2);
                 }
             } else {
-                Lettering.center(river,"HOLD HERE",b.x,b.y-67,12,VisualStyle.GOLD);
-                p.circle(RiverPainter.screenX(b.x),RiverPainter.screenY(b.y-50),2+pulse*.3f,VisualStyle.GOLD);
+                RiverPainter.center(river,"HOLD HERE",b.x+55,b.y,11,VisualStyle.GOLD);
+                p.circle(RiverPainter.screenX(b.x+43,b.y),RiverPainter.screenY(b.x+43,b.y),2+pulse*.3f,VisualStyle.GOLD);
             }
         }
     }

@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 public final class AnimationPreview {
     private static void frame(Game g,String sequence,int frame) throws Exception {
         File directory=new File("out/animation-frames/"+sequence); directory.mkdirs();
-        BufferedImage image=new BufferedImage(600,960,BufferedImage.TYPE_INT_RGB);
+        BufferedImage image=new BufferedImage(Layout.WIDTH,Layout.HEIGHT,BufferedImage.TYPE_INT_RGB);
         Graphics2D p=image.createGraphics(); p.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         g.render(new DesktopPainter(p)); p.dispose();
         ImageIO.write(image,"png",new File(directory,String.format("%04d.png",frame)));

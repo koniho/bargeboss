@@ -9,7 +9,7 @@ for tool in javac aapt2 d8 apksigner zip keytool; do command -v "$tool" >/dev/nu
 rm -rf build/android/classes
 mkdir -p build/android/classes build/android/gen build/android/dex
 aapt2 compile --dir res -o build/android/resources.zip
-aapt2 link -o build/android/base.apk -I "$SDK_JAR" --manifest AndroidManifest.xml --java build/android/gen --min-sdk-version 24 --target-sdk-version 36 build/android/resources.zip
+aapt2 link -o build/android/base.apk -I "$SDK_JAR" --manifest AndroidManifest.xml -A assets --java build/android/gen --min-sdk-version 24 --target-sdk-version 36 build/android/resources.zip
 find core android build/android/gen -name '*.java' | sort > build/android/sources.txt
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp "$SDK_JAR" -d build/android/classes @build/android/sources.txt
 find build/android/classes -name '*.class' | sort > build/android/classes.txt

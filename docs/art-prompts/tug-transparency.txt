@@ -1,0 +1,7 @@
+Built-in image_gen edit of the first generated tug atlas (tug-atlas.txt).
+
+Preserve the eight tug sprites, their appearance, positions, scale and 4x2 grid.
+Remove the semitransparent white background veil completely. Every background
+pixel and every space between sprites must have zero alpha. Preserve the
+opaque hulls, tires, windows, highlights, mast and antialiased sprite edges.
+Output a transparent PNG; do not add a background, checkerboard or shadow plane.

@@ -3,6 +3,7 @@ package com.bargeboss.game;
 public final class Physics {
     private Physics() {}
     public static final float DT = 1f / 60f;
+    public static final float LEFT=170, RIGHT=430, TOP=215, BOTTOM=817;
     public static float clamp(float v, float low, float high) { return Math.max(low, Math.min(high, v)); }
     public static float length(float x, float y) { return (float) StrictMath.sqrt(x*x + y*y); }
     public static float angle(float a) {
@@ -57,10 +58,10 @@ public final class Physics {
         float impact=0;
         for(int i=0;i<3;i++) {
             float x=b.discX(i), y=b.discY(i), r=b.radius;
-            if(x-r<110) { impact=Math.max(impact,-b.vx); b.x+=110-x+r; b.vx=Math.abs(b.vx)*.2f; b.spin*=.8f; }
-            if(x+r>490) { impact=Math.max(impact,b.vx); b.x-=x+r-490; b.vx=-Math.abs(b.vx)*.2f; b.spin*=.8f; }
-            if(y-r<215) { impact=Math.max(impact,-b.vy); b.y+=215-y+r; b.vy=Math.abs(b.vy)*.2f; }
-            if(y+r>817) { impact=Math.max(impact,b.vy); b.y-=y+r-817; b.vy=-Math.abs(b.vy)*.2f; }
+            if(x-r<LEFT) { impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; b.vx=Math.abs(b.vx)*.2f; b.spin*=.8f; }
+            if(x+r>RIGHT) { impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; b.vx=-Math.abs(b.vx)*.2f; b.spin*=.8f; }
+            if(y-r<TOP) { impact=Math.max(impact,-b.vy); b.y+=TOP-y+r; b.vy=Math.abs(b.vy)*.2f; }
+            if(y+r>BOTTOM) { impact=Math.max(impact,b.vy); b.y-=y+r-BOTTOM; b.vy=-Math.abs(b.vy)*.2f; }
         }
         return impact;
     }

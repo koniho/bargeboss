@@ -8,6 +8,8 @@ public final class Tutorial {
     private float startX,startY;
     public void setup(Game g) {
         g.cancelInputs(); g.braking=false;
+        // A lesson reset owns a fresh fixture; no line may keep targeting a removed hull.
+        g.ropePhase=g.ropeTicks=0; g.ropeBody=null;
         g.tug=new Body(0,-1,350,700,-(float)Math.PI/2);
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.delivered=g.score=0; g.nextId=1; g.selected=-1; actionTicks=0;
@@ -40,10 +42,10 @@ public final class Tutorial {
     }
     public String firstLine() {
         switch(lesson) {
-            case MOVE: return "PRESS THE TUG, THEN DRAG UP.";
+            case MOVE: return "PRESS THE TUG, THEN DRAG LEFT.";
             case STOP: return "LIFT YOUR FINGER. TAP BRAKE.";
             case HOLD: return "PRESS CARGO C AND KEEP HOLDING.";
-            case STEER: return "KEEP HOLDING. DRAG UP AND LEFT.";
+            case STEER: return "KEEP HOLDING. DRAG DOWN AND LEFT.";
             case DOCK: return "LIFT, THEN HOLD CARGO C AGAIN.";
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
             default: return "YOU MOVED, STEERED AND TIED UP.";

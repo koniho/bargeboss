@@ -16,7 +16,7 @@ if [ "${1:-}" = '--animations' ]; then
         for sequence in title mooring results; do
             ffmpeg -hide_banner -loglevel error -y -framerate 12 \
                 -i "out/animation-frames/$sequence/%04d.png" \
-                -filter_complex '[0:v]scale=400:640:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer' \
+                -filter_complex '[0:v]scale=640:400:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer' \
                 -loop 0 "out/concept-$sequence.gif"
         done
     fi

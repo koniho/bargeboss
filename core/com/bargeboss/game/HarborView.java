@@ -6,55 +6,46 @@ public final class HarborView {
     private HarborView() {}
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
-        p.rect(0,148,600,688,0xff343f52);
-        p.rect(103,148,394,688,0xff082e40);
-        p.rect(110,148,380,688,VisualStyle.TEAL);
+        p.rect(140,148,320,688,0xff343f52);
+        p.rect(167,148,266,688,0xff082e40);
+        p.rect(170,148,260,688,VisualStyle.TEAL);
         ArcadeView.water(g,p);
-        quay(p,0,148,108,688,false,tick);
-        quay(p,492,148,108,688,true,tick);
-        // Small shore districts leave a clear apron around each working berth.
-        warehouse(p,9,356,64,39,0xff7e6764);
-        container(p,13,416,27,13,0xffb94535); container(p,42,416,31,13,0xff365d85);
-        container(p,13,400,27,13,0xffcd7e3d); container(p,42,400,31,13,0xff527e97);
-        container(p,17,774,55,15,0xff95423a); container(p,20,756,43,14,0xff426b8b);
-        container(p,520,254,30,15,0xffb54b35); container(p,552,254,33,15,0xff335674);
-        container(p,521,235,29,15,0xff527e91); container(p,553,235,32,15,0xffc78734);
-        warehouse(p,524,354,67,38,0xff6a7485);
-        for(int i=0;i<3;i++) silo(p,20+i*24,579+(i%2)*4);
-        for(int i=0;i<5;i++) {
-            float x=532+(i%2)*26,y=641+(i/2)*20;
-            p.poly(new float[]{x-15,y+12,x-13,y-2,x-4,y-12,x+8,y-8,x+17,y+7,x+10,y+15},DARK);
-            p.poly(new float[]{x-10,y+7,x-8,y-1,x-2,y-8,x+7,y-5,x+12,y+7},0xff5e5b60);
-            p.rect(x-4,y-3,5,3,0xff918475);
+        quay(p,140,148,30,688,false,tick);
+        quay(p,430,148,30,688,true,tick);
+        // A narrow shore keeps the whole navigable channel large in the landscape view.
+        container(p,144,424,20,14,0xffb94535); container(p,145,442,19,14,0xff365d85);
+        container(p,143,458,22,14,0xffcd7e3d);
+        container(p,435,254,20,14,0xffb54b35); container(p,436,274,19,14,0xff335674);
+        container(p,434,294,21,14,0xff527e91);
+        warehouse(p,435,354,20,38,0xff6a7485);
+        silo(p,148,577); silo(p,160,620);
+        for(int i=0;i<3;i++) {
+            float x=445,y=641+i*23;
+            p.poly(new float[]{x-11,y+10,x-9,y-2,x-3,y-10,x+5,y-6,x+11,y+7,x+7,y+12},DARK);
+            p.poly(new float[]{x-7,y+5,x-5,y-1,x-1,y-6,x+5,y-4,x+8,y+6},0xff5e5b60);
+            p.rect(x-3,y-2,4,2,0xff918475);
         }
-        warehouse(p,513,762,75,38,0xff735d64);
+        warehouse(p,435,762,20,38,0xff735d64);
         for(int i=0;i<3;i++) berth(g,p,i);
         bridge(g,p);
         for(int side=0;side<2;side++) {
-            float x=side==0?105:495;
+            float x=side==0?165:435;
             for(int y=235;y<810;y+=57) pylon(p,x,y,side==0?1:-1,tick);
         }
-        // Amber work lamps cast flickering pixel reflections onto the water.
-        for(int i=0;i<3;i++) {
-            float x=i==1?488:112,y=Game.DOCK_Y[i]-42;
-            lamp(p,x,y,tick+i*31);
-        }
-        p.rect(110,817,380,19,0xff123b48); p.rect(110,817,380,2,0xff4e9a96);
-        Lettering.center(p,"SOUTH REACH / CALUMET",300,824,8,0xff88b3b5);
+        for(int i=0;i<3;i++) lamp(p,i==1?428:172,Game.DOCK_Y[i]-42,tick+i*31);
+        p.rect(170,817,260,19,0xff123b48); p.rect(170,817,260,2,0xff4e9a96);
+        for(int i=0;i<7;i++) p.rect(187+i*34,825,18,3,0xff88b3b5);
     }
     private static void quay(Painter p,float x,float y,float w,float h,boolean right,int tick) {
         p.rect(x,y,w,h,0xff737582);
         for(int row=0;row<23;row++) {
             float yy=y+row*30;
-            for(int col=0;col<3;col++) {
-                float xx=x+col*34;
-                int tone=(row*7+col*13)%5;
-                p.rect(xx+1,yy+1,32,28,tone<2?0xff898493:tone==2?0xff94909b:0xff7d7d89);
-                p.rect(xx+3,yy+3,23,1,0xffa4a0a8);
-                if((row+col)%3==0) {
-                    p.rect(xx+8,yy+16,4,2,0xff626879); p.rect(xx+21,yy+22,6,2,0xffa7a0a3);
-                    p.line(xx+26,yy+7,xx+22,yy+12,1,0xff626879);
-                }
+            int tone=(row*7)%5;
+            p.rect(x+1,yy+1,w-2,Math.min(28,y+h-yy-1),tone<2?0xff898493:tone==2?0xff94909b:0xff7d7d89);
+            p.rect(x+3,yy+3,w-6,1,0xffa4a0a8);
+            if(row%3==0) {
+                p.rect(x+8,yy+16,4,2,0xff626879); p.rect(x+17,yy+22,6,2,0xffa7a0a3);
+                p.line(x+24,yy+7,x+20,yy+12,1,0xff626879);
             }
         }
         float edge=right?x:x+w;
@@ -65,12 +56,11 @@ public final class HarborView {
             p.rect(right?edge:edge-4,yy,4,12,0xff2f4055);
             p.rect(right?edge-6:edge+1,yy+5,5,4,0x554e98a4);
         }
-        // Service lane and rail ties are confined to the far bank.
-        float lane=right?x+w-18:x+2;
-        p.rect(lane,y,15,h,0xff424b60);
-        for(int yy=(int)y+9;yy<y+h;yy+=27) p.rect(lane+6,yy,2,12,0xffd2bf8e);
-        p.line(lane+16,y,lane+16,y+h,1,0xff303c52);
-        if(tick%180<90) p.rect(lane+5,802,4,3,0xffe9b448);
+        // A single shoreline rail avoids shrinking the open water to make room for roads.
+        float lane=right?x+w-3:x+2;
+        p.line(lane,y,lane,y+h,2,0xff424b60);
+        for(int yy=(int)y+9;yy<y+h-10;yy+=27) p.rect(lane-1,yy,2,10,0xffd2bf8e);
+        if(tick%180<90) p.rect(lane-1,802,2,3,0xffe9b448);
     }
     private static void container(Painter p,float x,float y,float w,float h,int color) {
         p.rect(x+3,y+5,w,h,DARK);
@@ -135,28 +125,27 @@ public final class HarborView {
             float xx=x+side*110, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
             p.line(xx,yy,xx+sx*15,yy,4,color); p.line(xx,yy,xx,yy+sy*15,4,color);
         }
-        Lettering.center(p,""+(char)('A'+index),x+55,y+35,29,0x6656bac1);
-        Lettering.center(p,Game.CARGO_NAMES[index],x+55,y+69,10,0x99b8d9cf);
-        VisualStyle.panel(p,x+9,y-21,92,17,VisualStyle.NAVY);
+        RiverPainter.center(p,""+(char)('A'+index),x+75,y+53,22,0x6656bac1);
+        RiverPainter.center(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
         String badge=(working?"UNLOAD ":occupied?"TYING ":"BERTH ")+(char)('A'+index);
-        Lettering.center(p,badge,x+55,y-16,9,color);
+        badge(p,badge,x+95,y+53,8,color);
         if(selected && !occupied && !ready) {
             float bob=3*(float)StrictMath.sin(g.visualTicks*.1),cx=x+55,cy=y+12+bob;
             p.poly(new float[]{cx-6,cy-11,cx+6,cy-11,cx+6,cy,cx+12,cy,cx,cy+12,cx-12,cy,cx-6,cy},DARK);
             p.poly(new float[]{cx-4,cy-9,cx+4,cy-9,cx+4,cy+2,cx+8,cy+2,cx,cy+9,cx-8,cy+2,cx-4,cy+2},GOLD);
         }
-        float bank=index==1?501:15;
-        p.rect(bank,Game.DOCK_Y[index]-52,84,3,DARK);
-        for(int i=0;i<8;i++) p.rect(bank+i*10,Game.DOCK_Y[index]-52,5,3,GOLD);
-        if(working) lamp(p,index==1?493:107,Game.DOCK_Y[index]+40,g.visualTicks*3);
+        float bank=index==1?433:143;
+        p.rect(bank,Game.DOCK_Y[index]-52,24,3,DARK);
+        for(int i=0;i<3;i++) p.rect(bank+i*8,Game.DOCK_Y[index]-52,4,3,GOLD);
+        if(working) lamp(p,index==1?429:171,Game.DOCK_Y[index]+40,g.visualTicks*3);
     }
     private static void bridge(Game g,Painter p) {
-        p.rect(0,148,600,61,0xff39465b);
-        p.rect(0,185,600,23,DARK); p.rect(0,179,600,19,0xff716d79);
-        p.rect(0,179,600,3,0xffb7a293); p.rect(0,195,600,3,0xff485368);
-        for(int x=4;x<600;x+=22) p.rect(x,187,11,2,0xffd0af71);
+        p.rect(140,148,320,61,0xff39465b);
+        p.rect(140,185,320,23,DARK); p.rect(140,179,320,19,0xff716d79);
+        p.rect(140,179,320,3,0xffb7a293); p.rect(140,195,320,3,0xff485368);
+        for(int x=144;x<450;x+=22) p.rect(x,187,11,2,0xffd0af71);
         for(int side=0;side<2;side++) {
-            float tower=side==0?102:486,sign=side==0?1:-1;
+            float tower=side==0?164:432,sign=side==0?1:-1;
             p.rect(tower-8,153,20,60,DARK); p.rect(tower-5,154,13,53,0xff76757e);
             p.rect(tower-5,154,4,53,0xffc4b3a0); p.rect(tower-7,150,18,6,0xffb4a493);
             float end=tower+sign*56,raise=20+2*(float)StrictMath.sin(g.visualTicks*.013);
@@ -166,9 +155,15 @@ public final class HarborView {
                 float t=i/5f,xx=tower+sign*(4+t*55),yy=178-t*raise;
                 p.line(xx,yy,xx+sign*5,yy-2,3,GOLD);
             }
-            lamp(p,tower,151,g.visualTicks+side*30);
+            lamp(p,tower,155,g.visualTicks+side*30);
         }
-        VisualStyle.panel(p,205,151,190,20,VisualStyle.NAVY);
-        Lettering.center(p,"CALUMET LIFT BRIDGE",300,157,9,VisualStyle.CREAM);
+        badge(p,"CALUMET",300,180,7,VisualStyle.CREAM);
     }
+    static void badge(Painter p,String text,float x,float y,float size,int color) {
+        float width=Lettering.width(text,size)+10;
+        if(p instanceof RiverPainter) VisualStyle.panel(p,x-size-3,y-width/2,size+6,width,VisualStyle.NAVY);
+        else VisualStyle.panel(p,x-width/2,y-3,width,size+6,VisualStyle.NAVY);
+        RiverPainter.center(p,text,x,y,size,color);
+    }
+
 }

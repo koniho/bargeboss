@@ -39,8 +39,8 @@ public final class ControlView {
         String label=g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
         if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
             if(b!=null && b.active && b.unloadingTicks>0) { label="CREW UNLOADING"; break; }
-        Lettering.center(p,label,300,721,14,color(g));
-        Lettering.center(p,hint(g),300,741,10,PAPER);
+        Lettering.center(p,label,Layout.STATUS_CENTER_X,Layout.STATUS_LABEL_Y,14,color(g));
+        Lettering.center(p,hint(g),Layout.STATUS_CENTER_X,Layout.STATUS_HINT_Y,10,PAPER);
     }
     public static void ring(Painter p,float x,float y,float radius,float fraction,int color,float width) {
         int segments=40;
@@ -64,7 +64,7 @@ public final class ControlView {
         int color=color(g);
         if(g.holdingTug()) {
             dragRing(g,p,BLUE);
-            if(!g.pushing) ring(p,g.tug.x,g.tug.y,31,g.holdProgress(),AMBER,4);
+            if(!g.pushing) ring(p,g.tug.x,g.tug.y,36,g.holdProgress(),AMBER,4);
             else if(g.manualSteering) {
                 float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
                 arrow(p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
@@ -72,10 +72,10 @@ public final class ControlView {
         }
         Body b=g.workingCargo();
         if(b!=null && !g.ropeDragging) {
-            ring(p,b.x,b.y,39,1,0x668eaaa9,2);
-            if(!g.pushing) ring(p,b.x,b.y,39,g.holdProgress(),AMBER,5);
+            ring(p,b.x,b.y,46,1,0x668eaaa9,2);
+            if(!g.pushing) ring(p,b.x,b.y,46,g.holdProgress(),AMBER,5);
             else {
-                ring(p,b.x,b.y,39,1,color,2);
+                ring(p,b.x,b.y,46,1,color,2);
                 float bx=Game.DOCK_X[b.berth],by=Game.DOCK_Y[b.berth];
                 ring(p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
@@ -83,25 +83,24 @@ public final class ControlView {
                     ring(p,g.guideX,g.guideY,15,1,AMBER,2);
                     label(p,"APPROACH",g.guideX,g.guideY+26,AMBER);
                 }
-                if(g.control!=Game.DOCKING) arrow(p,b.x+g.pushX*40,b.y+g.pushY*40,
-                        Physics.clamp(b.x+g.pushX*95,115,485),Physics.clamp(b.y+g.pushY*95,220,809),color);
+                if(g.control!=Game.DOCKING) arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,
+                        Physics.clamp(b.x+g.pushX*108,Physics.LEFT+5,Physics.RIGHT-5),Physics.clamp(b.y+g.pushY*108,Physics.TOP+5,Physics.BOTTOM-5),color);
                 dragRing(g,p,PURPLE);
                 if(g.control==Game.DOCKING) {
-                    ring(p,b.x,b.y,44,Math.min(1,b.dockTime/1.2f),GREEN,5);
+                    ring(p,b.x,b.y,51,Math.min(1,b.dockTime/1.2f),GREEN,5);
                     label(p,"SETTLING",b.x,b.y-67,GREEN);
                 }
             }
         }
         MooringView.draw(g,p);
-        ring(p,g.tug.x,g.tug.y,27,1,color,2);
+        ring(p,g.tug.x,g.tug.y,33,1,color,2);
         if(g.control==Game.COASTING || g.control==Game.BRAKING) {
             float speed=g.tug.speed();
             if(speed>5) arrow(p,g.tug.x,g.tug.y,g.tug.x+g.tug.vx*.65f,g.tug.y+g.tug.vy*.65f,color);
         }
         if(g.noticeTicks>0 && (g.notice.startsWith("DELIVERED") || g.notice.startsWith("HARD IMPACT")
                 || g.notice.startsWith("CONTRACT"))) {
-            p.rect(117,216,366,29,0xee101e25);
-            Lettering.center(p,g.notice,300,224,11,PAPER);
+            label(p,g.notice,454,(RiverPainter.WORLD_TOP+RiverPainter.WORLD_BOTTOM)/2,PAPER);
         }
     }
     private static void dragRing(Game g,Painter p,int color) {
@@ -115,8 +114,17 @@ public final class ControlView {
         }
     }
     private static void label(Painter p,String text,float x,float y,int color) {
-        float w=Lettering.width(text,10)+10;
-        x=Physics.clamp(x,115+w/2,485-w/2); y=Physics.clamp(y,218,799);
-        p.rect(x-w/2,y-3,w,17,0xdd101e25); Lettering.center(p,text,x,y,10,color);
+        float size=10,w=Lettering.width(text,size)+10;
+        if(p instanceof RiverPainter) {
+            // The board rotates, but the label and its backing remain screen-upright.
+            x=Physics.clamp(x,RiverPainter.WORLD_LEFT+size+4,RiverPainter.WORLD_RIGHT-3);
+            y=Physics.clamp(y,RiverPainter.WORLD_TOP+w/2+3,RiverPainter.WORLD_BOTTOM-w/2-3);
+            p.rect(x-size-3,y-w/2,size+6,w,0xee101e25);
+        } else {
+            x=Physics.clamp(x,w/2+4,Layout.WIDTH-w/2-4);
+            y=Physics.clamp(y,4,Layout.HEIGHT-size-4);
+            p.rect(x-w/2,y-3,w,size+6,0xee101e25);
+        }
+        RiverPainter.center(p,text,x,y,size,color);
     }
 }

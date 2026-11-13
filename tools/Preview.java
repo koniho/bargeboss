@@ -19,7 +19,7 @@ public final class Preview {
         g.reset(); capture(g,"stage");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
-        steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,110,910); steps(g,4); capture(g,"braking");
+        steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,Layout.BRAKE); steps(g,4); capture(g,"braking");
         g.reset(); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.ALIGNING) { capture(g,"aligning"); break; } }
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.PUSHING) { capture(g,"push"); break; } }
@@ -39,8 +39,8 @@ public final class Preview {
         while(g.delivered==0) g.step(); steps(g,12); capture(g,"delivery");
         steps(g,90); capture(g,"crew-idle");
         g.background(); capture(g,"pause"); g.pause();
-        ReplayInput.tap(g,300,910); capture(g,"help"); ReplayInput.tap(g,300,680);
-        g.tug.x=479; g.tug.vx=100; g.step(); capture(g,"impact");
+        ReplayInput.tap(g,Layout.HELP); capture(g,"help"); ReplayInput.tap(g,Layout.START);
+        g.tug.x=Physics.RIGHT-15; g.tug.vx=100; g.step(); capture(g,"impact");
         g.reset(); g.ticks=1000; capture(g,"traffic-warning");
         g.ticks=1200; capture(g,"traffic");
         g.reset();
@@ -48,7 +48,7 @@ public final class Preview {
         capture(g,"shift-complete");
         for(int i=0;i<60;i++) g.advance(1.0/60); capture(g,"results-animated");
         g.reset(); steps(g,Game.SHIFT_TICKS); capture(g,"shift-ended");
-        g=new Game(); ReplayInput.tap(g,300,608); capture(g,"tutorial-0");
+        g=new Game(); ReplayInput.tap(g,Layout.LEARN); capture(g,"tutorial-0");
         int previous=0;
         for(int i=0;i<3000;i++) {
             Game a=g.activeGame(); ReplayInput.tutorial(g); g.step();
@@ -66,17 +66,17 @@ public final class Preview {
         System.out.println("Shared renderer: control-states.png, tutorial.png and mooring.png in out/");
     }
     private static void capture(Game game,String name) throws Exception {
-        BufferedImage image=new BufferedImage(600,960,BufferedImage.TYPE_INT_RGB);
+        BufferedImage image=new BufferedImage(Layout.WIDTH,Layout.HEIGHT,BufferedImage.TYPE_INT_RGB);
         Graphics2D g=image.createGraphics(); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         Renderer.draw(game,new DesktopPainter(g)); g.dispose(); ImageIO.write(image,"png",new File("out/"+name+".png"));
     }
     private static void sheet(String name,String[] scenes) throws Exception {
-        BufferedImage sheet=new BufferedImage(900,510*((scenes.length+2)/3),BufferedImage.TYPE_INT_RGB);
+        BufferedImage sheet=new BufferedImage(960,330*((scenes.length+1)/2),BufferedImage.TYPE_INT_RGB);
         Graphics2D p=sheet.createGraphics(); p.setColor(new Color(0x101e25)); p.fillRect(0,0,sheet.getWidth(),sheet.getHeight());
         p.setFont(new Font("SansSerif",Font.BOLD,14));
         for(int i=0;i<scenes.length;i++) {
-            int x=i%3*300,y=i/3*510; p.setColor(new Color(0xeee7d4)); p.drawString(scenes[i].toUpperCase(),x+12,y+20);
-            p.drawImage(ImageIO.read(new File("out/"+scenes[i]+".png")),x,y+30,300,480,null);
+            int x=i%2*480,y=i/2*330; p.setColor(new Color(0xeee7d4)); p.drawString(scenes[i].toUpperCase(),x+12,y+20);
+            p.drawImage(ImageIO.read(new File("out/"+scenes[i]+".png")),x,y+30,480,300,null);
         }
         p.dispose(); ImageIO.write(sheet,"png",new File("out/"+name+".png"));
     }

@@ -8,8 +8,8 @@ public final class Game {
     // same collision resolution, stopping distances and impact thresholds.
     // Gesture, contract and shift clocks stay at 60 real ticks per second.
     public static final int MOTION_STEPS=2, UNLOAD_TICKS=3*60;
-    public static final float[] DOCK_X={178,422,178}, DOCK_Y={290,488,700};
-    public static final float[] TIE_X={116,484,116};
+    public static final float[] DOCK_X={230,370,230}, DOCK_Y={290,488,700};
+    public static final float[] TIE_X={176,424,176};
     public static final float TIE_RADIUS=30;
     public static final int ROPE_FLIGHT_TICKS=18, ROPE_RETURN_TICKS=18, ROPE_HIT_TICKS=24;
     public int ropePhase,ropeTicks;
@@ -96,25 +96,27 @@ public final class Game {
         if(practice!=null) { practice.cancelInputs(); return; }
         cancel(); mapPointer=-1; hapticPending=0; braking=true; navigating=false;
     }
+    /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
-        if(mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE) && y>712 && y<750) return;
-        if(mapPointer!=-1) return;
-        mapPointer=id;
-        mapInRiver=mode==PLAY && y>=148 && y<=712 && (tutorial==null || tutorial.lesson!=Tutorial.DONE);
-        if(mapInRiver) down(RiverPainter.riverX(x),RiverPainter.riverY(y)); else down(x,y);
+        if(mapPointer!=-1 || pointer || x<0 || x>Layout.WIDTH || y<0 || y>Layout.HEIGHT) return;
+        boolean river=liveRiverInput() && RiverPainter.inBoard(x,y);
+        if(river) beginDown(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y),true);
+        else beginDown(x,y,false);
+        if(pointer) mapPointer=id;
     }
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(id!=mapPointer) return;
-        if(mapInRiver) move(RiverPainter.riverX(x),RiverPainter.riverY(y)); else move(x,y);
+        if(mapInRiver) move(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(id!=mapPointer) return;
         mapPointer=-1;
-        if(mapInRiver) up(RiverPainter.riverX(x),RiverPainter.riverY(y)); else up(x,y);
+        if(mapInRiver) up(RiverPainter.riverX(x,y),RiverPainter.riverY(x,y)); else up(x,y);
     }
+    private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
         if(practice!=null) { practice.pointerCancel(id); return; }
         if(id==mapPointer) { cancel(); mapPointer=-1; }
@@ -128,7 +130,7 @@ public final class Game {
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing) { navigating=false; braking=false; control=COASTING; }
-        pointer=false; mapPointer=-1; pushing=false; ropeDragging=false; navigating=false; held=-1; pressTicks=0; manualSteering=false;
+        pointer=false; mapPointer=-1; mapInRiver=false; pushing=false; ropeDragging=false; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
@@ -140,7 +142,7 @@ public final class Game {
         return Physics.length(x-TIE_X[b.berth],y-DOCK_Y[b.berth])<=TIE_RADIUS;
     }
     public float aimX(Body b,float x,float y) {
-        return overTiePoint(b,x,y)?TIE_X[b.berth]:Physics.clamp(x,20,580);
+        return overTiePoint(b,x,y)?TIE_X[b.berth]:Physics.clamp(x,144,456);
     }
     public float aimY(Body b,float x,float y) {
         return overTiePoint(b,x,y)?DOCK_Y[b.berth]:Physics.clamp(y,168,816);
@@ -150,11 +152,20 @@ public final class Game {
     public float holdProgress() { return pointer && held!=-1?Math.min(1,pressTicks/12f):0; }
     public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
     public void pause() { if(practice!=null) { practice.pause(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; else if(mode==PAUSE) mode=PLAY; }
+    /** Direct/replay input uses world coordinates on the board, canvas coordinates in menus. */
     public void down(float x,float y) {
         if(practice!=null) { practice.down(x,y); return; }
-        if(pointer || x<0 || x>600 || y<0 || y>960) return;
-        pointer=true; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
-        if(mode!=PLAY) return;
+        boolean river=liveRiverInput() && x>=RiverPainter.WORLD_LEFT && x<=RiverPainter.WORLD_RIGHT
+                && y>=RiverPainter.WORLD_TOP && y<=RiverPainter.WORLD_BOTTOM;
+        beginDown(x,y,river);
+    }
+    private void beginDown(float x,float y,boolean river) {
+        if(pointer) return;
+        if(river) {
+            if(x<RiverPainter.WORLD_LEFT || x>RiverPainter.WORLD_RIGHT || y<RiverPainter.WORLD_TOP || y>RiverPainter.WORLD_BOTTOM) return;
+        } else if(x<0 || x>Layout.WIDTH || y<0 || y>Layout.HEIGHT) return;
+        pointer=true; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
+        if(!river) return;
         if(tug.hit(x,y,8)) {
             held=-2; braking=true; control=HOLDING; haptic(HAPTIC_TICK); return;
         }
@@ -168,6 +179,7 @@ public final class Game {
         if(practice!=null) { practice.move(x,y); return; }
         if(pointer) {
             pointerX=x; pointerY=y;
+            if(!mapInRiver) return;
             float distance=Physics.length(x-downX,y-downY);
             boolean wasSteering=manualSteering;
             if(distance>42) manualSteering=true;
@@ -192,39 +204,49 @@ public final class Game {
             }
             cancel(); return;
         }
-        boolean tap=!pushing && Physics.length(x-downX,y-downY)<22;
-        if(tap && x>=380 && x<=496 && y>=18 && y<=85) {
+        // A world gesture never activates a screen-space button, even if its
+        // rotated endpoint happens to share a button's numerical coordinates.
+        if(mapInRiver) {
+            if(!pushing && held>=0) tell("HOLD THE CARGO TO LINE UP AND PUSH");
+            cancel(); return;
+        }
+        boolean tap=Physics.length(x-downX,y-downY)<22;
+        if(tap && tapped(Layout.HAPTICS,x,y)) {
             hapticsEnabled=!hapticsEnabled; hapticPending=0; if(hapticsEnabled) haptic(HAPTIC_TICK);
-        } else if(tutorial!=null && mode==PLAY && tap && tutorial.lesson==Tutorial.DONE && x>=100 && x<=500 && y>=650 && y<=726) {
-            tutorial.exitRequested=true;
+        } else if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
+            if(tap && tapped(Layout.START,x,y)) tutorial.exitRequested=true;
         } else if(mode==HELP) {
-            if(tap && x>=100 && x<=500 && y>=576 && y<=640) { startTutorial(); return; }
-            if(tap && x>=100 && x<=500 && y>=650 && y<=726) mode=PLAY;
-        } else if(mode==TITLE || mode==FINISH) {
-            if(mode==TITLE && tap && x>=100 && x<=500 && y>=576 && y<=640) { startTutorial(); return; }
-            if(tap && x>=100 && x<=500 && y>=650 && y<=726) reset();
+            if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
+            if(tap && tapped(Layout.START,x,y)) mode=PLAY;
+        } else if(mode==TITLE) {
+            if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
+            if(tap && tapped(Layout.START,x,y)) reset();
+        } else if(mode==FINISH) {
+            if(tap && tapped(Layout.AGAIN,x,y)) reset();
         } else if(mode==PAUSE) {
-            if(tap && x>=100 && x<=500 && y>=540 && y<=612) pause();
-            else if(tap && x>=100 && x<=500 && y>=632 && y<=704) {
+            if(tap && tapped(Layout.RESUME,x,y)) pause();
+            else if(tap && tapped(Layout.RESTART,x,y)) {
                 boolean training=tutorial!=null, resume=training && tutorial.resumeShift;
                 reset();
                 if(training) { tutorial=new Tutorial(); tutorial.resumeShift=resume; tutorial.setup(this); }
             }
         } else if(tap) {
-            if(x>=508 && y<=100) pause();
-            else if(y>=872 && y<=940 && x>=30 && x<=198) {
+            if(tapped(Layout.PAUSE,x,y)) pause();
+            else if(tapped(Layout.BRAKE,x,y)) {
                 cancelInputs(); control=BRAKING; targetX=tug.x; targetY=tug.y; haptic(HAPTIC_TICK);
-            } else if(y>=872 && y<=940 && x>=216 && x<=384) {
+            } else if(tapped(Layout.HELP,x,y)) {
                 cancelInputs();
                 if(tutorial!=null) tutorial.setup(this); else mode=HELP;
-            } else if(y>=872 && y<=940 && x>=402 && x<=570) {
+            } else if(tapped(Layout.PRACTICE,x,y)) {
                 cancelInputs();
                 if(tutorial!=null) tutorial.exitRequested=true;
                 else { startTutorial(); return; }
             }
-            else if(held>=0) tell("HOLD THE CARGO TO LINE UP AND PUSH");
         }
         cancel();
+    }
+    private boolean tapped(Layout.Box box,float x,float y) {
+        return box.contains(downX,downY) && box.contains(x,y);
     }
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */
     public void advance(double seconds) {
@@ -393,7 +415,7 @@ public final class Game {
             float sideSign=side>=0?1:-1;
             float sx=b.x-nx*(reach+14), sy=b.y-ny*(reach+14);
             if(along>-20) { sx-=ny*sideSign*78; sy+=nx*sideSign*78; }
-            guideX=Physics.clamp(sx,138,462); guideY=Physics.clamp(sy,245,787);
+            guideX=Physics.clamp(sx,198,402); guideY=Physics.clamp(sy,245,787);
             control=steering?STEERING:ALIGNING;
             navigate(guideX,guideY,95);
         } else {
@@ -415,8 +437,8 @@ public final class Game {
     }
     public int trafficPhase() { return ticks%(28*60); }
     public boolean trafficWarning() { return tutorial==null && ticks>=600 && trafficPhase()>=900 && trafficPhase()<1080; }
-    public boolean trafficActive() { return tutorial==null && ticks>=600 && trafficPhase()>=1080 && trafficPhase()<1080+480/MOTION_STEPS; }
-    public float trafficX() { return 75+(trafficPhase()-1080)*.95f*MOTION_STEPS; }
+    public boolean trafficActive() { return tutorial==null && ticks>=600 && trafficPhase()>=1080 && trafficPhase()<1080+400/MOTION_STEPS; }
+    public float trafficX() { return 110+(trafficPhase()-1080)*.95f*MOTION_STEPS; }
     private void traffic() {
         if(!trafficActive()) return;
         Body ship=new Body(-1,-1,trafficX(),395,0); ship.vx=57;

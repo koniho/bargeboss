@@ -5,6 +5,14 @@ public final class AnimationTest {
     private static int assertions;
     private static void check(boolean ok,String message) { assertions++; if(!ok) throw new AssertionError(message); }
     public static void run() {
+        Viewport landscape=new Viewport(1440,900),portrait=new Viewport(900,1440);
+        check(landscape.x==0 && landscape.y==0 && landscape.scale==1.5f,"landscape stage fills a matching display");
+        check(portrait.x==0 && portrait.y>0 && portrait.scale==900f/Layout.WIDTH,"portrait window letterboxes the whole landscape stage");
+        float screenX=RiverPainter.screenX(310,540),screenY=RiverPainter.screenY(310,540);
+        check(Math.abs(RiverPainter.riverX(screenX,screenY)-310)<.0001f && Math.abs(RiverPainter.riverY(screenX,screenY)-540)<.0001f,
+                "quarter-turn river input is the inverse of drawing");
+        check(RiverPainter.inBoard(screenX,screenY) && !RiverPainter.inBoard(Layout.BRAKE.centerX(),Layout.BRAKE.centerY()),
+                "landscape controls sit outside the river input surface");
         Game g=new Game(); float x=g.tug.x,y=g.tug.y;
         int first=Parity.frame(g);
         for(int i=0;i<45;i++) g.advance(1.0/60);

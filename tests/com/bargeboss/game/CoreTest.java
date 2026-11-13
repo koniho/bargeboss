@@ -7,16 +7,16 @@ public final class CoreTest {
     }
     private static Game playing() { Game g=new Game(); g.reset(); return g; }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
-    private static void tap(Game g,float x,float y) { g.down(x,y); g.up(x,y); }
+    private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
-        Game g=new Game(); tap(g,300,680); check(g.mode==Game.PLAY,"start button");
+        Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
         g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
         check(g.navigating && g.tug.y<650,"drag drives tug in finger direction");
         g.background(); int ticks=g.ticks; g.advance(1); check(g.ticks==ticks,"background freezes shift");
-        check(!g.pointer && !g.pushing,"background cancels gesture"); tap(g,300,570); check(g.mode==Game.PLAY,"resume button");
-        ticks=g.ticks; tap(g,300,900); check(g.mode==Game.HELP,"help opens");
-        g.advance(.1); check(g.ticks==ticks,"help freezes shift"); tap(g,300,680);
+        check(!g.pointer && !g.pushing,"background cancels gesture"); tap(g,Layout.RESUME); check(g.mode==Game.PLAY,"resume button");
+        ticks=g.ticks; tap(g,Layout.HELP); check(g.mode==Game.HELP,"help opens");
+        g.advance(.1); check(g.ticks==ticks,"help freezes shift"); tap(g,Layout.START);
         check(g.mode==Game.PLAY && g.ticks==ticks,"help resumes existing shift without reset");
         g=playing(); g.down(g.cargo[0].x,g.cargo[0].y); steps(g,11); check(!g.pushing,"hold threshold avoids accidental push");
         steps(g,1); check(g.pushing,"hold engages"); g.cancel(); check(!g.pushing && !g.pointer,"cancel releases push");
@@ -26,7 +26,7 @@ public final class CoreTest {
         coast.down(coast.cargo[0].x,coast.cargo[0].y); drag.down(drag.cargo[0].x,drag.cargo[0].y);
         drag.move(drag.cargo[0].x,drag.cargo[0].y-120); steps(coast,150); steps(drag,150);
         check(Physics.length(coast.tug.x-drag.tug.x,coast.tug.y-drag.tug.y)>15,"drag overrides assisted direction");
-        g=playing(); g.tug.vx=90;  tap(g,110,900); steps(g,30);
+        g=playing(); g.tug.vx=90;  tap(g,Layout.BRAKE); steps(g,30);
         check(g.tug.speed()<20,"brake sheds momentum");
         g=playing(); for(int i=0;i<1200;i++) { ReplayInput.work(g); g.step(); }
         check(g.delivered>=1,"assisted first delivery within 20 seconds: tug="+g.tug.x+","+g.tug.y+" cargo="+g.cargo[0].x+","+g.cargo[0].y);
@@ -45,7 +45,7 @@ public final class CoreTest {
         g.down(300,700); g.move(360,700); g.cancel(); check(!g.pointer,"cancelled drag cannot stick");
         Viewport v=new Viewport(1200,1000); check(Math.abs(v.worldX(v.x+300*v.scale)-300)<.001,"letterboxed coordinate mapping");
         g=playing(); g.down(-1,500); check(!g.pointer,"letterbox tap ignored");
-        g=playing(); g.tug.x=479; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
+        g=playing(); g.tug.x=415; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
         steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
         g=playing(); g.ticks=1200; g.tug.x=g.trafficX()+31; g.tug.y=395; steps(g,1);
         check(g.hull<100,"cross traffic is a physical hazard");
@@ -61,7 +61,7 @@ public final class CoreTest {
             ReplayInput.work(g);
             g.step();
             check(Float.isFinite(g.tug.x) && Float.isFinite(g.tug.y),"finite tug state");
-            check(g.tug.x>=110 && g.tug.x<=490 && g.tug.y>=215 && g.tug.y<=817,"tug remains navigable");
+            check(g.tug.x>=Physics.LEFT && g.tug.x<=Physics.RIGHT && g.tug.y>=Physics.TOP && g.tug.y<=Physics.BOTTOM,"tug remains navigable");
         }
         check(g.delivered>=Game.QUOTA,"bounded drag/rope player can meet quota: "+g.delivered+" delivered, "+g.lost+" expired, hull "+g.hull+", ticks "+g.ticks);
         float tx=g.tug.x, ty=g.tug.y; ticks=g.ticks; score=g.score;
@@ -69,7 +69,7 @@ public final class CoreTest {
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
         ControlsTest.run();
         AnimationTest.run();
-        check(Parity.signature().equals("6a6df3f7:10:8166"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("fc21eb49:10:7702"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

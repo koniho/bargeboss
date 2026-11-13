@@ -9,6 +9,11 @@ public final class Parity implements Painter {
     public void circle(float x,float y,float r,int c) { add(2); value(x); value(y); value(r); add(c); }
     public void poly(float[] xy,int c) { add(3); for(float f:xy) value(f); add(c); }
     public void line(float x,float y,float xx,float yy,float w,int c) { add(4); value(x); value(y); value(xx); value(yy); value(w); add(c); }
+    public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
+        add(5); add(atlas); add(frame); value(cx); value(cy); value(width); value(height); value(rotation); value(alpha);
+        // Registration and file choice are part of the shared renderer contract too.
+        add(SpriteAtlas.file(atlas).hashCode()); value(SpriteAtlas.pivotX(atlas,frame)); value(SpriteAtlas.pivotY(atlas,frame));
+    }
     public static int frame(Game g) { Parity p=new Parity(); Renderer.draw(g,p); return p.hash; }
     public static String signature() {
         Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p);
@@ -34,7 +39,7 @@ public final class Parity implements Painter {
     }
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
     private static void tutorial(Parity p) {
-        Game root=new Game(); tap(root,300,608);
+        Game root=new Game(); ReplayInput.tap(root,Layout.LEARN);
         for(int i=0;i<2400;i++) {
             Game g=root.activeGame();
             if(g.tutorial.lesson==Tutorial.DONE) { Renderer.draw(root,p); return; }

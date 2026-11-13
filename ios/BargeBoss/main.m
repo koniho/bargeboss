@@ -36,7 +36,7 @@
         self.contact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
         self.impact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
         self.delivery=[[UINotificationFeedbackGenerator alloc] init];
-        self.viewport=[[BBViewport alloc] initWithFloat:600 withFloat:960];
+        self.viewport=[[BBViewport alloc] initWithFloat:960 withFloat:600];
         self.displayLink=[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)];
         self.displayLink.preferredFramesPerSecond=60;
         [self.displayLink addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
@@ -68,7 +68,7 @@
     CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx,insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY]);
     CGContextScaleCTM(ctx,[self.viewport zoomFactor],[self.viewport zoomFactor]);
-    CGContextClipToRect(ctx,CGRectMake(0,0,600,960)); self.painter.context=ctx;
+    CGContextClipToRect(ctx,CGRectMake(0,0,960,600)); self.painter.context=ctx;
     [self.game renderWithBBPainter:self.painter]; self.painter.context=NULL;
     CGContextRestoreGState(ctx);
 }
@@ -79,7 +79,7 @@
 }
 - (CGRect)accessibilityFrame {
     UIEdgeInsets insets=self.safeAreaInsets; CGFloat scale=[self.viewport zoomFactor];
-    CGRect stage=CGRectMake(insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY],600*scale,960*scale);
+    CGRect stage=CGRectMake(insets.left+[self.viewport offsetX],insets.top+[self.viewport offsetY],960*scale,600*scale);
     return UIAccessibilityConvertFrameToScreenCoordinates(stage,self);
 }
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
@@ -121,7 +121,7 @@
 @implementation BBController
 - (void)loadView { self.view=[[BBGameView alloc] initWithFrame:UIScreen.mainScreen.bounds]; }
 - (BOOL)prefersStatusBarHidden { return YES; }
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskPortrait; }
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskLandscape; }
 @end
 
 @interface BBAppDelegate : UIResponder <UIApplicationDelegate>

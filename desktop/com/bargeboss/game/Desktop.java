@@ -8,9 +8,9 @@ import javax.swing.*;
 public final class Desktop extends JPanel {
     private final Game game=new Game();
     private long last=System.nanoTime();
-    private Viewport viewport=new Viewport(600,960);
+    private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
     private Desktop() {
-        setPreferredSize(new Dimension(600,960)); setBackground(new Color(0x101e25));
+        setPreferredSize(new Dimension(Layout.WIDTH,Layout.HEIGHT)); setBackground(new Color(0x101e25));
         MouseAdapter mouse=new MouseAdapter() {
             public void mousePressed(MouseEvent e) { if(SwingUtilities.isLeftMouseButton(e)) game.pointerDown(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
             public void mouseDragged(MouseEvent e) { game.pointerMove(0,viewport.worldX(e.getX()),viewport.worldY(e.getY())); }
@@ -26,7 +26,7 @@ public final class Desktop extends JPanel {
         super.paintComponent(graphics); Graphics2D g=(Graphics2D)graphics.create();
         viewport=new Viewport(getWidth(),getHeight());
         g.translate(viewport.x,viewport.y); g.scale(viewport.scale,viewport.scale);
-        g.clipRect(0,0,600,960); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        g.clipRect(0,0,Layout.WIDTH,Layout.HEIGHT); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         Renderer.draw(game,new DesktopPainter(g)); g.dispose();
     }
     public static void main(String[] args) {
@@ -34,7 +34,8 @@ public final class Desktop extends JPanel {
             Desktop panel=new Desktop(); JFrame frame=new JFrame("Barge Boss / Calumet Reach");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); frame.setContentPane(panel); frame.pack();
             Dimension screen=Toolkit.getDefaultToolkit().getScreenSize();
-            if(frame.getHeight()>screen.height-60) frame.setSize((int)((screen.height-80)*.625),screen.height-60);
+            double scale=Math.min(1,Math.min((screen.width-60.0)/frame.getWidth(),(screen.height-60.0)/frame.getHeight()));
+            if(scale<1) frame.setSize((int)(frame.getWidth()*scale),(int)(frame.getHeight()*scale));
             frame.setLocationRelativeTo(null);
             frame.addWindowFocusListener(new WindowAdapter() { public void windowLostFocus(WindowEvent e) { panel.game.background(); panel.last=System.nanoTime(); } });
             frame.setVisible(true);

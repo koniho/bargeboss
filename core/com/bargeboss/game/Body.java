@@ -11,8 +11,8 @@ public final class Body {
     public Body(int id, int berth, float x, float y, float angle) {
         this.id = id; this.berth = berth; this.x = x; this.y = y; this.angle = angle;
         mass = id == 0 ? 2f : 4f;
-        half = id == 0 ? 10f : 17f;
-        radius = id == 0 ? 12f : 14f;
+        half = id == 0 ? 12.5f : 21.25f;
+        radius = id == 0 ? 15f : 17.5f;
         inertia = mass * (half * half + radius * radius) * .8f;
     }
     public float speed() { return (float) StrictMath.sqrt(vx * vx + vy * vy); }

@@ -14,7 +14,7 @@ only when the complete hull is inside its berth and speed is below the limit.
 Dragging an armed lasso shows a curved aiming guide; release starts an 18-tick
 flight. A hit attaches at impact and flashes for 24 ticks; a miss retracts for 18
 instead. These are real-time shared simulation phases. Aiming cancellation
-never launches a rope. Tightening emits an 18-tick tension pulse and quiver before
+never launches a rope. Tightening emits an 18-tick tension pulse and quiver as
 unloading begins.
 Attached lines anchor the hull during tightening and three seconds of unloading;
 only completed unloading scores. Unloading and crew animation share the same
@@ -27,17 +27,26 @@ gesture, haptic, mooring and unloading clocks advance once per real step.
 Crossing boats cover their route twice as fast; warning and arrival cycles keep
 their original timing. Visual wakes, wave patterns and bursts do not affect physics.
 
-`Renderer` emits every primitive through `Painter`. Lettering is a shared 5x7
-vector alphabet, avoiding different platform font metrics. There are no native
-menus overlaying the game. `Viewport` fits the same full portrait interface to each
-host, including desktop landscape windows and tablet screens with letterboxing.
+`Renderer` emits geometry and atlas sprite commands through `Painter`. Lettering
+is a shared 5x7 vector alphabet, avoiding different platform font metrics. There
+are no native menus overlaying the game. `Viewport` fits the same **960×600
+landscape interface** within each host's safe bounds, using letterboxing where
+necessary. The entire playable stage remains visible; there is no following
+camera or platform-specific crop.
 
-`RiverPainter` uniformly fits the entire original river above the control panel. Its
-inverse transform is used by the shared pointer router, preserving world physics
-and showing the same whole stage on all devices.
+`RiverPainter` turns the source river a quarter-turn into the landscape board:
+`screenX = 16 + (worldY - 148) × 1.35` and
+`screenY = 84 + (460 - worldX) × 1.35`. The full source rectangle is
+`x=140..460, y=148..836`; navigable water is `x=170..430, y=215..817`.
+The paired inverse transform maps native pointer coordinates back to that same
+world. World-label helpers retain upright text after rotation. Hull dimensions
+are 1.25× their earlier values, and collision inertia is recalculated with those
+dimensions. These shared layout and geometry choices make the boats larger
+while preserving the complete stage on every platform.
 
 Platform hosts forward stable pointer IDs, cancel on interruptions, feed elapsed
-time into `Game.advance`, and implement four drawing primitives. One pointer
+time into `Game.advance`, and implement four geometry primitives plus the shared
+`Painter.sprite` operation. One pointer
 owns the current tug, cargo or rope drag. Extra fingers cannot replace it.
 The original touch point remains fixed as the hull moves. Releasing removes
 thrust and coasts; returning to the ring brakes. Rope cancellation never attaches
@@ -60,11 +69,25 @@ haptics off never changes simulation state.
 
 ## Concept art and animation coverage
 
-The user-supplied reference is retained under `docs/reference/`. `VisualStyle`
-sets the shared palette; `VesselView`, `HarborView`, `DockView`, `MooringView`,
-`ArcadeView` and `ScreenView` emit the same primitives on every platform.
-Raised cabins/decks, quays and equipment use decorative screen-up depth while
-keeping the original world coordinates and collision footprints.
+The [user-supplied reference](reference/barge-boss-concept.png) guides the shared
+palette and silhouettes. The built-in `image_gen` tool produced transparent
+directional boat and cargo atlases in [assets/sprites](../assets/sprites/), with
+source instructions in [docs/art-prompts](art-prompts/). These are production
+source assets, not screenshots or generated build output.
+
+`SpriteAtlas` owns common filenames and hull registration points. Shared Java
+chooses atlas frames, scale, pivot, opacity and decorative animation from the
+same phase state on every platform. Android Canvas, iOS Core Graphics and Java2D
+cache/decode the same bundled PNGs and draw the requested cells. They do not
+choose independent animation states. Sprite commands are included in drawing
+replay parity; pixel-level raster output remains a native validation boundary.
+
+`VisualStyle` sets the palette; `VesselView`, `HarborView`, `DockView`,
+`MooringView`, `ArcadeView` and `ScreenView` compose artwork, procedural scenery,
+lettering and effects. Directional sprites preserve raised cabins/decks and
+camera lighting as boats turn. Decorative depth does not change the physical
+hull or its touch target. The quays and machinery fit the compact landscape
+shoreline, and world labels stay upright.
 
 `Game.visualTicks` advances in fixed 60 Hz steps during play, title and results.
 Title/results animation never advances gameplay timers, bodies or scores.
@@ -111,15 +134,15 @@ flight, tightening, unloading and celebration durations.
 - Native builds use `-ffp-contract=off` so compiler-specific fused arithmetic
   does not silently alter the physics path.
 - CI compilation proves native API wiring; it does not prove visual pixel
-  identity or physical-device responsiveness. Native antialiasing can differ.
+  identity or physical-device responsiveness. Native antialiasing, alpha blending and bitmap sampling can differ.
 - The iPhone simulator smoke test delivers cargo by holding and lassoing, completes all tutorial lessons, and
   verifies pause/resume and background lifecycle transitions through UIKit.
 
 ## Device acceptance before release
 
-On Android and iPhone/iPad: complete a shift; test tug dragging, neutral, release, brake, cargo steering and lasso drops;
+On Android and iPhone/iPad: complete a shift; test tug dragging, neutral, release, brake, cargo steering and lasso throws;
 add/remove/cancel an extra finger while holding a drag; cancel via an OS gesture; background
-and resume; inspect notches and home indicators; verify no controls are clipped.
+and resume; inspect landscape notches and home indicators; verify the whole stage and all controls remain visible.
 On Windows/macOS/Linux: resize and letterbox the game, move the window between
 different pixel-density monitors, lose focus while holding and resume.
 Compare corresponding native captures with the shared renderer previews. Feel

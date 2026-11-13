@@ -40,8 +40,8 @@ public final class MainActivity extends Activity {
 
     private final class GameView extends View implements Choreographer.FrameCallback {
         private final Game game=new Game();
-        private final CanvasPainter painter=new CanvasPainter();
-        private Viewport viewport=new Viewport(600,960);
+        private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
+        private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
         private long last;
         private boolean running;
         GameView() { super(MainActivity.this); setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up."); }
@@ -61,7 +61,7 @@ public final class MainActivity extends Activity {
         protected void onSizeChanged(int w,int h,int oldW,int oldH) { viewport=new Viewport(w,h); game.cancelInputs(); }
         protected void onDraw(Canvas canvas) {
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
-            canvas.clipRect(0,0,600,960); painter.bind(canvas); game.render(painter); canvas.restore();
+            canvas.clipRect(0,0,Layout.WIDTH,Layout.HEIGHT); painter.bind(canvas); game.render(painter); canvas.restore();
         }
         public boolean onTouchEvent(MotionEvent event) {
             int action=event.getActionMasked(), index=event.getActionIndex();

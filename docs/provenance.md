@@ -6,16 +6,39 @@ translation into a UIKit/Core Graphics host. The iOS `bootstrap.sh` is copied
 from that sibling project; build conventions and native adapter patterns are
 adapted to the new, smaller game. DDDumpling was only read, never modified.
 
-Game rules, stage layout, rendered hull art, scenery and 5x7 glyphs are authored
-here. The Calumet reference is thematic; no real navigation map is used.
+Game rules, stage layout, shared rendering/animation code, procedural scenery
+and 5x7 glyphs are authored here. Boat and cargo sprite artwork is generated as
+described below. The Calumet reference is thematic; no real navigation map is used.
 
-The user supplied the graphical concept retained at
-`docs/reference/barge-boss-concept.png`, copied from their latest Pictures image
-on 2026-11-13. It guides the red/cream tug, shaded rust barges, teal water, yellow
-machinery, sunset title and arcade presentation. The shipped game draws its own
-geometry and animations through the shared `Painter`; the reference sheet is
+The user supplied the [graphical concept](reference/barge-boss-concept.png),
+copied from their latest Pictures image on 2026-11-13. It guides the red/cream tug,
+shaded rust barges, teal water, yellow machinery, sunset title and arcade
+presentation. The concept sheet is retained as a development reference and is
 not bundled into native builds. This note makes no claim about the source
 image's original authorship or license.
+
+## Generated production artwork
+
+The built-in `image_gen` tool created the directional boat and cargo artwork
+using that concept as the visual reference. The production transparent PNG
+atlases are tracked in [assets/sprites](../assets/sprites/), and their generation
+instructions are retained in [docs/art-prompts](art-prompts/). The first boat
+prompts are [tug-atlas.txt](art-prompts/tug-atlas.txt) and
+[barge-atlas.txt](art-prompts/barge-atlas.txt). The tug has a red hull, cream
+pilothouse and tire fenders; the empty barge provides a common deck for separately
+animated steel, freight and bulk loads.
+
+Each directional atlas uses a shared eight-heading cell layout. The game chooses
+headings, registration points and phase effects in pure Java, then native hosts
+draw the same assets. Smoke, wakes, aiming guides, thrown/retracting ropes,
+line-tightening effects, unloading equipment and score celebrations are shared
+runtime animations rather than alternate platform-specific asset sequences.
+The title screen also uses the production boat art within its animated harbor.
+
+The landscape presentation keeps the whole river visible in a 960×600 logical
+interface. The concept's other illustrated levels and progression menus remain
+visual references; they do not imply that extra playable stages or upgrade
+systems have been implemented.
 
 J2ObjC 3.1 is an external Apache-2.0 toolchain. Its checksum-verified source
 archive and generated runtime remain ignored. iOS builds gather upstream
