@@ -1,0 +1,91 @@
+name: Build and verify all platforms
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  desktop:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Shared rules, replay and desktop build
+        shell: bash
+        run: |
+          ./check.sh
+          ./desktop.sh --build-only
+      - name: Shared renderer captures
+        if: runner.os == 'Linux'
+        run: ./preview.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ runner.os }}
+          path: build/bargeboss.jar
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: shared-renderer-preview
+          path: out/*.png
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build native APK with shared rules gate
+        run: |
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          export PATH="$ANDROID_HOME/build-tools/36.0.0:$PATH"
+          ./build-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bargeboss-android-debug
+          path: build/bargeboss-debug.apk
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install build tools
+        run: brew install maven xcodegen
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ios/vendor
+            ~/.m2/repository
+          key: j2objc-3.1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('ios/scripts/bootstrap.sh') }}
+      - name: Bootstrap DDDumpling toolchain
+        run: ./ios/scripts/bootstrap.sh
+      - name: Compare JVM and native gameplay and drawing trace
+        run: ./ios/scripts/parity.sh
+      - name: Build iOS simulator app
+        run: ./ios/scripts/build.sh
+      - name: Build unsigned iOS device app
+        run: ./ios/scripts/build.sh iphoneos
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bargeboss-ios-simulator
+          path: ios/build/DerivedData/Build/Products/Debug-iphonesimulator/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-parity-evidence
+          path: ios/build/parity/*.txt

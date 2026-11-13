@@ -1,0 +1,45 @@
+name: BargeBoss
+options:
+  deploymentTarget:
+    iOS: '15.0'
+settings:
+  base:
+    CLANG_ENABLE_OBJC_ARC: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    J2OBJC_HOME: $(SRCROOT)/vendor/j2objc-3.1/dist
+    HEADER_SEARCH_PATHS: ['$(SRCROOT)/build/generated', '$(J2OBJC_HOME)/include']
+    LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]: $(J2OBJC_HOME)/lib/simulator
+    LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: $(J2OBJC_HOME)/lib/iphone
+    CODE_SIGN_STYLE: Automatic
+    SUPPORTS_MACCATALYST: NO
+    OTHER_CFLAGS: ['$(inherited)', '-ffp-contract=off']
+targets:
+  BargeBoss:
+    type: application
+    platform: iOS
+    sources:
+      - path: BargeBoss
+      - path: build/generated
+        compilerFlags: '-fno-objc-arc'
+      - path: build/ThirdPartyNotices.txt
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bargeboss.game.ios
+        TARGETED_DEVICE_FAMILY: '1,2'
+        INFOPLIST_FILE: BargeBoss/Info.plist
+        OTHER_LDFLAGS: ['$(inherited)', '-ObjC', '-ljre_emul', '-liconv', '-lz']
+    preBuildScripts:
+      - name: Translate shared Java
+        script: 'bash "$SRCROOT/scripts/translate.sh"'
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - sdk: UIKit.framework
+      - sdk: QuartzCore.framework
+      - sdk: CoreGraphics.framework
+      - sdk: Security.framework
+schemes:
+  BargeBoss:
+    build:
+      targets:
+        BargeBoss: all

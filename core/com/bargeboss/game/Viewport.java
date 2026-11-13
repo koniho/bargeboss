@@ -1,0 +1,16 @@
+package com.bargeboss.game;
+
+/** Fit, never crop: all devices see the same water, controls and traffic. */
+public final class Viewport {
+    public final float scale, x, y;
+    public Viewport(float width, float height) {
+        scale = Math.max(.001f, Math.min(width / 600f, height / 960f));
+        x = (width - 600 * scale) * .5f;
+        y = (height - 960 * scale) * .5f;
+    }
+    public float worldX(float screenX) { return (screenX - x) / scale; }
+    public float worldY(float screenY) { return (screenY - y) / scale; }
+    public float scale() { return scale; }
+    public float offsetX() { return x; }
+    public float offsetY() { return y; }
+}

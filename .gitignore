@@ -1,0 +1,14 @@
+build/
+out/
+ios/build/
+ios/vendor/
+ios/*.xcodeproj/
+*.apk
+*.idsig
+*.keystore
+*.jks
+*.class
+.DS_Store
+.idea/
+.vscode/
+local.properties
