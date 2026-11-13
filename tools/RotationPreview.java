@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 /** Real atlas rendering: one full turn around stationary, always-visible crosshairs. */
 public final class RotationPreview {
     private static final int FRAMES=240;
-    private static final String[] NAMES={"TUG","EMPTY BARGE","STEEL LOAD","CONTAINER LOAD","BULK LOAD","LOADED BARGE"};
+    private static final String[] NAMES={"TUG","EMPTY BARGE","STEEL BARGE","FREIGHT BARGE","BULK BARGE","BULK PILE"};
     private RotationPreview() {}
     public static void main(String[] args) throws Exception {
         File directory=new File("out/animation-frames/rotation"); directory.mkdirs();
@@ -51,8 +51,8 @@ public final class RotationPreview {
             if(panel==0) {
                 Body tug=new Body(0,-1,cx,cy,angle); tug.lineAttached=true;
                 VesselView.draw(g,new SpritesOnly(painter,1.9f,cx,cy),tug,true);
-            } else if(panel==1 || panel==5) {
-                Body barge=new Body(1,1,cx,cy,angle); barge.lineAttached=true;
+            } else if(panel>=1 && panel<=4) {
+                Body barge=new Body(1,panel==2?0:panel==4?2:1,cx,cy,angle); barge.lineAttached=true;
                 if(panel==1) barge.unloadingTicks=Game.UNLOAD_TICKS;
                 VesselView.draw(g,new SpritesOnly(painter,1.55f,cx,cy),barge,false);
             } else {

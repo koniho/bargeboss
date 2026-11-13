@@ -4,7 +4,12 @@ package com.bargeboss.game;
 public final class SpriteAtlas {
     public static final int TUG=0, BARGE=1, STEEL=2, CONTAINER=3, BULK=4, WATER=5, NORTH_QUAY=6, SOUTH_QUAY=7, SCENERY=8, PIERS=9, BRIDGE=10,
             TITLE_BACKDROP=11, TITLE_HARBOR=12, TITLE_VESSELS=13, TITLE_WATER=14;
-    private static final String[] FILES={"tug-16.png","barge-16.png","steel-16.png","container-16.png","bulk-16.png"};
+    private static final String[] FILES={"tug-16.png","barge-arcade-v3-16.png","steel-16.png","container-16.png","bulk-16.png"};
+    // Alpha-bound registration preserves the previous hull footprint and fixed world anchor.
+    private static final float[] BARGE_V3_X={0.500000f,0.488854f,0.498454f,0.488851f,0.480892f,0.469745f,0.507987f,0.496827f,0.499906f,0.458599f,0.477670f,0.472824f,0.498381f,0.488826f,0.503195f,0.487221f,0.500000f,0.488853f,0.504792f,0.491974f,0.487262f,0.476101f,0.487221f,0.480830f,0.496815f,0.482414f,0.477636f,0.464913f,0.493631f,0.468101f,0.506390f,0.487249f};
+    private static final float[] BARGE_V3_Y={0.632488f,0.642208f,0.635785f,0.641465f,0.630815f,0.635095f,0.613950f,0.613974f,0.541459f,0.552364f,0.545208f,0.561648f,0.549624f,0.560352f,0.553962f,0.572752f,0.580506f,0.584951f,0.577399f,0.590001f,0.569135f,0.579053f,0.543935f,0.544965f,0.533748f,0.545299f,0.538553f,0.557157f,0.544036f,0.564184f,0.563636f,0.579887f};
+    private static final float[] BARGE_V3_SX={1.033088f,0.984868f,1.033195f,1.017251f,1.030435f,0.842702f,1.007143f,0.974104f,1.062992f,1.317996f,1.022222f,1.216122f,1.017094f,1.130887f,1.000000f,1.047716f,1.025547f,0.970543f,1.016394f,0.996499f,1.013393f,0.859555f,1.013986f,1.005545f,1.071429f,1.296793f,1.025641f,1.191821f,1.032787f,1.113343f,1.022472f,1.035571f};
+    private static final float[] BARGE_V3_SY={0.981132f,1.368932f,0.977528f,1.033708f,0.984536f,1.025253f,1.014286f,0.987591f,0.990338f,0.985646f,0.971564f,0.971336f,0.985075f,0.930000f,1.000000f,0.833391f,0.963303f,1.304074f,0.960894f,1.057021f,0.970297f,1.019754f,1.014151f,1.027593f,0.981900f,0.988788f,0.981481f,0.959906f,0.959799f,0.914748f,0.946746f,0.846963f};
     private static final float[] BARGE_X={.498408f,.511182f,.488854f,.500000f,.500000f,.490415f,.495223f,.496805f,.498408f,.514377f,.498408f,.477636f,.495223f,.482428f,.500000f,.500000f};
     private static final float[] BARGE_Y={.628726f,.625541f,.622357f,.606433f,.541182f,.544377f,.547572f,.553962f,.588917f,.587325f,.568217f,.549108f,.542780f,.547572f,.545974f,.563546f};
     private static final float[] CONTAINER_X={.498408f,.501597f,.498408f,.514377f,.503185f,.485623f,.485669f,.490415f,.500000f,.503195f,.506369f,.531949f,.503185f,.487220f,.482484f,.493610f};
@@ -15,7 +20,7 @@ public final class SpriteAtlas {
     private static final float[] STEEL_Y={.755241f,.726302f,.684502f,.649132f,.597685f,.620193f,.652347f,.681286f,.657419f,.631613f,.589677f,.559032f,.531768f,.559100f,.589646f,.600900f};
     private static final float[] BULK_X={.507962f,.500000f,.487261f,.484026f,.507962f,.501597f,.485669f,.485623f,.504777f,.500000f,.480892f,.485623f,.514331f,.498403f,.484076f,.490415f};
     private static final float[] BULK_Y={.798153f,.798153f,.790191f,.772675f,.717380f,.717380f,.723770f,.726965f,.678726f,.680318f,.673949f,.643694f,.607157f,.610351f,.627923f,.634313f};
-    private static final String[] HALF_FILES={"tug-half.png","barge-half.png","steel-half.png","container-half.png","bulk-half.png"};
+    private static final String[] HALF_FILES={"tug-half.png","barge-arcade-v3-half.png","steel-half.png","container-half.png","bulk-half.png"};
     private static final float[][] HALF_PX={
         {0.507962f,0.543131f,0.523885f,0.525559f,0.520701f,0.503195f,0.507962f,0.504792f,0.515924f,0.522364f,0.527070f,0.520767f,0.498408f,0.479233f,0.487261f,0.490415f},
         {0.485669f,0.496805f,0.484076f,0.493610f,0.466561f,0.472843f,0.485669f,0.477636f,0.479299f,0.498403f,0.476115f,0.461661f,0.476115f,0.460064f,0.468153f,0.476038f},
@@ -56,14 +61,14 @@ public final class SpriteAtlas {
         return atlas==BRIDGE?"bridge-v1.png":atlas==SCENERY?"harbor-props-v1.png":atlas==PIERS?"harbor-piers-v1.png":atlas>=WATER?"harbor-base-v1.png":FILES[atlas];
     }
     public static String file(int atlas,int frame) { return atlas>=WATER?file(atlas):frame%2==0?FILES[atlas]:HALF_FILES[atlas]; }
-    public static float widthScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
-    public static float heightScale(int atlas,int frame) { return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
+    public static float widthScale(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_SX[frame]; return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
+    public static float heightScale(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_SY[frame]; return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
     public static int sourceFrame(int atlas,int frame) { return atlas>=WATER?frame:frame/2; }
     public static int count(int atlas) { return atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
     public static int columns(int atlas) { return atlas>=WATER?1:4; }
     public static int rows(int atlas) { return atlas>=WATER?1:4; }
-    public static float pivotX(int atlas,int frame) { if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_X[frame]:atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
-    public static float pivotY(int atlas,int frame) { if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PY[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_Y[frame]:atlas==BARGE?BARGE_Y[frame]:atlas==STEEL?STEEL_Y[frame]:atlas==CONTAINER?CONTAINER_Y[frame]:BULK_Y[frame]; }
+    public static float pivotX(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_X[frame]; if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_X[frame]:atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
+    public static float pivotY(int atlas,int frame) { if(atlas==BARGE) return BARGE_V3_Y[frame]; if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PY[atlas][frame/2]; frame/=2; return atlas==TUG?TUG_Y[frame]:atlas==BARGE?BARGE_Y[frame]:atlas==STEEL?STEEL_Y[frame]:atlas==CONTAINER?CONTAINER_Y[frame]:BULK_Y[frame]; }
     // Irregular cells from the painted source sheets. Hosts use these same normalized crop bounds.
     private static final int[][] TERRAIN={{130,340,1640,570},{120,0,1000,223},{630,680,1150,908}};
     private static int[] region(int atlas,int frame) { return TERRAIN[atlas-WATER]; }

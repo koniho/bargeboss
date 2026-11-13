@@ -17,5 +17,5 @@ public final class RiverCamera {
     public float worldY(float x,float y) { return worldTop+(x-left)/scale; }
     public float width() { return 688*scale/zoom; }
     public float height() { return 320*scale*DEPTH/zoom; }
-    public boolean contains(float x,float y) { return x>=left && x<=left+width() && y>=top && y<=top+height(); }
+    public boolean contains(float x,float y) { return x>=left && x<=left+width() && y>=0 && y<=2*top+height(); }
 }

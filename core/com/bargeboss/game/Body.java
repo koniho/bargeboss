@@ -5,7 +5,7 @@ public final class Body {
     public final int id, berth;
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
-    public int unloadingTicks,lineSnapTicks;
+    public int unloadingTicks,lineSnapTicks,tieBurstTicks;
     public int mooringTicks;
     public float mooringX,mooringY,mooringAngle;
     public float engineLoad;

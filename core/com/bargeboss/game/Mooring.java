@@ -2,10 +2,10 @@ package com.bargeboss.game;
 
 /** Real-time dock winch: tighten, draw alongside, then hand over to the unloading crew. */
 public final class Mooring {
-    public static final int TIGHTEN_TICKS=72,ALIGN_TICKS=72;
+    public static final int TIGHTEN_TICKS=0,ALIGN_TICKS=72;
     private Mooring() {}
     public static void attach(Body b) {
-        b.lineAttached=true;b.dockTime=0;b.mooringTicks=0;b.unloadingTicks=0;
+        b.lineAttached=true;b.lineSnapTicks=18;b.tieBurstTicks=30;b.dockTime=1.2f;b.mooringTicks=0;b.unloadingTicks=0;
         b.mooringX=b.tiedX=b.x;b.mooringY=b.tiedY=b.y;b.mooringAngle=b.tiedAngle=b.angle;
         b.vx=b.vy=b.spin=0;
     }
@@ -14,8 +14,7 @@ public final class Mooring {
     }
     public static void step(Game g,Body b) {
         if(b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS) b.mooringTicks++;
-        b.dockTime=Math.min(b.mooringTicks,TIGHTEN_TICKS)*Physics.DT;
-        if(b.mooringTicks==TIGHTEN_TICKS) { b.lineSnapTicks=18;g.haptic(Game.HAPTIC_CONTACT); }
+        b.dockTime=1.2f;
         if(b.mooringTicks<=TIGHTEN_TICKS) return;
         float t=(b.mooringTicks-TIGHTEN_TICKS)/(float)ALIGN_TICKS;
         float eased=t*t*(3-2*t);
@@ -27,9 +26,13 @@ public final class Mooring {
         // Keep the complete rotating hull in the berth, even when caught near its edge.
         float ex=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(b.angle));
         float ey=b.radius+b.half*(float)StrictMath.abs(StrictMath.sin(b.angle));
-        b.x=Physics.clamp(b.x,Math.max(Physics.LEFT+ex,Game.DOCK_X[b.berth]-55+ex),Math.min(Physics.RIGHT-ex,Game.DOCK_X[b.berth]+55-ex));
-        b.y=Physics.clamp(b.y,g.dockY(b.berth)-53+ey,g.dockY(b.berth)+53-ey);
+        float minX=Math.max(Physics.LEFT+ex,Game.DOCK_X[b.berth]-55+ex),maxX=Math.min(Physics.RIGHT-ex,Game.DOCK_X[b.berth]+55-ex);
+        float minY=g.dockY(b.berth)-53+ey,maxY=g.dockY(b.berth)+53-ey;
+        // A moving throw may catch just outside the berth. Reduce its initial
+        // overshoot smoothly instead of teleporting the hull back inside.
+        b.x=Physics.clamp(b.x,minX+Math.min(0,b.mooringX-minX)*(1-eased),maxX+Math.max(0,b.mooringX-maxX)*(1-eased));
+        b.y=Physics.clamp(b.y,minY+Math.min(0,b.mooringY-minY)*(1-eased),maxY+Math.max(0,b.mooringY-maxY)*(1-eased));
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;
-        if(b.mooringTicks>=TIGHTEN_TICKS+ALIGN_TICKS) b.unloadingTicks++;
+        if(b.mooringTicks>=TIGHTEN_TICKS+ALIGN_TICKS && g.inDock(b)) b.unloadingTicks++;
     }
 }

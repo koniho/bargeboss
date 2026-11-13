@@ -30,8 +30,13 @@ public final class VesselView {
         } else {
             int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
             int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
-            // Each load is an independent sprite; the crew removes one per lift.
-            for(int i=0;i<remaining;i++) {
+            // Bulk fills the open hold as one broad pile, lowering with each scoop.
+            if(b.berth==2 && b.unloadingTicks<Game.UNLOAD_TICKS) {
+                float fill=1-b.unloadingTicks/(float)Game.UNLOAD_TICKS;
+                SpriteAtlas.draw(p,atlas,b.angle,hullX,hullY,74,48+26*fill,Math.min(1,fill*6));
+            }
+            // Discrete steel and container loads leave one per lift.
+            for(int i=0;b.berth!=2 && i<remaining;i++) {
                 float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
                 float cargoSize=b.berth==0?58:b.berth==2?27:26;
                 SpriteAtlas.draw(p,atlas,b.angle,hullX+c*xx-s*yy,hullY+s*xx+c*yy,cargoSize,cargoSize,1);

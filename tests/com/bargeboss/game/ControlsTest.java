@@ -56,10 +56,10 @@ public final class ControlsTest {
         g.background(); steps(g,60); check(g.ropeTicks==0 && !b.lineAttached,"background freezes an in-flight throw"); g.pause();
         steps(g,Game.ROPE_FLIGHT_TICKS-1); check(!b.lineAttached,"line cannot attach before reaching bollard");
         g.step(); check(g.ropePhase==3 && b.lineAttached && g.pollHaptic()==Game.HAPTIC_CONTACT,"bollard hit attaches with visual event and contact feedback");
-        float x=b.x,y=b.y; steps(g,60); check(g.delivered==0 && b.unloadingTicks==0,"line tightens before unloading");
-        while(b.mooringTicks<Mooring.TIGHTEN_TICKS) g.step();
-        check(b.lineSnapTicks==18 && g.pollHaptic()==Game.HAPTIC_CONTACT && b.unloadingTicks==0,"taut line emits snap and feedback before drawing alongside");
-        steps(g,Mooring.ALIGN_TICKS);
+        check(b.lineSnapTicks>0 && b.tieBurstTicks>0 && b.dockTime==1.2f && Mooring.aligning(b),"catch immediately snaps taut, bursts outward and starts winching");
+        float x=b.x,y=b.y; g.step();
+        check(b.x!=x && b.unloadingTicks==0,"winch moves the hull on the next tick without a tightening delay");
+        while(b.mooringTicks<Mooring.ALIGN_TICKS) g.step();
         check(b.unloadingTicks==1 && Math.abs(StrictMath.cos(b.angle))<.0001,"crew starts only after the hull is parallel to shore");
         x=b.x;y=b.y;
         g.background(); int pausedUnload=b.unloadingTicks; steps(g,60);
@@ -72,7 +72,19 @@ public final class ControlsTest {
         check(b.lineSnapTicks==0,"snap effect completes while the crew works");
         int score=g.score; steps(g,30); check(g.score==score,"unloading cannot score twice");
         g=ready(); b=g.cargo[0]; b.vx=50; ReplayInput.down(g,b.x,b.y);
-        check(!g.ropeDragging,"fast cargo cannot start a tie");
+        check(g.ropeDragging,"moving cargo can start a tie");
+        ReplayInput.move(g,Game.TIE_X[2],Game.DOCK_Y[2]);ReplayInput.up(g,Game.TIE_X[2],Game.DOCK_Y[2]);
+        steps(g,Game.ROPE_FLIGHT_TICKS-1);
+        check(!g.inDock(b),"moving hull may drift outside the berth while the rope is flying");g.step();
+        check(b.lineAttached && b.speed()==0 && b.tieBurstTicks>0,"moving catch arrests momentum and shows success burst");
+        while(b.mooringTicks<Mooring.ALIGN_TICKS) {
+            x=b.x;y=b.y;g.step();
+            check(Physics.length(b.x-x,b.y-y)<3,"moving catch is drawn alongside continuously");
+        }
+        check(g.inDock(b) && b.unloadingTicks==1,"moving catch unloads after alignment");
+        g=ready();b=g.cargo[0];ReplayInput.lasso(g,b);b.y-=150;
+        steps(g,Game.ROPE_FLIGHT_TICKS);
+        check(!b.lineAttached && g.ropePhase==2,"cargo drifting out of rope reach misses and retracts");
         g=ready(); b=g.cargo[0]; b.x+=40; ReplayInput.down(g,b.x,b.y);
         check(!g.ropeDragging,"whole hull must fit before tying");
         g=game(); g.haptic(Game.HAPTIC_TICK); check(g.pollHaptic()==Game.HAPTIC_TICK,"semantic haptic drains once");

@@ -9,7 +9,7 @@ public final class Game {
     // Gesture, contract and shift clocks stay at 60 real ticks per second.
     public static final int MOTION_STEPS=2, UNLOAD_TICKS=3*60;
     public static final float[] DOCK_X={230,370,230}, DOCK_Y={290,488,700};
-    public static final float[] TIE_X={176,424,176};
+    public static final float[] TIE_X={120,480,120};
     public static final float TIE_RADIUS=30;
     public static final int ROPE_FLIGHT_TICKS=18, ROPE_RETURN_TICKS=18, ROPE_HIT_TICKS=24;
     public int ropePhase,ropeTicks;
@@ -48,6 +48,7 @@ public final class Game {
     private int nextFeedTick;
     private final float[] route=new float[2];
     private float engineDemand;
+    public int cameraOverviewTicks;
     public static final float TRAFFIC_Y=420;
     private double accumulator, visualAccumulator;
 
@@ -82,14 +83,21 @@ public final class Game {
         cancel();
         RiverCamera c=layout.camera;
         layout=new Layout(width,height,c.worldTop,c.worldRight,c.zoom);
+        if(tutorial!=null) fitTutorialCamera();
         if(practice!=null) practice.configureCanvas(width,height);
+    }
+    private void fitTutorialCamera() {
+        RiverCamera c=layout.camera;
+        float right=Math.min(460,TIE_X[2]+(layout.height-100-c.top)/(c.scale*RiverCamera.DEPTH));
+        if(right!=c.worldRight) layout=new Layout(layout.width,layout.height,148,right,1);
     }
     private void updateCamera() {
         if(ropeDragging || ropePhase!=0 || tutorial!=null) return;
+        if(cameraOverviewTicks>0) cameraOverviewTicks--;
         RiverCamera c=layout.camera;
         float zoom=1,focusX=300,focusY=bridgeStage()?tug.y:492;
         Body nearest=null;float nearestDistance=190;
-        for(Body b:cargo) if(b!=null && b.active && !b.awaitingPickup
+        for(Body b:cargo) if(cameraOverviewTicks==0 && b!=null && b.active && !b.awaitingPickup
                 && Physics.length(tug.x-b.x,tug.y-b.y)<170) {
             float distance=Physics.length(b.x-DOCK_X[b.berth],b.y-dockY(b.berth));
             if(distance<nearestDistance) { nearest=b;nearestDistance=distance; }
@@ -98,10 +106,15 @@ public final class Game {
             zoom=1+.4f*Physics.clamp((190-nearestDistance)/130,0,1);
             focusX=.4f*tug.x+.35f*nearest.x+.25f*DOCK_X[nearest.berth];
             focusY=.4f*tug.y+.35f*nearest.y+.25f*dockY(nearest.berth);
+            float low=Math.min(TIE_X[nearest.berth],Math.min(tug.x,nearest.x));
+            float high=Math.max(TIE_X[nearest.berth],Math.max(tug.x,nearest.x));
+            // Include the inland target and both hulls inside the clear area between HUD bars.
+            zoom=Math.min(zoom,Math.max(1,(layout.height-120)/((c.scale/c.zoom)*RiverCamera.DEPTH*(high-low+96))));
+            focusX=(low+high)/2;
         }
         zoom=c.zoom+(zoom-c.zoom)*.035f;
         float top=Physics.clamp(focusY-344/zoom,channelTop()-67,836-688/zoom);
-        float right=Physics.clamp(focusX+160/zoom,140+320/zoom,460);
+        float right=nearest==null?460:focusX+(layout.height/2+4-c.top)/((c.scale/c.zoom)*zoom*RiverCamera.DEPTH);
         top=c.worldTop+(top-c.worldTop)*.055f;right=c.worldRight+(right-c.worldRight)*.055f;
         if(Math.abs(top-c.worldTop)<.0001f && Math.abs(right-c.worldRight)<.0001f && Math.abs(zoom-c.zoom)<.000001f) return;
         float px=c.screenX(pointerX,pointerY),py=c.screenY(pointerX,pointerY);
@@ -126,7 +139,7 @@ public final class Game {
         practice.restoreProgress(saveProgress());
         practice.layout=layout.camera.zoom==1 && layout.camera.worldTop==148?layout:new Layout(layout.width,layout.height);
         practice.hapticsEnabled=hapticsEnabled;
-        practice.tutorial.setup(practice);
+        practice.tutorial.setup(practice);practice.fitTutorialCamera();
         practice.tutorial.resumeShift=returnToShift;
     }
     public void render(Painter painter) { Renderer.draw(this,painter); }
@@ -146,7 +159,7 @@ public final class Game {
         practice=null; tutorial=null; pushing=false; ropeDragging=false; braking=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
-        earnedStars=0; rankPromoted=false;
+        earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         bridge=new Bridge();
         water=new WaterSurface(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
@@ -225,14 +238,18 @@ public final class Game {
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
     private boolean tieEligible(Body b) {
-        return b!=null && b.active && !b.lineAttached && inDock(b) && b.speed()<4
+        return b!=null && b.active && !b.lineAttached && inDock(b)
                 && (tutorial==null || tutorial.lesson>=Tutorial.TIE);
+    }
+    private boolean ropeWithinReach(Body b) {
+        return b!=null && b.active && !b.lineAttached
+                && Math.abs(b.x-DOCK_X[b.berth])<105 && Math.abs(b.y-dockY(b.berth))<105;
     }
     public boolean overTiePoint(Body b,float x,float y) {
         return Physics.length(x-TIE_X[b.berth],y-dockY(b.berth))<=TIE_RADIUS;
     }
     public float aimX(Body b,float x,float y) {
-        return overTiePoint(b,x,y)?TIE_X[b.berth]:Physics.clamp(x,144,456);
+        return overTiePoint(b,x,y)?TIE_X[b.berth]:Physics.clamp(x,TIE_X[0]-TIE_RADIUS,TIE_X[1]+TIE_RADIUS);
     }
     public float aimY(Body b,float x,float y) {
         return overTiePoint(b,x,y)?dockY(b.berth):Physics.clamp(y,channelTop()-47,816);
@@ -288,7 +305,7 @@ public final class Game {
             Body b=heldCargo();
             if(b!=null && ropePhase==0) {
                 ropeBody=b; ropePhase=1; ropeTicks=0;
-                ropeStartX=b.x; ropeStartY=b.y; ropeTargeted=overTiePoint(b,x,y);
+                ropeStartX=b.x; ropeStartY=b.y; ropeTargeted=overTiePoint(b,x,y) && ropeWithinReach(b);
                 ropeEndX=aimX(b,x,y); ropeEndY=aimY(b,x,y);
                 haptic(HAPTIC_TICK);
             }
@@ -327,7 +344,7 @@ public final class Game {
             else if(tap && tapped(Layout.RESTART,x,y)) {
                 boolean training=tutorial!=null, resume=training && tutorial.resumeShift;
                 reset();
-                if(training) { tutorial=new Tutorial(); tutorial.resumeShift=resume; tutorial.setup(this); }
+                if(training) { tutorial=new Tutorial(); tutorial.resumeShift=resume; tutorial.setup(this);fitTutorialCamera(); }
             }
         } else if(tap) {
             if(tapped(Layout.PAUSE,x,y)) pause();
@@ -391,11 +408,12 @@ public final class Game {
         for(int i=0;i<cargo.length;i++) {
             Body b=cargo[i]; if(b==null || !b.active) continue;
             if(b.lineSnapTicks>0) b.lineSnapTicks--;
+            if(b.tieBurstTicks>0) b.tieBurstTicks--;
             if(tutorial==null && !b.lineAttached) b.age+=Physics.DT;
-            if(b.lineAttached && inDock(b) && b.speed()<24) Mooring.step(this,b);
+            if(b.lineAttached) Mooring.step(this,b);
             else { b.dockTime=0; b.lineAttached=false; }
             if(b.unloadingTicks>=UNLOAD_TICKS) {
-                b.active=false; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
+                b.active=false;cameraOverviewTicks=180; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
                 score+=points; tell("DELIVERED +"+points+" / "+delivered+" OF "+quota());
                 haptic(HAPTIC_SUCCESS);
@@ -425,7 +443,7 @@ public final class Game {
         if(ropePhase==0 || ropeBody==null) return;
         ropeTicks++;
         if(ropePhase==1 && ropeTicks>=ROPE_FLIGHT_TICKS) {
-            if(ropeTargeted && tieEligible(ropeBody)) {
+            if(ropeTargeted && ropeWithinReach(ropeBody)) {
                 Body b=ropeBody;
                 Mooring.attach(b);ropePhase=3;ropeTicks=0;haptic(HAPTIC_CONTACT);
             } else { ropePhase=2; ropeTicks=0; }

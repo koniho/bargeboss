@@ -1,0 +1,5 @@
+Built-in image_gen; transparent_background=true.
+Input 1: assets/sprites/barge-half.png (layout edit target).
+Input 2: assets/sprites/barge-arcade-v3-16.png (style reference).
+
+Use case: style-transfer. Edit image 1, the existing 4x4 intermediate-angle barge atlas. Preserve EXACTLY each of its sixteen individual hull orientations, cell centers, proportions, camera elevation, and grid layout. Image 2 is the new matching base-angle atlas: use its identical charcoal-blue steel hull, orange coaming, simple gray cleats, empty dark steel cargo hold and clean chunky cartoon shading. Replace the wooden deck, gold studs and ornate details of image 1 with this clean industrial design. These are the intermediate views at 11.25,33.75,56.25,78.75,101.25,123.75,146.25,168.75,191.25,213.75,236.25,258.75,281.25,303.75,326.25,348.75 degrees clockwise. Follow image1's precise orientations rather than copying image2's poses. Sixteen equal cells, true transparent background, generous gutters. No cargo, water, wake, cast shadow, text, labels, or gridlines.

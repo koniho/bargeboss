@@ -21,13 +21,15 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   berth. Keep your finger still for assistance; drag outside the ring to steer.
 - **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
 - **Tie up:** once the entire barge fits its matching **A / steel**, **B / freight**,
-  or **C / bulk** zone and has slowed, its bank bollard glows. Lift your finger,
+  or **C / bulk** zone, the hull and its bank bollard glow with a **READY TO TIE**
+  badge. Moving barges are eligible too. Lift your finger,
   then drag from the barge to aim. A curved trajectory guide and landing marker
   show the throw while the rope stays coiled. **Release to throw**: the lasso
   flies out, flashes on a bollard hit, or retracts after a miss. The guide turns
   green when aimed at the matching bollard.
-- The line tightens for **1.2 seconds**, flashes and recoils as it snaps taut,
-  then a crane, forklift and dock crew
+- A successful catch sends an expanding flash across the barge, snaps the line
+  taut immediately, and starts drawing it parallel to shore over **1.2 seconds**.
+  Then a crane, forklift and dock crew
   unload the barge for **3 seconds**. The barge stays secured while you work on
   another load. Scoring happens once unloading finishes, with a floating score
   and burst of stars. The crew and equipment then return to idle.
@@ -35,7 +37,7 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   pace**, using two original-size physics steps per real tick. Hold gestures,
   the shift clock, contracts, mooring and unloading retain their real durations.
 - The supplied concept guides the pixel-styled harbor: a red/cream tug with
-  raised wheelhouse and tire fenders, rust barges carrying steel, containers or
+  raised wheelhouse and tire fenders, charcoal-blue steel barges with orange coamings carrying steel, containers or
   bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
   The title reuses the gameplay scenery and vessels, with a matching HUD and animated results.
   The play view uses a fixed 2.5D ground projection with independent painted
@@ -57,8 +59,10 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 - **Barge momentum:** loaded barges are heavier than the tug, glide along their keel,
   resist broadside motion, and carry yaw inertia. Holding push assist deliberately
   settles a load once it fits the berth; released cargo keeps gliding. A lasso-ready
-  cue now waits for a slower approach so the line has time to reach the bollard.
-- **Automatic berthing:** a caught line tightens and snaps taut, then the dock
+  cue requires the hull to fit its assigned berth, with no speed restriction.
+  During flight a moving hull can drift within 105 world units of the berth center
+  on each axis; beyond that the throw misses and retracts.
+- **Automatic berthing:** a caught line snaps taut immediately and the dock
   winch draws the barge alongside and turns it parallel to shore over 1.2 seconds.
   The crew's three-second unloading cycle begins only after alignment finishes.
 - **Engine smoke:** idle boats give off a light trail; acceleration, reverse thrust
@@ -71,7 +75,10 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
 First Watch asks you to deliver **6 loads in 3 minutes**, with **one feeder and one
 berth at the far left end**, opposite the feeder on the right. Hold a load to push it toward berth A; the camera
 smoothly moves into a **1.4× docking view** as the tug brings it close. The camera
-holds still during lasso aiming and flight, then eases back out after delivery.
+holds still during lasso aiming and flight, then eases back out after delivery
+and keeps the overview for three seconds even if another load is nearby. Inland
+bollards sit 50 world units behind the bank; camera framing and scenery fading
+keep the active target visible.
 Barges retain keel momentum, but stronger forward, sideways and turning resistance
 make released loads settle sooner. Gentle berth fender damping helps with aiming.
 
@@ -237,3 +244,9 @@ After each completed development round, run the relevant checks, build the
 Android APK, install it on the connected development phone using the existing
 debug signing key, and launch it. This is the user's requested development loop;
 the authorized Shizuku/rish path is available when adb is unavailable.
+
+The reference-derived v3 barge hull uses 32 registered views shared by every load
+type. Bulk is one broad grain pile that lowers as the crew unloads it. Source
+atlases are `assets/sprites/barge-arcade-v3-16.png` and
+`assets/sprites/barge-arcade-v3-half.png`; exact built-in image generation prompts
+and input roles are in `docs/art-prompts/barge-arcade-v3-*.txt`.

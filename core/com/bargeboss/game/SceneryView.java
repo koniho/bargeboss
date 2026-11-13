@@ -23,6 +23,11 @@ public final class SceneryView {
             alpha=Math.min(alpha,bodyAlpha(g,f.boat,x,y,w,h));
             if(f.load!=null) alpha=Math.min(alpha,bodyAlpha(g,f.load,x,y,w,h));
         }
+        for(Body b:g.cargo) if(b!=null && b.active && (g.canTie(b) || b.lineAttached)) {
+            RiverCamera c=g.layout.camera;float s=c.scale;
+            alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(Game.TIE_X[b.berth],g.dockY(b.berth)),
+                    c.screenY(Game.TIE_X[b.berth],g.dockY(b.berth)),24*s,24*s,24*s,20*s));
+        }
         Body rope=g.ropeDragging?g.heldCargo():g.ropeBody;
         if(rope!=null && (g.ropeDragging || g.ropePhase!=0)) {
             float ex=g.ropeDragging?g.aimX(rope,g.pointerX,g.pointerY):g.ropeEndX;

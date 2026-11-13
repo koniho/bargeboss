@@ -83,7 +83,7 @@
     // Each outcome gets its own real feeder/push sequence. A previous miss must
     // not leave this test aiming at stale coordinates as unmoored cargo coasts.
     XCUIElement *stage=[self startAndDockFirstLoad:app];
-    [self throwLine:stage toX:176 toY:290];
+    [self throwLine:stage toX:120 toY:290];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
@@ -110,7 +110,7 @@
     [self waitFor:@"lesson 4" on:stage];
     [[self river:stage x:292 y:700] pressForDuration:3];
     [self waitFor:@"lesson 5" on:stage];
-    [self riverDrag:stage x:244 y:700 toX:176 toY:700 hold:0.2];
+    [self riverDrag:stage x:244 y:700 toX:120 toY:700 hold:0.2];
     [self waitFor:@"lesson 6" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];

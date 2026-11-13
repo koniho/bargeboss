@@ -19,6 +19,8 @@ public final class ReplayInput {
     }
     public static void work(Game g) {
         if(g.ropePhase!=0) return;
+        // A covered or drifting hull can make a press miss; lift before retrying.
+        if(g.pointer && g.heldCargo()==null && !g.holdingTug()) up(g,g.pointerX,g.pointerY);
         Body target=null;
         for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached) { target=b; break; }
         if(target!=null && (!g.pointer || g.holdingTug()) && !g.layout.camera.contains(g.layout.camera.screenX(target.x,target.y),g.layout.camera.screenY(target.x,target.y))) {

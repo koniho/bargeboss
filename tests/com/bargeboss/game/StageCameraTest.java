@@ -27,6 +27,17 @@ public final class StageCameraTest {
         check(b.lineAttached && g.layout.camera==frozen,"throw uses the same projected bollard until hit");
         steps(g,Mooring.TIGHTEN_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS+180);
         check(g.delivered==1 && g.layout.camera.zoom<1.01f,"camera returns to overview after the crew clears the load");
+        g=stage(0);for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
+        b=new Body(1,2,230,g.dockY(2),0);g.cargo[0]=b;g.tug.x=300;g.tug.y=b.y;
+        steps(g,180);check(g.layout.camera.zoom>1.3f,"nearby cargo triggers docking view");
+        Mooring.attach(b);b.mooringTicks=Mooring.ALIGN_TICKS;b.x=197.5f;b.angle=(float)Math.PI/2;
+        b.unloadingTicks=Game.UNLOAD_TICKS-1;
+        Body next=new Body(2,2,265,b.y+100,0);g.cargo[1]=next;
+        g.step();check(g.delivered==1 && g.cameraOverviewTicks>0,"delivery starts an overview grace period");
+        int grace=g.cameraOverviewTicks;g.background();steps(g,60);
+        check(g.cameraOverviewTicks==grace,"pause freezes overview grace period");g.pause();steps(g,120);
+        check(next.active && g.layout.camera.zoom<1.02f && g.cameraOverviewTicks>0,"nearby next load cannot prevent delivery zoom-out");
+        g.reset();check(g.cameraOverviewTicks==0,"restart clears overview grace period");
         g=stage(1);check(g.channelTop()<Physics.TOP-688 && g.feeders.length==2,"bridge run extends beyond a screen and has two feeders");
         for(int side=-1;side<=1;side+=2) for(int angle=0;angle<8;angle++) {
             Body hull=new Body(1,2,300,Bridge.Y+side*100,(float)(angle*Math.PI/4));hull.vy=-side*100;

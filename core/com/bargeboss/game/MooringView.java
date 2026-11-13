@@ -34,14 +34,16 @@ public final class MooringView {
             if(!b.lineAttached) {
                 if(g.canTie(b) && g.ropeBody!=b) {
                     float pulse=1+(float)StrictMath.sin(tick*.09);
-                    ControlView.ring(p,b.x,b.y,37+pulse,1,0x8892ecc2,2);
+                    ControlView.ring(p,b.x,b.y,40+pulse,1,GREEN,3);
+                    readiness(g,p,b);
                 }
                 continue;
             }
             float x=Game.TIE_X[b.berth],y=g.dockY(b.berth);
             float progress=Math.min(1,b.dockTime/1.2f);
-            // Take up the loose line slowly, then pull its final slack out decisively.
+            // Successful throws are taut immediately; only the impact vibration remains.
             float slack=23*(1-progress*progress*progress);
+            if(b.tieBurstTicks>0) catchBurst(p,b);
             if(b.lineSnapTicks>0) {
                 float snap=Physics.clamp(1-b.lineSnapTicks/18f,0,1);
                 float shake=4.5f*(1-snap)*(1-snap);
@@ -64,6 +66,41 @@ public final class MooringView {
             if(g.ropePhase==1 || g.ropePhase==2) projectile(g,p);
             else if(g.ropePhase==3) hit(g,p);
         }
+    }
+    public static void glow(Game g,Painter p,Body b) {
+        if(!g.canTie(b) || g.ropeDragging) return;
+        float pulse=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.10);
+        float dx=(float)StrictMath.cos(b.angle)*b.half,dy=(float)StrictMath.sin(b.angle)*b.half;
+        for(int layer=5;layer>=1;layer--) p.line(b.x-dx,b.y-dy,b.x+dx,b.y+dy,
+                2*b.radius+layer*(3+pulse),((int)(12+8*pulse)<<24)|0x65ffb6);
+        ControlView.ring(p,b.x,b.y,b.half+b.radius+5+pulse*3,1,0xbb92ffd0,2.5f);
+    }
+    private static void catchBurst(Painter p,Body b) {
+        float t=1-b.tieBurstTicks/30f;int alpha=(int)(235*(1-t)*(1-t));
+        float radius=b.half+b.radius+7+t*65;
+        ControlView.ring(p,b.x,b.y,radius,1,(alpha<<24)|0x9bffe0,4*(1-t)+1);
+        ControlView.ring(p,b.x,b.y,radius-9,1,((alpha/2)<<24)|0xffe5a8,2);
+        if(t<.25f) p.circle(b.x,b.y,b.half+b.radius,((int)(65*(1-t*4))<<24)|0xb8ffe2);
+    }
+    private static void readiness(Game g,Painter p,Body b) {
+        if(!(p instanceof RiverPainter)) return;
+        RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
+        float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
+        if(!c.contains(bx,by)) return;
+        float tx=c.screenX(Game.TIE_X[b.berth],g.dockY(b.berth)),ty=c.screenY(Game.TIE_X[b.berth],g.dockY(b.berth));
+        float dx=tx-bx,dy=ty-by,distance=Math.max(1,Physics.length(dx,dy));dx/=distance;dy/=distance;
+        for(int i=0;i<4;i++) {
+            float t=((g.visualTicks%60)/60f+i*.25f)%1;
+            float along=38*c.scale+t*Math.max(0,distance-55*c.scale);
+            float x=bx+dx*along,y=by+dy*along;
+            canvas.line(x-dx*5-dy*4,y-dy*5+dx*4,x,y,2,GREEN);
+            canvas.line(x-dx*5+dy*4,y-dy*5-dx*4,x,y,2,GREEN);
+        }
+        float x=Physics.clamp(bx,110,g.layout.width-110),y=Math.max(82,by-62*c.scale);
+        VisualStyle.panel(canvas,x-101,y-5,202,45,0xf0102b35);
+        canvas.line(x-92,y+9,x-87,y+15,3,GREEN);canvas.line(x-87,y+15,x-77,y+2,3,GREEN);
+        Lettering.center(canvas,"READY TO TIE",x+8,y+2,13,GREEN);
+        Lettering.center(canvas,g.pushing?"LIFT, THEN DRAG TO BOLLARD":"DRAG TO BOLLARD / RELEASE",x,y+24,8,VisualStyle.CREAM);
     }
     private static void bollard(Game g,Painter p,float x,float y) {
         if(p instanceof RiverPainter) {

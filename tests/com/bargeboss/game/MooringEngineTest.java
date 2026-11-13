@@ -11,8 +11,8 @@ public final class MooringEngineTest {
             Body b=new Body(1,berth,Game.DOCK_X[berth],Game.DOCK_Y[berth]+10,heading);g.cargo[0]=b;
             Mooring.attach(b);float startX=b.x,startY=b.y;
             steps(g,Mooring.TIGHTEN_TICKS);
-            check(b.x==startX && b.y==startY && b.angle==heading && b.unloadingTicks==0,"hull waits for rope to snap tight");
-            check(b.lineSnapTicks==18,"snap occurs exactly once at end of tightening");
+            check(b.x==startX && b.y==startY && b.angle==heading && b.unloadingTicks==0,"catch preserves the initial hull pose before the first winch step");
+            check(b.lineSnapTicks==18,"snap starts immediately on attachment");
             steps(g,30);check(Mooring.aligning(b) && b.unloadingTicks==0,"crew waits while winch draws and turns hull");
             float x=b.x,y=b.y,angle=b.angle;int clock=b.mooringTicks;
             g.background();steps(g,100);g.advance(.25);

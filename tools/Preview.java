@@ -40,9 +40,9 @@ public final class Preview {
         steps(g,Game.ROPE_RETURN_TICKS-8);
         ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"aiming");
         ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,9); capture(g,"lasso");
-        steps(g,9); capture(g,"bollard-hit"); steps(g,30); capture(g,"tying-up");
-        for(int i=0;i<1200 && b.lineSnapTicks==0;i++) g.step();capture(g,"line-snap");
-        steps(g,Mooring.ALIGN_TICKS/2);capture(g,"drawing-alongside");
+        steps(g,9); capture(g,"bollard-hit"); steps(g,4);capture(g,"line-snap");
+        steps(g,8);capture(g,"tying-up");
+        steps(g,24);capture(g,"drawing-alongside");
         waitUnload(g,b,1);capture(g,"parallel-to-shore");
         waitUnload(g,b,85); capture(g,"unloading");
         waitUnload(g,b,Game.UNLOAD_TICKS); steps(g,12); capture(g,"delivery");
