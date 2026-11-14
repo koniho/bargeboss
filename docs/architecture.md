@@ -392,12 +392,17 @@ glide, reverse motion, yaw inertia, wake timing, local wave amplitude and render
 
 `TitleView` combines the panoramic sunset, separate industrial/bridge shore and
 varied land sprites with the gameplay tug, barge and cargo atlases. Sky and shore
-pan at different speeds for an endless voyage; menu hit targets stay fixed.
-The convoy's camera anchors the barge in the open water below the logo, entirely
-left of the menu and above the rank bar. This corrects the fixed-camera placement
-that let the isometric barge disappear behind the menu. Framing tests cover
-960×600, the screenshot's approximately 1243×600 safe canvas, wide phones and
-960×720 tablets throughout the bob animation.
+pan at different speeds for an endless voyage. The compact logo anchors to the
+upper-left safe canvas; subtitle lines and the menu's instruction block are
+removed. The shift card and its three actions anchor to the right edge, using
+the same `Layout.titleBox` / `Game.controlBox` positions as input. Other screens keep their existing
+centered menu rules. The rank strip sits 24 logical pixels above the bottom edge.
+
+The convoy scales within the water left of the menu, stays above the rank strip,
+and adapts its position to the full available width. The higher horizon leaves
+more open foreground water. Framing and touch-target tests cover 960×600, the
+phone screenshot's approximately 1243×600 safe canvas, wide phones and 960×720
+tablets throughout the bob animation.
 
 The tug pushes its barge while both bob independently, with registered chimney
 smoke. `WaveView` supplies moving curved waves. Wake geometry is clipped below
@@ -406,10 +411,10 @@ lighter wake packets retain movement without piling bright rings over the scene.
 Every phase is a pure function of `visualTicks`, so drawing cannot alter game
 state and animation matches across display refresh rates. `TitleLayoutReview`
 exports the actual composition at four aspect ratios under `out/title-layout`.
-The layout fix was also reviewed in a native Android capture after installation
-(`BargeBoss-title-fixed-device-v1.png` in Downloads). The 438 title framing,
-water clipping and touch-target checks pass on JVM and ART; replay signature
-`e26e666a:11:8970` includes the intentional title drawing changes.
+The 446 title framing, water clipping and touch-target checks run on JVM and ART;
+replay signature `e8ba8e4b:11:8970` includes the intentional title drawing changes.
+The final Android build was installed, launched and visually checked on the
+development phone; `BargeBoss-title-fixed-device-v2.png` is saved in Downloads.
 `./preview.sh --title` exports eight seconds to `out/concept-title.gif`.
 `./preview.sh` also exports all 32 smoke headings and a seven-second wake trail
 sequence showing outward propagation after the tug stops.

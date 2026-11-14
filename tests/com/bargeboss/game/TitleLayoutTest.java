@@ -39,13 +39,17 @@ public final class TitleLayoutTest {
             Game g=new Game();g.configureCanvas(size[0],size[1]);
             for(int tick=0;tick<=720;tick+=37) {
                 g.visualTicks=tick;Capture p=new Capture();TitleView.voyage(g,p);
-                float ox=g.layout.offsetX,oy=g.layout.offsetY;
+                float menuLeft=g.layout.width-352;
                 check(p.vessels>=5,"title retains both watercraft and all three container loads");
-                check(p.left>=24+ox && p.right<=592+ox,"complete convoy stays left of menu panel");
-                check(p.top>=294+oy,"mast and cargo stay below title tagline");
-                check(p.bottom<=546+oy,"convoy clears the rank bar throughout heave");
+                check(p.left>=24 && p.right<=menuLeft-16,"complete convoy stays left of menu panel");
+                check(p.top>=238,"mast and cargo stay below the compact logo");
+                check(p.bottom<=g.layout.height-76,"convoy clears the rank bar throughout heave");
                 check(p.shoreOrder>0 && p.vesselOrder>p.shoreOrder,"shoreline covers wake while vessels remain in front");
             }
+            check(g.controlBox(Layout.START).x==size[0]-328,"title action is anchored to the actual right edge");
+            g.mode=Game.HELP;
+            check(g.controlBox(Layout.START).x==Layout.START.x+g.layout.offsetX,"help action keeps its centered rendered position");
+            g.mode=Game.TITLE;
             int ticks=g.ticks;float tx=g.tug.x,ty=g.tug.y;TitleView.voyage(g,new Parity());
             check(g.ticks==ticks && g.tug.x==tx && g.tug.y==ty,"title framing cannot move the live player tug");
             for(Layout.Box button:new Layout.Box[]{Layout.LEARN,Layout.START,Layout.CHALLENGES}) {

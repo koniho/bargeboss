@@ -36,33 +36,30 @@ public final class ScreenView {
     }
     public static void title(Game g,Painter p) {
         TitleView.background(g,p); TitleView.voyage(g,p); haptics(g,p);
-        p=centered(g,p);
-        text(p,"A CALUMET RIVER ARCADE",25,23,11,PAPER);
-        Painter sign=scaled(p,3.6f,7.2f,.88f);
+        // Title anchors use the full safe canvas instead of centering a fixed
+        // 960-wide poster inside a wide phone screen.
+        Painter sign=scaled(p,24,-14,.74f);
         sign.poly(new float[]{44,132,125,110,143,66,533,66,492,238,133,270,151,240,32,246,78,169},INK);
         sign.poly(new float[]{55,132,133,117,150,74,521,74,484,231,143,258,163,231,47,237,91,169},0xffa92d37);
         sign.poly(new float[]{70,134,143,125,158,82,509,82,476,223,156,246,173,223,62,227,103,169},NAVY);
         logo(sign,"BARGE",76,93,84,PAPER); logo(sign,"BOSS",155,181,93,GOLD);
         float lamp=1+(float)StrictMath.sin(g.visualTicks*.065)*.25f;
         sign.rect(99,263,15*lamp,4,GOLD); sign.rect(496,91,5,19*lamp,PAPER);
-        VisualStyle.panel(p,57,254,410,29,0xd5101c30);
-        center(p,"HEAVY CARGO. BIG PAYDAY.",262,262,13,PAPER);
-        VisualStyle.panel(p,608,96,324,452,0xf5101c30);
-        center(p,"SHIFT 0"+(g.challengeId+1),770,118,11,GOLD);
-        center(p,g.challengeTitle(),770,147,22,PAPER);
-        center(p,g.quota()+" LOADS / "+time(g.shiftTicks()),770,190,13,GOLD);
-        center(p,"DRAG TUG. DRAG CARGO.",770,234,12,PAPER);
-        center(p,"AIM LINE. RELEASE TO THROW.",770,260,11,PAPER);
-        center(p,"CREWS UNLOAD IN 3 SECONDS.",770,286,11,MUTED);
-        button(g,p,Layout.LEARN,"LEARN TO DRIVE",false);
-        button(g,p,Layout.START,"START SHIFT",true);
-        button(g,p,Layout.CHALLENGES,"CHALLENGES",false);
-        VisualStyle.panel(p,28,558,545,34,0xe8101c30);
-        captainBadge(p,52,575,.37f,g.career.stripes());
-        text(p,g.career.rankTitle(),77,569,13,PAPER);
-        text(p,g.career.totalStars()+" / 9 CAREER STARS",367,570,10,GOLD);
-        text(p,"DRAG / PUSH / THROW / UNLOAD",709,580,9,GOLD);
+        Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
+        VisualStyle.panel(menu,608,180,324,368,0xf5101c30);
+        center(menu,"SHIFT 0"+(g.challengeId+1),770,200,11,GOLD);
+        center(menu,g.challengeTitle(),770,230,22,PAPER);
+        center(menu,g.quota()+" LOADS / "+time(g.shiftTicks()),770,274,13,GOLD);
+        button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
+        button(g,menu,Layout.START,"START SHIFT",true);
+        button(g,menu,Layout.CHALLENGES,"CHALLENGES",false);
+        Painter rank=offset(p,0,g.layout.height-Layout.HEIGHT);
+        VisualStyle.panel(rank,28,536,545,40,0xe8101c30);
+        captainBadge(rank,52,556,.37f,g.career.stripes());
+        text(rank,g.career.rankTitle(),77,548,13,PAPER);
+        text(rank,g.career.totalStars()+" / 9 CAREER STARS",367,549,10,GOLD);
     }
+
     private static void logo(Painter p,String word,float x,float y,float size,int fill) {
         Painter italic=new Transform(p,x,y,1,-.18f);
         Lettering.draw(italic,word,4,6,size,INK); Lettering.draw(italic,word,-2,-2,size,INK);

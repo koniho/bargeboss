@@ -9,7 +9,7 @@ public final class ReplayInput {
         g.addCargo(2,292,700); g.addCargo(1,320,480);
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
-    public static void tap(Game g,Layout.Box box) { box=g.activeGame().layout.box(box); tap(g,box.centerX(),box.centerY()); }
+    public static void tap(Game g,Layout.Box box) { box=g.activeGame().controlBox(box); tap(g,box.centerX(),box.centerY()); }
     public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }

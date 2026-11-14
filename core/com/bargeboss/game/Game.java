@@ -478,8 +478,10 @@ public final class Game {
         }
         cancel();
     }
+    /** Actual screen target, including title-only right anchoring. */
+    public Layout.Box controlBox(Layout.Box box) {return mode==TITLE?layout.titleBox(box):layout.box(box);}
     private boolean tapped(Layout.Box box,float x,float y) {
-        box=layout.box(box);
+        box=controlBox(box);
         return box.contains(downX,downY) && box.contains(x,y);
     }
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */

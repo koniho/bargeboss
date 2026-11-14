@@ -34,7 +34,13 @@ public final class Layout {
         return new Layout(width,height,148+y-c.worldY(screenX,screenY),460+x-c.worldX(screenX,screenY),zoom);
     }
 
-    /** Menu rectangles remain centered; live controls overlay the outer shore. */
+    /** Title actions anchor right; reused help/practice actions retain centered placement. */
+    public Box titleBox(Box original) {
+        if(original==LEARN || original==START || original==CHALLENGES)
+            return new Box(original.x+width-WIDTH,original.y+offsetY,original.w,original.h);
+        return box(original);
+    }
+    /** Other menus remain centered; live controls use the outer canvas edges. */
     public Box box(Box original) {
         if(original==HAPTICS) return new Box(width-158,4,94,40);
         if(original==PAUSE) return new Box(width-56,4,48,40);

@@ -55,6 +55,10 @@
     CGSize size=[self logicalSize:stage];
     [[self point:stage x:x+(size.width-960)/2 y:y+(size.height-600)/2] tap];
 }
+- (void)tapTitle:(XCUIElement *)stage x:(double)x y:(double)y {
+    CGSize size=[self logicalSize:stage];
+    [[self point:stage x:x+size.width-960 y:y+(size.height-600)/2] tap];
+}
 - (void)tapPause:(XCUIElement *)stage {
     CGSize size=[self logicalSize:stage];
     [[self point:stage x:size.width-32 y:24] tap];
@@ -75,7 +79,7 @@
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
-    [self tapMenu:stage x:770 y:446];
+    [self tapTitle:stage x:770 y:446];
     [self waitFor:@"feeder drops 1;" on:stage];
     [[self river:stage x:260 y:730] pressForDuration:15];
     [self waitFor:@"ready to tie 2" on:stage];
@@ -181,7 +185,7 @@
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
-    [self tapMenu:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
+    [self tapTitle:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
     CGPoint start=[self worldPosition:stage tag:@"tug"];
     [self riverDrag:stage x:start.x y:start.y toX:start.x+100 toY:start.y hold:0.6];
     [self waitFor:@"lesson 2" on:stage];
@@ -241,7 +245,7 @@
     [self waitFor:@"rank WAKE WRANGLER" on:stage];
     XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
-    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    [self tapTitle:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
     // Third challenge remains locked; the board must preserve the prior selection.
     [self tapMenu:stage x:790 y:302];
     XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 0;"]);
@@ -254,11 +258,11 @@
     XCTAssertTrue([(NSString *)stage.value containsString:@"rank WAKE WRANGLER;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
-    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    [self tapTitle:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-saved-captain-challenges"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
     [self tapMenu:stage x:150 y:544]; [self waitFor:@"Ready;" on:stage];
-    [self tapMenu:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
+    [self tapTitle:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
     [self tapMenu:stage x:790 y:544]; [self waitFor:@"Working;" on:stage];
     XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 1;"]);
 }
