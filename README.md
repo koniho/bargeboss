@@ -43,8 +43,13 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   raised bridge in the current cartoon style. Skyline, bridge and curved water
   waves scroll at different speeds behind a larger gameplay tug and barge, with
   bobbing, engine smoke and warm wave reflections across open foreground water.
+  Separate headland, inlet, peninsula and islet sprites break up the title shore.
+  Both hulls leave widening wakes with receding crests, side foam and bow spray;
+  the tug churns prop wash while compressed push knees and traveling gold arrows
+  show it pushing the barge. These presentation effects do not advance gameplay.
   Title artwork prompts are in `docs/art-prompts/title-backdrop-v2.txt` and
-  `docs/art-prompts/title-harbor-v2.txt`.
+  `docs/art-prompts/title-harbor-v2.txt`; shoreline sprite provenance is in
+  `docs/art-prompts/title-land-v1.txt`.
   The play view uses a fixed 2.5D ground projection with independent painted
   warehouses, stockpiles, container stacks, quays and solid finger piers. Foreground
   scenery fades when it overlaps a boat, active cargo or lasso path. A faint outline

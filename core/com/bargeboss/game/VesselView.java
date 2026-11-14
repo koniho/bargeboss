@@ -3,13 +3,14 @@ package com.bargeboss.game;
 /** Directional painted hulls with deterministic, phase-driven water and exhaust. */
 public final class VesselView {
     private VesselView() {}
-    public static void draw(Game g,Painter p,Body b,boolean tug) {
+    public static void draw(Game g,Painter p,Body b,boolean tug) { draw(g,p,b,tug,true); }
+    public static void draw(Game g,Painter p,Body b,boolean tug,boolean wake) {
         int tick=g.visualTicks;
         float bob=WaterSurface.lift(g,b);
         boolean river=p instanceof RiverPainter;
         float hullX=b.x+(river?bob/RiverCamera.DEPTH:0),hullY=b.y-(river?0:bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        ArcadeView.wake(p,b,tick);
+        if(wake) ArcadeView.wake(p,b,tick);
         if(river) LightingView.hull(p,b);
         float size=2*(b.half+b.radius)/(tug?.84f:.89f);
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size*(tug?1.05f:1.2f),1);

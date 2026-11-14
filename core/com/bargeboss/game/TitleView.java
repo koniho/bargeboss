@@ -24,8 +24,17 @@ public final class TitleView {
         // distant city. No close quay or bottom bank encloses the foreground water.
         float harborWidth=690,harborHeight=harborWidth/3;
         float harborDrift=scroll(harborWidth*.61f-(420+g.layout.offsetX)+tick*.19f,harborWidth);
+        coast(p,harborWidth,horizon+40,g.layout.width,harborDrift);
         strip(p,SpriteAtlas.TITLE_HARBOR,harborWidth,harborHeight,horizon+40-harborHeight*.92f,
                 g.layout.width,harborDrift);
+    }
+    private static void coast(Painter p,float period,float shore,float extent,float drift) {
+        for(float x=-drift;x<extent;x+=period) {
+            p.sprite(SpriteAtlas.TITLE_LAND,0,x+period*.13f,shore-6,235,235*4/3f,0,1);
+            p.sprite(SpriteAtlas.TITLE_LAND,1,x+period*.36f,shore-2,190,190*4/3f,0,1);
+            p.sprite(SpriteAtlas.TITLE_LAND,2,x+period*.86f,shore-5,225,225*4/3f,0,1);
+            p.sprite(SpriteAtlas.TITLE_LAND,3,x+period*.02f,shore+43,72,96,0,1);
+        }
     }
     private static void sky(Painter p,float width,float height,float extent,float drift) {
         float overlap=width*.12f,period=width-overlap,slice=overlap/SpriteAtlas.TITLE_SKY_FADE_SLICES;
@@ -58,14 +67,19 @@ public final class TitleView {
         Painter p=new RiverPainter(centered,c);
         Body tug=new Body(0,-1,300,230,(float)Math.PI/2);
         Body barge=new Body(1,1,300,300,(float)Math.PI/2);
-        tug.angle+=sine(tick*.018)*.025f;barge.angle+=sine(tick*.018-.4)*.018f;
+        float pressure=.5f+.5f*sine(tick*.065);
+        tug.y=barge.y-(tug.half+tug.radius+barge.half+barge.radius)+.8f+pressure;
+        tug.angle+=sine(tick*.018)*.012f;barge.angle+=sine(tick*.018-.4)*.008f;
         tug.heave=sine(tick*.048)*1.6f+sine(tick*.031)*.4f;
         barge.heave=sine(tick*.048-.7)*1.2f+sine(tick*.031-.5)*.3f;
         tug.floatingInitialized=barge.floatingInitialized=true;
-        tug.vy=barge.vy=48;tug.engineLoad=.84f;
+        tug.vy=barge.vy=48;tug.engineLoad=.75f+pressure*.2f;
         tug.wakeKickTicks=(int)(18*Math.max(0,sine(tick*.048+Math.PI/2)));
         barge.wakeKickTicks=(int)(16*Math.max(0,sine(tick*.048-.7+Math.PI/2)));
-        VesselView.draw(g,p,barge,false);
-        VesselView.draw(g,p,tug,true);
+        TitleWaterView.water(p,barge,tick,false);TitleWaterView.water(p,tug,tick,true);
+        VesselView.draw(g,p,barge,false,false);
+        TitleWaterView.contact(p,barge,tick);
+        VesselView.draw(g,p,tug,true,false);
+        TitleWaterView.push(p,barge,tick);
     }
 }
