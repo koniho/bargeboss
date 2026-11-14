@@ -22,7 +22,7 @@ public final class VesselView {
                 float t=((tick+i*9)%30)/30f,xx=b.half+b.radius+t*9,yy=(i%2==0?-1:1)*(6+t*10);
                 p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+t*2,1.5f,0xbbe5ffff);
             }
-            if(b==g.tug && g.braking && b.speed()>8) for(int i=0;i<5;i++) {
+            if(b==g.tug && g.reversing && b.speed()>8) for(int i=0;i<5;i++) {
                 float t=((tick+i*7)%25)/25f,xx=-b.half-b.radius-t*15,yy=(i-2)*3;
                 p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+3*t,1.5f,0xaae5ffff);
             }

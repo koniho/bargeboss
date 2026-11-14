@@ -8,28 +8,35 @@ an original gameplay layout, not a navigational map of the real river.
 
 ## Play
 
-Choose **Learn to Drive** for nine hands-on lessons without a timer, traffic or
-hull damage: driving, braking, pushing, steering, docking, throwing a mooring
+Choose **Learn to Drive** for ten hands-on lessons without a timer, traffic or
+hull damage: driving, coasting, a scrolling winding channel, drag-to-push,
+assisted pushing, docking, throwing a mooring
 line, connecting a towline, pulling and releasing. Lessons advance only after the action. **Reset Lesson** gives another try;
-**Exit Practice** restores your suspended shift.
+**Exit Practice** restores your suspended shift. Before the cargo lessons, steer
+upstream through seven gates along a narrow industrial channel spanning several
+screens. Solid curved banks prevent shortcuts; the camera scrolls upward with
+the tug while keeping the original drag anchor fixed on the screen.
 
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
   farther for more thrust. The control ring stays at your original touch point;
-  there is no need to chase the boat. Bring your finger into the ring to brake,
-  or release to coast. Tapping the water does not set a route.
-- **Push:** hold a cargo barge to line up behind it and push toward its matching
-  berth. Keep your finger still for assistance; drag outside the ring to steer.
+  there is no need to chase the boat. Center the control or release to coast.
+  Drag behind the tug to apply astern thrust without turning it around. Tapping the water does not set a route.
+- **Push:** press a cargo barge, then drag to steer the push. Keep your finger
+  down; the tug lines up and pushes physically. Return to the ring and hold still
+  for assistance toward the matching berth. The tutorial animates this gesture and requires pushing the load into a marked
+  practice zone before moving on.
 - **Pull:** bring the tug near an unmoored barge, drag **from the barge to the
   tug**, then release to throw a towline. The tug glows as the target; the curved
   guide turns green over it. Drive the tug to take up slack and pull the barge.
   The line applies force at the ends of the hulls, so cargo trails, swings and
-  retains momentum. Tap **Release line** at the top right before pushing again;
+  retains momentum. **Tap the connected barge** to release it before pushing again;
   a successful shore-bollard catch also releases the tow. One load at a time,
   within 170 river units. Pick up feeder loads as soon as they are dropped off;
   secured loads and loads still aboard an incoming feeder cannot be towed.
   Blocked or overstretched lines release. Practice includes connecting, pulling
   the load a real distance, and explicitly releasing it.
-- **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
+- **Slow down:** drag against your motion to apply counter-thrust, then release
+  to coast. There is no brake button. Pausing or backgrounding cancels input.
 - **Tie up:** once the barge center enters its matching **A / steel**, **B / freight**,
   or **C / bulk** zone, the hull and its bank bollard glow with a **READY TO TIE**
   badge. Moving barges are eligible too. Lift your finger,

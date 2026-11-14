@@ -65,7 +65,7 @@ public final class Parity implements Painter {
     }
     private static void bridge(Parity p) {
         Game g=new Game();g.challengeId=1;g.reset();
-        for(int i=0;i<3000;i++) {
+        for(int i=0;i<9000;i++) {
             ReplayInput.work(g);g.step();
             if(i%30==0) {
                 p.value(g.tug.x);p.value(g.tug.y);p.add(g.bridge.phase);p.add(g.bridge.ticks);
@@ -89,13 +89,13 @@ public final class Parity implements Painter {
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
     private static void tutorial(Parity p) {
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN);
-        for(int i=0;i<2400;i++) {
+        for(int i=0;i<9000;i++) {
             Game g=root.activeGame();
             if(g.tutorial.lesson==Tutorial.DONE) { Renderer.draw(root,p); return; }
             ReplayInput.tutorial(root);
             root.step();p.add(g.tow.cargo==null?0:g.tow.cargo.id);p.value(g.tow.length);p.value(g.tow.tension);
             if(g.cargo[0]!=null) { p.value(g.cargo[0].x);p.value(g.cargo[0].y);p.value(g.cargo[0].angle); }
-            p.add(g.tutorial.lesson); p.add(g.control); p.add(root.pollHaptic());
+            p.add(g.tutorial.lesson);p.add(g.tutorial.channelGate);p.value(g.layout.camera.worldRight); p.add(g.control); p.add(root.pollHaptic());
             p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.add(g.water.emitted); p.add(g.ropeDragging?1:0); p.add(g.ropePhase); p.add(g.ropeTicks);
             if(i%30==0) Renderer.draw(root,p);
         }

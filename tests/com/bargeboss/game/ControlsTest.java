@@ -18,9 +18,9 @@ public final class ControlsTest {
         g.pointerDown(2,200,400); g.pointerMove(2,100,400); g.pointerUp(2,100,400);
         check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f && g.pointer,"second finger cannot steal drag");
         ReplayInput.move(g,g.downX,g.downY); steps(g,30);
-        check(g.braking && g.tug.speed()<5,"centering drag brakes");
+        check(!g.navigating && !g.reversing && g.tug.speed()>5 && g.control==Game.COASTING,"centering drag cuts throttle and coasts");
         ReplayInput.move(g,g.downX,g.downY-100); steps(g,30); ReplayInput.up(g,g.pointerX,g.pointerY);
-        check(!g.pointer && !g.navigating && !g.braking,"release removes thrust and coasts");
+        check(!g.pointer && !g.navigating && !g.reversing,"release removes thrust and coasts");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100); steps(g,15);
         g.background(); check(!g.pointer && !g.navigating && g.mode==Game.PAUSE,"background cancels drive");
         g=game(); g.cargo[1].x=300; g.cargo[1].y=559;
@@ -101,10 +101,10 @@ public final class ControlsTest {
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN); g=root.activeGame();
         steps(root,2000); check(g.tutorial.lesson==Tutorial.MOVE && g.hull==100,"waiting never advances practice");
         int seen=0;
-        for(int i=0;i<3000 && g.tutorial.lesson!=Tutorial.DONE;i++) {
+        for(int i=0;i<9000 && g.tutorial.lesson!=Tutorial.DONE;i++) {
             seen|=1<<g.tutorial.lesson; ReplayInput.tutorial(root); root.step();
         }
-        check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1,"all nine lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
+        check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1,"all ten lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
         ReplayInput.tap(root,Layout.START); check(root.activeGame()==root && root.mode==Game.PLAY && root.ticks==0,"completed tutorial starts shift");
         root=game(); root.score=321; steps(root,12); int ticks=root.ticks; x=root.tug.x; y=root.tug.y;
         ReplayInput.tap(root,Layout.PRACTICE); steps(root,300); ReplayInput.tap(root,Layout.PRACTICE);

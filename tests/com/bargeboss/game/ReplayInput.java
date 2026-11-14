@@ -13,6 +13,10 @@ public final class ReplayInput {
     public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }
+    public static void releaseTow(Game root) {
+        Body b=root.activeGame().tow.cargo;
+        if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y); }
+    }
     public static void lasso(Game root,Body b) {
         down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
         up(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
@@ -36,7 +40,6 @@ public final class ReplayInput {
             float dx=300-g.tug.x,dy=610-g.tug.y,len=Physics.length(dx,dy);
             if(len<22) {
                 if(g.pointer) up(g,g.pointerX,g.pointerY);
-                if(!g.braking) tap(g,Layout.BRAKE);
             } else {
                 if(!g.pointer) down(g,g.tug.x,g.tug.y);
                 move(g,g.downX+dx/len*90,g.downY+dy/len*90);
@@ -50,20 +53,35 @@ public final class ReplayInput {
         if(len<25) move(g,g.downX,g.downY);
         else move(g,g.downX+dx/len*90,g.downY+dy/len*90);
     }
+    public static void channel(Game root) {
+        Game g=root.activeGame();
+        float ahead=Math.min(TrainingChannel.X[g.tutorial.channelGate],g.tug.x+28);
+        float dx=ahead-g.tug.x,dy=TrainingChannel.center(ahead)-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+        if(!g.pointer) down(root,g.tug.x,g.tug.y);
+        move(root,g.downX+dx/len*55,g.downY+dy/len*55);
+    }
+    public static void pushPractice(Game root) {
+        Game g=root.activeGame();Body b=g.cargo[0];
+        if(!g.pointer) down(root,b.x,b.y);
+        float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
+        move(root,g.downX+90*dx/len,g.downY+90*dy/len);
+    }
     public static void tutorial(Game root) {
         Game g=root.activeGame();
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
                 if(!g.pointer) down(root,g.tug.x,g.tug.y);
                 move(root,g.downX,g.downY-100); break;
-            case Tutorial.STOP:
+            case Tutorial.COAST:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
-                if(!g.braking) tap(root,Layout.BRAKE); break;
+                break;
+            case Tutorial.CHANNEL:
+                channel(root);break;
             case Tutorial.HOLD:
-                if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y); break;
+                pushPractice(root);break;
             case Tutorial.STEER:
                 if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y);
-                move(root,g.downX-65,g.downY-65); break;
+                move(root,g.downX,g.downY); break;
             case Tutorial.DOCK:
                 if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y); break;
             case Tutorial.TIE:
@@ -77,7 +95,7 @@ public final class ReplayInput {
                 move(root,g.downX,g.downY-100);break;
             case Tutorial.RELEASE:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
-                tap(root,Layout.RELEASE);break;
+                releaseTow(root);break;
             default: break;
         }
     }

@@ -26,8 +26,9 @@ public final class CoreTest {
         coast.down(coast.cargo[0].x,coast.cargo[0].y); drag.down(drag.cargo[0].x,drag.cargo[0].y);
         drag.move(drag.cargo[0].x,drag.cargo[0].y-120); steps(coast,150); steps(drag,150);
         check(Physics.length(coast.tug.x-drag.tug.x,coast.tug.y-drag.tug.y)>15,"drag overrides assisted direction");
-        g=playing(); g.tug.vx=90;  tap(g,Layout.BRAKE); steps(g,30);
-        check(g.tug.speed()<20,"brake sheds momentum");
+        g=playing(); g.tug.x=300;g.tug.y=560;g.tug.angle=0;g.tug.vx=60;
+        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX-90,g.downY);steps(g,25);
+        check(g.reversing && g.tug.vx<20,"astern thrust slows forward motion");
         g=playing(); for(int i=0;i<1200;i++) { ReplayInput.work(g); g.step(); }
         check(g.delivered>=1,"assisted first delivery within 20 seconds: tug="+g.tug.x+","+g.tug.y+" cargo="+g.cargo[0].x+","+g.cargo[0].y);
         check(g.score>0,"delivery scores"); int score=g.score; steps(g,10); check(g.score==score,"delivery scores only once");
@@ -70,7 +71,9 @@ public final class CoreTest {
         MooringAccessTest.run();
         ControlsTest.run();
         TutorialHoldTest.run();
+        ChannelTest.run();
         TowTest.run();
+        ThrottleTest.run();
         MooringEngineTest.run();
         AnimationTest.run();
         RotationTest.run();
@@ -80,7 +83,7 @@ public final class CoreTest {
         SceneryTest.run();
         WaterPhysicsTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("8b6695da:11:8984"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("4391fc4:11:8968"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

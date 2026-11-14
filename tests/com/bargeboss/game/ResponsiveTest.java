@@ -3,9 +3,9 @@ package com.bargeboss.game;
 /** Exercise the public touch boundary across windows without changing the simulation geometry. */
 public final class ResponsiveTest {
     private static int assertions;
-    private static final Layout.Box[] BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.BRAKE,Layout.HELP,
+    private static final Layout.Box[] BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.HELP,
             Layout.PRACTICE,Layout.LEARN,Layout.START,Layout.RESUME,Layout.RESTART,Layout.AGAIN};
-    private static final Layout.Box[] LIVE_BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.BRAKE,Layout.HELP,Layout.PRACTICE};
+    private static final Layout.Box[] LIVE_BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.HELP,Layout.PRACTICE};
     private static void check(boolean condition,String message) { assertions++; if(!condition) throw new AssertionError(message); }
     private static boolean near(float a,float b) { return Math.abs(a-b)<.002f; }
     private static void tap(Game game,Layout.Box box) { ReplayInput.tap(game,box); }
@@ -60,8 +60,8 @@ public final class ResponsiveTest {
         ReplayInput.move(game,game.downX,game.downY-90);
         for(int i=0;i<12;i++) game.step();
         check(game.manualSteering && game.navigating,"responsive drag drives shared navigation");
-        ReplayInput.up(game,game.pointerX,game.pointerY); tap(game,Layout.BRAKE);
-        check(game.braking && !game.pointer,"responsive brake releases navigation");
+        ReplayInput.up(game,game.pointerX,game.pointerY);
+        check(!game.navigating && !game.pointer,"responsive release cuts throttle");
         tap(game,Layout.PAUSE); check(game.mode==Game.PAUSE,"responsive pause target routes");
         tap(game,Layout.RESUME); check(game.mode==Game.PLAY,"responsive resume target routes");
         tap(game,Layout.HELP); check(game.mode==Game.HELP,"responsive help target routes");

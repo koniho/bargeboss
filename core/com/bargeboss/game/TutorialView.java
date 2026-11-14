@@ -13,9 +13,19 @@ public final class TutorialView {
             ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
             Lettering.center(p,"PUSH. TOW. DELIVER.",302,323,20,PAPER);
             Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
-            Lettering.center(p,"DRAG TUG. HOLD CARGO.",770,241,12,PAPER);
+            Lettering.center(p,"DRAG TUG. DRAG CARGO.",770,241,12,PAPER);
             Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
             ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO SHIFT":"START SHIFT",true);
+            return;
+        }
+        if(t.lesson==Tutorial.CHANNEL) {
+            VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
+            Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF 10",30,79,9,VisualStyle.GOLD);
+            Lettering.draw(p,"THREAD THE CHANNEL",30,100,16,PAPER);
+            Lettering.draw(p,"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
+            Lettering.draw(p,"EASE OFF FOR BENDS. LIFT TO COAST.",30,145,9,MUTED);
+            p.rect(30,167,260,4,0xff35475a);
+            p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
             return;
         }
         Painter coach=ScreenView.offset(p,g.layout.camera.left-16,g.layout.camera.top-84);
@@ -26,26 +36,33 @@ public final class TutorialView {
         Lettering.draw(coach,t.title(),54,137,19,PAPER);
         boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug();
         Lettering.draw(coach,wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine(),54,168,12,PAPER);
-        Lettering.draw(coach,wrongTug?"HOLD THE CARGO INSIDE THE GOLD RING.":t.secondLine(),54,187,11,MUTED);
+        Lettering.draw(coach,wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine(),54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
-            coach.rect(54+i*44,210,36,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
-            if(i==t.lesson) coach.rect(54+i*44+(g.visualTicks%60)/60f*29,208,7,2,PAPER);
+            coach.rect(54+i*40,210,32,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
+            if(i==t.lesson) coach.rect(54+i*40+(g.visualTicks%60)/60f*25,208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=2*(float)StrictMath.sin(g.visualTicks*.10);
+        if(t.lesson==Tutorial.HOLD) {
+            river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x2635c8bd);
+            ControlView.ring(river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);
+            ControlView.ring(river,Tutorial.PUSH_X,Tutorial.PUSH_Y,Tutorial.PUSH_RADIUS,1,0x99b9df9c,1);
+            RiverPainter.center(river,"PUSH HERE",Tutorial.PUSH_X,Tutorial.PUSH_Y,11,ControlView.GREEN);
+        }
         if(t.lesson==Tutorial.MOVE) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             float x=g.holdingTug()?g.downX:g.tug.x,y=g.holdingTug()?g.downY:g.tug.y;
             ControlView.arrow(river,x,y-25,x,y-100-pulse,VisualStyle.GOLD);
             RiverPainter.center(river,"DRAG LEFT",x+22,y-72,10,PAPER);
-        } else if(t.lesson==Tutorial.STOP) {
-            Layout.Box b=g.layout.box(Layout.BRAKE);
-            p.rect(b.x,b.y,b.w,3,VisualStyle.GOLD); p.rect(b.x,b.y+b.h-3,b.w,3,VisualStyle.GOLD);
-            p.poly(new float[]{b.centerX()-10,b.y-10-pulse,b.centerX()+10,b.y-10-pulse,b.centerX(),b.y-2-pulse},VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.COAST) {
+            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,ControlView.BLUE,3);
+            RiverPainter.center(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
         } else if(t.lesson==Tutorial.RELEASE) {
-            Layout.Box b=g.layout.box(Layout.RELEASE);
-            p.rect(b.x,b.y,b.w,3,ControlView.GREEN);
-            p.poly(new float[]{b.centerX()-8,b.y+b.h+13+pulse,b.centerX()+8,b.y+b.h+13+pulse,b.centerX(),b.y+b.h+3},VisualStyle.GOLD);
+            Body b=g.cargo[0];RiverCamera c=g.layout.camera;
+            ControlView.ring(river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
+            float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
+            VisualStyle.panel(p,x-54,y-12,108,24,0xee101c30);
+            Lettering.center(p,"TAP TO LET GO",x,y-4,10,ControlView.GREEN);
         } else if(t.lesson==Tutorial.PULL) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             ControlView.arrow(river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
@@ -55,9 +72,8 @@ public final class TutorialView {
             if(t.lesson==Tutorial.CONNECT) {
                 ControlView.arrow(river,b.x,b.y-38,g.tug.x,g.tug.y+30,ControlView.GREEN);
                 ControlView.ring(river,g.tug.x,g.tug.y,38+pulse,1,ControlView.GREEN,3);
-            } else if(t.lesson==Tutorial.STEER) {
-                float x=g.pointer?g.downX:b.x,y=g.pointer?g.downY:b.y;
-                ControlView.arrow(river,x-15,y-15,x-65-pulse,y-65-pulse,VisualStyle.GOLD);
+            } else if(t.lesson==Tutorial.HOLD || t.lesson==Tutorial.STEER) {
+                pushGesture(g,p,river,b,t.lesson==Tutorial.STEER);
             } else if(t.lesson==Tutorial.TIE) {
                 if(g.canTie(b) && !g.ropeDragging) {
                     ControlView.arrow(river,b.x-25,b.y,Game.TIE_X[b.berth]+18,b.y,ControlView.GREEN);
@@ -72,5 +88,29 @@ public final class TutorialView {
                 Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
+    }
+    private static void pushGesture(Game g,Painter canvas,Painter river,Body b,boolean assist) {
+        boolean held=g.heldCargo()==b;
+        float x=held?g.downX:b.x,y=held?g.downY:b.y;
+        float phase=(g.visualTicks%150)/150f;
+        float travel=Physics.clamp((phase-.2f)/.5f,0,1);
+        float from=assist?1:0,to=assist?0:1,position=from+(to-from)*travel;
+        float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
+        dx=assist?-65:dx/len*90;dy=assist?-65:dy/len*90;
+        float sx=x+dx*from,sy=y+dy*from,tx=x+dx*to,ty=y+dy*to;
+        ControlView.path(river,sx,sy,tx,ty,ControlView.BLUE);
+        ControlView.arrow(river,sx-8*(assist?-1:1),sy-8*(assist?-1:1),tx,ty,VisualStyle.GOLD);
+        RiverCamera c=g.layout.camera;
+        float fingerX=c.screenX(x+dx*position,y+dy*position),fingerY=c.screenY(x+dx*position,y+dy*position);
+        float pulse=phase<.2f?2*(float)StrictMath.sin(phase*5*Math.PI):0;
+        canvas.circle(fingerX,fingerY,12+pulse,0x99101c30);
+        canvas.circle(fingerX,fingerY,8+pulse,VisualStyle.CREAM);
+        canvas.circle(fingerX,fingerY,4,VisualStyle.GOLD);
+        if(!held) {
+            float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
+            VisualStyle.panel(canvas,bx-51,by-12,102,24,0xee101c30);
+            Lettering.center(canvas,assist?"HOLD STILL":"PRESS + DRAG",bx,by-4,10,VisualStyle.GOLD);
+        }
+        Lettering.center(canvas,assist?"BACK TO THE RING":phase<.2f?"PRESS":phase<.7f?"DRAG":"KEEP HOLDING",fingerX,fingerY+20,10,PAPER);
     }
 }

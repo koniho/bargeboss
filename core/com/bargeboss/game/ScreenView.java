@@ -12,8 +12,8 @@ public final class ScreenView {
         int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
         String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
         VisualStyle.panel(p,12,8,316,48,0xed101c30);
-        text(p,"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
-        text(p,g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
+        text(p,g.trainingChannel()?"PRACTICE - WINDING CHANNEL":"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
+        text(p,g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
         float timerX=layout.width/2-130;
         VisualStyle.panel(p,timerX,8,104,48,0xed101c30);
         center(p,time,timerX+52,20,23,seconds<30?GOLD:PAPER);
@@ -24,7 +24,6 @@ public final class ScreenView {
         text(p,"SCORE",24,layout.height-39,8,MUTED);
         text(p,""+g.score,81,layout.height-37,18,PAPER);
         haptics(g,p);
-        if(g.tow.cargo!=null) button(g,p,layout.box(Layout.RELEASE),"RELEASE LINE",true);
         Layout.Box pause=layout.box(Layout.PAUSE);
         VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);
         p.rect(pause.centerX()-10,pause.y+10,6,20,PAPER); p.rect(pause.centerX()+4,pause.y+10,6,20,PAPER);
@@ -52,7 +51,7 @@ public final class ScreenView {
         center(p,"SHIFT 0"+(g.challengeId+1),770,118,11,GOLD);
         center(p,g.challengeTitle(),770,147,22,PAPER);
         center(p,g.quota()+" LOADS / "+time(g.shiftTicks()),770,190,13,GOLD);
-        center(p,"DRAG TUG. HOLD CARGO.",770,234,12,PAPER);
+        center(p,"DRAG TUG. DRAG CARGO.",770,234,12,PAPER);
         center(p,"AIM LINE. RELEASE TO THROW.",770,260,11,PAPER);
         center(p,"CREWS UNLOAD IN 3 SECONDS.",770,286,11,MUTED);
         button(g,p,Layout.LEARN,"LEARN TO DRIVE",false);
@@ -112,10 +111,10 @@ public final class ScreenView {
         overlay(p,105,411);
         center(p,"CAPTAIN'S FIELD GUIDE",480,133,24,GOLD);
         instruction(p,1,185,"DRAG THE TUG","Pull farther for thrust. Release to coast.");
-        instruction(p,2,251,"HOLD THE CARGO","Keep still to push. Drag to steer.");
+        instruction(p,2,251,"DRAG THE CARGO","Press, drag and hold. Center for assist.");
         instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
         instruction(p,4,383,"THROW A TOWLINE","Drag cargo to tug. Release, then drive.");
-        text(p,"TAP RELEASE LINE TO LET GO.",159,447,10,GOLD);
+        text(p,"TAP THE CONNECTED BARGE TO LET GO.",159,447,10,GOLD);
         button(g,p,Layout.LEARN,"PRACTICE CONTROLS",false);
         button(g,p,Layout.START,"RESUME SHIFT",true);
         center(p,"YOUR SHIFT WAITS HERE.",770,231,12,MUTED);

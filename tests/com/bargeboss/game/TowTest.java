@@ -31,10 +31,26 @@ public final class TowTest {
         check(g.tow.cargo==b && b.y<y-60 && g.tug.y<b.y-60,"drag drives a trailing loaded barge: "+b.y);
         check(b.unloadingTicks==0 && g.delivered==0,"tow alone never unloads or scores");
         g.cancel();float vx=b.vx,vy=b.vy;
-        ReplayInput.tap(g,Layout.RELEASE);
+        ReplayInput.releaseTow(g);
         check(g.tow.cargo==null && b.vx==vx && b.vy==vy && g.tow.releaseTicks>0,"release preserves cargo momentum and animates recoil");
         float lastY=b.y;steps(g,5);check(b.y<lastY,"released load coasts");
 
+        g=fixture();connect(g);b=g.cargo[0];
+        ReplayInput.down(g,b.x,b.y);steps(g,25);ReplayInput.up(g,b.x,b.y);
+        check(g.tow.cargo==b,"a long hold does not count as a release tap");
+        ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,b.x+45,b.y);ReplayInput.move(g,g.downX,g.downY);ReplayInput.up(g,g.downX,g.downY);
+        check(g.tow.cargo==b,"dragging out and back does not release the tow");
+        ReplayInput.down(g,b.x,b.y);g.pointerCancel(0);
+        check(g.tow.cargo==b,"cancelled cargo tap leaves line attached");
+        ReplayInput.releaseTow(g);check(g.tow.cargo==null,"short cargo tap releases after cancelled gesture");
+        g=fixture();connect(g);ReplayInput.releaseTow(g);
+        check(g.tow.cargo==null && g.ropePhase==0,"cargo tap can release immediately after catch without casting a shore lasso");
+        g=fixture();g.cargo[0].x=230;g.cargo[0].y=290;g.tug.x=330;g.tug.y=290;g.tug.angle=0;
+        connect(g);steps(g,24);ReplayInput.releaseTow(g);
+        check(g.tow.cargo==null && g.ropePhase==0 && !g.cargo[0].lineAttached,"berth-ready cargo tap releases instead of throwing a lasso");
+        g=fixture();connect(g);b=g.cargo[0];g.cargo[1]=b;
+        g.cargo[0]=new Body(2,1,b.x+37,b.y,b.angle);
+        ReplayInput.releaseTow(g);check(g.tow.cargo==null,"connected hull wins over adjacent cargo touch padding");
         g=fixture();aim(g);ReplayInput.move(g,410,600);ReplayInput.up(g,410,600);steps(g,18);
         check(g.ropePhase==2 && g.tow.cargo==null,"missed tug throw retracts");steps(g,18);
         check(g.ropePhase==0,"miss frees gesture for retry");
@@ -64,7 +80,7 @@ public final class TowTest {
         check(g.tow.cargo==g.cargo[0] && g.cargo[0].y==y,"background holds tow without advancing");
         g.configureCanvas(1333,600);g.pause();steps(g,5);
         check(g.tow.cargo==g.cargo[0],"resume and resize retain cable");
-        ReplayInput.tap(g,Layout.RELEASE);check(g.tow.cargo==null,"responsive release hit target works");
+        ReplayInput.releaseTow(g);check(g.tow.cargo==null,"responsive barge tap releases tow");
         g=fixture();connect(g);g.reset();check(g.tow.cargo==null,"restart clears tow references");
         g=fixture();connect(g);g.cargo[0].age=g.contractSeconds()+1;g.step();
         check(g.tow.cargo==null && !g.cargo[0].active,"expiry clears tow in same tick");

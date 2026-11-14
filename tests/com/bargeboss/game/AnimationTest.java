@@ -14,7 +14,7 @@ public final class AnimationTest {
         float screenX=RiverPainter.screenX(310,540),screenY=RiverPainter.screenY(310,540);
         check(Math.abs(RiverPainter.riverX(screenX,screenY)-310)<.0001f && Math.abs(RiverPainter.riverY(screenX,screenY)-540)<.0001f,
                 "quarter-turn river input is the inverse of drawing");
-        check(RiverPainter.inBoard(screenX,screenY) && !RiverPainter.inBoard(Layout.BRAKE.centerX(),Layout.BRAKE.centerY()),
+        check(RiverPainter.inBoard(screenX,screenY) && !RiverPainter.inBoard(Layout.HELP.centerX(),Layout.HELP.centerY()),
                 "landscape controls sit outside the river input surface");
         Game g=new Game(); float x=g.tug.x,y=g.tug.y;
         int first=Parity.frame(g);

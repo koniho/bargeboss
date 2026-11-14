@@ -46,10 +46,6 @@
     CGSize size=[self logicalSize:stage];
     [[self point:stage x:size.width-32 y:24] tap];
 }
-- (void)tapBrake:(XCUIElement *)stage {
-    CGSize size=[self logicalSize:stage];
-    [[self point:stage x:size.width-282 y:size.height-24] tap];
-}
 - (void)riverDrag:(XCUIElement *)stage x:(double)x y:(double)y toX:(double)xx toY:(double)yy hold:(double)hold {
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
                                   withVelocity:100 thenHoldForDuration:hold];
@@ -95,6 +91,47 @@
     [XCUIDevice.sharedDevice pressButton:XCUIDeviceButtonHome]; [app activate];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Paused; delivered 1;"],@"Background pauses without resetting delivery");
 }
+- (CGPoint)worldPosition:(XCUIElement *)stage tag:(NSString *)tag {
+    NSArray<NSString *> *parts=[(NSString *)stage.value componentsSeparatedByString:[NSString stringWithFormat:@"; %@ ",tag]];
+    XCTAssertEqual(parts.count,2);
+    NSArray<NSString *> *pair=[[parts.lastObject componentsSeparatedByString:@";"].firstObject componentsSeparatedByString:@","];
+    XCTAssertEqual(pair.count,2);
+    return CGPointMake(pair[0].doubleValue,pair[1].doubleValue);
+}
+- (void)holdCargo:(XCUIElement *)stage duration:(double)duration {
+    CGPoint b=[self worldPosition:stage tag:@"cargo"];
+    [[self river:stage x:b.x y:b.y] pressForDuration:duration];
+}
+- (void)driveTrainingChannel:(XCUIElement *)stage {
+    const double xs[]={200,380,560,740,920,1100,1280,1460};
+    const double ys[]={500,390,620,390,620,390,600,500};
+    for(int attempt=0;attempt<150 && [(NSString *)stage.value containsString:@"lesson 2;"];attempt++) {
+        CGPoint boat=[self worldPosition:stage tag:@"tug"];
+        NSArray<NSString *> *parts=[(NSString *)stage.value componentsSeparatedByString:@"; gate "];
+        NSInteger gate=[[parts.lastObject componentsSeparatedByString:@";"].firstObject integerValue];
+        if(gate>7) break;
+        XCTAssertTrue(gate>=1 && gate<=7);
+        double ahead=fmin(xs[gate],boat.x+28);int segment=0;
+        while(segment<6 && ahead>=xs[segment+1]) segment++;
+        double t=fmax(0,fmin(1,(ahead-xs[segment])/(xs[segment+1]-xs[segment])));
+        double y=ys[segment]+(ys[segment+1]-ys[segment])*t*t*(3-2*t);
+        double dx=ahead-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
+        [[self river:stage x:boat.x y:boat.y] pressForDuration:0.05
+                thenDragToCoordinate:[self river:stage x:boat.x+55*dx/length y:boat.y+55*dy/length]
+                withVelocity:500 thenHoldForDuration:0.35];
+    }
+    [self waitFor:@"lesson 3" on:stage];
+}
+- (void)pushPracticeLoad:(XCUIElement *)stage {
+    for(int attempt=0;attempt<80 && [(NSString *)stage.value containsString:@"lesson 3;"];attempt++) {
+        CGPoint b=[self worldPosition:stage tag:@"cargo"];
+        double dx=240-b.x,dy=600-b.y,length=fmax(1,hypot(dx,dy));
+        [[self river:stage x:b.x y:b.y] pressForDuration:0.05
+            thenDragToCoordinate:[self river:stage x:b.x+90*dx/length y:b.y+90*dy/length]
+            withVelocity:500 thenHoldForDuration:0.5];
+    }
+    [self waitFor:@"lesson 4" on:stage];
+}
 - (void)testInteractiveDragAndLassoTutorial {
     XCUIApplication *app=[[XCUIApplication alloc] init];
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
@@ -102,24 +139,24 @@
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self tapMenu:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
     [self riverDrag:stage x:350 y:700 toX:350 toY:600 hold:0.6];
-    [self waitFor:@"lesson 1" on:stage];
-    [self tapBrake:stage]; [self waitFor:@"lesson 2" on:stage];
-    [[self river:stage x:292 y:700] pressForDuration:3];
-    [self waitFor:@"lesson 3" on:stage];
-    [self riverDrag:stage x:230 y:700 toX:165 toY:635 hold:0.8];
-    [self waitFor:@"lesson 4" on:stage];
-    [[self river:stage x:292 y:700] pressForDuration:3];
+    [self waitFor:@"lesson 2" on:stage];
+    [self driveTrainingChannel:stage];
+    [self pushPracticeLoad:stage];
+    CGPoint b;
+    [self holdCargo:stage duration:10];
     [self waitFor:@"lesson 5" on:stage];
-    [self riverDrag:stage x:244 y:700 toX:120 toY:700 hold:0.2];
+    [self holdCargo:stage duration:3];
     [self waitFor:@"lesson 6" on:stage];
+    b=[self worldPosition:stage tag:@"cargo"];
+    [self riverDrag:stage x:b.x y:b.y toX:120 toY:700 hold:0.2];
+    [self waitFor:@"lesson 7" on:stage];
     [[self river:stage x:300 y:690] pressForDuration:0.05 thenDragToCoordinate:[self river:stage x:300 y:570]
                                   withVelocity:300 thenHoldForDuration:0.1];
-    [self waitFor:@"lesson 7" on:stage];
-    [self riverDrag:stage x:300 y:570 toX:300 toY:470 hold:2.5];
     [self waitFor:@"lesson 8" on:stage];
-    CGSize size=[self logicalSize:stage];
-    [[self point:stage x:size.width-94 y:74] tap];
+    [self riverDrag:stage x:300 y:570 toX:300 toY:470 hold:2.5];
     [self waitFor:@"lesson 9" on:stage];
+    b=[self worldPosition:stage tag:@"cargo"];[[self river:stage x:b.x y:b.y] tap];
+    [self waitFor:@"lesson 10" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
     [self tapMenu:stage x:770 y:446];

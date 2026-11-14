@@ -23,6 +23,8 @@ public final class TowView {
                 ControlView.ring(p,x,y,8+30*t,1,glow,3);
                 ControlView.ring(p,xx,yy,8+30*t,1,glow,3);
             }
+            ControlView.ring(p,line.cargo.x,line.cargo.y,44,1,0x9983c8d5,2);
+            if(g.tutorial==null || g.tutorial.lesson!=Tutorial.RELEASE) RiverPainter.center(p,"TAP TO LET GO",line.cargo.x-47,line.cargo.y,8,ControlView.BLUE);
             RiverPainter.center(p,line.tension>12?"PULLING":"LINE SLACK",(x+xx)/2+15,(y+yy)/2,8,color);
         } else if(line.releaseTicks>0) {
             float t=line.releaseTicks/18f;

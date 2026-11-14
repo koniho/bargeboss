@@ -8,7 +8,6 @@ public final class AssistView {
         Layout layout=g.layout;
         VisualStyle.panel(p,192,layout.height-48,418,40,0xde101c30);
         ControlView.status(g,p);
-        button(p,layout.box(Layout.BRAKE),"BRAKE",g.braking?VisualStyle.RED:0xff2b4156);
         button(p,layout.box(Layout.HELP),g.tutorial==null?"HELP":"RESET",0xff2b4156);
         button(p,layout.box(Layout.PRACTICE),g.tutorial==null?"PRACTICE":"EXIT",0xff2b4156);
     }

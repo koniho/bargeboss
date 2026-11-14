@@ -26,7 +26,9 @@ public final class Preview {
         g.reset();
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
-        steps(g,4); capture(g,"coasting"); ReplayInput.tap(g,Layout.BRAKE); steps(g,4); capture(g,"braking");
+        steps(g,4); capture(g,"coasting");
+        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY+100);
+        steps(g,15);capture(g,"reverse-thrust");ReplayInput.up(g,g.pointerX,g.pointerY);
         ReplayInput.controlFixture(g); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.ALIGNING) { capture(g,"aligning"); break; } }
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.PUSHING) { capture(g,"push"); break; } }
@@ -60,12 +62,22 @@ public final class Preview {
         g.reset(); steps(g,Game.SHIFT_TICKS); capture(g,"shift-ended");
         g=new Game(); ReplayInput.tap(g,Layout.LEARN); capture(g,"tutorial-0");
         int previous=0;
-        for(int i=0;i<3000;i++) {
+        for(int i=0;i<9000;i++) {
             Game a=g.activeGame(); ReplayInput.tutorial(g); g.step();
             if(a.tutorial.lesson!=previous) { previous=a.tutorial.lesson; capture(g,"tutorial-"+previous); }
             if(previous==Tutorial.DONE) break;
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
+        g=new Game();g.startTutorial();Game channel=g.activeGame();
+        channel.tutorial.lesson=Tutorial.CHANNEL;channel.tutorial.setup(channel);capture(g,"channel-entry");
+        for(int i=0;i<1800 && channel.trainingChannel();i++) {
+            ReplayInput.channel(g);g.step();
+            if(i==450) capture(g,"channel-bends");
+            if(i==1100) capture(g,"channel-upstream");
+        }
+        capture(g,"channel-to-push");
+        for(int i=0;i<75;i++) g.advance(1.0/60);capture(g,"push-gesture-demo");
+        sheet("training-channel",new String[]{"channel-entry","channel-bends","channel-upstream","channel-to-push"});
         g=new Game();g.startTutorial();Game tow=g.activeGame();
         tow.tutorial.lesson=Tutorial.CONNECT;tow.tutorial.setup(tow);b=tow.cargo[0];
         ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,tow.tug.x,tow.tug.y);capture(g,"tow-aim");
@@ -73,8 +85,8 @@ public final class Preview {
         steps(g,9);capture(g,"tow-catch");
         ReplayInput.down(g,tow.tug.x,tow.tug.y);ReplayInput.move(g,tow.downX,tow.downY-100);
         steps(g,60);capture(g,"tow-pulling");
-        ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.tap(g,Layout.RELEASE);steps(g,5);capture(g,"tow-release");
-        sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-8"});
+        ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.releaseTow(g);steps(g,5);capture(g,"tow-release");
+        sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-9"});
         g=new Game();g.reset();steps(g,180);capture(g,"first-watch-overview");
         ReplayInput.down(g,260,730);for(int i=0;i<1800 && !g.canTie(g.cargo[0]);i++) g.step();steps(g,180);capture(g,"docking-zoom");
         g=new Game();g.challengeId=1;g.reset();capture(g,"bridge-start");
@@ -95,9 +107,9 @@ public final class Preview {
         sheet("bridge-progression",new String[]{"first-watch-overview","docking-zoom","bridge-wait","bridge-opening","bridge-open","bridge-destination"});
         sheet("lasso-phases",new String[]{"aim-miss","retracting","aiming","lasso","bollard-hit","line-snap"});
         sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});
-        sheet("all-phases",new String[]{"stage","driving","coasting","braking","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});
+        sheet("all-phases",new String[]{"stage","driving","coasting","reverse-thrust","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});
         sheet("control-states",new String[]{"driving","holding","steering","lasso","unloading","delivery"});
-        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6","tutorial-7","tutorial-8","tutorial-9"});
+        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6","tutorial-7","tutorial-8","tutorial-9","tutorial-10"});
         sheet("assist-states",new String[]{"holding","aligning","steering"});
         sheet("mooring",new String[]{"ready-to-tie","lasso","tying-up","unloading","delivery","stage"});
         System.out.println("Shared renderer: control-states.png, tutorial.png and mooring.png in out/");

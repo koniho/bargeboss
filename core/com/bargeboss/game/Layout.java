@@ -5,9 +5,8 @@ public final class Layout {
     public static final int WIDTH=960, HEIGHT=600, HEADER_HEIGHT=80, FOOTER_TOP=520;
     public static final float STATUS_CENTER_X=300, STATUS_LABEL_Y=530, STATUS_HINT_Y=552;
     public static final Box HAPTICS=new Box(786,10,94,60), PAUSE=new Box(890,10,54,60);
-    public static final Box BRAKE=new Box(610,534,102,50), HELP=new Box(722,534,102,50),
+    public static final Box HELP=new Box(722,534,102,50),
             PRACTICE=new Box(834,534,110,50);
-    public static final Box RELEASE=new Box(440,48,160,44);
     public static final Box LEARN=new Box(632,330,276,64), START=new Box(632,410,276,72);
     public static final Box RESUME=new Box(340,300,280,64), RESTART=new Box(340,382,280,64),
             AGAIN=new Box(340,450,280,64);
@@ -30,10 +29,8 @@ public final class Layout {
 
     /** Menu rectangles remain centered; live controls overlay the outer shore. */
     public Box box(Box original) {
-        if(original==RELEASE) return new Box(width-176,52,164,44);
         if(original==HAPTICS) return new Box(width-158,4,94,40);
         if(original==PAUSE) return new Box(width-56,4,48,40);
-        if(original==BRAKE) return new Box(width-332,height-44,100,40);
         if(original==HELP) return new Box(width-224,height-44,100,40);
         if(original==PRACTICE) return new Box(width-116,height-44,108,40);
         return new Box(original.x+offsetX,original.y+offsetY,original.w,original.h);

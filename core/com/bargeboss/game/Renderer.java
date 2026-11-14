@@ -7,12 +7,15 @@ public final class Renderer {
         Game g=root.activeGame();
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
-        SceneryView.ground(g,p);
-        SceneryView.props(g,p,false);
-        river(g,new RiverPainter(p,g.layout.camera));
-        SceneryView.props(g,p,true);
-        SceneryView.piers(g,p);
-        SceneryView.bridge(g,p);
+        if(g.trainingChannel()) TrainingChannelView.draw(g,p);
+        else {
+            SceneryView.ground(g,p);
+            SceneryView.props(g,p,false);
+            river(g,new RiverPainter(p,g.layout.camera));
+            SceneryView.props(g,p,true);
+            SceneryView.piers(g,p);
+            SceneryView.bridge(g,p);
+        }
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
         HarborView.objective(g,p);
