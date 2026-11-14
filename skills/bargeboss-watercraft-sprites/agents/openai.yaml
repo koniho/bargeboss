@@ -1,0 +1,4 @@
+interface:
+  display_name: "Barge Boss Watercraft Sprites"
+  short_description: "Generate and validate rotating watercraft sprite sheets"
+  default_prompt: "Use $bargeboss-watercraft-sprites to generate or refine a watercraft sprite sheet for Barge Boss and document the validation results."

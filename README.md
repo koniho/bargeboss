@@ -6,6 +6,18 @@ Stage 01 is a stylized **Calumet River industrial corridor** with steel yards,
 freight rail, bulk storage, cranes, a lift bridge and crossing workboats. It is
 an original gameplay layout, not a navigational map of the real river.
 
+The original project code, tooling and documentation are open source under the
+[MIT License](LICENSE). See [provenance](docs/provenance.md) for generated artwork,
+supplied reference images and third-party notices.
+
+The three-quarter art conversion is currently an isolated
+[32-frame tug study](docs/art-studies/isometric-tug-v4-review.md) and
+[three-element scenery trial](docs/art-studies/scenery-trial/review.md), not the
+live game's camera. Reusable art workflows are maintained in
+[watercraft](skills/bargeboss-watercraft-sprites/SKILL.md),
+[static scenery](skills/bargeboss-scenery-sprites/SKILL.md), and
+[animated shore equipment](skills/bargeboss-shore-animation/SKILL.md) skills.
+
 ## Play
 
 Choose **Learn to Drive** for ten hands-on lessons without a timer, traffic or

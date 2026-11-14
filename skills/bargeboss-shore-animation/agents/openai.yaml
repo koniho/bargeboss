@@ -1,0 +1,4 @@
+interface:
+  display_name: "Barge Boss Shore Animation"
+  short_description: "Animate cranes, unloading crews and shore machinery"
+  default_prompt: "Use $bargeboss-shore-animation to create consistent animated shore equipment for Barge Boss with gameplay-phase states and fixed mechanical pivots."

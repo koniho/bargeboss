@@ -1,5 +1,8 @@
 # Isometric tug style proof
 
+This records the earlier v2 study. See [v4 refinement](isometric-tug-v4-review.md)
+and [accumulated learnings](sprite-sheet-learnings.md) for the current result.
+
 Status: **review candidate, not approved for gameplay**. This round validates a
 single tug before converting the full scene. The existing live vessel assets,
 camera, physics, input and cross-platform rendering remain unchanged.
@@ -42,7 +45,10 @@ images are not bundled into the game.
 
 ## Reproduce the review
 
-Run `./preview-tug-concept.sh` from the project root. It reads the candidate
+The current `./preview-tug-concept.sh` now defaults to v4. To reproduce this v2
+study, first run that script to compile the tool, then run
+`java -Djava.awt.headless=true -cp build/tug-concept com.bargeboss.game.TugConceptPreview docs/art-studies/tug-isometric-v2-32.png out/isometric-tug-v2 - docs/art-studies/tug-isometric-v4-pose-guide.png`.
+The tool reads the candidate
 without modifying it and exports:
 
 - `out/isometric-tug/review.html`: self-contained interactive turntable with play,
@@ -51,7 +57,7 @@ without modifying it and exports:
 - `out/isometric-tug/turntable.gif`: looping preview when FFmpeg is available.
 - `out/isometric-tug/measurements.csv`: alpha and source-cell measurements.
 
-The review deliberately uses the requested source anchor `(0.50, 0.72)` rather
+The v2 raw review uses the requested source anchor `(0.50, 0.72)` rather
 than automatically centering each silhouette. The crosshair remains fixed so
 artwork drift is visible. No blend conceals frame changes. This is an isolated
 asset inspection tool, not a separate platform implementation of the game.

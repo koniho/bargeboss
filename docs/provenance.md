@@ -1,7 +1,7 @@
 # Provenance
 
 The newer three-quarter industrial tug study is documented in
-[isometric-tug-review.md](art-studies/isometric-tug-review.md), with its supplied
+[isometric-tug-v4-review.md](art-studies/isometric-tug-v4-review.md), with its supplied
 reference, built-in image generation prompt, candidate atlas and validation
 limits. It is not a production atlas and is not bundled into native builds.
 
@@ -66,5 +66,18 @@ systems have been implemented.
 J2ObjC 3.1 is an external Apache-2.0 toolchain. Its checksum-verified source
 archive and generated runtime remain ignored. iOS builds gather upstream
 LICENSE/NOTICE text into a bundled ThirdPartyNotices.txt. Review runtime and
-dependency notices before any store release. No distribution license is granted
-for this private game's source by this notice.
+dependency notices before any store release.
+
+## Open-source license scope
+
+The original project source, tooling, skills and documentation are distributed
+under the root [MIT License](../LICENSE). Project-generated artwork in
+`assets/sprites/` and `docs/art-studies/` is included under the same permission
+to the extent the contributors hold rights in it. This does not assert that
+AI-generated images have exclusive copyright protection.
+
+User-supplied concept/reference images in `docs/reference/` are retained as
+design references and are excluded from the project's MIT grant; their original
+authorship/license has not been established here. Third-party dependencies,
+upstream license texts and notices keep their own licenses. The project's MIT
+license does not override those notices or grant rights in third-party material.

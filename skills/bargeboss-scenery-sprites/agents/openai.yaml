@@ -1,0 +1,4 @@
+interface:
+  display_name: "Barge Boss Scenery Sprites"
+  short_description: "Generate modular static harbor scenery sprites"
+  default_prompt: "Use $bargeboss-scenery-sprites to generate and validate a small set of static isometric scenery assets for Barge Boss."

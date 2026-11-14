@@ -1,0 +1,5 @@
+# file=docs/art-studies/scenery-trial/static-harbor-v1.png image=2172x724 grid=3x1 nominal_cell=724.000x724.000 alpha>=128 roi=0.000,0.000,1.000,1.000
+frame,source_x,source_y,cell_width,cell_height,min_x,min_y,max_x,max_y,pixels,ink_x,ink_y,alpha_center_x,alpha_center_y,largest_x,largest_y,dense_x,dense_y,axis_degrees,intended_degrees,axis_error_degrees,touches_border
+0,0,0,724,724,80,239,635,684,144720,0.494475,0.638122,0.491396,0.639398,0.494475,0.638122,0.494475,0.636740,26.843,0.000,26.843,false
+1,724,0,724,724,38,174,682,661,214312,0.497928,0.577348,0.499018,0.600301,0.497928,0.577348,0.497928,0.604972,0.036,120.000,60.036,false
+2,1448,0,724,724,49,110,668,689,239468,0.495856,0.552486,0.515791,0.550430,0.495856,0.552486,0.495856,0.551796,148.754,240.000,88.754,false
