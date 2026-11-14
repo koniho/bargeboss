@@ -3,6 +3,14 @@ package com.bargeboss.game;
 public final class SceneryTest {
     private static int checks;
     private static void check(boolean value,String message) { checks++; if(!value) throw new AssertionError(message); }
+    private static float opacity(Game g,float x,float y,float w,float h) {
+        SceneryOcclusion p=new SceneryOcclusion(new Parity());
+        Painter river=new RiverPainter(p,g.layout.camera);
+        VesselView.draw(g,river,g.tug,true,false);
+        for(Body b:g.cargo)if(b!=null && b.active)VesselView.draw(g,river,b,false,false);
+        if(g.trafficActive())VesselView.draw(g,river,g.trafficBoat,true,false);
+        return SceneryOcclusion.polygonOpacity(p,new float[]{x,y,x+w,y,x+w,y+h,x,y+h});
+    }
     public static void run() {
         for(int atlas=SpriteAtlas.WATER;atlas<=SpriteAtlas.BRIDGE;atlas++) for(int frame=0;frame<SpriteAtlas.count(atlas);frame++) {
             float l=SpriteAtlas.sourceLeft(atlas,frame),t=SpriteAtlas.sourceTop(atlas,frame),r=SpriteAtlas.sourceRight(atlas,frame),b=SpriteAtlas.sourceBottom(atlas,frame);
@@ -12,17 +20,17 @@ public final class SceneryTest {
         Game g=new Game();g.challengeId=2;g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
         float obscuredX=g.tug.x,obscuredY=g.tug.y;
         RiverCamera c=g.layout.camera;float x=c.screenX(obscuredX,obscuredY),y=c.screenY(obscuredX,obscuredY);
-        float faded=SceneryView.opacity(g,x-30,y-70,60,80);
+        float faded=opacity(g,x-30,y-70,60,80);
         check(faded<=.29f,"foreground scenery fades over the player's vessel");
         int before=Parity.frame(g);int tick=g.visualTicks;
         check(before==Parity.frame(g) && g.visualTicks==tick,"repeated scenery drawing is deterministic and state-free");
         g.tug.y=260;
-        check(SceneryView.opacity(g,x-30,y-70,60,80)==1,"unobscuring scenery returns to full opacity");
+        check(opacity(g,x-30,y-70,60,80)==1,"unobscuring scenery returns to full opacity");
         Body cargo=new Body(99,1,obscuredX,obscuredY,0);g.cargo[0]=cargo;
-        check(SceneryView.opacity(g,x-30,y-70,60,80)<.3f,"cargo also reveals obstructing scenery");
+        check(opacity(g,x-30,y-70,60,80)<.3f,"cargo also reveals obstructing scenery");
         g.cargo[0]=null;
         g.ticks=1080;g.trafficBoat.x=obscuredX;g.trafficBoat.y=obscuredY;
-        check(SceneryView.opacity(g,x-30,y-70,60,80)<.3f,"cross-traffic also reveals obstructing scenery");
+        check(opacity(g,x-30,y-70,60,80)<.3f,"cross-traffic also reveals obstructing scenery");
         g.ticks=0;
         g.ropeBody=new Body(99,0,300,300,0);g.ropePhase=1;g.ropeEndX=300;g.ropeEndY=700;
         g.ropeStartX=300;g.ropeStartY=317.5f;g.ropeStartHeight=4;g.ropeLocalY=17.5f;g.ropeTicks=9;
@@ -30,9 +38,9 @@ public final class SceneryTest {
         float height=4*.625f+30*(float)StrictMath.sin(.375*Math.PI);
         float rx=c.screenX(300+RiverCamera.riseX(height),317.5f+382.5f*.375f+RiverCamera.riseY(height));
         float ry=c.screenY(300+RiverCamera.riseX(height),317.5f+382.5f*.375f+RiverCamera.riseY(height));
-        check(SceneryView.opacity(g,rx-12,ry-12,24,24)<.4f,"foreground reveals the paid-out lasso arc");
+        check(opacity(g,rx-12,ry-12,24,24)==1,"a lasso arc alone does not fade scenery");
         rx=c.screenX(300,700);ry=c.screenY(300,700);
-        check(SceneryView.opacity(g,rx-8,ry-8,16,16)==1,"scenery beyond the flying loop does not fade prematurely");
+        check(opacity(g,rx-8,ry-8,16,16)==1,"scenery beyond the flying loop does not fade prematurely");
         g.ropePhase=0;g.ropeBody=null;
         Body boat=new Body(0,-1,370,290,0);boat.vx=80;
         float hit=HarborGeometry.collide(boat);

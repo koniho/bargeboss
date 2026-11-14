@@ -5,7 +5,7 @@ public final class Renderer {
     private Renderer() {}
     public static void draw(Game root,Painter p) {
         Game g=root.activeGame();
-        p=new ViewportPainter(p,g.layout.width,g.layout.height);
+        p=new SceneryOcclusion(new ViewportPainter(p,g.layout.width,g.layout.height));
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         if(g.tutorial!=null) TrainingChannelView.draw(g,p);

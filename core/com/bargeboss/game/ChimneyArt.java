@@ -21,10 +21,7 @@ public final class ChimneyArt {
         float x=c.screenX(wx,wy),y=c.screenY(wx,wy),left=x-PX[frame]*size,top=y-PY[frame]*size;
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
         float outletX=x+(SX[frame]-PX[frame])*size,outletY=y+(SY[frame]-PY[frame])*size;
-        // Include the plume in the fading envelope, not only the solid stack.
-        float minX=Math.min(x-32*c.scale,outletX-60*c.scale),minY=outletY-92*c.scale;
-        float maxX=Math.max(x+32*c.scale,outletX+20*c.scale);
-        float alpha=SceneryView.opacity(g,minX,minY,maxX-minX,y+12*c.scale-minY);
+        float alpha=SceneryOcclusion.spriteOpacity(p,SpriteAtlas.CHIMNEYS,frame,x,y,size,size);
         LightingView.shadow(p,x,y,size*.28f,size*.07f,alpha);
         p.sprite(SpriteAtlas.CHIMNEYS,frame,x,y,size,size,0,alpha);
         SceneryEffects.glow(p,x+(LX[frame]-PX[frame])*size,y+(LY[frame]-PY[frame])*size,

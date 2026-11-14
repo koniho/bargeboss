@@ -79,7 +79,7 @@ public final class TrainingGroundView {
             wall(g,canvas,bank[i],bank[i+1],bank[next],bank[next+1],i,true);
         }
     }
-    /** Foreground caps may overlap hull artwork; their section alpha fades around nearby play objects. */
+    /** Foreground caps may overlap hull artwork; only overlapping painted sections become translucent. */
     public static void foreground(Game g,Painter canvas) {
         float[] bank=TrainingChannel.WATER_BOUNDARY;
         for(int i=0;i<bank.length;i+=2) {
@@ -99,9 +99,7 @@ public final class TrainingGroundView {
             float end=Math.min(length,at+24),ax=x+dx*at,ay=y+dy*at,bx=x+dx*end,by=y+dy*end;
             float sx=c.screenX(ax,ay),sy=c.screenY(ax,ay),ex=c.screenX(bx,by),ey=c.screenY(bx,by);
             if(Math.max(sx,ex)<-20 || Math.min(sx,ex)>g.layout.width+20 || Math.max(sy,ey)<-20 || Math.min(sy,ey)-rise>g.layout.height+20) continue;
-            float alpha=SceneryView.opacity(g,Math.min(sx,ex)-5*c.scale,Math.min(sy,ey)-rise-5*c.scale,
-                    Math.abs(ex-sx)+10*c.scale,Math.abs(ey-sy)+rise+10*c.scale);
-            Painter p=new OpacityPainter(canvas,alpha);
+            Painter p=SceneryOcclusion.obstacles(canvas);
             if(visible && !capOnly) {
                 p.poly(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},dx>0?0xff202d38:0xff2c3942);
                 // Steel sheets have real folded faces: raised ribs and recessed channels,

@@ -105,7 +105,19 @@ public final class ArticulatedModel {
             float x=c.screenX(0,0),y=c.screenY(0,0);
             return new float[]{x+b[0]*c.scale,y+b[1]*c.scale,x+b[2]*c.scale,y+b[3]*c.scale};
         }
-        public float opacity(Game g,int node) {float[] b=nodeBounds(g.layout.camera,node);return b==null?1:SceneryView.opacity(g,b[0],b[1],b[2]-b[0],b[3]-b[1]);}
+        public float opacity(Game g,Painter painter,int node) {
+            float alpha=1;RiverCamera c=g.layout.camera;
+            for(Poly face:polygons)if(face.node==node && -face.nx+face.ny+face.nz>EPS) {
+                float[] xy=new float[face.xyz.length/3*2];
+                for(int i=0,j=0;i<face.xyz.length;i+=3,j+=2) {
+                    xy[j]=c.screenX(face.xyz[i],face.xyz[i+1]);
+                    xy[j+1]=c.screenY(face.xyz[i],face.xyz[i+1])-face.xyz[i+2]*Z_SCALE*c.scale;
+                }
+                alpha=Math.min(alpha,SceneryOcclusion.polygonOpacity(painter,xy));
+                if(alpha<=.28f)break;
+            }
+            return alpha;
+        }
         /** Exact convex-face ray test; halos do not shine through opaque bridge parts. */
         public boolean occluded(float[] origin) {
             for(Poly f:polygons) {
@@ -123,7 +135,7 @@ public final class ArticulatedModel {
     public Stats draw(Game g,Painter p,Pose pose) {
         Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
-            if(visible[i])alpha[i]=SceneryView.opacity(g,b[0],b[1],b[2]-b[0],b[3]-b[1]);else stats.culledNodes++;}
+            if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
         for(Poly f:pose.polygons)if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;
         if(stats.visibleFaces==0)return stats;
         if(pose.tree==null) {

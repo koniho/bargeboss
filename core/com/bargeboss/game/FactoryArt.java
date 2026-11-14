@@ -28,7 +28,7 @@ public final class FactoryArt {
         float[] bounds=FactoryArtData.BOUNDS[i];
         float minX=left+bounds[0]*size,minY=top+bounds[1]*size;
         float maxX=left+bounds[2]*size,maxY=top+bounds[3]*size;
-        // The shared fading envelope includes both solid art and its animated plume.
+        // Visibility includes the plume; fading tests only the solid sprite silhouette.
         for(int k=0;k<smokeCount(i);k++) {
             float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
             float r=FactoryArtData.SMOKE[i][k*3+2]*c.scale*5.94f;
@@ -36,7 +36,7 @@ public final class FactoryArt {
             maxX=Math.max(maxX,sx+6*c.scale+r*1.2f);maxY=Math.max(maxY,sy+r*1.1f);
         }
         if(maxX<0 || minX>g.layout.width || maxY<0 || minY>g.layout.height) return;
-        float alpha=SceneryView.opacity(g,minX,minY,maxX-minX,maxY-minY);
+        float alpha=SceneryOcclusion.spriteOpacity(p,SpriteAtlas.FACTORY,i,x,y,size,size);
         p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
         float phase=i*1.71f+wx*.011f+wy*.007f;
         // A source can be visible while its rooftop emitters are completely offscreen.

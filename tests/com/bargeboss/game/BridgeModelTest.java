@@ -82,9 +82,14 @@ public final class BridgeModelTest {
                 check(bounds!=null && bounds[2]>bounds[0] && bounds[3]>bounds[1],"projected fade bounds include the raised leaf");
                 float sx=(bounds[0]+bounds[2])*.5f,sy=(bounds[1]+bounds[3])*.5f;
                 g.tug.x=g.layout.camera.worldX(sx,sy);g.tug.y=g.layout.camera.worldY(sx,sy);
-                check(pose.opacity(g,leaf)<.4f,"leaf becomes translucent where its projection obscures vessel");
+                SceneryOcclusion foreground=new SceneryOcclusion(new Capture());
+                close(pose.opacity(g,foreground,leaf),1,"bridge behind the vessel cannot obscure it");
+                VesselView.draw(g,new RiverPainter(foreground,g.layout.camera),g.tug,true,false);
+                check(pose.opacity(g,foreground,leaf)<1,"visible leaf faces become translucent over painted vessel pixels");
                 g.tug.x=300;g.tug.y=Bridge.Y+500;
-                close(pose.opacity(g,leaf),1,"clear leaf remains fully visible");
+                SceneryOcclusion clear=new SceneryOcclusion(new Capture());
+                VesselView.draw(g,new RiverPainter(clear,g.layout.camera),g.tug,true,false);
+                close(pose.opacity(g,clear,leaf),1,"clear leaf remains fully visible");
             }
         }
         g=scene();g.layout=Layout.focused(960,600,8000,8000,1,480,300);

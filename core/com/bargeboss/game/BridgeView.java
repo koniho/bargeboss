@@ -14,7 +14,7 @@ public final class BridgeView {
             float x=c.screenX(xyz[0],xyz[1]),y=c.screenY(xyz[0],xyz[1])-xyz[2]*ArticulatedModel.Z_SCALE*c.scale;
             float radius=lamp.radius*c.scale;if(x < -radius*8 || x>g.layout.width+radius*8 || y < -radius*8 || y>g.layout.height+radius*8)continue;
             int color=lamp.kind==BridgeModel.SIGNAL?(g.bridge.passable()?0xff8fe4a2:0xffff5945):lamp.color;
-            float alpha=pose.opacity(g,lamp.node);
+            float alpha=pose.opacity(g,canvas,lamp.node);
             SceneryEffects.glow(canvas,x,y,radius,color,alpha,g.visualTicks,i*1.27f);
             canvas.circle(x,y,Math.max(.7f,1.25f*c.scale),((int)(alpha*255)<<24)|(color&0xffffff));
         }

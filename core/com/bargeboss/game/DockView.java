@@ -22,8 +22,7 @@ public final class DockView {
             float anchorX=camera.screenX(berth==1?445:155,g.dockY(berth));
             float anchorY=camera.screenY(berth==1?445:155,g.dockY(berth))-(g.tutorial!=null?GroundArt.LAND_RISE*camera.scale:0);
             float scale=camera.scale*.55f;
-            float alpha=SceneryView.opacity(g,anchorX-24*scale,anchorY-90*scale,100*scale,122*scale);
-            Painter p=ScreenView.scaled(new OpacityPainter(canvas,alpha),anchorX,anchorY,scale);
+            Painter p=ScreenView.scaled(SceneryOcclusion.obstacles(canvas),anchorX,anchorY,scale);
             float sign=berth==1?-1:1,base=0,y=0;
             float phase=working?(load.unloadingTicks%60)/60f:0;
             float lift=working?Physics.clamp((phase-.16f)/.62f,0,1):1;

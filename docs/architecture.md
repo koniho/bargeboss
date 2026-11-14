@@ -343,12 +343,24 @@ never define physics implicitly. All vessels, including NPC arrivals, are ordere
 by their projected ground depth. Unloading cranes and personnel remain independently
 animated in screen-upright coordinates.
 
-`SceneryView.opacity` eases each scenery object's opacity from 1 to 0.28 when its
-screen bounds overlap a vessel silhouette or sampled lasso arc. This includes
-warehouses, storage clusters, piers, bridge and crane groups. The fade uses spatial
-proximity, so it restores naturally as the action moves clear and cannot mutate
-simulation state during rendering. Target arrows, controls and bollards render
-above scenery. Faded solid piers retain a subtle ground outline.
+`SceneryOcclusion` records vessel and cargo sprite submissions in a per-render
+context. Scenery can fade only over opaque pixels of a watercraft already drawn
+behind it. Shared 64×64 interior masks derive from the production PNG alpha and
+registered atlas crops, including each visible turning-frame blend. Transparent
+padding, wake, smoke, lasso lines, bollards, gates and proximity margins do not
+trigger fading. Factory/stack visibility bounds still include their smoke, but
+only the solid building silhouette determines the building's opacity.
+
+Foreground bridge nodes test their projected visible faces; dock equipment and
+shore caps test the actual painted polygons and strokes. Alpha eases from 1 to
+0.28 over the first few overlapping samples, entirely inside the opaque overlap.
+Background scenery stays solid because it has no previously painted vessel to
+obscure. The context is rebuilt each render, with no gameplay mutations or stale
+fade after motion, reset, pause or camera changes. Generate masks with
+`GenerateOcclusionMasks`; `preview.sh` verifies they match the production artwork.
+The masks intentionally exclude soft edges and sub-cell slivers rather than
+fading a nearby structure. No runtime bitmap readback or platform image APIs enter
+shared scene composition.
 
 ## Waves, heave and trough-triggered wake
 

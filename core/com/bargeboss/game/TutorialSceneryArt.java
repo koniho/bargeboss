@@ -26,7 +26,7 @@ public final class TutorialSceneryArt {
         RiverCamera c=g.layout.camera;float size=SIZE[frame]*c.scale;
         float x=c.screenX(wx,wy),y=c.screenY(wx,wy),left=x-PX[frame]*size,top=y-PY[frame]*size;
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
-        float alpha=SceneryView.opacity(g,left,top,size,size);
+        float alpha=SceneryOcclusion.spriteOpacity(p,SpriteAtlas.TUTORIAL_SCENERY,frame,x,y,size,size);
         LightingView.shadow(p,x,y,size*.5f,size*.08f,alpha);
         p.sprite(SpriteAtlas.TUTORIAL_SCENERY,frame,x,y,size,size,0,alpha);
         if(frame==SHED) {
