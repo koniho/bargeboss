@@ -27,7 +27,7 @@ public final class VesselWaterline {
         }
         return result;
     }
-    /** Outer ripples go beneath the sprite; the thin contact crest follows the hull pass. */
+    /** Outer ripples go beneath the sprite; the speed-scaled contact crest follows the hull pass. */
     public static void draw(Game g,Painter p,Body b,boolean tug,float size,boolean contact) {
         boolean river=p instanceof RiverPainter;RiverCamera c=river?((RiverPainter)p).camera:null;
         Painter canvas=river?((RiverPainter)p).canvas():p;
@@ -55,10 +55,10 @@ public final class VesselWaterline {
                     float crest=.55f+.45f*(float)StrictMath.sin(phase*1.4+u*21);
                     float strength=taper*(.48f+motion*.3f+trough*.22f);
                     if(contact) {
-                        canvas.line(previousX,previousY,xx,yy,3.4f*scale,SoftCue.alpha(0xff70c5bd,strength*.16f));
-                        canvas.line(previousX,previousY,xx,yy,(.65f+crest*.35f)*scale,SoftCue.alpha(0xffc2e7dc,strength*(.36f+crest*.34f)));
-                    } else canvas.line(previousX,previousY,xx,yy,1.1f*scale,
-                            SoftCue.alpha(0xff80bcb7,strength*.25f*(1-age)*(1-age)));
+                        canvas.line(previousX,previousY,xx,yy,(4.8f+motion*6)*scale,SoftCue.alpha(0xff70c5bd,strength*.28f));
+                        canvas.line(previousX,previousY,xx,yy,(1.5f+crest*.6f+motion*2.6f)*scale,SoftCue.alpha(0xffd6f4e9,strength*(.65f+crest*.3f)));
+                    } else canvas.line(previousX,previousY,xx,yy,(1.4f+motion*1.8f)*scale,
+                            SoftCue.alpha(0xff80bcb7,strength*.38f*(1-age)*(1-age)));
                 }
                 previousX=xx;previousY=yy;
             }

@@ -70,8 +70,10 @@ inside the hull's ground clip.
 `VesselWaterline` caches a smoothed lower-hull contour from each of the 32
 opaque hull masks, using the same frame scale, pivot, camera offset and sector
 blend as `SpriteAtlas`. Cargo and superstructure do not supply the contour.
-Detached ripples draw under the hull; the narrow contact crest draws after the
-hull/cargo pass. Both use the all-dry-ground cutout, including background banks.
+Detached ripples draw under the hull; the contact foam crest draws after the
+hull/cargo pass. Contact foam, its soft fringe and detached ripples thicken
+smoothly with actual speed, capped at 65 world units/second; reverse and sideways
+motion use the same response. Both use the all-dry-ground cutout, including background banks.
 The contact follows hull heave; outward ripples reduce that coupling as they
 expand. Fixed visual ticks animate idle shimmer; speed and downward heave/trough
 response strengthen foam. Rendering never advances waves or modifies vessels.
