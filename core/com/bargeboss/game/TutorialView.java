@@ -11,10 +11,10 @@ public final class TutorialView {
             ScreenView.overlay(p,104,412);
             Lettering.center(p,"PRACTICE COMPLETE",480,141,27,PAPER);
             ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
-            Lettering.center(p,"YOUR FIRST LOAD",302,323,20,PAPER);
-            Lettering.center(p,"IS UNLOADED.",302,355,20,ControlView.GREEN);
+            Lettering.center(p,"PUSH. TOW. DELIVER.",302,323,20,PAPER);
+            Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
             Lettering.center(p,"DRAG TUG. HOLD CARGO.",770,241,12,PAPER);
-            Lettering.center(p,"AIM. RELEASE. UNLOAD.",770,272,12,MUTED);
+            Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
             ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO SHIFT":"START SHIFT",true);
             return;
         }
@@ -22,13 +22,13 @@ public final class TutorialView {
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
-        Lettering.draw(coach,(t.lesson+1)+" / 6",403,116,10,MUTED);
+        Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
         Lettering.draw(coach,t.title(),54,137,19,PAPER);
         Lettering.draw(coach,t.firstLine(),54,168,12,PAPER);
         Lettering.draw(coach,t.secondLine(),54,187,11,MUTED);
-        for(int i=0;i<6;i++) {
-            coach.rect(54+i*66,210,55,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
-            if(i==t.lesson) coach.rect(54+i*66+(g.visualTicks%60)/60f*48,208,7,2,PAPER);
+        for(int i=0;i<Tutorial.DONE;i++) {
+            coach.rect(54+i*44,210,36,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
+            if(i==t.lesson) coach.rect(54+i*44+(g.visualTicks%60)/60f*29,208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=2*(float)StrictMath.sin(g.visualTicks*.10);
@@ -41,10 +41,20 @@ public final class TutorialView {
             Layout.Box b=g.layout.box(Layout.BRAKE);
             p.rect(b.x,b.y,b.w,3,VisualStyle.GOLD); p.rect(b.x,b.y+b.h-3,b.w,3,VisualStyle.GOLD);
             p.poly(new float[]{b.centerX()-10,b.y-10-pulse,b.centerX()+10,b.y-10-pulse,b.centerX(),b.y-2-pulse},VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.RELEASE) {
+            Layout.Box b=g.layout.box(Layout.RELEASE);
+            p.rect(b.x,b.y,b.w,3,ControlView.GREEN);
+            p.poly(new float[]{b.centerX()-8,b.y+b.h+13+pulse,b.centerX()+8,b.y+b.h+13+pulse,b.centerX(),b.y+b.h+3},VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.PULL) {
+            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
+            ControlView.arrow(river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
         } else if(g.cargo[0]!=null && g.cargo[0].active) {
             Body b=g.cargo[0];
             if(!b.lineAttached) ControlView.ring(river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
-            if(t.lesson==Tutorial.STEER) {
+            if(t.lesson==Tutorial.CONNECT) {
+                ControlView.arrow(river,b.x,b.y-38,g.tug.x,g.tug.y+30,ControlView.GREEN);
+                ControlView.ring(river,g.tug.x,g.tug.y,38+pulse,1,ControlView.GREEN,3);
+            } else if(t.lesson==Tutorial.STEER) {
                 float x=g.pointer?g.downX:b.x,y=g.pointer?g.downY:b.y;
                 ControlView.arrow(river,x-15,y-15,x-65-pulse,y-65-pulse,VisualStyle.GOLD);
             } else if(t.lesson==Tutorial.TIE) {

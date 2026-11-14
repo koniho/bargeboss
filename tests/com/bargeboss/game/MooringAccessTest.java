@@ -40,7 +40,7 @@ public final class MooringAccessTest {
         check(practice.tutorial.lesson==Tutorial.TIE && practice.canTie(b),"practice accepts a moving shoreline arrival and teaches the same lasso readiness");
         ReplayInput.lasso(root,b);
         for(int i=0;i<Game.ROPE_FLIGHT_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS;i++) root.step();
-        check(practice.tutorial.lesson==Tutorial.DONE,"shoreline practice throw can finish the interactive tutorial");
+        check(practice.tutorial.lesson==Tutorial.CONNECT,"shoreline practice throw advances to tow training");
         System.out.println(checks+" shoreline lasso, rotated hull, screen input and winch assertions passed");
     }
 }

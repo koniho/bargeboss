@@ -67,12 +67,14 @@ public final class Physics {
     public static float banks(Body b,float top,float bottom) { return banks(b,top,bottom,true); }
     public static float banks(Body b,float top,float bottom,boolean piers) {
         float impact=0;
+        // A rotating tip can still overlap the bank while the hull pulls away.
+        // Correct penetration, but only rebound velocity directed into the bank.
         for(int i=0;i<3;i++) {
             float x=b.discX(i), y=b.discY(i), r=b.radius;
-            if(x-r<LEFT) { impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; b.vx=Math.abs(b.vx)*.2f; b.spin*=.8f; }
-            if(x+r>RIGHT) { impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; b.vx=-Math.abs(b.vx)*.2f; b.spin*=.8f; }
-            if(y-r<top) { impact=Math.max(impact,-b.vy); b.y+=top-y+r; b.vy=Math.abs(b.vy)*.2f; }
-            if(y+r>bottom) { impact=Math.max(impact,b.vy); b.y-=y+r-bottom; b.vy=-Math.abs(b.vy)*.2f; }
+            if(x-r<LEFT) { impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; if(b.vx<0) b.vx=-b.vx*.2f; b.spin*=.8f; }
+            if(x+r>RIGHT) { impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; if(b.vx>0) b.vx=-b.vx*.2f; b.spin*=.8f; }
+            if(y-r<top) { impact=Math.max(impact,-b.vy); b.y+=top-y+r; if(b.vy<0) b.vy=-b.vy*.2f; }
+            if(y+r>bottom) { impact=Math.max(impact,b.vy); b.y-=y+r-bottom; if(b.vy>0) b.vy=-b.vy*.2f; }
         }
         return Math.max(impact,piers?HarborGeometry.collide(b):0);
     }

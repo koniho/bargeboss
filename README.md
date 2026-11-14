@@ -8,9 +8,9 @@ an original gameplay layout, not a navigational map of the real river.
 
 ## Play
 
-Choose **Learn to Drive** for six hands-on lessons without a timer, traffic or
-hull damage: driving, braking, pushing, steering, docking and throwing a mooring
-line. Lessons advance only after the action. **Reset Lesson** gives another try;
+Choose **Learn to Drive** for nine hands-on lessons without a timer, traffic or
+hull damage: driving, braking, pushing, steering, docking, throwing a mooring
+line, connecting a towline, pulling and releasing. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended shift.
 
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
@@ -19,6 +19,16 @@ line. Lessons advance only after the action. **Reset Lesson** gives another try;
   or release to coast. Tapping the water does not set a route.
 - **Push:** hold a cargo barge to line up behind it and push toward its matching
   berth. Keep your finger still for assistance; drag outside the ring to steer.
+- **Pull:** bring the tug near an unmoored barge, drag **from the barge to the
+  tug**, then release to throw a towline. The tug glows as the target; the curved
+  guide turns green over it. Drive the tug to take up slack and pull the barge.
+  The line applies force at the ends of the hulls, so cargo trails, swings and
+  retains momentum. Tap **Release line** at the top right before pushing again;
+  a successful shore-bollard catch also releases the tow. One load at a time,
+  within 170 river units. Pick up feeder loads as soon as they are dropped off;
+  secured loads and loads still aboard an incoming feeder cannot be towed.
+  Blocked or overstretched lines release. Practice includes connecting, pulling
+  the load a real distance, and explicitly releasing it.
 - **Stop:** release, then tap **Brake**. Pausing or backgrounding cancels input.
 - **Tie up:** once the barge center enters its matching **A / steel**, **B / freight**,
   or **C / bulk** zone, the hull and its bank bollard glow with a **READY TO TIE**

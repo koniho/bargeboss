@@ -104,7 +104,7 @@ public final class ControlsTest {
         for(int i=0;i<3000 && g.tutorial.lesson!=Tutorial.DONE;i++) {
             seen|=1<<g.tutorial.lesson; ReplayInput.tutorial(root); root.step();
         }
-        check(g.tutorial.lesson==Tutorial.DONE && seen==63,"all six lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
+        check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1,"all nine lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
         ReplayInput.tap(root,Layout.START); check(root.activeGame()==root && root.mode==Game.PLAY && root.ticks==0,"completed tutorial starts shift");
         root=game(); root.score=321; steps(root,12); int ticks=root.ticks; x=root.tug.x; y=root.tug.y;
         ReplayInput.tap(root,Layout.PRACTICE); steps(root,300); ReplayInput.tap(root,Layout.PRACTICE);

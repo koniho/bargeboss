@@ -68,6 +68,16 @@ public final class ReplayInput {
                 if(!g.pointer) down(root,g.cargo[0].x,g.cargo[0].y); break;
             case Tutorial.TIE:
                 if(!g.cargo[0].lineAttached && g.ropePhase==0) lasso(root,g.cargo[0]); break;
+            case Tutorial.CONNECT:
+                if(g.ropePhase==0 && g.tow.cargo==null) {
+                    down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
+                } break;
+            case Tutorial.PULL:
+                if(!g.pointer) down(root,g.tug.x,g.tug.y);
+                move(root,g.downX,g.downY-100);break;
+            case Tutorial.RELEASE:
+                if(g.pointer) up(root,g.pointerX,g.pointerY);
+                tap(root,Layout.RELEASE);break;
             default: break;
         }
     }

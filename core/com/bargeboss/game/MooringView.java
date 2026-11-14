@@ -28,7 +28,7 @@ public final class MooringView {
             }
         }
         for(Body b:g.cargo) if(b!=null && b.active) {
-            if(g.ropeDragging && g.heldCargo()==b) {
+            if((g.ropeDragging || g.towAiming) && g.heldCargo()==b) {
                 aim(g,p,b); continue;
             }
             if(!b.lineAttached) {
@@ -115,8 +115,10 @@ public final class MooringView {
         p.rect(x-9,y-7,18,3,DARK); p.rect(x-8,y-7,16,1,HIGHLIGHT);
     }
     private static void aim(Game g,Painter p,Body b) {
-        float x=g.aimX(b,g.pointerX,g.pointerY),y=g.aimY(b,g.pointerX,g.pointerY);
-        boolean onPoint=g.canTie(b) && g.overTiePoint(b,g.pointerX,g.pointerY);
+        boolean tow=g.towAiming;
+        boolean onPoint=tow?g.towTarget(b,g.pointerX,g.pointerY):g.canTie(b) && g.overTiePoint(b,g.pointerX,g.pointerY);
+        float x=tow?(onPoint?g.tug.x:g.pointerX):g.aimX(b,g.pointerX,g.pointerY);
+        float y=tow?(onPoint?g.tug.y:g.pointerY):g.aimY(b,g.pointerX,g.pointerY);
         int color=onPoint?GREEN:VisualStyle.GOLD;
         // This thin continuous trajectory is a guide; the rope remains coiled on deck.
         float lastX=b.x,lastY=b.y;
@@ -190,7 +192,7 @@ public final class MooringView {
             p.line(endX-size,endY+size,endX+size,endY-size,2,HIGHLIGHT);
         }
     }
-    private static void rope(Painter p,float startX,float startY,float x,float y,float slack,int color) {
+    static void rope(Painter p,float startX,float startY,float x,float y,float slack,int color) {
         rope(p,startX,startY,x,y,slack,color,0,-1);
     }
     private static void rope(Painter p,float startX,float startY,float x,float y,float slack,int color,float shake,float snapTime) {

@@ -24,6 +24,7 @@ public final class ScreenView {
         text(p,"SCORE",24,layout.height-39,8,MUTED);
         text(p,""+g.score,81,layout.height-37,18,PAPER);
         haptics(g,p);
+        if(g.tow.cargo!=null) button(g,p,layout.box(Layout.RELEASE),"RELEASE LINE",true);
         Layout.Box pause=layout.box(Layout.PAUSE);
         VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);
         p.rect(pause.centerX()-10,pause.y+10,6,20,PAPER); p.rect(pause.centerX()+4,pause.y+10,6,20,PAPER);
@@ -110,11 +111,11 @@ public final class ScreenView {
         p=menu(g,p);
         overlay(p,105,411);
         center(p,"CAPTAIN'S FIELD GUIDE",480,133,24,GOLD);
-        instruction(p,1,199,"DRAG THE TUG","Pull farther for thrust. Release to coast.");
-        instruction(p,2,275,"HOLD THE CARGO","Keep still to push. Drag to steer.");
-        instruction(p,3,351,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
-        text(p,"MISSES RETRACT. AIM AGAIN.",159,409,11,GOLD);
-        text(p,"CREWS UNLOAD IN 3 SECONDS, THEN SCORE.",159,445,10,MUTED);
+        instruction(p,1,185,"DRAG THE TUG","Pull farther for thrust. Release to coast.");
+        instruction(p,2,251,"HOLD THE CARGO","Keep still to push. Drag to steer.");
+        instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
+        instruction(p,4,383,"THROW A TOWLINE","Drag cargo to tug. Release, then drive.");
+        text(p,"TAP RELEASE LINE TO LET GO.",159,447,10,GOLD);
         button(g,p,Layout.LEARN,"PRACTICE CONTROLS",false);
         button(g,p,Layout.START,"RESUME SHIFT",true);
         center(p,"YOUR SHIFT WAITS HERE.",770,231,12,MUTED);

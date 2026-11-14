@@ -15,6 +15,9 @@ public final class ControlView {
         return g.control==Game.IDLE || g.control==Game.COASTING?PAPER:AMBER;
     }
     public static String hint(Game g) {
+        if(g.towAiming) return "RELEASE OVER THE TUG TO THROW A TOWLINE";
+        if(g.ropeToTug && g.ropePhase==1) return "TOWLINE AWAY / WATCH THE TUG";
+        if(g.tow.cargo!=null) return g.heldCargo()!=null?"RELEASE LINE TO PUSH / OR DRAG TO BOLLARD":"DRAG TUG TO PULL / RELEASE LINE TO LET GO";
         if(g.ropeDragging) return "AIM THE ARC / RELEASE TO THROW THE LASSO";
         if(g.ropePhase==1) return "LINE AWAY / WATCH THE BOLLARD";
         if(g.ropePhase==2) return "MISSED / REELING BACK FOR ANOTHER THROW";
@@ -24,6 +27,7 @@ public final class ControlView {
         for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
+        if(g.noticeTicks>0 && g.notice.startsWith("TOWLINE RELEASED")) return "LINE BLOCKED OR TOO LONG / RECONNECT NEARBY";
         if(g.holdingTug()) return "DRAG FARTHER FOR THRUST / CENTER TO BRAKE";
         switch(g.control) {
             case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
@@ -38,8 +42,8 @@ public final class ControlView {
         }
     }
     public static void status(Game g,Painter p) {
-        String label=g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
-        if(!g.ropeDragging && g.ropePhase==0) for(Body b:g.cargo) if(g.canTie(b)) { label="READY TO TIE";break; }
+        String label=g.towAiming?"AIM AT TUG":g.tow.cargo!=null?"TOWING":g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
+        if(!g.ropeDragging && !g.towAiming && g.tow.cargo==null && g.ropePhase==0) for(Body b:g.cargo) if(g.canTie(b)) { label="READY TO TIE";break; }
         if(g.control==Game.IDLE || g.control==Game.BRAKING) for(Body b:g.cargo)
             if(b!=null && b.active && b.lineAttached) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
         Layout layout=g.layout;
@@ -76,7 +80,7 @@ public final class ControlView {
             }
         }
         Body b=g.workingCargo();
-        if(b!=null && !g.ropeDragging && !g.canTie(b)) {
+        if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.cargo==null && !g.canTie(b)) {
             ring(p,b.x,b.y,46,1,0x668eaaa9,2);
             if(!g.pushing) ring(p,b.x,b.y,46,g.holdProgress(),AMBER,5);
             else {
@@ -107,6 +111,7 @@ public final class ControlView {
                 || g.notice.startsWith("CONTRACT"))) {
             label(p,g.notice,454,g.layout.camera.worldTop+344/g.layout.camera.zoom,PAPER);
         }
+        TowView.draw(g,p);
         MooringView.draw(g,p);
     }
     private static void dragRing(Game g,Painter p,int color) {

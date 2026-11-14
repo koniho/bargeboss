@@ -28,13 +28,21 @@ public final class SceneryView {
             alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(Game.TIE_X[b.berth],g.dockY(b.berth)),
                     c.screenY(Game.TIE_X[b.berth],g.dockY(b.berth)),24*s,24*s,24*s,20*s));
         }
-        Body rope=g.ropeDragging?g.heldCargo():g.ropeBody;
-        if(rope!=null && (g.ropeDragging || g.ropePhase!=0)) {
-            float ex=g.ropeDragging?g.aimX(rope,g.pointerX,g.pointerY):g.ropeEndX;
-            float ey=g.ropeDragging?g.aimY(rope,g.pointerX,g.pointerY):g.ropeEndY;
+        Body rope=g.ropeDragging || g.towAiming?g.heldCargo():g.ropeBody;
+        if(rope!=null && (g.ropeDragging || g.towAiming || g.ropePhase!=0)) {
+            float ex=g.towAiming?g.pointerX:g.ropeDragging?g.aimX(rope,g.pointerX,g.pointerY):g.ropeEndX;
+            float ey=g.towAiming?g.pointerY:g.ropeDragging?g.aimY(rope,g.pointerX,g.pointerY):g.ropeEndY;
             RiverCamera c=g.layout.camera;
             for(int i=0;i<=12;i++) {
                 float t=i/12f,wx=rope.x+(ex-rope.x)*t,wy=rope.y+(ey-rope.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+                alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(wx,wy),c.screenY(wx,wy),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
+            }
+        }
+        if(g.tow.cargo!=null) {
+            RiverCamera c=g.layout.camera;
+            for(int i=0;i<=12;i++) {
+                float t=i/12f,wx=g.tow.cargoX()+(g.tow.tugX(g.tug)-g.tow.cargoX())*t;
+                float wy=g.tow.cargoY()+(g.tow.tugY(g.tug)-g.tow.cargoY())*t;
                 alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(wx,wy),c.screenY(wx,wy),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
             }
         }

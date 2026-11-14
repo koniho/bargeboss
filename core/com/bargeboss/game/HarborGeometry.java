@@ -26,7 +26,7 @@ public final class HarborGeometry {
         }
         return impact;
     }
-    private static boolean clear(float x,float y,float xx,float yy,float pad) {
+    static boolean clear(float x,float y,float xx,float yy,float pad) {
         for(float[] r:PIERS) {
             float lo=0,hi=1; boolean outside=false;
             for(int axis=0;axis<2;axis++) {

@@ -112,6 +112,14 @@
     [self waitFor:@"lesson 5" on:stage];
     [self riverDrag:stage x:244 y:700 toX:120 toY:700 hold:0.2];
     [self waitFor:@"lesson 6" on:stage];
+    [[self river:stage x:300 y:690] pressForDuration:0.05 thenDragToCoordinate:[self river:stage x:300 y:570]
+                                  withVelocity:300 thenHoldForDuration:0.1];
+    [self waitFor:@"lesson 7" on:stage];
+    [self riverDrag:stage x:300 y:570 toX:300 toY:470 hold:2.5];
+    [self waitFor:@"lesson 8" on:stage];
+    CGSize size=[self logicalSize:stage];
+    [[self point:stage x:size.width-94 y:74] tap];
+    [self waitFor:@"lesson 9" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
     [self tapMenu:stage x:770 y:446];

@@ -66,6 +66,15 @@ public final class Preview {
             if(previous==Tutorial.DONE) break;
         }
         if(previous!=Tutorial.DONE) throw new IllegalStateException("Preview tutorial failed");
+        g=new Game();g.startTutorial();Game tow=g.activeGame();
+        tow.tutorial.lesson=Tutorial.CONNECT;tow.tutorial.setup(tow);b=tow.cargo[0];
+        ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,tow.tug.x,tow.tug.y);capture(g,"tow-aim");
+        ReplayInput.up(g,tow.tug.x,tow.tug.y);steps(g,9);capture(g,"tow-flight");
+        steps(g,9);capture(g,"tow-catch");
+        ReplayInput.down(g,tow.tug.x,tow.tug.y);ReplayInput.move(g,tow.downX,tow.downY-100);
+        steps(g,60);capture(g,"tow-pulling");
+        ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.tap(g,Layout.RELEASE);steps(g,5);capture(g,"tow-release");
+        sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-8"});
         g=new Game();g.reset();steps(g,180);capture(g,"first-watch-overview");
         ReplayInput.down(g,260,730);for(int i=0;i<1800 && !g.canTie(g.cargo[0]);i++) g.step();steps(g,180);capture(g,"docking-zoom");
         g=new Game();g.challengeId=1;g.reset();capture(g,"bridge-start");
@@ -88,7 +97,7 @@ public final class Preview {
         sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});
         sheet("all-phases",new String[]{"stage","driving","coasting","braking","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});
         sheet("control-states",new String[]{"driving","holding","steering","lasso","unloading","delivery"});
-        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6"});
+        sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6","tutorial-7","tutorial-8","tutorial-9"});
         sheet("assist-states",new String[]{"holding","aligning","steering"});
         sheet("mooring",new String[]{"ready-to-tie","lasso","tying-up","unloading","delivery","stage"});
         System.out.println("Shared renderer: control-states.png, tutorial.png and mooring.png in out/");
