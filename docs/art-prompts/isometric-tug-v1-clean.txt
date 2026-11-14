@@ -1,0 +1,5 @@
+Use case: precise-object-edit.
+Asset type: transparent directional tug sprite atlas, 4 columns by 4 rows.
+Input: the existing 16-heading tug atlas is the edit target. Preserve the exact boat design, camera, 16 poses, order, position, scale, and all attached equipment.
+Change only the background/alpha cleanup: remove ALL red, yellow, green, black and gray speckles, mist, colored haze, halos and detached pixels around every boat. Outside the solid boat and its attached mast/rails there must be completely transparent pixels (alpha zero). Keep clean antialiased vessel edges and opaque solid hulls. No smoke, water, wake, cast shadow or glow outside the physical boat. Do not fill the background with any color, checkerboard or texture. Use real transparency.
+Return a clean square 4 by 4 atlas with equal cells and transparent gutters. Do not move, redesign, crop, relight or rotate any boat. No text, numbers or grid.

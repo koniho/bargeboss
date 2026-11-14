@@ -1,5 +1,10 @@
 # Provenance
 
+The newer three-quarter industrial tug study is documented in
+[isometric-tug-review.md](art-studies/isometric-tug-review.md), with its supplied
+reference, built-in image generation prompt, candidate atlas and validation
+limits. It is not a production atlas and is not bundled into native builds.
+
 The project adopts the user's existing DDDumpling cross-platform design:
 pure Java game/renderer, a small Painter boundary, Android Canvas, and J2ObjC
 translation into a UIKit/Core Graphics host. The iOS `bootstrap.sh` is copied
