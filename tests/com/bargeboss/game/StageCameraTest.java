@@ -17,6 +17,11 @@ public final class StageCameraTest {
         for(int i=0;i<1800 && !g.canTie(b);i++) g.step();
         steps(g,180);
         check(g.canTie(b) && g.layout.camera.zoom>1.39f,"real assisted arrival settles at berth and smoothly zooms in");
+        for(float[] point:new float[][]{{g.tug.x,g.tug.y},{b.x,b.y},{Game.TIE_X[b.berth],g.dockY(b.berth)}}) {
+            float sx=g.layout.camera.screenX(point[0],point[1]),sy=g.layout.camera.screenY(point[0],point[1]);
+            check(sx>32 && sx<g.layout.width-32 && sy>64 && sy<g.layout.height-48,
+                    "docking zoom keeps both hull centers and the inland tie target clear of HUD edges");
+        }
         check(!g.manualSteering && Math.abs(px-g.layout.camera.screenX(g.downX,g.downY))<.05f
                 && Math.abs(py-g.layout.camera.screenY(g.downX,g.downY))<.05f,"camera cannot move a resting finger or steer its barge");
         ReplayInput.up(g,g.pointerX,g.pointerY);steps(g,180);

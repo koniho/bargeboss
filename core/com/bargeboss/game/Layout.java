@@ -23,8 +23,15 @@ public final class Layout {
     public Layout(float width,float height,float worldTop,float worldRight,float zoom) {
         this.width=Math.max(WIDTH,width); this.height=Math.max(HEIGHT,height);
         offsetX=(this.width-WIDTH)/2; offsetY=(this.height-HEIGHT)/2;
-        float scale=Math.min(this.width/688,this.height/320);
-        camera=new RiverCamera((this.width-688*scale)/2,(this.height-320*RiverCamera.DEPTH*scale)/2,scale*zoom,worldTop,worldRight,zoom);
+        float scale=Math.min(this.width/RiverCamera.BOARD_WIDTH,(this.height-104)/RiverCamera.BOARD_HEIGHT);
+        camera=new RiverCamera((this.width-RiverCamera.BOARD_WIDTH*scale)/2,(this.height-RiverCamera.BOARD_HEIGHT*scale)/2,scale*zoom,worldTop,worldRight,zoom);
+    }
+
+    /** Place a world focus at a screen anchor using the same inverse as touch input. */
+    public static Layout focused(float width,float height,float x,float y,float zoom,float screenX,float screenY) {
+        Layout base=new Layout(width,height,148,460,zoom);
+        RiverCamera c=base.camera;
+        return new Layout(width,height,148+y-c.worldY(screenX,screenY),460+x-c.worldX(screenX,screenY),zoom);
     }
 
     /** Menu rectangles remain centered; live controls overlay the outer shore. */

@@ -9,12 +9,21 @@
     XCUIDevice.sharedDevice.orientation=UIDeviceOrientationLandscapeLeft;
 }
 - (void)waitFor:(NSString *)value on:(XCUIElement *)stage after:(NSTimeInterval)delay {
+    NSLog(@"Barge Boss wait: expected '%@'; initial status: %@",value,stage.value);
     NSTimeInterval earliest=NSDate.timeIntervalSinceReferenceDate+delay;
     NSPredicate *predicate=[NSPredicate predicateWithBlock:^BOOL(id object,NSDictionary *bindings) {
         return NSDate.timeIntervalSinceReferenceDate>=earliest && [[(XCUIElement *)object value] containsString:value];
     }];
-    [self expectationForPredicate:predicate evaluatedWithObject:stage handler:nil];
-    [self waitForExpectationsWithTimeout:18 handler:nil];
+    XCTNSPredicateExpectation *expectation=[[XCTNSPredicateExpectation alloc] initWithPredicate:predicate object:stage];
+    XCTWaiterResult result=[XCTWaiter waitForExpectations:@[expectation] timeout:18];
+    NSString *actual=(NSString *)stage.value;
+    NSLog(@"Barge Boss wait result %ld: expected '%@'; actual status: %@",(long)result,value,actual);
+    if(result!=XCTWaiterResultCompleted) {
+        XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:stage.screenshot];
+        image.name=[NSString stringWithFormat:@"failed-wait-%@",value];
+        image.lifetime=XCTAttachmentLifetimeKeepAlways;[self addAttachment:image];
+    }
+    XCTAssertEqual(result,XCTWaiterResultCompleted,@"Expected '%@'; actual status: %@",value,actual);
 }
 - (void)waitFor:(NSString *)value on:(XCUIElement *)stage { [self waitFor:value on:stage after:0]; }
 // Mirror the small shared Viewport/Layout contract, not fixed device dimensions.
@@ -27,16 +36,20 @@
     return [stage coordinateWithNormalizedOffset:CGVectorMake(x/size.width,y/size.height)];
 }
 - (XCUICoordinate *)river:(XCUIElement *)stage x:(double)x y:(double)y {
+    return [self river:stage x:x y:y status:(NSString *)stage.value];
+}
+- (XCUICoordinate *)river:(XCUIElement *)stage x:(double)x y:(double)y status:(NSString *)status {
     CGSize size=[self logicalSize:stage];
-    double scale=fmin(size.width/688,size.height/320);
-    double left=(size.width-688*scale)/2,top=(size.height-320*0.75*scale)/2;
+    double q=0.70710678,depth=0.57735027;
+    double scale=fmin(size.width/(1008*q),(size.height-104)/(1008*q*depth));
+    double left=(size.width-1008*q*scale)/2,top=(size.height-1008*q*depth*scale)/2;
     double worldTop=148,worldRight=460;
-    NSArray<NSString *> *sections=[(NSString *)stage.value componentsSeparatedByString:@"; camera "];
+    NSArray<NSString *> *sections=[status componentsSeparatedByString:@"; camera "];
     if(sections.count==2) {
         NSArray<NSString *> *values=[sections[1] componentsSeparatedByString:@","];
         if(values.count==5) { left=values[0].doubleValue;top=values[1].doubleValue;scale=values[2].doubleValue;worldTop=values[3].doubleValue;worldRight=values[4].doubleValue; }
     }
-    return [self point:stage x:left+(y-worldTop)*scale y:top+(worldRight-x)*scale*0.75];
+    return [self point:stage x:left+q*((x-worldRight)+(y-worldTop)+320)*scale y:top+q*depth*((y-worldTop)-(x-worldRight))*scale];
 }
 - (void)tapMenu:(XCUIElement *)stage x:(double)x y:(double)y {
     CGSize size=[self logicalSize:stage];
@@ -51,8 +64,11 @@
                                   withVelocity:100 thenHoldForDuration:hold];
 }
 - (void)throwLine:(XCUIElement *)stage toX:(double)x toY:(double)y {
-    [[self river:stage x:230 y:290] pressForDuration:0.15 thenDragToCoordinate:[self river:stage x:x y:y]
-                                   withVelocity:300 thenHoldForDuration:0.1];
+    NSString *status=(NSString *)stage.value;
+    CGPoint barge=[self worldPositionInStatus:status tag:@"cargo"];
+    [[self river:stage x:barge.x y:barge.y status:status] pressForDuration:0.15
+            thenDragToCoordinate:[self river:stage x:x y:y status:status]
+            withVelocity:300 thenHoldForDuration:0.1];
 }
 - (XCUIElement *)startAndDockFirstLoad:(XCUIApplication *)app {
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
@@ -92,7 +108,10 @@
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Paused; delivered 1;"],@"Background pauses without resetting delivery");
 }
 - (CGPoint)worldPosition:(XCUIElement *)stage tag:(NSString *)tag {
-    NSArray<NSString *> *parts=[(NSString *)stage.value componentsSeparatedByString:[NSString stringWithFormat:@"; %@ ",tag]];
+    return [self worldPositionInStatus:(NSString *)stage.value tag:tag];
+}
+- (CGPoint)worldPositionInStatus:(NSString *)status tag:(NSString *)tag {
+    NSArray<NSString *> *parts=[status componentsSeparatedByString:[NSString stringWithFormat:@"; %@ ",tag]];
     XCTAssertEqual(parts.count,2);
     NSArray<NSString *> *pair=[[parts.lastObject componentsSeparatedByString:@";"].firstObject componentsSeparatedByString:@","];
     XCTAssertEqual(pair.count,2);
@@ -150,10 +169,21 @@
     b=[self worldPosition:stage tag:@"cargo"];
     [self riverDrag:stage x:b.x y:b.y toX:120 toY:700 hold:0.2];
     [self waitFor:@"lesson 7" on:stage];
-    [[self river:stage x:300 y:690] pressForDuration:0.05 thenDragToCoordinate:[self river:stage x:300 y:570]
-                                  withVelocity:300 thenHoldForDuration:0.1];
+    // CONNECT creates drifting hulls. Derive both endpoints and the camera from
+    // one current status snapshot rather than reusing their setup coordinates.
+    NSString *towStatus=(NSString *)stage.value;
+    b=[self worldPositionInStatus:towStatus tag:@"cargo"];
+    CGPoint boat=[self worldPositionInStatus:towStatus tag:@"tug"];
+    NSLog(@"Connecting tow: %@",towStatus);
+    [[self river:stage x:b.x y:b.y status:towStatus] pressForDuration:0.05
+            thenDragToCoordinate:[self river:stage x:boat.x y:boat.y status:towStatus]
+            withVelocity:300 thenHoldForDuration:0.1];
     [self waitFor:@"lesson 8" on:stage];
-    [self riverDrag:stage x:300 y:570 toX:300 toY:470 hold:2.5];
+    NSString *pullStatus=(NSString *)stage.value;
+    boat=[self worldPositionInStatus:pullStatus tag:@"tug"];
+    [[self river:stage x:boat.x y:boat.y status:pullStatus] pressForDuration:0.35
+            thenDragToCoordinate:[self river:stage x:boat.x y:boat.y-100 status:pullStatus]
+            withVelocity:100 thenHoldForDuration:2.5];
     [self waitFor:@"lesson 9" on:stage];
     b=[self worldPosition:stage tag:@"cargo"];[[self river:stage x:b.x y:b.y] tap];
     [self waitFor:@"lesson 10" on:stage];

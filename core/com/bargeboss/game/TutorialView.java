@@ -28,7 +28,7 @@ public final class TutorialView {
             p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
             return;
         }
-        Painter coach=ScreenView.offset(p,g.layout.camera.left-16,g.layout.camera.top-84);
+        Painter coach=ScreenView.offset(p,-18,-30);
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
@@ -53,7 +53,7 @@ public final class TutorialView {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             float x=g.holdingTug()?g.downX:g.tug.x,y=g.holdingTug()?g.downY:g.tug.y;
             ControlView.arrow(river,x,y-25,x,y-100-pulse,VisualStyle.GOLD);
-            RiverPainter.center(river,"DRAG LEFT",x+22,y-72,10,PAPER);
+            RiverPainter.center(river,"DRAG THIS WAY",x+22,y-72,10,PAPER);
         } else if(t.lesson==Tutorial.COAST) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,ControlView.BLUE,3);
             RiverPainter.center(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);

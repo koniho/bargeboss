@@ -42,7 +42,7 @@ public final class RotationTest {
             Capture direct=new Capture(); SpriteAtlas.draw(direct,atlas,.27f,300,550,128,144,1);
             Draw river=nativeCalls.draws[0],world=direct.draws[0];
             check(near(river.cx,RiverPainter.screenX(300,550)) && near(river.cy,RiverPainter.screenY(300,550)),"camera rotation preserves one mapped footprint center");
-            check(river.frameA==(world.frameA+24)%32 && river.frameB==(world.frameB+24)%32,"landscape camera shifts both blend frames by a quarter-turn");
+            check(river.frameA==(world.frameA+28)%32 && river.frameB==(world.frameB+28)%32,"isometric camera shifts both blend frames by minus 45 degrees");
             check(near(river.width,128*RiverPainter.SCALE) && near(river.height,144*RiverPainter.SCALE)
                     && near(river.blend,world.blend),"camera scales dimensions without changing blend progress");
         }
@@ -64,7 +64,30 @@ public final class RotationTest {
                 check(g.ticks==ticks && g.visualTicks==visual && b.x==x && b.y==y && b.angle==angle,"rotation drawing never mutates clocks or pose");
             }
         }
+        depthOrder();
         System.out.println(assertions+" sprite rotation, fixed-anchor and blend continuity assertions passed");
+    }
+    private static void depthOrder() {
+        Game g=new Game();g.reset();
+        for(Feeder feeder:g.feeders) {feeder.phase=Feeder.IDLE;feeder.load=null;}
+        for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
+        g.cargo[0]=new Body(1,2,250,400,0);g.tug.x=350;g.tug.y=650;
+        HullOrder capture=new HullOrder();g.render(capture);
+        check(capture.count==2 && capture.first==SpriteAtlas.BARGE && capture.last==SpriteAtlas.TUG,
+                "smaller projected ground depth renders behind even when world X alone suggests the opposite");
+        g.cargo[0].y=650;g.tug.y=350;capture=new HullOrder();g.render(capture);
+        check(capture.count==2 && capture.first==SpriteAtlas.TUG && capture.last==SpriteAtlas.BARGE,
+                "changing world Y reverses overlap order across the isometric plane");
+    }
+    private static final class HullOrder implements Painter {
+        int first=-1,last=-1,count;
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {record(a);}
+        public void spriteBlend(int a,int f,int b,float x,float y,float w,float h,float r,float blend,float alpha) {record(a);}
+        private void record(int atlas) {if(atlas==SpriteAtlas.TUG || atlas==SpriteAtlas.BARGE) {if(count++==0) first=atlas;last=atlas;}}
+        public void rect(float x,float y,float w,float h,int c) {}
+        public void circle(float x,float y,float r,int c) {}
+        public void poly(float[] xy,int c) {}
+        public void line(float x,float y,float xx,float yy,float w,int c) {}
     }
     private static Capture sample(int atlas,float angle,float alpha) {
         Capture p=new Capture(); SpriteAtlas.draw(p,atlas,angle,250.25f,400.75f,128,144,alpha); return p;

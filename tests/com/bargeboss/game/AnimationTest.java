@@ -13,7 +13,7 @@ public final class AnimationTest {
                 && portrait.logicalHeight()>Layout.HEIGHT,"portrait window exposes a full responsive canvas");
         float screenX=RiverPainter.screenX(310,540),screenY=RiverPainter.screenY(310,540);
         check(Math.abs(RiverPainter.riverX(screenX,screenY)-310)<.0001f && Math.abs(RiverPainter.riverY(screenX,screenY)-540)<.0001f,
-                "quarter-turn river input is the inverse of drawing");
+                "isometric river input is the inverse of drawing");
         check(RiverPainter.inBoard(screenX,screenY) && !RiverPainter.inBoard(Layout.HELP.centerX(),Layout.HELP.centerY()),
                 "landscape controls sit outside the river input surface");
         Game g=new Game(); float x=g.tug.x,y=g.tug.y;

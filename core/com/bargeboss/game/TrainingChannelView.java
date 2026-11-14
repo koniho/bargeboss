@@ -7,10 +7,15 @@ public final class TrainingChannelView {
         RiverCamera c=g.layout.camera;Painter p=new RiverPainter(canvas,c);
         WaveView.draw(canvas,g.visualTicks,0,0,g.layout.width,g.layout.height,c.scale,0);
         g.water.draw(g,p);
-        float low=c.worldX(0,g.layout.height)-35,high=c.worldX(0,0)+35;
+        float low=Float.MAX_VALUE,high=-Float.MAX_VALUE,minY=Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
+        for(int corner=0;corner<4;corner++) {
+            float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
+            low=Math.min(low,c.worldX(sx,sy)-35);high=Math.max(high,c.worldX(sx,sy)+35);
+            minY=Math.min(minY,c.worldY(sx,sy)-35);maxY=Math.max(maxY,c.worldY(sx,sy)+35);
+        }
         int samples=(int)((high-low)/8)+1;
         for(int side=-1;side<=1;side+=2) {
-            float outer=side<0?c.worldTop-20:c.worldTop+688/c.zoom+20;
+            float outer=side<0?minY:maxY;
             float[] land=new float[(samples+3)*2];land[0]=low;land[1]=outer;
             for(int i=0;i<=samples;i++) {
                 float x=low+(high-low)*i/samples,y=TrainingChannel.center(x)+side*TrainingChannel.HALF_WIDTH;
@@ -34,8 +39,8 @@ public final class TrainingChannelView {
                 canvas.sprite(SpriteAtlas.SCENERY,Math.abs(i*3+(side>0?2:0))%8,sx,sy,90*c.scale,90*c.scale,0,alpha);
             }
         }
-        if(low<TrainingChannel.MIN) p.rect(low,c.worldTop,TrainingChannel.MIN-low,688,0xff67788c);
-        if(high>TrainingChannel.MAX) p.rect(TrainingChannel.MAX,c.worldTop,high-TrainingChannel.MAX,688,0xff67788c);
+        if(low<TrainingChannel.MIN) p.rect(low,minY,TrainingChannel.MIN-low,maxY-minY,0xff67788c);
+        if(high>TrainingChannel.MAX) p.rect(TrainingChannel.MAX,minY,high-TrainingChannel.MAX,maxY-minY,0xff67788c);
         int gate=g.tutorial.channelGate;
         for(int i=1;i<TrainingChannel.X.length;i++) {
             float x=TrainingChannel.X[i],y=TrainingChannel.Y[i];

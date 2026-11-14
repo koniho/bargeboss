@@ -36,7 +36,8 @@ with higher load during cargo contact and reverse braking. Releasing thrust lets
 the exhaust settle toward idle even while the hull coasts. NPC feeder loads depend
 on hauling versus empty return; blocked feeders idle. `VesselView` draws 5–20
 overlapping smoke puffs, increasing their size, density and darkness with load.
-Each of the 32 source views has a calibrated chimney-mouth anchor. The anchor
+The tug has 32 source-cell chimney anchors: 31 visually calibrated, with the
+hidden rim in frame 10 explicitly estimated. The anchor
 uses the same pivot, scale corrections and blend as its hull, including the river
 projection. A throat puff connects the stack to the brighter drifting plume.
 
@@ -50,10 +51,12 @@ Buttons receive input priority over the projected world. Industrial scenery fill
 responsive margins. HUD targets stay fixed while the river camera moves.
 
 `RiverCamera` stores the viewport origin, uniform scale, world origin and zoom.
-The overview spans world x=140..460, y=148..836. Base scale is
-min(canvasWidth/688, canvasHeight/320), multiplied by docking zoom. The fixed
-ground-depth factor is 0.75: screenY=top+(worldRight-worldX)*scale*0.75 and
-screenX=left+(worldY-worldTop)*scale. Input uses the exact inverse. Sprites retain
+The overview spans world x=140..460, y=148..836. Ground yaw is 45° and elevation
+35.264°, with equal foreshortening along both world axes. The projected bounding
+box is `1008/sqrt(2)` by `1008/sqrt(6)`; base scale fits it inside canvas width and
+canvas height minus 104, then applies docking zoom. Both screen coordinates use
+both world axes; input uses the paired inverse documented in
+[the migration notes](isometric-migration.md). Sprites retain
 uniform scale, fixed 32-view anchors and upright scenery; physics never changes
 with camera transforms. Navigable water is x=170..430. Normal stages span
 y=215..817; Bridge Run extends upstream to y=-520, with berth A at y=-400.
@@ -110,9 +113,12 @@ source assets, not screenshots or generated build output.
 
 `SpriteAtlas` owns filenames, grid dimensions and per-frame hull/payload
 registration points. All five rotating assets use 32 logical views, ordered
-clockwise from east in 11.25° steps. Each asset has two physical 4×4 sheets:
-even logical frames use the corrected 16-view base sheet, and odd frames use a
-new sheet of intermediate headings (11.25°, 33.75°, …, 348.75°).
+clockwise from east in 11.25° steps. The v5 tug uses one 8×4 sheet with a single
+uniform scale and registered waterline pivots. Its production smoke points are
+in `TugArt`; unverified light/fender guide points remain in the art-study metadata.
+The transitional barge and payload assets each use two physical 4×4 sheets:
+even logical frames use the corrected 16-view base sheet, and odd frames use
+intermediate headings (11.25°, 33.75°, …, 348.75°).
 `file(atlas, frame)` chooses the sheet; `sourceFrame(atlas, frame)` maps to the
 physical cell. Irregular scenery cells use shared normalized sourceLeft/Top/Right/Bottom
 bounds. All hosts cache source images by path across atlas IDs, then cache their
@@ -121,7 +127,7 @@ blend weight, scale, pivots, opacity and decorative animation from the same
 phase state on every platform. Both frames place their registered footprint at
 the same world point; the stage applies no residual bitmap rotation. Per-frame
 `widthScale` and `heightScale` calibrate drawing size before applying each pivot.
-The base views use scale one; intermediate views match the average normalized
+For the transitional atlases, base views use scale one; intermediate views match the average normalized
 ink bounds of their neighboring base drawings. This compensates for different
 padding and drawing sizes across the two sheets. Each native blend layer covers
 the union of both independently scaled cells. The atlas

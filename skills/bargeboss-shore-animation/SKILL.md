@@ -54,3 +54,24 @@ checks/install instructions when integration is part of the authorized task.
 On the development phone, also copy concept/review images to
 `/storage/emulated/0/Download` with descriptive versioned names, following the
 repository workflow; keep source atlases and prompts in the repository.
+
+## Required lighting and smoke anchors
+
+Inventory every visible lamp, furnace opening, chimney, exhaust and steam outlet.
+Record stable named IDs, emitter kind/role, color, local XYZ and outward normal,
+normalized source-cell position, radius, visibility and review status alongside
+source crops and the ground pivot. Explicitly record empty categories for assets
+without lights or outlets. Keep glow, smoke and steam independently animated;
+a painted bright spot is not a substitute for an emitter anchor.
+
+For animated equipment, store anchors for every phase/frame, including idle,
+working and return transitions. Identify the parent rigid part and its pivot;
+move lamps and exhaust with that part. Keep IDs stable across frames, marking
+hidden points occluded rather than deleting them. Document phase-driven emission
+(e.g. engine load or steam release) separately from anchor geometry.
+
+Review labeled emitter overlays on the actual source pixels and at gameplay size.
+Distinguish guide-projected estimates from pixel-verified positions; generated
+art can add or relocate fixtures. Verify visibility, phase transitions and any
+interpolation before integrating effects. Keep the runtime metadata and emission
+rules in shared Java so Android, iOS and desktop use identical attachment points.

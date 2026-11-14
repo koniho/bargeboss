@@ -68,3 +68,22 @@ host-specific scenery layouts or treat art opacity as collision geometry.
 On the development phone, also copy concept/review images to
 `/storage/emulated/0/Download` with descriptive versioned names, as requested in
 the repository workflow. Preserve the canonical files and prompts in the repo.
+
+## Required lighting and smoke anchors
+
+Inventory every visible lamp, furnace opening, chimney, exhaust and steam outlet.
+Record stable named IDs, emitter kind/role, color, local XYZ and outward normal,
+normalized source-cell position, radius, visibility and review status alongside
+source crops and the ground pivot. Explicitly record empty categories for assets
+without lights or outlets. Keep glow, smoke and steam independently animated;
+a painted bright spot is not a substitute for an emitter anchor.
+
+For static scenery, store anchors per asset/layer and fixed view. Keep the same
+local origin as the ground footprint; state outlet height above the deck and
+light spill direction so effects remain attached when the building fades.
+
+Review labeled emitter overlays on the actual source pixels and at gameplay size.
+Distinguish guide-projected estimates from pixel-verified positions; generated
+art can add or relocate fixtures. Verify visibility, phase transitions and any
+interpolation before integrating effects. Keep the runtime metadata and emission
+rules in shared Java so Android, iOS and desktop use identical attachment points.

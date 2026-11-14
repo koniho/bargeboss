@@ -125,3 +125,16 @@ three art skills.
   when integrating; all native hosts must consume the same metadata.
 - Record prompt, input roles, output, observed failures and acceptance decision
   for each attempt. Do not silently replace the previous candidate.
+
+### Runtime v5 smoke registration
+
+Guide-generated effect positions need their own pixel review even after a hull
+fit is accepted. The v5 main stack rim is substantially higher than several
+projected guide points. Visually calibrated 31 rim centers; frame 10 has no
+reliable visible rim and remains explicitly interpolated/occluded. Keep this
+calibration as a separate authored CSV so re-exporting guide metadata cannot
+silently overwrite it. Runtime smoke must share the hull's source-frame offset,
+short blend, registered pivot and uniform scale. Review these through the actual
+native drawing contract, not only the art-study HTML. Square source cells need
+square runtime rectangles; retaining the old tug's 1.05 height factor deforms
+the approved isometric design.

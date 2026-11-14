@@ -15,7 +15,8 @@ public final class EffectsPreview {
         Game g=new Game();g.visualTicks=43;
         for(int i=0;i<32;i++) {
             float x=100+(i%8)*200,y=165+(i/8)*200;
-            RiverCamera camera=new RiverCamera(x-(500-148)*2.1f,y-(460-300)*2.1f*.75f,2.1f);
+            RiverCamera origin=new RiverCamera(0,0,2.1f);
+            RiverCamera camera=new RiverCamera(x-origin.screenX(300,500),y-origin.screenY(300,500),2.1f);
             Body tug=new Body(0,-1,300,500,(float)(i*Math.PI/16));tug.floatingInitialized=true;tug.engineLoad=1;
             VesselView.draw(g,new RiverPainter(p,camera),tug,true);
             Lettering.center(p,""+Math.round(i*360/32f),x,(i/8)*200+10,12,VisualStyle.GOLD);

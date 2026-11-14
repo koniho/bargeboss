@@ -28,7 +28,7 @@ public final class ResponsiveTest {
         RiverCamera camera=layout.camera;
         check(camera.left>=0 && camera.top>=0 && camera.left+camera.width()<=layout.width+.002f
                 && camera.top+camera.height()<=layout.height+.002f,"entire river rectangle fits the canvas");
-        float[] xs={RiverPainter.WORLD_LEFT,Physics.LEFT,Game.DOCK_X[0],Game.TIE_X[1],Physics.RIGHT,RiverPainter.WORLD_RIGHT};
+        float[] xs={RiverPainter.WORLD_LEFT,Physics.LEFT,Game.DOCK_X[0],Physics.RIGHT,RiverPainter.WORLD_RIGHT};
         float[] ys={RiverPainter.WORLD_TOP,Physics.TOP,Game.DOCK_Y[1],Physics.BOTTOM,RiverPainter.WORLD_BOTTOM};
         for(float x:xs) for(float y:ys) {
             float sx=camera.screenX(x,y),sy=camera.screenY(x,y);
@@ -37,7 +37,15 @@ public final class ResponsiveTest {
         }
         float xDistance=Physics.length(camera.screenX(330,500)-camera.screenX(300,500),camera.screenY(330,500)-camera.screenY(300,500));
         float yDistance=Physics.length(camera.screenX(300,530)-camera.screenX(300,500),camera.screenY(300,530)-camera.screenY(300,500));
-        check(near(xDistance,30*camera.scale*RiverCamera.DEPTH) && near(yDistance,30*camera.scale),"ground plane uses the same fixed depth projection on every host");
+        float edge=30*camera.scale*(float)StrictMath.sqrt(2.0/3);
+        check(near(xDistance,edge) && near(yDistance,edge),"isometric ground axes have equal foreshortening on every host");
+        check(camera.screenX(330,500)>camera.screenX(300,500) && camera.screenY(330,500)<camera.screenY(300,500)
+                && camera.screenX(300,530)>camera.screenX(300,500) && camera.screenY(300,530)>camera.screenY(300,500),
+                "positive world axes project right-up and right-down at the fixed isometric angle");
+        for(int i=0;i<Game.TIE_X.length;i++) {
+            float sx=camera.screenX(Game.TIE_X[i],Game.DOCK_Y[i]),sy=camera.screenY(Game.TIE_X[i],Game.DOCK_Y[i]);
+            check(sx>=0 && sx<=layout.width && sy>=0 && sy<=layout.height,"actual inland tie targets remain on screen");
+        }
         for(Layout.Box original:BUTTONS) {
             Layout.Box box=layout.box(original);
             check(box.x>=0 && box.y>=0 && box.x+box.w<=layout.width && box.y+box.h<=layout.height,"all menu and control targets fit the canvas");
@@ -45,8 +53,7 @@ public final class ResponsiveTest {
         for(Layout.Box original:LIVE_BUTTONS) {
             Layout.Box box=layout.box(original);
             // Controls overlay only the shore and outer apron, never navigable water.
-            float waterTop=camera.screenY(Physics.RIGHT,Physics.TOP),waterBottom=camera.screenY(Physics.LEFT,Physics.TOP);
-            check(box.y+box.h<=waterTop || box.y>=waterBottom,"live controls leave the navigable channel clear");
+            check(!overlapsWater(camera,box),"live controls leave the projected navigable channel clear");
         }
     }
     private static void menuAndGestureRouting(Game game) {
@@ -114,6 +121,55 @@ public final class ResponsiveTest {
         float x=302,y=519,sx=camera.screenX(x,y),sy=camera.screenY(x,y);
         check(near(camera.worldX(sx,sy),x) && near(camera.worldY(sx,sy),y),"translated and zoomed camera preserves exact input inverse");
         check(camera.contains(sx,sy) && !camera.contains(camera.left-1,camera.top),"camera containment follows its translated projection");
-        check(near(camera.width(),688*2.4f) && near(camera.height(),320*2.4f*RiverCamera.DEPTH),"camera zoom preserves the fixed ground depth ratio");
+        check(near(camera.width(),1008*RiverCamera.Q*2.4f) && near(camera.height(),1008*RiverCamera.Q*RiverCamera.DEPTH*2.4f),"camera bounds include all four projected world corners");
+        for(float zoom:new float[]{1,1.17f,1.4f}) {
+            camera=new RiverCamera(37,81,1.3f*zoom,-470,1020,zoom);
+            for(float wx:new float[]{-200,120,480,1460}) for(float wy:new float[]{-520,290,817}) {
+                sx=camera.screenX(wx,wy);sy=camera.screenY(wx,wy);
+                check(near(camera.worldX(sx,sy),wx) && near(camera.worldY(sx,sy),wy),"scrolled and zoomed isometric inverse preserves both axes");
+            }
+            for(float rise:new float[]{-3,0,4}) {
+                float baseX=camera.screenX(310,540),baseY=camera.screenY(310,540);
+                float liftedX=camera.screenX(310+RiverCamera.riseX(rise),540+RiverCamera.riseY(rise));
+                float liftedY=camera.screenY(310+RiverCamera.riseX(rise),540+RiverCamera.riseY(rise));
+                check(near(baseX,liftedX) && near(liftedY,baseY-rise*camera.scale),
+                        "wave heave lifts upright sprites vertically without screen-sideways drift");
+            }
+            GroundCapture capture=new GroundCapture();new RiverPainter(capture,camera).rect(170,215,260,602,0xff112233);
+            check(capture.points!=null && capture.points.length==8 && capture.rects==0,"ground rectangles draw as four-corner projected polygons");
+            float[] world={170,215,430,215,430,817,170,817};
+            for(int i=0;i<8;i+=2) {
+                boolean found=false;
+                for(int j=0;j<8;j+=2) if(near(capture.points[j],camera.screenX(world[i],world[i+1]))
+                        && near(capture.points[j+1],camera.screenY(world[i],world[i+1]))) found=true;
+                check(found,"projected ground footprint retains every collision corner");
+            }
+        }
     }
+    /** Separating axes of the screen rectangle and the projected water parallelogram. */
+    private static boolean overlapsWater(RiverCamera camera,Layout.Box box) {
+        float[] world={Physics.LEFT,Physics.TOP,Physics.RIGHT,Physics.TOP,Physics.RIGHT,Physics.BOTTOM,Physics.LEFT,Physics.BOTTOM};
+        float[] water=new float[8],control={box.x,box.y,box.x+box.w,box.y,box.x+box.w,box.y+box.h,box.x,box.y+box.h};
+        for(int i=0;i<8;i+=2) {water[i]=camera.screenX(world[i],world[i+1]);water[i+1]=camera.screenY(world[i],world[i+1]);}
+        float[][] axes={{1,0},{0,1},{RiverCamera.DEPTH,1},{RiverCamera.DEPTH,-1}};
+        for(float[] axis:axes) {
+            float wmin=Float.POSITIVE_INFINITY,wmax=Float.NEGATIVE_INFINITY,cmin=wmin,cmax=wmax;
+            for(int i=0;i<8;i+=2) {
+                float wp=water[i]*axis[0]+water[i+1]*axis[1],cp=control[i]*axis[0]+control[i+1]*axis[1];
+                wmin=Math.min(wmin,wp);wmax=Math.max(wmax,wp);cmin=Math.min(cmin,cp);cmax=Math.max(cmax,cp);
+            }
+            if(wmax<=cmin || cmax<=wmin) return false;
+        }
+        return true;
+    }
+    private static final class GroundCapture implements Painter {
+        float[] points;int rects;
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {}
+        public void spriteBlend(int a,int f,int next,float x,float y,float w,float h,float r,float blend,float alpha) {}
+        public void rect(float x,float y,float w,float h,int c) {rects++;}
+        public void circle(float x,float y,float r,int c) {}
+        public void poly(float[] xy,int c) {points=xy;}
+        public void line(float x,float y,float xx,float yy,float w,int c) {}
+    }
+
 }

@@ -1,22 +1,23 @@
 package com.bargeboss.game;
 
-/** Rotate the full river into a landscape board; physics keeps its world axes. */
+/** Project the ground plane; upright sprites and labels keep their source perspective. */
 public final class RiverPainter implements Painter {
-    public static final float SCALE=960f/688, LEFT=0, TOP=(600-320*RiverCamera.DEPTH*SCALE)/2;
+    public static final float SCALE=RiverCamera.DEFAULT.scale, LEFT=RiverCamera.DEFAULT.left, TOP=RiverCamera.DEFAULT.top;
     public static final float WORLD_LEFT=140, WORLD_RIGHT=460, WORLD_TOP=148, WORLD_BOTTOM=836;
     private final Painter painter;
     public final RiverCamera camera;
     public RiverPainter(Painter painter) { this(painter,RiverCamera.DEFAULT); }
     public RiverPainter(Painter painter,RiverCamera camera) { this.painter=painter; this.camera=camera; }
-    public static float screenX(float x,float y) { return LEFT+(y-WORLD_TOP)*SCALE; }
-    public static float screenY(float x,float y) { return TOP+(WORLD_RIGHT-x)*SCALE*RiverCamera.DEPTH; }
-    public static float riverX(float x,float y) { return WORLD_RIGHT-(y-TOP)/(SCALE*RiverCamera.DEPTH); }
-    public static float riverY(float x,float y) { return WORLD_TOP+(x-LEFT)/SCALE; }
+    public static float screenX(float x,float y) { return RiverCamera.DEFAULT.screenX(x,y); }
+    public static float screenY(float x,float y) { return RiverCamera.DEFAULT.screenY(x,y); }
+    public static float riverX(float x,float y) { return RiverCamera.DEFAULT.worldX(x,y); }
+    public static float riverY(float x,float y) { return RiverCamera.DEFAULT.worldY(x,y); }
     public static boolean inBoard(float x,float y) {
-        return x>=LEFT && x<=screenX(WORLD_RIGHT,WORLD_BOTTOM) && y>=TOP && y<=screenY(WORLD_LEFT,WORLD_BOTTOM);
+        float wx=riverX(x,y),wy=riverY(x,y);
+        return wx>=WORLD_LEFT && wx<=WORLD_RIGHT && wy>=WORLD_TOP && wy<=WORLD_BOTTOM;
     }
     public void rect(float x,float y,float w,float h,int c) {
-        painter.rect(camera.screenX(x+w,y),camera.screenY(x+w,y),h*camera.scale,w*camera.scale*RiverCamera.DEPTH,c);
+        poly(new float[]{x,y,x+w,y,x+w,y+h,x,y+h},c);
     }
     public Painter canvas() { return painter; }
     public void circle(float x,float y,float r,int c) {
@@ -34,10 +35,10 @@ public final class RiverPainter implements Painter {
         painter.line(camera.screenX(x,y),camera.screenY(x,y),camera.screenX(xx,yy),camera.screenY(xx,yy),w*camera.scale,c);
     }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
-        painter.sprite(atlas,(frame+24)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),width*camera.scale,height*camera.scale,rotation,alpha);
+        painter.sprite(atlas,(frame+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),width*camera.scale,height*camera.scale,rotation,alpha);
     }
     public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,float rotation,float blend,float alpha) {
-        painter.spriteBlend(atlas,(frameA+24)%32,(frameB+24)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),
+        painter.spriteBlend(atlas,(frameA+RiverCamera.DIRECTION_OFFSET)%32,(frameB+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),
                 width*camera.scale,height*camera.scale,rotation,blend,alpha);
     }
     /** UI labels stay upright instead of inheriting the world's quarter-turn. */

@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** A vertical, several-screen practice course in the same rotated river coordinates. */
+/** A winding, several-screen practice course in shared world coordinates. */
 public final class TrainingChannel {
     public static final float MIN=120,MAX=1540,HALF_WIDTH=58;
     public static final float[] X={200,380,560,740,920,1100,1280,1460};

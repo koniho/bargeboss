@@ -64,10 +64,15 @@ public final class HarborView {
         if(ready) return;
         RiverCamera c=g.layout.camera;
         float x=c.screenX(Game.DOCK_X[berth],g.dockY(berth)),y=c.screenY(Game.DOCK_X[berth],g.dockY(berth));
-        if(x<32 || x>g.layout.width-32) {
-            boolean left=x<32;float edge=left?22:g.layout.width-22;
-            ControlView.arrow(canvas,edge+(left?32:-32),g.layout.height/2,edge,g.layout.height/2,GOLD);
-            Lettering.center(canvas,"BERTH "+g.berthLetter(berth),left?85:g.layout.width-85,g.layout.height/2-30,12,GOLD);return;
+        if(x<32 || x>g.layout.width-32 || y<80 || y>g.layout.height-70) {
+            float cx=g.layout.width/2,cy=g.layout.height/2,dx=x-cx,dy=y-cy;
+            float fraction=Math.min((g.layout.width/2-32)/Math.max(1,Math.abs(dx)),
+                    (g.layout.height/2-80)/Math.max(1,Math.abs(dy)));
+            float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
+            float ux=dx/distance,uy=dy/distance;
+            ControlView.arrow(canvas,ex-ux*32,ey-uy*32,ex,ey,GOLD);
+            Lettering.center(canvas,"BERTH "+g.berthLetter(berth),Physics.clamp(ex,85,g.layout.width-85),
+                    Physics.clamp(ey+22,85,g.layout.height-62),12,GOLD);return;
         }
         Painter p=ScreenView.scaled(canvas,x,y,c.scale);
         float bob=3*(float)StrictMath.sin(g.visualTicks*.10);
@@ -77,9 +82,15 @@ public final class HarborView {
     }
     static void badge(Painter p,String text,float x,float y,float size,int color) {
         float width=Lettering.width(text,size)+10;
-        if(p instanceof RiverPainter) VisualStyle.panel(p,x-size-3,y-width/2,size+6,width,VisualStyle.NAVY);
-        else VisualStyle.panel(p,x-width/2,y-3,width,size+6,VisualStyle.NAVY);
-        RiverPainter.center(p,text,x,y,size,color);
+        if(p instanceof RiverPainter) {
+            RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
+            Painter canvas=river.canvas();float sx=c.screenX(x,y),sy=c.screenY(x,y),scale=c.scale;
+            VisualStyle.panel(canvas,sx-width*scale/2,sy-3*scale,width*scale,(size+6)*scale,VisualStyle.NAVY);
+            Lettering.center(canvas,text,sx,sy,size*scale,color);
+        } else {
+            VisualStyle.panel(p,x-width/2,y-3,width,size+6,VisualStyle.NAVY);
+            Lettering.center(p,text,x,y,size,color);
+        }
     }
 
 }

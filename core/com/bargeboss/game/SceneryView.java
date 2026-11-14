@@ -2,7 +2,6 @@ package com.bargeboss.game;
 
 /** Independent painted scenery cells, registered to the shared ground plane. */
 public final class SceneryView {
-    private static final float[] PIER_BODY_WIDTH={321/362f,247/362f};
     private SceneryView() {}
     private static float overlap(float x,float y,float w,float h,float fx,float fy,float rx,float above,float below,float margin) {
         float dx=Math.max(x-fx-rx,fx-rx-x-w),dy=Math.max(y-fy-below,fy-above-y-h);
@@ -34,7 +33,9 @@ public final class SceneryView {
             float ey=g.towAiming?g.pointerY:g.ropeDragging?g.aimY(rope,g.pointerX,g.pointerY):g.ropeEndY;
             RiverCamera c=g.layout.camera;
             for(int i=0;i<=12;i++) {
-                float t=i/12f,wx=rope.x+(ex-rope.x)*t,wy=rope.y+(ey-rope.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+                float t=i/12f,height=30*(float)StrictMath.sin(t*Math.PI);
+                float wx=rope.x+(ex-rope.x)*t+RiverCamera.riseX(height);
+                float wy=rope.y+(ey-rope.y)*t+RiverCamera.riseY(height);
                 alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(wx,wy),c.screenY(wx,wy),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
             }
         }
@@ -50,24 +51,30 @@ public final class SceneryView {
     }
     public static void ground(Game g,Painter p) {
         RiverCamera c=g.layout.camera;float s=c.scale;
-        float top=c.screenY(Physics.RIGHT,492),bottom=c.screenY(Physics.LEFT,492);
-        p.rect(0,0,g.layout.width,g.layout.height,0xff67788c);
-        WaveView.draw(p,g.visualTicks,0,top,g.layout.width,bottom-top,s,c.screenX(300,148));
-        // Flat ground follows the same orthographic plane as physics. Broad planes,
-        // one lit rim and one shadow face replace the noisy painted pavement.
-        p.rect(0,0,g.layout.width,top,0xff7c8a99);
-        p.rect(0,bottom,g.layout.width,g.layout.height-bottom,0xff7c8a99);
-        p.rect(0,top-13*s,g.layout.width,13*s,0xff25394a);
-        p.rect(0,top-15*s,g.layout.width,4*s,0xffc3b89b);
-        p.rect(0,bottom,g.layout.width,7*s,0xffc3b89b);
-        p.rect(0,bottom+7*s,g.layout.width,5*s,0xff46586c);
-        for(float x=c.screenX(300,128)-(float)StrictMath.ceil(c.screenX(300,128)/(96*s))*96*s;x<g.layout.width;x+=96*s) {
-            p.line(x,top-15*s,x-18*s,top-48*s,1.2f*s,0x5546576b);
-            p.line(x,bottom+12*s,x-18*s,bottom+52*s,1.2f*s,0x5546576b);
-            for(int i=0;i<3;i++) {
-                float xx=x+i*8*s;
-                p.poly(new float[]{xx,top-15*s,xx+4*s,top-15*s,xx+8*s,top-11*s,xx+4*s,top-11*s},0xffe4b859);
-                p.poly(new float[]{xx,bottom,xx+4*s,bottom,xx+8*s,bottom+7*s,xx+4*s,bottom+7*s},0xff233647);
+        WaveView.draw(p,g.visualTicks,0,0,g.layout.width,g.layout.height,s,c.screenX(300,148));
+        Painter world=new RiverPainter(p,c);
+        // Clip the visible world with the real banks. Both coordinates of every
+        // corner pass through the same camera as the collision footprints.
+        float minX=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,minY=Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
+        for(int corner=0;corner<4;corner++) {
+            float sx=corner%2*g.layout.width,sy=corner/2*g.layout.height;
+            float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
+            minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+        }
+        minX-=80;maxX+=80;minY-=80;maxY+=80;
+        if(minX<Physics.LEFT) world.rect(minX,minY,Physics.LEFT-minX,maxY-minY,0xff67788c);
+        if(maxX>Physics.RIGHT) world.rect(Physics.RIGHT,minY,maxX-Physics.RIGHT,maxY-minY,0xff7c8a99);
+        for(int bank=0;bank<2;bank++) {
+            float edge=bank==0?Physics.RIGHT:Physics.LEFT,side=bank==0?1:-1;
+            world.line(edge,minY,edge,maxY,6,VisualStyle.OUTLINE);
+            world.line(edge+side*3,minY,edge+side*3,maxY,2,0xffc3b89b);
+            for(int row=(int)StrictMath.floor(minY/64);row*64<maxY;row++) {
+                float y=row*64;
+                world.line(edge+side*5,y,edge+side*65,y,1,0x4446576b);
+                for(int mark=0;mark<3;mark++) {
+                    float yy=y+mark*7;
+                    world.line(edge+side*5,yy,edge+side*9,yy+3,2,bank==0?0xffe4b859:0xff233647);
+                }
             }
         }
         LightingView.quays(g,p);
@@ -77,48 +84,49 @@ public final class SceneryView {
         int[] cells=foreground?new int[]{5,3,7,6}:new int[]{0,4,2,1};
         float[] along={70,250,465,625};
         float[] sizes=foreground?new float[]{82,80,76,94}:new float[]{100,84,91,100};
-        float edge=c.screenY(foreground?Physics.LEFT:Physics.RIGHT,492);
+        float bank=foreground?Physics.LEFT-82:Physics.RIGHT+48;
         for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++) for(int i=0;i<cells.length;i++) {
             float worldY=148+along[i]+segment*688;
             if(g.bridgeStage() && Math.abs(worldY-Bridge.Y)<95) continue;
-            float size=sizes[i]*s,x=c.screenX(300,worldY);
-            if(x+size<0 || x-size>g.layout.width) continue;
-            float foot=edge+(foreground?83:-10)*s;
-            float y=foot-size*.47f;
-            float alpha=opacity(g,x-size/2,y-size/2,size,size);
+            boolean warehouse=cells[i]==0 || cells[i]==1;
+            float size=(warehouse?144:sizes[i])*s,x=c.screenX(bank,worldY),foot=c.screenY(bank,worldY);
+            float y=warehouse?foot:foot-size*.47f;
+            float px=warehouse?StaticHarborArt.pivotX(StaticHarborArt.WAREHOUSE):.5f;
+            float py=warehouse?StaticHarborArt.pivotY(StaticHarborArt.WAREHOUSE):.5f;
+            float left=x-px*size,top=y-py*size;
+            if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) continue;
+            float alpha=opacity(g,left,top,size,size);
             LightingView.shadow(p,x,foot,size*.83f,size*.14f,alpha);
-            p.sprite(SpriteAtlas.SCENERY,cells[i],x,y,size,size,0,alpha);
+            p.sprite(warehouse?SpriteAtlas.STATIC_HARBOR:SpriteAtlas.SCENERY,
+                    warehouse?StaticHarborArt.WAREHOUSE:cells[i],x,y,size,size,0,alpha);
+            if(warehouse) StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
         }
     }
     public static void bridge(Game g,Painter p) {
         if(g.challengeId==0) return;
         if(g.bridgeStage()) { BridgeView.draw(g,p);return; }
         RiverCamera c=g.layout.camera;float s=c.scale;
-        float x=c.screenX(300,178),middle=c.screenY(300,178);
         for(int frame=0;frame<2;frame++) {
-            float size=108*s,y=middle+(frame==0?-86:86)*s;
+            float bank=frame==0?Physics.RIGHT+35:Physics.LEFT-35;
+            float x=c.screenX(bank,178),foot=c.screenY(bank,178),size=108*s,y=foot-size*.4f;
             float alpha=opacity(g,x-size/2,y-size/2,size,size);
-            LightingView.shadow(p,x,y+size*.36f,size*.8f,size*.13f,alpha);
+            LightingView.shadow(p,x,foot,size*.8f,size*.13f,alpha);
             p.sprite(SpriteAtlas.BRIDGE,frame,x,y,size,size,0,alpha);
         }
     }
     public static void piers(Game g,Painter p) {
         if(g.challengeId!=2) return;
-        RiverCamera c=g.layout.camera;float s=c.scale;
-        for(int f=0;f<2;f++) {
-            float[] r=HarborGeometry.PIERS[f];
-            float left=c.screenX(r[0],r[1]),right=c.screenX(r[0],r[3]);
-            float top=c.screenY(r[2],r[1]),bottom=c.screenY(r[0],r[1]);
-            // Registered opaque bounds of the two cells, preserving uniform sprite scale.
-            float size=(right-left)/PIER_BODY_WIDTH[f];
-            float x=(left+right)/2-(182.5f/362-.5f)*size,y=bottom-(351/362f-.5f)*size;
-            float alpha=opacity(g,x-size/2,y-size/2,size,size);
-            LightingView.shadow(p,x,bottom,(right-left),8*s,alpha);
-            p.sprite(SpriteAtlas.PIERS,f,x,y,size,size,0,alpha);
-            // The visible edge remains registered to the solid footprint beneath the prop.
-            if(alpha<.95f) {
-                p.line(left,top,right,top,1.5f,0x99ffce65);p.line(left,bottom,right,bottom,1.5f,0x99ffce65);
-                p.line(left,top,left,bottom,1.5f,0x99ffce65);p.line(right,top,right,bottom,1.5f,0x99ffce65);
+        RiverCamera c=g.layout.camera;Painter world=new RiverPainter(p,c);
+        for(float[] r:HarborGeometry.PIERS) {
+            // Project the exact solid rectangle; the old painted pier crops had
+            // baked-in axes and could no longer mark the playable edge reliably.
+            world.rect(r[0],r[1],r[2]-r[0],r[3]-r[1],VisualStyle.OUTLINE);
+            world.rect(r[0]+2,r[1]+2,r[2]-r[0]-4,r[3]-r[1]-4,0xff7c8a99);
+            world.line(r[0],r[1],r[2],r[1],2,0xffc3b89b);
+            world.line(r[2],r[1],r[2],r[3],2,0xffc3b89b);
+            for(float y=r[1]+9;y<r[3]-4;y+=14) {
+                world.line(r[0]+3,y,r[0]+6,y+5,3,VisualStyle.GOLD);
+                world.line(r[2]-6,y,r[2]-3,y+5,3,VisualStyle.OUTLINE);
             }
         }
     }

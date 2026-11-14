@@ -53,3 +53,29 @@ python tools/project-vessel-anchors.py docs/art-studies/tug-isometric-v5-guide-a
 Downloads copies use `BargeBoss-tug-v5-design.png`, `BargeBoss-tug-v5-32-frames.png`,
 `BargeBoss-tug-v5-review.png`, `BargeBoss-tug-v5-turntable.gif` and
 `BargeBoss-tug-v5-review.html`. Prompts and canonical source images remain here.
+
+## First runtime integration
+
+The user approved the v5 design in the interactive review. The unchanged sheet
+is now copied to `assets/sprites/tug-isometric-v5-32.png`. Runtime addressing is
+one 8×4 atlas, with the existing 32 guide-fitted waterline pivots and one uniform
+0.8957603 scale. The guide's hull spans .78 of a cell; runtime hull size uses
+that fraction and square draw dimensions, without per-heading deformation.
+
+`tools/export-tug-runtime.py` exports registration and the separate
+`tug-isometric-v5-stack-anchors.csv` to shared `TugArt.java`. The main stack outlet
+was visually calibrated against the painted rim in the production image for 31
+headings. Frame 10 does not expose a reliable stack rim: its outlet is interpolated
+between neighboring registered views and explicitly marked `interpolated-occluded`.
+This is an artwork limitation, not proof that the source model contains a
+geometrically correct hidden stack. Full light and fender inventories remain
+tracked in the guide JSON and unverified for runtime effects; do not relabel all
+512 guide points as pixel-reviewed because the main exhaust was calibrated.
+
+`tools/TugRuntimePreview.java` renders the actual desktop atlas and overlays
+runtime stack points (mint = visually calibrated; pink = estimated) and the fixed
+waterline anchor. Review output: `out/isometric-tug/runtime-stack-anchors.png`.
+The smoke transform uses the same heading offset, blend weights, pivots and
+uniform scale as the rendered hull; `TugAtlasTest` checks that contract through
+negative angles, intermediate blends and turn wraparound. Source PNG pixels are
+unchanged. This integration did not run image generation or retouch the sheet.

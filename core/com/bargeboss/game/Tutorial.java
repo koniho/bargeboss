@@ -80,7 +80,7 @@ public final class Tutorial {
     }
     public String firstLine() {
         switch(lesson) {
-            case MOVE: return "PRESS THE TUG, THEN DRAG LEFT.";
+            case MOVE: return "PRESS THE TUG. DRAG ALONG THE ARROW.";
             case COAST: return "LIFT YOUR FINGER TO CUT THRUST.";
             case CHANNEL: return "STEER UPSTREAM THROUGH EVERY GATE.";
             case HOLD: return "PRESS AND DRAG THE BARGE TO PUSH HERE.";
@@ -88,7 +88,7 @@ public final class Tutorial {
             case DOCK: return "LIFT, THEN HOLD THE BARGE AGAIN.";
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
             case CONNECT: return "DRAG FROM THE BARGE TO THE TUG.";
-            case PULL: return "DRAG THE TUG LEFT TO PULL THE LOAD.";
+            case PULL: return "DRAG ALONG THE ARROW TO PULL.";
             case RELEASE: return "TAP THE CONNECTED BARGE TO LET GO.";
             default: return "YOU PUSHED, TIED UP AND TOWED.";
         }

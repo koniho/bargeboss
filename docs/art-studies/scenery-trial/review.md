@@ -1,8 +1,9 @@
 # Three static scenery candidates
 
 The user requested a small scenery trial while watercraft refinement continues.
-This is **one atlas containing three static elements**, not a new level or an
-approved seamless tileset. Nothing from this trial is integrated into gameplay.
+This is **one atlas containing three static elements**, not an approved seamless
+tileset. The first isometric integration now uses only the warehouse (cell 2);
+the quay cells remain candidates until join and ground-plane validation.
 
 - [Source atlas](static-harbor-v1.png)
 - [Interactive background/opacity review](review.html)
@@ -77,3 +78,31 @@ out of static terrain artwork when independent placement or animation is needed.
 The focused reusable workflow is
 `skills/bargeboss-scenery-sprites/SKILL.md`. Watercraft turntables and animated
 shore equipment belong to their separate skills.
+
+## First isometric runtime integration
+
+The warehouse is now a decorative land prop using the unchanged source PNG at
+`assets/sprites/static-harbor-v1.png`, shared atlas ID `STATIC_HARBOR`, frame 2.
+Two former warehouse positions use it at a square source-cell size of 144 world
+units. Other scenery and cargo artwork remains transitional. Quay cells are
+addressable for review but are not placed in the level: neither their seams nor
+their baked-in bollards have been accepted as gameplay geometry.
+
+The measured ground anchor is `(359/724,518/724)`, inferred from visible foundation
+bottom corners `(49,524)`, `(370,689)` and `(667,512)`. The hidden fourth corner is
+inferred; this is a footprint estimate, not an opaque-bounds center or verified
+modular connection. Whole-sprite occlusion fading includes its foundation and
+independently drawn window glow. Land collision still comes from world geometry.
+
+[Warehouse anchor metadata](warehouse-v1-anchors.json) records seven visible warm
+window panes with stable IDs, pixel-inspected centers, radius, normals, visibility
+and approximate local XYZ. Three front panes and four side panes receive gentle
+shared-clock glow. The rust roof pipe is a closed return bend: no visible exhaust
+outlet was found, so the smoke inventory is explicitly empty. Future art adding
+an outlet must add and review that point before smoke integration.
+
+`tools/SceneryAnchorPreview.java` overlays the ground footprint, pivot and seven
+light anchors without changing source pixels. Run it with the shared classes and
+inspect `out/scenery-warehouse-anchors.png`. Local XYZ is approximate wall-plane
+reconstruction; the painted source positions, not those reconstructed dimensions,
+are used for runtime glow alignment.

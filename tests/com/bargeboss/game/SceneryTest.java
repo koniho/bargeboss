@@ -10,17 +10,18 @@ public final class SceneryTest {
             check(SpriteAtlas.artWidth(atlas,frame)>0 && SpriteAtlas.artHeight(atlas,frame)>0,"scenery retains source proportions");
         }
         Game g=new Game();g.challengeId=2;g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
-        RiverCamera c=g.layout.camera;float x=c.screenX(g.tug.x,g.tug.y),y=c.screenY(g.tug.x,g.tug.y);
+        float obscuredX=g.tug.x,obscuredY=g.tug.y;
+        RiverCamera c=g.layout.camera;float x=c.screenX(obscuredX,obscuredY),y=c.screenY(obscuredX,obscuredY);
         float faded=SceneryView.opacity(g,x-30,y-70,60,80);
         check(faded<=.29f,"foreground scenery fades over the player's vessel");
         int before=Parity.frame(g);int tick=g.visualTicks;
         check(before==Parity.frame(g) && g.visualTicks==tick,"repeated scenery drawing is deterministic and state-free");
         g.tug.y=260;
         check(SceneryView.opacity(g,x-30,y-70,60,80)==1,"unobscuring scenery returns to full opacity");
-        Body cargo=new Body(99,1,330,650,0);g.cargo[0]=cargo;
+        Body cargo=new Body(99,1,obscuredX,obscuredY,0);g.cargo[0]=cargo;
         check(SceneryView.opacity(g,x-30,y-70,60,80)<.3f,"cargo also reveals obstructing scenery");
         g.cargo[0]=null;
-        g.ticks=1080;g.trafficBoat.x=330;g.trafficBoat.y=650;
+        g.ticks=1080;g.trafficBoat.x=obscuredX;g.trafficBoat.y=obscuredY;
         check(SceneryView.opacity(g,x-30,y-70,60,80)<.3f,"cross-traffic also reveals obstructing scenery");
         g.ticks=0;
         g.ropeBody=new Body(99,0,300,300,0);g.ropePhase=1;g.ropeEndX=300;g.ropeEndY=700;

@@ -8,12 +8,12 @@ public final class VesselView {
         int tick=g.visualTicks;
         float bob=WaterSurface.lift(g,b);
         boolean river=p instanceof RiverPainter;
-        float hullX=b.x+(river?bob/RiverCamera.DEPTH:0),hullY=b.y-(river?0:bob);
+        float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         if(wake) ArcadeView.wake(p,b,tick);
         if(river) LightingView.hull(p,b);
-        float size=2*(b.half+b.radius)/(tug?.84f:.89f);
-        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size*(tug?1.05f:1.2f),1);
+        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:.89f);
+        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size*(tug?1:1.2f),1);
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
@@ -50,13 +50,13 @@ public final class VesselView {
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         boolean river=p instanceof RiverPainter;
-        float size=2*(b.half+b.radius)/.84f;
+        float size=2*(b.half+b.radius)/TugArt.HULL_FRACTION;
         float scale=river?((RiverPainter)p).camera.scale:1;
         float sx=river?((RiverPainter)p).camera.screenX(b.x,b.y):b.x;
         float sy=river?((RiverPainter)p).camera.screenY(b.x,b.y):b.y;
         sx+=SpriteAtlas.stackOffset(b.angle,river,false)*size*scale;
-        sy+=(SpriteAtlas.stackOffset(b.angle,river,true)*size*1.05f-bob)*scale;
-        float trailX=river?b.vy:b.vx;
+        sy+=(SpriteAtlas.stackOffset(b.angle,river,true)*size-bob)*scale;
+        float trailX=river?RiverCamera.Q*(b.vx+b.vy):b.vx;
         if(river) p=((RiverPainter)p).canvas();
         power=Physics.clamp(power,0,1);
         // A small throat plume closes the gap between discrete puffs and the mouth.

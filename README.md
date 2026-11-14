@@ -1,6 +1,6 @@
 # Barge Boss
 
-A landscape industrial river action game with a top-down harbor and shaded arcade boats. Drive a heavy tug, push container barges
+A landscape industrial river action game with an isometric harbor and directional boat sprites. Drive a heavy tug, push container barges
 into matching berths and manage incoming cargo before a three-minute shift ends.
 Stage 01 is a stylized **Calumet River industrial corridor** with steel yards,
 freight rail, bulk storage, cranes, a lift bridge and crossing workboats. It is
@@ -10,10 +10,10 @@ The original project code, tooling and documentation are open source under the
 [MIT License](LICENSE). See [provenance](docs/provenance.md) for generated artwork,
 supplied reference images and third-party notices.
 
-The three-quarter art conversion is currently an isolated
-[32-frame tug study](docs/art-studies/isometric-tug-v5-review.md) and
-[three-element scenery trial](docs/art-studies/scenery-trial/review.md), not the
-live game's camera. Reusable art workflows are maintained in
+The first playable [isometric conversion](docs/isometric-migration.md) uses the
+approved [32-frame tug](docs/art-studies/isometric-tug-v5-review.md) and a warehouse
+from the [scenery trial](docs/art-studies/scenery-trial/review.md). Barges and other
+shore equipment still use transitional art. Reusable art workflows are maintained in
 [watercraft](skills/bargeboss-watercraft-sprites/SKILL.md),
 [static scenery](skills/bargeboss-scenery-sprites/SKILL.md), and
 [animated shore equipment](skills/bargeboss-shore-animation/SKILL.md) skills.
@@ -179,18 +179,18 @@ or separate JavaScript/Swift gameplay implementation.
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
 using 960×600 as the reference size. The river uses the largest uniform scale that
-fits the introductory stage, follows the tug on the longer bridge stage, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane is foreshortened to 75% depth; sprites retain their painted
+fits the introductory stage, follows the tug on the longer bridge stage, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane uses a 45° yaw and 35.264° elevation; sprites retain their painted
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
-The complete river is visible at once, with a compact channel and larger boat
-footprints that make cargo, wakes and rope actions easier to read. The camera
-rotates the shared world into the board; it does not scroll or crop the stage.
+The introductory overview fits the whole stage. The bridge route and winding
+tutorial channel scroll, while docking zoom keeps the tug, barge and bollard visible.
 Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring,
 traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
 
 The same PNG atlases are bundled on Android, iOS and desktop. Every rotating
-boat and payload has **32 headings**, spaced 11.25° apart, interleaved from two
-4×4 sheets. Shared code calibrates each frame’s X/Y size and footprint anchor.
-It holds each drawing crisp, then blends across a brief 2.25° transition. Native hosts sum their weighted premultiplied colors in one layer,
+boat and payload has **32 headings**, spaced 11.25° apart. The tug uses one 8×4
+sheet with a single uniform scale and registered waterline pivots. Transitional
+barges and payloads interleave two 4×4 sheets with per-frame size calibration.
+Shared code holds each drawing crisp, then blends across a brief 2.25° transition. Native hosts sum their weighted premultiplied colors in one layer,
 so an opaque boat stays opaque between headings. This smooths transitions between
 painted views; it is not skeletal animation or a live 3D model. Native
 antialiasing and bitmap sampling can still differ slightly.

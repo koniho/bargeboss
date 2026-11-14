@@ -11,7 +11,9 @@ public final class ChannelTest {
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}}) {
             Game root=course(size[0],size[1]),g=root.activeGame();
             float original=g.layout.camera.worldRight;
-            check(g.layout.camera.screenY(TrainingChannel.X[7],TrainingChannel.Y[7])< -size[1],"course is longer than two screens and leads upward");
+            check(g.layout.camera.screenY(TrainingChannel.X[7],TrainingChannel.Y[7])<0
+                    && g.layout.camera.screenX(TrainingChannel.X[7],TrainingChannel.Y[7])>g.layout.width,
+                    "long winding course continues upward beyond the initial isometric view");
             for(int i=0;i<120;i++)root.step();
             check(g.tutorial.channelGate==1 && g.tutorial.lesson==Tutorial.CHANNEL,"waiting never passes a gate");
             int seen=0;boolean scrolled=false;
@@ -28,8 +30,9 @@ public final class ChannelTest {
                             && Math.abs(g.layout.camera.screenX(g.pointerX,g.pointerY)-px)<.002f
                             && Math.abs(g.layout.camera.screenY(g.pointerX,g.pointerY)-py)<.002f,"scroll preserves physical touch anchors");
                     scrolled|=g.layout.camera.worldRight>original+700;
-                    float y=g.layout.camera.screenY(g.tug.x,g.tug.y);
-                    check(y>100 && y<g.layout.height-100,"camera keeps tug on screen throughout course");
+                    float x=g.layout.camera.screenX(g.tug.x,g.tug.y),y=g.layout.camera.screenY(g.tug.x,g.tug.y);
+                    check(x>100 && x<g.layout.width-100 && y>100 && y<g.layout.height-100,
+                            "camera keeps tug clear of every screen edge throughout course");
                 }
             }
             check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.HOLD,"seven ordered gates lead into cargo practice");
@@ -54,7 +57,7 @@ public final class ChannelTest {
         }
         Game a=low.activeGame(),b=high.activeGame();
         check(a.tug.x==b.tug.x && a.tug.y==b.tug.y && a.tug.angle==b.tug.angle
-                && a.layout.camera.worldRight==b.layout.camera.worldRight && a.tutorial.channelGate==b.tutorial.channelGate,
+                && a.layout.camera.worldRight==b.layout.camera.worldRight && a.layout.camera.worldTop==b.layout.camera.worldTop && a.tutorial.channelGate==b.tutorial.channelGate,
                 "course physics and camera match at 30 and 144 Hz");
         System.out.println(checks+" winding course, solid banks, camera, gates and lifecycle assertions passed");
     }

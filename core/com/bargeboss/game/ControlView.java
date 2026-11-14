@@ -109,7 +109,8 @@ public final class ControlView {
         }
         if(g.noticeTicks>0 && (g.notice.startsWith("DELIVERED") || g.notice.startsWith("HARD IMPACT")
                 || g.notice.startsWith("CONTRACT"))) {
-            label(p,g.notice,454,g.layout.camera.worldTop+344/g.layout.camera.zoom,PAPER);
+            RiverCamera c=g.layout.camera;
+            label(p,g.notice,c.worldX(g.layout.width/2,88),c.worldY(g.layout.width/2,88),PAPER);
         }
         TowView.draw(g,p);
         if(!g.trainingChannel()) MooringView.draw(g,p);
@@ -127,11 +128,13 @@ public final class ControlView {
     private static void label(Painter p,String text,float x,float y,int color) {
         float size=10,w=Lettering.width(text,size)+10;
         if(p instanceof RiverPainter) {
-            // The board rotates, but the label and its backing remain screen-upright.
-            RiverCamera c=((RiverPainter)p).camera;
-            x=Physics.clamp(x,c.worldRight-320/c.zoom+size+4,c.worldRight-3);
-            y=Physics.clamp(y,c.worldTop+w/2+3,c.worldTop+688/c.zoom-w/2-3);
-            p.rect(x-size-3,y-w/2,size+6,w,0xee101e25);
+            RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
+            float sx=Physics.clamp(c.screenX(x,y),w*c.scale/2+4,2*c.left+c.width()-w*c.scale/2-4);
+            float sy=Physics.clamp(c.screenY(x,y),60,2*c.top+c.height()-(size+4)*c.scale);
+            Painter canvas=river.canvas();
+            canvas.rect(sx-w*c.scale/2,sy-3*c.scale,w*c.scale,(size+6)*c.scale,0xee101e25);
+            Lettering.center(canvas,text,sx,sy,size*c.scale,color);
+            return;
         } else {
             x=Physics.clamp(x,w/2+4,Layout.WIDTH-w/2-4);
             y=Physics.clamp(y,4,Layout.HEIGHT-size-4);

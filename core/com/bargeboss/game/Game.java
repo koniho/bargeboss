@@ -95,26 +95,19 @@ public final class Game {
         return trainingChannel()?TrainingChannel.contains(x,y):x>=Physics.LEFT && x<=Physics.RIGHT && y>=channelTop() && y<=Physics.BOTTOM;
     }
     void fitTutorialCamera() {
-        if(trainingChannel()) {
-            RiverCamera c=layout.camera;
-            layout=new Layout(layout.width,layout.height,148,tug.x+(layout.height*.68f-c.top)/(c.scale*RiverCamera.DEPTH),1);
-            return;
-        }
-        RiverCamera c=layout.camera;
-        float right=Math.min(460,TIE_X[2]+(layout.height-100-c.top)/(c.scale*RiverCamera.DEPTH));
-        if(right!=c.worldRight) layout=new Layout(layout.width,layout.height,148,right,1);
+        layout=trainingChannel()?Layout.focused(layout.width,layout.height,tug.x,tug.y,1,layout.width*.5f,layout.height*.62f):new Layout(layout.width,layout.height);
     }
     private void updateCamera() {
+        RiverCamera c=layout.camera;
         if(trainingChannel()) {
-            RiverCamera c=layout.camera;
-            float right=tug.x+(layout.height*.68f-c.top)/(c.scale*RiverCamera.DEPTH);
-            changeCamera(new Layout(layout.width,layout.height,148,c.worldRight+(right-c.worldRight)*.12f,1));
+            Layout target=Layout.focused(layout.width,layout.height,tug.x,tug.y,1,layout.width*.5f,layout.height*.62f);
+            changeCamera(new Layout(layout.width,layout.height,c.worldTop+(target.camera.worldTop-c.worldTop)*.12f,
+                    c.worldRight+(target.camera.worldRight-c.worldRight)*.12f,1));
             return;
         }
         if(ropeDragging || towAiming || ropePhase!=0 || tutorial!=null) return;
         if(cameraOverviewTicks>0) cameraOverviewTicks--;
-        RiverCamera c=layout.camera;
-        float zoom=1,focusX=300,focusY=bridgeStage()?tug.y:492;
+        float zoom=1,focusX=300,focusY=bridgeStage()?Physics.clamp(tug.y,-176,492):492;
         Body nearest=null;float nearestDistance=190;
         for(Body b:cargo) if(cameraOverviewTicks==0 && b!=null && b.active && !b.awaitingPickup
                 && Physics.length(tug.x-b.x,tug.y-b.y)<170) {
@@ -123,18 +116,24 @@ public final class Game {
         }
         if(nearest!=null) {
             zoom=1+.4f*Physics.clamp((190-nearestDistance)/130,0,1);
-            focusX=.4f*tug.x+.35f*nearest.x+.25f*DOCK_X[nearest.berth];
-            focusY=.4f*tug.y+.35f*nearest.y+.25f*dockY(nearest.berth);
-            float low=Math.min(TIE_X[nearest.berth],Math.min(tug.x,nearest.x));
-            float high=Math.max(TIE_X[nearest.berth],Math.max(tug.x,nearest.x));
-            // Include the inland target and both hulls inside the clear area between HUD bars.
-            zoom=Math.min(zoom,Math.max(1,(layout.height-120)/((c.scale/c.zoom)*RiverCamera.DEPTH*(high-low+96))));
-            focusX=(low+high)/2;
+            // Fit both hulls and the inland bollard in projected space, including sprite height.
+            float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
+            float[] xs={tug.x,nearest.x,TIE_X[nearest.berth]},ys={tug.y,nearest.y,dockY(nearest.berth)};
+            RiverCamera base=RiverCamera.DEFAULT;
+            for(int i=0;i<3;i++) {
+                float x=base.screenX(xs[i],ys[i])/base.scale,y=base.screenY(xs[i],ys[i])/base.scale;
+                minX=Math.min(minX,x-48);maxX=Math.max(maxX,x+48);
+                minY=Math.min(minY,y-78);maxY=Math.max(maxY,y+36);
+            }
+            float fit=Math.min((layout.width-96)/(maxX-minX),(layout.height-136)/(maxY-minY))/(c.scale/c.zoom);
+            zoom=Math.min(zoom,Math.max(1,fit));
+            focusX=base.worldX((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
+            focusY=base.worldY((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
         }
         zoom=c.zoom+(zoom-c.zoom)*.035f;
-        float top=Physics.clamp(focusY-344/zoom,channelTop()-67,836-688/zoom);
-        float right=nearest==null?460:focusX+(layout.height/2+4-c.top)/((c.scale/c.zoom)*zoom*RiverCamera.DEPTH);
-        top=c.worldTop+(top-c.worldTop)*.055f;right=c.worldRight+(right-c.worldRight)*.055f;
+        Layout target=Layout.focused(layout.width,layout.height,focusX,focusY,zoom,layout.width*.5f,layout.height*.5f);
+        float top=c.worldTop+(target.camera.worldTop-c.worldTop)*.055f;
+        float right=c.worldRight+(target.camera.worldRight-c.worldRight)*.055f;
         if(Math.abs(top-c.worldTop)<.0001f && Math.abs(right-c.worldRight)<.0001f && Math.abs(zoom-c.zoom)<.000001f) return;
         changeCamera(new Layout(layout.width,layout.height,top,right,zoom));
     }

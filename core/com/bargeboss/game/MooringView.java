@@ -123,14 +123,16 @@ public final class MooringView {
         // This thin continuous trajectory is a guide; the rope remains coiled on deck.
         float lastX=b.x,lastY=b.y;
         for(int i=1;i<=32;i++) {
-            float t=i/32f,xx=b.x+(x-b.x)*t,yy=b.y+(y-b.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+            float t=i/32f,height=30*(float)StrictMath.sin(t*Math.PI);
+            float xx=b.x+(x-b.x)*t+liftX(p,height),yy=b.y+(y-b.y)*t+liftY(p,height);
             p.line(lastX,lastY,xx,yy,3,0x990b1424);
             p.line(lastX,lastY,xx,yy,1.25f,(color&0xffffff)|0xcc000000);
             lastX=xx; lastY=yy;
         }
         for(int i=0;i<4;i++) {
             float t=((g.visualTicks%48)/48f+i*.25f)%1;
-            float xx=b.x+(x-b.x)*t,yy=b.y+(y-b.y)*t-30*(float)StrictMath.sin(t*Math.PI);
+            float height=30*(float)StrictMath.sin(t*Math.PI);
+            float xx=b.x+(x-b.x)*t+liftX(p,height),yy=b.y+(y-b.y)*t+liftY(p,height);
             p.rect(xx-2,yy-2,4,4,DARK); p.rect(xx-1,yy-1,3,3,onPoint?HIGHLIGHT:color);
         }
         float radius=onPoint?14:11;
@@ -145,13 +147,16 @@ public final class MooringView {
             loop(p,b.x,b.y+3-i*2,10-i,6-i*.5f,0,i==1?HIGHLIGHT:ROPE,2);
         }
     }
+    private static float liftX(Painter p,float height) { return p instanceof RiverPainter?RiverCamera.riseX(height):0; }
+    private static float liftY(Painter p,float height) { return p instanceof RiverPainter?RiverCamera.riseY(height):-height; }
     private static void projectile(Game g,Painter p) {
         boolean returning=g.ropePhase==2;
         float t=Physics.clamp(g.ropeTicks/(float)(returning?Game.ROPE_RETURN_TICKS:Game.ROPE_FLIGHT_TICKS),0,1);
         float eased=1-(1-t)*(1-t),distance=returning?1-eased:eased;
         float startX=returning?g.ropeBody.x:g.ropeStartX,startY=returning?g.ropeBody.y:g.ropeStartY;
-        float x=startX+(g.ropeEndX-startX)*distance;
-        float y=startY+(g.ropeEndY-startY)*distance-30*(float)StrictMath.sin(distance*Math.PI);
+        float height=30*(float)StrictMath.sin(distance*Math.PI);
+        float x=startX+(g.ropeEndX-startX)*distance+liftX(p,height);
+        float y=startY+(g.ropeEndY-startY)*distance+liftY(p,height);
         float slack=(returning?10:18)*(float)StrictMath.sin(distance*Math.PI);
         rope(p,g.ropeBody.x,g.ropeBody.y,x,y,slack,ROPE);
         float radius=returning?8+14*distance:8+14*eased;

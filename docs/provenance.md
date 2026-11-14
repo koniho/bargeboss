@@ -1,9 +1,19 @@
 # Provenance
 
-The newer three-quarter industrial tug study is documented in
+The production three-quarter industrial tug is documented in
 [isometric-tug-v5-review.md](art-studies/isometric-tug-v5-review.md), with its supplied
 reference, built-in image generation prompt, candidate atlas and validation
-limits. It is not a production atlas and is not bundled into native builds.
+limits. The approved source sheet is bundled unchanged as
+`assets/sprites/tug-isometric-v5-32.png`, with registered pivots and calibrated
+smoke points in shared Java. Its design and turntable prompts are
+[isometric-tug-v5-design.txt](art-prompts/isometric-tug-v5-design.txt) and
+[isometric-tug-v5-32.txt](art-prompts/isometric-tug-v5-32.txt).
+
+The [static scenery trial](art-studies/scenery-trial/review.md) is bundled unchanged
+as `assets/sprites/static-harbor-v1.png`; only its warehouse cell is placed in the
+live scene. The [original prompt](art-prompts/scenery-trial-v1.txt) and measured
+window-light anchors remain tracked. Trial quay cells are not used as level
+geometry.
 
 The project adopts the user's existing DDDumpling cross-platform design:
 pure Java game/renderer, a small Painter boundary, Android Canvas, and J2ObjC
@@ -33,7 +43,7 @@ prompts are [tug-atlas.txt](art-prompts/tug-atlas.txt) and
 pilothouse and tire fenders; the empty barge provides a common deck for separately
 animated steel, freight and bulk loads.
 
-Each production asset has a corrected base sheet (`tug-16.png`, `barge-16.png`,
+Before the isometric conversion, each rotating asset used a corrected base sheet (`tug-16.png`, `barge-16.png`,
 `steel-16.png`, `container-16.png`, `bulk-16.png`) and a corresponding `-half.png`
 sheet with 16 newly generated intermediate views. Both physical sheets use 4×4
 grids. The game interleaves base and intermediate cells to produce 32 logical
