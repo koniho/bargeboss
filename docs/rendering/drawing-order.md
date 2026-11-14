@@ -65,19 +65,21 @@ water-plane effects use a nested, stricter clip. Both scopes must restore before
 subsequent vessels, buildings and UI. Moving smoke is airborne and is not put
 inside the hull's ground clip.
 
-### Animated vessel waterline
+### Animated vessel waterline and foam
 
-`VesselWaterline` caches a smoothed lower-hull contour from each of the 32
-opaque hull masks, using the same frame scale, pivot, camera offset and sector
-blend as `SpriteAtlas`. Cargo and superstructure do not supply the contour.
-Detached ripples draw under the hull; the contact foam crest draws after the
-hull/cargo pass. Contact foam, its soft fringe and detached ripples thicken
-smoothly with actual speed, capped at 65 world units/second; reverse and sideways
-motion use the same response. Both use the all-dry-ground cutout, including background banks.
-The contact follows hull heave; outward ripples reduce that coupling as they
-expand. Fixed visual ticks animate idle shimmer; speed and downward heave/trough
-response strengthen foam. Rendering never advances waves or modifies vessels.
-These are contact effects, distinct from persistent world-space wake packets.
+`VesselWaterline` derives contact positions from the 32 registered lower-hull
+silhouettes with the same sector blend as the hull. Small transparent foam
+sprites appear intermittently along that contour; do not restore a continuous
+thick outline. `WaterSurface.foam` holds detached displacement and propeller-wash
+sprites in world space, advanced at 60 Hz. Speed drives bow/shoulder foam;
+engine loading drives tug wash. Unpowered barges have no propeller wash.
+Released patches drift, expand and fade independently of vessel heading/position.
+
+Detached foam draws with water beneath hulls; contact foam draws at the lower
+hull after its sprite. Both use the all-dry-land clip, including background banks,
+and neither contributes to building-fade silhouettes. Flat texture decals use
+affine projection onto the water plane, unlike upright vessel artwork. See
+[foam references, asset prompt and source behavior](../art-prompts/vessel-foam-v1.md).
 
 ## Scene composition
 

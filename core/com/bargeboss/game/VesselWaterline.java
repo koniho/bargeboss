@@ -27,8 +27,9 @@ public final class VesselWaterline {
         }
         return result;
     }
-    /** Outer ripples go beneath the sprite; the speed-scaled contact crest follows the hull pass. */
+    /** Sparse contact filaments; detached foam lives independently in WaterSurface.foam. */
     public static void draw(Game g,Painter p,Body b,boolean tug,float size,boolean contact) {
+        if(!contact)return;
         boolean river=p instanceof RiverPainter;RiverCamera c=river?((RiverPainter)p).camera:null;
         Painter canvas=river?((RiverPainter)p).canvas():p;
         float scale=river?c.scale:1,x=river?c.screenX(b.x,b.y):b.x,y=river?c.screenY(b.x,b.y):b.y;
@@ -39,29 +40,28 @@ public final class VesselWaterline {
             int a=(((int)whole+(river?RiverCamera.DIRECTION_OFFSET:0))%32+32)%32,bb=(a+1)%32;
             float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
             float[] from=EDGE[tug?0:1][a],to=EDGE[tug?0:1][bb];
-            float motion=Math.min(1,b.speed()/65),trough=Math.min(1,Math.max(0,-b.heaveVelocity)/7+b.wakeKickTicks/24f);
-            float tick=g.visualTicks,phase=tick*.055f+b.id*1.73f;
-            float bob=WaterSurface.lift(g,b),age=((g.visualTicks+b.id*17)%90+90)%90/90f;
-            // Contact rides the hull. Detached ripples spread on the surface with reduced heave.
-            float spread=contact?0:2+age*(5+motion*4),lift=contact?bob:bob*(1-age);
-            float previousX=0,previousY=0;
-            for(int i=0;i<=SEGMENTS;i++) {
-                float u=i/(float)SEGMENTS,ex=from[2*i]+(to[2*i]-from[2*i])*mix;
-                float ey=from[2*i+1]+(to[2*i+1]-from[2*i+1])*mix;
-                float wave=(float)StrictMath.sin(phase+u*13)*(.25f+trough*.35f);
-                float xx=x+(ex*size+(u-.5f)*spread)*scale,yy=y+(ey*size-lift+spread*.45f+wave)*scale;
-                if(i>0) {
-                    float taper=(float)StrictMath.sin((u-.5f/SEGMENTS)*StrictMath.PI);
-                    float crest=.55f+.45f*(float)StrictMath.sin(phase*1.4+u*21);
-                    float strength=taper*(.48f+motion*.3f+trough*.22f);
-                    if(contact) {
-                        canvas.line(previousX,previousY,xx,yy,(4.8f+motion*6)*scale,SoftCue.alpha(0xff70c5bd,strength*.28f));
-                        canvas.line(previousX,previousY,xx,yy,(1.5f+crest*.6f+motion*2.6f)*scale,SoftCue.alpha(0xffd6f4e9,strength*(.65f+crest*.3f)));
-                    } else canvas.line(previousX,previousY,xx,yy,(1.4f+motion*1.8f)*scale,
-                            SoftCue.alpha(0xff80bcb7,strength*.38f*(1-age)*(1-age)));
-                }
-                previousX=xx;previousY=yy;
+            float speed=b.speed(),motion=Math.min(1,speed/65),bob=WaterSurface.lift(g,b);
+            float travelX=river?RiverCamera.Q*(b.vx+b.vy):b.vx;
+            // Patches travel toward the trailing end; their envelopes leave clear gaps between crests.
+            for(int patch=0;patch<7;patch++) {
+                float age=Math.floorMod(g.visualTicks+patch*13+b.id*7,78)/78f;
+                float u=(patch+.5f+(travelX<0?age-.5f:.5f-age)*.65f)/7;
+                float index=u*SEGMENTS;int i=Math.min(SEGMENTS-1,(int)index);float t=index-i;
+                float ex=offset(from,to,i,false,t,mix),ey=offset(from,to,i,true,t,mix);
+                float tx=offset(from,to,i+1,false,0,mix)-offset(from,to,i,false,0,mix);
+                float ty=offset(from,to,i+1,true,0,mix)-offset(from,to,i,true,0,mix);
+                float leading=.35f+.65f*(travelX>=0?u:1-u);
+                float envelope=(float)StrictMath.sin(age*StrictMath.PI);
+                float alpha=(.035f+motion*.64f*leading)*envelope*envelope;
+                float length=(11+motion*8)*scale,width=(9+motion*9)*scale;
+                VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-bob+.5f)*scale,
+                        (float)StrictMath.atan2(ty,tx),length,width,alpha);
             }
         } finally {if(clip.length>0)canvas.popClip();}
+    }
+    private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
+        int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);
+        float x=a[j]+(b[j]-a[j])*blend,y=a[k]+(b[k]-a[k])*blend;
+        return x+(y-x)*t;
     }
 }

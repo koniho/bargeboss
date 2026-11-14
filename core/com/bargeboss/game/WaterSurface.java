@@ -6,6 +6,7 @@ public final class WaterSurface {
     public final float[] x=new float[CAPACITY],y=new float[CAPACITY],strength=new float[CAPACITY],heading=new float[CAPACITY];
     public final int[] age=new int[CAPACITY];
     private final Body[] source=new Body[CAPACITY];
+    public final VesselFoam foam=new VesselFoam();
     private int cursor;
     public int emitted,pulses;
     public WaterSurface() { for(int i=0;i<CAPACITY;i++) age[i]=LIFE; }
@@ -25,6 +26,7 @@ public final class WaterSurface {
         return (.65f+local*1.2f)*wave+.22f*cross;
     }
     public void step(Game g) {
+        foam.step();
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) age[i]++;
         floatBoat(g,g.tug);
         for(Body b:g.cargo) if(b!=null && b.active) floatBoat(g,b);
@@ -34,6 +36,7 @@ public final class WaterSurface {
         if(g.trafficActive()) floatBoat(g,g.trafficBoat);
     }
     private void floatBoat(Game g,Body b) {
+        foam.emit(g,b);
         float old=b.heave,velocity=b.heaveVelocity;
         float response=b.berth>=0?.76f:1;
         if(b.lineAttached || b.awaitingPickup) response*=.45f;
@@ -65,6 +68,7 @@ public final class WaterSurface {
         return g.water.height(b.x,b.y,g.visualTicks,b)*(b.lineAttached?.25f:b.berth>=0?.5f:.75f);
     }
     public void draw(Game g,Painter p) {
+        foam.draw(g,p);
         p=new WaterEffectsPainter(g,p);
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
             float t=age[i]/(float)LIFE,r=9+age[i]*.55f;

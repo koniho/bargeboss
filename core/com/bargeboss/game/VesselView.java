@@ -21,10 +21,8 @@ public final class VesselView {
         Painter canvas=river?((RiverPainter)p).canvas():p;
         if(surface.length>0)canvas.pushClipOutside(surface);
         try {
-            if(wake)ArcadeView.wake(g,p,b,tick);
             if(tug)VesselLighting.reflection(g,p,b);
             ShadowView.vessel(g,p,b,tug,size);
-            VesselWaterline.draw(g,p,b,tug,size,false);
         } finally {if(surface.length>0)canvas.popClip();}
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
         if(flash) {
@@ -39,17 +37,7 @@ public final class VesselView {
         if(tug) {
             VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);
-            boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
-            boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
             exhaust(p,b,tick,b.engineLoad,bob);
-            if(pushing) for(int i=0;i<4;i++) {
-                float t=((tick+i*9)%30)/30f,xx=b.half+b.radius+t*9,yy=(i%2==0?-1:1)*(6+t*10);
-                p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+t*2,1.5f,0xbbe5ffff);
-            }
-            if(b==g.tug && g.reversing && b.speed()>8) for(int i=0;i<5;i++) {
-                float t=((tick+i*7)%25)/25f,xx=-b.half-b.radius-t*15,yy=(i-2)*3;
-                p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+3*t,1.5f,0xaae5ffff);
-            }
         } else {
             // Coaming fittings sit behind cargo; the painted loads occlude them.
             VesselLighting.barge(g,p,b,bob);

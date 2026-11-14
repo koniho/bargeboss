@@ -110,7 +110,7 @@ public final class CoreTest {
         FactoryActivityTest.run();
         ShadowActivityTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("aaf53f4a:11:8972"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("77b68781:11:8972"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

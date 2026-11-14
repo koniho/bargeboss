@@ -5,7 +5,6 @@ public final class HarborView {
     private static final int DARK=VisualStyle.OUTLINE, GOLD=VisualStyle.GOLD;
     private HarborView() {}
     public static void draw(Game g,Painter p) {
-        ArcadeView.water(g,p);
         berths(g,p);
     }
     static void berths(Game g,Painter p) {

@@ -1,43 +1,51 @@
 package com.bargeboss.game;
 
-/** Contact animation stays deterministic, bounded and alive at rest in all turn sectors. */
+/** Sprite contact, physically distinct foam sources and detached history remain deterministic. */
 public final class VesselWaterlineTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Trace implements Painter {
-        int hash=1,lines;float totalWidth;
+        int hash=1,sprites;float energy;
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
         public void rect(float x,float y,float w,float h,int c){}
         public void poly(float[] p,int c){}
         public void circle(float x,float y,float r,int c){}
-        public void line(float x,float y,float xx,float yy,float w,int color) {
-            check(Float.isFinite(x) && Float.isFinite(y) && Float.isFinite(xx) && Float.isFinite(yy),"finite contact contour at every heading");
-            check(w>0 && w<24 && (color>>>24)<250,"soft bounded contact effect");
-            totalWidth+=w;lines++;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);hash=hash*31+color;
+        public void line(float x,float y,float xx,float yy,float w,int color){throw new AssertionError("Foam must use textured sprites, not strokes");}
+        public void spriteAffine(int atlas,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+            check(atlas==SpriteAtlas.FOAM && frame>=0 && frame<4,"reviewed foam texture");
+            check(Float.isFinite(x+ax+bx) && Float.isFinite(y+ay+by) && alpha>0 && alpha<=1,"finite sprite projection and opacity");
+            sprites++;energy+=alpha;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);hash=hash*31+Float.floatToIntBits(alpha);
         }
     }
     private static Trace draw(Game g,Body b) {
-        Trace p=new Trace();float size=2*(b.half+b.radius)/.78f;
-        Painter river=new RiverPainter(p,new RiverCamera(0,0,2));
-        VesselWaterline.draw(g,river,b,b.berth<0,size,false);VesselWaterline.draw(g,river,b,b.berth<0,size,true);return p;
+        Trace p=new Trace();VesselWaterline.draw(g,new RiverPainter(p,new RiverCamera(0,0,2)),b,b.berth<0,2*(b.half+b.radius)/.78f,true);return p;
     }
     public static void run() {
         Game g=new Game();g.mode=Game.TITLE;
         for(int kind=0;kind<2;kind++)for(int heading=0;heading<64;heading++) {
             Body b=new Body(kind,kind-1,300,400,heading*(float)StrictMath.PI/32);b.floatingInitialized=true;
             g.visualTicks=0;Trace idle=draw(g,b),again=draw(g,b);
-            check(idle.hash==again.hash && idle.lines==72,"render repeats exactly without advancing time, with fixed submission cost");
-            g.visualTicks=17;check(draw(g,b).hash!=idle.hash,"idle contact continues animating");
-            g.visualTicks=0;b.vx=20;Trace slow=draw(g,b);
-            b.vx=65;Trace fast=draw(g,b);
-            check(slow.totalWidth>idle.totalWidth && fast.totalWidth>slow.totalWidth,"waterline thickness grows with actual speed");
-            b.vx=-65;check(draw(g,b).totalWidth==fast.totalWidth,"reverse motion has the same thickness at the same speed");
-            b.vx=0;b.vy=65;check(draw(g,b).totalWidth==fast.totalWidth,"sideways drift also builds a thick waterline");
-            b.vy=0;
-            b.vx=0;b.heave=1.5f;b.heaveVelocity=-4;check(draw(g,b).hash!=idle.hash,"heave moves contact and trough descent strengthens it");
-            check(b.x==300 && b.y==400 && b.heave==1.5f && g.visualTicks==0,"effect does not mutate vessel or clock");
+            check(idle.hash==again.hash && idle.sprites<=7,"repeatable bounded contact sprites");
+            g.visualTicks=17;check(draw(g,b).hash!=idle.hash,"idle contact shimmers faintly");
+            g.visualTicks=0;b.vx=65;Trace moving=draw(g,b);
+            check(moving.energy>idle.energy*3,"breaking contact grows with speed without an opaque rim");
+            b.heave=1.5f;check(draw(g,b).hash!=moving.hash,"contact remains registered during heave");
+            check(b.x==300 && b.y==400 && g.visualTicks==0,"rendering does not advance vessels");
         }
-        System.out.println(checks+" animated waterline direction, idle, heave and render-purity assertions passed");
+        Body tug=new Body(0,-1,300,400,0),barge=new Body(1,0,300,400,0);
+        VesselFoam foam=new VesselFoam();g.visualTicks=0;foam.emit(g,tug);
+        check(foam.emitted==0,"idle hull creates no continuous whitewater");
+        tug.engineLoad=1;foam.emit(g,tug);
+        check(foam.propEmitted==2 && foam.emitted==2,"stationary loaded tug emits twin propeller wash");
+        float oldX=foam.x[0],oldY=foam.y[0];tug.x+=100;tug.angle=2;foam.step();
+        check(Math.abs(foam.x[0]-oldX)<1 && Math.abs(foam.y[0]-oldY)<1,"released foam drifts independently of source turns and translation");
+        VesselFoam passive=new VesselFoam();barge.engineLoad=1;barge.vx=40;g.visualTicks=1;passive.emit(g,barge);
+        check(passive.propEmitted==0 && passive.emitted==2,"moving barge generates displacement foam only");
+        VesselFoam reverse=new VesselFoam();tug.x=300;tug.angle=0;g.tug=tug;g.reversing=true;g.visualTicks=0;reverse.emit(g,tug);
+        check(reverse.vx[0]>0 && foam.vx[0]<0,"astern thrust reverses wash flow at the stern fitting");
+        for(int tick=0;tick<160;tick++)foam.step();
+        for(int i=0;i<VesselFoam.CAPACITY;i++)check(foam.age[i]>=foam.life[i],"unrefreshed foam dissipates");
+        System.out.println(checks+" sprite foam direction, idle, prop load, drift and lifecycle assertions passed");
     }
 }

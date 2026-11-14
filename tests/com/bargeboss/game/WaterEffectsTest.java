@@ -51,10 +51,6 @@ public final class WaterEffectsTest {
             }
         }
         Body b=new Body(0,-1,290,440,0);b.vx=55;b.vy=-20;
-        Capture first=new Capture(g),second=new Capture(g);
-        ArcadeView.wake(new WaterEffectsPainter(g,first),b,60);
-        ArcadeView.wake(new WaterEffectsPainter(g,second),b,60);
-        check(first.hash==second.hash && first.polygons>0,"wake rendering is deterministic and still visible near a bank");
         int emitted=g.water.emitted;float heave=b.heave;
         g.water.x[0]=290;g.water.y[0]=440;g.water.heading[0]=0;g.water.age[0]=130;g.water.strength[0]=1;
         g.water.draw(g,new Capture(g));

@@ -7,6 +7,7 @@ public final class SceneryView {
         RiverCamera c=g.layout.camera;float s=c.scale;
         WaveView.draw(g,p);
         Painter world=new RiverPainter(p,c);
+        ArcadeView.water(g,world);
         // Clip the visible world with the real banks. Both coordinates of every
         // corner pass through the same camera as the collision footprints.
         float minX=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,minY=Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
