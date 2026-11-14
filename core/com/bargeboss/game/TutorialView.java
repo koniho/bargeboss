@@ -20,18 +20,24 @@ public final class TutorialView {
             return;
         }
         if(t.lesson==Tutorial.CHANNEL) {
+            boolean entering=g.tug.x<TrainingChannel.X[0];
             VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
             Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF 10",30,79,9,VisualStyle.GOLD);
-            Lettering.draw(p,"NAVIGATE THE CANAL",30,100,16,PAPER);
-            Lettering.draw(p,"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
+            Lettering.draw(p,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",30,100,16,PAPER);
+            Lettering.draw(p,entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
             Lettering.draw(p,"SLOW AT CORNERS. LIFT TO COAST.",30,145,9,MUTED);
             p.rect(30,167,260,4,0xff35475a);
             p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
+            if(entering) {
+                float[] entry=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,t.channelGate,entry);
+                driveArrow(g,new RiverPainter(p,g.layout.camera),entry[0],entry[1],"CANAL ENTRANCE");
+            }
             return;
         }
         // The tow route runs through the upper-left harbor. Keep its touch
         // targets visible by placing those two cards on the opposite side.
-        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL?g.layout.width-486:-18,-30);
+        boolean markerOnLeft=t.lesson==Tutorial.MOVE && g.layout.camera.screenX(t.driveTargetX(),t.driveTargetY())<g.layout.width*.5f;
+        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || markerOnLeft?g.layout.width-486:-18,-30);
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
@@ -65,9 +71,17 @@ public final class TutorialView {
         }
         if(t.lesson==Tutorial.MOVE) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
-            float x=g.holdingTug()?g.downX:g.tug.x,y=g.holdingTug()?g.downY:g.tug.y;
-            ControlView.arrow(river,x+25,y,x+100+pulse,y,VisualStyle.GOLD);
-            RiverPainter.center(river,"DRAG THIS WAY",x+72,y-22,10,PAPER);
+            for(int i=0;i<Tutorial.DRIVE_X.length;i++) {
+                float x=Tutorial.DRIVE_X[i],y=Tutorial.DRIVE_Y[i];int color=i<t.driveMarker?ControlView.GREEN:VisualStyle.GOLD;
+                river.circle(x,y,Tutorial.DRIVE_RADIUS,0x2235c8bd);
+                ControlView.ring(river,x,y,Tutorial.DRIVE_RADIUS+(i==t.driveMarker?pulse:0),1,color,i==t.driveMarker?3:1);
+                river.circle(x,y,6,VisualStyle.OUTLINE);river.circle(x,y,4,color);
+            }
+            driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
+            RiverCamera c=g.layout.camera;float sx=c.screenX(t.driveTargetX(),t.driveTargetY()),sy=c.screenY(t.driveTargetX(),t.driveTargetY());
+            sx=Physics.clamp(sx,75,g.layout.width-75);sy=Physics.clamp(sy+48,216,g.layout.height-90);
+            VisualStyle.panel(p,sx-47,sy-12,94,24,0xee101c30);
+            Lettering.center(p,"BUOY "+(t.driveMarker+1)+" / 2",sx,sy-4,10,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.COAST) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,ControlView.BLUE,3);
             RiverPainter.center(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
@@ -102,6 +116,11 @@ public final class TutorialView {
                 Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
+    }
+    private static void driveArrow(Game g,Painter river,float x,float y,String label) {
+        float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy)),reach=Math.min(90,len);
+        ControlView.arrow(river,g.tug.x+dx/len*30,g.tug.y+dy/len*30,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach,VisualStyle.GOLD);
+        if(label!=null) RiverPainter.center(river,label,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach-18,9,PAPER);
     }
     /** A navigation cue precedes the cargo gesture when the next job is farther away. */
     private static void approach(Game g,Painter canvas,Painter river,Body b,float pulse) {

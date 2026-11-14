@@ -98,12 +98,16 @@ public final class Game {
         return tutorial!=null?TrainingChannel.contains(x,y):x>=Physics.LEFT && x<=Physics.RIGHT && y>=channelTop() && y<=Physics.BOTTOM;
     }
     public static final float WORK_ZOOM=1.5f,DOCK_ZOOM=1.75f;
+    public static final float PRACTICE_DRIVE_ZOOM=1.9f,PRACTICE_CANAL_ZOOM=1.4f;
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
+        float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
+        entrance=entrance*entrance*(3-2*entrance);
+        float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;
         float blend=Physics.clamp((tug.x-80)/160,0,1);
         blend=blend*blend*(3-2*blend);
-        if(blend==0) return Layout.focused(layout.width,layout.height,tug.x,tug.y,1,layout.width*.5f,layout.height*.62f);
-        return workCamera(1+(WORK_ZOOM-1)*blend,blend,true);
+        if(blend==0) return Layout.focused(layout.width,layout.height,tug.x,tug.y,travelZoom,layout.width*.5f,layout.height*.62f);
+        return workCamera(travelZoom+(WORK_ZOOM-travelZoom)*blend,blend,true);
     }
     void fitTutorialCamera() { layout=tutorialCamera(); }
     private Body cameraLoad() {
@@ -187,7 +191,9 @@ public final class Game {
         if(practice!=null) return practice.automationStatus();
         RiverCamera c=layout.camera;
         Body load=null;for(Body b:cargo) if(b!=null && b.active) { load=b;break; }
-        return status()+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)+"; camera "+c.left+","+c.top+","+c.scale+","+c.worldTop+","+c.worldRight;
+        return status()+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
+                +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
+                +"; camera "+c.left+","+c.top+","+c.scale+","+c.worldTop+","+c.worldRight;
     }
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
@@ -356,7 +362,7 @@ public final class Game {
         beginDown(x,y,river);
     }
     private boolean worldTouch(float x,float y) {
-        return x>=(tutorial!=null?TrainingChannel.MIN-40:RiverPainter.WORLD_LEFT)
+        return x>=(tutorial!=null?TrainingChannel.BASIN_LEFT-40:RiverPainter.WORLD_LEFT)
                 && x<=RiverPainter.WORLD_RIGHT
                 && y>=channelTop()-67 && y<=RiverPainter.WORLD_BOTTOM;
     }

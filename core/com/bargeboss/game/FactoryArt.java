@@ -36,7 +36,7 @@ public final class FactoryArt {
             maxX=Math.max(maxX,sx+6*c.scale+r*1.2f);maxY=Math.max(maxY,sy+r*1.1f);
         }
         if(maxX<0 || minX>g.layout.width || maxY<0 || minY>g.layout.height) return;
-        float alpha=SceneryOcclusion.spriteOpacity(p,SpriteAtlas.FACTORY,i,x,y,size,size);
+        float alpha=SceneryOcclusion.buildingOpacity(g,p,SpriteAtlas.FACTORY,i,wx,wy,g.tutorial!=null?GroundArt.LAND_RISE:0,size(i));
         p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
         float phase=i*1.71f+wx*.011f+wy*.007f;
         // A source can be visible while its rooftop emitters are completely offscreen.

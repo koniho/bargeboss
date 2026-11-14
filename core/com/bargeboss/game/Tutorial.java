@@ -4,21 +4,27 @@ package com.bargeboss.game;
 public final class Tutorial {
     public static final int MOVE=0, COAST=1, CHANNEL=2, HOLD=3, STEER=4, DOCK=5, TIE=6, CONNECT=7, PULL=8, RELEASE=9, DONE=10;
     public static final float PUSH_X=240,PUSH_Y=600,PUSH_RADIUS=24;
+    public static final float START_X=-1740,START_Y=650,DRIVE_RADIUS=36;
+    public static final float[] DRIVE_X={-1570,-1450},DRIVE_Y={650,440};
     public int lesson=MOVE, actionTicks,channelGate=1;
+    public int driveMarker;
     public int clearedGate,gateClearTicks;
     public boolean exitRequested, resumeShift;
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
-        clearedGate=gateClearTicks=0;channelGate=1;
+        clearedGate=gateClearTicks=driveMarker=0;channelGate=1;
         g.cancelInputs();g.reversing=false;
         g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.delivered=g.score=0;g.nextId=1;g.selected=-1;actionTicks=0;
         g.addCargo(2,292,700);park(g.cargo[0]);
         g.addCargo(2,350,440);g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
-        g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
-        if(lesson==COAST) g.tug.vx=40;
+        g.tug=new Body(0,-1,START_X,START_Y,0);
+        if(lesson==COAST) {
+            driveMarker=DRIVE_X.length;g.tug.x=DRIVE_X[driveMarker-1];g.tug.y=DRIVE_Y[driveMarker-1];g.tug.vx=25;g.tug.vy=-25;
+        }
+        if(lesson==CHANNEL) g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
         // Reset can restart the current exercise; normal progression preserves
         // the original bodies, positions, momentum, water and camera instead.
         if(lesson>=HOLD) g.tug=new Body(0,-1,376,700,(float)Math.PI);
@@ -55,8 +61,12 @@ public final class Tutorial {
             }
             channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         }
-        if(lesson==MOVE && g.navigating && Physics.length(g.tug.x-startX,g.tug.y-startY)>30) {
-            lesson=COAST; g.haptic(Game.HAPTIC_TICK);
+        if(lesson==MOVE) {
+            if(g.navigating) actionTicks++;
+            if(actionTicks>=6 && Physics.length(g.tug.x-driveTargetX(),g.tug.y-driveTargetY())<=DRIVE_RADIUS) {
+                driveMarker++;actionTicks=0;g.haptic(Game.HAPTIC_CONTACT);
+                if(driveMarker==DRIVE_X.length) {lesson=COAST;g.haptic(Game.HAPTIC_TICK);}
+            }
         } else if(lesson==COAST) {
             actionTicks=!g.pointer && !g.navigating?actionTicks+1:0;
             if(actionTicks>=60) {
@@ -98,12 +108,14 @@ public final class Tutorial {
         } else if(lesson==RELEASE && g.tow.cargo==null && g.towReleases>actionTicks) { lesson=DONE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS); }
         else if((lesson==PULL || lesson==RELEASE) && g.tow.cargo==null && g.ropePhase==0) { lesson=CONNECT;actionTicks=0;g.cancelInputs(); }
     }
+    public float driveTargetX() {return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)];}
+    public float driveTargetY() {return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)];}
     public String title() {
         return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","PULL YOUR BARGE","LET GO OF THE LINE","READY FOR YOUR SHIFT"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
-            case MOVE: return "PRESS THE TUG. DRAG ALONG THE ARROW.";
+            case MOVE: return driveMarker==0?"DRAG THE TUG TO THE FIRST BUOY.":"TURN TOWARD THE SECOND BUOY.";
             case COAST: return "LIFT YOUR FINGER TO CUT THRUST.";
             case CHANNEL: return "STEER UPSTREAM THROUGH EVERY GATE.";
             case HOLD: return "PRESS AND DRAG THE BARGE TO PUSH HERE.";
@@ -118,7 +130,7 @@ public final class Tutorial {
     }
     public String secondLine() {
         switch(lesson) {
-            case MOVE: return "PULL FARTHER FOR MORE THRUST.";
+            case MOVE: return "SHORT DRAG: SLOW. LONG DRAG: FAST.";
             case COAST: return "BOATS COAST. DRAG BACK TO SLOW DOWN.";
             case CHANNEL: return "SLOW FOR SQUARE TURNS. CAMERA FOLLOWS.";
             case HOLD: return "REACH THE MARKED ZONE TO CONTINUE.";

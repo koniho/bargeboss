@@ -76,8 +76,7 @@ public final class ReplayInput {
         Game g=root.activeGame();
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
-                if(!g.pointer) down(root,g.tug.x,g.tug.y);
-                move(root,g.downX+100,g.downY); break;
+                drive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY());break;
             case Tutorial.COAST:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
                 break;

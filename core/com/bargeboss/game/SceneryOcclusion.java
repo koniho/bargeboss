@@ -1,6 +1,7 @@
 package com.bargeboss.game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /** Per-render foreground occlusion. Only already painted vessel pixels can trigger fading.
  * Masks are conservative opaque interiors, shared by every native host. No proximity radius,
@@ -9,6 +10,8 @@ public final class SceneryOcclusion implements Painter {
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
     public SceneryOcclusion(Painter target) {this.target=target;}
+    public void beginFrame(){target.beginFrame();}
+    public void layer(StaticLayer layer,float x,float y,float scale,float alpha){target.layer(layer,x,y,scale,alpha);}
     private interface Shape {boolean contains(float x,float y);float left();float top();float right();float bottom();}
     private static final class Sprite implements Shape {
         final long[] rows;final float x,y,w,h,px,py,c,s,l,t,r,b;
@@ -79,6 +82,38 @@ public final class SceneryOcclusion implements Painter {
         for(Sprite vessel:vessels){hits+=vessel.overlap(shape);if(hits>=4)return .28f;}
         // Easing starts inside actual opaque overlap, never outside the silhouette.
         float t=hits/4f;t=t*t*(3-2*t);return 1-.72f*t;
+    }
+    private static final class WaterPlacement {
+        final float rise,size;final boolean overlaps;
+        WaterPlacement(float rise,float size,boolean overlaps){this.rise=rise;this.size=size;this.overlaps=overlaps;}
+    }
+    @SuppressWarnings("unchecked")
+    private static final HashMap<Long,WaterPlacement>[] WATER_BUILDINGS=new HashMap[3*21*32];
+    /** Placement-only eligibility: an inland silhouette never enters the fading path. */
+    static boolean buildingOverWater(Game g,int atlas,int frame,float wx,float wy,float rise,float size) {
+        int kind=g.tutorial!=null?1:g.bridgeStage()?2:0;
+        int bucket=(kind*21+atlas)*32+frame;
+        HashMap<Long,WaterPlacement> placements=WATER_BUILDINGS[bucket];
+        if(placements==null)WATER_BUILDINGS[bucket]=placements=new HashMap<Long,WaterPlacement>();
+        long key=((long)Float.floatToIntBits(wx)<<32)|(Float.floatToIntBits(wy)&0xffffffffL);
+        WaterPlacement cached=placements.get(key);
+        if(cached!=null && cached.rise==rise && cached.size==size)return cached.overlaps;
+        long[] rows=OcclusionMasks.rows(atlas)[frame];
+        float px=SpriteAtlas.pivotX(atlas,frame),py=SpriteAtlas.pivotY(atlas,frame);
+        boolean overlaps=false;
+        for(int y=0;y<64 && !overlaps;y+=2)for(int x=0;x<64;x+=2)if((rows[y]&(1L<<x))!=0) {
+            float dx=((x+.5f)/64-px)*size,dy=((y+.5f)/64-py)*size-rise;
+            float ex=wx+(dx/RiverCamera.Q-dy/(RiverCamera.Q*RiverCamera.DEPTH))*.5f;
+            float ey=wy+(dx/RiverCamera.Q+dy/(RiverCamera.Q*RiverCamera.DEPTH))*.5f;
+            if(g.inWater(ex,ey)){overlaps=true;break;}
+        }
+        if(placements.size()>1024)placements.clear();
+        placements.put(key,new WaterPlacement(rise,size,overlaps));return overlaps;
+    }
+    public static float buildingOpacity(Game g,Painter p,int atlas,int frame,float wx,float wy,float rise,float size) {
+        if(!buildingOverWater(g,atlas,frame,wx,wy,rise,size))return 1;
+        RiverCamera c=g.layout.camera;
+        return spriteOpacity(p,atlas,frame,c.screenX(wx,wy),c.screenY(wx,wy)-rise*c.scale,size*c.scale,size*c.scale);
     }
     public static float spriteOpacity(Painter p,int atlas,int frame,float x,float y,float w,float h) {
         SceneryOcclusion scene=context(p);return scene==null || scene.vessels.isEmpty()?1:scene.opacity(new Sprite(atlas,frame,x,y,w,h,0));

@@ -1,0 +1,76 @@
+package com.bargeboss.game;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/** Terrain retention keeps world identity while separating foreground caps from the ground. */
+public final class StaticTerrainTest {
+    private static int checks;
+    private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
+    private static boolean near(float a,float b){return Math.abs(a-b)<.002f;}
+    public static void run() {
+        Game g=new Game();g.startTutorial();g=g.activeGame();
+        g.layout=Layout.focused(960,600,300,500,1.4f,480,300);
+        RiverCamera firstCamera=g.layout.camera;Capture before=new Capture();StaticTerrain.draw(g,before,false);
+        Capture foreground=new Capture();StaticTerrain.draw(g,foreground,true);
+        check(!before.calls.isEmpty() && !foreground.calls.isEmpty(),"working harbor has cached ground and separate foreground cap layers");
+        int backgroundSprites=0;
+        for(Call call:before.calls.values()) {
+            check(call.layer.width()>0 && call.layer.width()<=StaticTerrain.CHUNK
+                    && call.layer.height()>0 && call.layer.height()<=StaticTerrain.CHUNK,"trimmed raster bounds stay within their terrain chunk");
+            Trace trace=new Trace();call.layer.paint(trace);backgroundSprites+=trace.sprites;
+        }
+        check(backgroundSprites>0,"background chunks retain the industrial ground textures");
+        for(Call call:foreground.calls.values()) {
+            check(!before.calls.containsKey(call.layer.key()),"foreground caps never alias a background raster key");
+            Trace trace=new Trace();call.layer.paint(trace);
+            check(trace.commands>0 && trace.sprites==0,"foreground retention contains only quay-cap primitives, not the land textures");
+        }
+        g.layout=Layout.focused(1333,600,330,535,1.75f,666.5f,300);
+        Capture after=new Capture();StaticTerrain.draw(g,after,false);int shared=0;
+        for(Call next:after.calls.values()) {
+            Call old=before.calls.get(next.layer.key());if(old==null)continue;shared++;
+            check(old.layer==next.layer,"panning zooming and resizing reuse the same immutable terrain content");
+            check(old.hash==next.hash,"terrain commands do not depend on camera scale or translation");
+            float oldX=(old.x-firstCamera.screenX(0,0))/old.scale,oldY=(old.y-firstCamera.screenY(0,0))/old.scale;
+            float nextX=(next.x-g.layout.camera.screenX(0,0))/next.scale,nextY=(next.y-g.layout.camera.screenY(0,0))/next.scale;
+            check(near(oldX,nextX) && near(oldY,nextY),"reused chunk anchors remain fixed in canonical projection space");
+        }
+        check(shared>=2,"camera regression compares multiple overlapping world chunks");
+        int ticks=g.ticks,visual=g.visualTicks,gate=g.tutorial.channelGate;float x=g.tug.x,y=g.tug.y;
+        Layout layout=g.layout;String progress=g.saveProgress();float[] boundary=TrainingChannel.WATER_BOUNDARY.clone();
+        Capture repeat=new Capture();StaticTerrain.draw(g,repeat,false);StaticTerrain.draw(g,new Capture(),true);
+        check(repeat.calls.size()==after.calls.size(),"repeated terrain drawing submits the same visible chunks");
+        for(Call call:repeat.calls.values()) {
+            Call old=after.calls.get(call.layer.key());
+            check(old!=null && old.hash==call.hash && old.x==call.x && old.y==call.y && old.scale==call.scale,
+                    "cached geometry and draw placement are repeatable within a frame");
+        }
+        check(g.ticks==ticks && g.visualTicks==visual && g.tutorial.channelGate==gate && g.tug.x==x && g.tug.y==y
+                && g.layout==layout && progress.equals(g.saveProgress()),"terrain rendering cannot mutate gameplay camera clocks or progress");
+        for(int i=0;i<boundary.length;i++)check(boundary[i]==TrainingChannel.WATER_BOUNDARY[i],"retained terrain leaves collision geometry unchanged");
+        System.out.println(checks+" retained terrain key, foreground separation and render-purity assertions passed");
+    }
+    private static final class Call {
+        final StaticLayer layer;final float x,y,scale;final int hash;
+        Call(StaticLayer layer,float x,float y,float scale){this.layer=layer;this.x=x;this.y=y;this.scale=scale;Trace trace=new Trace();layer.paint(trace);hash=trace.hash;}
+    }
+    private static class Trace implements Painter {
+        int hash=1,commands,sprites;
+        void mix(int v){hash=31*hash+v;}void value(float v){mix(Float.floatToIntBits(v));}
+        public void rect(float x,float y,float w,float h,int c){commands++;mix(0);value(x);value(y);value(w);value(h);mix(c);}
+        public void circle(float x,float y,float r,int c){commands++;mix(1);value(x);value(y);value(r);mix(c);}
+        public void poly(float[] xy,int c){commands++;mix(2);for(float v:xy)value(v);mix(c);}
+        public void line(float x,float y,float xx,float yy,float w,int c){commands++;mix(3);value(x);value(y);value(xx);value(yy);value(w);mix(c);}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){commands++;sprites++;mix(4);mix(a);mix(f);value(x);value(y);value(w);value(h);value(r);value(alpha);}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha){throw new AssertionError("static terrain must not retain animated vessel blends");}
+    }
+    private static final class Capture extends Trace {
+        final Map<Integer,Call> calls=new HashMap<Integer,Call>();
+        public void layer(StaticLayer layer,float x,float y,float scale,float alpha){
+            check(alpha==1,"terrain layer opacity stays solid independently of vessel occlusion");
+            check(calls.put(layer.key(),new Call(layer,x,y,scale))==null,"each terrain chunk is submitted only once per pass");
+        }
+    }
+    public static void main(String[] args){run();}
+}

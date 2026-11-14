@@ -1,5 +1,7 @@
 # Scenery fades only when covering watercraft
 
+Current rule: only foreground buildings with opaque artwork projecting over water can fade when actually obscuring an already painted watercraft. Inland/background buildings, bridge structures, equipment and shore caps remain opaque. This supersedes the broader primitive fading described in the original measurements below.
+
 The former fade envelope extended 24 world units beyond an oversized boat box,
 then also protected ropes, bollards and canal gates. Factory smoke expanded that
 envelope further. This made nearby buildings disappear even when they did not

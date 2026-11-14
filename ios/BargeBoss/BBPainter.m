@@ -2,6 +2,7 @@
 #import "IOSPrimitiveArray.h"
 #import "com/bargeboss/game/SpriteAtlas.h"
 #import "com/bargeboss/game/SpriteGrade.h"
+#import "com/bargeboss/game/StaticLayer.h"
 #import <math.h>
 
 static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
@@ -11,6 +12,11 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
 @interface BBNativePainter ()
 @property(nonatomic,strong) NSMutableDictionary<NSNumber *,NSArray<UIImage *> *> *spriteAtlases;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *spriteSources;
+@property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *staticLayers;
+@property(nonatomic,strong) NSMutableArray<NSString *> *staticLayerOrder;
+@property(nonatomic,assign) NSUInteger staticLayerBytes;
+@property(nonatomic,assign) jint staticLayerBuilds;
+@property(nonatomic,assign) BOOL paintingStaticLayer;
 - (NSArray<UIImage *> *)atlas:(jint)atlas;
 - (UIImage *)gradedImage:(UIImage *)image atlas:(jint)atlas;
 @end
@@ -19,9 +25,81 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
 - (instancetype)init {
     if((self=[super init])) {
         self.spriteAtlases=[NSMutableDictionary dictionary]; self.spriteSources=[NSMutableDictionary dictionary];
+        self.staticLayers=[NSMutableDictionary dictionary];self.staticLayerOrder=[NSMutableArray array];
         [self atlas:0]; [self atlas:1];
     }
     return self;
+}
+- (void)beginFrame {
+    if(!self.paintingStaticLayer) self.staticLayerBuilds=0;
+}
+- (void)layerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y
+                    withFloat:(jfloat)scale withFloat:(jfloat)alpha {
+    float width=[layer width]*scale,height=[layer height]*scale;
+    if(!(width>0 && height>0 && alpha>0) || !isfinite(width) || !isfinite(height)) return;
+    CGRect bounds=CGRectMake(x,y,width,height);CGContextRef target=self.context;
+    if(!CGRectIntersectsRect(bounds,CGContextGetClipBoundingBox(target))) return;
+    if(self.paintingStaticLayer) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+    float density=[BBStaticLayer rasterScaleWithFloat:scale];
+    double pw=ceil([layer width]*density),ph=ceil([layer height]*density);
+    NSString *key=[NSString stringWithFormat:@"%d:%g",[layer key],density];
+    UIImage *image=self.staticLayers[key];
+    if(image) {
+        [self.staticLayerOrder removeObject:key];[self.staticLayerOrder addObject:key];
+    } else {
+        if(pw<=0 || ph<=0 || pw*ph*4>[BBStaticLayer cacheBudgetBytes]
+                || self.staticLayerBuilds>=[BBStaticLayer maxBuildsPerFrame]) {
+            [self directLayer:layer x:x y:y scale:scale alpha:alpha];return;
+        }
+        size_t pixelsW=(size_t)pw,pixelsH=(size_t)ph,bytes=pixelsW*pixelsH*4;
+        self.staticLayerBuilds++;
+        while(self.staticLayerBytes+bytes>(NSUInteger)[BBStaticLayer cacheBudgetBytes] && self.staticLayerOrder.count>0) {
+            NSString *oldKey=self.staticLayerOrder.firstObject;UIImage *old=self.staticLayers[oldKey];
+            self.staticLayerBytes-=CGImageGetBytesPerRow(old.CGImage)*CGImageGetHeight(old.CGImage);
+            [self.staticLayerOrder removeObjectAtIndex:0];[self.staticLayers removeObjectForKey:oldKey];
+        }
+        CGColorSpaceRef space=CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        CGContextRef offscreen=CGBitmapContextCreate(NULL,pixelsW,pixelsH,8,pixelsW*4,space,
+                kCGBitmapByteOrder32Big|kCGImageAlphaPremultipliedLast);
+        CGColorSpaceRelease(space);
+        if(!offscreen) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+        CGContextClearRect(offscreen,CGRectMake(0,0,pixelsW,pixelsH));
+        CGContextTranslateCTM(offscreen,0,pixelsH);CGContextScaleCTM(offscreen,density,-density);
+        CGContextClipToRect(offscreen,CGRectMake(0,0,[layer width],[layer height]));
+        CGContextSetShouldAntialias(offscreen,true);
+        self.paintingStaticLayer=YES;self.context=offscreen;
+        @try {
+            [layer paintWithBBPainter:self];
+            CGImageRef bitmap=CGBitmapContextCreateImage(offscreen);
+            if(bitmap) {image=[UIImage imageWithCGImage:bitmap scale:1 orientation:UIImageOrientationUp];CGImageRelease(bitmap);}
+        } @finally {
+            self.context=target;self.paintingStaticLayer=NO;CGContextRelease(offscreen);
+        }
+        if(!image) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+        self.staticLayers[key]=image;[self.staticLayerOrder addObject:key];
+        self.staticLayerBytes+=CGImageGetBytesPerRow(image.CGImage)*CGImageGetHeight(image.CGImage);
+    }
+    CGContextSaveGState(target);CGContextClipToRect(target,bounds);
+    // Preserve the exact logical scale even when raster dimensions round up.
+    // The clip trims the subpixel padding instead of squeezing the painted art.
+    float drawWidth=CGImageGetWidth(image.CGImage)*scale/density,drawHeight=CGImageGetHeight(image.CGImage)*scale/density;
+    CGContextTranslateCTM(target,x,y+drawHeight);CGContextScaleCTM(target,1,-1);
+    CGContextSetInterpolationQuality(target,kCGInterpolationLow);CGContextSetAlpha(target,fmaxf(0,fminf(1,alpha)));
+    CGContextDrawImage(target,CGRectMake(0,0,drawWidth,drawHeight),image.CGImage);
+    CGContextRestoreGState(target);
+}
+- (void)directLayer:(BBStaticLayer *)layer x:(float)x y:(float)y scale:(float)scale alpha:(float)alpha {
+    CGContextRef ctx=self.context;BOOL previous=self.paintingStaticLayer;self.paintingStaticLayer=YES;
+    CGContextSaveGState(ctx);CGRect bounds=CGRectMake(x,y,[layer width]*scale,[layer height]*scale);
+    CGContextClipToRect(ctx,bounds);
+    BOOL group=alpha<1;
+    if(group) {CGContextSetAlpha(ctx,fmaxf(0,alpha));CGContextBeginTransparencyLayerWithRect(ctx,bounds,NULL);}
+    @try {
+        CGContextTranslateCTM(ctx,x,y);CGContextScaleCTM(ctx,scale,scale);[layer paintWithBBPainter:self];
+    } @finally {
+        if(group) CGContextEndTransparencyLayer(ctx);
+        CGContextRestoreGState(ctx);self.paintingStaticLayer=previous;
+    }
 }
 - (UIImage *)gradedImage:(UIImage *)image atlas:(jint)atlas {
     if(![BBSpriteGrade appliesWithInt:atlas]) return image;

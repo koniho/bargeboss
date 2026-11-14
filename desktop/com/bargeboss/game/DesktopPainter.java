@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
@@ -26,8 +28,107 @@ public final class DesktopPainter implements Painter {
     private static final Map<Integer,BufferedImage[]> ATLASES=new HashMap<Integer,BufferedImage[]>();
     private static final Map<String,BufferedImage> SOURCE_IMAGES=new HashMap<String,BufferedImage>();
     private static final ThreadLocal<BufferedImage> BLEND_BUFFER=new ThreadLocal<BufferedImage>();
+    private static final ThreadLocal<BufferedImage> LAYER_SCRATCH=new ThreadLocal<BufferedImage>();
+    private static final ThreadLocal<LayerCache> LAYERS=new ThreadLocal<LayerCache>() {
+        protected LayerCache initialValue() {return new LayerCache();}
+    };
+    private static final class LayerCache {
+        final LinkedHashMap<Long,BufferedImage> images=new LinkedHashMap<Long,BufferedImage>(16,.75f,true);
+        long bytes;int builds;
+        void room(long incoming) {
+            Iterator<Map.Entry<Long,BufferedImage>> entries=images.entrySet().iterator();
+            while(bytes+incoming>StaticLayer.cacheBudgetBytes() && entries.hasNext()) {
+                BufferedImage old=entries.next().getValue();bytes-=4L*old.getWidth()*old.getHeight();entries.remove();old.flush();
+            }
+        }
+    }
     private final Graphics2D g;
-    public DesktopPainter(Graphics2D g) { this.g=g; }
+    private final boolean paintingLayer;
+    public DesktopPainter(Graphics2D g) {this(g,false);}
+    private DesktopPainter(Graphics2D g,boolean paintingLayer) {this.g=g;this.paintingLayer=paintingLayer;}
+    public void beginFrame() {if(!paintingLayer) LAYERS.get().builds=0;}
+    public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
+        float width=layer.width()*scale,height=layer.height()*scale;
+        if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;
+        if(!g.hitClip((int)StrictMath.floor(x),(int)StrictMath.floor(y),(int)StrictMath.ceil(width)+1,(int)StrictMath.ceil(height)+1)) return;
+        if(paintingLayer) {drawLayerDirect(layer,x,y,scale,alpha);return;}
+        float density=StaticLayer.rasterScale(scale);
+        double pw=StrictMath.ceil(layer.width()*density),ph=StrictMath.ceil(layer.height()*density);
+        long key=((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);
+        LayerCache cache=LAYERS.get();BufferedImage image=cache.images.get(key);
+        if(image==null) {
+            if(pw<=0 || ph<=0 || pw*ph*4>StaticLayer.cacheBudgetBytes()
+                    || cache.builds>=StaticLayer.maxBuildsPerFrame()) {drawLayerDirect(layer,x,y,scale,alpha);return;}
+            int pixelsW=(int)pw,pixelsH=(int)ph;long bytes=4L*pixelsW*pixelsH;
+            cache.builds++;cache.room(bytes);
+            image=new BufferedImage(pixelsW,pixelsH,BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics2D offscreen=image.createGraphics();
+            try {
+                offscreen.setRenderingHints(g.getRenderingHints());offscreen.scale(density,density);
+                offscreen.clip(new Rectangle2D.Float(0,0,layer.width(),layer.height()));
+                layer.paint(new DesktopPainter(offscreen,true));
+            } finally {offscreen.dispose();}
+            cache.images.put(key,image);cache.bytes+=bytes;
+        }
+        Graphics2D target=(Graphics2D)g.create();
+        try {
+            target.clip(new Rectangle2D.Float(x,y,width,height));
+            target.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,Math.max(0,Math.min(1,alpha))));
+            target.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            AffineTransform transform=new AffineTransform();transform.translate(x,y);transform.scale(scale/density,scale/density);
+            target.drawImage(image,transform,null);
+        } finally {target.dispose();}
+    }
+    private void drawLayerDirect(StaticLayer layer,float x,float y,float scale,float alpha) {
+        if(alpha>=1) {
+            Graphics2D target=(Graphics2D)g.create();
+            try {
+                target.clip(new Rectangle2D.Float(x,y,layer.width()*scale,layer.height()*scale));
+                target.translate(x,y);target.scale(scale,scale);layer.paint(new DesktopPainter(target,true));
+            } finally {target.dispose();}
+            return;
+        }
+        // Faded cold/oversized layers still require group alpha. A reusable
+        // 1026-square scratch surface bounds working memory; invisible tiles
+        // are rejected, and one-pixel gutters prevent filtering seams.
+        float density=StaticLayer.rasterScale(scale);int tile=1024;
+        int width=(int)StrictMath.ceil(layer.width()*density),height=(int)StrictMath.ceil(layer.height()*density);
+        java.awt.Rectangle clip=g.getClipBounds();
+        int firstX=0,firstY=0,lastX=width,lastY=height;
+        if(clip!=null) {
+            firstX=Math.max(0,(int)StrictMath.floor((clip.x-x)*density/scale/tile)*tile);
+            firstY=Math.max(0,(int)StrictMath.floor((clip.y-y)*density/scale/tile)*tile);
+            lastX=Math.min(width,(int)StrictMath.ceil((clip.x+clip.width-x)*density/scale));
+            lastY=Math.min(height,(int)StrictMath.ceil((clip.y+clip.height-y)*density/scale));
+        }
+        for(int ty=firstY;ty<lastY;ty+=tile) for(int tx=firstX;tx<lastX;tx+=tile) {
+            int tw=Math.min(tile,width-tx),th=Math.min(tile,height-ty);
+            float left=x+tx*scale/density,top=y+ty*scale/density;
+            float right=Math.min(x+layer.width()*scale,left+tw*scale/density),bottom=Math.min(y+layer.height()*scale,top+th*scale/density);
+            if(!g.hitClip((int)StrictMath.floor(left),(int)StrictMath.floor(top),(int)StrictMath.ceil(right-left)+1,(int)StrictMath.ceil(bottom-top)+1)) continue;
+            BufferedImage scratch=LAYER_SCRATCH.get();
+            if(scratch==null || scratch.getWidth()<tw+2 || scratch.getHeight()<th+2) {
+                scratch=new BufferedImage(Math.max(tw+2,scratch==null?0:scratch.getWidth()),
+                        Math.max(th+2,scratch==null?0:scratch.getHeight()),BufferedImage.TYPE_INT_ARGB_PRE);LAYER_SCRATCH.set(scratch);
+            }
+            Graphics2D offscreen=scratch.createGraphics();
+            try {
+                offscreen.setComposite(AlphaComposite.Clear);offscreen.fillRect(0,0,tw+2,th+2);
+                offscreen.setComposite(AlphaComposite.SrcOver);offscreen.setRenderingHints(g.getRenderingHints());
+                offscreen.translate(1-tx,1-ty);offscreen.scale(density,density);
+                offscreen.clip(new Rectangle2D.Float(0,0,layer.width(),layer.height()));
+                layer.paint(new DesktopPainter(offscreen,true));
+            } finally {offscreen.dispose();}
+            Graphics2D target=(Graphics2D)g.create();
+            try {
+                target.clip(new Rectangle2D.Float(left,top,right-left,bottom-top));
+                target.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,Math.max(0,Math.min(1,alpha))));
+                target.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                target.translate(x+(tx-1)*scale/density,y+(ty-1)*scale/density);target.scale(scale/density,scale/density);
+                target.drawImage(scratch,0,0,tw+2,th+2,0,0,tw+2,th+2,null);
+            } finally {target.dispose();}
+        }
+    }
     private static synchronized BufferedImage[] atlas(int id) {
         BufferedImage[] frames=ATLASES.get(id); if(frames!=null) return frames;
         Map<String,BufferedImage> sources=SOURCE_IMAGES;

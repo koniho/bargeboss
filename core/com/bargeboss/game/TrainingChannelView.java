@@ -10,10 +10,7 @@ public final class TrainingChannelView {
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
         WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
-        TrainingGroundView.walls(g,canvas);
-        TrainingGroundView.ground(g,canvas);
-        IndustrialRoadView.draw(g,canvas);
-        TrainingGroundView.caps(g,canvas);
+        StaticTerrain.draw(g,canvas,false);
         float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
             float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
@@ -38,7 +35,7 @@ public final class TrainingChannelView {
         HarborAtmosphere.bankHaze(g,canvas);
         LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
         factoriesAndVessels(g,canvas);
-        TrainingGroundView.foreground(g,canvas);
+        StaticTerrain.draw(g,canvas,true);
         DockView.draw(g,canvas);
         if(g.trainingChannel()) {
             int next=Math.min(gate,TrainingChannel.X.length-1);

@@ -125,15 +125,67 @@
     CGPoint b=[self worldPosition:stage tag:@"cargo"];
     [[self river:stage x:b.x y:b.y] pressForDuration:duration];
 }
+- (NSInteger)integerInStatus:(NSString *)status tag:(NSString *)tag {
+    NSArray<NSString *> *parts=[status componentsSeparatedByString:[NSString stringWithFormat:@"; %@ ",tag]];
+    XCTAssertEqual(parts.count,2,@"Missing '%@' in status: %@",tag,status);
+    return [[parts.lastObject componentsSeparatedByString:@";"].firstObject integerValue];
+}
+- (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y status:(NSString *)status thrust:(double)thrust {
+    CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
+    double dx=x-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
+    // Both endpoints use this same published camera and boat position. In
+    // particular, do not re-read accessibility between the two coordinates.
+    [[self river:stage x:boat.x y:boat.y status:status] pressForDuration:0.05
+        thenDragToCoordinate:[self river:stage x:boat.x+thrust*dx/length y:boat.y+thrust*dy/length status:status]
+        withVelocity:500 thenHoldForDuration:0.35];
+}
+- (void)driveOpenWaterPractice:(XCUIElement *)stage {
+    NSInteger previousMarker=0;NSUInteger seenMarkers=0;
+    for(int attempt=0;attempt<100;attempt++) {
+        NSString *status=(NSString *)stage.value;
+        NSInteger marker=[self integerInStatus:status tag:@"drive marker"];
+        XCTAssertTrue(marker>=previousMarker && marker<=2,@"Driving markers must remain ordered: %@",status);
+        previousMarker=marker;
+        if(![status containsString:@"lesson 0;"]) break;
+        XCTAssertLessThan(marker,2,@"Both markers should advance into the coast lesson: %@",status);
+        seenMarkers|=(1u<<marker);
+        CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
+        CGPoint target=[self worldPositionInStatus:status tag:@"drive target"];
+        double distance=hypot(target.x-boat.x,target.y-boat.y);
+        // Ease thrust near a ring, then inspect real progress before deciding
+        // the next gesture. No sleep assumes that a fixed drag reached a goal.
+        // Each new press must cross the shared 42-unit steering-engage threshold.
+        double thrust=fmax(55,fmin(85,distance*.4));
+        NSLog(@"Open-water attempt %d, marker %ld, distance %.1f: %@",attempt,(long)marker,distance,status);
+        [self drivePracticeTug:stage toX:target.x toY:target.y status:status thrust:thrust];
+    }
+    NSString *status=(NSString *)stage.value;
+    XCTAssertEqual(seenMarkers,(NSUInteger)3,@"Both driving targets must be exercised: %@",status);
+    XCTAssertEqual([self integerInStatus:status tag:@"drive marker"],2,@"Opening must reach both targets: %@",status);
+    // Every synthesized drag releases its finger. Stop sending steering once
+    // the second goal is reached and wait for the actual coast completion gate.
+    // A slow accessibility snapshot may already show CHANNEL, so do not require
+    // observing the transient COAST card before accepting that completion.
+    [self waitFor:@"lesson 2;" on:stage];
+    XCTAssertEqual([self integerInStatus:(NSString *)stage.value tag:@"gate"],1,@"Open-water practice cannot award a canal gate");
+}
 - (void)driveTrainingChannel:(XCUIElement *)stage {
     const double xs[]={-1180,-1000,-820,-640,-460,-280,-100,80};
     const double ys[]={500,390,620,390,620,390,600,500};
-    for(int attempt=0;attempt<150 && [(NSString *)stage.value containsString:@"lesson 2;"];attempt++) {
-        CGPoint boat=[self worldPosition:stage tag:@"tug"];
-        NSArray<NSString *> *parts=[(NSString *)stage.value componentsSeparatedByString:@"; gate "];
-        NSInteger gate=[[parts.lastObject componentsSeparatedByString:@";"].firstObject integerValue];
+    for(int attempt=0;attempt<180;attempt++) {
+        NSString *status=(NSString *)stage.value;
+        if(![status containsString:@"lesson 2;"]) break;
+        CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
+        NSInteger gate=[self integerInStatus:status tag:@"gate"];
         if(gate>7) break;
         XCTAssertTrue(gate>=1 && gate<=7);
+        if(gate==1 && boat.x<xs[0]) {
+            // Match the basin-entry leg of TrainingChannel.guide: line up in
+            // open water before attempting the narrower mouth at x=-1260.
+            double x=boat.x<-1300 && fabs(boat.y-500)>24?-1360:xs[0];
+            [self drivePracticeTug:stage toX:x toY:500 status:status thrust:55];
+            continue;
+        }
         // Follow each horizontal / vertical / horizontal reach of the shared
         // rectilinear course rather than steering through the solid inner corner.
         double turn=(xs[gate-1]+xs[gate])/2;
@@ -152,20 +204,13 @@
             if(target<=length || i==2) {double t=fmin(1,target/length);tx=px[i]+t*dx;ty=py[i]+t*dy;break;}
             target-=length;
         }
-        double dx=tx-boat.x,dy=ty-boat.y,length=fmax(1,hypot(dx,dy));
-        [[self river:stage x:boat.x y:boat.y] pressForDuration:0.05
-                thenDragToCoordinate:[self river:stage x:boat.x+55*dx/length y:boat.y+55*dy/length]
-                withVelocity:500 thenHoldForDuration:0.35];
+        [self drivePracticeTug:stage toX:tx toY:ty status:status thrust:55];
     }
     [self waitFor:@"lesson 3" on:stage];
 }
 - (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y {
     NSString *status=(NSString *)stage.value;
-    CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
-    double dx=x-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
-    [[self river:stage x:boat.x y:boat.y status:status] pressForDuration:0.05
-        thenDragToCoordinate:[self river:stage x:boat.x+75*dx/length y:boat.y+75*dy/length status:status]
-        withVelocity:500 thenHoldForDuration:0.35];
+    [self drivePracticeTug:stage toX:x toY:y status:status thrust:75];
 }
 - (void)pushPracticeLoad:(XCUIElement *)stage {
     for(int attempt=0;attempt<80 && [(NSString *)stage.value containsString:@"lesson 3;"];attempt++) {
@@ -186,9 +231,7 @@
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self tapTitle:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
-    CGPoint start=[self worldPosition:stage tag:@"tug"];
-    [self riverDrag:stage x:start.x y:start.y toX:start.x+100 toY:start.y hold:0.6];
-    [self waitFor:@"lesson 2" on:stage];
+    [self driveOpenWaterPractice:stage];
     [self driveTrainingChannel:stage];
     [self pushPracticeLoad:stage];
     CGPoint b;

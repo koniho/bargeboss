@@ -29,15 +29,17 @@ public final class TutorialSceneryPreview {
         new File(directory).mkdirs();
         BufferedImage[] lessons=new BufferedImage[11];String[] titles=new String[11];
         Game root=new Game();root.configureCanvas(width,height);root.startTutorial();Game g=root.activeGame();
-        int previous=-1,channelTicks=0,ticks=0,harborTicks=0;
+        int previous=-1,channelTicks=0,ticks=0,harborTicks=0,turnTicks=0;boolean basinExit=false;
         while(ticks++<16000) {
             int lesson=g.tutorial.lesson;
             if(lesson!=previous) {
                 lessons[lesson]=capture(root,"lesson-"+lesson);titles[lesson]=g.tutorial.title();previous=lesson;
             }
             if(lesson==Tutorial.DONE) break;
+            if(lesson==Tutorial.MOVE && g.tutorial.driveMarker==1 && ++turnTicks==60) capture(root,"open-water-turn");
             if(lesson==Tutorial.CHANNEL) {
                 channelTicks++;
+                if(!basinExit && g.tug.x>TrainingChannel.MIN+15) {capture(root,"basin-exit");basinExit=true;}
                 if(g.tutorial.clearedGate==1 && g.tutorial.gateClearTicks==78) capture(root,"gate-cleared");
                 if(channelTicks==700) capture(root,"canal-middle");
                 if(channelTicks==1700) capture(root,"canal-upstream");

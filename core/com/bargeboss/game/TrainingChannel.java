@@ -3,6 +3,7 @@ package com.bargeboss.game;
 /** A long industrial canal with exact, shared right-angle banks. */
 public final class TrainingChannel {
     public static final float MIN=-1260,MAX=Physics.LEFT,HALF_WIDTH=58;
+    public static final float BASIN_LEFT=-1856,BASIN_TOP=192,BASIN_BOTTOM=832;
     public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};
     /** Each water rectangle is [minX,minY,maxX,maxY]; their union is navigable. */
@@ -13,20 +14,25 @@ public final class TrainingChannel {
     public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
     private static float[][] waterRectangles() {
-        float[][] water=new float[RECTANGLES.length+1][];
+        float[][] water=new float[RECTANGLES.length+2][];
         System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
         water[RECTANGLES.length]=new float[]{Physics.LEFT,Physics.TOP,Physics.RIGHT,Physics.BOTTOM};
+        water[RECTANGLES.length+1]=new float[]{BASIN_LEFT,BASIN_TOP,MIN,BASIN_BOTTOM};
         return water;
     }
     private static float[] waterBoundary() {
-        // Replace the canal's downstream end cap with the harbor's outer quays.
-        float[] result=new float[LOW.length+HIGH.length+8];int n=0;
+        // Open both canal ends into permanent basins; neither mouth has a wall.
+        float[] result=new float[LOW.length+HIGH.length+16];int n=0;
+        result[n++]=BASIN_LEFT;result[n++]=BASIN_TOP;
+        result[n++]=MIN;result[n++]=BASIN_TOP;
         for(float v:LOW) result[n++]=v;
         result[n++]=Physics.LEFT;result[n++]=Physics.TOP;
         result[n++]=Physics.RIGHT;result[n++]=Physics.TOP;
         result[n++]=Physics.RIGHT;result[n++]=Physics.BOTTOM;
         result[n++]=Physics.LEFT;result[n++]=Physics.BOTTOM;
         for(int i=HIGH.length-2;i>=0;i-=2) { result[n++]=HIGH[i];result[n++]=HIGH[i+1]; }
+        result[n++]=MIN;result[n++]=BASIN_BOTTOM;
+        result[n++]=BASIN_LEFT;result[n]=BASIN_BOTTOM;
         return result;
     }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */
@@ -90,6 +96,10 @@ public final class TrainingChannel {
     }
     /** Follow the three orthogonal legs leading from the previous gate to the next. */
     public static void guide(float x,float y,int gate,float[] out) {
+        if(gate==1 && x<X[0]) {
+            // Align inside the broad basin before crossing the narrower mouth.
+            out[0]=x<MIN-40 && Math.abs(y-Y[0])>24?MIN-100:X[0];out[1]=Y[0];return;
+        }
         gate=Math.max(1,Math.min(X.length-1,gate));float turn=(X[gate-1]+X[gate])*.5f;
         float[] px={X[gate-1],turn,turn,X[gate]},py={Y[gate-1],Y[gate-1],Y[gate],Y[gate]};
         float best=Float.MAX_VALUE,along=0,total=0;

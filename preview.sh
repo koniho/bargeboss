@@ -9,6 +9,7 @@ echo tools/Preview.java >> build/preview/sources.txt
 echo tools/AnimationPreview.java >> build/preview/sources.txt
 echo tools/ScreenSizesPreview.java >> build/preview/sources.txt
 echo tools/RotationPreview.java >> build/preview/sources.txt
+echo tools/StaticLayerPixelTest.java >> build/preview/sources.txt
 echo tools/DesktopPainterTest.java >> build/preview/sources.txt
 echo tools/GenerateOcclusionMasks.java >> build/preview/sources.txt
 echo tools/TitleLayoutReview.java >> build/preview/sources.txt
@@ -20,6 +21,7 @@ javac -Xlint:-options --release 8 -encoding UTF-8 -d build/preview @build/previe
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateOcclusionMasks --check
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.TitleLayoutReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.OcclusionPreview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.StaticLayerPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.DesktopPainterTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ViewportPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.VesselLightPixelTest

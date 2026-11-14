@@ -63,10 +63,10 @@ y=215..817; Bridge Run extends upstream to y=-520, with berth A at y=-400.
 
 `Game.updateCamera` runs once per simulation tick. It eases toward the tug on
 Bridge Run and toward the tug/load/berth group when a nearby picked-up barge
-approaches its destination. Zoom reaches 1.4×. Both drag endpoints are reprojected
+approaches its destination. Local work uses 1.5× and docking reaches 1.75×. Both drag endpoints are reprojected
 so a stationary physical finger remains stationary on screen. Rope aim and flight
 freeze the camera. Pause freezes it too; restart restores the overview. The
-tutorial uses its own stable overview. Hosts contain no camera rules or gameplay
+tutorial follows the tug at 1.9× in its opening driving basin and 1.4× through the canal, then blends into the harbor work camera. Hosts contain no camera rules or gameplay
 exceptions; iOS automation reads the shared projection to aim real native touches.
 Android hides system bars with transient swipe access and hosts retain safe cutout bounds.
 
@@ -344,16 +344,17 @@ by their projected ground depth. Unloading cranes and personnel remain independe
 animated in screen-upright coordinates.
 
 `SceneryOcclusion` records vessel and cargo sprite submissions in a per-render
-context. Scenery can fade only over opaque pixels of a watercraft already drawn
-behind it. Shared 64×64 interior masks derive from the production PNG alpha and
+context. Only buildings whose opaque silhouettes project over navigable water
+are eligible to fade, and only over opaque pixels of a watercraft already drawn
+behind them. Placement eligibility is cached independently of camera movement. Shared 64×64 interior masks derive from the production PNG alpha and
 registered atlas crops, including each visible turning-frame blend. Transparent
 padding, wake, smoke, lasso lines, bollards, gates and proximity margins do not
 trigger fading. Factory/stack visibility bounds still include their smoke, but
 only the solid building silhouette determines the building's opacity.
 
-Foreground bridge nodes test their projected visible faces; dock equipment and
-shore caps test the actual painted polygons and strokes. Alpha eases from 1 to
-0.28 over the first few overlapping samples, entirely inside the opaque overlap.
+Bridge structures, dock equipment, standalone stacks, ground and shore caps stay
+opaque. Eligible building alpha eases from 1 to 0.28 over the first few
+overlapping samples, entirely inside the opaque overlap.
 Background scenery stays solid because it has no previously painted vessel to
 obscure. The context is rebuilt each render, with no gameplay mutations or stale
 fade after motion, reset, pause or camera changes. Generate masks with
@@ -422,7 +423,8 @@ sequence showing outward propagation after the tug stops.
 ## Continuous tutorial world and raised terrain
 
 Practice uses one connected `TrainingChannel.WATER_BOUNDARY` and rectangle union
-through every lesson. The tug and two barges persist; progression does not call
+through every lesson. A broad basin starts with two steering targets and a
+coasting lesson before the rectilinear canal. The tug and two barges persist; progression does not call
 fixture setup. The first unloaded barge stays moored and solid using its
 `deliveryRecorded` flag, while the second original barge becomes the tow job.
 Camera follow blends into the harbor by world position, not lesson number.
@@ -457,8 +459,8 @@ mechanism towers. Bridge timing, collision and passage permission remain in
 `Bridge`; the mesh only presents that state.
 
 Light fixtures have stable IDs, local positions and outward normals parented to
-their rigid parts. Their projection, visibility, organic glow and obstruction
-fade use the same transforms as the steelwork. Future booms and other rotating
+their rigid parts. Their projection, visibility and organic glow use the same
+transforms as the steelwork; bridge structures remain opaque. Future booms and other rotating
 shore equipment should use this contract; fixed-view raster scenery cannot be
 rotated into a new perspective. Existing unloading machinery is not converted
 by the bridge change.
@@ -477,7 +479,7 @@ pass skips back faces that have no visible geometry. These terrain changes are
 pixel-identical in nine captured scene/viewport combinations.
 
 Factory light and smoke emitters have individual conservative visibility bounds.
-Below 1.35× zoom, small factory lights use four glow layers and exhaust retains
+Below 1.35× zoom, small factory lights use compact glow kernels and exhaust retains
 all eighteen primary puffs with fewer secondary lobes. Close views retain the full
 factory effect detail. Vessel exhaust, wakes, water and game feedback use their
 existing animation paths. Production sprite pixels/resolution and placements are
@@ -488,3 +490,27 @@ and parsing hexadecimal values for every letter on every frame.
 with minimum factory/effect counts to prevent satisfying a budget by hiding the
 scene. `ScenePerformanceBenchmark` separates shared command generation from
 Java2D raster cost; these timings are not Android or iOS frame-rate claims.
+
+
+`StaticTerrain` records immutable raised ground, roads, corrugated retaining walls
+and caps in 256-unit projection-space chunks. Background and foreground caps use
+separate passes; boats and factory sprites retain their original depth order.
+Chunk keys do not contain camera offsets or fractional zoom. A bounded shared
+geometry cache holds at most 256 chunks. Smoke and water never enter those chunks.
+
+`Painter.layer` lets Android Canvas, iOS Core Graphics and desktop Java2D retain
+native raster layers under a 48 MiB LRU budget. All hosts use the shared 2×/3×
+raster-density rule and build at most one new layer per frame. Misses draw the
+same content directly, clipped to its declared bounds; alpha applies to the whole
+group. Pan and animation do not rebuild immutable layers. Default command
+expansion keeps deterministic JVM/translated traces independent of cache warmth.
+Native antialiasing and cached resampling are validated separately.
+
+Organic lights reuse small static glow kernels while their pulse, position, core
+and accents remain live. Factory sprites stay separate: combining them into a
+single image would interfere with vessel insertion, selective building fading
+and smoke behind nearer roofs. The existing source-image cache already avoids
+repeated factory PNG decoding. `StaticLayerPixelTest` covers clipped cold/warm
+rendering, group alpha, density changes, eviction and reuse. See
+[cache profiling](performance/cache-baseline.md) for source-memory costs and
+controlled submission measurements; these do not establish device frame rate.

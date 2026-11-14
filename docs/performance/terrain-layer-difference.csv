@@ -1,0 +1,13 @@
+width,scene,changedPercent,largeRGBPercent,meanChannelError
+960,basin-entry,11.152,0.028,0.17230
+960,canal-entry,9.226,0.050,0.21290
+960,canal-middle,29.647,0.205,0.51979
+960,harbor-close,22.244,0.153,0.39807
+1333,basin-entry,14.027,0.066,0.22782
+1333,canal-entry,11.758,0.067,0.23444
+1333,canal-middle,31.099,0.189,0.53239
+1333,harbor-close,24.464,0.225,0.47827
+1920,basin-entry,20.821,0.049,0.28953
+1920,canal-entry,18.628,0.077,0.32992
+1920,canal-middle,33.469,0.236,0.54751
+1920,harbor-close,29.306,0.143,0.45494

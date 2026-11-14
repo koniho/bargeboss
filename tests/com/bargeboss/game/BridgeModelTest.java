@@ -85,7 +85,7 @@ public final class BridgeModelTest {
                 SceneryOcclusion foreground=new SceneryOcclusion(new Capture());
                 close(pose.opacity(g,foreground,leaf),1,"bridge behind the vessel cannot obscure it");
                 VesselView.draw(g,new RiverPainter(foreground,g.layout.camera),g.tug,true,false);
-                check(pose.opacity(g,foreground,leaf)<1,"visible leaf faces become translucent over painted vessel pixels");
+                close(pose.opacity(g,foreground,leaf),1,"bridge machinery remains solid even over vessel pixels");
                 g.tug.x=300;g.tug.y=Bridge.Y+500;
                 SceneryOcclusion clear=new SceneryOcclusion(new Capture());
                 VesselView.draw(g,new RiverPainter(clear,g.layout.camera),g.tug,true,false);

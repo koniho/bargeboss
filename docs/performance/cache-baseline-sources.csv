@@ -1,0 +1,27 @@
+cacheKey,width,height,argbBytes
+barge-isometric-v3-32.png#source,1774,887,6294152
+bulk-isometric-v1-32.png#source,1774,887,6294152
+container-16.png#source,1254,1254,6290064
+container-half.png#source,1254,1254,6290064
+factory-assembly-hall-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-blast-furnace-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-boiler-house-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-coal-bunker-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-coking-plant-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-compressor-house-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-filter-bank-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-foundry-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-gatehouse-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-pipework-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-power-station-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-pump-house-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-rail-warehouse-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-rolling-mill-v3.png#cool-industrial-v1,1254,1254,6290064
+factory-substation-v2.png#cool-industrial-v1,1254,1254,6290064
+factory-tank-farm-v2.png#cool-industrial-v1,1254,1254,6290064
+ground-industrial-v1.png#cool-industrial-v1,1254,1254,6290064
+title-backdrop-v2.png#source,2172,724,6290112
+title-harbor-v2.png#cool-industrial-v1,2172,724,6290112
+title-land-v1.png#cool-industrial-v1,2172,724,6290112
+tug-isometric-v5-32.png#source,1774,887,6294152
+TOTAL title+tutorial sources=25 decodedARGB=149.979MiB; excludes GPU copies, Java/native objects and new scene-layer caches

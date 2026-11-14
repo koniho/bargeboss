@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Iterator;
 
 public final class CanvasPainter implements Painter {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -23,7 +25,54 @@ public final class CanvasPainter implements Painter {
     private final AssetManager assets;
     private final Map<Integer,Atlas> atlases=new HashMap<Integer,Atlas>();
     private final Map<String,Bitmap> sourceImages=new HashMap<String,Bitmap>();
+    private final LinkedHashMap<Long,Bitmap> layers=new LinkedHashMap<Long,Bitmap>(16,.75f,true);
+    private final Paint layerPaint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+    private long layerBytes;
+    private int layerBuilds;
+    private boolean paintingLayer;
     private Canvas canvas;
+    public void beginFrame() {if(!paintingLayer) layerBuilds=0;}
+    public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
+        float width=layer.width()*scale,height=layer.height()*scale;
+        if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;
+        if(canvas.quickReject(x,y,x+width,y+height,Canvas.EdgeType.AA)) return;
+        if(paintingLayer) {drawLayerDirect(layer,x,y,scale,alpha);return;}
+        float density=StaticLayer.rasterScale(scale);
+        double pw=StrictMath.ceil(layer.width()*density),ph=StrictMath.ceil(layer.height()*density);
+        long key=((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);
+        Bitmap image=layers.get(key);
+        if(image==null) {
+            if(pw<=0 || ph<=0 || pw*ph*4>StaticLayer.cacheBudgetBytes()
+                    || layerBuilds>=StaticLayer.maxBuildsPerFrame()) {drawLayerDirect(layer,x,y,scale,alpha);return;}
+            long bytes=4L*(int)pw*(int)ph;layerBuilds++;
+            Iterator<Map.Entry<Long,Bitmap>> entries=layers.entrySet().iterator();
+            while(layerBytes+bytes>StaticLayer.cacheBudgetBytes() && entries.hasNext()) {
+                Bitmap old=entries.next().getValue();layerBytes-=old.getAllocationByteCount();entries.remove();
+                // Hardware display lists may still reference this frame's images;
+                // let the VM release evictions after those references disappear.
+            }
+            image=Bitmap.createBitmap((int)pw,(int)ph,Bitmap.Config.ARGB_8888);image.setDensity(Bitmap.DENSITY_NONE);
+            Canvas previous=canvas;Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);
+            paintingLayer=true;canvas=new Canvas(image);canvas.scale(density,density);canvas.clipRect(0,0,layer.width(),layer.height());
+            try {layer.paint(this);} finally {canvas=previous;paintingLayer=false;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+            layers.put(key,image);layerBytes+=image.getAllocationByteCount();
+        }
+        int saved=canvas.save();
+        try {
+            canvas.clipRect(x,y,x+width,y+height);canvas.translate(x,y);canvas.scale(scale/density,scale/density);
+            layerPaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
+            canvas.drawBitmap(image,0,0,layerPaint);
+        } finally {canvas.restoreToCount(saved);}
+    }
+    private void drawLayerDirect(StaticLayer layer,float x,float y,float scale,float alpha) {
+        int saved=canvas.save();boolean previousLayer=paintingLayer;
+        Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);paintingLayer=true;
+        try {
+            canvas.clipRect(x,y,x+layer.width()*scale,y+layer.height()*scale);
+            if(alpha<1) canvas.saveLayerAlpha(x,y,x+layer.width()*scale,y+layer.height()*scale,Math.round(Math.max(0,alpha)*255));
+            canvas.translate(x,y);canvas.scale(scale,scale);layer.paint(this);
+        } finally {canvas.restoreToCount(saved);paintingLayer=previousLayer;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+    }
     public CanvasPainter(AssetManager assets) {
         this.assets=assets;
         spritePaint.setFilterBitmap(false);

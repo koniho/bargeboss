@@ -93,14 +93,16 @@ public final class CoreTest {
         FeederTest.run();
         SceneryTest.run();
         SceneryOcclusionTest.run();
+        BuildingOcclusionTest.run();
         FactoryPlacementTest.run();
         RenderBudgetTest.run();
         TrainingGroundTest.run();
+        StaticTerrainTest.run();
         WaterPhysicsTest.run();
         WaterEffectsTest.run();
         SceneryEffectsTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("e8ba8e4b:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("6400020e:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

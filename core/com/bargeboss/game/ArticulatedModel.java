@@ -105,19 +105,8 @@ public final class ArticulatedModel {
             float x=c.screenX(0,0),y=c.screenY(0,0);
             return new float[]{x+b[0]*c.scale,y+b[1]*c.scale,x+b[2]*c.scale,y+b[3]*c.scale};
         }
-        public float opacity(Game g,Painter painter,int node) {
-            float alpha=1;RiverCamera c=g.layout.camera;
-            for(Poly face:polygons)if(face.node==node && -face.nx+face.ny+face.nz>EPS) {
-                float[] xy=new float[face.xyz.length/3*2];
-                for(int i=0,j=0;i<face.xyz.length;i+=3,j+=2) {
-                    xy[j]=c.screenX(face.xyz[i],face.xyz[i+1]);
-                    xy[j+1]=c.screenY(face.xyz[i],face.xyz[i+1])-face.xyz[i+2]*Z_SCALE*c.scale;
-                }
-                alpha=Math.min(alpha,SceneryOcclusion.polygonOpacity(painter,xy));
-                if(alpha<=.28f)break;
-            }
-            return alpha;
-        }
+        /** Moving shore machinery remains solid; only buildings may fade. */
+        public float opacity(Game g,Painter painter,int node) {return 1;}
         /** Exact convex-face ray test; halos do not shine through opaque bridge parts. */
         public boolean occluded(float[] origin) {
             for(Poly f:polygons) {

@@ -2,6 +2,10 @@ package com.bargeboss.game;
 
 /** The entire native drawing boundary. Coordinates are in the shared landscape stage. */
 public interface Painter {
+    /** Native cache bookkeeping only; never advances simulation. */
+    default void beginFrame() {}
+    /** Immutable static content, clipped to layer bounds with group opacity. */
+    default void layer(StaticLayer layer,float x,float y,float scale,float alpha) {layer.draw(this,x,y,scale,alpha);}
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);
     /** Additively blend registered atlas cells in a transparent layer, then composite once. */

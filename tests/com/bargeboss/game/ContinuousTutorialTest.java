@@ -12,6 +12,8 @@ public final class ContinuousTutorialTest {
     }
     public static void run() {
         canalMouth();
+        openPractice();
+        nativeOpeningCadence();
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}}) {
             Game root=new Game();root.configureCanvas(size[0],size[1]);root.startTutorial();
             Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0],towLoad=g.cargo[1];
@@ -35,7 +37,8 @@ public final class ContinuousTutorialTest {
                         && Math.abs(camera.screenY(tug.x,tug.y)-g.layout.camera.screenY(tug.x,tug.y))<20,
                         "camera eases across lesson changes without a scene reset: tick="+tick+" lesson="+lesson+"->"+g.tutorial.lesson+" zoom="+camera.zoom+"->"+g.layout.camera.zoom+" delta="+(camera.screenX(tug.x,tug.y)-g.layout.camera.screenX(tug.x,tug.y))+","+(camera.screenY(tug.x,tug.y)-g.layout.camera.screenY(tug.x,tug.y)));
                 check(g.inWater(tug.x,tug.y),"continuous tutorial keeps the tug in connected water");
-                if(lesson<=Tutorial.CHANNEL && tug.x<=80) check(g.layout.camera.zoom<1.01f,"canal navigation keeps the wider transit view");
+                if(lesson<=Tutorial.CHANNEL && tug.x<=80) check(g.layout.camera.zoom>=Game.PRACTICE_CANAL_ZOOM-.01f
+                        && g.layout.camera.zoom<=Game.PRACTICE_DRIVE_ZOOM+.01f,"driving stays close, easing wider only through the canal");
                 if(lesson>=Tutorial.HOLD && g.layout.camera.zoom>1.35f) closeWorkSeen=true;
                 if(g.tutorial.lesson!=lesson) {
                     transitions++;
@@ -58,6 +61,64 @@ public final class ContinuousTutorialTest {
         raisedBollard();
         nativePushCadence();
         System.out.println(checks+" continuous tutorial, vessel continuity, camera and tow retry assertions passed");
+    }
+    private static void openPractice() {
+        check(TrainingChannel.MIN-TrainingChannel.BASIN_LEFT>500 && TrainingChannel.BASIN_BOTTOM-TrainingChannel.BASIN_TOP>500,
+                "initial driving area is genuinely broad open water, not another narrow reach");
+        for(int marker=0;marker<Tutorial.DRIVE_X.length;marker++)
+            for(int x=-100;x<=100;x+=20) for(int y=-100;y<=100;y+=20)
+                check(TrainingChannel.contains(Tutorial.DRIVE_X[marker]+x,Tutorial.DRIVE_Y[marker]+y),"practice markers have open maneuvering water on every side");
+        for(float width:new float[]{960,1333}) {
+            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();Body tug=g.tug;
+            check(tug.x==Tutorial.START_X && tug.y==Tutorial.START_Y && g.layout.camera.zoom==Game.PRACTICE_DRIVE_ZOOM,
+                    "practice starts inside the new basin with a close driving camera");
+            for(int tick=0;tick<120;tick++)root.step();
+            check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.driveMarker==0,"waiting cannot earn a driving marker");
+            int seen=0,turns=0;float previousAngle=tug.angle;
+            for(int tick=0;tick<1800 && g.tutorial.lesson==Tutorial.MOVE;tick++) {
+                seen|=1<<g.tutorial.driveMarker;ReplayInput.tutorial(root);
+                RiverCamera c=g.layout.camera;float px=c.screenX(g.pointerX,g.pointerY),py=c.screenY(g.pointerX,g.pointerY);
+                float ax=c.screenX(g.downX,g.downY),ay=c.screenY(g.downX,g.downY);root.step();
+                check(Math.abs(g.layout.camera.screenX(g.pointerX,g.pointerY)-px)<.003f && Math.abs(g.layout.camera.screenY(g.pointerX,g.pointerY)-py)<.003f
+                        && Math.abs(g.layout.camera.screenX(g.downX,g.downY)-ax)<.003f && Math.abs(g.layout.camera.screenY(g.downX,g.downY)-ay)<.003f,
+                        "close open-water camera preserves screen-space steering anchors");
+                check(g.inWater(tug.x,tug.y) && tug.x<TrainingChannel.MIN,"driving goals are reached entirely inside the open basin");
+                if(Math.abs(Physics.angle(tug.angle-previousAngle))>.4f)turns++;
+            }
+            check(seen==3 && turns>0 && g.tutorial.driveMarker==2 && g.tutorial.lesson==Tutorial.COAST,
+                    "two real driving destinations teach a direction change before coast");
+            check(Physics.length(tug.x-Tutorial.START_X,tug.y-Tutorial.START_Y)>250,"opening requires a meaningful drive, not a thirty-unit nudge");
+            check(g.tutorial.channelGate==1,"open-water targets cannot skip canal gates");
+            ReplayInput.up(root,g.pointerX,g.pointerY);float cx=tug.x,cy=tug.y;
+            for(int tick=0;tick<60;tick++)root.step();
+            check(g.tutorial.lesson==Tutorial.CHANNEL && g.tug==tug && Physics.length(tug.x-cx,tug.y-cy)>5,
+                    "release teaches actual coasting and preserves momentum into the next lesson");
+            for(int tick=0;tick<1200 && tug.x<TrainingChannel.X[0];tick++) {ReplayInput.channel(root);root.step();}
+            check(tug.x>=TrainingChannel.X[0] && g.tutorial.channelGate==1 && g.tutorial.lesson==Tutorial.CHANNEL,
+                    "basin navigation reaches the first canal reach through its open mouth without a teleport or gate shortcut");
+        }
+    }
+    private static void nativeOpeningCadence() {
+        for(int width:new int[]{960,1333}) for(int idle:new int[]{0,30,60,180,300}) {
+            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();int attempts=0;
+            while(g.tutorial.lesson==Tutorial.MOVE && attempts++<100) {
+                float dx=g.tutorial.driveTargetX()-g.tug.x,dy=g.tutorial.driveTargetY()-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+                // Match the native test's fresh snapshot, gesture duration and
+                // adaptive thrust; each fresh drag must engage manual steering.
+                float thrust=Math.max(55,Math.min(85,len*.4f));RiverCamera c=g.layout.camera;
+                float sx=c.screenX(g.tug.x,g.tug.y),sy=c.screenY(g.tug.x,g.tug.y);
+                float ex=c.screenX(g.tug.x+thrust*dx/len,g.tug.y+thrust*dy/len),ey=c.screenY(g.tug.x+thrust*dx/len,g.tug.y+thrust*dy/len);
+                root.pointerDown(0,sx,sy);for(int tick=0;tick<3;tick++)root.step();
+                int drag=Math.max(1,(int)StrictMath.ceil(Physics.length(ex-sx,ey-sy)/500*60));
+                for(int tick=1;tick<=drag;tick++) {root.pointerMove(0,sx+(ex-sx)*tick/drag,sy+(ey-sy)*tick/drag);root.step();}
+                for(int tick=0;tick<21;tick++)root.step();root.pointerUp(0,ex,ey);
+                for(int tick=0;tick<idle;tick++)root.step();
+            }
+            for(int tick=0;tick<60;tick++)root.step();
+            check(g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.driveMarker==2 && g.tutorial.channelGate==1,
+                    "native opening gestures reach both markers then coast without skipping gates, with "+idle+" idle ticks at width "+width);
+            check(attempts<100,"feedback-guided native opening converges within its gesture budget");
+        }
     }
     private static void nativePushCadence() {
         for(float width:new float[]{960,1333}) for(int coast:new int[]{180,300,480}) {
@@ -125,7 +186,10 @@ public final class ContinuousTutorialTest {
         g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);
         g.tug.x=TrainingChannel.X[7];g.tug.y=TrainingChannel.Y[7];g.tug.angle=0;
         g.fitTutorialCamera();Body tug=g.tug,load=g.cargo[0];
-        ReplayInput.down(root,load.x,load.y);
+        // Isolate the assist route with the public world-coordinate replay API.
+        // At the closer camera this distant load is intentionally offscreen;
+        // the full gesture replay above tests approaching it before selection.
+        g.down(load.x,load.y);
         int ticks=0;
         while(!Physics.touching(tug,load,4) && ticks++<1200) {
             root.step();
@@ -134,11 +198,12 @@ public final class ContinuousTutorialTest {
         check(Physics.touching(tug,load,4) && g.heldCargo()==load,
                 "holding the waiting barge from the last gate routes the tug through the mouth without a bank trap");
         check(g.tutorial.lesson==Tutorial.HOLD,"assisted approach alone cannot pass the drag-to-push lesson");
-        ReplayInput.up(root,g.pointerX,g.pointerY);
+        g.up(g.pointerX,g.pointerY);
         check(!g.pointer && g.tug==tug && g.cargo[0]==load,"releasing the assisted approach preserves the same scene");
     }
     private static void lateCoast() {
         Game root=new Game();root.startTutorial();Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0];
+        for(int tick=0;tick<1800 && g.tutorial.lesson==Tutorial.MOVE;tick++) {ReplayInput.tutorial(root);root.step();}
         for(int tick=0;tick<6500 && g.tutorial.channelGate<TrainingChannel.X.length;tick++) {
             // Deliberately ignore the lift instruction and keep steering. These
             // are genuine route crossings, not fixture position assignments.
@@ -153,8 +218,8 @@ public final class ContinuousTutorialTest {
         check(Math.abs(tug.x-TrainingChannel.X[7])<50,"late coast keeps the tug at the actual canal exit");
     }
     private static void canalMouth() {
-        for(int heading=0;heading<16;heading++) for(int direction:new int[]{-1,1}) {
-            Body tug=new Body(0,-1,direction>0?130:220,500,heading*(float)Math.PI/8);
+        for(float mouth:new float[]{170,TrainingChannel.MIN}) for(int heading=0;heading<16;heading++) for(int direction:new int[]{-1,1}) {
+            Body tug=new Body(0,-1,mouth+(direction>0?-40:50),500,heading*(float)Math.PI/8);
             for(int tick=0;tick<90;tick++) {
                 float x=tug.x+direction;tug.x=x;
                 TrainingChannel.collideWater(tug);

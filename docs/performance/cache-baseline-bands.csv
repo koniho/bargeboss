@@ -1,0 +1,10 @@
+width,scene,factories,faded,potentialWaterOverlapLowerBound,visibleDepthBands,largestBandSprites,bandClippedMiB,individualTightMiB,individualFullMiB,vesselSprites
+960,canal-entry,77,0,9,45,4,7.439,3.770,20.178,1
+960,canal-middle,59,0,13,43,4,4.712,2.345,12.400,1
+960,harbor-close,19,0,1,16,2,1.390,0.964,6.229,5
+1333,canal-entry,98,0,11,48,5,15.910,5.860,29.096,1
+1333,canal-middle,84,0,13,48,4,11.160,4.071,20.398,1
+1333,harbor-close,28,0,1,23,3,2.305,1.823,10.813,5
+1920,canal-entry,140,0,14,52,7,32.051,9.262,43.420,1
+1920,canal-middle,129,0,13,54,6,27.886,7.124,36.698,1
+1920,harbor-close,45,0,1,28,3,8.290,3.938,20.008,5

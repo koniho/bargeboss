@@ -6,6 +6,10 @@ public final class ViewportPainter implements Painter {
     private final Painter target;
     private final float width,height;
     public ViewportPainter(Painter target,float width,float height) {this.target=target;this.width=width;this.height=height;}
+    public void beginFrame(){target.beginFrame();}
+    public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
+        if(alpha>0 && visible(x,y,x+layer.width()*scale,y+layer.height()*scale))target.layer(layer,x,y,scale,alpha);
+    }
     private boolean visible(float left,float top,float right,float bottom) {
         // One logical pixel retains antialiased coverage just outside an edge.
         return right>=-1 && bottom>=-1 && left<=width+1 && top<=height+1;

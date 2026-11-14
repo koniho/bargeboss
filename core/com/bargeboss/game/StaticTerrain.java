@@ -1,0 +1,73 @@
+package com.bargeboss.game;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** Reusable projection-space terrain chunks. Geometry and raster keys ignore the live camera. */
+public final class StaticTerrain {
+    public static final int CHUNK=256;
+    private static final LinkedHashMap<Integer,Tile> TILES=new LinkedHashMap<Integer,Tile>(32,.75f,true) {
+        protected boolean removeEldestEntry(Map.Entry<Integer,Tile> entry){return size()>256;}
+    };
+    private StaticTerrain() {}
+    public static void draw(Game g,Painter p,boolean foreground) {
+        RiverCamera c=g.layout.camera;
+        float ox=c.screenX(0,0),oy=c.screenY(0,0),unit=CHUNK*c.scale;
+        int firstX=(int)StrictMath.floor(-ox/unit),lastX=(int)StrictMath.floor((g.layout.width-ox)/unit);
+        int firstY=(int)StrictMath.floor(-oy/unit),lastY=(int)StrictMath.floor((g.layout.height-oy)/unit);
+        for(int row=firstY;row<=lastY;row++)for(int col=firstX;col<=lastX;col++) {
+            Tile tile=tile(col,row,foreground);
+            if(!tile.commands.isEmpty())p.layer(tile,ox+(col*CHUNK+tile.left)*c.scale,oy+(row*CHUNK+tile.top)*c.scale,c.scale,1);
+        }
+    }
+    static synchronized Tile tile(int col,int row,boolean foreground) {
+        if(col< -2048 || col>=2048 || row< -2048 || row>=2048)throw new IllegalArgumentException("Terrain chunk outside key range");
+        int key=0x20000000|(foreground?0x01000000:0)|((col+2048)<<12)|(row+2048);
+        Tile tile=TILES.get(key);if(tile!=null)return tile;
+        Recorder record=new Recorder();Painter p=new ViewportPainter(record,CHUNK,CHUNK);
+        Game scene=new Game();
+        // Canonical projection is screenX=Q*(x+y), screenY=Q*DEPTH*(y-x).
+        RiverCamera c=new RiverCamera(RiverCamera.Q*288-col*CHUNK,-RiverCamera.Q*RiverCamera.DEPTH*312-row*CHUNK,1);
+        scene.layout=Layout.renderTile(CHUNK,CHUNK,c);
+        if(foreground)TrainingGroundView.foreground(scene,p);
+        else {
+            TrainingGroundView.walls(scene,p);TrainingGroundView.ground(scene,p);
+            IndustrialRoadView.draw(scene,p);TrainingGroundView.caps(scene,p);
+        }
+        tile=new Tile(key,record);TILES.put(key,tile);return tile;
+    }
+    static final class Tile extends StaticLayer {
+        final int key;final ArrayList<Command> commands;final float left,top,w,h;
+        Tile(int key,Recorder r){this.key=key;commands=r.commands;
+            left=Math.max(0,(float)StrictMath.floor(r.left));top=Math.max(0,(float)StrictMath.floor(r.top));
+            w=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.right))-left);
+            h=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.bottom))-top);
+        }
+        public int key(){return key;}public float width(){return w;}public float height(){return h;}
+        public void paint(Painter p){p=ScreenView.offset(p,-left,-top);for(Command command:commands)command.paint(p);}
+    }
+    private static final class Command {
+        final int type,a,b,color;final float[] v;
+        Command(int type,int a,int b,int color,float[] v){this.type=type;this.a=a;this.b=b;this.color=color;this.v=v;}
+        void paint(Painter p){switch(type){
+            case 0:p.rect(v[0],v[1],v[2],v[3],color);break;
+            case 1:p.line(v[0],v[1],v[2],v[3],v[4],color);break;
+            case 2:p.poly(v,color);break;
+            case 3:p.circle(v[0],v[1],v[2],color);break;
+            default:p.sprite(a,b,v[0],v[1],v[2],v[3],v[4],v[5]);
+        }}
+    }
+    private static final class Recorder implements Painter {
+        final ArrayList<Command> commands=new ArrayList<Command>();
+        float left=CHUNK,top=CHUNK,right=0,bottom=0;
+        private void bounds(float l,float t,float r,float b){left=Math.min(left,l-1);top=Math.min(top,t-1);right=Math.max(right,r+1);bottom=Math.max(bottom,b+1);}
+        public void rect(float x,float y,float w,float h,int c){commands.add(new Command(0,0,0,c,new float[]{x,y,w,h}));bounds(x,y,x+w,y+h);}
+        public void line(float x,float y,float xx,float yy,float w,int c){commands.add(new Command(1,0,0,c,new float[]{x,y,xx,yy,w}));bounds(Math.min(x,xx)-w/2,Math.min(y,yy)-w/2,Math.max(x,xx)+w/2,Math.max(y,yy)+w/2);}
+        public void poly(float[] xy,int c){commands.add(new Command(2,0,0,c,xy.clone()));for(int i=0;i<xy.length;i+=2)bounds(xy[i],xy[i+1],xy[i],xy[i+1]);}
+        public void circle(float x,float y,float r,int c){commands.add(new Command(3,0,0,c,new float[]{x,y,r}));bounds(x-r,y-r,x+r,y+r);}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){commands.add(new Command(4,a,f,0,new float[]{x,y,w,h,r,alpha}));
+            float ww=w*SpriteAtlas.widthScale(a,f),hh=h*SpriteAtlas.heightScale(a,f),l=x-SpriteAtlas.pivotX(a,f)*ww,t=y-SpriteAtlas.pivotY(a,f)*hh;bounds(l,t,l+ww,t+hh);}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new IllegalStateException("Static terrain cannot contain turning sprites");}
+    }
+}

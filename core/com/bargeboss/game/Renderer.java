@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class Renderer {
     private Renderer() {}
     public static void draw(Game root,Painter p) {
+        p.beginFrame();
         Game g=root.activeGame();
         p=new SceneryOcclusion(new ViewportPainter(p,g.layout.width,g.layout.height));
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }

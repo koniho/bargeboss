@@ -27,6 +27,12 @@ public final class Layout {
         camera=new RiverCamera((this.width-RiverCamera.BOARD_WIDTH*scale)/2,(this.height-RiverCamera.BOARD_HEIGHT*scale)/2,scale*zoom,worldTop,worldRight,zoom);
     }
 
+    /** Small offscreen drawing viewport; never installed on a playable Game. */
+    static Layout renderTile(float width,float height,RiverCamera camera) {return new Layout(width,height,camera);}
+    private Layout(float width,float height,RiverCamera camera) {
+        this.width=width;this.height=height;offsetX=offsetY=0;this.camera=camera;
+    }
+
     /** Place a world focus at a screen anchor using the same inverse as touch input. */
     public static Layout focused(float width,float height,float x,float y,float zoom,float screenX,float screenY) {
         Layout base=new Layout(width,height,148,460,zoom);

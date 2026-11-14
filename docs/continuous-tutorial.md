@@ -1,7 +1,11 @@
 # Continuous practice harbor
 
 Practice uses one connected world for all ten lessons. The tug starts at
-(-1180, 500), travels through seven rectilinear canal gates, and enters the
+(-1740, 650) in an open basin spanning x=-1856..-1260, y=192..832. The player
+drives to two ordered markers at (-1570, 650) and (-1450, 440), learning both
+thrust and turning, then releases to feel the boat coast. The basin connects
+directly to the canal at x=-1260, y=442..558. An entry cue aligns the boat
+with that opening before the seven existing rectilinear canal gates. It enters the
 harbor through the opening at x=170, y=442..558. The harbor occupies
 x=170..430, y=215..817. The last gate is at (80, 500), before the mouth,
 so the arrival instruction guides the player into the basin.
@@ -18,8 +22,9 @@ the water, or snap the camera. The explicit Reset control may restart the
 current exercise. Camera follow eases into a basin view by position rather
 than lesson number, and lasso aiming/flight freezes projection as in a shift.
 Local work targets 1.5× zoom, rising toward 1.75× for docking while fitting the
-working hulls and raised bollard. The canal remains at 1×; zoom blends on entering
-the basin. The view follows the tug and nearby teaching barge rather than holding
+working hulls and raised bollard. Open-water driving uses 1.9×; the canal uses
+1.4× with a spatial blend at its entrance. Zoom then blends toward the working
+view on entering the harbor. The view follows the tug and nearby teaching barge rather than holding
 the entire harbor in frame.
 
 `TrainingChannel.WATER_RECTANGLES` and `WATER_BOUNDARY` define the complete
@@ -35,7 +40,7 @@ which existing barge the tutorial teaches without changing vessel identity.
 
 The replay suite exercises real gestures through every lesson on phone and
 tablet layouts, checks hull and camera continuity at every simulation tick,
-and verifies the canal mouth in both directions at sixteen hull headings.
+and verifies both basin/canal and canal/harbor mouths in both directions at sixteen hull headings.
 Separate checks cover late coasting, full-width gates, tow retry, pause/reset,
 single scoring, water clipping and the retained empty barge.
 
@@ -43,7 +48,7 @@ Factory placements use a 64-unit planning grid with whole-cell footprints.
 Footprint edges, rather than arbitrary bitmap centers, align to the grid.
 Four-by-four-cell industrial blocks are packed with the sixteen approved modules;
 one-cell road lanes divide the rows. Every eligible non-road cell outside the
-shore apron is occupied, with 664 modules in the bounded tutorial yard. Placement
+shore apron is occupied; the open practice basin leaves 613 modules in the bounded tutorial yard. Placement
 and depth order are generated once; actual art/effect bounds cull offscreen work.
 Building height varies independently of footprint, and large/tall structures
 stand farther inland to leave the quays and working apron readable. Source

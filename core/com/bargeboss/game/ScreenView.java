@@ -270,6 +270,10 @@ public final class ScreenView {
         public void circle(float xx,float yy,float r,int c) { p.circle(tx(xx,yy),ty(yy),r*scale,c); }
         public void poly(float[] a,int c) { float[] b=new float[a.length]; for(int i=0;i<a.length;i+=2) { b[i]=tx(a[i],a[i+1]); b[i+1]=ty(a[i+1]); } p.poly(b,c); }
         public void line(float xx,float yy,float bx,float by,float w,int c) { p.line(tx(xx,yy),ty(yy),tx(bx,by),ty(by),w*scale,c); }
+        public void layer(StaticLayer layer,float xx,float yy,float size,float alpha) {
+            if(shear==0)p.layer(layer,x+xx*scale,y+yy*scale,size*scale,alpha);
+            else layer.draw(this,xx,yy,size,alpha);
+        }
         public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
             p.sprite(atlas,frame,x+cx*scale,y+cy*scale,width*scale,height*scale,rotation,alpha);
         }
