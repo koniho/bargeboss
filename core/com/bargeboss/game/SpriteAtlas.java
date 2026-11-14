@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Shared atlas layout, per-view registration and continuous heading interpolation. */
 public final class SpriteAtlas {
     public static final int TUG=0, BARGE=1, STEEL=2, CONTAINER=3, BULK=4, WATER=5, NORTH_QUAY=6, SOUTH_QUAY=7, SCENERY=8, PIERS=9, BRIDGE=10,
-            TITLE_BACKDROP=11, TITLE_HARBOR=12, TITLE_VESSELS=13, TITLE_WATER=14, TITLE_LAND=15, STATIC_HARBOR=16, TUTORIAL_SCENERY=17, CHIMNEYS=18, FACTORY=19, GROUND=20;
+            TITLE_BACKDROP=11, TITLE_HARBOR=12, TITLE_VESSELS=13, TITLE_WATER=14, TITLE_LAND=15, STATIC_HARBOR=16, TUTORIAL_SCENERY=17, CHIMNEYS=18, FACTORY=19, GROUND=20, BARGE_GOLD=21, BARGE_MINT=22, TUG_GOLD=23;
     public static final int TITLE_SKY_FADE_SLICES=64;
     private static final String[] FILES={"tug-isometric-v5-32.png","barge-isometric-v3-32.png","steel-16.png","container-16.png","bulk-isometric-v1-32.png"};
     // Alpha-bound registration preserves the previous hull footprint and fixed world anchor.
@@ -46,8 +46,9 @@ public final class SpriteAtlas {
     };
     private static final float STEP=(float)(Math.PI/16);
     private SpriteAtlas() {}
-    private static boolean singleSheet(int atlas) { return atlas==TUG || atlas==BARGE || atlas==BULK; }
+    private static boolean singleSheet(int atlas) { return atlas==TUG || atlas==BARGE || atlas==BULK || VesselHighlight.atlas(atlas); }
     public static String file(int atlas) {
+        if(VesselHighlight.atlas(atlas)) return atlas==TUG_GOLD?"tug-glow-gold-32.png":atlas==BARGE_GOLD?"barge-glow-gold-32.png":"barge-glow-mint-32.png";
         if(atlas==GROUND) return "ground-industrial-v1.png";
         if(atlas==FACTORY) return FactoryArt.file(0);
         if(atlas==CHIMNEYS) return "chimneys-v1.png";
@@ -60,14 +61,14 @@ public final class SpriteAtlas {
         return atlas==BRIDGE?"bridge-v1.png":atlas==SCENERY?"harbor-props-v1.png":atlas==PIERS?"harbor-piers-v1.png":atlas>=WATER?"harbor-base-v1.png":FILES[atlas];
     }
     public static String file(int atlas,int frame) { if(atlas==FACTORY) return FactoryArt.file(frame); return singleSheet(atlas) || atlas>=WATER?file(atlas):frame%2==0?FILES[atlas]:HALF_FILES[atlas]; }
-    public static float widthScale(int atlas,int frame) { if(atlas==TUG) return TugArt.SCALE; if(atlas==BARGE) return BargeArt.HULL_SCALE; if(atlas==BULK) return BargeArt.COAL_SCALE; return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
-    public static float heightScale(int atlas,int frame) { if(atlas==TUG) return TugArt.SCALE; if(atlas==BARGE) return BargeArt.HULL_SCALE; if(atlas==BULK) return BargeArt.COAL_SCALE; return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
+    public static float widthScale(int atlas,int frame) { if(VesselHighlight.atlas(atlas)) return VesselHighlight.scale(atlas); if(atlas==TUG) return TugArt.SCALE; if(atlas==BARGE) return BargeArt.HULL_SCALE; if(atlas==BULK) return BargeArt.COAL_SCALE; return atlas>=WATER || frame%2==0?1:HALF_SX[atlas][frame/2]; }
+    public static float heightScale(int atlas,int frame) { if(VesselHighlight.atlas(atlas)) return VesselHighlight.scale(atlas); if(atlas==TUG) return TugArt.SCALE; if(atlas==BARGE) return BargeArt.HULL_SCALE; if(atlas==BULK) return BargeArt.COAL_SCALE; return atlas>=WATER || frame%2==0?1:HALF_SY[atlas][frame/2]; }
     public static int sourceFrame(int atlas,int frame) { return singleSheet(atlas) || atlas>=WATER?frame:frame/2; }
-    public static int count(int atlas) { if(atlas==FACTORY) return FactoryArt.COUNT; if(atlas==CHIMNEYS) return 2; if(atlas==TUTORIAL_SCENERY) return 4; if(atlas==STATIC_HARBOR) return 3; if(atlas==TITLE_LAND) return 4; return atlas==TITLE_BACKDROP?TITLE_SKY_FADE_SLICES+1:atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
+    public static int count(int atlas) { if(VesselHighlight.atlas(atlas)) return 32; if(atlas==FACTORY) return FactoryArt.COUNT; if(atlas==CHIMNEYS) return 2; if(atlas==TUTORIAL_SCENERY) return 4; if(atlas==STATIC_HARBOR) return 3; if(atlas==TITLE_LAND) return 4; return atlas==TITLE_BACKDROP?TITLE_SKY_FADE_SLICES+1:atlas==SCENERY?8:atlas==PIERS || atlas==BRIDGE || atlas==TITLE_VESSELS?2:atlas>=WATER?1:32; }
     public static int columns(int atlas) { if(atlas==CHIMNEYS) return 2; if(atlas==TUTORIAL_SCENERY) return 2; if(atlas==STATIC_HARBOR) return 3; if(singleSheet(atlas)) return 8; if(atlas==TITLE_LAND) return 4; return atlas>=WATER?1:4; }
-    public static int rows(int atlas) { if(atlas==CHIMNEYS) return 1; if(atlas==TUTORIAL_SCENERY) return 2; return atlas>=WATER?1:4; }
-    public static float pivotX(int atlas,int frame) { if(atlas==GROUND) return GroundArt.PIVOT_X; if(atlas==FACTORY) return FactoryArt.pivotX(frame); if(atlas==CHIMNEYS) return ChimneyArt.pivotX(frame); if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.pivotX(frame); if(atlas==STATIC_HARBOR) return StaticHarborArt.pivotX(frame); if(atlas==TUG) return TugArt.pivotX(frame); if(atlas==BARGE || atlas==BULK) return BargeArt.pivotX(atlas==BULK,frame); if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
-    public static float pivotY(int atlas,int frame) { if(atlas==GROUND) return GroundArt.PIVOT_Y; if(atlas==FACTORY) return FactoryArt.pivotY(frame); if(atlas==CHIMNEYS) return ChimneyArt.pivotY(frame); if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.pivotY(frame); if(atlas==STATIC_HARBOR) return StaticHarborArt.pivotY(frame); if(atlas==TUG) return TugArt.pivotY(frame); if(atlas==BARGE || atlas==BULK) return BargeArt.pivotY(atlas==BULK,frame); if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PY[atlas][frame/2]; frame/=2; return atlas==BARGE?BARGE_Y[frame]:atlas==STEEL?STEEL_Y[frame]:atlas==CONTAINER?CONTAINER_Y[frame]:BULK_Y[frame]; }
+    public static int rows(int atlas) { if(VesselHighlight.atlas(atlas)) return 4; if(atlas==CHIMNEYS) return 1; if(atlas==TUTORIAL_SCENERY) return 2; return atlas>=WATER?1:4; }
+    public static float pivotX(int atlas,int frame) { if(VesselHighlight.atlas(atlas)) return VesselHighlight.pivot(pivotX(VesselHighlight.source(atlas),frame)); if(atlas==GROUND) return GroundArt.PIVOT_X; if(atlas==FACTORY) return FactoryArt.pivotX(frame); if(atlas==CHIMNEYS) return ChimneyArt.pivotX(frame); if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.pivotX(frame); if(atlas==STATIC_HARBOR) return StaticHarborArt.pivotX(frame); if(atlas==TUG) return TugArt.pivotX(frame); if(atlas==BARGE || atlas==BULK) return BargeArt.pivotX(atlas==BULK,frame); if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PX[atlas][frame/2]; frame/=2; return atlas==BARGE?BARGE_X[frame]:atlas==STEEL?STEEL_X[frame]:atlas==CONTAINER?CONTAINER_X[frame]:BULK_X[frame]; }
+    public static float pivotY(int atlas,int frame) { if(VesselHighlight.atlas(atlas)) return VesselHighlight.pivot(pivotY(VesselHighlight.source(atlas),frame)); if(atlas==GROUND) return GroundArt.PIVOT_Y; if(atlas==FACTORY) return FactoryArt.pivotY(frame); if(atlas==CHIMNEYS) return ChimneyArt.pivotY(frame); if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.pivotY(frame); if(atlas==STATIC_HARBOR) return StaticHarborArt.pivotY(frame); if(atlas==TUG) return TugArt.pivotY(frame); if(atlas==BARGE || atlas==BULK) return BargeArt.pivotY(atlas==BULK,frame); if(atlas>=WATER) return .5f; if(frame%2!=0) return HALF_PY[atlas][frame/2]; frame/=2; return atlas==BARGE?BARGE_Y[frame]:atlas==STEEL?STEEL_Y[frame]:atlas==CONTAINER?CONTAINER_Y[frame]:BULK_Y[frame]; }
     // Irregular cells from the painted source sheets. Hosts use these same normalized crop bounds.
     private static final int[][] TERRAIN={{130,340,1640,570},{120,0,1000,223},{630,680,1150,908}};
     private static int[] region(int atlas,int frame) { return TERRAIN[atlas-WATER]; }

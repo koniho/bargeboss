@@ -16,8 +16,8 @@ public final class LightingView {
             float x=c.screenX(bank,along),foot=c.screenY(bank,along),y=foot-17*s;
             float phase=lamp*1.31f+side*.77f;
             float pulse=SceneryEffects.intensity(g.visualTicks,phase);
-            // Light spills onto the quay; the emissive lens remains a small crisp focal point.
-            p.poly(new float[]{x,y+2*s,x-11*s,foot+4*s,x+16*s,foot+5*s},((int)(40*pulse)<<24)|0xffbc68);
+            // Cached feathered haze and a wide diffuse pool replace the hard triangle.
+            DiffuseLight.lamp(p,x,foot,s,pulse);
             p.line(x,foot,x,y,2.4f*s,0xff18252d);
             p.line(x+.7f*s,foot,x+.7f*s,y,0.65f*s,0xff8f7654);
             SceneryEffects.glow(p,x,y,3.3f*s,0xffffb354,1,g.visualTicks,phase);

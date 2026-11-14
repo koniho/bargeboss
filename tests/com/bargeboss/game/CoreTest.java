@@ -84,6 +84,7 @@ public final class CoreTest {
         FrameGateTest.run();
         SpriteGradeTest.run();
         VesselLightingTest.run();
+        VesselHighlightTest.run();
         RotationTest.run();
         TugAtlasTest.run();
         BargeAtlasTest.run();
@@ -102,7 +103,7 @@ public final class CoreTest {
         WaterEffectsTest.run();
         SceneryEffectsTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("6400020e:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("3df0e0d0:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

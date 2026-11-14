@@ -4,6 +4,8 @@ cd "$(dirname "$0")"
 rm -rf build/preview
 mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
+echo tools/GenerateVesselGlow.java >> build/preview/sources.txt
+echo tools/VesselGlowReview.java >> build/preview/sources.txt
 echo tools/EffectsPreview.java >> build/preview/sources.txt
 echo tools/Preview.java >> build/preview/sources.txt
 echo tools/AnimationPreview.java >> build/preview/sources.txt
@@ -19,6 +21,7 @@ echo tools/VesselLightPixelTest.java >> build/preview/sources.txt
 echo tests/com/bargeboss/game/ReplayInput.java >> build/preview/sources.txt
 javac -Xlint:-options --release 8 -encoding UTF-8 -d build/preview @build/preview/sources.txt
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateOcclusionMasks --check
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateVesselGlow --check
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.TitleLayoutReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.OcclusionPreview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.StaticLayerPixelTest

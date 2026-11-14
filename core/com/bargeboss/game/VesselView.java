@@ -25,6 +25,7 @@ public final class VesselView {
         }
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
         if(tug) {
+            VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
@@ -67,6 +68,7 @@ public final class VesselView {
                     SpriteAtlas.draw(p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,cargoSize,1);
                 }
             }
+            VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
             if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
                 float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;
                 p.circle(b.x-c*28+s*9,b.y-s*28-c*9,1.7f+pulse,b.lineAttached?0xffd3e8a1:0xffffd34e);

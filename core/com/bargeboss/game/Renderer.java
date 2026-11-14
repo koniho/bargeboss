@@ -68,7 +68,6 @@ public final class Renderer {
                 p.circle(b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,(color&0xffffff)|0x77000000);
             }
         }
-        MooringView.glow(g,p,b);
         VesselView.draw(g,p,b,false);
         tag(p,b.deliveryRecorded?"EMPTY":""+g.berthLetter(b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-44,10,color);
         if(!b.lineAttached) {

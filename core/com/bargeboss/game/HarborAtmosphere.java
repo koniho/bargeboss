@@ -19,6 +19,11 @@ public final class HarborAtmosphere {
             float bank=side==0?Physics.RIGHT:Physics.LEFT,along=lampY(lamp),sign=side==0?-1:1;
             if(g.tutorial!=null && TrainingChannel.contains(lampBank(side),along)) continue;
             if(!visible(g,bank,along,70*g.layout.camera.scale)) continue;
+            // Broad low-energy reflected light sits beneath the broken wave glints.
+            // Clip every lobe to actual water so it cannot illuminate piers or land.
+            float breath=SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f);
+            for(int ring=8;ring>=1;ring--)
+                world.circle(bank+sign*17,along,ring*5.5f,((int)((2+(8-ring)*.5f)*breath)<<24)|0xe5a35e);
             for(int i=0;i<21;i++) {
                 float phase=g.visualTicks*.045f+lamp*1.31f+i*1.87f;
                 float shimmer=(.55f+.45f*(float)StrictMath.sin(phase))*SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f);

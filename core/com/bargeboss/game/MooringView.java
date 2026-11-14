@@ -70,14 +70,6 @@ public final class MooringView {
             else if(g.ropePhase==3) hit(g,p);
         }
     }
-    public static void glow(Game g,Painter p,Body b) {
-        if(!g.canTie(b) || g.ropeDragging) return;
-        float pulse=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.10);
-        float dx=(float)StrictMath.cos(b.angle)*b.half,dy=(float)StrictMath.sin(b.angle)*b.half;
-        for(int layer=5;layer>=1;layer--) p.line(b.x-dx,b.y-dy,b.x+dx,b.y+dy,
-                2*b.radius+layer*(3+pulse),((int)(12+8*pulse)<<24)|0x65ffb6);
-        ControlView.ring(p,b.x,b.y,b.half+b.radius+5+pulse*3,1,0xbb92ffd0,2.5f);
-    }
     private static void catchBurst(Painter p,Body b) {
         float t=1-b.tieBurstTicks/30f;int alpha=(int)(235*(1-t)*(1-t));
         float radius=b.half+b.radius+7+t*65;

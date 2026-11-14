@@ -514,3 +514,19 @@ repeated factory PNG decoding. `StaticLayerPixelTest` covers clipped cold/warm
 rendering, group alpha, density changes, eviction and reuse. See
 [cache profiling](performance/cache-baseline.md) for source-memory costs and
 controlled submission measurements; these do not establish device frame rate.
+
+## Watercraft highlight and diffuse quay lighting
+
+`VesselHighlight` supplies alpha-derived, registered hull rim/bloom textures for
+all 32 tug and barge views. Every craft has a subdued warm edge; active driving
+and tutorial targets breathe more strongly, while lasso readiness uses mint.
+The glow shares the vessel's pivot, heading crossfade, bob and depth order. It
+never participates in scenery-occlusion masks. See
+[effect texture generation](art-prompts/watercraft-glow.md) for the reproducible
+alpha filtering and padding contract.
+
+Quay lamps use cached `DiffuseLight` beam and pool layers (`0x42000001/2`).
+Overlapping soft lobes disperse beyond the lamp foot instead of ending in a
+filled triangle. A wide low-energy ground pool and water-clipped diffuse
+reflections soften the surrounding darkness. Dynamic intensity remains shared
+and deterministic; hosts cache the fixed shapes through `StaticLayer`.
