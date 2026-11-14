@@ -24,6 +24,7 @@ public final class VesselView {
             if(wake)ArcadeView.wake(g,p,b,tick);
             if(tug)VesselLighting.reflection(g,p,b);
             ShadowView.vessel(g,p,b,tug,size);
+            VesselWaterline.draw(g,p,b,tug,size,false);
         } finally {if(surface.length>0)canvas.popClip();}
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
         if(flash) {
@@ -85,6 +86,7 @@ public final class VesselView {
                 p.circle(b.x-c*28+s*9,b.y-s*28-c*9,1.7f+pulse,b.lineAttached?0xffd3e8a1:0xffffd34e);
             }
         }
+        VesselWaterline.draw(g,p,b,tug,size,true);
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         boolean river=p instanceof RiverPainter;

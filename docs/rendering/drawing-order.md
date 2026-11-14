@@ -65,6 +65,18 @@ water-plane effects use a nested, stricter clip. Both scopes must restore before
 subsequent vessels, buildings and UI. Moving smoke is airborne and is not put
 inside the hull's ground clip.
 
+### Animated vessel waterline
+
+`VesselWaterline` caches a smoothed lower-hull contour from each of the 32
+opaque hull masks, using the same frame scale, pivot, camera offset and sector
+blend as `SpriteAtlas`. Cargo and superstructure do not supply the contour.
+Detached ripples draw under the hull; the narrow contact crest draws after the
+hull/cargo pass. Both use the all-dry-ground cutout, including background banks.
+The contact follows hull heave; outward ripples reduce that coupling as they
+expand. Fixed visual ticks animate idle shimmer; speed and downward heave/trough
+response strengthen foam. Rendering never advances waves or modifies vessels.
+These are contact effects, distinct from persistent world-space wake packets.
+
 ## Scene composition
 
 ### Continuous tutorial
