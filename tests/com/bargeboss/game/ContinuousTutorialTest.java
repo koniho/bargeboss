@@ -1,0 +1,182 @@
+package com.bargeboss.game;
+
+/** Exercise one physical scene through navigation, cargo work and the return tow. */
+public final class ContinuousTutorialTest {
+    private static int checks;
+    private static void check(boolean ok,String message) {
+        checks++;if(!ok) throw new AssertionError(message);
+    }
+    private static boolean present(Game g,Body expected) {
+        for(Body b:g.cargo) if(b==expected) return true;
+        return false;
+    }
+    public static void run() {
+        canalMouth();
+        for(float[] size:new float[][]{{960,600},{1333,600},{960,720}}) {
+            Game root=new Game();root.configureCanvas(size[0],size[1]);root.startTutorial();
+            Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0],towLoad=g.cargo[1];
+            check(load!=null && towLoad!=null && load!=towLoad,"both teaching barges exist when practice begins");
+            int seen=0,transitions=0,waitAtTow=0;
+            for(int tick=0;tick<12000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
+                int lesson=g.tutorial.lesson;seen|=1<<lesson;
+                float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;
+                RiverCamera camera=g.layout.camera;
+                if(lesson==Tutorial.CONNECT && waitAtTow++<180) {
+                    // Leave the unloaded barge alongside while reading the next
+                    // card; it must not disappear or keep awarding deliveries.
+                    if(g.pointer) ReplayInput.up(root,g.pointerX,g.pointerY);
+                } else ReplayInput.tutorial(root);
+                root.step();
+                check(g.tug==tug && present(g,load) && present(g,towLoad),"lesson progression preserves all vessel identities");
+                check(Physics.length(tug.x-x,tug.y-y)<8,"tug moves physically instead of teleporting between lessons");
+                check(Physics.length(load.x-lx,load.y-ly)<8 && Physics.length(towLoad.x-bx,towLoad.y-by)<8,
+                        "cargo moves physically instead of being replaced at a lesson boundary");
+                check(Math.abs(camera.screenX(tug.x,tug.y)-g.layout.camera.screenX(tug.x,tug.y))<20
+                        && Math.abs(camera.screenY(tug.x,tug.y)-g.layout.camera.screenY(tug.x,tug.y))<20,
+                        "camera eases across lesson changes without a scene reset");
+                check(g.inWater(tug.x,tug.y),"continuous tutorial keeps the tug in connected water");
+                if(g.tutorial.lesson!=lesson) {
+                    transitions++;
+                    if(lesson==Tutorial.CHANNEL) check(Math.abs(tug.x-TrainingChannel.X[7])<30,
+                            "last gate advances the lesson while the tug remains at the canal mouth");
+                    if(lesson==Tutorial.STEER) check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<55,
+                            "assisted docking continues from the practiced push destination");
+                }
+                if(g.delivered>0) check(g.delivered==1 && load.active && load.lineAttached && load.unloadingTicks>=Game.UNLOAD_TICKS,
+                        "the completed empty barge remains alongside and scores exactly once");
+            }
+            check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,
+                    "real gestures finish every lesson in one scene at "+size[0]+"x"+size[1]+"; stopped at "+g.tutorial.lesson);
+            check(g.cargo[0]==towLoad && load.active && g.delivered==1,"the second original barge becomes the tow exercise");
+        }
+        retryTow();
+        lateCoast();
+        holdFromMouth();
+        raisedBollard();
+        nativePushCadence();
+        System.out.println(checks+" continuous tutorial, vessel continuity, camera and tow retry assertions passed");
+    }
+    private static void nativePushCadence() {
+        for(float width:new float[]{960,1333}) for(int coast:new int[]{180,300,480}) {
+            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
+            g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);Body load=g.cargo[0];
+            int attempts=0;
+            while(g.tutorial.lesson==Tutorial.HOLD && attempts++<40) {
+                RiverCamera camera=g.layout.camera;
+                float dx=Tutorial.PUSH_X-load.x,dy=Tutorial.PUSH_Y-load.y,len=Math.max(1,Physics.length(dx,dy));
+                float sx=camera.screenX(load.x,load.y),sy=camera.screenY(load.x,load.y);
+                float ex=camera.screenX(load.x+90*dx/len,load.y+90*dy/len);
+                float ey=camera.screenY(load.x+90*dx/len,load.y+90*dy/len);
+                root.pointerDown(0,sx,sy);
+                for(int tick=0;tick<3;tick++) root.step();
+                for(int tick=1;tick<=12 && g.tutorial.lesson==Tutorial.HOLD;tick++) {
+                    root.pointerMove(0,sx+(ex-sx)*tick/12,sy+(ey-sy)*tick/12);root.step();
+                }
+                for(int tick=0;tick<180 && g.tutorial.lesson==Tutorial.HOLD;tick++) root.step();
+                root.pointerUp(0,ex,ey);
+                // XCTest can spend several seconds reading accessibility state
+                // and resolving the next two coordinates after a release.
+                for(int tick=0;tick<coast && g.tutorial.lesson==Tutorial.HOLD;tick++) root.step();
+            }
+            check(g.tutorial.lesson==Tutorial.STEER,
+                    "native three-second manual push bursts finish despite "+coast+" idle ticks between gestures at width "+width);
+            check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,
+                    "native cadence earns the actual push-target gate rather than bypassing it");
+        }
+    }
+    private static void raisedBollard() {
+        for(float width:new float[]{960,1333}) {
+            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
+            g.tutorial.lesson=Tutorial.TIE;g.tutorial.setup(g);Body load=g.cargo[0];
+            RiverCamera camera=g.layout.camera;
+            float sx=camera.screenX(Game.TIE_X[load.berth],g.dockY(load.berth));
+            float sy=camera.screenY(Game.TIE_X[load.berth],g.dockY(load.berth))-18*camera.scale;
+            float wx=camera.worldX(sx,sy),wy=camera.worldY(sx,sy);
+            check(Math.abs(wx-g.bollardX(load.berth))<.002f && Math.abs(wy-g.bollardY(load.berth))<.002f,
+                    "raised bollard hit point is the exact inverse of its elevated visual anchor");
+            BollardCapture p=new BollardCapture();MooringView.draw(g,new RiverPainter(p,camera));
+            check(p.first!=null && Math.abs(p.first[0]-(sx-12*camera.scale*.8f))<.002f
+                    && Math.abs(p.first[1]-(sy+4*camera.scale*.8f))<.002f,
+                    "rendered bollard foundation uses the same elevated anchor as the gesture target");
+            ReplayInput.down(root,load.x,load.y);ReplayInput.move(root,wx,wy);
+            check(g.overTiePoint(load,wx,wy) && Math.abs(g.aimX(load,wx,wy)-wx)<.002f
+                    && Math.abs(g.aimY(load,wx,wy)-wy)<.002f,"aiming at the exact raised visual anchor has no hidden snap offset");
+            ReplayInput.up(root,wx,wy);
+            check(Math.abs(g.ropeEndX-wx)<.002f && Math.abs(g.ropeEndY-wy)<.002f,
+                    "released lasso targets the raised bollard rather than the old water-plane point");
+            for(int tick=0;tick<Game.ROPE_FLIGHT_TICKS;tick++) root.step();
+            check(load.lineAttached,"throwing at the elevated visual anchor catches the bollard");
+        }
+    }
+    private static final class BollardCapture implements Painter {
+        float[] first;
+        public void poly(float[] xy,int color) {if(first==null) first=xy.clone();}
+        public void rect(float x,float y,float w,float h,int color) {}
+        public void circle(float x,float y,float r,int color) {}
+        public void line(float x,float y,float xx,float yy,float w,int color) {}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha) {}
+    }
+    private static void holdFromMouth() {
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);
+        g.tug.x=TrainingChannel.X[7];g.tug.y=TrainingChannel.Y[7];g.tug.angle=0;
+        g.fitTutorialCamera();Body tug=g.tug,load=g.cargo[0];
+        ReplayInput.down(root,load.x,load.y);
+        int ticks=0;
+        while(!Physics.touching(tug,load,4) && ticks++<1200) {
+            root.step();
+            check(g.inWater(tug.x,tug.y),"held-barge assist stays inside connected water from the canal mouth");
+        }
+        check(Physics.touching(tug,load,4) && g.heldCargo()==load,
+                "holding the waiting barge from the last gate routes the tug through the mouth without a bank trap");
+        check(g.tutorial.lesson==Tutorial.HOLD,"assisted approach alone cannot pass the drag-to-push lesson");
+        ReplayInput.up(root,g.pointerX,g.pointerY);
+        check(!g.pointer && g.tug==tug && g.cargo[0]==load,"releasing the assisted approach preserves the same scene");
+    }
+    private static void lateCoast() {
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0];
+        for(int tick=0;tick<6500 && g.tutorial.channelGate<TrainingChannel.X.length;tick++) {
+            // Deliberately ignore the lift instruction and keep steering. These
+            // are genuine route crossings, not fixture position assignments.
+            ReplayInput.channel(root);root.step();
+        }
+        check(g.tutorial.lesson==Tutorial.COAST && g.tutorial.channelGate==TrainingChannel.X.length,
+                "gates crossed while the coast instruction is visible still receive credit");
+        ReplayInput.up(root,g.pointerX,g.pointerY);
+        for(int tick=0;tick<61;tick++) root.step();
+        check(g.tutorial.lesson==Tutorial.HOLD && g.tug==tug && g.cargo[0]==load,
+                "lifting late advances into cargo practice without losing the course or resetting the scene");
+        check(Math.abs(tug.x-TrainingChannel.X[7])<50,"late coast keeps the tug at the actual canal exit");
+    }
+    private static void canalMouth() {
+        for(int heading=0;heading<16;heading++) for(int direction:new int[]{-1,1}) {
+            Body tug=new Body(0,-1,direction>0?130:220,500,heading*(float)Math.PI/8);
+            for(int tick=0;tick<90;tick++) {
+                float x=tug.x+direction;tug.x=x;
+                TrainingChannel.collideWater(tug);
+                check(Math.abs(tug.x-x)<.001f && Math.abs(tug.y-500)<.001f,
+                        "all tug headings pass through the open canal mouth in both directions");
+                for(int disc=0;disc<3;disc++) for(int point=0;point<8;point++) {
+                    double angle=point*Math.PI/4;
+                    check(TrainingChannel.contains(tug.discX(disc)+tug.radius*(float)StrictMath.cos(angle),
+                            tug.discY(disc)+tug.radius*(float)StrictMath.sin(angle)),
+                            "complete hull remains in connected water while crossing the mouth");
+                }
+            }
+        }
+    }
+    private static void retryTow() {
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);
+        Body tug=g.tug,load=g.cargo[0];
+        for(int i=0;i<300 && g.tutorial.lesson==Tutorial.CONNECT;i++) { ReplayInput.tutorial(root);root.step(); }
+        check(g.tutorial.lesson==Tutorial.PULL && g.tow.cargo==load,"tow retry fixture connects using the public gesture");
+        ReplayInput.releaseTow(root);
+        float x=tug.x,y=tug.y,bx=load.x,by=load.y;root.step();
+        check(g.tutorial.lesson==Tutorial.CONNECT && g.tow.cargo==null,"an early release returns to connect instruction");
+        check(g.tug==tug && g.cargo[0]==load && Physics.length(tug.x-x,tug.y-y)<8 && Physics.length(load.x-bx,load.y-by)<8,
+                "retrying a tow preserves the existing boats and positions");
+    }
+    public static void main(String[] args) { run(); }
+}

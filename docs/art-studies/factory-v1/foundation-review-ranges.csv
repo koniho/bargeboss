@@ -1,0 +1,17 @@
+id,reviewedSource,leftStart,leftEnd,rightStart,rightEnd
+blast-furnace,blast-furnace-candidate-v2.png,280,580,680,970
+boiler-house,boiler-house-candidate-v3.png,280,580,680,980
+coking-plant,coking-plant-candidate-v2.png,270,590,690,990
+foundry,foundry-candidate-v2.png,290,580,680,980
+rolling-mill,rolling-mill-candidate-v3.png,400,510,590,840
+assembly-hall,assembly-hall-candidate-v3.png,400,510,590,820
+power-station,power-station-candidate-v3.png,400,500,590,830
+pipework,pipework-candidate-v3.png,400,500,590,830
+tank-farm,tank-farm-candidate-v2.png,390,690,760,850
+filter-bank,filter-bank-candidate-v2.png,390,680,750,880
+coal-bunker,coal-bunker-candidate-v2.png,340,660,750,950
+rail-warehouse,rail-warehouse-candidate-v2.png,320,650,740,940
+pump-house,pump-house-candidate-v2.png,440,590,640,690
+substation,substation-candidate-v2.png,380,590,670,880
+compressor-house,compressor-house-candidate-v2.png,450,590,660,800
+gatehouse,gatehouse-candidate-v3.png,480,590,660,770

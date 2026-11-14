@@ -24,19 +24,40 @@ public final class SceneryView {
         }
         for(Body b:g.cargo) if(b!=null && b.active && (g.canTie(b) || b.lineAttached)) {
             RiverCamera c=g.layout.camera;float s=c.scale;
-            alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(Game.TIE_X[b.berth],g.dockY(b.berth)),
-                    c.screenY(Game.TIE_X[b.berth],g.dockY(b.berth)),24*s,24*s,24*s,20*s));
+            alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(g.bollardX(b.berth),g.bollardY(b.berth)),
+                    c.screenY(g.bollardX(b.berth),g.bollardY(b.berth)),24*s,24*s,24*s,20*s));
         }
         Body rope=g.ropeDragging || g.towAiming?g.heldCargo():g.ropeBody;
         if(rope!=null && (g.ropeDragging || g.towAiming || g.ropePhase!=0)) {
-            float ex=g.towAiming?g.pointerX:g.ropeDragging?g.aimX(rope,g.pointerX,g.pointerY):g.ropeEndX;
-            float ey=g.towAiming?g.pointerY:g.ropeDragging?g.aimY(rope,g.pointerX,g.pointerY):g.ropeEndY;
+            boolean aiming=g.ropeDragging || g.towAiming;
+            boolean towTarget=g.towAiming && g.towTarget(rope,g.pointerX,g.pointerY);
+            float ex=g.towAiming?(towTarget?g.tug.x:g.pointerX):g.ropeDragging?g.aimX(rope,g.pointerX,g.pointerY):g.ropeEndX;
+            float ey=g.towAiming?(towTarget?g.tug.y:g.pointerY):g.ropeDragging?g.aimY(rope,g.pointerX,g.pointerY):g.ropeEndY;
+            float[] point=new float[2];LassoPath.edge(rope,ex,ey,point);
+            float currentHeight=LassoPath.DECK_HEIGHT+WaterSurface.lift(g,rope);
+            float sx=point[0],sy=point[1],height=currentHeight,distance=1,offsetX=0,offsetY=0;
+            if(!aiming) {
+                boolean returning=g.ropePhase==2;
+                float currentX=g.ropeOriginX(),currentY=g.ropeOriginY();
+                sx=returning?currentX:g.ropeStartX;sy=returning?currentY:g.ropeStartY;
+                height=returning?currentHeight:g.ropeStartHeight;
+                float progress=Physics.clamp(g.ropeTicks/(float)(returning?Game.ROPE_RETURN_TICKS:Game.ROPE_FLIGHT_TICKS),0,1);
+                float eased=1-(1-progress)*(1-progress);distance=returning?1-eased:eased;
+                offsetX=currentX-sx+LassoPath.liftX(true,currentHeight-height);
+                offsetY=currentY-sy+LassoPath.liftY(true,currentHeight-height);
+            }
             RiverCamera c=g.layout.camera;
-            for(int i=0;i<=12;i++) {
-                float t=i/12f,height=30*(float)StrictMath.sin(t*Math.PI);
-                float wx=rope.x+(ex-rope.x)*t+RiverCamera.riseX(height);
-                float wy=rope.y+(ey-rope.y)*t+RiverCamera.riseY(height);
-                alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(wx,wy),c.screenY(wx,wy),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
+            for(int i=0;i<=16;i++) {
+                float fraction=i/16f;
+                if(!aiming && g.ropePhase==3) {
+                    float ox=g.ropeOriginX()+LassoPath.liftX(true,currentHeight);
+                    float oy=g.ropeOriginY()+LassoPath.liftY(true,currentHeight);
+                    point[0]=ox+(ex-ox)*fraction;point[1]=oy+(ey-oy)*fraction;
+                } else {
+                    LassoPath.sample(sx,sy,ex,ey,height,distance*fraction,true,point);
+                    point[0]+=offsetX*(1-fraction);point[1]+=offsetY*(1-fraction);
+                }
+                alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(point[0],point[1]),c.screenY(point[0],point[1]),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
             }
         }
         if(g.tow.cargo!=null) {

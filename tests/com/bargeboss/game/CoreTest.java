@@ -72,6 +72,9 @@ public final class CoreTest {
         ControlsTest.run();
         TutorialHoldTest.run();
         ChannelTest.run();
+        ContinuousTutorialTest.run();
+        LassoFeedbackTest.run();
+        BridgeModelTest.run();
         TowTest.run();
         CargoGestureTest.run();
         ThrottleTest.run();
@@ -85,11 +88,13 @@ public final class CoreTest {
         CareerTest.run();
         FeederTest.run();
         SceneryTest.run();
+        FactoryPlacementTest.run();
+        TrainingGroundTest.run();
         WaterPhysicsTest.run();
         WaterEffectsTest.run();
         SceneryEffectsTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("7e4242ca:11:8974"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("d7f2d0a5:11:8974"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

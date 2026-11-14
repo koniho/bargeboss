@@ -122,7 +122,7 @@
     [[self river:stage x:b.x y:b.y] pressForDuration:duration];
 }
 - (void)driveTrainingChannel:(XCUIElement *)stage {
-    const double xs[]={200,380,560,740,920,1100,1280,1460};
+    const double xs[]={-1180,-1000,-820,-640,-460,-280,-100,80};
     const double ys[]={500,390,620,390,620,390,600,500};
     for(int attempt=0;attempt<150 && [(NSString *)stage.value containsString:@"lesson 2;"];attempt++) {
         CGPoint boat=[self worldPosition:stage tag:@"tug"];
@@ -155,13 +155,24 @@
     }
     [self waitFor:@"lesson 3" on:stage];
 }
+- (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y {
+    NSString *status=(NSString *)stage.value;
+    CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
+    double dx=x-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
+    [[self river:stage x:boat.x y:boat.y status:status] pressForDuration:0.05
+        thenDragToCoordinate:[self river:stage x:boat.x+75*dx/length y:boat.y+75*dy/length status:status]
+        withVelocity:500 thenHoldForDuration:0.35];
+}
 - (void)pushPracticeLoad:(XCUIElement *)stage {
     for(int attempt=0;attempt<80 && [(NSString *)stage.value containsString:@"lesson 3;"];attempt++) {
         CGPoint b=[self worldPosition:stage tag:@"cargo"];
+        CGPoint boat=[self worldPosition:stage tag:@"tug"];
+        if(boat.x<215) { [self drivePracticeTug:stage toX:240 toY:500];continue; }
+        if(hypot(boat.x-b.x,boat.y-b.y)>190) { [self drivePracticeTug:stage toX:360 toY:620];continue; }
         double dx=240-b.x,dy=600-b.y,length=fmax(1,hypot(dx,dy));
         [[self river:stage x:b.x y:b.y] pressForDuration:0.05
             thenDragToCoordinate:[self river:stage x:b.x+90*dx/length y:b.y+90*dy/length]
-            withVelocity:500 thenHoldForDuration:0.5];
+            withVelocity:500 thenHoldForDuration:3];
     }
     [self waitFor:@"lesson 4" on:stage];
 }
@@ -171,20 +182,35 @@
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self tapMenu:stage x:770 y:362]; [self waitFor:@"lesson 0" on:stage];
-    [self riverDrag:stage x:350 y:700 toX:350 toY:600 hold:0.6];
+    CGPoint start=[self worldPosition:stage tag:@"tug"];
+    [self riverDrag:stage x:start.x y:start.y toX:start.x+100 toY:start.y hold:0.6];
     [self waitFor:@"lesson 2" on:stage];
     [self driveTrainingChannel:stage];
     [self pushPracticeLoad:stage];
     CGPoint b;
-    [self holdCargo:stage duration:10];
-    [self waitFor:@"lesson 5" on:stage];
-    [self holdCargo:stage duration:3];
+    // HOLD FOR ASSIST now continues directly into docking on the same load.
+    // Do not require a transient lesson-five snapshot after a long held touch.
+    for(int attempt=0;attempt<20;attempt++) {
+        NSString *status=(NSString *)stage.value;
+        if(![status containsString:@"lesson 4;"] && ![status containsString:@"lesson 5;"]) break;
+        [self holdCargo:stage duration:0.8];
+    }
     [self waitFor:@"lesson 6" on:stage];
     b=[self worldPosition:stage tag:@"cargo"];
-    [self riverDrag:stage x:b.x y:b.y toX:120 toY:700 hold:0.2];
+    // The tutorial quay is 18 world units above the water. Project its bollard
+    // at that same height; both screen coordinates still use the shared camera.
+    double quayRise=18/(2*0.70710678*0.57735027);
+    [self riverDrag:stage x:b.x y:b.y toX:120+quayRise toY:700-quayRise hold:0.2];
     [self waitFor:@"lesson 7" on:stage];
-    // CONNECT creates drifting hulls. Derive both endpoints and the camera from
-    // one current status snapshot rather than reusing their setup coordinates.
+    // Sail to the waiting second barge; neither it nor the tug is respawned.
+    // Approach on its upstream side so the next lesson pulls it into open water.
+    for(int attempt=0;attempt<80;attempt++) {
+        CGPoint load=[self worldPosition:stage tag:@"cargo"];
+        CGPoint tug=[self worldPosition:stage tag:@"tug"];
+        if(hypot(tug.x-load.x,tug.y-load.y)<=150 && tug.y<=load.y-55) break;
+        [self drivePracticeTug:stage toX:load.x-95 toY:load.y-85];
+    }
+    // Derive both endpoints and the camera from one current status snapshot.
     NSString *towStatus=(NSString *)stage.value;
     b=[self worldPositionInStatus:towStatus tag:@"cargo"];
     CGPoint boat=[self worldPositionInStatus:towStatus tag:@"tug"];

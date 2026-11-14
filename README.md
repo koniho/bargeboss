@@ -28,8 +28,11 @@ assisted pushing, docking, throwing a mooring
 line, connecting a towline, pulling and releasing. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended shift. Before the cargo lessons, steer
 upstream through seven gates along a narrow industrial channel spanning several
-screens. Solid curved banks prevent shortcuts; the camera scrolls upward with
-the tug while keeping the original drag anchor fixed on the screen.
+screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
+the tug while keeping the original drag anchor fixed on the screen. The canal
+opens into the same practice harbor, with both teaching barges already waiting.
+Sixteen factory modules, varied building heights, active exhausts and warm
+lighting populate the raised industrial yards behind the quays.
 
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
   farther for more thrust. The control ring stays at your original touch point;
@@ -198,6 +201,11 @@ so an opaque boat stays opaque between headings. This smooths transitions betwee
 painted views; it is not skeletal animation or a live 3D model. Native
 antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
+
+Practice is one [continuous canal and harbor](docs/continuous-tutorial.md): drive
+through the gates, push and unload the first barge, then sail to the second barge
+for towing. Boats, water and scenery stay in place between lessons; only an
+explicit reset restarts an exercise.
 
 ## Design a level
 

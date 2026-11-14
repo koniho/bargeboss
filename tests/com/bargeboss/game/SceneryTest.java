@@ -25,8 +25,14 @@ public final class SceneryTest {
         check(SceneryView.opacity(g,x-30,y-70,60,80)<.3f,"cross-traffic also reveals obstructing scenery");
         g.ticks=0;
         g.ropeBody=new Body(99,0,300,300,0);g.ropePhase=1;g.ropeEndX=300;g.ropeEndY=700;
-        float rx=c.screenX(300,470),ry=c.screenY(300,470);
-        check(SceneryView.opacity(g,rx-12,ry-12,24,24)<.4f,"foreground reveals a thrown or aimed lasso path");
+        g.ropeStartX=300;g.ropeStartY=317.5f;g.ropeStartHeight=4;g.ropeLocalY=17.5f;g.ropeTicks=9;
+        // Halfway along the paid-out 75% arc, sampled from the actual launch edge.
+        float height=4*.625f+30*(float)StrictMath.sin(.375*Math.PI);
+        float rx=c.screenX(300+RiverCamera.riseX(height),317.5f+382.5f*.375f+RiverCamera.riseY(height));
+        float ry=c.screenY(300+RiverCamera.riseX(height),317.5f+382.5f*.375f+RiverCamera.riseY(height));
+        check(SceneryView.opacity(g,rx-12,ry-12,24,24)<.4f,"foreground reveals the paid-out lasso arc");
+        rx=c.screenX(300,700);ry=c.screenY(300,700);
+        check(SceneryView.opacity(g,rx-8,ry-8,16,16)==1,"scenery beyond the flying loop does not fade prematurely");
         g.ropePhase=0;g.ropeBody=null;
         Body boat=new Body(0,-1,370,290,0);boat.vx=80;
         float hit=HarborGeometry.collide(boat);

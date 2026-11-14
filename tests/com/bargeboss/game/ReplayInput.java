@@ -18,8 +18,9 @@ public final class ReplayInput {
         if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y); }
     }
     public static void lasso(Game root,Body b) {
-        down(root,b.x,b.y); move(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
-        up(root,Game.TIE_X[b.berth],root.activeGame().dockY(b.berth));
+        Game g=root.activeGame();
+        down(root,b.x,b.y); move(root,g.bollardX(b.berth),g.bollardY(b.berth));
+        up(root,g.bollardX(b.berth),g.bollardY(b.berth));
     }
     public static void work(Game g) {
         if(g.ropePhase!=0) return;
@@ -62,6 +63,11 @@ public final class ReplayInput {
     }
     public static void pushPractice(Game root) {
         Game g=root.activeGame();Body b=g.cargo[0];
+        // The canal now opens into this same harbor. Drive through its mouth
+        // before touching the load, instead of selecting an off-screen hull.
+        if(g.tug.x<215) { drive(g,240,500);return; }
+        if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>190) { drive(g,360,620);return; }
+        if(g.holdingTug()) up(root,g.pointerX,g.pointerY);
         if(!g.pointer) down(root,b.x,b.y);
         float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
         move(root,g.downX+90*dx/len,g.downY+90*dy/len);
@@ -71,7 +77,7 @@ public final class ReplayInput {
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
                 if(!g.pointer) down(root,g.tug.x,g.tug.y);
-                move(root,g.downX,g.downY-100); break;
+                move(root,g.downX+100,g.downY); break;
             case Tutorial.COAST:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
                 break;
@@ -88,6 +94,13 @@ public final class ReplayInput {
                 if(!g.cargo[0].lineAttached && g.ropePhase==0) lasso(root,g.cargo[0]); break;
             case Tutorial.CONNECT:
                 if(g.ropePhase==0 && g.tow.cargo==null) {
+                    Body b=g.cargo[0];
+                    // Circle to the upstream side of the waiting barge. The
+                    // subsequent northbound drag should pull, not ram its bow.
+                    if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>150 || g.tug.y>b.y-55) {
+                        drive(g,b.x-95,b.y-85);break;
+                    }
+                    if(g.pointer) up(root,g.pointerX,g.pointerY);
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
                 } break;
             case Tutorial.PULL:

@@ -1,42 +1,25 @@
 package com.bargeboss.game;
 
-/** Isometric industrial practice yard, registered to the exact right-angle canal banks. */
+/** One connected industrial practice yard, from the canal entrance to the working berth. */
 public final class TrainingChannelView {
+    public static final int FACTORY_PLACEMENTS=FactoryArt.COUNT+4;
+    private static final int[] HARBOR_FACTORIES={0,4,8,13};
+    private static final float[] HARBOR_FACTORY_Y={320,512,704,160};
     private TrainingChannelView() {}
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;Painter p=new RiverPainter(canvas,c);
-        WaveView.draw(g,canvas);
-        g.water.draw(g,p);
-        float low=Float.MAX_VALUE,high=-Float.MAX_VALUE,minY=Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
+        canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
+        WaveView.surface(g,canvas);
+        ArcadeView.water(g,p);
+        TrainingGroundView.walls(g,canvas);
+        TrainingGroundView.ground(g,canvas);
+        factoryAprons(g,new RiverPainter(GroundArt.raisedCanvas(g,canvas),c));
+        TrainingGroundView.caps(g,canvas);
+        float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
             float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
             low=Math.min(low,c.worldX(sx,sy)-35);high=Math.max(high,c.worldX(sx,sy)+35);
-            minY=Math.min(minY,c.worldY(sx,sy)-35);maxY=Math.max(maxY,c.worldY(sx,sy)+35);
         }
-        float outerLow=Math.min(low,TrainingChannel.MIN)-80,outerHigh=Math.max(high,TrainingChannel.MAX)+80;
-        minY=Math.min(minY,200);maxY=Math.max(maxY,800);
-        for(int side=-1;side<=1;side+=2) {
-            float[] bank=TrainingChannel.bank(side);float outer=side<0?minY:maxY;
-            float[] land=new float[bank.length+8];land[0]=outerLow;land[1]=outer;
-            land[2]=outerLow;land[3]=bank[1];
-            System.arraycopy(bank,0,land,4,bank.length);
-            land[bank.length+4]=outerHigh;land[bank.length+5]=bank[bank.length-1];
-            land[bank.length+6]=outerHigh;land[bank.length+7]=outer;
-            p.poly(land,side<0?HarborAtmosphere.SHORE_LIT:HarborAtmosphere.SHORE_DARK);
-            for(int i=0;i<bank.length-2;i+=2) {
-                float x=bank[i],y=bank[i+1],xx=bank[i+2],yy=bank[i+3];
-                p.line(x,y,xx,yy,6,VisualStyle.OUTLINE);
-                p.line(x,y,xx,yy,2,HarborAtmosphere.QUAY_EDGE);
-                float length=Physics.length(xx-x,yy-y);
-                for(float d=14;d<length-6;d+=38) {
-                    float t=d/length,bx=x+(xx-x)*t,by=y+(yy-y)*t;
-                    p.circle(bx,by,3.5f,VisualStyle.OUTLINE);
-                    p.circle(bx,by,1.5f,0xff6e6252);
-                }
-            }
-        }
-        p.rect(outerLow,minY,TrainingChannel.MIN-outerLow,maxY-minY,HarborAtmosphere.SHORE_DARK);
-        p.rect(TrainingChannel.MAX,minY,outerHigh-TrainingChannel.MAX,maxY-minY,HarborAtmosphere.SHORE_DARK);
         int gate=g.tutorial.channelGate;
         for(int i=1;i<TrainingChannel.X.length;i++) {
             float x=TrainingChannel.X[i],y=TrainingChannel.Y[i];
@@ -51,15 +34,22 @@ public final class TrainingChannelView {
             for(int j=-5;j<=5;j++) p.line(x,y+j*10-3,x,y+j*10+3,2,color);
             RiverPainter.center(p,i==TrainingChannel.X.length-1?"HARBOR":"GATE "+i,x+20,y,9,color);
         }
+        HarborView.berths(g,p);
         gateBurst(g,p);
-        propsAndTug(g,canvas,low,high);
-        int next=Math.min(gate,TrainingChannel.X.length-1);
-        float gx=TrainingChannel.X[next],gy=TrainingChannel.Y[next];
-        float sy=c.screenY(gx,gy);
-        if(sy<82) {
-            float sx=Physics.clamp(c.screenX(gx,gy),80,g.layout.width-80);
-            ControlView.arrow(canvas,sx,122,sx,88,VisualStyle.GOLD);
-            Lettering.center(canvas,"NEXT GATE",sx,131,10,VisualStyle.CREAM);
+        HarborAtmosphere.bankHaze(g,canvas);
+        LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
+        factoriesAndVessels(g,canvas);
+        TrainingGroundView.foreground(g,canvas);
+        DockView.draw(g,canvas);
+        if(g.trainingChannel()) {
+            int next=Math.min(gate,TrainingChannel.X.length-1);
+            float gx=TrainingChannel.X[next],gy=TrainingChannel.Y[next];
+            float sy=c.screenY(gx,gy);
+            if(sy<82) {
+                float sx=Physics.clamp(c.screenX(gx,gy),80,g.layout.width-80);
+                ControlView.arrow(canvas,sx,122,sx,88,VisualStyle.GOLD);
+                Lettering.center(canvas,"NEXT GATE",sx,131,10,VisualStyle.CREAM);
+            }
         }
     }
     private static void gateBurst(Game g,Painter world) {
@@ -81,48 +71,77 @@ public final class TrainingChannelView {
             water.circle(sx,sy,1+2*fade,i%2==0?white:mint);
         }
     }
-    /** Keep the entire footprint on land even at a steep bend or turning point. */
-    static float propY(float x,int side,float half) {
-        float edge=side>0?-Float.MAX_VALUE:Float.MAX_VALUE;
-        for(float[] r:TrainingChannel.RECTANGLES) if(r[2]>=x-half && r[0]<=x+half)
-            edge=side>0?Math.max(edge,r[3]):Math.min(edge,r[1]);
-        if(edge==Float.MAX_VALUE || edge==-Float.MAX_VALUE) edge=TrainingChannel.center(x)+side*TrainingChannel.HALF_WIDTH;
-        return edge+side*(half+18);
+    /** Every footprint occupies whole 64-unit grid cells, including rectangular blocks. */
+    static int factoryCell(int slot) {
+        return slot<FactoryArt.COUNT?slot:HARBOR_FACTORIES[slot-FactoryArt.COUNT];
     }
-    private static void propsAndTug(Game g,Painter canvas,float low,float high) {
+    static float factorySetback(int slot) {
+        int cell=factoryCell(slot);
+        return FactoryArt.height(cell)>=150?128:
+                Math.max(FactoryArt.footprintX(cell),FactoryArt.footprintY(cell))>32?96:72;
+    }
+    static float factoryX(int slot) {
+        float half=FactoryArt.footprintX(factoryCell(slot));
+        if(slot>=FactoryArt.COUNT)
+            return (float)StrictMath.ceil((Physics.RIGHT+factorySetback(slot))/64)*64+half;
+        float nominal=TrainingChannel.X[0]+(slot/2)*192;
+        return (float)StrictMath.floor((nominal-half)/64)*64+half;
+    }
+    static float factoryY(int slot) {
+        int cell=factoryCell(slot);float hx=FactoryArt.footprintX(cell),hy=FactoryArt.footprintY(cell);
+        if(slot>=FactoryArt.COUNT) {
+            float nominal=HARBOR_FACTORY_Y[slot-FactoryArt.COUNT];
+            return (float)StrictMath.floor((nominal-hy)/64)*64+hy;
+        }
+        int side=slot%2==0?-1:1;float x=factoryX(slot),setback=factorySetback(slot);
+        float center=side>0?-Float.MAX_VALUE:Float.MAX_VALUE;
+        for(float[] r:TrainingChannel.WATER_RECTANGLES) {
+            float dx=Math.max(0,Math.max(r[0]-(x+hx),(x-hx)-r[2]));
+            if(dx>=setback) continue;
+            // Nearby canal corners count too, even if they are just outside
+            // the footprint's X span. Preserve the full radial apron clearance.
+            float distance=(float)StrictMath.sqrt(setback*setback-dx*dx);
+            float limit=side<0?r[1]-hy-distance:r[3]+hy+distance;
+            center=side<0?Math.min(center,limit):Math.max(center,limit);
+        }
+        return (float)(side<0?StrictMath.floor((center-hy)/64):StrictMath.ceil((center-hy)/64))*64+hy;
+    }
+    private static void factoryAprons(Game g,Painter world) {
+        for(int slot=0;slot<FACTORY_PLACEMENTS;slot++) {
+            int cell=factoryCell(slot);float x=factoryX(slot),y=factoryY(slot);
+            float hx=FactoryArt.footprintX(cell)+16,hy=FactoryArt.footprintY(cell)+16;
+            if(!HarborAtmosphere.visible(g,x,y,(hx+hy)*g.layout.camera.scale)) continue;
+            // A quiet service apron gives the registered slab a shared ground plane.
+            world.rect(x-hx,y-hy,hx*2,hy*2,0xff40494b);
+            world.line(x-hx,y+hy,x+hx,y+hy,1,0x88626c69);
+            world.line(x+hx,y-hy,x+hx,y+hy,1,0x88626c69);
+        }
+    }
+    private static void factoriesAndVessels(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
-        int spacing=220;
-        int first=(int)StrictMath.floor((low-spacing-50)/spacing),last=(int)StrictMath.ceil((high+spacing-50)/spacing);
-        int count=(last-first+1)*2+2;
-        float[] xs=new float[count],ys=new float[count],depth=new float[count];int[] cells=new int[count];
-        int n=0;
-        for(int i=first;i<=last;i++) for(int side=-1;side<=1;side+=2) {
-            int cell=Math.abs(i*3+(side>0?2:0))%8;
-            float x=i*spacing+50+(side>0?55:0);
-            float half=cell==0 || cell==1?StaticHarborArt.FOOTPRINT_HALF:TutorialSceneryArt.footprintHalf(TutorialSceneryArt.fromLegacy(cell));
-            xs[n]=x;ys[n]=propY(x,side,half);cells[n]=cell;depth[n]=c.screenY(x,ys[n]);n++;
+        float[] depth=new float[FACTORY_PLACEMENTS];int[] order=new int[FACTORY_PLACEMENTS];
+        for(int slot=0;slot<FACTORY_PLACEMENTS;slot++) {
+            order[slot]=slot;depth[slot]=c.screenY(factoryX(slot),factoryY(slot));
         }
-        // Two fixed industrial landmarks break up repeated storage props. Their
-        // complete bases stay inland; plume and lamp anchors belong to their art.
-        for(int stack=0;stack<2;stack++) {
-            float x=stack==0?610:1270;
-            xs[n]=x;ys[n]=propY(x,-1,ChimneyArt.FOOTPRINT_HALF);
-            cells[n]=-1-stack;depth[n]=c.screenY(x,ys[n]);n++;
+        for(int i=1;i<FACTORY_PLACEMENTS;i++) {
+            float d=depth[i];int slot=order[i],j=i-1;
+            while(j>=0 && depth[j]>d) {depth[j+1]=depth[j];order[j+1]=order[j];j--;}
+            depth[j+1]=d;order[j+1]=slot;
         }
-        // Banks reverse their screen-depth relationship as the course bends.
-        // Sort both banks together and insert the vessel at its waterline depth.
+        Body[] bodies=new Body[g.cargo.length+1];int count=0;
+        bodies[count++]=g.tug;
+        for(Body b:g.cargo) if(b!=null && b.active) bodies[count++]=b;
         for(int i=1;i<count;i++) {
-            float x=xs[i],y=ys[i],d=depth[i];int cell=cells[i],j=i-1;
-            while(j>=0 && depth[j]>d) { xs[j+1]=xs[j];ys[j+1]=ys[j];depth[j+1]=depth[j];cells[j+1]=cells[j];j--; }
-            xs[j+1]=x;ys[j+1]=y;depth[j+1]=d;cells[j+1]=cell;
+            Body b=bodies[i];int j=i-1;
+            while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
+            bodies[j+1]=b;
         }
-        float tugDepth=c.screenY(g.tug.x,g.tug.y);boolean tugDrawn=false;
-        Painter world=new RiverPainter(canvas,c);
-        for(int i=0;i<count;i++) {
-            if(!tugDrawn && depth[i]>=tugDepth) { VesselView.draw(g,world,g.tug,true);tugDrawn=true; }
-            if(cells[i]<0) ChimneyArt.draw(g,canvas,-cells[i]-1,xs[i],ys[i]);
-            else SceneryView.prop(g,canvas,cells[i],xs[i],ys[i]);
+        Painter world=new RiverPainter(canvas,c);int boat=0;
+        for(int i=0;i<FACTORY_PLACEMENTS;i++) {
+            while(boat<count && c.screenY(bodies[boat].x,bodies[boat].y)<=depth[i]) Renderer.body(g,world,bodies[boat++]);
+            int slot=order[i];
+            FactoryArt.draw(g,canvas,factoryCell(slot),factoryX(slot),factoryY(slot));
         }
-        if(!tugDrawn) VesselView.draw(g,world,g.tug,true);
+        while(boat<count) Renderer.body(g,world,bodies[boat++]);
     }
 }

@@ -13,7 +13,16 @@ public final class VesselView {
         if(wake) ArcadeView.wake(g,p,b,tick);
         if(river) LightingView.hull(p,b);
         float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
-        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,1);
+        boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
+        if(flash) {
+            // A bright hull-shaped pulse under the fading sprite flashes the
+            // vessel itself; normal fender contacts never start this timer.
+            p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
+                    2*b.radius+7,0x88ff935a);
+            p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
+                    2*b.radius+1,0xffffedc0);
+        }
+        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
@@ -26,8 +35,6 @@ public final class VesselView {
                 float t=((tick+i*7)%25)/25f,xx=-b.half-b.radius-t*15,yy=(i-2)*3;
                 p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+3*t,1.5f,0xaae5ffff);
             }
-            if(b==g.tug && g.damageCooldown>50 && (tick/5)%2==0)
-                p.circle(b.x,b.y,18,0x44ff7049);
         } else {
             int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
             int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;

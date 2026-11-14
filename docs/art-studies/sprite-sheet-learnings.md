@@ -161,3 +161,25 @@ including hull pixels in the separate cargo layer. Preserve the resulting cutout
 silhouette during material generation. Masked cargo cannot be lowered or resized
 during unloading without invalidating the mask; a fixed-position scoop fade is
 compatible. Painted-hull differences still require composite inspection.
+
+## Scenery ground-plane alignment (continuous tutorial)
+
+The phone screenshot `Screenshot_20261114-011816.png` exposed a different kind
+of registration error: several generated foundations used ground-axis slopes
+around 20–27 degrees while the shared camera uses 30 degrees on both axes.
+Grid-snapping a world origin and correcting a ground pivot cannot repair that
+baked-in perspective. The pipe-rack pivot also had a separate twelve-source-pixel
+vertical discrepancy, which can be corrected in metadata without changing art.
+
+For new factory modules, supply an orthographic geometry guide with a measured
+footprint diamond and explicit height, not only a prompt saying “isometric.”
+Check both visible foundation edges, verticals, the ground datum, and transparent
+gutters before accepting the material-rendered result. A tall stack touching
+the source edge is a clipped candidate even if the rest of the building fits.
+Keep rejected appearance studies separate from production assets.
+
+Whole-cell placement means snapping footprint edges to the planning grid;
+centers differ by half a tile for odd/even footprint dimensions. Footprint and
+height are separate metadata: a narrow tall stack and a wide low production
+hall should retain their distinct silhouettes and setbacks. Use one uniform
+source-to-world scale, never a bitmap shear to conceal projection errors.

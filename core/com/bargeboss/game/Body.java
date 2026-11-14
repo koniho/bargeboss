@@ -13,7 +13,7 @@ public final class Body {
     public int wakeKickTicks,wakeCooldown,wakeTrailTicks;
     public boolean floatingInitialized;
     public float tiedX,tiedY,tiedAngle;
-    public boolean active = true, lineAttached, awaitingPickup;
+    public boolean active = true, lineAttached, awaitingPickup, deliveryRecorded;
     public Body(int id, int berth, float x, float y, float angle) {
         this.id = id; this.berth = berth; this.x = x; this.y = y; this.angle = angle;
         mass = berth>=0?5f:id==0?2f:4f;

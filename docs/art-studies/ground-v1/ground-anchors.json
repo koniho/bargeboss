@@ -1,0 +1,122 @@
+{
+  "id": "industrial-ground-v1",
+  "source": "assets/sprites/ground-industrial-v1.png",
+  "source_dimensions": [
+    1254,
+    1254
+  ],
+  "source_crop": [
+    0,
+    0,
+    1254,
+    1254
+  ],
+  "ground_pivot": [
+    0.499601275,
+    0.499202549
+  ],
+  "world_footprint": {
+    "center": [
+      0,
+      0
+    ],
+    "half_x": 32,
+    "half_y": 32,
+    "deck_height": 18
+  },
+  "world_draw_size": 121.389435,
+  "measured_source_corners": [
+    [
+      159,
+      626
+    ],
+    [
+      626,
+      355
+    ],
+    [
+      1094,
+      626
+    ],
+    [
+      626,
+      898
+    ]
+  ],
+  "edge_angles_degrees": [
+    -30.127,
+    30.073,
+    149.835,
+    -149.782
+  ],
+  "connection_edges": [
+    {
+      "id": "west",
+      "local_endpoints": [
+        [
+          -32,
+          -32
+        ],
+        [
+          -32,
+          32
+        ]
+      ],
+      "deck_height": 18,
+      "material": "asphalt-concrete",
+      "adjacent_to": "land"
+    },
+    {
+      "id": "north",
+      "local_endpoints": [
+        [
+          -32,
+          -32
+        ],
+        [
+          32,
+          -32
+        ]
+      ],
+      "deck_height": 18,
+      "material": "asphalt-concrete",
+      "adjacent_to": "land"
+    },
+    {
+      "id": "east",
+      "local_endpoints": [
+        [
+          32,
+          -32
+        ],
+        [
+          32,
+          32
+        ]
+      ],
+      "deck_height": 18,
+      "material": "asphalt-concrete",
+      "adjacent_to": "land"
+    },
+    {
+      "id": "south",
+      "local_endpoints": [
+        [
+          -32,
+          32
+        ],
+        [
+          32,
+          32
+        ]
+      ],
+      "deck_height": 18,
+      "material": "asphalt-concrete",
+      "adjacent_to": "land"
+    }
+  ],
+  "lights": [],
+  "smoke": [],
+  "steam": [],
+  "review_status": "Measured alpha outline and tile-join review accepted. No emitting fixtures. Static source pixels unchanged; side walls supplied by shared geometry."
+}

@@ -1,0 +1,6 @@
+Dimensions 1254x1254; alpha>=128 bounds [159,355,1094,898]; edge pixels 0; fully opaque pixels 392
+Corner 0=(159,626), edge angle -30.127 degrees
+Corner 1=(626,355), edge angle 30.073 degrees
+Corner 2=(1094,626), edge angle 149.835 degrees
+Corner 3=(626,898), edge angle -149.782 degrees
+Pivot 0.499601275 0.499202549; uniform runtime size 121.389434814 for64-unit footprint

@@ -11,6 +11,7 @@ public final class LightingView {
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int side=0;side<2;side++) for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++) {
             float bank=HarborAtmosphere.lampBank(side),along=HarborAtmosphere.lampY(lamp);
+            if(g.tutorial!=null && TrainingChannel.contains(bank,along)) continue;
             if(!HarborAtmosphere.visible(g,bank,along,55*s)) continue;
             float x=c.screenX(bank,along),foot=c.screenY(bank,along),y=foot-17*s;
             float phase=lamp*1.31f+side*.77f;

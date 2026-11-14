@@ -2,13 +2,33 @@ package com.bargeboss.game;
 
 /** A long industrial canal with exact, shared right-angle banks. */
 public final class TrainingChannel {
-    public static final float MIN=120,MAX=1540,HALF_WIDTH=58;
-    public static final float[] X={200,380,560,740,920,1100,1280,1460};
+    public static final float MIN=-1260,MAX=Physics.LEFT,HALF_WIDTH=58;
+    public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};
     /** Each water rectangle is [minX,minY,maxX,maxY]; their union is navigable. */
     public static final float[][] RECTANGLES=rectangles();
     private static final float[] LOW=makeBank(-1),HIGH=makeBank(1),BOUNDARY=boundary();
+    /** Canal and practice harbor are permanently connected, regardless of lesson. */
+    public static final float[][] WATER_RECTANGLES=waterRectangles();
+    public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
+    private static float[][] waterRectangles() {
+        float[][] water=new float[RECTANGLES.length+1][];
+        System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
+        water[RECTANGLES.length]=new float[]{Physics.LEFT,Physics.TOP,Physics.RIGHT,Physics.BOTTOM};
+        return water;
+    }
+    private static float[] waterBoundary() {
+        // Replace the canal's downstream end cap with the harbor's outer quays.
+        float[] result=new float[LOW.length+HIGH.length+8];int n=0;
+        for(float v:LOW) result[n++]=v;
+        result[n++]=Physics.LEFT;result[n++]=Physics.TOP;
+        result[n++]=Physics.RIGHT;result[n++]=Physics.TOP;
+        result[n++]=Physics.RIGHT;result[n++]=Physics.BOTTOM;
+        result[n++]=Physics.LEFT;result[n++]=Physics.BOTTOM;
+        for(int i=HIGH.length-2;i>=0;i-=2) { result[n++]=HIGH[i];result[n++]=HIGH[i+1]; }
+        return result;
+    }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */
     public static float[] bank(int side) {return side<0?LOW:HIGH;}
     private static float[] makeBank(int side) {
@@ -49,6 +69,10 @@ public final class TrainingChannel {
         return Y[Y.length-1];
     }
     public static boolean contains(float x,float y) {
+        for(float[] r:WATER_RECTANGLES) if(x>=r[0] && x<=r[2] && y>=r[1] && y<=r[3]) return true;
+        return false;
+    }
+    public static boolean containsCanal(float x,float y) {
         for(float[] r:RECTANGLES) if(x>=r[0] && x<=r[2] && y>=r[1] && y<=r[3]) return true;
         return false;
     }
@@ -86,12 +110,14 @@ public final class TrainingChannel {
         }
     }
     /** Resolve every hull disc against the exterior boundary of the rectangle union. */
-    public static void collide(Body b) {
+    public static void collide(Body b) { collide(b,BOUNDARY,false); }
+    public static void collideWater(Body b) { collide(b,WATER_BOUNDARY,true); }
+    private static void collide(Body b,float[] boundary,boolean harbor) {
         for(int iteration=0;iteration<4;iteration++) for(int disc=0;disc<3;disc++) {
             float x=b.discX(disc),y=b.discY(disc),best=Float.MAX_VALUE,qx=0,qy=0,nx=0,ny=0;
-            for(int i=0;i<BOUNDARY.length;i+=2) {
-                int next=(i+2)%BOUNDARY.length;
-                float ax=BOUNDARY[i],ay=BOUNDARY[i+1],dx=BOUNDARY[next]-ax,dy=BOUNDARY[next+1]-ay;
+            for(int i=0;i<boundary.length;i+=2) {
+                int next=(i+2)%boundary.length;
+                float ax=boundary[i],ay=boundary[i+1],dx=boundary[next]-ax,dy=boundary[next+1]-ay;
                 float length2=dx*dx+dy*dy;if(length2==0) continue;
                 float t=Physics.clamp(((x-ax)*dx+(y-ay)*dy)/length2,0,1);
                 float px=ax+t*dx,py=ay+t*dy,ex=x-px,ey=y-py,distance=ex*ex+ey*ey;
@@ -99,7 +125,7 @@ public final class TrainingChannel {
                     best=distance;qx=px;qy=py;float length=(float)StrictMath.sqrt(length2);nx=-dy/length;ny=dx/length;
                 }
             }
-            boolean inside=contains(x,y);float distance=(float)StrictMath.sqrt(best);
+            boolean inside=harbor?contains(x,y):containsCanal(x,y);float distance=(float)StrictMath.sqrt(best);
             float penetration=inside?b.radius-distance:b.radius+distance;
             if(penetration<=0) continue;
             if(distance>.0001f) {float sign=inside?1:-1;nx=sign*(x-qx)/distance;ny=sign*(y-qy)/distance;}

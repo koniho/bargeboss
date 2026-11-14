@@ -66,9 +66,9 @@
       ],
       "groundPivot": [
         0.4864433811802233,
-        0.7001594896331739
+        0.7192982456140351
       ],
-      "groundPivotReview": "pixel-inspected visible ground-footprint corners with occluded corner inferred",
+      "groundPivotReview": "center of the four recorded ground-footprint corners; corrected 12px vertical registration discrepancy during November 14 grounding audit; hidden corner remains inferred",
       "foundationCornersPixels": [
         [
           140,

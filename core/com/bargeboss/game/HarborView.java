@@ -6,8 +6,10 @@ public final class HarborView {
     private HarborView() {}
     public static void draw(Game g,Painter p) {
         ArcadeView.water(g,p);
+        berths(g,p);
+    }
+    static void berths(Game g,Painter p) {
         for(int i=0;i<3;i++) if(g.berthEnabled(i)) berth(g,p,i);
-
     }
     static void lamp(Painter p,float x,float y,int tick) {
         int glow=120+(int)(30*StrictMath.sin(tick*.06));
@@ -23,7 +25,7 @@ public final class HarborView {
         float x=Game.DOCK_X[index]-55,y=g.dockY(index)-53;
         boolean ready=false,occupied=false,working=false,selected=false;
         for(Body b:g.cargo) if(b!=null && b.active && b.berth==index) {
-            ready|=g.canTie(b); occupied|=b.lineAttached; working|=b.unloadingTicks>0;
+            ready|=g.canTie(b); occupied|=b.lineAttached && !b.deliveryRecorded; working|=b.unloadingTicks>0 && !b.deliveryRecorded;
             selected|=g.workingCargo()==b;
         }
         int color=occupied?0xff8ce7c2:ready || focused(g)==index?GOLD:(Game.COLORS[index]&0xffffff)|0x88000000;
@@ -46,19 +48,21 @@ public final class HarborView {
         String badge=(working?"UNLOAD ":occupied?"TYING ":"BERTH ")+g.berthLetter(index);
         badge(p,badge,x+95,y+53,8,color);
         float bank=index==1?433:143;
-        p.rect(bank,g.dockY(index)-52,24,3,DARK);
-        for(int i=0;i<3;i++) p.rect(bank+i*8,g.dockY(index)-52,4,3,GOLD);
-        if(working) lamp(p,index==1?429:171,g.dockY(index)+40,g.visualTicks*3);
+        Painter shore=g.tutorial!=null && p instanceof RiverPainter?
+                new RiverPainter(GroundArt.raisedCanvas(g,((RiverPainter)p).canvas()),g.layout.camera):p;
+        shore.rect(bank,g.dockY(index)-52,24,3,DARK);
+        for(int i=0;i<3;i++) shore.rect(bank+i*8,g.dockY(index)-52,4,3,GOLD);
+        if(working) lamp(shore,index==1?429:171,g.dockY(index)+40,g.visualTicks*3);
     }
     private static int focused(Game g) {
         Body held=g.heldCargo(); if(held!=null && !held.lineAttached) return held.berth;
-        if(g.selected>=0) { Body b=g.cargo[g.selected]; if(b!=null && b.active && !b.lineAttached) return b.berth; }
-        for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached) return b.berth;
+        if(g.selected>=0) { Body b=g.cargo[g.selected]; if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth; }
+        for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth;
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
         // The early lessons teach a touch target, before the berth destination.
-        if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DOCK) return;
+        if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.CONNECT)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
         boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) ready|=g.canTie(b);
         if(ready) return;

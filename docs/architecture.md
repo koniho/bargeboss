@@ -353,3 +353,47 @@ The previous low-angle title assets remain in source history but are not drawn.
 `./preview.sh --title` exports eight seconds to `out/concept-title.gif`.
 `./preview.sh` also exports all 32 smoke headings and a seven-second wake trail
 sequence showing outward propagation after the tug stops.
+
+## Continuous tutorial world and raised terrain
+
+Practice uses one connected `TrainingChannel.WATER_BOUNDARY` and rectangle union
+through every lesson. The tug and two barges persist; progression does not call
+fixture setup. The first unloaded barge stays moored and solid using its
+`deliveryRecorded` flag, while the second original barge becomes the tow job.
+Camera follow blends into the harbor by world position, not lesson number.
+See [the continuous tutorial contract](continuous-tutorial.md).
+
+`TrainingGroundView` subtracts the actual water geometry from the raised yard,
+then renders corrugated steel retaining faces and caps. Source ground texture is
+used only on wholly dry cells; partial shore cells use matching concrete.
+`GroundArt.LAND_RISE` lifts yard, factory bases, lamps and dock foundations.
+Bollard projection is exposed through `Game.bollardX/Y` to keep input, aiming
+and rope rendering attached to the same raised fitting.
+
+Sixteen registered factory sprites reserve 64-unit whole-cell footprints. Their
+actual foundations fit those reservations uniformly, without warping; permanent
+placements have height-dependent setbacks and share depth sorting with vessels.
+`FactoryArtData` owns source pivots and per-fixture light/smoke UVs. World XYZ
+in the source study is inferred and must not be reused as exact 3-D geometry.
+
+`LassoPath` supplies both preview and released arc geometry. The tether root is
+stored in barge-local coordinates at the throw-facing edge. The flying endpoint
+follows the released trajectory while the root follows vessel translation and
+rotation; a missed throw reels back to that moving root. Hull damage uses a
+separate shared timer for two brief player-sprite pulses, independent of ordinary
+contact feedback.
+
+## Articulated industrial structures
+
+`ArticulatedModel` stores rigid local XYZ parts under named parents. Mechanical
+pivots and parent transforms move the complete mesh before the shared isometric
+projection. `BridgeModel` supplies two hinged truss leaves, fixed abutments and
+mechanism towers. Bridge timing, collision and passage permission remain in
+`Bridge`; the mesh only presents that state.
+
+Light fixtures have stable IDs, local positions and outward normals parented to
+their rigid parts. Their projection, visibility, organic glow and obstruction
+fade use the same transforms as the steelwork. Future booms and other rotating
+shore equipment should use this contract; fixed-view raster scenery cannot be
+rotated into a new perspective. Existing unloading machinery is not converted
+by the bridge change.

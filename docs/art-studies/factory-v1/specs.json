@@ -1,0 +1,146 @@
+[
+  {
+    "id": "blast-furnace",
+    "name": "Blast furnace",
+    "tiles": [
+      2,
+      2
+    ],
+    "subject": "a towering cylindrical steel blast furnace in a chunky four-legged dark steel support frame, squat rounded hot chamber, broad rusty pipe elbow, two open exhaust stack rims, four sparse amber furnace inspection panels, one visible small amber work lamp; readable large silhouettes, no ladders or minute railing clutter"
+  },
+  {
+    "id": "boiler-house",
+    "name": "Boiler house",
+    "tiles": [
+      2,
+      2
+    ],
+    "subject": "a substantial red-brown brick boiler house with a dark slate gabled roof, two tall open brick chimneys behind the roof, two broad amber windows on each visible facade, one heavy iron doorway and simple chunky piping"
+  },
+  {
+    "id": "coking-plant",
+    "name": "Coking plant",
+    "tiles": [
+      2,
+      2
+    ],
+    "subject": "a wide squat bank of three coke ovens in rusty dark steel with three orange furnace door panels across the visible front, two thick open exhaust stacks at back, one large plain industrial shed roof and chunky ductwork"
+  },
+  {
+    "id": "foundry",
+    "name": "Foundry hall",
+    "tiles": [
+      2,
+      2
+    ],
+    "subject": "a red-brick foundry hall with a heavy charcoal sawtooth roof, a large warm-orange furnace opening on its visible front facade, two small amber windows and one tall open exhaust chimney, simple bulky factory proportions"
+  },
+  {
+    "id": "rolling-mill",
+    "name": "Rolling mill",
+    "tiles": [
+      2,
+      1
+    ],
+    "subject": "a long rust-red rolling mill factory hall on a two-by-one rectangular footprint, dark corrugated pitched roof, one broad warm amber loading opening and four broad warm window panels, one squat open exhaust vent at roof end"
+  },
+  {
+    "id": "assembly-hall",
+    "name": "Assembly hall",
+    "tiles": [
+      2,
+      1
+    ],
+    "subject": "a long charcoal-steel and brick assembly hall with broad rounded shed roof, three broad amber clerestory window panels, one shutter door, one amber yard lamp and one short open cylindrical roof exhaust, broad readable shapes"
+  },
+  {
+    "id": "power-station",
+    "name": "Power station",
+    "tiles": [
+      2,
+      1
+    ],
+    "subject": "a long compact red-brick industrial power station, two dark roof turbines inside a plain boxy housing, one open tall dark-steel smokestack, two large amber window panels, heavy electrical conduit, simplified readable details"
+  },
+  {
+    "id": "pipework",
+    "name": "Pipework gallery",
+    "tiles": [
+      2,
+      1
+    ],
+    "subject": "a freestanding long industrial pipework gallery, three chunky rust-red elbow pipes supported by a dark steel trestle, one small brick valve cabin with one amber window, one small open vertical steam outlet at one end, no moving equipment"
+  },
+  {
+    "id": "tank-farm",
+    "name": "Tank farm",
+    "tiles": [
+      1,
+      2
+    ],
+    "subject": "two large squat cylindrical steel storage tanks lengthwise on a one-by-two footprint, rust-red bands, one connecting pipe, two small amber inspection lamps, closed circular tank lids with NO exhaust outlets"
+  },
+  {
+    "id": "filter-bank",
+    "name": "Filter bank",
+    "tiles": [
+      1,
+      2
+    ],
+    "subject": "a one-by-two industrial gas filter bank with three chunky steel cylindrical filter vessels and a large boxy collector, one open tall exhaust stack, two tiny amber service lamps, slate steel and rust orange"
+  },
+  {
+    "id": "coal-bunker",
+    "name": "Coal bunker",
+    "tiles": [
+      1,
+      2
+    ],
+    "subject": "a one-by-two industrial coal storage bunker with two large dark coal heaps in rusty steel bays beneath a short covered static loading hopper, one amber maintenance lamp, no chimney or smoke outlet, no vehicles or moving machinery"
+  },
+  {
+    "id": "rail-warehouse",
+    "name": "Rail warehouse",
+    "tiles": [
+      1,
+      2
+    ],
+    "subject": "a one-by-two red-brick railway warehouse with long charcoal gabled roof, two wide cargo doors, three broad amber window panels and one amber loading lamp, no trains, no tracks outside foundation, no exhaust outlets"
+  },
+  {
+    "id": "pump-house",
+    "name": "Pump house",
+    "tiles": [
+      1,
+      1
+    ],
+    "subject": "a small square red-brick pump house with dark peaked roof, one large rust pipe turning into ground, two broad amber windows, one open small chimney rim, no wheels or moving equipment"
+  },
+  {
+    "id": "substation",
+    "name": "Electrical substation",
+    "tiles": [
+      1,
+      1
+    ],
+    "subject": "a square industrial electrical substation on a compact foundation, two chunky slate transformers with simplified large insulators, a small dark cabinet, two amber safety lamps, no smoke or exhaust outlets"
+  },
+  {
+    "id": "compressor-house",
+    "name": "Compressor house",
+    "tiles": [
+      1,
+      1
+    ],
+    "subject": "a compact square corrugated rust-red compressor house with low rounded dark roof, one broad amber window and one small amber work lamp, a single open short metal exhaust chimney, broad simple piping"
+  },
+  {
+    "id": "gatehouse",
+    "name": "Factory gatehouse",
+    "tiles": [
+      1,
+      1
+    ],
+    "subject": "a small square two-story red-brick factory gatehouse with dark slate pitched roof, two broad amber windows, one stout door and one amber porch lamp, no fence arms, no smoke outlets"
+  }
+]

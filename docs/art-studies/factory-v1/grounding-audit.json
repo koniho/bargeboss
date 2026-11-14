@@ -1,0 +1,2124 @@
+{
+  "cameraGroundAxesDegrees": [
+    30,
+    -30
+  ],
+  "edgeToleranceDegrees": 1.5,
+  "toleranceScope": "Freestanding modules only; not a seamless-tile certification",
+  "assets": [
+    {
+      "id": "blast-furnace",
+      "file": "blast-furnace-candidate-v2.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        241,
+        158,
+        1013,
+        1195
+      ],
+      "foundationEdgeRanges": [
+        [
+          280,
+          580
+        ],
+        [
+          680,
+          970
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.570405,
+          839.065
+        ],
+        [
+          -0.573517,
+          1555.478
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.700651498839598,
+        -29.835003976259625
+      ],
+      "inferredGroundPivotPixels": [
+        627.0,
+        975.518942
+      ],
+      "inferredFrontCornerPixels": [
+        626.2778406220004,
+        1196.2970116799922
+      ],
+      "uniformWorldSize": 292.70780295901636,
+      "visibleHeightAboveGroundPivot": 190.82469967320537,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 4.284135876540263,
+      "inferredFoundationCornersPixels": [
+        [
+          241,
+          976.5326050000001
+        ],
+        [
+          626.2778406220004,
+          1196.2970116799922
+        ],
+        [
+          1013,
+          974.505279
+        ],
+        [
+          627.7221593779996,
+          754.7408723200078
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -63.420429885350856
+        ],
+        [
+          -63.23502805619761,
+          62.99663982202548
+        ],
+        [
+          64.0,
+          63.420429885350856
+        ],
+        [
+          63.23502805619761,
+          -62.99663982202548
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "boiler-house",
+      "file": "boiler-house-candidate-v3.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        237,
+        166,
+        1016,
+        1202
+      ],
+      "foundationEdgeRanges": [
+        [
+          280,
+          580
+        ],
+        [
+          680,
+          980
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.580655,
+          838.996
+        ],
+        [
+          -0.581259,
+          1566.761
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        30.141807131282206,
+        -30.167681049257993
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        976.4065455
+      ],
+      "inferredFrontCornerPixels": [
+        626.3501429537815,
+        1202.689342256828
+      ],
+      "uniformWorldSize": 289.4771718006241,
+      "pixelsPerWorldUnit": 4.331947808525938,
+      "inferredFoundationCornersPixels": [
+        [
+          237,
+          976.611235
+        ],
+        [
+          626.3501429537815,
+          1202.689342256828
+        ],
+        [
+          1016,
+          976.201856
+        ],
+        [
+          626.6498570462185,
+          750.123748743172
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.63621998052572,
+          -63.52047878213951
+        ],
+        [
+          -64.0,
+          63.95107746525425
+        ],
+        [
+          63.63621998052572,
+          63.52047878213951
+        ],
+        [
+          64.0,
+          -63.95107746525425
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        64
+      ],
+      "visibleHeightAboveGroundPivot": 187.07671036686904,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "coking-plant",
+      "file": "coking-plant-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        216,
+        124,
+        1034,
+        1209
+      ],
+      "foundationEdgeRanges": [
+        [
+          270,
+          590
+        ],
+        [
+          690,
+          990
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.545624,
+          864.357
+        ],
+        [
+          -0.574538,
+          1574.709
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.617941888737693,
+        -29.87900447098158
+      ],
+      "inferredGroundPivotPixels": [
+        625.0,
+        981.424246
+      ],
+      "inferredFrontCornerPixels": [
+        634.1511317113061,
+        1210.3650770888496
+      ],
+      "uniformWorldSize": 276.5815427780563,
+      "visibleHeightAboveGroundPivot": 189.11301497128522,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 4.533925103622248,
+      "inferredFoundationCornersPixels": [
+        [
+          216,
+          982.211784
+        ],
+        [
+          634.1511317113061,
+          1210.3650770888496
+        ],
+        [
+          1034,
+          980.6367080000001
+        ],
+        [
+          615.8488682886939,
+          752.4834149111505
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -63.574526219784566
+        ],
+        [
+          -60.41636665342304,
+          63.27077079142969
+        ],
+        [
+          64.0,
+          63.574526219784566
+        ],
+        [
+          60.41636665342304,
+          -63.27077079142969
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "foundry",
+      "file": "foundry-candidate-v2.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        235,
+        157,
+        1018,
+        1199
+      ],
+      "foundationEdgeRanges": [
+        [
+          290,
+          580
+        ],
+        [
+          680,
+          980
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.576861,
+          836.938
+        ],
+        [
+          -0.585812,
+          1569.065
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.978970750983645,
+        -30.362283829865927
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        972.6043595
+      ],
+      "inferredFrontCornerPixels": [
+        629.6929575211605,
+        1200.183309168614
+      ],
+      "uniformWorldSize": 285.62489233176393,
+      "visibleHeightAboveGroundPivot": 185.77105850678214,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 4.390373646227697,
+      "inferredFoundationCornersPixels": [
+        [
+          235,
+          972.500335
+        ],
+        [
+          629.6929575211605,
+          1200.183309168614
+        ],
+        [
+          1018,
+          972.708384
+        ],
+        [
+          623.3070424788395,
+          745.025409831386
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.02536495940612,
+          -63.08340260409888
+        ],
+        [
+          -62.971494411555135,
+          64.0
+        ],
+        [
+          63.02536495940612,
+          63.08340260409888
+        ],
+        [
+          62.971494411555135,
+          -64.0
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "rolling-mill",
+      "file": "rolling-mill-candidate-v3.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        370,
+        560,
+        882,
+        1084
+      ],
+      "foundationEdgeRanges": [
+        [
+          400,
+          510
+        ],
+        [
+          590,
+          840
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.545542,
+          786.625
+        ],
+        [
+          -0.563828,
+          1391.946
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.614321332515217,
+        -29.41552113316924
+      ],
+      "inferredGroundPivotPixels": [
+        626.0,
+        941.5626219999999
+      ],
+      "inferredFrontCornerPixels": [
+        545.6439240289533,
+        1084.2966776026033
+      ],
+      "uniformWorldSize": 324.75746307801666,
+      "pixelsPerWorldUnit": 3.8613431331638126,
+      "inferredFoundationCornersPixels": [
+        [
+          370,
+          988.47554
+        ],
+        [
+          545.6439240289533,
+          1084.2966776026033
+        ],
+        [
+          882,
+          894.6497039999999
+        ],
+        [
+          706.3560759710467,
+          798.8285663973966
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -61.75977722831228,
+          -31.999999999999968
+        ],
+        [
+          -59.987709150077265,
+          30.55736625169181
+        ],
+        [
+          61.75977722831225,
+          32.0
+        ],
+        [
+          59.987709150077265,
+          -30.55736625169181
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 98.8160359857386,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "assembly-hall",
+      "file": "assembly-hall-candidate-v3.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        376,
+        567,
+        868,
+        1080
+      ],
+      "foundationEdgeRanges": [
+        [
+          400,
+          510
+        ],
+        [
+          590,
+          820
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.552071,
+          778.276
+        ],
+        [
+          -0.569616,
+          1391.908
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.901815456038182,
+        -29.666531216872258
+      ],
+      "inferredGroundPivotPixels": [
+        622.0,
+        941.6680039999999
+      ],
+      "inferredFrontCornerPixels": [
+        547.0617025961787,
+        1080.2929012139748
+      ],
+      "uniformWorldSize": 334.8720474670993,
+      "pixelsPerWorldUnit": 3.7447138675353417,
+      "inferredFoundationCornersPixels": [
+        [
+          376,
+          985.8546959999999
+        ],
+        [
+          547.0617025961787,
+          1080.2929012139748
+        ],
+        [
+          868,
+          897.4813119999999
+        ],
+        [
+          696.9382974038213,
+          803.043106786025
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -60.90336956312136,
+          -32.0
+        ],
+        [
+          -59.48906059448499,
+          31.188164910995948
+        ],
+        [
+          60.90336956312136,
+          32.0
+        ],
+        [
+          59.48906059448499,
+          -31.188164910995948
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 100.05250527902018,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "power-station",
+      "file": "power-station-candidate-v3.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        372,
+        347,
+        880,
+        1087
+      ],
+      "foundationEdgeRanges": [
+        [
+          400,
+          500
+        ],
+        [
+          590,
+          830
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.571159,
+          780.404
+        ],
+        [
+          -0.555707,
+          1385.332
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.73323656100938,
+        -29.061234307938243
+      ],
+      "inferredGroundPivotPixels": [
+        626.0,
+        944.592494
+      ],
+      "inferredFrontCornerPixels": [
+        536.8233667534562,
+        1087.0154973315373
+      ],
+      "uniformWorldSize": 333.09208738889146,
+      "pixelsPerWorldUnit": 3.7647246736783955,
+      "inferredFoundationCornersPixels": [
+        [
+          372,
+          992.875148
+        ],
+        [
+          536.8233667534562,
+          1087.0154973315373
+        ],
+        [
+          880,
+          896.3098400000001
+        ],
+        [
+          715.1766332465438,
+          802.1694906684627
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.414745028829195,
+          -31.99999999999996
+        ],
+        [
+          -63.08276582639467,
+          29.583688173841974
+        ],
+        [
+          63.41474502882915,
+          32.0
+        ],
+        [
+          63.08276582639467,
+          -29.583688173841974
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 158.73471390302518,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "pipework",
+      "file": "pipework-candidate-v3.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        373,
+        591,
+        886,
+        1160
+      ],
+      "foundationEdgeRanges": [
+        [
+          400,
+          500
+        ],
+        [
+          590,
+          830
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.554863,
+          864.965
+        ],
+        [
+          -0.573201,
+          1464.562
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.024273284898538,
+        -29.821377940370255
+      ],
+      "inferredGroundPivotPixels": [
+        629.5,
+        1014.3174065
+      ],
+      "inferredFrontCornerPixels": [
+        531.5274665267218,
+        1159.8899246594165
+      ],
+      "uniformWorldSize": 318.56181110915304,
+      "pixelsPerWorldUnit": 3.9364417085459293,
+      "inferredFoundationCornersPixels": [
+        [
+          373,
+          1071.928899
+        ],
+        [
+          531.5274665267218,
+          1159.8899246594165
+        ],
+        [
+          886,
+          956.7059139999999
+        ],
+        [
+          727.4725334732782,
+          868.7448883405834
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -28.15067962550688
+        ],
+        [
+          -62.89086849243174,
+          27.693069099857443
+        ],
+        [
+          64.0,
+          28.15067962550688
+        ],
+        [
+          62.89086849243174,
+          -27.693069099857443
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 107.538085876132,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "tank-farm",
+      "file": "tank-farm-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        354,
+        483,
+        883,
+        1009
+      ],
+      "foundationEdgeRanges": [
+        [
+          390,
+          690
+        ],
+        [
+          760,
+          850
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.557418,
+          603.655
+        ],
+        [
+          -0.552126,
+          1412.352
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.136082327275073,
+        -28.904230567221177
+      ],
+      "inferredGroundPivotPixels": [
+        618.5,
+        862.902857
+      ],
+      "inferredFrontCornerPixels": [
+        728.8552774833626,
+        1009.932051064221
+      ],
+      "uniformWorldSize": 305.30883270869396,
+      "pixelsPerWorldUnit": 4.107316479757682,
+      "inferredFoundationCornersPixels": [
+        [
+          354,
+          800.980972
+        ],
+        [
+          728.8552774833626,
+          1009.932051064221
+        ],
+        [
+          883,
+          924.824742
+        ],
+        [
+          508.14472251663744,
+          715.8736629357791
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -27.071503520895433,
+          -64.0
+        ],
+        [
+          -24.84354123420373,
+          62.84059621293888
+        ],
+        [
+          27.071503520895465,
+          63.99999999999996
+        ],
+        [
+          24.84354123420373,
+          -62.84059621293888
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        128
+      ],
+      "visibleHeightAboveGroundPivot": 92.49417688466339,
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center."
+    },
+    {
+      "id": "filter-bank",
+      "file": "filter-bank-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        353,
+        158,
+        914,
+        1106
+      ],
+      "foundationEdgeRanges": [
+        [
+          390,
+          680
+        ],
+        [
+          750,
+          880
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.546447,
+          716.884
+        ],
+        [
+          -0.579267,
+          1521.14
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.654266083326682,
+        -30.082297078773056
+      ],
+      "inferredGroundPivotPixels": [
+        633.5,
+        950.7348765000002
+      ],
+      "inferredFrontCornerPixels": [
+        714.4407904672058,
+        1107.2880266284333
+      ],
+      "uniformWorldSize": 270.7986107752575,
+      "pixelsPerWorldUnit": 4.630747537478048,
+      "inferredFoundationCornersPixels": [
+        [
+          353,
+          909.779791
+        ],
+        [
+          714.4407904672058,
+          1107.2880266284333
+        ],
+        [
+          914,
+          991.6899620000002
+        ],
+        [
+          552.5592095327942,
+          794.181726371567
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.999999999999968,
+          -53.663686269904694
+        ],
+        [
+          -29.04582571549288,
+          53.764850603267604
+        ],
+        [
+          32.0,
+          53.663686269904666
+        ],
+        [
+          29.04582571549288,
+          -53.764850603267604
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        128
+      ],
+      "visibleHeightAboveGroundPivot": 171.1893965464875,
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center."
+    },
+    {
+      "id": "coal-bunker",
+      "file": "coal-bunker-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        298,
+        407,
+        986,
+        1143
+      ],
+      "foundationEdgeRanges": [
+        [
+          340,
+          660
+        ],
+        [
+          750,
+          950
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.577002,
+          738.979
+        ],
+        [
+          -0.579477,
+          1550.242
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.98503197706302,
+        -30.091305364092488
+      ],
+      "inferredGroundPivotPixels": [
+        642.0,
+        944.9016369999999
+      ],
+      "inferredFrontCornerPixels": [
+        701.4939311479067,
+        1143.7424012602046
+      ],
+      "uniformWorldSize": 199.0152881816329,
+      "pixelsPerWorldUnit": 6.301023461351003,
+      "inferredFoundationCornersPixels": [
+        [
+          298,
+          910.925596
+        ],
+        [
+          701.4939311479067,
+          1143.7424012602046
+        ],
+        [
+          986,
+          978.877678
+        ],
+        [
+          582.5060688520933,
+          746.0608727397953
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -45.20800730871051
+        ],
+        [
+          -31.972685918859284,
+          45.32561577610201
+        ],
+        [
+          31.99999999999998,
+          45.20800730871053
+        ],
+        [
+          31.972685918859284,
+          -45.32561577610201
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        128
+      ],
+      "visibleHeightAboveGroundPivot": 85.36734394013324,
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center."
+    },
+    {
+      "id": "rail-warehouse",
+      "file": "rail-warehouse-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        274,
+        480,
+        978,
+        1155
+      ],
+      "foundationEdgeRanges": [
+        [
+          320,
+          650
+        ],
+        [
+          740,
+          940
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.573307,
+          757.807
+        ],
+        [
+          -0.586962,
+          1561.595
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.825949113429104,
+        -30.41131471917728
+      ],
+      "inferredGroundPivotPixels": [
+        626.0,
+        951.219641
+      ],
+      "inferredFrontCornerPixels": [
+        692.7600409904944,
+        1154.9711808201373
+      ],
+      "uniformWorldSize": 196.31050506832466,
+      "pixelsPerWorldUnit": 6.387839507435189,
+      "inferredFoundationCornersPixels": [
+        [
+          274,
+          914.893118
+        ],
+        [
+          692.7600409904944,
+          1154.9711808201373
+        ],
+        [
+          978,
+          987.5461640000001
+        ],
+        [
+          559.2399590095056,
+          747.4681011798627
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -45.92981858356124
+        ],
+        [
+          -31.67536934837975,
+          46.455476970596635
+        ],
+        [
+          32.0,
+          45.92981858356124
+        ],
+        [
+          31.67536934837975,
+          -46.455476970596635
+        ]
+      ],
+      "reservedFootprintWorld": [
+        64,
+        128
+      ],
+      "visibleHeightAboveGroundPivot": 73.76823422872778,
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center."
+    },
+    {
+      "id": "pump-house",
+      "file": "pump-house-candidate-v2.png",
+      "reviewStatus": "accepted-with-residual",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        423,
+        489,
+        830,
+        1060
+      ],
+      "foundationEdgeRanges": [
+        [
+          440,
+          590
+        ],
+        [
+          640,
+          690
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.543803,
+          720.187
+        ],
+        [
+          -0.562896,
+          1413.973
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.537480268520554,
+        -29.374986284894796
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        948.4924945
+      ],
+      "inferredFrontCornerPixels": [
+        626.8967442818689,
+        1061.0953302307132
+      ],
+      "uniformWorldSize": 274.83674203515704,
+      "pixelsPerWorldUnit": 4.56270872196407,
+      "inferredFoundationCornersPixels": [
+        [
+          423,
+          950.215669
+        ],
+        [
+          626.8967442818689,
+          1061.0953302307132
+        ],
+        [
+          830,
+          946.76932
+        ],
+        [
+          626.1032557181311,
+          835.8896587692868
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -31.074913933809327
+        ],
+        [
+          -30.16392528646667,
+          30.286896350017596
+        ],
+        [
+          32.0,
+          31.074913933809327
+        ],
+        [
+          30.16392528646667,
+          -30.286896350017596
+        ]
+      ],
+      "reservedFootprintWorld": [
+        32,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 100.70607669695958,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "substation",
+      "file": "substation-candidate-v2.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        331,
+        582,
+        923,
+        1148
+      ],
+      "foundationEdgeRanges": [
+        [
+          380,
+          590
+        ],
+        [
+          670,
+          880
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.582747,
+          782.809
+        ],
+        [
+          -0.586997,
+          1517.562
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        30.231365496291765,
+        -30.412806192041533
+      ],
+      "inferredGroundPivotPixels": [
+        627.0,
+        975.731013
+      ],
+      "inferredFrontCornerPixels": [
+        628.1314544036985,
+        1148.8507206593922
+      ],
+      "uniformWorldSize": 188.54703337266045,
+      "pixelsPerWorldUnit": 6.650860411690951,
+      "inferredFoundationCornersPixels": [
+        [
+          331,
+          975.698257
+        ],
+        [
+          628.1314544036985,
+          1148.8507206593922
+        ],
+        [
+          923,
+          975.7637689999999
+        ],
+        [
+          625.8685455963015,
+          802.6113053406077
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.4641229156404,
+          -31.476186841365475
+        ],
+        [
+          -31.759411855930022,
+          32.0
+        ],
+        [
+          31.4641229156404,
+          31.476186841365475
+        ],
+        [
+          31.759411855930022,
+          -32.0
+        ]
+      ],
+      "reservedFootprintWorld": [
+        32,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 59.20001152150111,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "compressor-house",
+      "file": "compressor-house-candidate-v2.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        424,
+        505,
+        830,
+        1076
+      ],
+      "foundationEdgeRanges": [
+        [
+          450,
+          590
+        ],
+        [
+          660,
+          800
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.57365,
+          716.766
+        ],
+        [
+          -0.578389,
+          1439.543
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.840737873898824,
+        -30.044616092003444
+      ],
+      "inferredGroundPivotPixels": [
+        627.0,
+        959.736865
+      ],
+      "inferredFrontCornerPixels": [
+        627.3893505341398,
+        1076.6679009339093
+      ],
+      "uniformWorldSize": 278.94345711531713,
+      "pixelsPerWorldUnit": 4.49553473298206,
+      "inferredFoundationCornersPixels": [
+        [
+          424,
+          959.9936
+        ],
+        [
+          627.3893505341398,
+          1076.6679009339093
+        ],
+        [
+          830,
+          959.4801299999999
+        ],
+        [
+          626.6106494658602,
+          842.8058290660906
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -31.86011235893702
+        ],
+        [
+          -31.794966039289772,
+          31.917448644497554
+        ],
+        [
+          32.0,
+          31.86011235893702
+        ],
+        [
+          31.794966039289772,
+          -31.917448644497554
+        ]
+      ],
+      "reservedFootprintWorld": [
+        32,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 101.1530089321222,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    },
+    {
+      "id": "gatehouse",
+      "file": "gatehouse-candidate-v3.png",
+      "reviewStatus": "accepted",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        470,
+        603,
+        783,
+        1037
+      ],
+      "foundationEdgeRanges": [
+        [
+          480,
+          590
+        ],
+        [
+          660,
+          770
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.571823,
+          678.597
+        ],
+        [
+          -0.574298,
+          1396.92
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.761914641277173,
+        -29.868665041194145
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        947.2992380000001
+      ],
+      "inferredFrontCornerPixels": [
+        626.7427261170506,
+        1036.98290587643
+      ],
+      "uniformWorldSize": 362.3981305077909,
+      "pixelsPerWorldUnit": 3.4602827510255088,
+      "inferredFoundationCornersPixels": [
+        [
+          470,
+          947.35381
+        ],
+        [
+          626.7427261170506,
+          1036.98290587643
+        ],
+        [
+          783,
+          947.244666
+        ],
+        [
+          626.2572738829494,
+          857.61557012357
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.999999999999957,
+          -31.96136918169377
+        ],
+        [
+          -31.693357707084758,
+          31.792559590680344
+        ],
+        [
+          32.0,
+          31.96136918169373
+        ],
+        [
+          31.693357707084758,
+          -31.792559590680344
+        ]
+      ],
+      "reservedFootprintWorld": [
+        32,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 99.50031912795612,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    }
+  ],
+  "supersededCandidates": [
+    {
+      "id": "boiler-house",
+      "file": "boiler-house-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        2
+      ],
+      "alpha128BoundsInclusive": [
+        293,
+        275,
+        960,
+        1167
+      ],
+      "foundationEdgeRanges": [
+        [
+          320,
+          580
+        ],
+        [
+          680,
+          930
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.505053,
+          850.347
+        ],
+        [
+          -0.512671,
+          1488.457
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        26.796195191403736,
+        -27.142898581224358
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        997.3101845
+      ],
+      "inferredFrontCornerPixels": [
+        626.997103340395,
+        1167.0137680333764
+      ],
+      "uniformWorldSize": 338.5384934572118,
+      "visibleHeightAboveGroundPivot": 194.9998418416513,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 3.704157796633233,
+      "inferredFoundationCornersPixels": [
+        [
+          293,
+          998.3275289999999
+        ],
+        [
+          626.997103340395,
+          1167.0137680333764
+        ],
+        [
+          960,
+          996.2928400000001
+        ],
+        [
+          626.002896659605,
+          827.6066009666235
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -63.327249254907095
+        ],
+        [
+          -56.01599603422022,
+          56.20578554224998
+        ],
+        [
+          64.0,
+          63.327249254907095
+        ],
+        [
+          56.01599603422022,
+          -56.20578554224998
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "rolling-mill",
+      "file": "rolling-mill-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        273,
+        335,
+        1000,
+        1067
+      ],
+      "foundationEdgeRanges": [
+        [
+          300,
+          460
+        ],
+        [
+          550,
+          950
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.540284,
+          798.27
+        ],
+        [
+          -0.554993,
+          1344.34
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.381643126097764,
+        -29.029968058647533
+      ],
+      "inferredGroundPivotPixels": [
+        636.5,
+        867.557266
+      ],
+      "inferredFrontCornerPixels": [
+        498.5679421735324,
+        1067.6382820692847
+      ],
+      "uniformWorldSize": 227.46949387897493,
+      "visibleHeightAboveGroundPivot": 96.60329486330991,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 5.5128271427340945,
+      "inferredFoundationCornersPixels": [
+        [
+          273,
+          945.767532
+        ],
+        [
+          498.5679421735324,
+          1067.6382820692847
+        ],
+        [
+          1000,
+          789.347
+        ],
+        [
+          774.4320578264676,
+          667.4762499307153
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.99999999999997,
+          -29.249183515605043
+        ],
+        [
+          -62.14250562477845,
+          26.758594282425438
+        ],
+        [
+          64.0,
+          29.249183515605015
+        ],
+        [
+          62.14250562477845,
+          -26.758594282425438
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        64
+      ]
+    },
+    {
+      "id": "assembly-hall",
+      "file": "assembly-hall-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        292,
+        452,
+        949,
+        1096
+      ],
+      "foundationEdgeRanges": [
+        [
+          320,
+          480
+        ],
+        [
+          560,
+          910
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.531384,
+          820.943
+        ],
+        [
+          -0.581761,
+          1397.643
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        27.98546179228461,
+        -30.189175200078893
+      ],
+      "inferredGroundPivotPixels": [
+        620.5,
+        910.8294695
+      ],
+      "inferredFrontCornerPixels": [
+        518.0816515368618,
+        1096.2433003202636
+      ],
+      "uniformWorldSize": 257.03876861590174,
+      "visibleHeightAboveGroundPivot": 94.0486139114573,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 4.878641485689179,
+      "inferredFoundationCornersPixels": [
+        [
+          292,
+          976.107128
+        ],
+        [
+          518.0816515368618,
+          1096.2433003202636
+        ],
+        [
+          949,
+          845.551811
+        ],
+        [
+          722.9183484631382,
+          725.4156386797363
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -31.22510653884102
+        ],
+        [
+          -61.391136851714776,
+          31.70225361294925
+        ],
+        [
+          63.999999999999964,
+          31.225106538841047
+        ],
+        [
+          61.391136851714776,
+          -31.70225361294925
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        64
+      ]
+    },
+    {
+      "id": "power-station",
+      "file": "power-station-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        322,
+        204,
+        910,
+        1114
+      ],
+      "foundationEdgeRanges": [
+        [
+          350,
+          480
+        ],
+        [
+          560,
+          875
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.528597,
+          842.64
+        ],
+        [
+          -0.558632,
+          1402.337
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        27.860795867570754,
+        -29.1891229751308
+      ],
+      "inferredGroundPivotPixels": [
+        616.0,
+        953.415057
+      ],
+      "inferredFrontCornerPixels": [
+        514.7921918933362,
+        1114.7576082582418
+      ],
+      "uniformWorldSize": 285.9342898961278,
+      "visibleHeightAboveGroundPivot": 170.87995387620506,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 4.385623006095367,
+      "inferredFoundationCornersPixels": [
+        [
+          322,
+          1012.848234
+        ],
+        [
+          514.7921918933362,
+          1114.7576082582418
+        ],
+        [
+          910,
+          893.98188
+        ],
+        [
+          717.2078081066638,
+          792.0725057417583
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -30.804953996232445
+        ],
+        [
+          -61.375131706011,
+          28.739071870596753
+        ],
+        [
+          64.0,
+          30.804953996232445
+        ],
+        [
+          61.375131706011,
+          -28.739071870596753
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        64
+      ]
+    },
+    {
+      "id": "pipework",
+      "file": "pipework-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        2,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        242,
+        401,
+        1036,
+        1157
+      ],
+      "foundationEdgeRanges": [
+        [
+          310,
+          470
+        ],
+        [
+          560,
+          940
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.511709,
+          909.061
+        ],
+        [
+          -0.544023,
+          1424.159
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        27.099234750067072,
+        -28.547207594689155
+      ],
+      "inferredGroundPivotPixels": [
+        639.0,
+        946.7228749999999
+      ],
+      "inferredFrontCornerPixels": [
+        487.9060216039678,
+        1158.7269024089449
+      ],
+      "uniformWorldSize": 207.7772829375725,
+      "visibleHeightAboveGroundPivot": 90.42170351226515,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "pixelsPerWorldUnit": 6.035308491240446,
+      "inferredFoundationCornersPixels": [
+        [
+          242,
+          1032.894578
+        ],
+        [
+          487.9060216039678,
+          1158.7269024089449
+        ],
+        [
+          1036,
+          860.5511720000001
+        ],
+        [
+          790.0939783960322,
+          734.718847591055
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -29.026360637072347
+        ],
+        [
+          -60.72438923970062,
+          25.319545601515976
+        ],
+        [
+          63.99999999999997,
+          29.026360637072372
+        ],
+        [
+          60.72438923970062,
+          -25.319545601515976
+        ]
+      ],
+      "reservedFootprintWorld": [
+        128,
+        64
+      ]
+    },
+    {
+      "id": "gatehouse",
+      "file": "gatehouse-candidate-v2.png",
+      "reviewStatus": "rejected-camera",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "tiles": [
+        1,
+        1
+      ],
+      "alpha128BoundsInclusive": [
+        419,
+        496,
+        834,
+        1095
+      ],
+      "foundationEdgeRanges": [
+        [
+          450,
+          590
+        ],
+        [
+          660,
+          800
+        ]
+      ],
+      "foundationEdgeFits": [
+        [
+          0.526063,
+          766.05
+        ],
+        [
+          -0.533054,
+          1430.668
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        27.747197465065366,
+        -28.060025145524843
+      ],
+      "inferredGroundPivotPixels": [
+        626.5,
+        986.2856804999999
+      ],
+      "inferredFrontCornerPixels": [
+        627.5208499155427,
+        1096.16550086912
+      ],
+      "uniformWorldSize": 273.070824088995,
+      "pixelsPerWorldUnit": 4.592215240070158,
+      "inferredFoundationCornersPixels": [
+        [
+          419,
+          986.4703969999999
+        ],
+        [
+          627.5208499155427,
+          1096.16550086912
+        ],
+        [
+          834,
+          986.1009639999999
+        ],
+        [
+          625.4791500844573,
+          876.4058601308798
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -31.90147213307319
+        ],
+        [
+          -29.147783710288365,
+          29.46216352922863
+        ],
+        [
+          32.0,
+          31.90147213307319
+        ],
+        [
+          29.147783710288365,
+          -29.46216352922863
+        ]
+      ],
+      "reservedFootprintWorld": [
+        32,
+        32
+      ],
+      "visibleHeightAboveGroundPivot": 106.76452536935301,
+      "heightReview": "Conservative projected height above footprint center; not verified local Z for features away from the footprint center.",
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed."
+    }
+  ]
+}

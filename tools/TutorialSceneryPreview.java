@@ -9,16 +9,19 @@ import javax.imageio.ImageIO;
 
 /** Capture the complete real tutorial and reject accidental legacy scenery draws. */
 public final class TutorialSceneryPreview {
+    private static String directory="out/tutorial-scenery";
     private static BufferedImage capture(Game root,String name) throws Exception {
-        BufferedImage image=new BufferedImage(960,600,BufferedImage.TYPE_INT_RGB);
+        BufferedImage image=new BufferedImage(Math.round(root.activeGame().layout.width),Math.round(root.activeGame().layout.height),BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics=image.createGraphics();root.render(new ReviewedPainter(new DesktopPainter(graphics)));
-        graphics.dispose();ImageIO.write(image,"png",new File("out/tutorial-scenery/"+name+".png"));return image;
+        graphics.dispose();ImageIO.write(image,"png",new File(directory+"/"+name+".png"));return image;
     }
     public static void main(String[] args) throws Exception {
-        new File("out/tutorial-scenery").mkdirs();
+        int width=args.length>0?Integer.parseInt(args[0]):960,height=args.length>1?Integer.parseInt(args[1]):600;
+        if(width!=960 || height!=600) directory="out/tutorial-scenery-"+width+"x"+height;
+        new File(directory).mkdirs();
         BufferedImage[] lessons=new BufferedImage[11];String[] titles=new String[11];
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();
-        int previous=-1,channelTicks=0,ticks=0;
+        Game root=new Game();root.configureCanvas(width,height);root.startTutorial();Game g=root.activeGame();
+        int previous=-1,channelTicks=0,ticks=0,harborTicks=0;
         while(ticks++<16000) {
             int lesson=g.tutorial.lesson;
             if(lesson!=previous) {
@@ -31,30 +34,40 @@ public final class TutorialSceneryPreview {
                 if(channelTicks==700) capture(root,"canal-middle");
                 if(channelTicks==1700) capture(root,"canal-upstream");
             }
+            if(lesson>=Tutorial.HOLD && harborTicks<121) {
+                if(harborTicks%30==0) capture(root,"harbor-entry-"+(harborTicks/30));
+                harborTicks++;
+            }
+            if(lesson==Tutorial.TIE && g.cargo[0].unloadingTicks==20) capture(root,"unloading-hook");
             ReplayInput.tutorial(root);root.step();
         }
         if(g.tutorial.lesson!=Tutorial.DONE) throw new AssertionError("Tutorial stopped at lesson "+g.tutorial.lesson+" / gate "+g.tutorial.channelGate);
         for(int i=0;i<lessons.length;i++) if(lessons[i]==null) throw new AssertionError("Missing lesson "+i);
-        BufferedImage sheet=new BufferedImage(1920,3720,BufferedImage.TYPE_INT_RGB);Graphics2D graphics=sheet.createGraphics();
-        graphics.setColor(new Color(17,30,40));graphics.fillRect(0,0,1920,3720);graphics.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,16));
+        BufferedImage sheet=new BufferedImage(width*2,(height+20)*6,BufferedImage.TYPE_INT_RGB);Graphics2D graphics=sheet.createGraphics();
+        graphics.setColor(new Color(17,30,40));graphics.fillRect(0,0,width*2,(height+20)*6);graphics.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,16));
         for(int i=0;i<lessons.length;i++) {
-            int x=i%2*960,y=i/2*620;graphics.setColor(Color.WHITE);graphics.drawString((i<10?"LESSON "+(i+1):"COMPLETE")+" — "+titles[i],x+12,y+16);
+            int x=i%2*width,y=i/2*(height+20);graphics.setColor(Color.WHITE);graphics.drawString((i<10?"LESSON "+(i+1):"COMPLETE")+" — "+titles[i],x+12,y+16);
             graphics.drawImage(lessons[i],x,y+20,null);
         }
-        graphics.dispose();ImageIO.write(sheet,"png",new File("out/tutorial-scenery/BargeBoss-isometric-tutorial-v3.png"));
+        graphics.dispose();ImageIO.write(sheet,"png",new File(directory+"/BargeBoss-continuous-tutorial-v1.png"));
         int samples=0;
-        for(int x=120;x<=1540;x+=5) for(int side=-1;side<=1;side+=2) {
-            float y=TrainingChannelView.propY(x,side,44);
-            for(int dx=-44;dx<=44;dx+=4) for(int dy=-44;dy<=44;dy+=4) {
-                if(TrainingChannel.contains(x+dx,y+dy)) throw new AssertionError("Prop enters canal at "+x+","+y);
+        for(int slot=0;slot<TrainingChannelView.FACTORY_PLACEMENTS;slot++) {
+            int cell=TrainingChannelView.factoryCell(slot);
+            float x=TrainingChannelView.factoryX(slot),y=TrainingChannelView.factoryY(slot);
+            float hx=FactoryArt.footprintX(cell),hy=FactoryArt.footprintY(cell);
+            for(float dx=-hx;dx<=hx;dx+=4) for(float dy=-hy;dy<=hy;dy+=4) {
+                if(TrainingChannel.contains(x+dx,y+dy)) throw new AssertionError("Factory enters water at "+x+","+y);
                 samples++;
             }
         }
-        System.out.println("All10 lessons completed in "+ticks+" ticks; no legacy SCENERY draws; "+samples+" prop-footprint samples clear of water.");
+        System.out.println("All10 lessons completed in "+ticks+" ticks; no legacy scenery draws; "+samples+" factory-footprint samples clear of water.");
     }
     private static final class ReviewedPainter implements Painter {
         final Painter delegate;ReviewedPainter(Painter p) { delegate=p; }
-        private void check(int atlas) { if(atlas==SpriteAtlas.SCENERY) throw new AssertionError("Legacy scenery in tutorial"); }
+        private void check(int atlas) {
+            if(atlas==SpriteAtlas.SCENERY || atlas==SpriteAtlas.STATIC_HARBOR || atlas==SpriteAtlas.TUTORIAL_SCENERY || atlas==SpriteAtlas.CHIMNEYS || atlas==SpriteAtlas.BRIDGE)
+                throw new AssertionError("Legacy scenery in tutorial: atlas "+atlas);
+        }
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {check(a);delegate.sprite(a,f,x,y,w,h,r,alpha);}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float b,float alpha) {check(a);delegate.spriteBlend(a,f,ff,x,y,w,h,r,b,alpha);}
         public void rect(float x,float y,float w,float h,int c) {delegate.rect(x,y,w,h,c);}

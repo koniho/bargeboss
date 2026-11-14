@@ -8,7 +8,7 @@ public final class MooringView {
         int tick=g.visualTicks;
         for(int berth=0;berth<3;berth++) {
             if(!g.berthEnabled(berth)) continue;
-            float x=Game.TIE_X[berth],y=g.dockY(berth);
+            float x=g.bollardX(berth),y=g.bollardY(berth);
             boolean ready=false,tied=false;
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
@@ -39,7 +39,10 @@ public final class MooringView {
                 }
                 continue;
             }
-            float x=Game.TIE_X[b.berth],y=g.dockY(b.berth);
+            float x=g.bollardX(b.berth),y=g.bollardY(b.berth);
+            float[] edge=new float[2];LassoPath.edge(b,x,y,edge);
+            float deck=LassoPath.DECK_HEIGHT+WaterSurface.lift(g,b);
+            float originX=edge[0]+liftX(p,deck),originY=edge[1]+liftY(p,deck);
             float progress=Math.min(1,b.dockTime/1.2f);
             // Successful throws are taut immediately; only the impact vibration remains.
             float slack=23*(1-progress*progress*progress);
@@ -47,9 +50,9 @@ public final class MooringView {
             if(b.lineSnapTicks>0) {
                 float snap=Physics.clamp(1-b.lineSnapTicks/18f,0,1);
                 float shake=4.5f*(1-snap)*(1-snap);
-                rope(p,b.x,b.y,x,y,0,ROPE,shake,snap);
-                snapRings(p,b.x,b.y,x,y,snap);
-            } else rope(p,b.x,b.y,x,y,slack,ROPE);
+                rope(p,originX,originY,x,y,0,ROPE,shake,snap);
+                snapRings(p,originX,originY,x,y,snap);
+            } else rope(p,originX,originY,x,y,slack,ROPE);
             float rx=17-8*progress,ry=14-7*progress;
             lasso(p,x,y,rx,ry,0,ROPE);
             if(progress>.75f) {
@@ -87,7 +90,7 @@ public final class MooringView {
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
         float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
         if(!c.contains(bx,by)) return;
-        float tx=c.screenX(Game.TIE_X[b.berth],g.dockY(b.berth)),ty=c.screenY(Game.TIE_X[b.berth],g.dockY(b.berth));
+        float tx=c.screenX(g.bollardX(b.berth),g.bollardY(b.berth)),ty=c.screenY(g.bollardX(b.berth),g.bollardY(b.berth));
         float dx=tx-bx,dy=ty-by,distance=Math.max(1,Physics.length(dx,dy));dx/=distance;dy/=distance;
         for(int i=0;i<4;i++) {
             float t=((g.visualTicks%60)/60f+i*.25f)%1;
@@ -121,18 +124,22 @@ public final class MooringView {
         float y=tow?(onPoint?g.tug.y:g.pointerY):g.aimY(b,g.pointerX,g.pointerY);
         int color=onPoint?GREEN:VisualStyle.GOLD;
         // This thin continuous trajectory is a guide; the rope remains coiled on deck.
-        float lastX=b.x,lastY=b.y;
+        float[] edge=new float[2],point=new float[2];LassoPath.edge(b,x,y,edge);
+        float deck=LassoPath.DECK_HEIGHT+WaterSurface.lift(g,b);boolean river=p instanceof RiverPainter;
+        LassoPath.sample(edge[0],edge[1],x,y,deck,0,river,point);
+        float originX=point[0],originY=point[1],lastX=originX,lastY=originY;
         for(int i=1;i<=32;i++) {
-            float t=i/32f,height=30*(float)StrictMath.sin(t*Math.PI);
-            float xx=b.x+(x-b.x)*t+liftX(p,height),yy=b.y+(y-b.y)*t+liftY(p,height);
+            float t=i/32f;
+            LassoPath.sample(edge[0],edge[1],x,y,deck,t,river,point);
+            float xx=point[0],yy=point[1];
             p.line(lastX,lastY,xx,yy,3,0x990b1424);
             p.line(lastX,lastY,xx,yy,1.25f,(color&0xffffff)|0xcc000000);
             lastX=xx; lastY=yy;
         }
         for(int i=0;i<4;i++) {
             float t=((g.visualTicks%48)/48f+i*.25f)%1;
-            float height=30*(float)StrictMath.sin(t*Math.PI);
-            float xx=b.x+(x-b.x)*t+liftX(p,height),yy=b.y+(y-b.y)*t+liftY(p,height);
+            LassoPath.sample(edge[0],edge[1],x,y,deck,t,river,point);
+            float xx=point[0],yy=point[1];
             p.rect(xx-2,yy-2,4,4,DARK); p.rect(xx-1,yy-1,3,3,onPoint?HIGHLIGHT:color);
         }
         float radius=onPoint?14:11;
@@ -143,30 +150,46 @@ public final class MooringView {
         p.rect(x-1,y-1,3,3,color);
         // The rope stays visibly coiled on deck until the finger lifts.
         for(int i=0;i<3;i++) {
-            loop(p,b.x+1,b.y+5-i*2,10-i,6-i*.5f,0,DARK,4);
-            loop(p,b.x,b.y+3-i*2,10-i,6-i*.5f,0,i==1?HIGHLIGHT:ROPE,2);
+            loop(p,originX+1,originY+2-i*2,8-i,5-i*.5f,0,DARK,4);
+            loop(p,originX,originY-i*2,8-i,5-i*.5f,0,i==1?HIGHLIGHT:ROPE,2);
         }
     }
     private static float liftX(Painter p,float height) { return p instanceof RiverPainter?RiverCamera.riseX(height):0; }
     private static float liftY(Painter p,float height) { return p instanceof RiverPainter?RiverCamera.riseY(height):-height; }
     private static void projectile(Game g,Painter p) {
-        boolean returning=g.ropePhase==2;
+        boolean returning=g.ropePhase==2,river=p instanceof RiverPainter;
         float t=Physics.clamp(g.ropeTicks/(float)(returning?Game.ROPE_RETURN_TICKS:Game.ROPE_FLIGHT_TICKS),0,1);
         float eased=1-(1-t)*(1-t),distance=returning?1-eased:eased;
-        float startX=returning?g.ropeBody.x:g.ropeStartX,startY=returning?g.ropeBody.y:g.ropeStartY;
-        float height=30*(float)StrictMath.sin(distance*Math.PI);
-        float x=startX+(g.ropeEndX-startX)*distance+liftX(p,height);
-        float y=startY+(g.ropeEndY-startY)*distance+liftY(p,height);
-        float slack=(returning?10:18)*(float)StrictMath.sin(distance*Math.PI);
-        rope(p,g.ropeBody.x,g.ropeBody.y,x,y,slack,ROPE);
+        float currentX=g.ropeOriginX(),currentY=g.ropeOriginY();
+        float currentHeight=LassoPath.DECK_HEIGHT+WaterSurface.lift(g,g.ropeBody);
+        float startX=returning?currentX:g.ropeStartX,startY=returning?currentY:g.ropeStartY;
+        float height=returning?currentHeight:g.ropeStartHeight;
+        float[] point=new float[2];
+        LassoPath.sample(startX,startY,g.ropeEndX,g.ropeEndY,height,distance,river,point);
+        float x=point[0],y=point[1];
+        // Pay out the very same arc as the guide, not a sagging straight chord.
+        // The tether root follows its local deck fitting; the flying tip keeps
+        // the released trajectory even if the barge translates or turns.
+        float offsetX=currentX-startX+liftX(p,currentHeight-height);
+        float offsetY=currentY-startY+liftY(p,currentHeight-height);
+        float lastX=currentX+liftX(p,currentHeight),lastY=currentY+liftY(p,currentHeight);
+        for(int i=1;i<=32;i++) {
+            float fraction=i/32f;
+            LassoPath.sample(startX,startY,g.ropeEndX,g.ropeEndY,height,distance*fraction,river,point);
+            float xx=point[0]+offsetX*(1-fraction),yy=point[1]+offsetY*(1-fraction);
+            p.line(lastX+1,lastY+2,xx+1,yy+2,4.5f,DARK);
+            p.line(lastX,lastY,xx,yy,3,ROPE);
+            if(i%2==0) p.line(lastX,lastY-1,xx,yy-1,1,HIGHLIGHT);
+            lastX=xx;lastY=yy;
+        }
         float radius=returning?8+14*distance:8+14*eased;
         lasso(p,x,y,radius,radius*.72f,.3f*(float)StrictMath.sin(g.ropeTicks*.34),ROPE);
-        // Short fading twine streaks emphasize launch and the recoil of a miss.
         if(t>.08f && t<.85f) {
-            float dx=g.ropeEndX-startX,dy=g.ropeEndY-startY,len=Math.max(1,Physics.length(dx,dy));
-            float sign=returning?-1:1;
-            p.line(x-sign*dx/len*(radius+4),y-sign*dy/len*(radius+4),
-                    x-sign*dx/len*(radius+12),y-sign*dy/len*(radius+12),1.5f,0xaae8c581);
+            float behind=Physics.clamp(distance+(returning?.07f:-.07f),0,1);
+            LassoPath.sample(startX,startY,g.ropeEndX,g.ropeEndY,height,behind,river,point);
+            float dx=x-point[0],dy=y-point[1],length=Math.max(1,Physics.length(dx,dy));
+            p.line(x-dx/length*(radius+4),y-dy/length*(radius+4),
+                    x-dx/length*(radius+12),y-dy/length*(radius+12),1.5f,0xaae8c581);
         }
     }
     private static void hit(Game g,Painter p) {

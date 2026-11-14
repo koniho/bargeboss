@@ -12,6 +12,7 @@ public final class ChannelTest {
         bankSideGates();
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}}) {
             Game root=course(size[0],size[1]),g=root.activeGame();
+            Body originalTug=g.tug,originalLoad=g.cargo[0];
             float original=g.layout.camera.worldRight;
             check(g.layout.camera.screenY(TrainingChannel.X[7],TrainingChannel.Y[7])<0
                     && g.layout.camera.screenX(TrainingChannel.X[7],TrainingChannel.Y[7])>g.layout.width,
@@ -38,7 +39,10 @@ public final class ChannelTest {
                 }
             }
             check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.HOLD,"seven ordered gates lead into cargo practice");
-            check(g.cargo[0]!=null && g.cargo[0].awaitingPickup && g.layout.camera.worldRight<=460,"harbor fixtures and camera reset after course");
+            check(g.tug==originalTug && g.cargo[0]==originalLoad && originalLoad.awaitingPickup,
+                    "course exit preserves the tug and waiting harbor load");
+            check(Math.abs(g.tug.x-TrainingChannel.X[7])<30,
+                    "last gate leads into the same harbor without teleporting the tug");
         }
         // Separate short gestures reproduce the native test's lift/coast cadence
         // as well as the continuous steering gesture exercised above.
@@ -60,7 +64,7 @@ public final class ChannelTest {
         root.background();float x=g.tug.x;int ticks=g.ticks;root.advance(1);
         check(g.tug.x==x && g.ticks==ticks,"course pauses on background");
         root.configureCanvas(1333,600);g.pause();ReplayInput.tap(root,Layout.HELP);
-        check(g.trainingChannel() && g.tutorial.channelGate==1 && g.tug.x==200,"reset restarts channel and responsive camera");
+        check(g.trainingChannel() && g.tutorial.channelGate==1 && g.tug.x==TrainingChannel.X[0],"reset restarts channel and responsive camera");
         check(Parity.frame(root)==Parity.frame(root),"channel rendering has no side effects");
         Game low=course(960,600),high=course(960,600);
         for(int second=0;second<12;second++) {

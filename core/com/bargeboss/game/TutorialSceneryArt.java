@@ -5,7 +5,7 @@ public final class TutorialSceneryArt {
     public static final int CRATES=0,PIPES=1,TANKS=2,SHED=3;
     private static final float CELL=627;
     private static final float[] PX={323/CELL,305/CELL,329/CELL,301/CELL};
-    private static final float[] PY={440/CELL,439/CELL,394/CELL,410/CELL};
+    private static final float[] PY={440/CELL,451/CELL,394/CELL,410/CELL};
     private static final float[] SIZE={128,152,152,180},HALF={30,44,44,44};
     private static final float[] LX={186/CELL,214/CELL,262/CELL,286/CELL};
     private static final float[] LY={288/CELL,297/CELL,315/CELL,323/CELL};

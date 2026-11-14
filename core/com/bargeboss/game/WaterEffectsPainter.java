@@ -8,15 +8,15 @@ import java.util.Arrays;
 public final class WaterEffectsPainter implements Painter {
     private static final float LIMIT=100000;
     private static final float[][] RIVER={{Physics.LEFT,-LIMIT,Physics.RIGHT,LIMIT}};
-    private static final float[][] CHANNEL=partition(TrainingChannel.RECTANGLES,null);
+    private static final float[][] CHANNEL=partition(TrainingChannel.WATER_RECTANGLES,null);
     private static final float[][] PIERS=partition(RIVER,HarborGeometry.PIERS);
     private final Painter target;
     private final float[][] water;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;water=g.trainingChannel()?CHANNEL:g.challengeId==2?PIERS:RIVER;
+        this.target=target;water=g.tutorial!=null?CHANNEL:g.challengeId==2?PIERS:RIVER;
     }
     public static boolean contains(Game g,float x,float y) {
-        if(g.trainingChannel()) return TrainingChannel.contains(x,y);
+        if(g.tutorial!=null) return TrainingChannel.contains(x,y);
         if(x<Physics.LEFT || x>Physics.RIGHT) return false;
         if(g.challengeId==2) for(float[] r:HarborGeometry.PIERS)
             if(x>r[0] && x<r[2] && y>r[1] && y<r[3]) return false;

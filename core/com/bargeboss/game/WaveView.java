@@ -9,8 +9,12 @@ public final class WaveView {
     }
     /** World-anchored detail moves with the river during camera follow and zoom. */
     public static void draw(Game g,Painter canvas) {
-        RiverCamera c=g.layout.camera;
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
+        surface(g,canvas);
+    }
+    /** Wave detail without clearing a scene that has already drawn its land/water mask. */
+    public static void surface(Game g,Painter canvas) {
+        RiverCamera c=g.layout.camera;
         Painter p=new WaterEffectsPainter(g,new RiverPainter(canvas,c));
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
@@ -58,10 +62,11 @@ public final class WaveView {
     }
 
     private static void shorelines(Game g,Painter p,float minY,float maxY) {
-        if(g.trainingChannel()) {
-            for(int side=-1;side<=1;side+=2) {
-                float[] bank=TrainingChannel.bank(side);
-                for(int i=0;i<bank.length-2;i+=2) edge(g,p,bank[i],bank[i+1],bank[i+2],bank[i+3]);
+        if(g.tutorial!=null) {
+            float[] bank=TrainingChannel.WATER_BOUNDARY;
+            for(int i=0;i<bank.length;i+=2) {
+                int next=(i+2)%bank.length;
+                edge(g,p,bank[i],bank[i+1],bank[next],bank[next+1]);
             }
         } else {
             edge(g,p,Physics.LEFT,minY,Physics.LEFT,maxY);

@@ -80,7 +80,8 @@ public final class CareerTest {
         Game game=quickTurn(); String saved=game.saveProgress(); int version=game.progressVersion();
         game.startTutorial(); Game practice=game.activeGame();
         check(practice!=game && practice.career!=game.career && practice.saveProgress().equals(saved),"practice receives an isolated career snapshot");
-        practice.tutorial.lesson=Tutorial.TIE; practice.delivered=10; practice.score=10000;
+        practice.tutorial.lesson=Tutorial.TIE;practice.tutorial.setup(practice);
+        practice.delivered=10; practice.score=10000;
         practice.ticks=practice.shiftTicks()-1; practice.step();
         for(int i=0;i<1200 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
         check(practice.tutorial.lesson==Tutorial.DONE && practice.earnedStars==0,"tutorial completion never records challenge rewards");

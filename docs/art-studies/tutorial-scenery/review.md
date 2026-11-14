@@ -25,6 +25,14 @@ camera is an approximate coherent three-quarter view, not a geometry-guide proof
 of exact35.264degree elevation. Conservative world footprints drive decorative
 placement; scenery does not change collision geometry.
 
+The November 14 [grounding audit](../scenery-grounding-audit.md) measured visible
+foundation-edge mismatches against the actual camera, especially on the pipe
+rack and shed. It also corrected the pipe rack's runtime/JSON Y pivot from
+439/627 to451/627, matching the center of its existing recorded corner set.
+This registration correction preserves source pixels and does not repair the
+painted perspective. Calibrated replacement art is still needed for exact tile
+alignment.
+
 `isometric-props-v2-anchors.json` records per-cell ground pivots, source rectangles,
 world sizes, conservative footprints, visibility and feature inventories. The shed
 contains two windows with four tracked glowing panes. Their painted source centers

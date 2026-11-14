@@ -17,6 +17,12 @@ the same `Painter`. Do not add a second game implementation for any platform.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in
   shared Java. Native hosts decode the same PNGs and execute `Painter.sprite` / `Painter.spriteBlend`;
   they must not infer gameplay phases or select different artwork.
+- Scenery that changes orientation (bridge leaves, booms and similar machinery)
+  must be authored as rigid parts in a shared skeleton or 3-D model. Rotate parts
+  about mechanical pivots before projection; do not rotate a painted isometric
+  bitmap. Parent light/smoke anchors to their rigid parts, with stable IDs and
+  local XYZ/normals, so effects follow the same transformation. Match the concept
+  and shared camera, and review closed, moving and open/working states.
 - Fixed 60 Hz steps, ordered cargo slots and `StrictMath` keep replays repeatable.
   Rendering must not mutate gameplay or use wall-clock time/randomness.
 - `./check.sh` checks rules and bounded play. `./preview.sh` exports the actual

@@ -99,3 +99,14 @@ design references and are excluded from the project's MIT grant; their original
 authorship/license has not been established here. Third-party dependencies,
 upstream license texts and notices keep their own licenses. The project's MIT
 license does not override those notices or grant rights in third-party material.
+
+## Continuous tutorial factory and quay artwork
+
+The sixteen additional factory modules and industrial ground tile were generated
+with the built-in image tool using the user-provided industrial concept and
+programmatic orthographic geometry guides. Accepted source pixels are preserved;
+rejected perspective studies remain documented separately. Exact prompts and
+registration/emitter reviews are linked from
+[the factory set review](art-studies/factory-v1/review.md) and
+[the ground study](art-studies/ground-v1/). Corrugated retaining walls are shared
+Java geometry, aligned to the collision boundary rather than baked into a raster.

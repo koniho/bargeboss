@@ -9,7 +9,7 @@ public final class DockView {
             if(!g.berthEnabled(berth)) continue;
             Body load=null,mooring=null;
             boolean ready=false;
-            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
+            for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && b.berth==berth) {
                 if(b.unloadingTicks>0) load=b;
                 else if(b.lineAttached) mooring=b;
                 ready|=g.canTie(b);
@@ -20,7 +20,7 @@ public final class DockView {
             int tick=g.visualTicks;
             RiverCamera camera=g.layout.camera;
             float anchorX=camera.screenX(berth==1?445:155,g.dockY(berth));
-            float anchorY=camera.screenY(berth==1?445:155,g.dockY(berth));
+            float anchorY=camera.screenY(berth==1?445:155,g.dockY(berth))-(g.tutorial!=null?GroundArt.LAND_RISE*camera.scale:0);
             float scale=camera.scale*.55f;
             float alpha=SceneryView.opacity(g,anchorX-24*scale,anchorY-90*scale,100*scale,122*scale);
             Painter p=ScreenView.scaled(new OpacityPainter(canvas,alpha),anchorX,anchorY,scale);

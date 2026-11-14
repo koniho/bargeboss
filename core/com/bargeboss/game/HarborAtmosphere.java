@@ -15,9 +15,9 @@ public final class HarborAtmosphere {
     /** Warm, broken reflections follow the same bank lamps, with dark water between glints. */
     public static void reflections(Game g,Painter world) {
         world=new WaterEffectsPainter(g,world);
-        if(g.trainingChannel()) return;
         for(int side=0;side<2;side++) for(int lamp=firstLamp(g);lamp<=5;lamp++) {
             float bank=side==0?Physics.RIGHT:Physics.LEFT,along=lampY(lamp),sign=side==0?-1:1;
+            if(g.tutorial!=null && TrainingChannel.contains(lampBank(side),along)) continue;
             if(!visible(g,bank,along,70*g.layout.camera.scale)) continue;
             for(int i=0;i<21;i++) {
                 float phase=g.visualTicks*.045f+lamp*1.31f+i*1.87f;
@@ -35,7 +35,6 @@ public final class HarborAtmosphere {
     }
     /** A thin warm aerial layer over the far industrial bank, behind all play objects. */
     public static void bankHaze(Game g,Painter canvas) {
-        if(g.trainingChannel()) return;
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int lamp=firstLamp(g);lamp<=5;lamp+=2) {
             float wx=Physics.RIGHT+100,wy=lampY(lamp);

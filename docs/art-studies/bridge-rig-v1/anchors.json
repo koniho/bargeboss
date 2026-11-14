@@ -1,0 +1,36 @@
+{
+  "geometry": "core/com/bargeboss/game/BridgeModel.java",
+  "representation": "rigid code-native XYZ mesh",
+  "sourceUV": null,
+  "reviewStatus": "geometry-authored; shared-render phase review",
+  "physicalZProjection": 0.81649655,
+  "smoke": [],
+  "steam": [],
+  "parts": [
+    {"id": "bridge-ground", "parent": null, "joint": "fixed"},
+    {"id": "west-abutment", "parent": "bridge-ground", "joint": "fixed"},
+    {"id": "west-mechanism-tower", "parent": "west-abutment", "joint": "fixed"},
+    {"id": "west-leaf", "parent": "west-abutment", "joint": "local upward pitch = Bridge.lift * PI/2"},
+    {"id": "east-abutment", "parent": "bridge-ground", "joint": "fixed"},
+    {"id": "east-mechanism-tower", "parent": "east-abutment", "joint": "fixed"},
+    {"id": "east-leaf", "parent": "east-abutment", "joint": "local upward pitch = Bridge.lift * PI/2"}
+  ],
+  "lights": [
+    {"id": "west-shore-signal", "parent": "west-abutment", "kind": "navigation signal", "localXYZ": [-23.0, 35.0, 29.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 3.2, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "green 0xff8fe4a2 only when Bridge.passable; red otherwise"},
+    {"id": "west-tower-beacon", "parent": "west-mechanism-tower", "kind": "red warning marker", "localXYZ": [-21.0, -24.0, 77.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-upstream-base-lantern", "parent": "west-mechanism-tower", "kind": "warm lantern", "localXYZ": [-21.0, -31.0, 17.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 4.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-downstream-base-lantern", "parent": "west-mechanism-tower", "kind": "warm lantern", "localXYZ": [-21.0, 31.0, 17.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 4.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-upstream-deck-lamp", "parent": "west-leaf", "kind": "warm lantern", "localXYZ": [45.0, -21.0, 43.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-upstream-tip-marker", "parent": "west-leaf", "kind": "red warning marker", "localXYZ": [128.0, -21.0, 39.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 2.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-downstream-deck-lamp", "parent": "west-leaf", "kind": "warm lantern", "localXYZ": [45.0, 21.0, 43.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "west-downstream-tip-marker", "parent": "west-leaf", "kind": "red warning marker", "localXYZ": [128.0, 21.0, 39.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 2.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-shore-signal", "parent": "east-abutment", "kind": "navigation signal", "localXYZ": [-23.0, 35.0, 29.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 3.2, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "green 0xff8fe4a2 only when Bridge.passable; red otherwise"},
+    {"id": "east-tower-beacon", "parent": "east-mechanism-tower", "kind": "red warning marker", "localXYZ": [-21.0, -24.0, 77.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-upstream-base-lantern", "parent": "east-mechanism-tower", "kind": "warm lantern", "localXYZ": [-21.0, -31.0, 17.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 4.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-downstream-base-lantern", "parent": "east-mechanism-tower", "kind": "warm lantern", "localXYZ": [-21.0, 31.0, 17.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 4.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-upstream-deck-lamp", "parent": "east-leaf", "kind": "warm lantern", "localXYZ": [45.0, -21.0, 43.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-upstream-tip-marker", "parent": "east-leaf", "kind": "red warning marker", "localXYZ": [128.0, -21.0, 39.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 2.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-downstream-deck-lamp", "parent": "east-leaf", "kind": "warm lantern", "localXYZ": [45.0, 21.0, 43.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffffb65b", "radius": 3.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"},
+    {"id": "east-downstream-tip-marker", "parent": "east-leaf", "kind": "red warning marker", "localXYZ": [128.0, 21.0, 39.9], "outwardNormal": [0.0, 0.0, 1.0], "colorARGB": "ffff5945", "radius": 2.0, "visibility": "normal facing camera and convex-face ray clear; parent overlap fade", "emission": "SceneryEffects.intensity from shared visualTicks"}
+  ]
+}

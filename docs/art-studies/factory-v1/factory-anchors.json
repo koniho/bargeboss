@@ -1,0 +1,3152 @@
+{
+  "schema": "bargeboss.scenery.factory.v1",
+  "camera": {
+    "yaw": 45,
+    "elevation": 35.2643897,
+    "groundAxes": [
+      30,
+      -30
+    ]
+  },
+  "tileWorldSize": 64,
+  "groundRise": "GroundArt.LAND_RISE, applied in shared Java during tutorial",
+  "sourcePolicy": "Immutable imagegen originals, full-frame uniform scaling, true alpha. Freestanding modules with service-pad occupancy; not seamless tiles.",
+  "anchorPolicy": "Source UV positions are runtime authority. Local XYZ/normal are explicitly inferred from one view and must be rebuilt for another camera.",
+  "assets": [
+    {
+      "id": "blast-furnace",
+      "index": 0,
+      "file": "factory-blast-furnace-v2.png",
+      "sourceStudy": "blast-furnace-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/blast-furnace-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        2
+      ],
+      "groundPivotUV": [
+        0.5,
+        0.7779257910685806
+      ],
+      "uniformWorldSize": 292.70780295901636,
+      "authoredGuideHeight": 175,
+      "visibleHeightAboveGroundPivot": 190.82469967320537,
+      "foundationCornersPixels": [
+        [
+          241,
+          976.5326050000001
+        ],
+        [
+          626.2778406220004,
+          1196.2970116799922
+        ],
+        [
+          1013,
+          974.505279
+        ],
+        [
+          627.7221593779996,
+          754.7408723200078
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -63.420429885350856
+        ],
+        [
+          -63.23502805619761,
+          62.99663982202548
+        ],
+        [
+          64.0,
+          63.420429885350856
+        ],
+        [
+          63.23502805619761,
+          -62.99663982202548
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.700651498839598,
+        -29.835003976259625
+      ],
+      "alphaBounds": [
+        241,
+        158,
+        1013,
+        1195
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "blast-furnace.lamp.work",
+          "kind": "lamp",
+          "sourcePixels": [
+            424,
+            705
+          ],
+          "sourceUV": [
+            0.33811802232854865,
+            0.562200956937799
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -67.011,
+            0,
+            90.502
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "blast-furnace.furnace.left",
+          "kind": "furnace",
+          "sourcePixels": [
+            444,
+            849
+          ],
+          "sourceUV": [
+            0.35406698564593303,
+            0.6770334928229665
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -60.409,
+            0,
+            54.194
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "blast-furnace.furnace.front-left",
+          "kind": "furnace",
+          "sourcePixels": [
+            547,
+            886
+          ],
+          "sourceUV": [
+            0.43620414673046254,
+            0.7065390749601276
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -26.408,
+            0,
+            31.677
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "blast-furnace.furnace.front-right",
+          "kind": "furnace",
+          "sourcePixels": [
+            718,
+            885
+          ],
+          "sourceUV": [
+            0.5725677830940988,
+            0.7057416267942583
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            30.04,
+            0,
+            8.865
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "blast-furnace.furnace.right",
+          "kind": "furnace",
+          "sourcePixels": [
+            814,
+            846
+          ],
+          "sourceUV": [
+            0.6491228070175439,
+            0.6746411483253588
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            61.73,
+            0,
+            5.031
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "blast-furnace.stack.main",
+          "kind": "smoke",
+          "sourcePixels": [
+            625,
+            213
+          ],
+          "sourceUV": [
+            0.4984051036682616,
+            0.16985645933014354
+          ],
+          "radiusWorld": 5,
+          "color": "#7b8589",
+          "localXYZ": [
+            -0.66,
+            0,
+            178.256
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "blast-furnace.stack.secondary",
+          "kind": "smoke",
+          "sourcePixels": [
+            847,
+            322
+          ],
+          "sourceUV": [
+            0.6754385964912281,
+            0.2567783094098884
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            72.623,
+            0,
+            122.896
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "boiler-house",
+      "index": 1,
+      "file": "factory-boiler-house-v3.png",
+      "sourceStudy": "boiler-house-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/boiler-house-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        2
+      ],
+      "groundPivotUV": [
+        0.4996012759170654,
+        0.7786336088516747
+      ],
+      "uniformWorldSize": 289.4771718006241,
+      "authoredGuideHeight": 145,
+      "visibleHeightAboveGroundPivot": 187.07671036686904,
+      "foundationCornersPixels": [
+        [
+          237,
+          976.611235
+        ],
+        [
+          626.3501429537815,
+          1202.689342256828
+        ],
+        [
+          1016,
+          976.201856
+        ],
+        [
+          626.6498570462185,
+          750.123748743172
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.63621998052572,
+          -63.52047878213951
+        ],
+        [
+          -64.0,
+          63.95107746525425
+        ],
+        [
+          63.63621998052572,
+          63.52047878213951
+        ],
+        [
+          64.0,
+          -63.95107746525425
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        30.141807131282206,
+        -30.167681049257993
+      ],
+      "alphaBounds": [
+        237,
+        166,
+        1016,
+        1202
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "boiler-house.window.left-back",
+          "kind": "window",
+          "sourcePixels": [
+            387,
+            789
+          ],
+          "sourceUV": [
+            0.30861244019138756,
+            0.6291866028708134
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -78.187,
+            0,
+            75.181
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "boiler-house.window.left-front",
+          "kind": "window",
+          "sourcePixels": [
+            534,
+            867
+          ],
+          "sourceUV": [
+            0.4258373205741627,
+            0.6913875598086124
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -30.198,
+            0,
+            37.584
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "boiler-house.window.right-front",
+          "kind": "window",
+          "sourcePixels": [
+            740,
+            898
+          ],
+          "sourceUV": [
+            0.5901116427432217,
+            0.7161084529505582
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            37.053,
+            0,
+            2.973
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "boiler-house.window.right-back",
+          "kind": "window",
+          "sourcePixels": [
+            871,
+            820
+          ],
+          "sourceUV": [
+            0.6945773524720893,
+            0.6539074960127592
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            79.82,
+            0,
+            3.519
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "boiler-house.stack.left",
+          "kind": "smoke",
+          "sourcePixels": [
+            627,
+            200
+          ],
+          "sourceUV": [
+            0.5,
+            0.1594896331738437
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            0.163,
+            0,
+            179.161
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "boiler-house.stack.right",
+          "kind": "smoke",
+          "sourcePixels": [
+            783,
+            287
+          ],
+          "sourceUV": [
+            0.6244019138755981,
+            0.22886762360446572
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            51.091,
+            0,
+            138.287
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "coking-plant",
+      "index": 2,
+      "file": "factory-coking-plant-v2.png",
+      "sourceStudy": "coking-plant-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/coking-plant-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        2
+      ],
+      "groundPivotUV": [
+        0.4984051036682616,
+        0.7826349649122807
+      ],
+      "uniformWorldSize": 276.5815427780563,
+      "authoredGuideHeight": 120,
+      "visibleHeightAboveGroundPivot": 189.11301497128522,
+      "foundationCornersPixels": [
+        [
+          216,
+          982.211784
+        ],
+        [
+          634.1511317113061,
+          1210.3650770888496
+        ],
+        [
+          1034,
+          980.6367080000001
+        ],
+        [
+          615.8488682886939,
+          752.4834149111505
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -63.574526219784566
+        ],
+        [
+          -60.41636665342304,
+          63.27077079142969
+        ],
+        [
+          64.0,
+          63.574526219784566
+        ],
+        [
+          60.41636665342304,
+          -63.27077079142969
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.617941888737693,
+        -29.87900447098158
+      ],
+      "alphaBounds": [
+        216,
+        124,
+        1034,
+        1209
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "coking-plant.furnace.left",
+          "kind": "furnace",
+          "sourcePixels": [
+            333,
+            930
+          ],
+          "sourceUV": [
+            0.26555023923444976,
+            0.7416267942583732
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -91.08,
+            0,
+            48.525
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "coking-plant.furnace.middle",
+          "kind": "furnace",
+          "sourcePixels": [
+            471,
+            992
+          ],
+          "sourceUV": [
+            0.37559808612440193,
+            0.7910685805422647
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -48.035,
+            0,
+            17.278
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "coking-plant.furnace.right",
+          "kind": "furnace",
+          "sourcePixels": [
+            610,
+            1060
+          ],
+          "sourceUV": [
+            0.4864433811802233,
+            0.8452950558213717
+          ],
+          "radiusWorld": 5,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -4.679,
+            0,
+            -15.421
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "coking-plant.stack.left",
+          "kind": "smoke",
+          "sourcePixels": [
+            678,
+            157
+          ],
+          "sourceUV": [
+            0.5406698564593302,
+            0.1251993620414673
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            16.532,
+            0,
+            175.086
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "coking-plant.stack.right",
+          "kind": "smoke",
+          "sourcePixels": [
+            865,
+            230
+          ],
+          "sourceUV": [
+            0.689792663476874,
+            0.18341307814992025
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            74.86,
+            0,
+            135.172
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "foundry",
+      "index": 3,
+      "file": "factory-foundry-v2.png",
+      "sourceStudy": "foundry-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/foundry-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        2
+      ],
+      "groundPivotUV": [
+        0.4996012759170654,
+        0.775601562599681
+      ],
+      "uniformWorldSize": 285.62489233176393,
+      "authoredGuideHeight": 145,
+      "visibleHeightAboveGroundPivot": 185.77105850678214,
+      "foundationCornersPixels": [
+        [
+          235,
+          972.500335
+        ],
+        [
+          629.6929575211605,
+          1200.183309168614
+        ],
+        [
+          1018,
+          972.708384
+        ],
+        [
+          623.3070424788395,
+          745.025409831386
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.02536495940612,
+          -63.08340260409888
+        ],
+        [
+          -62.971494411555135,
+          64.0
+        ],
+        [
+          63.02536495940612,
+          63.08340260409888
+        ],
+        [
+          62.971494411555135,
+          -64.0
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.978970750983645,
+        -30.362283829865927
+      ],
+      "alphaBounds": [
+        235,
+        157,
+        1018,
+        1199
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "foundry.furnace.front",
+          "kind": "furnace",
+          "sourcePixels": [
+            483,
+            957
+          ],
+          "sourceUV": [
+            0.38516746411483255,
+            0.7631578947368421
+          ],
+          "radiusWorld": 6,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -46.224,
+            0,
+            22.425
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "foundry.window.left",
+          "kind": "window",
+          "sourcePixels": [
+            353,
+            837
+          ],
+          "sourceUV": [
+            0.28149920255183414,
+            0.6674641148325359
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -88.099,
+            0,
+            66.853
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "foundry.window.front",
+          "kind": "window",
+          "sourcePixels": [
+            613,
+            939
+          ],
+          "sourceUV": [
+            0.48883572567783096,
+            0.7488038277511961
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -4.349,
+            0,
+            9.429
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "foundry.window.clerestory-1",
+          "kind": "window",
+          "sourcePixels": [
+            576,
+            569
+          ],
+          "sourceUV": [
+            0.45933014354066987,
+            0.45374800637958534
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -16.267,
+            0,
+            98.57
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "foundry.window.clerestory-2",
+          "kind": "window",
+          "sourcePixels": [
+            689,
+            615
+          ],
+          "sourceUV": [
+            0.5494417862838915,
+            0.4904306220095694
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            20.132,
+            0,
+            73.233
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "foundry.window.clerestory-3",
+          "kind": "window",
+          "sourcePixels": [
+            802,
+            663
+          ],
+          "sourceUV": [
+            0.6395534290271132,
+            0.5287081339712919
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            56.532,
+            0,
+            47.44
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "foundry.stack.main",
+          "kind": "smoke",
+          "sourcePixels": [
+            633,
+            188
+          ],
+          "sourceUV": [
+            0.5047846889952153,
+            0.14992025518341306
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            2.094,
+            0,
+            177.855
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "rolling-mill",
+      "index": 4,
+      "file": "factory-rolling-mill-v3.png",
+      "sourceStudy": "rolling-mill-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/rolling-mill-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        1
+      ],
+      "groundPivotUV": [
+        0.49920255183413076,
+        0.7508473859649122
+      ],
+      "uniformWorldSize": 324.75746307801666,
+      "authoredGuideHeight": 85,
+      "visibleHeightAboveGroundPivot": 98.8160359857386,
+      "foundationCornersPixels": [
+        [
+          370,
+          988.47554
+        ],
+        [
+          545.6439240289533,
+          1084.2966776026033
+        ],
+        [
+          882,
+          894.6497039999999
+        ],
+        [
+          706.3560759710467,
+          798.8285663973966
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -61.75977722831228,
+          -31.999999999999968
+        ],
+        [
+          -59.987709150077265,
+          30.55736625169181
+        ],
+        [
+          61.75977722831225,
+          32.0
+        ],
+        [
+          59.987709150077265,
+          -30.55736625169181
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.614321332515217,
+        -29.41552113316924
+      ],
+      "alphaBounds": [
+        370,
+        560,
+        882,
+        1084
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "rolling-mill.lamp.door",
+          "kind": "lamp",
+          "sourcePixels": [
+            469,
+            835
+          ],
+          "sourceUV": [
+            0.3740031897926635,
+            0.6658692185007975
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -57.501,
+            0,
+            51.072
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rolling-mill.opening.loading",
+          "kind": "opening",
+          "sourcePixels": [
+            471,
+            932
+          ],
+          "sourceUV": [
+            0.37559808612440193,
+            0.7432216905901117
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -56.769,
+            0,
+            25.652
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rolling-mill.window.1",
+          "kind": "window",
+          "sourcePixels": [
+            603,
+            879
+          ],
+          "sourceUV": [
+            0.48086124401913877,
+            0.7009569377990431
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -8.424,
+            0,
+            19.641
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rolling-mill.window.2",
+          "kind": "window",
+          "sourcePixels": [
+            677,
+            840
+          ],
+          "sourceUV": [
+            0.539872408293461,
+            0.6698564593301436
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            18.679,
+            0,
+            18.677
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rolling-mill.window.3",
+          "kind": "window",
+          "sourcePixels": [
+            750,
+            800
+          ],
+          "sourceUV": [
+            0.5980861244019139,
+            0.6379585326953748
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            45.415,
+            0,
+            18.121
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rolling-mill.window.4",
+          "kind": "window",
+          "sourcePixels": [
+            815,
+            760
+          ],
+          "sourceUV": [
+            0.6499202551834131,
+            0.6060606060606061
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            69.221,
+            0,
+            18.761
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "rolling-mill.exhaust.roof",
+          "kind": "smoke",
+          "sourcePixels": [
+            752,
+            577
+          ],
+          "sourceUV": [
+            0.5996810207336523,
+            0.46012759170653905
+          ],
+          "radiusWorld": 3,
+          "color": "#7b8589",
+          "localXYZ": [
+            46.147,
+            0,
+            75.574
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "assembly-hall",
+      "index": 5,
+      "file": "factory-assembly-hall-v3.png",
+      "sourceStudy": "assembly-hall-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/assembly-hall-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        1
+      ],
+      "groundPivotUV": [
+        0.4960127591706539,
+        0.7509314226475278
+      ],
+      "uniformWorldSize": 334.8720474670993,
+      "authoredGuideHeight": 80,
+      "visibleHeightAboveGroundPivot": 100.05250527902018,
+      "foundationCornersPixels": [
+        [
+          376,
+          985.8546959999999
+        ],
+        [
+          547.0617025961787,
+          1080.2929012139748
+        ],
+        [
+          868,
+          897.4813119999999
+        ],
+        [
+          696.9382974038213,
+          803.043106786025
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -60.90336956312136,
+          -32.0
+        ],
+        [
+          -59.48906059448499,
+          31.188164910995948
+        ],
+        [
+          60.90336956312136,
+          32.0
+        ],
+        [
+          59.48906059448499,
+          -31.188164910995948
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.901815456038182,
+        -29.666531216872258
+      ],
+      "alphaBounds": [
+        376,
+        567,
+        868,
+        1080
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "assembly-hall.lamp.door",
+          "kind": "lamp",
+          "sourcePixels": [
+            461,
+            854
+          ],
+          "sourceUV": [
+            0.36762360446570974,
+            0.6810207336523126
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -60.803,
+            0,
+            48.234
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "assembly-hall.window.1",
+          "kind": "window",
+          "sourcePixels": [
+            622,
+            838
+          ],
+          "sourceUV": [
+            0.4960127591706539,
+            0.6682615629984051
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            0.0,
+            0,
+            27.684
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "assembly-hall.window.2",
+          "kind": "window",
+          "sourcePixels": [
+            710,
+            787
+          ],
+          "sourceUV": [
+            0.5661881977671451,
+            0.6275917065390749
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            33.234,
+            0,
+            27.735
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "assembly-hall.window.3",
+          "kind": "window",
+          "sourcePixels": [
+            794,
+            740
+          ],
+          "sourceUV": [
+            0.6331738437001595,
+            0.5901116427432217
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            64.957,
+            0,
+            27.336
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "assembly-hall.exhaust.roof",
+          "kind": "smoke",
+          "sourcePixels": [
+            678,
+            599
+          ],
+          "sourceUV": [
+            0.5406698564593302,
+            0.47767145135566186
+          ],
+          "radiusWorld": 3,
+          "color": "#7b8589",
+          "localXYZ": [
+            21.149,
+            0,
+            82.873
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "power-station",
+      "index": 6,
+      "file": "factory-power-station-v3.png",
+      "sourceStudy": "power-station-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/power-station-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        1
+      ],
+      "groundPivotUV": [
+        0.49920255183413076,
+        0.7532635518341307
+      ],
+      "uniformWorldSize": 333.09208738889146,
+      "authoredGuideHeight": 150,
+      "visibleHeightAboveGroundPivot": 158.73471390302518,
+      "foundationCornersPixels": [
+        [
+          372,
+          992.875148
+        ],
+        [
+          536.8233667534562,
+          1087.0154973315373
+        ],
+        [
+          880,
+          896.3098400000001
+        ],
+        [
+          715.1766332465438,
+          802.1694906684627
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -63.414745028829195,
+          -31.99999999999996
+        ],
+        [
+          -63.08276582639467,
+          29.583688173841974
+        ],
+        [
+          63.41474502882915,
+          32.0
+        ],
+        [
+          63.08276582639467,
+          -29.583688173841974
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.73323656100938,
+        -29.061234307938243
+      ],
+      "alphaBounds": [
+        372,
+        347,
+        880,
+        1087
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "power-station.lamp.door",
+          "kind": "lamp",
+          "sourcePixels": [
+            469,
+            884
+          ],
+          "sourceUV": [
+            0.3740031897926635,
+            0.7049441786283892
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -58.977,
+            0,
+            40.172
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "power-station.window.front",
+          "kind": "window",
+          "sourcePixels": [
+            671,
+            885
+          ],
+          "sourceUV": [
+            0.5350877192982456,
+            0.7057416267942583
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            16.904,
+            0,
+            8.928
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "power-station.window.rear",
+          "kind": "window",
+          "sourcePixels": [
+            787,
+            817
+          ],
+          "sourceUV": [
+            0.6275917065390749,
+            0.6515151515151515
+          ],
+          "radiusWorld": 4,
+          "color": "#ffb34f",
+          "localXYZ": [
+            60.479,
+            0,
+            9.201
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "power-station.stack.main",
+          "kind": "smoke",
+          "sourcePixels": [
+            678,
+            368
+          ],
+          "sourceUV": [
+            0.5406698564593302,
+            0.2934609250398724
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            19.534,
+            0,
+            145.182
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "pipework",
+      "index": 7,
+      "file": "factory-pipework-v3.png",
+      "sourceStudy": "pipework-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/pipework-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        2,
+        1
+      ],
+      "groundPivotUV": [
+        0.501993620414673,
+        0.8088655554226475
+      ],
+      "uniformWorldSize": 318.56181110915304,
+      "authoredGuideHeight": 65,
+      "visibleHeightAboveGroundPivot": 107.538085876132,
+      "foundationCornersPixels": [
+        [
+          373,
+          1071.928899
+        ],
+        [
+          531.5274665267218,
+          1159.8899246594165
+        ],
+        [
+          886,
+          956.7059139999999
+        ],
+        [
+          727.4725334732782,
+          868.7448883405834
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -64.0,
+          -28.15067962550688
+        ],
+        [
+          -62.89086849243174,
+          27.693069099857443
+        ],
+        [
+          64.0,
+          28.15067962550688
+        ],
+        [
+          62.89086849243174,
+          -27.693069099857443
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.024273284898538,
+        -29.821377940370255
+      ],
+      "alphaBounds": [
+        373,
+        591,
+        886,
+        1160
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "pipework.lamp.cabin",
+          "kind": "lamp",
+          "sourcePixels": [
+            740,
+            776
+          ],
+          "sourceUV": [
+            0.5901116427432217,
+            0.6188197767145136
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            39.698,
+            0,
+            44.335
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "pipework.window.cabin",
+          "kind": "window",
+          "sourcePixels": [
+            805,
+            761
+          ],
+          "sourceUV": [
+            0.6419457735247209,
+            0.6068580542264753
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            63.05,
+            0,
+            38.612
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "pipework.exhaust.cabin",
+          "kind": "smoke",
+          "sourcePixels": [
+            746,
+            601
+          ],
+          "sourceUV": [
+            0.594896331738437,
+            0.47926634768740034
+          ],
+          "radiusWorld": 2,
+          "color": "#7b8589",
+          "localXYZ": [
+            41.854,
+            0,
+            87.911
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "tank-farm",
+      "index": 8,
+      "file": "factory-tank-farm-v2.png",
+      "sourceStudy": "tank-farm-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/tank-farm-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        2
+      ],
+      "groundPivotUV": [
+        0.4932216905901116,
+        0.6881203006379586
+      ],
+      "uniformWorldSize": 305.30883270869396,
+      "authoredGuideHeight": 100,
+      "visibleHeightAboveGroundPivot": 92.49417688466339,
+      "foundationCornersPixels": [
+        [
+          354,
+          800.980972
+        ],
+        [
+          728.8552774833626,
+          1009.932051064221
+        ],
+        [
+          883,
+          924.824742
+        ],
+        [
+          508.14472251663744,
+          715.8736629357791
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -27.071503520895433,
+          -64.0
+        ],
+        [
+          -24.84354123420373,
+          62.84059621293888
+        ],
+        [
+          27.071503520895465,
+          63.99999999999996
+        ],
+        [
+          24.84354123420373,
+          -62.84059621293888
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.136082327275073,
+        -28.904230567221177
+      ],
+      "alphaBounds": [
+        354,
+        483,
+        883,
+        1009
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "tank-farm.lamp.rear-tank",
+          "kind": "lamp",
+          "sourcePixels": [
+            436,
+            650
+          ],
+          "sourceUV": [
+            0.34768740031897927,
+            0.518341307814992
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -62.838,
+            0,
+            77.488
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "tank-farm.lamp.front-tank",
+          "kind": "lamp",
+          "sourcePixels": [
+            796,
+            823
+          ],
+          "sourceUV": [
+            0.6347687400318979,
+            0.6562998405103668
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            61.116,
+            0,
+            -15.235
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": []
+    },
+    {
+      "id": "filter-bank",
+      "index": 9,
+      "file": "factory-filter-bank-v2.png",
+      "sourceStudy": "filter-bank-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/filter-bank-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        2
+      ],
+      "groundPivotUV": [
+        0.50518341307815,
+        0.758161783492823
+      ],
+      "uniformWorldSize": 270.7986107752575,
+      "authoredGuideHeight": 155,
+      "visibleHeightAboveGroundPivot": 171.1893965464875,
+      "foundationCornersPixels": [
+        [
+          353,
+          909.779791
+        ],
+        [
+          714.4407904672058,
+          1107.2880266284333
+        ],
+        [
+          914,
+          991.6899620000002
+        ],
+        [
+          552.5592095327942,
+          794.181726371567
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.999999999999968,
+          -53.663686269904694
+        ],
+        [
+          -29.04582571549288,
+          53.764850603267604
+        ],
+        [
+          32.0,
+          53.663686269904666
+        ],
+        [
+          29.04582571549288,
+          -53.764850603267604
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.654266083326682,
+        -30.082297078773056
+      ],
+      "alphaBounds": [
+        353,
+        158,
+        914,
+        1106
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "filter-bank.lamp.left",
+          "kind": "lamp",
+          "sourcePixels": [
+            491,
+            466
+          ],
+          "sourceUV": [
+            0.3915470494417863,
+            0.37161084529505584
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -43.519,
+            0,
+            122.444
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "filter-bank.lamp.right",
+          "kind": "lamp",
+          "sourcePixels": [
+            791,
+            591
+          ],
+          "sourceUV": [
+            0.6307814992025519,
+            0.47129186602870815
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            48.1,
+            0,
+            58.047
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "filter-bank.stack.main",
+          "kind": "smoke",
+          "sourcePixels": [
+            623,
+            187
+          ],
+          "sourceUV": [
+            0.49681020733652315,
+            0.14912280701754385
+          ],
+          "radiusWorld": 4,
+          "color": "#7b8589",
+          "localXYZ": [
+            -3.207,
+            0,
+            166.236
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "coal-bunker",
+      "index": 10,
+      "file": "factory-coal-bunker-v2.png",
+      "sourceStudy": "coal-bunker-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/coal-bunker-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        2
+      ],
+      "groundPivotUV": [
+        0.5119617224880383,
+        0.753510077352472
+      ],
+      "uniformWorldSize": 199.0152881816329,
+      "authoredGuideHeight": 60,
+      "visibleHeightAboveGroundPivot": 85.36734394013324,
+      "foundationCornersPixels": [
+        [
+          298,
+          910.925596
+        ],
+        [
+          701.4939311479067,
+          1143.7424012602046
+        ],
+        [
+          986,
+          978.877678
+        ],
+        [
+          582.5060688520933,
+          746.0608727397953
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -45.20800730871051
+        ],
+        [
+          -31.972685918859284,
+          45.32561577610201
+        ],
+        [
+          31.99999999999998,
+          45.20800730871053
+        ],
+        [
+          31.972685918859284,
+          -45.32561577610201
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.98503197706302,
+        -30.091305364092488
+      ],
+      "alphaBounds": [
+        298,
+        407,
+        986,
+        1143
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "coal-bunker.lamp.hopper",
+          "kind": "lamp",
+          "sourcePixels": [
+            335,
+            662
+          ],
+          "sourceUV": [
+            0.2671451355661882,
+            0.5279106858054227
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -68.904,
+            0,
+            73.028
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": []
+    },
+    {
+      "id": "rail-warehouse",
+      "index": 11,
+      "file": "factory-rail-warehouse-v2.png",
+      "sourceStudy": "rail-warehouse-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/rail-warehouse-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        2
+      ],
+      "groundPivotUV": [
+        0.49920255183413076,
+        0.7585483580542265
+      ],
+      "uniformWorldSize": 196.31050506832466,
+      "authoredGuideHeight": 85,
+      "visibleHeightAboveGroundPivot": 73.76823422872778,
+      "foundationCornersPixels": [
+        [
+          274,
+          914.893118
+        ],
+        [
+          692.7600409904944,
+          1154.9711808201373
+        ],
+        [
+          978,
+          987.5461640000001
+        ],
+        [
+          559.2399590095056,
+          747.4681011798627
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -45.92981858356124
+        ],
+        [
+          -31.67536934837975,
+          46.455476970596635
+        ],
+        [
+          32.0,
+          45.92981858356124
+        ],
+        [
+          31.67536934837975,
+          -46.455476970596635
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.825949113429104,
+        -30.41131471917728
+      ],
+      "alphaBounds": [
+        274,
+        480,
+        978,
+        1155
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "rail-warehouse.window.roof-1",
+          "kind": "window",
+          "sourcePixels": [
+            465,
+            668
+          ],
+          "sourceUV": [
+            0.3708133971291866,
+            0.532695374800638
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -35.644,
+            0,
+            58.889
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rail-warehouse.window.roof-2",
+          "kind": "window",
+          "sourcePixels": [
+            548,
+            715
+          ],
+          "sourceUV": [
+            0.4370015948963317,
+            0.5701754385964912
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -17.269,
+            0,
+            44.029
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rail-warehouse.window.roof-3",
+          "kind": "window",
+          "sourcePixels": [
+            629,
+            764
+          ],
+          "sourceUV": [
+            0.5015948963317385,
+            0.6092503987240829
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            0.664,
+            0,
+            29.038
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "rail-warehouse.lamp.loading",
+          "kind": "lamp",
+          "sourcePixels": [
+            855,
+            890
+          ],
+          "sourceUV": [
+            0.6818181818181818,
+            0.7097288676236044
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            50.699,
+            0,
+            -11.114
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": []
+    },
+    {
+      "id": "pump-house",
+      "index": 12,
+      "file": "factory-pump-house-v2.png",
+      "sourceStudy": "pump-house-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/pump-house-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        1
+      ],
+      "groundPivotUV": [
+        0.4996012759170654,
+        0.7563736000797449
+      ],
+      "uniformWorldSize": 274.83674203515704,
+      "authoredGuideHeight": 70,
+      "visibleHeightAboveGroundPivot": 100.70607669695958,
+      "foundationCornersPixels": [
+        [
+          423,
+          950.215669
+        ],
+        [
+          626.8967442818689,
+          1061.0953302307132
+        ],
+        [
+          830,
+          946.76932
+        ],
+        [
+          626.1032557181311,
+          835.8896587692868
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -31.074913933809327
+        ],
+        [
+          -30.16392528646667,
+          30.286896350017596
+        ],
+        [
+          32.0,
+          31.074913933809327
+        ],
+        [
+          30.16392528646667,
+          -30.286896350017596
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        28.537480268520554,
+        -29.374986284894796
+      ],
+      "alphaBounds": [
+        423,
+        489,
+        830,
+        1060
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "pump-house.window.left",
+          "kind": "window",
+          "sourcePixels": [
+            541,
+            815
+          ],
+          "sourceUV": [
+            0.4314194577352472,
+            0.6499202551834131
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -26.501,
+            0,
+            40.076
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "pump-house.window.right",
+          "kind": "window",
+          "sourcePixels": [
+            713,
+            813
+          ],
+          "sourceUV": [
+            0.5685805422647527,
+            0.6483253588516746
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            26.811,
+            0,
+            18.75
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "pump-house.exhaust.roof",
+          "kind": "smoke",
+          "sourcePixels": [
+            628,
+            519
+          ],
+          "sourceUV": [
+            0.5007974481658692,
+            0.4138755980861244
+          ],
+          "radiusWorld": 2,
+          "color": "#7b8589",
+          "localXYZ": [
+            0.465,
+            0,
+            93.941
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "substation",
+      "index": 13,
+      "file": "factory-substation-v2.png",
+      "sourceStudy": "substation-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/substation-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        1
+      ],
+      "groundPivotUV": [
+        0.5,
+        0.7780949066985645
+      ],
+      "uniformWorldSize": 188.54703337266045,
+      "authoredGuideHeight": 55,
+      "visibleHeightAboveGroundPivot": 59.20001152150111,
+      "foundationCornersPixels": [
+        [
+          331,
+          975.698257
+        ],
+        [
+          628.1314544036985,
+          1148.8507206593922
+        ],
+        [
+          923,
+          975.7637689999999
+        ],
+        [
+          625.8685455963015,
+          802.6113053406077
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.4641229156404,
+          -31.476186841365475
+        ],
+        [
+          -31.759411855930022,
+          32.0
+        ],
+        [
+          31.4641229156404,
+          31.476186841365475
+        ],
+        [
+          31.759411855930022,
+          -32.0
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        30.231365496291765,
+        -30.412806192041533
+      ],
+      "alphaBounds": [
+        331,
+        582,
+        923,
+        1148
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "substation.lamp.left",
+          "kind": "lamp",
+          "sourcePixels": [
+            533,
+            762
+          ],
+          "sourceUV": [
+            0.42503987240829344,
+            0.6076555023923444
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -19.988,
+            0,
+            40.296
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "substation.lamp.right",
+          "kind": "lamp",
+          "sourcePixels": [
+            721,
+            764
+          ],
+          "sourceUV": [
+            0.5749601275917066,
+            0.6092503987240829
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            19.988,
+            0,
+            23.675
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "substation.window.left",
+          "kind": "window",
+          "sourcePixels": [
+            537,
+            815
+          ],
+          "sourceUV": [
+            0.42822966507177035,
+            0.6499202551834131
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -19.137,
+            0,
+            31.98
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "substation.window.right",
+          "kind": "window",
+          "sourcePixels": [
+            718,
+            814
+          ],
+          "sourceUV": [
+            0.5725677830940988,
+            0.6491228070175439
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            19.35,
+            0,
+            16.418
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": []
+    },
+    {
+      "id": "compressor-house",
+      "index": 14,
+      "file": "factory-compressor-house-v2.png",
+      "sourceStudy": "compressor-house-candidate-v2.png",
+      "prompt": "docs/art-prompts/factory-v1/compressor-house-v2.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        1
+      ],
+      "groundPivotUV": [
+        0.5,
+        0.7653404027113238
+      ],
+      "uniformWorldSize": 278.94345711531713,
+      "authoredGuideHeight": 65,
+      "visibleHeightAboveGroundPivot": 101.1530089321222,
+      "foundationCornersPixels": [
+        [
+          424,
+          959.9936
+        ],
+        [
+          627.3893505341398,
+          1076.6679009339093
+        ],
+        [
+          830,
+          959.4801299999999
+        ],
+        [
+          626.6106494658602,
+          842.8058290660906
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -32.0,
+          -31.86011235893702
+        ],
+        [
+          -31.794966039289772,
+          31.917448644497554
+        ],
+        [
+          32.0,
+          31.86011235893702
+        ],
+        [
+          31.794966039289772,
+          -31.917448644497554
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.840737873898824,
+        -30.044616092003444
+      ],
+      "alphaBounds": [
+        424,
+        505,
+        830,
+        1076
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "compressor-house.lamp.door",
+          "kind": "lamp",
+          "sourcePixels": [
+            522,
+            800
+          ],
+          "sourceUV": [
+            0.41626794258373206,
+            0.6379585326953748
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -33.031,
+            0,
+            49.017
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "compressor-house.window.side",
+          "kind": "window",
+          "sourcePixels": [
+            720,
+            826
+          ],
+          "sourceUV": [
+            0.5741626794258373,
+            0.6586921850079744
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            29.256,
+            0,
+            17.805
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": [
+        {
+          "id": "compressor-house.exhaust.roof",
+          "kind": "smoke",
+          "sourcePixels": [
+            627,
+            524
+          ],
+          "sourceUV": [
+            0.5,
+            0.4178628389154705
+          ],
+          "radiusWorld": 2,
+          "color": "#7b8589",
+          "localXYZ": [
+            0.0,
+            0,
+            96.927
+          ],
+          "outwardNormal": [
+            0,
+            0,
+            1
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ]
+    },
+    {
+      "id": "gatehouse",
+      "index": 15,
+      "file": "factory-gatehouse-v3.png",
+      "sourceStudy": "gatehouse-candidate-v3.png",
+      "prompt": "docs/art-prompts/factory-v1/gatehouse-v3.txt",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "tileOccupancy": [
+        1,
+        1
+      ],
+      "groundPivotUV": [
+        0.4996012759170654,
+        0.7554220398724083
+      ],
+      "uniformWorldSize": 362.3981305077909,
+      "authoredGuideHeight": 95,
+      "visibleHeightAboveGroundPivot": 99.50031912795612,
+      "foundationCornersPixels": [
+        [
+          470,
+          947.35381
+        ],
+        [
+          626.7427261170506,
+          1036.98290587643
+        ],
+        [
+          783,
+          947.244666
+        ],
+        [
+          626.2572738829494,
+          857.61557012357
+        ]
+      ],
+      "foundationWorldCoordinates": [
+        [
+          -31.999999999999957,
+          -31.96136918169377
+        ],
+        [
+          -31.693357707084758,
+          31.792559590680344
+        ],
+        [
+          32.0,
+          31.96136918169373
+        ],
+        [
+          31.693357707084758,
+          -31.792559590680344
+        ]
+      ],
+      "edgeAnglesDegrees": [
+        29.761914641277173,
+        -29.868665041194145
+      ],
+      "alphaBounds": [
+        470,
+        603,
+        783,
+        1037
+      ],
+      "registrationReview": "Two front edges measured from source-inspected alpha silhouette ranges; rear vertex inferred. Uniformly fit actual inverse-projected foundation inside reserved grid-aligned tile occupancy. Source pixels unchanged; exact tile fill and seamless adjacency not claimed.",
+      "lights": [
+        {
+          "id": "gatehouse.window.upper",
+          "kind": "window",
+          "sourcePixels": [
+            556,
+            795
+          ],
+          "sourceUV": [
+            0.4433811802232855,
+            0.6339712918660287
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -28.813,
+            0,
+            55.776
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "gatehouse.window.lower",
+          "kind": "window",
+          "sourcePixels": [
+            556,
+            918
+          ],
+          "sourceUV": [
+            0.4433811802232855,
+            0.7320574162679426
+          ],
+          "radiusWorld": 3,
+          "color": "#ffb34f",
+          "localXYZ": [
+            -28.813,
+            0,
+            20.23
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        },
+        {
+          "id": "gatehouse.lamp.door",
+          "kind": "lamp",
+          "sourcePixels": [
+            709,
+            829
+          ],
+          "sourceUV": [
+            0.5653907496012759,
+            0.6610845295055822
+          ],
+          "radiusWorld": 2,
+          "color": "#ffb34f",
+          "localXYZ": [
+            33.718,
+            0,
+            20.423
+          ],
+          "outwardNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible in fixed view",
+          "sourceReview": "pixel-reviewed on labeled overlay of final source; re-review required after source edits",
+          "localReview": "inferred single-view estimate with localY=0; not measured 3-D geometry",
+          "normalReview": "inferred up for exhaust; nominal facade normal for light spill"
+        }
+      ],
+      "smoke": []
+    }
+  ]
+}

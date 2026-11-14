@@ -91,7 +91,7 @@ public final class ResponsiveTest {
         check(!practice.pointer && !practice.navigating,"resizing cancels gestures before changing projection");
         check(practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"active practice receives resized bounds");
         check(game.tug.x==originalX && game.tug.y==originalY && game.ticks==0 && practice.ticks==0,"resizing cannot advance either simulation");
-        checkLayout(practice.layout);
+        checkPracticeLayout(practice);
         ReplayInput.down(game,practice.tug.x,practice.tug.y);
         check(practice.holdingTug(),"new gesture works after camera resize");
         ReplayInput.up(game,practice.tug.x,practice.tug.y); tap(game,Layout.PRACTICE);
@@ -99,6 +99,28 @@ public final class ResponsiveTest {
         game.mode=Game.TITLE; tap(game,Layout.LEARN);
         check(game.activeGame()!=game && game.activeGame().layout.width==game.layout.width && game.activeGame().layout.height==game.layout.height,"title learn target inherits responsive layout");
         tap(game,Layout.PRACTICE); check(game.activeGame()==game && game.mode==Game.TITLE,"leaving title practice returns to title");
+    }
+    private static void checkPracticeLayout(Game g) {
+        Layout layout=g.layout;RiverCamera camera=layout.camera;
+        float tx=camera.screenX(g.tug.x,g.tug.y),ty=camera.screenY(g.tug.x,g.tug.y);
+        check(tx>80 && tx<layout.width-80 && ty>100 && ty<layout.height-80,
+                "resized practice camera keeps the current tug visible in the long connected scene");
+        for(int gate=0;gate<TrainingChannel.X.length;gate++) {
+            float x=TrainingChannel.X[gate],y=TrainingChannel.Y[gate];
+            float sx=camera.screenX(x,y),sy=camera.screenY(x,y);
+            check(near(camera.worldX(sx,sy),x) && near(camera.worldY(sx,sy),y),
+                    "tutorial camera inverse preserves both on-screen and downstream world positions");
+        }
+        for(Layout.Box original:BUTTONS) {
+            Layout.Box box=layout.box(original);
+            check(box.x>=0 && box.y>=0 && box.x+box.w<=layout.width && box.y+box.h<=layout.height,
+                    "all tutorial control targets fit the resized canvas");
+        }
+        for(Layout.Box original:LIVE_BUTTONS) {
+            Layout.Box box=layout.box(original);
+            check(tx+40<box.x || tx-40>box.x+box.w || ty+40<box.y || ty-40>box.y+box.h,
+                    "tutorial follow camera leaves the tug clear of live controls");
+        }
     }
     private static void independentGames() {
         Game first=new Game(),second=new Game(); first.configureCanvas(1400,600);

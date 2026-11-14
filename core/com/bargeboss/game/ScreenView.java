@@ -12,8 +12,8 @@ public final class ScreenView {
         int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
         String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
         VisualStyle.panel(p,12,8,316,48,0xed101c30);
-        text(p,g.trainingChannel()?"PRACTICE - INDUSTRIAL CANAL":"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
-        text(p,g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
+        text(p,g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
+        text(p,g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.tutorial!=null?"LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE+" - NO TIME LIMIT":g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
         float timerX=layout.width/2-130;
         VisualStyle.panel(p,timerX,8,104,48,0xed101c30);
         center(p,time,timerX+52,20,23,seconds<30?GOLD:PAPER);

@@ -24,7 +24,7 @@ public final class ControlView {
         if(g.ropePhase==3) return "BOLLARD CAUGHT / LINE TAUT / WINCHING";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
         for(Body b:g.cargo) if(b!=null && b.active && Mooring.aligning(b)) return "WINCHING ALONGSIDE / LINING UP WITH SHORE";
-        for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
+        for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
         if(g.noticeTicks>0 && g.notice.startsWith("TOWLINE RELEASED")) return "LINE BLOCKED OR TOO LONG / RECONNECT NEARBY";
@@ -45,7 +45,7 @@ public final class ControlView {
         String label=g.towAiming?"AIM AT TUG":g.tow.cargo!=null?"TOWING":g.ropeDragging?"AIM YOUR THROW":g.ropePhase==1?"LASSO AWAY":g.ropePhase==2?"REELING IN":g.ropePhase==3?"BOLLARD HIT":LABELS[g.control];
         if(!g.ropeDragging && !g.towAiming && g.tow.cargo==null && g.ropePhase==0) for(Body b:g.cargo) if(g.canTie(b)) { label="READY TO TIE";break; }
         if(g.control==Game.IDLE || g.control==Game.REVERSING) for(Body b:g.cargo)
-            if(b!=null && b.active && b.lineAttached) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
+            if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
         Layout layout=g.layout;
         Lettering.center(p,label,layout.statusX(),layout.statusY(),14,label.equals("READY TO TIE")?GREEN:color(g));
         Lettering.center(p,hint(g),layout.statusX(),layout.statusHintY(),10,PAPER);

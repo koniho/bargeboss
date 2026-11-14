@@ -29,21 +29,34 @@ public final class TutorialView {
             p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
             return;
         }
-        Painter coach=ScreenView.offset(p,-18,-30);
+        // The tow route runs through the upper-left harbor. Keep its touch
+        // targets visible by placing those two cards on the opposite side.
+        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL?g.layout.width-486:-18,-30);
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
         Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
-        Lettering.draw(coach,t.title(),54,137,19,PAPER);
-        boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug();
-        Lettering.draw(coach,wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine(),54,168,12,PAPER);
-        Lettering.draw(coach,wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine(),54,187,11,MUTED);
+        Body target=g.cargo[0];
+        boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
+        boolean unloading=secured && target.unloadingTicks>0;
+        Lettering.draw(coach,secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title(),54,137,19,PAPER);
+        boolean approach=target!=null && (t.lesson==Tutorial.HOLD || t.lesson==Tutorial.CONNECT)
+                && (Physics.length(target.x-g.tug.x,target.y-g.tug.y)>165 || t.lesson==Tutorial.HOLD && g.tug.x<210);
+        boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug() && !approach;
+        String first=secured?(unloading?"UNLOADING: "+Math.max(1,(Game.UNLOAD_TICKS-target.unloadingTicks+59)/60)+" SECONDS.":"WINCHING THE BARGE ALONGSIDE."):
+                approach?(t.lesson==Tutorial.HOLD?"DRIVE INTO THE HARBOR.":"DRIVE TO THE SECOND BARGE."):
+                wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine();
+        String second=secured?(unloading?"THE NEXT BARGE IS WAITING UPSTREAM.":"THE CREW WILL UNLOAD HER NEXT."):
+                approach?"APPROACH THE GLOWING BARGE.":wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine();
+        Lettering.draw(coach,first,54,168,12,PAPER);
+        Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
             coach.rect(54+i*40,210,32,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
             if(i==t.lesson) coach.rect(54+i*40+(g.visualTicks%60)/60f*25,208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=2*(float)StrictMath.sin(g.visualTicks*.10);
+        if(approach) { approach(g,p,river,target,pulse);return; }
         if(t.lesson==Tutorial.HOLD) {
             river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x2635c8bd);
             ControlView.ring(river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);
@@ -53,8 +66,8 @@ public final class TutorialView {
         if(t.lesson==Tutorial.MOVE) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             float x=g.holdingTug()?g.downX:g.tug.x,y=g.holdingTug()?g.downY:g.tug.y;
-            ControlView.arrow(river,x,y-25,x,y-100-pulse,VisualStyle.GOLD);
-            RiverPainter.center(river,"DRAG THIS WAY",x+22,y-72,10,PAPER);
+            ControlView.arrow(river,x+25,y,x+100+pulse,y,VisualStyle.GOLD);
+            RiverPainter.center(river,"DRAG THIS WAY",x+72,y-22,10,PAPER);
         } else if(t.lesson==Tutorial.COAST) {
             ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,ControlView.BLUE,3);
             RiverPainter.center(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
@@ -77,8 +90,8 @@ public final class TutorialView {
                 pushGesture(g,p,river,b,t.lesson==Tutorial.STEER);
             } else if(t.lesson==Tutorial.TIE) {
                 if(g.canTie(b) && !g.ropeDragging) {
-                    ControlView.arrow(river,b.x-25,b.y,Game.TIE_X[b.berth]+18,b.y,ControlView.GREEN);
-                    ControlView.ring(river,Game.TIE_X[b.berth],b.y,20+pulse,1,PAPER,2);
+                    ControlView.arrow(river,b.x-25,b.y,g.bollardX(b.berth)+18,g.bollardY(b.berth),ControlView.GREEN);
+                    ControlView.ring(river,g.bollardX(b.berth),g.bollardY(b.berth),20+pulse,1,PAPER,2);
                 }
             } else {
                 // Put the instruction on the cargo's actual touch target. The old
@@ -89,6 +102,27 @@ public final class TutorialView {
                 Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
+    }
+    /** A navigation cue precedes the cargo gesture when the next job is farther away. */
+    private static void approach(Game g,Painter canvas,Painter river,Body b,float pulse) {
+        ControlView.ring(river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
+        float x=b.x,y=b.y;
+        if(g.tug.x<210) {x=230;y=TrainingChannel.Y[TrainingChannel.Y.length-1];}
+        float dx=x-g.tug.x,dy=y-g.tug.y,length=Math.max(1,Physics.length(dx,dy));
+        float reach=Math.min(95,length);
+        ControlView.arrow(river,g.tug.x+dx/length*30,g.tug.y+dy/length*30,
+                g.tug.x+dx/length*reach,g.tug.y+dy/length*reach,VisualStyle.GOLD);
+        RiverPainter.center(river,"DRIVE THIS WAY",g.tug.x+dx/length*reach,g.tug.y+dy/length*reach-18,9,PAPER);
+        RiverCamera c=g.layout.camera;
+        float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y);
+        if(sx<55 || sx>g.layout.width-55 || sy<210 || sy>g.layout.height-85) {
+            float cx=g.layout.width*.5f,cy=g.layout.height*.55f,ex=sx-cx,ey=sy-cy;
+            float fraction=Math.min((g.layout.width*.5f-65)/Math.max(1,Math.abs(ex)),
+                    (g.layout.height*.32f)/Math.max(1,Math.abs(ey)));
+            sx=cx+ex*fraction;sy=cy+ey*fraction;
+        }
+        VisualStyle.panel(canvas,sx-51,sy+28,102,23,0xee101c30);
+        Lettering.center(canvas,"NEXT BARGE",sx,sy+33,10,VisualStyle.GOLD);
     }
     private static void gateFeedback(Game g,Painter p) {
         Tutorial t=g.tutorial;
