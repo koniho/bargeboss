@@ -24,6 +24,7 @@ public final class Game {
     public final Body[] cargo=new Body[9];
     public Body tug;
     public WaterSurface water=new WaterSurface();
+    public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public Bridge bridge=new Bridge();
     public Body trafficBoat;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
@@ -227,7 +228,7 @@ public final class Game {
         earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         bridge=new Bridge();
-        water=new WaterSurface(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
+        water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
@@ -500,6 +501,7 @@ public final class Game {
                 visualAccumulator+=Math.min(.25,seconds);
                 while(visualAccumulator+1e-10>=1.0/60.0) {
                     visualAccumulator-=1.0/60.0; visualTicks++;
+                    if(mode==TITLE)titleSmoke.titleStep(this);else smoke.drift();
                 }
             } else visualAccumulator=0;
             return;
@@ -513,6 +515,7 @@ public final class Game {
         if(mode!=PLAY) return;
         visualTicks++;
         if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
+            smoke.step(this);
             if(celebrationTicks>0) celebrationTicks--;
             if(impactTicks>0) impactTicks--;
             return;
@@ -536,6 +539,7 @@ public final class Game {
             feeder.boat.engineLoad+=(load-feeder.boat.engineLoad)*.08f;
         }
         water.step(this);
+        smoke.step(this);
         tow.tick(this);
         updateRope();
         for(int i=0;i<cargo.length;i++) {

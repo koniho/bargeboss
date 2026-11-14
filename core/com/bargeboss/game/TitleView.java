@@ -77,14 +77,10 @@ public final class TitleView {
         Painter p=new RiverPainter(canvas,c);
         Body tug=new Body(0,-1,300,230,(float)Math.PI/2);
         Body barge=new Body(1,1,300,300,(float)Math.PI/2);
-        float pressure=.5f+.5f*sine(tick*.065);
-        tug.y=barge.y-(tug.half+tug.radius+barge.half+barge.radius)+.8f+pressure;
-        tug.angle+=sine(tick*.018)*.012f;barge.angle+=sine(tick*.018-.4)*.008f;
-        tug.heave=sine(tick*.048)*1.6f+sine(tick*.031)*.4f;
+        tugPose(tug,tick);
+        barge.angle+=sine(tick*.018-.4)*.008f;
         barge.heave=sine(tick*.048-.7)*1.2f+sine(tick*.031-.5)*.3f;
-        tug.floatingInitialized=barge.floatingInitialized=true;
-        tug.vy=barge.vy=48;tug.engineLoad=.75f+pressure*.2f;
-        tug.wakeKickTicks=(int)(18*Math.max(0,sine(tick*.048+Math.PI/2)));
+        barge.floatingInitialized=true;barge.vy=48;
         barge.wakeKickTicks=(int)(16*Math.max(0,sine(tick*.048-.7+Math.PI/2)));
         Painter water=new RiverPainter(TitleWaterView.below(canvas,horizon(g)),c);
         TitleWaterView.water(water,barge,tick,false);TitleWaterView.water(water,tug,tick,true);
@@ -95,5 +91,16 @@ public final class TitleView {
         TitleWaterView.contact(p,barge,tick);
         VesselView.draw(g,p,tug,true,false);
         TitleWaterView.push(p,barge,tick);
+        g.titleSmoke.draw(canvas,c,g.layout.width,g.layout.height);
     }
+    /** Shared pose for the title renderer and fixed-step exhaust emitter. */
+    static void tugPose(Body tug,int tick) {
+        float pressure=.5f+.5f*sine(tick*.065);
+        tug.x=300;tug.y=300-(tug.half+tug.radius+21.25f+17.5f)+.8f+pressure;
+        tug.angle=(float)Math.PI/2+sine(tick*.018)*.012f;
+        tug.heave=sine(tick*.048)*1.6f+sine(tick*.031)*.4f;
+        tug.floatingInitialized=true;tug.vy=48;tug.engineLoad=.75f+pressure*.2f;
+        tug.wakeKickTicks=(int)(18*Math.max(0,sine(tick*.048+Math.PI/2)));
+    }
+
 }

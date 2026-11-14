@@ -18,6 +18,7 @@ public final class Renderer {
             SceneryView.piers(g,p);
             SceneryView.bridge(g,p);
         }
+        g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
         HarborView.objective(g,p);

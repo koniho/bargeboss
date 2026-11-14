@@ -9,6 +9,7 @@ public final class Body {
     public int mooringTicks;
     public float mooringX,mooringY,mooringAngle;
     public float engineLoad;
+    float smokeCredit;
     public float heave,heaveVelocity;
     public int wakeKickTicks,wakeCooldown,wakeTrailTicks;
     public boolean floatingInitialized;

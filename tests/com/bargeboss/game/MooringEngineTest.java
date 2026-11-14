@@ -37,18 +37,10 @@ public final class MooringEngineTest {
         float load=g.tug.engineLoad;int frame=Parity.frame(g);g.background();g.advance(.25);
         check(g.tug.engineLoad==load,"pause freezes engine effort");
         g.pause();frame=Parity.frame(g);check(Parity.frame(g)==frame && g.tug.engineLoad==load,"smoke rendering cannot change engine state");
-        g=new Game();g.challengeId=2;g.reset();SmokeCounter idle=new SmokeCounter(),loaded=new SmokeCounter();
-        VesselView.draw(g,idle,g.tug,true);g.tug.engineLoad=1;VesselView.draw(g,loaded,g.tug,true);
-        check(loaded.puffs>idle.puffs*2,"higher engine loading visibly increases smoke quantity");
+        g=new Game();g.reset();VesselSmoke idle=new VesselSmoke(),loaded=new VesselSmoke();
+        Body idleBoat=new Body(0,-1,300,500,0),loadedBoat=new Body(0,-1,300,500,0);loadedBoat.engineLoad=1;
+        for(int i=0;i<120;i++){idle.emit(g,idleBoat);loaded.emit(g,loadedBoat);}
+        check(loaded.count()>idle.count()*2,"higher engine loading increases emitted smoke quantity");
         System.out.println(checks+" automatic docking, unload ordering and engine smoke assertions passed");
-    }
-    private static final class SmokeCounter implements Painter {
-        int puffs;
-        public void circle(float x,float y,float r,int color) { puffs++; }
-        public void rect(float x,float y,float w,float h,int color) {}
-        public void line(float x,float y,float xx,float yy,float width,int color) {}
-        public void poly(float[] points,int color) {}
-        public void sprite(int atlas,int frame,float x,float y,float w,float h,float angle,float alpha) {}
-        public void spriteBlend(int atlas,int a,int b,float x,float y,float w,float h,float angle,float blend,float alpha) {}
     }
 }
