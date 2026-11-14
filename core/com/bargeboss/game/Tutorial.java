@@ -26,8 +26,9 @@ public final class Tutorial {
             startX=g.cargo[0].x;startY=g.cargo[0].y;
             return;
         }
-        if(lesson==TIE) park(g.cargo[0]);
-        startX=g.tug.x; startY=g.tug.y;
+        if(lesson==TIE || lesson==HOLD) park(g.cargo[0]);
+        startX=lesson==HOLD?g.cargo[0].x:g.tug.x;
+        startY=lesson==HOLD?g.cargo[0].y:g.tug.y;
     }
     private static void park(Body b) {
         b.vx=b.vy=b.spin=0;b.awaitingPickup=true;
@@ -38,7 +39,9 @@ public final class Tutorial {
             lesson=STOP; g.haptic(Game.HAPTIC_TICK);
         } else if(lesson==STOP && g.braking && !g.navigating && g.tug.speed()<10) {
             lesson=HOLD; setup(g); g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==HOLD && g.pushing && g.control==Game.PUSHING) {
+        } else if(lesson==HOLD && g.pushing && g.heldCargo()==g.cargo[0]
+                && Physics.touching(g.tug,g.cargo[0],5)
+                && Physics.length(g.cargo[0].x-startX,g.cargo[0].y-startY)>3) {
             lesson=STEER; startX=g.cargo[0].x; startY=g.cargo[0].y; g.haptic(Game.HAPTIC_TICK);
         } else if(lesson==STEER) {
             Body b=g.cargo[0];
@@ -64,7 +67,7 @@ public final class Tutorial {
         switch(lesson) {
             case MOVE: return "PRESS THE TUG, THEN DRAG LEFT.";
             case STOP: return "LIFT YOUR FINGER. TAP BRAKE.";
-            case HOLD: return "PRESS THE BARGE AND KEEP HOLDING.";
+            case HOLD: return "HOLD THE CARGO INSIDE THE GOLD RING.";
             case STEER: return "KEEP HOLDING. DRAG DOWN AND LEFT.";
             case DOCK: return "LIFT, THEN HOLD THE BARGE AGAIN.";
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";

@@ -24,8 +24,9 @@ public final class TutorialView {
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
         Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
         Lettering.draw(coach,t.title(),54,137,19,PAPER);
-        Lettering.draw(coach,t.firstLine(),54,168,12,PAPER);
-        Lettering.draw(coach,t.secondLine(),54,187,11,MUTED);
+        boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug();
+        Lettering.draw(coach,wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine(),54,168,12,PAPER);
+        Lettering.draw(coach,wrongTug?"HOLD THE CARGO INSIDE THE GOLD RING.":t.secondLine(),54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
             coach.rect(54+i*44,210,36,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
             if(i==t.lesson) coach.rect(54+i*44+(g.visualTicks%60)/60f*29,208,7,2,PAPER);
@@ -63,8 +64,12 @@ public final class TutorialView {
                     ControlView.ring(river,Game.TIE_X[b.berth],b.y,20+pulse,1,PAPER,2);
                 }
             } else {
-                RiverPainter.center(river,"HOLD HERE",b.x+55,b.y,11,VisualStyle.GOLD);
-                p.circle(g.layout.camera.screenX(b.x+43,b.y),g.layout.camera.screenY(b.x+43,b.y),2+pulse*.3f,VisualStyle.GOLD);
+                // Put the instruction on the cargo's actual touch target. The old
+                // offset sat over the tug and taught players to press the wrong boat.
+                RiverCamera c=g.layout.camera;
+                float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
+                VisualStyle.panel(p,x-43,y-12,86,24,0xee101c30);
+                Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
     }

@@ -57,6 +57,8 @@ public final class HarborView {
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
+        // The early lessons teach a touch target, before the berth destination.
+        if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DOCK) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
         boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) ready|=g.canTie(b);
         if(ready) return;
