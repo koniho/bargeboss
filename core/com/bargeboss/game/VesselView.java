@@ -11,6 +11,7 @@ public final class VesselView {
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         if(wake) ArcadeView.wake(g,p,b,tick);
+        if(tug) VesselLighting.reflection(g,p,b);
         if(river) LightingView.hull(p,b);
         float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
@@ -24,6 +25,7 @@ public final class VesselView {
         }
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
         if(tug) {
+            VesselLighting.tug(g,p,b,bob);
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
             exhaust(p,b,tick,b.engineLoad,bob);
@@ -36,6 +38,8 @@ public final class VesselView {
                 p.rect(b.x+c*xx-s*yy,b.y+s*xx+c*yy,2+3*t,1.5f,0xaae5ffff);
             }
         } else {
+            // Coaming fittings sit behind cargo; the painted loads occlude them.
+            VesselLighting.barge(g,p,b,bob);
             int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
             int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
             // Coal is registered to this hull and masked behind its coaming.

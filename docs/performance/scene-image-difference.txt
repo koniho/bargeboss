@@ -1,0 +1,9 @@
+960 canal-entry: changed=19.88% largeRGBChange=0.03% meanChannelError=0.335/255; tick=0 visualTick=0 tug=-1180.000,500.000
+960 canal-middle: changed=12.63% largeRGBChange=0.00% meanChannelError=0.201/255; tick=797 visualTick=797 tug=-730.000,435.204
+960 harbor-close: changed=0.00% largeRGBChange=0.00% meanChannelError=0.000/255; tick=2517 visualTick=2517 tug=284.689,667.337
+1333 canal-entry: changed=23.67% largeRGBChange=0.08% meanChannelError=0.450/255; tick=0 visualTick=0 tug=-1180.000,500.000
+1333 canal-middle: changed=16.86% largeRGBChange=0.00% meanChannelError=0.272/255; tick=797 visualTick=797 tug=-730.000,435.205
+1333 harbor-close: changed=0.00% largeRGBChange=0.00% meanChannelError=0.000/255; tick=2517 visualTick=2517 tug=284.630,667.324
+1920 canal-entry: changed=26.22% largeRGBChange=0.05% meanChannelError=0.491/255; tick=0 visualTick=0 tug=-1180.000,500.000
+1920 canal-middle: changed=20.00% largeRGBChange=0.00% meanChannelError=0.339/255; tick=797 visualTick=797 tug=-730.000,435.205
+1920 harbor-close: changed=0.00% largeRGBChange=0.00% meanChannelError=0.000/255; tick=2517 visualTick=2517 tug=284.689,667.336

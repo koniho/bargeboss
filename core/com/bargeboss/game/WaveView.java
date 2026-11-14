@@ -47,7 +47,7 @@ public final class WaveView {
                 float xx=x+(along-bend)*RiverCamera.Q,yy=y+(along+bend)*RiverCamera.Q;
                 if(part>0) {
                     p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,0x16102028);
-                    int alpha=(int)((16+fade*93)*(float)StrictMath.sin((t-.1f)*StrictMath.PI));
+                    int alpha=(int)((12+fade*68)*(float)StrictMath.sin((t-.1f)*StrictMath.PI));
                     if(part!=2 || noise(seed+29)>.35f) p.line(lastX,lastY,xx,yy,.9f+fade*.5f,(alpha<<24)|0x83b3b4);
                 }
                 lastX=xx;lastY=yy;

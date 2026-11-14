@@ -1,12 +1,18 @@
 #import "BBPainter.h"
 #import "IOSPrimitiveArray.h"
 #import "com/bargeboss/game/SpriteAtlas.h"
+#import "com/bargeboss/game/SpriteGrade.h"
 #import <math.h>
+
+static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
+    (void)data;(void)bytes;(void)CFBridgingRelease(owner);
+}
 
 @interface BBNativePainter ()
 @property(nonatomic,strong) NSMutableDictionary<NSNumber *,NSArray<UIImage *> *> *spriteAtlases;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *spriteSources;
 - (NSArray<UIImage *> *)atlas:(jint)atlas;
+- (UIImage *)gradedImage:(UIImage *)image atlas:(jint)atlas;
 @end
 
 @implementation BBNativePainter
@@ -17,6 +23,28 @@
     }
     return self;
 }
+- (UIImage *)gradedImage:(UIImage *)image atlas:(jint)atlas {
+    if(![BBSpriteGrade appliesWithInt:atlas]) return image;
+    size_t width=CGImageGetWidth(image.CGImage),height=CGImageGetHeight(image.CGImage),bytes=width*height*4;
+    if(bytes>INT32_MAX) [NSException raise:@"SpriteGradeSize" format:@"Scenery image is too large"];
+    IOSByteArray *pixels=[IOSByteArray arrayWithLength:(jint)bytes];
+    CGColorSpaceRef space=CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    CGBitmapInfo format=kCGBitmapByteOrder32Big|kCGImageAlphaPremultipliedLast;
+    CGContextRef decode=CGBitmapContextCreate(pixels->buffer_,width,height,8,width*4,space,format);
+    if(!decode) {CGColorSpaceRelease(space);[NSException raise:@"SpriteGradeDecode" format:@"Cannot decode scenery RGBA buffer"];}
+    CGContextSetBlendMode(decode,kCGBlendModeCopy);CGContextDrawImage(decode,CGRectMake(0,0,width,height),image.CGImage);
+    CGContextRelease(decode);
+    [BBSpriteGrade applyPremultipliedRgbaWithInt:atlas withByteArray:pixels];
+    // Retain this one graded buffer for CGImage; do not copy a second full-size raster.
+    void *owner=(__bridge_retained void *)pixels;
+    CGDataProviderRef provider=CGDataProviderCreateWithData(owner,pixels->buffer_,bytes,BBReleaseGradePixels);
+    if(!provider) {BBReleaseGradePixels(owner,NULL,0);CGColorSpaceRelease(space);[NSException raise:@"SpriteGradeDecode" format:@"Cannot retain scenery pixels"];}
+    CGImageRef result=CGImageCreate(width,height,8,32,width*4,space,format,provider,NULL,false,kCGRenderingIntentDefault);
+    UIImage *graded=result?[UIImage imageWithCGImage:result scale:1 orientation:UIImageOrientationUp]:nil;
+    if(result) CGImageRelease(result);CGDataProviderRelease(provider);CGColorSpaceRelease(space);
+    if(!graded) [NSException raise:@"SpriteGradeDecode" format:@"Cannot create graded scenery image"];
+    return graded;
+}
 - (NSArray<UIImage *> *)atlas:(jint)atlas {
     NSArray<UIImage *> *cached=self.spriteAtlases[@(atlas)]; if(cached) return cached;
     int count=[BBSpriteAtlas countWithInt:atlas];
@@ -24,12 +52,15 @@
     NSMutableDictionary<NSString *,UIImage *> *sources=self.spriteSources;
     for(int f=0;f<count;f++) {
         NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:f];
-        UIImage *image=sources[file];
+        NSString *key=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file];
+        UIImage *image=sources[key];
         if(!image) {
-            NSString *path=[NSBundle.mainBundle pathForResource:file ofType:nil inDirectory:@"assets/sprites"];
-            image=path?[UIImage imageWithContentsOfFile:path]:nil;
-            if(!image.CGImage) [NSException raise:@"MissingSpriteAtlas" format:@"Missing or unreadable sprite atlas: assets/sprites/%@",file];
-            sources[file]=image;
+            @autoreleasepool {
+                NSString *path=[NSBundle.mainBundle pathForResource:file ofType:nil inDirectory:@"assets/sprites"];
+                image=path?[UIImage imageWithContentsOfFile:path]:nil;
+                if(!image.CGImage) [NSException raise:@"MissingSpriteAtlas" format:@"Missing or unreadable sprite atlas: assets/sprites/%@",file];
+                image=[self gradedImage:image atlas:atlas];sources[key]=image;
+            }
         }
         float width=(float)CGImageGetWidth(image.CGImage),height=(float)CGImageGetHeight(image.CGImage);
         int sourceFrame=[BBSpriteAtlas sourceFrameWithInt:atlas withInt:f];

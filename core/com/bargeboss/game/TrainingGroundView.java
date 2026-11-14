@@ -15,12 +15,31 @@ public final class TrainingGroundView {
         int firstX=(int)StrictMath.floor(minX/64)-1,lastX=(int)StrictMath.ceil(maxX/64)+1;
         int firstY=(int)StrictMath.floor(minY/64)-1,lastY=(int)StrictMath.ceil(maxY/64)+1;
         for(int row=firstY;row<lastY;row++) for(int col=firstX;col<lastX;col++) {
+            if(!tileVisible(g,col,row,true)) continue;
             float x=col*64,y=row*64;
             if(!intersectsWater(x,y,64,64)) {
                 raised.rect(x,y,64,64,GroundArt.BASE);
                 GroundArt.tile(g,canvas,x+32,y+32);
             } else landPiece(raised,x,y,64,64,0);
         }
+    }
+    /** The inverse-view rectangle also contains large offscreen corners. Reject them
+     * before water tests or painter calls, retaining the complete source-image bounds. */
+    static boolean tileVisible(Game g,int col,int row,boolean texture) {
+        RiverCamera c=g.layout.camera;
+        float sx=c.screenX(col*64+32,row*64+32),sy=c.screenY(col*64+32,row*64+32)-GroundArt.LAND_RISE*c.scale;
+        float left,right,top,bottom;
+        if(texture) {
+            float size=GroundArt.SIZE*c.scale;
+            left=sx-size*GroundArt.PIVOT_X;right=sx+size*(1-GroundArt.PIVOT_X);
+            top=sy-size*GroundArt.PIVOT_Y;bottom=sy+size*(1-GroundArt.PIVOT_Y);
+        } else {
+            float rx=64*RiverCamera.Q*c.scale,ry=rx*RiverCamera.DEPTH;
+            left=sx-rx;right=sx+rx;top=sy-ry;bottom=sy+ry;
+        }
+        // Include curb stroke width and raster antialiasing at the viewport edge.
+        float margin=2*c.scale+2;
+        return right>=-margin && left<=g.layout.width+margin && bottom>=-margin && top<=g.layout.height+margin;
     }
     static boolean intersectsWater(float x,float y,float width,float height) {
         for(float[] r:TrainingChannel.WATER_RECTANGLES)
@@ -74,6 +93,7 @@ public final class TrainingGroundView {
         float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);if(length<.01f) return;
         dx/=length;dy/=length;float nx=-dy,ny=dx;
         boolean visible=-nx+ny>0;
+        if(!capOnly && !visible) return;
         float rise=GroundArt.LAND_RISE*c.scale;
         for(float at=0;at<length;at+=24) {
             float end=Math.min(length,at+24),ax=x+dx*at,ay=y+dy*at,bx=x+dx*end,by=y+dy*end;
@@ -83,32 +103,32 @@ public final class TrainingGroundView {
                     Math.abs(ex-sx)+10*c.scale,Math.abs(ey-sy)+rise+10*c.scale);
             Painter p=new OpacityPainter(canvas,alpha);
             if(visible && !capOnly) {
-                p.poly(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},dx>0?0xff394447:0xff4a5050);
+                p.poly(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},dx>0?0xff202d38:0xff2c3942);
                 // Steel sheets have real folded faces: raised ribs and recessed channels,
                 // rather than a repeated flat stroke masquerading as a tall wall.
                 for(float d=at;d<end;d+=6) {
                     float a=d,b=Math.min(d+1.5f,end),cc=Math.min(d+4.5f,end),dd=Math.min(d+6,end);
-                    sheetFace(g,p,x+dx*a,y+dy*a,x+dx*b+nx*1.3f,y+dy*b+ny*1.3f,0xff69706a);
-                    sheetFace(g,p,x+dx*b+nx*1.3f,y+dy*b+ny*1.3f,x+dx*cc+nx*1.3f,y+dy*cc+ny*1.3f,dx>0?0xff485354:0xff566062);
-                    sheetFace(g,p,x+dx*cc+nx*1.3f,y+dy*cc+ny*1.3f,x+dx*dd,y+dy*dd,0xff283638);
+                    sheetFace(g,p,x+dx*a,y+dy*a,x+dx*b+nx*1.3f,y+dy*b+ny*1.3f,0xff43535b);
+                    sheetFace(g,p,x+dx*b+nx*1.3f,y+dy*b+ny*1.3f,x+dx*cc+nx*1.3f,y+dy*cc+ny*1.3f,dx>0?0xff293a45:0xff364750);
+                    sheetFace(g,p,x+dx*cc+nx*1.3f,y+dy*cc+ny*1.3f,x+dx*dd,y+dy*dd,0xff14232e);
                     int hash=(seed*73+(int)d*19)&255;
                     if(hash<115) {
                         float wx=x+dx*(a+1.8f)+nx*1.3f,wy=y+dy*(a+1.8f)+ny*1.3f;
                         float rx=c.screenX(wx,wy),ry=c.screenY(wx,wy);
-                        p.line(rx,ry-rise+2*c.scale,rx,ry-(3+hash%8)*c.scale,.85f*c.scale,0x887f533c);
+                        p.line(rx,ry-rise+2*c.scale,rx,ry-(3+hash%8)*c.scale,.85f*c.scale,0x88634431);
                     }
                 }
-                p.line(sx,sy-1.5f*c.scale,ex,ey-1.5f*c.scale,3*c.scale,0xff162f35);
-                p.line(sx,sy-rise*.55f,ex,ey-rise*.55f,1.2f*c.scale,0xff263737);
+                p.line(sx,sy-1.5f*c.scale,ex,ey-1.5f*c.scale,3*c.scale,0xff081722);
+                p.line(sx,sy-rise*.55f,ex,ey-rise*.55f,1.2f*c.scale,0xff172a35);
             }
             if(capOnly) {
                 Painter top=new RiverPainter(GroundArt.raisedCanvas(g,p),c);
-                top.poly(new float[]{ax-nx*4,ay-ny*4,bx-nx*4,by-ny*4,bx+nx*.8f,by+ny*.8f,ax+nx*.8f,ay+ny*.8f},0xff777b71);
-                top.line(ax-nx*3,ay-ny*3,bx-nx*3,by-ny*3,.85f,0xffa5a18a);
-                top.line(ax+nx*.8f,ay+ny*.8f,bx+nx*.8f,by+ny*.8f,1,0xff273739);
+                top.poly(new float[]{ax-nx*4,ay-ny*4,bx-nx*4,by-ny*4,bx+nx*.8f,by+ny*.8f,ax+nx*.8f,ay+ny*.8f},0xff43525a);
+                top.line(ax-nx*3,ay-ny*3,bx-nx*3,by-ny*3,.85f,0xff738087);
+                top.line(ax+nx*.8f,ay+ny*.8f,bx+nx*.8f,by+ny*.8f,1,0xff172731);
                 if(((int)at/24)%2==0) {
                     float mx=ax+dx*5-nx*2,my=ay+dy*5-ny*2;
-                    top.circle(mx,my,1.2f,0xff303d3c);
+                    top.circle(mx,my,1.2f,0xff1c2c34);
                 }
             }
         }

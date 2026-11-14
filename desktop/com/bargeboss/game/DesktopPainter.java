@@ -34,13 +34,22 @@ public final class DesktopPainter implements Painter {
         frames=new BufferedImage[SpriteAtlas.count(id)];
         for(int f=0;f<frames.length;f++) {
             String path="assets/sprites/"+SpriteAtlas.file(id,f);
-            BufferedImage image=sources.get(path);
+            String key=SpriteGrade.cacheKey(id,path);
+            BufferedImage image=sources.get(key);
             if(image==null) {
                 try(InputStream input=DesktopPainter.class.getResourceAsStream("/"+path)) {
                     image=input==null?ImageIO.read(new File(path)):ImageIO.read(input);
                 } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas: "+path,e); }
                 if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
-                sources.put(path,image);
+                if(SpriteGrade.applies(id)) {
+                    int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
+                    BufferedImage graded=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+                    for(int y=0;y<h;y++) {
+                        image.getRGB(0,y,w,1,row,0,w);SpriteGrade.applyArgb(id,row);graded.setRGB(0,y,w,1,row,0,w);
+                    }
+                    image=graded;
+                }
+                sources.put(key,image);
             }
             int x=Math.round(image.getWidth()*SpriteAtlas.sourceLeft(id,f)),y=Math.round(image.getHeight()*SpriteAtlas.sourceTop(id,f));
             int right=Math.round(image.getWidth()*SpriteAtlas.sourceRight(id,f)),bottom=Math.round(image.getHeight()*SpriteAtlas.sourceBottom(id,f));

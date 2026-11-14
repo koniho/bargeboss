@@ -31,18 +31,30 @@ public final class FactoryArt {
         // The shared fading envelope includes both solid art and its animated plume.
         for(int k=0;k<smokeCount(i);k++) {
             float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
-            minX=Math.min(minX,sx-65*c.scale);minY=Math.min(minY,sy-117*c.scale);
-            maxX=Math.max(maxX,sx+28*c.scale);
+            float r=FactoryArtData.SMOKE[i][k*3+2]*c.scale*5.94f;
+            minX=Math.min(minX,sx-48*c.scale-r*1.3f);minY=Math.min(minY,sy-91*c.scale-r*1.25f);
+            maxX=Math.max(maxX,sx+6*c.scale+r*1.2f);maxY=Math.max(maxY,sy+r*1.1f);
         }
         if(maxX<0 || minX>g.layout.width || maxY<0 || minY>g.layout.height) return;
         float alpha=SceneryView.opacity(g,minX,minY,maxX-minX,maxY-minY);
         p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
         float phase=i*1.71f+wx*.011f+wy*.007f;
-        for(int k=0;k<lightCount(i);k++)
-            SceneryEffects.glow(p,left+lightX(i,k)*size,top+lightY(i,k)*size,
-                    FactoryArtData.LIGHTS[i][k*3+2]*c.scale,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
-        for(int k=0;k<smokeCount(i);k++)
-            SceneryEffects.smoke(p,left+smokeX(i,k)*size,top+smokeY(i,k)*size,
-                    FactoryArtData.SMOKE[i][k*3+2]*c.scale,c.scale,alpha,g.visualTicks,phase+k*2.23f);
+        // A source can be visible while its rooftop emitters are completely offscreen.
+        // Cull each emitter separately and use fewer layers for the wider travel view.
+        boolean compact=c.zoom<1.35f;
+        for(int k=0;k<lightCount(i);k++) {
+            float sx=left+lightX(i,k)*size,sy=top+lightY(i,k)*size;
+            float radius=FactoryArtData.LIGHTS[i][k*3+2]*c.scale;
+            if(sx+radius*5.5f<0 || sx-radius*5.5f>g.layout.width || sy+radius*5.5f<0 || sy-radius*5.5f>g.layout.height)continue;
+            if(compact)SceneryEffects.compactGlow(p,sx,sy,radius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
+            else SceneryEffects.glow(p,sx,sy,radius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
+        }
+        for(int k=0;k<smokeCount(i);k++) {
+            float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
+            float radius=FactoryArtData.SMOKE[i][k*3+2]*c.scale,r=radius*5.94f;
+            if(sx+6*c.scale+r*1.2f< -1 || sx-48*c.scale-r*1.3f>g.layout.width+1
+                    || sy+r*1.1f< -1 || sy-91*c.scale-r*1.25f>g.layout.height+1)continue;
+            SceneryEffects.smoke(p,sx,sy,radius,c.scale,alpha,g.visualTicks,phase+k*2.23f,compact);
+        }
     }
 }

@@ -153,6 +153,25 @@ independent frames or animation states. Drawing replay parity includes both
 frames, source files/cells, pivots, X/Y calibration, grid dimensions and blend weight; pixel raster output remains a
 native validation boundary.
 
+`SpriteGrade` defines one deterministic integer color transform for industrial
+scenery. Android, Java2D and iOS apply it only when decoding a source image into
+the cache. Neutral scenery keeps roughly half its original brightness with a
+cool cast; bright warm window pixels retain their source color. Watercraft,
+cargo, title vessels, water, sky and UI are excluded. Alpha is unchanged, so
+darkening does not make opaque buildings translucent. Source PNGs remain
+unchanged. Cache keys distinguish graded and original uses of the same file.
+
+Android grades its mutable decoded bitmap using one row buffer. Java2D uses a
+row buffer and caches only the resulting ARGB image. iOS decodes into explicit
+premultiplied RGBA, uses the shared conversion/grading methods, and retains that
+one buffer as the cached CGImage's data provider; each source has a temporary
+autorelease pool. This adds one-time cold-decode CPU work, with no per-frame
+pixel filtering or additional draw commands. Native decoding/premultiplication
+may round antialiased edge channels differently; identical shared arithmetic
+does not prove pixel-identical native rasterization. `SpriteGradeTest` verifies
+alpha, bright-vessel exclusions, warm windows and premultiplied conversion, and
+the JVM/J2ObjC parity signature includes representative grading outputs.
+
 `VisualStyle` sets the palette; `VesselView`, `HarborView`, `DockView`,
 `MooringView`, `ArcadeView` and `ScreenView` compose artwork, procedural scenery,
 lettering and effects. Directional sprites preserve raised cabins/decks and
@@ -164,6 +183,23 @@ shoreline, and world labels stay upright.
 Title/results animation never advances gameplay timers, bodies or scores.
 Pause/help freeze both clocks. Rendering only reads clocks and phase state;
 there is no host-specific timing, randomness or state mutation in drawing.
+
+`FrameGate` shares redraw eligibility across Android, iOS and desktop. Hosts
+still call `Game.advance`, poll haptics and save progress on every timing
+callback. They request an animation redraw only when the active game's fixed
+simulation/visual clocks, mode, layout, identity or visible settings change.
+At 120/144 Hz callback rates this avoids submitting the same 60 Hz visual state
+twice; paused/help screens remain idle. Pointer events, cancellation, resize,
+back/pause, focus and lifecycle changes mark the gate dirty and immediately
+request drawing. A dirty request is consumed only after an actual completed
+draw, so native event coalescing cannot discard a pending input update. Native
+exposure paints are still allowed even when the shared state is unchanged.
+
+`FrameGateTest` checks 60/120/144 Hz cadence, unchanged simulation, paused idle,
+input dirtiness, practice enter/exit, lifecycle and independent haptic delivery.
+These shared tests and JVM compilation do not validate Android frame scheduling
+or iOS UIKit drawing on a device. Native build/device checks remain required;
+the generated `BBFrameGate` selectors are compiled by the iOS CI build.
 
 | Phase | Boat/cargo | Harbor, crew and feedback |
 | --- | --- | --- |
@@ -397,3 +433,29 @@ fade use the same transforms as the steelwork. Future booms and other rotating
 shore equipment should use this contract; fixed-view raster scenery cannot be
 rotated into a new perspective. Existing unloading machinery is not converted
 by the bridge change.
+
+## Dense-scene drawing cost
+
+`ViewportPainter` rejects fully offscreen or transparent primitives before they
+cross the host drawing boundary. Intersecting primitives are passed through
+unchanged, including registered sprite pivots, rotations, blends and a conservative
+antialias margin. Hosts still clip to the real viewport. `ViewportPixelTest`
+compares raw and culled desktop pixels, including edge strokes and rotated sprites.
+
+Tutorial terrain tests projected tile bounds before submitting textures and
+geometry; permanent road eligibility and connections are computed once. The wall
+pass skips back faces that have no visible geometry. These terrain changes are
+pixel-identical in nine captured scene/viewport combinations.
+
+Factory light and smoke emitters have individual conservative visibility bounds.
+Below 1.35× zoom, small factory lights use four glow layers and exhaust retains
+all eighteen primary puffs with fewer secondary lobes. Close views retain the full
+factory effect detail. Vessel exhaust, wakes, water and game feedback use their
+existing animation paths. Production sprite pixels/resolution and placements are
+unchanged. Authored font rows are decoded once rather than allocating substrings
+and parsing hexadecimal values for every letter on every frame.
+
+`RenderBudgetTest` caps drawing commands for real tutorial states at three widths,
+with minimum factory/effect counts to prevent satisfying a budget by hiding the
+scene. `ScenePerformanceBenchmark` separates shared command generation from
+Java2D raster cost; these timings are not Android or iOS frame-rate claims.

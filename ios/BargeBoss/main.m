@@ -2,12 +2,14 @@
 #import <QuartzCore/QuartzCore.h>
 #import "BBPainter.h"
 #import "com/bargeboss/game/Game.h"
+#import "com/bargeboss/game/FrameGate.h"
 #import "com/bargeboss/game/Viewport.h"
 #import "IOSClass.h"
 #import "NSString+JavaString.h"
 
 @interface BBGameView : UIView
 @property(nonatomic,strong) BBGame *game;
+@property(nonatomic,strong) BBFrameGate *frames;
 @property(nonatomic,strong) BBViewport *viewport;
 @property(nonatomic,strong) BBNativePainter *painter;
 @property(nonatomic,strong) CADisplayLink *displayLink;
@@ -25,6 +27,7 @@
 - (void)suspend;
 - (void)resume;
 - (void)saveProgress:(BOOL)flush;
+- (void)requestRedraw;
 @end
 
 @implementation BBGameView
@@ -34,7 +37,7 @@
         self.multipleTouchEnabled=YES;
         self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
         self.accessibilityLabel=@"Barge Boss river game";
-        self.game=[[BBGame alloc] init]; self.painter=[[BBNativePainter alloc] init];
+        self.game=[[BBGame alloc] init]; self.frames=[[BBFrameGate alloc] init]; self.painter=[[BBNativePainter alloc] init];
         @try {
             NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;
             // CI isolation only; normal launches never remove saved progress.
@@ -67,6 +70,7 @@
                                         withFloat:(jfloat)(self.bounds.size.height-insets.top-insets.bottom)];
     [self.game configureCanvasWithFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
     [self.game cancelInputs]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects];
+    [self requestRedraw];
 }
 - (void)frame:(CADisplayLink *)link {
     if(self.lastTime>0) [self.game advanceWithDouble:link.timestamp-self.lastTime];
@@ -77,8 +81,10 @@
         case 4: [self.delivery notificationOccurred:UINotificationFeedbackTypeSuccess]; break;
         default: break;
     }
-    [self saveProgress:NO]; self.lastTime=link.timestamp; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self setNeedsDisplay];
+    [self saveProgress:NO]; self.lastTime=link.timestamp;
+    if([self.frames needsFrameWithBBGame:self.game]) [self setNeedsDisplay];
 }
+- (void)requestRedraw { [self.frames markDirty]; [self setNeedsDisplay]; }
 - (void)saveProgress:(BOOL)flush {
     jint version=[self.game progressVersion];
     if(version==self.savedProgressVersion || (!flush && version==self.attemptedProgressVersion)) return;
@@ -90,8 +96,8 @@
         else NSLog(@"Could not save captain progress");
     } @catch(NSException *exception) { NSLog(@"Could not save captain progress: %@",exception); }
 }
-- (void)suspend { [self.game background]; [self saveProgress:YES]; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self setNeedsDisplay]; }
-- (void)resume { self.lastTime=0; self.displayLink.paused=NO; }
+- (void)suspend { [self.game background]; [self saveProgress:YES]; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self requestRedraw]; }
+- (void)resume { self.lastTime=0; self.displayLink.paused=NO; [self requestRedraw]; }
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;
     UIEdgeInsets insets=self.safeAreaInsets;
@@ -101,6 +107,8 @@
     CGContextClipToRect(ctx,CGRectMake(0,0,[self.viewport logicalWidth],[self.viewport logicalHeight])); self.painter.context=ctx;
     [self.game renderWithBBPainter:self.painter]; self.painter.context=NULL;
     CGContextRestoreGState(ctx);
+    self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status];
+    [self.frames renderedWithBBGame:self.game];
 }
 - (CGPoint)position:(UITouch *)touch {
     CGPoint point=[touch locationInView:self]; UIEdgeInsets insets=self.safeAreaInsets;
@@ -120,6 +128,7 @@
         CGPoint p=[self position:touch];
         [self.game pointerDownWithInt:identifier withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
     }
+    [self requestRedraw];
 }
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     for(UITouch *touch in touches) {
@@ -127,6 +136,7 @@
         CGPoint p=[self position:touch];
         [self.game pointerMoveWithInt:self.touchIDs[index].intValue withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
     }
+    [self requestRedraw];
 }
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     for(UITouch *touch in touches) {
@@ -135,6 +145,7 @@
         [self.game pointerUpWithInt:self.touchIDs[index].intValue withFloat:(jfloat)p.x withFloat:(jfloat)p.y];
         [self.touches removeObjectAtIndex:index]; [self.touchIDs removeObjectAtIndex:index];
     }
+    [self requestRedraw];
 }
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     for(UITouch *touch in touches) {
@@ -142,6 +153,7 @@
         [self.game pointerCancelWithInt:self.touchIDs[index].intValue];
         [self.touches removeObjectAtIndex:index]; [self.touchIDs removeObjectAtIndex:index];
     }
+    [self requestRedraw];
 }
 
 @end

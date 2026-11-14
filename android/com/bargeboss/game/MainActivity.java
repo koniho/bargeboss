@@ -30,7 +30,7 @@ public final class MainActivity extends Activity {
         fullscreen(); root.requestApplyInsets();
         if(android.os.Build.VERSION.SDK_INT>=33) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->gameView.game.pause());
+                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->gameView.togglePause());
         }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
@@ -38,6 +38,7 @@ public final class MainActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(hasFocus) fullscreen(); else if(gameView!=null) gameView.game.background();
+        if(gameView!=null) gameView.requestRedraw();
     }
     private void fullscreen() {
         if(android.os.Build.VERSION.SDK_INT>=30) {
@@ -53,10 +54,11 @@ public final class MainActivity extends Activity {
                     |View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
-    @Override public void onBackPressed() { gameView.game.pause(); }
+    @Override public void onBackPressed() { gameView.togglePause(); }
 
     private final class GameView extends View implements Choreographer.FrameCallback {
         private final Game game=new Game();
+        private final FrameGate frames=new FrameGate();
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
         private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
         private long last;
@@ -81,8 +83,10 @@ public final class MainActivity extends Activity {
                 else android.util.Log.w("BargeBoss","Could not save captain progress");
             } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not save captain progress",e); }
         }
-        void start() { if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { running=false; last=0; game.background(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); }
+        void requestRedraw() { frames.markDirty(); invalidate(); }
+        void togglePause() { game.pause(); requestRedraw(); }
+        void start() { requestRedraw(); if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
+        void stop() { running=false; last=0; game.background(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
             if(!running) return; if(last!=0) game.advance((now-last)/1e9); last=now;
             int event=game.pollHaptic();
@@ -92,15 +96,17 @@ public final class MainActivity extends Activity {
                 if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
                 performHapticFeedback(feedback);
             }
-            saveProgress(false); invalidate(); Choreographer.getInstance().postFrameCallback(this);
+            saveProgress(false); if(frames.needsFrame(game)) invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }
         protected void onSizeChanged(int w,int h,int oldW,int oldH) {
             viewport=new Viewport(w,h);
             game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight()); game.cancelInputs();
+            requestRedraw();
         }
         protected void onDraw(Canvas canvas) {
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,viewport.logicalWidth(),viewport.logicalHeight()); painter.bind(canvas); game.render(painter); canvas.restore();
+            frames.rendered(game);
         }
         public boolean onTouchEvent(MotionEvent event) {
             int action=event.getActionMasked(), index=event.getActionIndex();
@@ -112,6 +118,7 @@ public final class MainActivity extends Activity {
             } else if(action==MotionEvent.ACTION_UP || action==MotionEvent.ACTION_POINTER_UP) {
                 game.pointerUp(event.getPointerId(index),viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index))); performClick();
             } else if(action==MotionEvent.ACTION_CANCEL) game.cancelInputs();
+            requestRedraw();
             return true;
         }
         public boolean performClick() { super.performClick(); return true; }

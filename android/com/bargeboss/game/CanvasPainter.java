@@ -37,14 +37,23 @@ public final class CanvasPainter implements Painter {
             images=new Bitmap[count]; frames=new Rect[count];
             for(int f=0;f<count;f++) {
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
-                Bitmap image=sources.get(path);
+                String key=SpriteGrade.cacheKey(atlas,path);
+                Bitmap image=sources.get(key);
                 if(image==null) {
                     try(InputStream input=assets.open(path)) {
                         BitmapFactory.Options options=new BitmapFactory.Options(); options.inScaled=false;
+                        options.inPreferredConfig=Bitmap.Config.ARGB_8888;options.inMutable=SpriteGrade.applies(atlas);
                         image=BitmapFactory.decodeStream(input,null,options);
                     }
                     if(image==null) throw new IllegalStateException("Unreadable sprite atlas: "+path);
-                    sources.put(path,image);
+                    if(SpriteGrade.applies(atlas)) {
+                        int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
+                        for(int y=0;y<h;y++) {
+                            image.getPixels(row,0,w,0,y,w,1);SpriteGrade.applyArgb(atlas,row);
+                            image.setPixels(row,0,w,0,y,w,1);
+                        }
+                    }
+                    sources.put(key,image);
                 }
                 images[f]=image;
                 frames[f]=new Rect(Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,f)),

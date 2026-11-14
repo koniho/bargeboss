@@ -2,8 +2,8 @@ package com.bargeboss.game;
 
 /** Dusk palette and industrial water light. Pure shared rendering; no wave forces. */
 public final class HarborAtmosphere {
-    public static final int WATER_DEEP=0xff102c37,WATER_BASE=0xff173c45,WATER_GLINT=0xff75aaa9,
-            SHORE_DARK=0xff353d43,SHORE_LIT=0xff4c4d49,QUAY_EDGE=0xffb29b70;
+    public static final int WATER_DEEP=0xff040d16,WATER_BASE=0xff081c27,WATER_GLINT=0xff63999e,
+            SHORE_DARK=0xff141c27,SHORE_LIT=0xff242a30,QUAY_EDGE=0xff807354;
     private HarborAtmosphere() {}
     static float lampY(int index) { return 244+index*112; }
     static float lampBank(int side) { return side==0?Physics.RIGHT+9:Physics.LEFT-9; }
@@ -25,7 +25,7 @@ public final class HarborAtmosphere {
                 float distance=3+i*3.1f,x=bank+sign*distance;
                 float y=along-sign*distance+(float)StrictMath.sin(phase*.61f)*2.1f;
                 float span=(3.6f+i*.42f)*(0.5f+shimmer),half=span*.5f;
-                int alpha=(int)((side==0?175:88)*shimmer*(1-i/24f));
+                int alpha=(int)((side==0?215:145)*shimmer*(1-i/24f));
                 world.line(x-half,y-half,x,y-.45f,2.4f,(alpha/3<<24)|0xff7e30);
                 world.line(x,y-.45f,x+half,y+half,1.8f,(alpha<<24)|(i<5?0xffcf83:0xe6a35e));
                 if(i%4==0) world.line(x-half*1.7f,y-half*1.7f+1.5f,x+half*1.4f,y+half*1.4f+1.5f,

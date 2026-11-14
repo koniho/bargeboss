@@ -23,7 +23,7 @@ public final class SceneryEffects {
     /** Soft layered light, kept in the same source-cell coordinates as its fixture. */
     public static void glow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase) {
         if(opacity<=0 || radius<=0) return;
-        float energy=intensity(ticks,phase),breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
+        float energy=2.4f*intensity(ticks,phase),breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
         float driftX=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
         float driftY=radius*.12f*(float)StrictMath.sin(ticks*.013+phase*1.7);
         // Many weak layers give a smooth falloff without a large hard-edged disc.
@@ -38,8 +38,23 @@ public final class SceneryEffects {
         }
         p.circle(x,y,radius*.65f,tint(0xffe6ab,opacity*energy*19));
     }
+    /** Small distant fixtures need fewer overlapping layers than a close landmark. */
+    public static void compactGlow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase) {
+        if(opacity<=0 || radius<=0)return;
+        float energy=2.4f*intensity(ticks,phase),breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
+        float dx=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
+        float dy=radius*.12f*(float)StrictMath.sin(ticks*.013+phase*1.7);
+        // Group the original ten weak shells; total energy stays similar.
+        p.circle(x+dx*.9f,y+dy*.9f,radius*4.58f*breath,tint(color,opacity*energy*5.7f));
+        p.circle(x+dx*.6f,y+dy*.6f,radius*3.32f*breath,tint(color,opacity*energy*8.6f));
+        p.circle(x+dx*.25f,y+dy*.25f,radius*1.85f*breath,tint(color,opacity*energy*26));
+        p.circle(x,y,radius*.65f,tint(0xffe6ab,opacity*energy*19));
+    }
     /** Smoke leaves a declared open top rim; it never creates a new outlet in a painted prop. */
     public static void smoke(Painter p,float x,float y,float radius,float scale,float opacity,int ticks,float phase) {
+        smoke(p,x,y,radius,scale,opacity,ticks,phase,false);
+    }
+    public static void smoke(Painter p,float x,float y,float radius,float scale,float opacity,int ticks,float phase,boolean compact) {
         if(opacity<=0 || scale<=0 || radius<=0) return;
         float wind=1+.2f*(float)StrictMath.sin(ticks*.005+phase);
         for(int i=17;i>=0;i--) {
@@ -49,11 +64,13 @@ public final class SceneryEffects {
             float px=x-(age*35*wind+sway)*scale;
             float py=y-age*91*scale;
             float r=radius*(1+age*4.4f)*(1+.1f*(float)StrictMath.sin(age*12+phase+i));
-            float alpha=opacity*fade*54;
+            float alpha=opacity*fade*(compact?66:54);
             // Unequal lobes roll into one plume; older puffs soften and disperse.
             p.circle(px,py,r,tint(0x7b8589,alpha));
-            p.circle(px-r*.55f,py+r*.11f,r*.74f,tint(0x68767b,alpha*.7f));
-            p.circle(px+r*.44f,py-r*.25f,r*.68f,tint(0xb6aaa0,alpha*.48f));
+            // Keep the complete emission cadence even at wide zoom; dropping whole
+            // puffs makes a dotted chain. Reduce secondary lobes instead.
+            if(!compact || (i&1)==1)p.circle(px-r*.55f,py+r*.11f,r*.74f,tint(0x68767b,alpha*(compact?.9f:.7f)));
+            if(!compact)p.circle(px+r*.44f,py-r*.25f,r*.68f,tint(0xb6aaa0,alpha*.48f));
         }
         p.circle(x,y,radius*.8f,tint(0x7e8587,opacity*38));
     }

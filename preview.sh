@@ -10,9 +10,13 @@ echo tools/AnimationPreview.java >> build/preview/sources.txt
 echo tools/ScreenSizesPreview.java >> build/preview/sources.txt
 echo tools/RotationPreview.java >> build/preview/sources.txt
 echo tools/DesktopPainterTest.java >> build/preview/sources.txt
+echo tools/ViewportPixelTest.java >> build/preview/sources.txt
+echo tools/VesselLightPixelTest.java >> build/preview/sources.txt
 echo tests/com/bargeboss/game/ReplayInput.java >> build/preview/sources.txt
 javac -Xlint:-options --release 8 -encoding UTF-8 -d build/preview @build/preview/sources.txt
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.DesktopPainterTest
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ViewportPixelTest
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.VesselLightPixelTest
 if [ "${1:-}" = '--idle-water' ] || [ "${1:-}" = '--title' ]; then
     sequence=idle-water
     if [ "${1:-}" = '--title' ]; then sequence=title; fi

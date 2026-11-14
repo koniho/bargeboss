@@ -3,6 +3,7 @@ package com.bargeboss.game;
 /** Shared 64-unit road tiles separating the tutorial's packed industrial blocks. */
 public final class IndustrialRoadView {
     static final int MIN_COL=-32,MAX_COL=24,MIN_ROW=-12,MAX_ROW=28;
+    private static final byte[] ROADS=makeRoads();
     private IndustrialRoadView() {}
     static boolean isRoadCell(int col,int row) {
         return Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4;
@@ -16,8 +17,25 @@ public final class IndustrialRoadView {
         return true;
     }
     static boolean roadClear(int col,int row) {
-        return col>=MIN_COL && col<MAX_COL && row>=MIN_ROW && row<MAX_ROW
-                && isRoadCell(col,row) && clearance(col*64,row*64,64,64,48);
+        return roadMask(col,row)!=0;
+    }
+    private static int roadMask(int col,int row) {
+        return col<MIN_COL || col>=MAX_COL || row<MIN_ROW || row>=MAX_ROW?0:
+                ROADS[(row-MIN_ROW)*(MAX_COL-MIN_COL)+col-MIN_COL];
+    }
+    private static byte[] makeRoads() {
+        int width=MAX_COL-MIN_COL,height=MAX_ROW-MIN_ROW;
+        byte[] roads=new byte[width*height];
+        for(int row=MIN_ROW;row<MAX_ROW;row++) for(int col=MIN_COL;col<MAX_COL;col++)
+            if(isRoadCell(col,row) && clearance(col*64,row*64,64,64,48)) roads[(row-MIN_ROW)*width+col-MIN_COL]=1;
+        for(int row=0;row<height;row++) for(int col=0;col<width;col++) {
+            int at=row*width+col;if(roads[at]==0) continue;
+            if(col>0 && roads[at-1]!=0) roads[at]|=2;
+            if(col+1<width && roads[at+1]!=0) roads[at]|=4;
+            if(row>0 && roads[at-width]!=0) roads[at]|=8;
+            if(row+1<height && roads[at+width]!=0) roads[at]|=16;
+        }
+        return roads;
     }
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
@@ -31,27 +49,28 @@ public final class IndustrialRoadView {
         int firstX=Math.max(MIN_COL,(int)StrictMath.floor(minX/64)-1),lastX=Math.min(MAX_COL,(int)StrictMath.ceil(maxX/64)+1);
         int firstY=Math.max(MIN_ROW,(int)StrictMath.floor(minY/64)-1),lastY=Math.min(MAX_ROW,(int)StrictMath.ceil(maxY/64)+1);
         for(int row=firstY;row<lastY;row++) for(int col=firstX;col<lastX;col++) {
-            if(!roadClear(col,row)) continue;
+            int road=roadMask(col,row);
+            if(road==0 || !TrainingGroundView.tileVisible(g,col,row,false)) continue;
             float x=col*64,y=row*64;
-            world.rect(x,y,64,64,0xff303b3e);
+            world.rect(x,y,64,64,0xff101923);
             // Flush concrete shoulders and faded lane paint stay below factories.
-            boolean left=roadClear(col-1,row),right=roadClear(col+1,row);
-            boolean up=roadClear(col,row-1),down=roadClear(col,row+1);
+            boolean left=(road&2)!=0,right=(road&4)!=0;
+            boolean up=(road&8)!=0,down=(road&16)!=0;
             if(!left) edge(world,x,y,x,y+64);
             if(!right) edge(world,x+64,y,x+64,y+64);
             if(!up) edge(world,x,y,x+64,y);
             if(!down) edge(world,x,y+64,x+64,y+64);
             if(left && right && !(up && down)) {
-                world.line(x+7,y+32,x+23,y+32,1.2f,0x887d8070);
-                world.line(x+39,y+32,x+55,y+32,1.2f,0x887d8070);
+                world.line(x+7,y+32,x+23,y+32,1.2f,0x886b6f61);
+                world.line(x+39,y+32,x+55,y+32,1.2f,0x886b6f61);
             } else if(up && down && !(left && right)) {
-                world.line(x+32,y+7,x+32,y+23,1.2f,0x887d8070);
-                world.line(x+32,y+39,x+32,y+55,1.2f,0x887d8070);
+                world.line(x+32,y+7,x+32,y+23,1.2f,0x886b6f61);
+                world.line(x+32,y+39,x+32,y+55,1.2f,0x886b6f61);
             }
         }
     }
     private static void edge(Painter p,float x,float y,float xx,float yy) {
-        p.line(x,y,xx,yy,3,0xff62675f);
-        p.line(x,y,xx,yy,.8f,0xff868779);
+        p.line(x,y,xx,yy,3,0xff3b484d);
+        p.line(x,y,xx,yy,.8f,0xff637077);
     }
 }

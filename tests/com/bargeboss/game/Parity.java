@@ -37,8 +37,22 @@ public final class Parity implements Painter {
         value(SpriteAtlas.widthScale(atlas,frameB)); value(SpriteAtlas.heightScale(atlas,frameB));
     }
     public static int frame(Game g) { Parity p=new Parity(); Renderer.draw(g,p); return p.hash; }
+    private void spriteGrades() {
+        mark("spriteGrade");
+        int[] samples={0xff808080,0xffffc02a,0xffaa6844,0xff23466a,0x804080c0,0x10e4b230,0x00112233};
+        for(int atlas=0;atlas<=SpriteAtlas.GROUND;atlas++) {
+            add(atlas);add(SpriteGrade.applies(atlas)?1:0);
+            for(int pixel:samples) {
+                add(SpriteGrade.argb(atlas,pixel));int a=pixel>>>24;
+                byte[] rgba={(byte)SpriteGrade.premultiplied((pixel>>>16)&255,a),
+                        (byte)SpriteGrade.premultiplied((pixel>>>8)&255,a),(byte)SpriteGrade.premultiplied(pixel&255,a),(byte)a};
+                SpriteGrade.applyPremultipliedRgba(atlas,rgba);
+                for(byte channel:rgba)add(channel&255);
+            }
+        }
+    }
     public static String signature() {
-        Parity p=new Parity(); Game g=new Game(); Renderer.draw(g,p);
+        Parity p=new Parity();p.spriteGrades(); Game g=new Game(); Renderer.draw(g,p);
         for(int i=0;i<90;i++) { g.advance(1.0/60); if(i%30==0) Renderer.draw(g,p); }
         g.reset();
         for(int i=0;i<Game.SHIFT_TICKS;i++) {

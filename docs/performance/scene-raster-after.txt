@@ -1,0 +1,11 @@
+mode,width,scene,part,cpu_p50_ms,cpu_p95_ms,calls,sprites,factorySprites,groundSprites,circles,offscreenCircles,polys,lines,rects,factoryRectScreenCoverage,circleBoxScreenCoverage
+RASTER,960,canal-entry,first=1747.887ms,p50=51.126ms,p95=55.360ms
+RASTER,960,canal-middle,first=53.251ms,p50=50.848ms,p95=82.882ms
+RASTER,960,harbor-close,first=201.773ms,p50=35.313ms,p95=43.077ms
+RASTER,1333,canal-entry,first=81.214ms,p50=70.067ms,p95=93.534ms
+RASTER,1333,canal-middle,first=92.971ms,p50=65.810ms,p95=71.246ms
+RASTER,1333,harbor-close,first=75.685ms,p50=45.913ms,p95=48.034ms
+RASTER,1920,canal-entry,first=78.787ms,p50=68.746ms,p95=70.138ms
+RASTER,1920,canal-middle,first=63.787ms,p50=62.604ms,p95=66.777ms
+RASTER,1920,harbor-close,first=47.714ms,p50=46.721ms,p95=47.617ms
+Timings are Termux JVM/Java2D only, not Android Canvas/GPU timings. First raster includes any newly decoded source assets; warmed raster excludes initial decode. Destination-area ratios are upper-bound submission coverage, not visible alpha pixels.

@@ -14,6 +14,13 @@ public final class Lettering {
         "0000001F000000","0004041F040400","00040000040000","01010204081010","00000000000C0C","00000000000408",
         "04040404040004","0E110102040004","19190204081313","02040808080402","08040202020408","04040800000000"
     };
+    private static final int[][] ROWS=decode();
+    private static int[][] decode() {
+        int[][] rows=new int[GLYPHS.length][7];
+        for(int i=0;i<GLYPHS.length;i++)for(int row=0;row<7;row++)
+            rows[i][row]=Integer.parseInt(GLYPHS[i].substring(row*2,row*2+2),16);
+        return rows;
+    }
     public static float width(String text,float size) { return Math.max(0,text.length()*6-1)*size/7f; }
     public static void draw(Painter p,String text,float x,float y,float size,int color) {
         float unit=size/7f;
@@ -21,9 +28,9 @@ public final class Lettering {
             char ch=text.charAt(n); if(ch>='a' && ch<='z') ch=(char)(ch-32);
             int index=CHARS.indexOf(ch);
             if(index>=0) {
-                String data=GLYPHS[index];
+                int[] data=ROWS[index];
                 for(int row=0;row<7;row++) {
-                    int bits=Integer.parseInt(data.substring(row*2,row*2+2),16);
+                    int bits=data[row];
                     for(int col=0;col<5;col++) if((bits&(1<<(4-col)))!=0)
                         p.rect(x+(n*6+col)*unit,y+row*unit,unit,unit,color);
                 }

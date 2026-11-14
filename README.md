@@ -34,6 +34,10 @@ opens into the same practice harbor, with both teaching barges already waiting.
 Sixteen factory modules, varied building heights, active exhausts and warm
 lighting populate packed industrial blocks behind the quays. Aligned road tiles
 separate the factory rows; the working shoreline apron stays clear.
+The harbor uses a dark industrial palette with animated warm factory lights,
+while boats retain bright, saturated paintwork and registered vessel lamps.
+Shared visibility culling and redraw scheduling reduce work in wide views;
+see the [night harbor rendering notes](docs/performance/night-harbor.md).
 
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
   farther for more thrust. The control ring stays at your original touch point;

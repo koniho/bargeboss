@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public final class BridgeModel {
     public static final float LENGTH=130,HINGE_HEIGHT=12,HALF_WIDTH=21,TRUSS_HEIGHT=35,TOWER_SETBACK=45;
     public static final int WARM=0,SIGNAL=1,TIP=2;
-    public static final int RUST=0xffa96945,STEEL=0xff37454d,CONCRETE=0xff8c8b80,SAFETY=0xffb99342;
+    public static final int RUST=0xff684337,STEEL=0xff202e3a,CONCRETE=0xff48545d,SAFETY=0xff91783e;
     public static final ArticulatedModel MODEL;
     public static final int LEFT_LEAF,RIGHT_LEAF;
     public static final Light[] LIGHTS;
@@ -43,7 +43,7 @@ public final class BridgeModel {
     }
     private static void foundation(ArticulatedModel.Builder b,int n) {
         b.box(n,-43,0,3,92,66,10,CONCRETE);
-        b.box(n,-43,0,9,94,69,3,0xffb0a594);
+        b.box(n,-43,0,9,94,69,3,0xff65707a);
         b.beam(n,0,-29,HINGE_HEIGHT,0,29,HINGE_HEIGHT,7,STEEL);
         for(int y=-29;y<=29;y+=58)b.box(n,-3,y,13,12,8,11,SAFETY);
         b.beam(n,-23,35,10,-23,35,27,2.5f,STEEL);
@@ -59,13 +59,13 @@ public final class BridgeModel {
             b.beam(n,x,-24,36,x,24,36,3,STEEL);
         }
         b.box(n,-21,0,68,31,60,4,RUST);
-        b.box(n,-21,0,30,22,27,17,0xff44494a);
+        b.box(n,-21,0,30,22,27,17,0xff242f3a);
         for(int y=-28;y<=28;y+=56)b.beam(n,-34,y,75,-8,y,75,2.1f,SAFETY);
         for(int x=-34;x<=-8;x+=26)for(int y=-28;y<=28;y+=56)b.beam(n,x,y,69,x,y,75,1.8f,SAFETY);
     }
     private static void span(ArticulatedModel.Builder b,int n) {
-        b.box(n,LENGTH*.5f,0,-2,LENGTH,HALF_WIDTH*2,4,0xff535353);
-        b.box(n,-13,0,-1,24,30,14,0xff51514b);
+        b.box(n,LENGTH*.5f,0,-2,LENGTH,HALF_WIDTH*2,4,0xff293441);
+        b.box(n,-13,0,-1,24,30,14,0xff2b3540);
         for(int side=-1;side<=1;side+=2) {
             float y=side*HALF_WIDTH;
             b.beam(n,0,y,0,LENGTH,y,0,4.3f,RUST);

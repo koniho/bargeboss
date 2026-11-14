@@ -1,0 +1,11 @@
+{
+  "type": "new-code-authored-coaming-service-lamps",
+  "paintedSourceClaim": false,
+  "coordinateSystem": "Body local XYZ; +X bow, +Z up; yaw about Z",
+  "fixtures": [
+    {"id": "stern-coaming-lantern", "xyzFormula": ["-(half + radius * 0.65)", "0", "5"], "normal": [0, 0, 1], "visibility": "all headings, cargo occludes by draw order"},
+    {"id": "bow-coaming-lantern", "xyzFormula": ["+(half + radius * 0.65)", "0", "5"], "normal": [0, 0, 1], "visibility": "all headings, cargo occludes by draw order"}
+  ],
+  "review": "all32 source headings: lamp centers attach to opaque hull pixels; no original PNG edits",
+  "runtime": "VesselLighting.barge"
+}
