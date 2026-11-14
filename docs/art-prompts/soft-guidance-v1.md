@@ -1,10 +1,15 @@
 # Quiet gameplay guidance and shoreline depth
 
+See [the full drawing-order contract](../rendering/drawing-order.md) for the
+authoritative surface, height, orientation, clipping and fading rules.
+
 Lower shoreline caps are solid foreground geometry: they occlude watercraft
 and never fade. Short sections join the same far-to-near world ordering as
 vessels, road vehicles and factories, so a cap can cover the hull at the bank
 without being painted over a nearer factory roof or chimney. The underlying
-ground and bank walls remain cached. Only eligible buildings whose painted
+ground and bank walls remain cached. `ShoreOcclusion` clips complete foreground
+land coverage from vessels and ropes; cap sorting alone cannot hide a hull
+that projects over the bank. Only eligible buildings whose painted
 silhouettes actually obscure watercraft fade; shorelines are not buildings.
 
 `SoftCue` defines the shared gameplay guidance style: translucent feathered

@@ -263,6 +263,10 @@ public final class ScreenView {
         Transform(Painter p,float x,float y,float scale,float shear) { this.p=p; this.x=x; this.y=y; this.scale=scale; this.shear=shear; }
         private float tx(float xx,float yy) { return x+(xx+shear*yy)*scale; }
         private float ty(float yy) { return y+yy*scale; }
+        public void pushClipOutside(float[] a) {
+            float[] b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=tx(a[i],a[i+1]);b[i+1]=ty(a[i+1]);}p.pushClipOutside(b);
+        }
+        public void popClip(){p.popClip();}
         public void rect(float xx,float yy,float w,float h,int c) {
             if(shear!=0) { xx-=.3f; yy-=.3f; w+=.6f; h+=.6f; }
             poly(new float[]{xx,yy,xx+w,yy,xx+w,yy+h,xx,yy+h},c);

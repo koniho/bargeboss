@@ -11,6 +11,14 @@ public final class SceneryOcclusion implements Painter {
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
     private float recordingDepth=Float.NEGATIVE_INFINITY;
+    private float[] recordingClip=ShoreOcclusion.EMPTY;
+    private final ArrayList<float[]> clipStack=new ArrayList<float[]>();
+    public void pushClipOutside(float[] triangles) {
+        clipStack.add(recordingClip);float[] combined=new float[recordingClip.length+triangles.length];
+        System.arraycopy(recordingClip,0,combined,0,recordingClip.length);System.arraycopy(triangles,0,combined,recordingClip.length,triangles.length);
+        recordingClip=combined;target.pushClipOutside(triangles);
+    }
+    public void popClip(){recordingClip=clipStack.remove(clipStack.size()-1);target.popClip();}
     public SceneryOcclusion(Painter target) {this.target=target;}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
@@ -19,6 +27,7 @@ public final class SceneryOcclusion implements Painter {
     private static final class Sprite implements Shape {
         final long[] rows;final float x,y,w,h,px,py,c,s,l,t,r,b;
         float groundDepth=Float.NEGATIVE_INFINITY;
+        float[] hidden=ShoreOcclusion.EMPTY;
         Sprite(int atlas,int frame,float x,float y,float w,float h,float rotation) {
             this.rows=OcclusionMasks.rows(atlas)[frame];this.x=x;this.y=y;
             this.w=w*SpriteAtlas.widthScale(atlas,frame);this.h=h*SpriteAtlas.heightScale(atlas,frame);
@@ -34,7 +43,7 @@ public final class SceneryOcclusion implements Painter {
         public boolean contains(float sx,float sy) {
             float dx=sx-x,dy=sy-y,u=(c*dx+s*dy)/w+px,v=(-s*dx+c*dy)/h+py;
             if(u<0 || u>=1 || v<0 || v>=1)return false;
-            return (rows[(int)(v*64)]&(1L<<(int)(u*64)))!=0;
+            return (rows[(int)(v*64)]&(1L<<(int)(u*64)))!=0 && !ShoreOcclusion.contains(hidden,sx,sy);
         }
         int overlap(Shape shape) {
             if(shape.right()<=l || shape.left()>=r || shape.bottom()<=t || shape.top()>=b)return 0;
@@ -48,7 +57,7 @@ public final class SceneryOcclusion implements Painter {
                 long bits=rows[yy];
                 for(int xx=firstX;xx<=lastX;xx++)if((bits&(1L<<xx))!=0) {
                     float dx=((xx+.5f)/64-px)*w,dy=((yy+.5f)/64-py)*h;
-                    if(shape.contains(x+c*dx-s*dy,y+s*dx+c*dy) && ++hits==4)return hits;
+                    if(shape.contains(x+c*dx-s*dy,y+s*dx+c*dy) && !ShoreOcclusion.contains(hidden,x+c*dx-s*dy,y+s*dx+c*dy) && ++hits==4)return hits;
                 }
             }
             return hits;
@@ -133,6 +142,7 @@ public final class SceneryOcclusion implements Painter {
     private void register(Game g,Body b) {
         if(b==null || !b.active)return;
         recordingDepth=g.layout.camera.screenY(b.x,b.y);
+        recordingClip=ShoreOcclusion.vessel(g,g.layout.camera,b,false);
         Painter p=new RiverPainter(this,g.layout.camera);boolean tug=b.berth<0;
         float bob=WaterSurface.lift(g,b),x=b.x+RiverCamera.riseX(bob),y=b.y+RiverCamera.riseY(bob);
         float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
@@ -173,6 +183,8 @@ public final class SceneryOcclusion implements Painter {
     private static final class Obstacles implements Painter {
         final Painter p;final SceneryOcclusion scene;Obstacles(Painter p,SceneryOcclusion scene){this.p=p;this.scene=scene;}
         private int color(int color,Shape shape){if((color>>>24)<160)return color;return (((int)((color>>>24)*scene.opacity(shape)))<<24)|(color&0xffffff);}
+        public void pushClipOutside(float[] triangles){p.pushClipOutside(triangles);}
+        public void popClip(){p.popClip();}
         public void rect(float x,float y,float w,float h,int c){p.rect(x,y,w,h,color(c,new Polygon(new float[]{x,y,x+w,y,x+w,y+h,x,y+h})));}
         public void poly(float[] xy,int c){p.poly(xy,color(c,new Polygon(xy)));}
         public void line(float x,float y,float xx,float yy,float w,int c){p.line(x,y,xx,yy,w,color(c,new Stroke(x,y,xx,yy,w)));}
@@ -182,7 +194,7 @@ public final class SceneryOcclusion implements Painter {
     }
     private void remember(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
         if(atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK && alpha>=.15f && w>0 && h>0)
-            {Sprite vessel=new Sprite(atlas,frame,x,y,w,h,r);vessel.groundDepth=recordingDepth;vessels.add(vessel);}
+            {Sprite vessel=new Sprite(atlas,frame,x,y,w,h,r);vessel.groundDepth=recordingDepth;vessel.hidden=recordingClip;vessels.add(vessel);}
     }
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){remember(a,f,x,y,w,h,r,alpha);target.sprite(a,f,x,y,w,h,r,alpha);}
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){

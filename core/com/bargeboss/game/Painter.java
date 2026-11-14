@@ -4,6 +4,11 @@ package com.bargeboss.game;
 public interface Painter {
     /** Native cache bookkeeping only; never advances simulation. */
     default void beginFrame() {}
+    /** Save the current clip and exclude disjoint screen-space triangles (six floats each).
+     * Native hosts execute this primitive; diagnostic painters record the boundary. */
+    default void pushClipOutside(float[] triangles) {}
+    /** Restore the matching saved clip. Scopes must be balanced, including on errors. */
+    default void popClip() {}
     /** Immutable static content, clipped to layer bounds with group opacity. */
     default void layer(StaticLayer layer,float x,float y,float scale,float alpha) {layer.draw(this,x,y,scale,alpha);}
     /** Affine cell basis, already scaled by caller; normalized atlas pivot stays at x,y.

@@ -24,11 +24,11 @@ public final class SceneCueTest {
             Order painter=new Order(scene);TrainingChannelView.draw(scene,painter);
             check(painter.tugs>0 && painter.barges>0 && painter.foregroundCaps>0,"solid lower banks occlude vessels on both foreground basin edges");
         }
-        for(boolean practice:new boolean[]{false,true})for(boolean release:new boolean[]{false,true})for(int heading=0;heading<4;heading++) {
+        for(boolean practice:new boolean[]{false,true})for(boolean release:new boolean[]{false,true})for(int heading=0;heading<32;heading++) {
             Game root=new Game();root.reset();if(practice)root.startTutorial();Game scene=root.activeGame();
             for(int i=0;i<scene.cargo.length;i++)scene.cargo[i]=null;
             for(Feeder f:scene.feeders){f.phase=Feeder.IDLE;f.load=null;}
-            scene.tug.x=practice?-1550:300;scene.tug.y=600;scene.tug.angle=heading*(float)Math.PI/2;
+            scene.tug.x=practice?-1550:300;scene.tug.y=600;scene.tug.angle=heading*(float)Math.PI/16;
             scene.tug.floatingInitialized=true;scene.tug.heave=0;
             Body barge=new Body(1,0,scene.tug.x+70,scene.tug.y+20,-scene.tug.angle);barge.floatingInitialized=true;scene.cargo[0]=barge;
             scene.layout=Layout.focused(960,600,scene.tug.x+35,scene.tug.y,1.5f,480,350);

@@ -14,6 +14,8 @@ public final class Parity implements Painter {
     }
     private void add(int value) { hash=31*hash+value; if(tracing) System.out.println((ordinal++)+" "+value+" "+hash); }
     private void value(float f) { add(Math.round(f*100)); }
+    public void pushClipOutside(float[] triangles){mark("clipOutside");add(8);add(triangles.length);for(float v:triangles)value(v);}
+    public void popClip(){mark("clipRestore");add(9);}
     public void rect(float x,float y,float w,float h,int c) { mark("rect"); add(1); value(x); value(y); value(w); value(h); add(c); }
     public void circle(float x,float y,float r,int c) { mark("circle"); add(2); value(x); value(y); value(r); add(c); }
     public void poly(float[] xy,int c) { mark("poly"); add(3); for(float f:xy) value(f); add(c); }

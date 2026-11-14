@@ -12,10 +12,10 @@ public final class Renderer {
         if(g.tutorial!=null) TrainingChannelView.draw(g,p);
         else {
             SceneryView.ground(g,p);
+            SceneryView.piers(g,p);
             SceneryView.props(g,p,false);
             river(g,new RiverPainter(p,g.layout.camera));
             SceneryView.props(g,p,true);
-            SceneryView.piers(g,p);
             SceneryView.bridge(g,p);
         }
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);

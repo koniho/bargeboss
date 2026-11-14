@@ -30,6 +30,17 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     }
     return self;
 }
+- (void)pushClipOutsideWithFloatArray:(IOSFloatArray *)triangles {
+    CGContextRef c=self.context;CGContextSaveGState(c);CGContextBeginPath(c);
+    CGContextAddRect(c,CGContextGetClipBoundingBox(c));
+    for(jint i=0;i<triangles->size_;i+=6) {
+        CGContextMoveToPoint(c,triangles->buffer_[i],triangles->buffer_[i+1]);
+        CGContextAddLineToPoint(c,triangles->buffer_[i+2],triangles->buffer_[i+3]);
+        CGContextAddLineToPoint(c,triangles->buffer_[i+4],triangles->buffer_[i+5]);CGContextClosePath(c);
+    }
+    CGContextEOClip(c);
+}
+- (void)popClip {CGContextRestoreGState(self.context);}
 - (void)beginFrame {
     if(!self.paintingStaticLayer) self.staticLayerBuilds=0;
 }

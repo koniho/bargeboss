@@ -5,6 +5,8 @@ public final class OpacityPainter implements Painter {
     private final Painter p; private final float alpha;
     public OpacityPainter(Painter p,float alpha) { this.p=p; this.alpha=Physics.clamp(alpha,0,1); }
     private int color(int c) { return (Math.round((c>>>24)*alpha)<<24)|(c&0xffffff); }
+    public void pushClipOutside(float[] triangles){p.pushClipOutside(triangles);}
+    public void popClip(){p.popClip();}
     public void rect(float x,float y,float w,float h,int c) { p.rect(x,y,w,h,color(c)); }
     public void circle(float x,float y,float r,int c) { p.circle(x,y,r,color(c)); }
     public void poly(float[] xy,int c) { p.poly(xy,color(c)); }

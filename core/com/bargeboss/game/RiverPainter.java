@@ -16,6 +16,12 @@ public final class RiverPainter implements Painter {
         float wx=riverX(x,y),wy=riverY(x,y);
         return wx>=WORLD_LEFT && wx<=WORLD_RIGHT && wy>=WORLD_TOP && wy<=WORLD_BOTTOM;
     }
+    public void pushClipOutside(float[] points) {
+        float[] projected=new float[points.length];
+        for(int i=0;i<points.length;i+=2){projected[i]=camera.screenX(points[i],points[i+1]);projected[i+1]=camera.screenY(points[i],points[i+1]);}
+        painter.pushClipOutside(projected);
+    }
+    public void popClip(){painter.popClip();}
     public void rect(float x,float y,float w,float h,int c) {
         poly(new float[]{x,y,x+w,y,x+w,y+h,x,y+h},c);
     }

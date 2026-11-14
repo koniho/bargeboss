@@ -44,6 +44,15 @@ public final class DesktopPainter implements Painter {
     }
     private final Graphics2D g;
     private final boolean paintingLayer;
+    private final java.util.ArrayList<java.awt.Shape> clipStack=new java.util.ArrayList<java.awt.Shape>();
+    public void pushClipOutside(float[] triangles) {
+        java.awt.Shape previous=g.getClip();clipStack.add(previous);
+        java.awt.geom.Area visible=new java.awt.geom.Area(previous==null?new Rectangle2D.Float(-1000000,-1000000,2000000,2000000):previous);
+        Path2D.Float holes=new Path2D.Float(Path2D.WIND_NON_ZERO);
+        for(int i=0;i<triangles.length;i+=6){holes.moveTo(triangles[i],triangles[i+1]);holes.lineTo(triangles[i+2],triangles[i+3]);holes.lineTo(triangles[i+4],triangles[i+5]);holes.closePath();}
+        visible.subtract(new java.awt.geom.Area(holes));g.setClip(visible);
+    }
+    public void popClip(){g.setClip(clipStack.remove(clipStack.size()-1));}
     public DesktopPainter(Graphics2D g) {this(g,false);}
     private DesktopPainter(Graphics2D g,boolean paintingLayer) {this.g=g;this.paintingLayer=paintingLayer;}
     public void beginFrame() {if(!paintingLayer) LAYERS.get().builds=0;}

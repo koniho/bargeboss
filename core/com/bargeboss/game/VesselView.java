@@ -5,15 +5,26 @@ public final class VesselView {
     private VesselView() {}
     public static void draw(Game g,Painter p,Body b,boolean tug) { draw(g,p,b,tug,true); }
     public static void draw(Game g,Painter p,Body b,boolean tug,boolean wake) {
+        RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
+        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,false);
+        if(clip.length>0)river.canvas().pushClipOutside(clip);
+        try {paint(g,p,b,tug,wake);} finally {if(clip.length>0)river.canvas().popClip();}
+    }
+    private static void paint(Game g,Painter p,Body b,boolean tug,boolean wake) {
         int tick=g.visualTicks;
         float bob=WaterSurface.lift(g,b);
         boolean river=p instanceof RiverPainter;
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        if(wake) ArcadeView.wake(g,p,b,tick);
-        if(tug) VesselLighting.reflection(g,p,b);
         float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
-        ShadowView.vessel(g,p,b,tug,size);
+        float[] surface=river?ShoreOcclusion.vessel(g,((RiverPainter)p).camera,b,true):ShoreOcclusion.EMPTY;
+        Painter canvas=river?((RiverPainter)p).canvas():p;
+        if(surface.length>0)canvas.pushClipOutside(surface);
+        try {
+            if(wake)ArcadeView.wake(g,p,b,tick);
+            if(tug)VesselLighting.reflection(g,p,b);
+            ShadowView.vessel(g,p,b,tug,size);
+        } finally {if(surface.length>0)canvas.popClip();}
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
         if(flash) {
             // A bright hull-shaped pulse under the fading sprite flashes the

@@ -27,11 +27,12 @@ public final class TowView {
     }
     /** Small 3-D spans join the same ground-depth order as the hulls they attach to. */
     public static final class Segments {
+        private final Game game;
         public final int count;
         final float[] x=new float[25],y=new float[25],height=new float[25];
         final int[] order=new int[24];final int color;
         public Segments(Game g) {
-            Towline line=g.tow;float sx,sy,ex,ey,slack,h0,h1;
+            game=g;Towline line=g.tow;float sx,sy,ex,ey,slack,h0,h1;
             if(line.cargo!=null) {
                 sx=line.cargoX();sy=line.cargoY();ex=line.tugX(g.tug);ey=line.tugY(g.tug);
                 slack=Physics.clamp((line.length-Physics.length(ex-sx,ey-sy))*.25f,0,12);
@@ -57,9 +58,15 @@ public final class TowView {
             int i=order[slot];boolean river=p instanceof RiverPainter;
             float sx=x[i]+LassoPath.liftX(river,height[i]),sy=y[i]+LassoPath.liftY(river,height[i]);
             float ex=x[i+1]+LassoPath.liftX(river,height[i+1]),ey=y[i+1]+LassoPath.liftY(river,height[i+1]);
+            Painter canvas=river?((RiverPainter)p).canvas():p;
+            float[] clip=river?ShoreOcclusion.region(game,((RiverPainter)p).camera,
+                    Math.min(x[i],x[i+1])-12,Math.min(y[i],y[i+1])-12,Math.max(x[i],x[i+1])+12,Math.max(y[i],y[i+1])+12,depth(((RiverPainter)p).camera,slot)):ShoreOcclusion.EMPTY;
+            if(clip.length>0)canvas.pushClipOutside(clip);
+            try {
             p.line(sx+1,sy+2,ex+1,ey+2,4.5f,SoftCue.alpha(VisualStyle.OUTLINE,(color>>>24)/255f));
             p.line(sx,sy,ex,ey,3,color);
             if(i%2==0)p.line(sx,sy-1,ex,ey-1,1,SoftCue.alpha(0xffffe3a1,(color>>>24)/255f));
+            } finally {if(clip.length>0)canvas.popClip();}
         }
     }
 }

@@ -14,6 +14,11 @@ the same `Painter`. Do not add a second game implementation for any platform.
   wider canal/bridge transit views, and eased docking zoom near a loaded berth.
   Freeze projection during lasso aiming/flight and preserve screen-space drag
   anchors during camera movement. Use paired forward/inverse transforms for input.
+- Follow [the drawing-order contract](docs/rendering/drawing-order.md) for depth,
+  height, orientation, solid-shore cutouts, rope spans and building-only fades.
+  A cap stroke is not a land surface: production hull/cargo pixels must not show
+  through foreground ground. Maintain clip support on all three native painters
+  and coordinate wrappers; run the all-heading shoreline pixel regression.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in
   shared Java. Native hosts decode the same PNGs and execute `Painter.sprite` / `Painter.spriteBlend`;
   they must not infer gameplay phases or select different artwork.

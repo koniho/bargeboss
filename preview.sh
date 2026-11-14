@@ -9,6 +9,7 @@ echo tools/SpriteAffinePixelTest.java >> build/preview/sources.txt
 echo tools/GenerateVesselGlow.java >> build/preview/sources.txt
 echo tools/VesselGlowReview.java >> build/preview/sources.txt
 echo tools/BuildingFadeReview.java >> build/preview/sources.txt
+echo tools/ShoreOcclusionPixelTest.java >> build/preview/sources.txt
 echo tools/ShorelineReview.java >> build/preview/sources.txt
 echo tools/SoftCueReview.java >> build/preview/sources.txt
 echo tools/EffectsPreview.java >> build/preview/sources.txt
@@ -50,6 +51,7 @@ fi
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.Preview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ScreenSizesPreview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuildingFadeReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShoreOcclusionPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShorelineReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.SoftCueReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.EffectsPreview

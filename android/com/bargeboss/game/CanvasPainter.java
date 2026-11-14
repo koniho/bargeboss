@@ -36,6 +36,12 @@ public final class CanvasPainter implements Painter {
     private int layerBuilds;
     private boolean paintingLayer;
     private Canvas canvas;
+    public void pushClipOutside(float[] triangles) {
+        canvas.save();path.reset();path.setFillType(Path.FillType.WINDING);
+        for(int i=0;i<triangles.length;i+=6){path.moveTo(triangles[i],triangles[i+1]);path.lineTo(triangles[i+2],triangles[i+3]);path.lineTo(triangles[i+4],triangles[i+5]);path.close();}
+        canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
+    }
+    public void popClip(){canvas.restore();}
     public void beginFrame() {if(!paintingLayer) layerBuilds=0;}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
