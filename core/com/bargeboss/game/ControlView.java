@@ -52,60 +52,57 @@ public final class ControlView {
     }
 
     public static void ring(Painter p,float x,float y,float radius,float fraction,int color,float width) {
-        int segments=40;
-        for(int i=0;i<segments*fraction;i++) {
-            double a=-Math.PI/2+i*Math.PI*2/segments, b=-Math.PI/2+Math.min(i+1,segments*fraction)*Math.PI*2/segments;
-            p.line(x+radius*(float)StrictMath.cos(a),y+radius*(float)StrictMath.sin(a),
-                    x+radius*(float)StrictMath.cos(b),y+radius*(float)StrictMath.sin(b),width,color);
-        }
+        SoftCue.ring(p,x,y,radius,fraction,color,width);
+    }
+    public static void ring(Game g,Painter p,float x,float y,float radius,float fraction,int color,float width) {
+        ring(p,x,y,radius,fraction,SoftCue.animated(g,color),width);
     }
     public static void arrow(Painter p,float x,float y,float xx,float yy,int color) {
-        float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy); if(length<3) return;
-        dx/=length; dy/=length;
-        p.line(x,y,xx,yy,3,color);
-        p.poly(new float[]{xx,yy,xx-dx*12-dy*7,yy-dy*12+dx*7,xx-dx*12+dy*7,yy-dy*12-dx*7},color);
+        SoftCue.arrow(p,x,y,xx,yy,color);
+    }
+    public static void arrow(Game g,Painter p,float x,float y,float xx,float yy,int color) {
+        arrow(p,x,y,xx,yy,SoftCue.animated(g,color));
     }
     public static void path(Painter p,float x,float y,float xx,float yy,int color) {
         float distance=Physics.length(xx-x,yy-y); int count=Math.max(1,(int)(distance/12));
-        for(int i=1;i<count;i++) { float t=(float)i/count; p.circle(x+(xx-x)*t,y+(yy-y)*t,2,color); }
+        for(int i=1;i<count;i++) { float t=(float)i/count; SoftCue.dot(p,x+(xx-x)*t,y+(yy-y)*t,1.5f,color); }
     }
     public static void draw(Game g,Painter p) {
         int color=color(g);
         if(g.holdingTug()) {
             dragRing(g,p,BLUE);
-            if(!g.pushing) ring(p,g.tug.x,g.tug.y,36,g.holdProgress(),AMBER,4);
+            if(!g.pushing) ring(g,p,g.tug.x,g.tug.y,36,g.holdProgress(),AMBER,4);
             else if(g.manualSteering) {
                 float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
-                arrow(p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
+                arrow(g,p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
             }
         }
         Body b=g.workingCargo();
         if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.cargo==null && !g.canTie(b)) {
-            ring(p,b.x,b.y,46,1,0x668eaaa9,2);
-            if(!g.pushing) ring(p,b.x,b.y,46,g.holdProgress(),AMBER,5);
+            if(!g.pushing) ring(g,p,b.x,b.y,46,g.holdProgress(),AMBER,5);
             else {
-                ring(p,b.x,b.y,46,1,color,2);
                 float bx=Game.DOCK_X[b.berth],by=g.dockY(b.berth);
-                ring(p,bx,by,48,1,Game.COLORS[b.berth],2);
+                ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
                     path(p,g.tug.x,g.tug.y,g.guideX,g.guideY,AMBER);
-                    ring(p,g.guideX,g.guideY,15,1,AMBER,2);
+                    ring(g,p,g.guideX,g.guideY,15,1,AMBER,2);
                     label(p,"APPROACH",g.guideX,g.guideY+26,AMBER);
                 }
-                if(g.control!=Game.DOCKING && g.control!=Game.WAITING_BRIDGE) arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,
+                if(g.control!=Game.DOCKING && g.control!=Game.WAITING_BRIDGE) arrow(g,p,b.x+g.pushX*46,b.y+g.pushY*46,
                         Physics.clamp(b.x+g.pushX*108,Physics.LEFT+5,Physics.RIGHT-5),Physics.clamp(b.y+g.pushY*108,g.channelTop()+5,Physics.BOTTOM-5),color);
                 dragRing(g,p,PURPLE);
                 if(g.control==Game.WAITING_BRIDGE) label(p,"WAIT FOR GREEN",b.x,b.y-67,AMBER);
                 if(g.control==Game.DOCKING) {
-                    ring(p,b.x,b.y,51,Math.min(1,b.dockTime/1.2f),GREEN,5);
+                    ring(g,p,b.x,b.y,51,Math.min(1,b.dockTime/1.2f),GREEN,5);
                     label(p,"SETTLING",b.x,b.y-67,GREEN);
                 }
             }
         }
-        ring(p,g.tug.x,g.tug.y,33,1,color,2);
+        // Hull bloom identifies the tug; avoid a second permanent circle over it.
+
         if(g.control==Game.COASTING || g.control==Game.REVERSING) {
             float speed=g.tug.speed();
-            if(speed>5) arrow(p,g.tug.x,g.tug.y,g.tug.x+g.tug.vx*.65f,g.tug.y+g.tug.vy*.65f,color);
+            if(speed>5) arrow(g,p,g.tug.x,g.tug.y,g.tug.x+g.tug.vx*.65f,g.tug.y+g.tug.vy*.65f,color);
         }
         if(g.noticeTicks>0 && (g.notice.startsWith("DELIVERED") || g.notice.startsWith("HARD IMPACT")
                 || g.notice.startsWith("CONTRACT"))) {
@@ -116,13 +113,13 @@ public final class ControlView {
         if(!g.trainingChannel()) MooringView.draw(g,p);
     }
     private static void dragRing(Game g,Painter p,int color) {
-        ring(p,g.downX,g.downY,42,1,0x99eee7d4,1.5f);
-        p.circle(g.downX,g.downY,3,PAPER);
+        ring(g,p,g.downX,g.downY,42,1,0x99eee7d4,1.5f);
+        SoftCue.dot(p,g.downX,g.downY,3,SoftCue.animated(g,PAPER));
         float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
         float scale=Math.min(1,90/Math.max(1,len));
         if(len>8) {
-            p.line(g.downX,g.downY,g.downX+dx*scale,g.downY+dy*scale,2,color);
-            p.circle(g.downX+dx*scale,g.downY+dy*scale,8,color);
+            SoftCue.line(p,g.downX,g.downY,g.downX+dx*scale,g.downY+dy*scale,2,SoftCue.animated(g,color));
+            SoftCue.dot(p,g.downX+dx*scale,g.downY+dy*scale,5,SoftCue.animated(g,color));
         }
     }
     private static void label(Painter p,String text,float x,float y,int color) {
@@ -132,13 +129,13 @@ public final class ControlView {
             float sx=Physics.clamp(c.screenX(x,y),w*c.scale/2+4,2*c.left+c.width()-w*c.scale/2-4);
             float sy=Physics.clamp(c.screenY(x,y),60,2*c.top+c.height()-(size+4)*c.scale);
             Painter canvas=river.canvas();
-            canvas.rect(sx-w*c.scale/2,sy-3*c.scale,w*c.scale,(size+6)*c.scale,0xee101e25);
+            canvas.rect(sx-w*c.scale/2,sy-3*c.scale,w*c.scale,(size+6)*c.scale,0x60101e25);
             Lettering.center(canvas,text,sx,sy,size*c.scale,color);
             return;
         } else {
             x=Physics.clamp(x,w/2+4,Layout.WIDTH-w/2-4);
             y=Physics.clamp(y,4,Layout.HEIGHT-size-4);
-            p.rect(x-w/2,y-3,w,size+6,0xee101e25);
+            p.rect(x-w/2,y-3,w,size+6,0x60101e25);
         }
         RiverPainter.center(p,text,x,y,size,color);
     }

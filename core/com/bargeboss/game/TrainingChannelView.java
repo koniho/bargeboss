@@ -28,15 +28,14 @@ public final class TrainingChannelView {
                 p.line(x,yy,x+13,yy,2,VisualStyle.CREAM);
                 p.poly(new float[]{x+13,yy,x+7,yy,x+10,yy+side*10},color);
             }
-            for(int j=-5;j<=5;j++) p.line(x,y+j*10-3,x,y+j*10+3,2,color);
-            RiverPainter.center(p,i==TrainingChannel.X.length-1?"HARBOR":"GATE "+i,x+20,y,9,color);
+            for(int j=-5;j<=5;j++) SoftCue.line(p,x,y+j*10-3,x,y+j*10+3,1,SoftCue.animated(g,color));
+            SoftCue.caption(p,i==TrainingChannel.X.length-1?"HARBOR":"GATE "+i,x+20,y,9,color);
         }
         HarborView.berths(g,p);
         gateBurst(g,p);
         HarborAtmosphere.bankHaze(g,canvas);
         LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
         factoriesAndVessels(g,canvas);
-        StaticTerrain.draw(g,canvas,true);
         DockView.draw(g,canvas);
         if(g.trainingChannel()) {
             int next=Math.min(gate,TrainingChannel.X.length-1);
@@ -44,7 +43,7 @@ public final class TrainingChannelView {
             float sy=c.screenY(gx,gy);
             if(sy<82) {
                 float sx=Physics.clamp(c.screenX(gx,gy),80,g.layout.width-80);
-                ControlView.arrow(canvas,sx,122,sx,88,VisualStyle.GOLD);
+                ControlView.arrow(g,canvas,sx,122,sx,88,VisualStyle.GOLD);
                 Lettering.center(canvas,"NEXT GATE",sx,131,10,VisualStyle.CREAM);
             }
         }
@@ -57,8 +56,8 @@ public final class TrainingChannelView {
         float age=1-t.gateClearTicks/90f,fade=(1-age)*(1-age);
         int mint=((int)(220*fade)<<24)|0x99ffcb;
         int white=((int)(245*fade)<<24)|0xfff0c5;
-        ControlView.ring(water,x,y,12+100*age,1,mint,4*(1-age)+1);
-        ControlView.ring(water,x,y,6+65*age,1,white,2);
+        ControlView.ring(g,water,x,y,12+100*age,1,mint,4*(1-age)+1);
+        ControlView.ring(g,water,x,y,6+65*age,1,white,2);
         water.line(x,y-TrainingChannel.HALF_WIDTH,x,y+TrainingChannel.HALF_WIDTH,2+7*fade,mint);
         for(int side=-1;side<=1;side+=2) for(int i=0;i<5;i++) {
             double angle=(i+1)*Math.PI/6;
@@ -123,13 +122,15 @@ public final class TrainingChannelView {
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
-        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0;int[] vehicles=YardActivity.visible(g);
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0;int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
-            while(boat<count || vehicle<vehicles.length) {
+            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount()) {
                 float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
                 float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
-                if(Math.min(bd,vd)>next)break;
+                float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
+                if(Math.min(sd,Math.min(bd,vd))>next)break;
+                if(sd<=bd && sd<=vd && shore<TrainingGroundView.frontCount()){TrainingGroundView.frontSection(g,canvas,shore++);continue;}
                 if(bd<=vd && boat<count)Renderer.body(g,world,bodies[boat++]);
                 else YardActivity.drawVehicle(g,canvas,vehicles[vehicle++]);
             }

@@ -17,7 +17,7 @@ public final class VesselHighlightTest {
                 check(SpriteAtlas.sourceLeft(atlas,frame)==SpriteAtlas.sourceLeft(SpriteAtlas.BARGE,frame) && SpriteAtlas.sourceBottom(atlas,frame)==SpriteAtlas.sourceBottom(SpriteAtlas.BARGE,frame),"directional cells remain registered");
             }
         }
-        check(VesselHighlight.opacity(0)>=.35f && VesselHighlight.opacity(45)>.95f,"visible trough and clear peak");
+        check(VesselHighlight.opacity(0)>=.2f && VesselHighlight.opacity(45)>.5f && VesselHighlight.opacity(45)<.6f,"recognizable glow remains translucent even at its peak");
         for(int tick=0;tick<90;tick++) {
             check(VesselHighlight.opacity(tick)==VesselHighlight.opacity(tick+90),"pulse is deterministic and periodic");
             check(Math.abs(VesselHighlight.opacity(tick+1)-VesselHighlight.opacity(tick))<.022f,"smooth pulse including cycle seam");

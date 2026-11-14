@@ -34,7 +34,7 @@ public final class Renderer {
         HarborView.draw(g,p);
         if(g.trafficWarning() || g.trafficActive()) {
             for(int x=173;x<426;x+=18) p.line(x,Game.TRAFFIC_Y,x+8,Game.TRAFFIC_Y,2,0x88ffc52f);
-            if(g.trafficWarning()) RiverPainter.center(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
+            if(g.trafficWarning()) SoftCue.caption(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
         }
         FeederView.draw(g,p);
         Body[] ordered=new Body[g.cargo.length+6]; int count=0;
@@ -63,10 +63,10 @@ public final class Renderer {
         int i=-1; for(int slot=0;slot<g.cargo.length;slot++) if(g.cargo[slot]==b) { i=slot;break; }
         int color=Game.COLORS[b.berth];
         if(g.selected==i && !b.lineAttached) {
-            p.circle(b.x,b.y,40,0x18fff0ce);
+            SoftCue.dot(p,b.x,b.y,30,SoftCue.animated(g,0x66fff0ce));
             for(int j=1;j<10;j++) {
                 float t=j/10f;
-                p.circle(b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,(color&0xffffff)|0x77000000);
+                SoftCue.dot(p,b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,SoftCue.animated(g,color));
             }
         }
         VesselView.draw(g,p,b,false);
@@ -78,6 +78,6 @@ public final class Renderer {
     }
     private static void tag(Painter p,String text,float x,float y,float size,int color) {
         // Anchor labels beside the hull while keeping their glyphs horizontal.
-        RiverPainter.center(p,text,x,y,size,color);
+        SoftCue.caption(p,text,x,y,size,color);
     }
 }

@@ -115,10 +115,6 @@ public final class ArcadeView {
         p.poly(points,color);
     }
     private static void ring(Painter p,float x,float y,float radius,int color,float size) {
-        for(int i=0;i<24;i++) {
-            double a=i*Math.PI/12;
-            float xx=x+(float)StrictMath.cos(a)*radius,yy=y+(float)StrictMath.sin(a)*radius*.65f;
-            p.rect(xx,yy,3+size,size,color);
-        }
+        SoftCue.ring(p,x,y,radius,1,color,size);
     }
 }

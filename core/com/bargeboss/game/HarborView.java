@@ -30,21 +30,22 @@ public final class HarborView {
         }
         int color=occupied?0xff8ce7c2:ready || focused(g)==index?GOLD:(Game.COLORS[index]&0xffffff)|0x88000000;
         p.rect(x,y,110,106,(selected?0x27000000:0x14000000)|(color&0xffffff));
+        color=SoftCue.animated(g,color);
         int run=(g.visualTicks/6)%16;
         for(int k=0;k<110;k+=16) {
             float xx=x+(k+run)%110;
-            p.rect(xx,y,Math.min(8,x+110-xx),2,color); p.rect(xx,y+104,Math.min(8,x+110-xx),2,color);
+            SoftCue.line(p,xx,y,Math.min(xx+8,x+110),y,1,color); SoftCue.line(p,xx,y+104,Math.min(xx+8,x+110),y+104,1,color);
         }
         for(int k=0;k<106;k+=16) {
             float yy=y+(k+run)%106;
-            p.rect(x,yy,2,Math.min(8,y+106-yy),color); p.rect(x+108,yy,2,Math.min(8,y+106-yy),color);
+            SoftCue.line(p,x,yy,x,Math.min(yy+8,y+106),1,color); SoftCue.line(p,x+108,yy,x+108,Math.min(yy+8,y+106),1,color);
         }
         for(int side=0;side<2;side++) for(int end=0;end<2;end++) {
             float xx=x+side*110, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
-            p.line(xx,yy,xx+sx*15,yy,4,color); p.line(xx,yy,xx,yy+sy*15,4,color);
+            SoftCue.line(p,xx,yy,xx+sx*15,yy,1,color); SoftCue.line(p,xx,yy,xx,yy+sy*15,1,color);
         }
-        RiverPainter.center(p,""+g.berthLetter(index),x+75,y+53,22,0x6656bac1);
-        RiverPainter.center(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
+        SoftCue.caption(p,""+g.berthLetter(index),x+75,y+53,22,0x6656bac1);
+        SoftCue.caption(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
         String badge=(working?"UNLOAD ":occupied?"TYING ":"BERTH ")+g.berthLetter(index);
         badge(p,badge,x+95,y+53,8,color);
         float bank=index==1?433:143;
@@ -74,25 +75,23 @@ public final class HarborView {
                     (g.layout.height/2-80)/Math.max(1,Math.abs(dy)));
             float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
             float ux=dx/distance,uy=dy/distance;
-            ControlView.arrow(canvas,ex-ux*32,ey-uy*32,ex,ey,GOLD);
+            ControlView.arrow(g,canvas,ex-ux*32,ey-uy*32,ex,ey,GOLD);
             Lettering.center(canvas,"BERTH "+g.berthLetter(berth),Physics.clamp(ex,85,g.layout.width-85),
                     Physics.clamp(ey+22,85,g.layout.height-62),12,GOLD);return;
         }
         Painter p=ScreenView.scaled(canvas,x,y,c.scale);
         float bob=3*(float)StrictMath.sin(g.visualTicks*.10);
-        p.poly(new float[]{-10,-57+bob,10,-57+bob,10,-38+bob,19,-38+bob,0,-16+bob,-19,-38+bob,-10,-38+bob},DARK);
-        p.poly(new float[]{-7,-54+bob,7,-54+bob,7,-35+bob,13,-35+bob,0,-20+bob,-13,-35+bob,-7,-35+bob},GOLD);
-        p.line(-5,-52+bob,5,-52+bob,2,VisualStyle.CREAM);
+        ControlView.arrow(g,p,0,-54+bob,0,-22+bob,GOLD);
     }
     static void badge(Painter p,String text,float x,float y,float size,int color) {
         float width=Lettering.width(text,size)+10;
         if(p instanceof RiverPainter) {
             RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
             Painter canvas=river.canvas();float sx=c.screenX(x,y),sy=c.screenY(x,y),scale=c.scale;
-            VisualStyle.panel(canvas,sx-width*scale/2,sy-3*scale,width*scale,(size+6)*scale,VisualStyle.NAVY);
+            canvas.rect(sx-width*scale/2,sy-3*scale,width*scale,(size+6)*scale,0x40101c30);
             Lettering.center(canvas,text,sx,sy,size*scale,color);
         } else {
-            VisualStyle.panel(p,x-width/2,y-3,width,size+6,VisualStyle.NAVY);
+            p.rect(x-width/2,y-3,width,size+6,0x40101c30);
             Lettering.center(p,text,x,y,size,color);
         }
     }

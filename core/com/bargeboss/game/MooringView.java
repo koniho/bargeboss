@@ -16,15 +16,13 @@ public final class MooringView {
             bollard(g,p,x,y);
             if(ready) {
                 float pulse=2*(float)StrictMath.sin(tick*.11);
-                ControlView.ring(p,x,y,Game.TIE_RADIUS+pulse,1,0x665feac1,4);
-                ControlView.ring(p,x,y,Game.TIE_RADIUS,1,GREEN,1.5f);
+                ControlView.ring(g,p,x,y,Game.TIE_RADIUS,1,GREEN,1.5f);
                 float top=y-48+3*(float)StrictMath.sin(tick*.11);
-                p.poly(new float[]{x-4,top,x+4,top,x+4,top+9,x+9,top+9,x,top+18,x-9,top+9,x-4,top+9},DARK);
-                p.poly(new float[]{x-2,top+2,x+2,top+2,x+2,top+11,x+5,top+11,x,top+15,x-5,top+11,x-2,top+11},VisualStyle.GOLD);
-                RiverPainter.center(p,"TIE",x+(berth==1?-12:12),y-38,8,GREEN);
+                ControlView.arrow(g,p,x,top,x,top+18,VisualStyle.GOLD);
+                SoftCue.caption(p,"TIE",x+(berth==1?-12:12),y-38,8,GREEN);
             } else if(tied) {
                 p.rect(x-3,y-11,6,2,GREEN);
-                ControlView.ring(p,x,y,17,1,0x6688e2bb,1);
+                ControlView.ring(g,p,x,y,17,1,0x6688e2bb,1);
             }
         }
         for(Body b:g.cargo) if(b!=null && b.active) {
@@ -33,9 +31,7 @@ public final class MooringView {
             }
             if(!b.lineAttached) {
                 if(g.canTie(b) && g.ropeBody!=b) {
-                    float pulse=1+(float)StrictMath.sin(tick*.09);
-                    ControlView.ring(p,b.x,b.y,40+pulse,1,GREEN,3);
-                    readiness(g,p,b);
+                    if(b==readyFocus(g))readiness(g,p,b);
                 }
                 continue;
             }
@@ -59,10 +55,10 @@ public final class MooringView {
                 p.line(x-6,y+3,x+6,y-3,3,ROPE); p.line(x-5,y-3,x+6,y+3,2,HIGHLIGHT);
                 p.line(x+5,y+2,x+10,y+10,2,ROPE);
             }
-            if(progress<1) ControlView.ring(p,b.x,b.y,42,progress,GREEN,3);
+            if(progress<1) ControlView.ring(g,p,b.x,b.y,42,progress,GREEN,3);
             if(Mooring.aligning(b)) {
                 float t=(b.mooringTicks-Mooring.TIGHTEN_TICKS)/(float)Mooring.ALIGN_TICKS;
-                ControlView.ring(p,b.x,b.y,43,t,GREEN,2);
+                ControlView.ring(g,p,b.x,b.y,43,t,GREEN,2);
             }
         }
         if(g.ropeBody!=null && g.ropeBody.active) {
@@ -77,6 +73,12 @@ public final class MooringView {
         ControlView.ring(p,b.x,b.y,radius-9,1,((alpha/2)<<24)|0xffe5a8,2);
         if(t<.25f) p.circle(b.x,b.y,b.half+b.radius,((int)(65*(1-t*4))<<24)|0xb8ffe2);
     }
+    private static Body readyFocus(Game g) {
+        Body held=g.heldCargo();if(g.canTie(held))return held;
+        Body nearest=null;float distance=Float.MAX_VALUE;
+        for(Body b:g.cargo)if(g.canTie(b)) {float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);if(d<distance){nearest=b;distance=d;}}
+        return nearest;
+    }
     private static void readiness(Game g,Painter p,Body b) {
         if(!(p instanceof RiverPainter)) return;
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
@@ -88,14 +90,12 @@ public final class MooringView {
             float t=((g.visualTicks%60)/60f+i*.25f)%1;
             float along=38*c.scale+t*Math.max(0,distance-55*c.scale);
             float x=bx+dx*along,y=by+dy*along;
-            canvas.line(x-dx*5-dy*4,y-dy*5+dx*4,x,y,2,GREEN);
-            canvas.line(x-dx*5+dy*4,y-dy*5-dx*4,x,y,2,GREEN);
+            SoftCue.line(canvas,x-dx*5-dy*4,y-dy*5+dx*4,x,y,1,SoftCue.animated(g,GREEN));
+            SoftCue.line(canvas,x-dx*5+dy*4,y-dy*5-dx*4,x,y,1,SoftCue.animated(g,GREEN));
         }
         float x=Physics.clamp(bx,110,g.layout.width-110),y=Math.max(82,by-62*c.scale);
-        VisualStyle.panel(canvas,x-101,y-5,202,45,0xf0102b35);
-        canvas.line(x-92,y+9,x-87,y+15,3,GREEN);canvas.line(x-87,y+15,x-77,y+2,3,GREEN);
-        Lettering.center(canvas,"READY TO TIE",x+8,y+2,13,GREEN);
-        Lettering.center(canvas,g.pushing?"LIFT, THEN DRAG TO BOLLARD":"DRAG TO BOLLARD / RELEASE",x,y+24,8,VisualStyle.CREAM);
+        canvas.rect(x-65,y-3,130,22,0x40102b35);
+        Lettering.center(canvas,"READY TO TIE",x,y+2,11,SoftCue.alpha(GREEN,.85f));
     }
     private static void bollard(Game g,Painter p,float x,float y) {
         if(p instanceof RiverPainter) {
@@ -124,22 +124,21 @@ public final class MooringView {
             float t=i/32f;
             LassoPath.sample(edge[0],edge[1],x,y,deck,t,river,point);
             float xx=point[0],yy=point[1];
-            p.line(lastX,lastY,xx,yy,3,0x990b1424);
-            p.line(lastX,lastY,xx,yy,1.25f,(color&0xffffff)|0xcc000000);
+            SoftCue.line(p,lastX,lastY,xx,yy,1.25f,SoftCue.animated(g,color));
             lastX=xx; lastY=yy;
         }
         for(int i=0;i<4;i++) {
             float t=((g.visualTicks%48)/48f+i*.25f)%1;
             LassoPath.sample(edge[0],edge[1],x,y,deck,t,river,point);
             float xx=point[0],yy=point[1];
-            p.rect(xx-2,yy-2,4,4,DARK); p.rect(xx-1,yy-1,3,3,onPoint?HIGHLIGHT:color);
+            SoftCue.dot(p,xx,yy,2,SoftCue.animated(g,onPoint?HIGHLIGHT:color));
         }
         float radius=onPoint?14:11;
         for(int sx=-1;sx<=1;sx+=2) for(int sy=-1;sy<=1;sy+=2) {
-            p.line(x+sx*radius,y+sy*radius,x+sx*(radius-5),y+sy*radius,2,color);
-            p.line(x+sx*radius,y+sy*radius,x+sx*radius,y+sy*(radius-5),2,color);
+            SoftCue.line(p,x+sx*radius,y+sy*radius,x+sx*(radius-5),y+sy*radius,1,SoftCue.animated(g,color));
+            SoftCue.line(p,x+sx*radius,y+sy*radius,x+sx*radius,y+sy*(radius-5),1,SoftCue.animated(g,color));
         }
-        p.rect(x-1,y-1,3,3,color);
+        SoftCue.dot(p,x,y,2,SoftCue.animated(g,color));
         // The rope stays visibly coiled on deck until the finger lifts.
         for(int i=0;i<3;i++) {
             loop(p,originX+1,originY+2-i*2,8-i,5-i*.5f,0,DARK,4);

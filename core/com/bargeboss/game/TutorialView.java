@@ -61,77 +61,75 @@ public final class TutorialView {
             if(i==t.lesson) coach.rect(54+i*40+(g.visualTicks%60)/60f*25,208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
-        float pulse=2*(float)StrictMath.sin(g.visualTicks*.10);
+        float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
+        if(g.towAiming || g.ropeDragging)return; // The live trajectory replaces the demonstration.
         if(approach) { approach(g,p,river,target,pulse);return; }
         if(t.lesson==Tutorial.HOLD) {
-            river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x2635c8bd);
-            ControlView.ring(river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);
-            ControlView.ring(river,Tutorial.PUSH_X,Tutorial.PUSH_Y,Tutorial.PUSH_RADIUS,1,0x99b9df9c,1);
-            RiverPainter.center(river,"PUSH HERE",Tutorial.PUSH_X,Tutorial.PUSH_Y,11,ControlView.GREEN);
+            river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x0c35c8bd);
+            ControlView.ring(g,river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);
+            SoftCue.caption(river,"PUSH HERE",Tutorial.PUSH_X,Tutorial.PUSH_Y,11,ControlView.GREEN);
         }
         if(t.lesson==Tutorial.MOVE) {
-            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
             for(int i=0;i<Tutorial.DRIVE_X.length;i++) {
                 float x=Tutorial.DRIVE_X[i],y=Tutorial.DRIVE_Y[i];int color=i<t.driveMarker?ControlView.GREEN:VisualStyle.GOLD;
-                river.circle(x,y,Tutorial.DRIVE_RADIUS,0x2235c8bd);
-                ControlView.ring(river,x,y,Tutorial.DRIVE_RADIUS+(i==t.driveMarker?pulse:0),1,color,i==t.driveMarker?3:1);
-                river.circle(x,y,6,VisualStyle.OUTLINE);river.circle(x,y,4,color);
+                if(i>t.driveMarker)continue;
+                if(i==t.driveMarker)river.circle(x,y,Tutorial.DRIVE_RADIUS,0x0a35c8bd);
+                if(i==t.driveMarker)ControlView.ring(g,river,x,y,Tutorial.DRIVE_RADIUS+pulse,1,color,1.2f);
+                SoftCue.dot(river,x,y,4,SoftCue.animated(g,color));
             }
-            driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
+            if(!g.holdingTug())driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
             RiverCamera c=g.layout.camera;float sx=c.screenX(t.driveTargetX(),t.driveTargetY()),sy=c.screenY(t.driveTargetX(),t.driveTargetY());
             sx=Physics.clamp(sx,75,g.layout.width-75);sy=Physics.clamp(sy+48,216,g.layout.height-90);
-            VisualStyle.panel(p,sx-47,sy-12,94,24,0xee101c30);
+            p.rect(sx-47,sy-12,94,24,0x40101c30);
             Lettering.center(p,"BUOY "+(t.driveMarker+1)+" / 2",sx,sy-4,10,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.COAST) {
-            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,ControlView.BLUE,3);
-            RiverPainter.center(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
+            SoftCue.caption(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
         } else if(t.lesson==Tutorial.RELEASE) {
             Body b=g.cargo[0];RiverCamera c=g.layout.camera;
-            ControlView.ring(river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
+            ControlView.ring(g,river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
             float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
-            VisualStyle.panel(p,x-54,y-12,108,24,0xee101c30);
+            p.rect(x-54,y-12,108,24,0x40101c30);
             Lettering.center(p,"TAP TO LET GO",x,y-4,10,ControlView.GREEN);
         } else if(t.lesson==Tutorial.PULL) {
-            ControlView.ring(river,g.tug.x,g.tug.y,36+pulse,1,VisualStyle.GOLD,3);
-            ControlView.arrow(river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
+            ControlView.arrow(g,river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
         } else if(g.cargo[0]!=null && g.cargo[0].active) {
             Body b=g.cargo[0];
-            if(!b.lineAttached) ControlView.ring(river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
-            if(t.lesson==Tutorial.CONNECT) {
-                ControlView.arrow(river,b.x,b.y-38,g.tug.x,g.tug.y+30,ControlView.GREEN);
-                ControlView.ring(river,g.tug.x,g.tug.y,38+pulse,1,ControlView.GREEN,3);
+            if(!b.lineAttached && g.heldCargo()!=b && !g.canTie(b))ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,2);
+            if(t.lesson==Tutorial.CONNECT && !g.towAiming) {
+                ControlView.arrow(g,river,b.x,b.y-38,g.tug.x,g.tug.y+30,ControlView.GREEN);
+                ControlView.ring(g,river,g.tug.x,g.tug.y,38+pulse,1,ControlView.GREEN,3);
             } else if(t.lesson==Tutorial.HOLD || t.lesson==Tutorial.STEER) {
                 pushGesture(g,p,river,b,t.lesson==Tutorial.STEER);
             } else if(t.lesson==Tutorial.TIE) {
                 if(g.canTie(b) && !g.ropeDragging) {
-                    ControlView.arrow(river,b.x-25,b.y,g.bollardX(b.berth)+18,g.bollardY(b.berth),ControlView.GREEN);
-                    ControlView.ring(river,g.bollardX(b.berth),g.bollardY(b.berth),20+pulse,1,PAPER,2);
+                    ControlView.arrow(g,river,b.x-25,b.y,g.bollardX(b.berth)+18,g.bollardY(b.berth),ControlView.GREEN);
+                    ControlView.ring(g,river,g.bollardX(b.berth),g.bollardY(b.berth),20+pulse,1,PAPER,2);
                 }
             } else {
                 // Put the instruction on the cargo's actual touch target. The old
                 // offset sat over the tug and taught players to press the wrong boat.
                 RiverCamera c=g.layout.camera;
                 float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
-                VisualStyle.panel(p,x-43,y-12,86,24,0xee101c30);
+                p.rect(x-43,y-12,86,24,0x40101c30);
                 Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
     }
     private static void driveArrow(Game g,Painter river,float x,float y,String label) {
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy)),reach=Math.min(90,len);
-        ControlView.arrow(river,g.tug.x+dx/len*30,g.tug.y+dy/len*30,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach,VisualStyle.GOLD);
-        if(label!=null) RiverPainter.center(river,label,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach-18,9,PAPER);
+        ControlView.arrow(g,river,g.tug.x+dx/len*30,g.tug.y+dy/len*30,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach,VisualStyle.GOLD);
+        if(label!=null) SoftCue.caption(river,label,g.tug.x+dx/len*reach,g.tug.y+dy/len*reach-18,9,PAPER);
     }
     /** A navigation cue precedes the cargo gesture when the next job is farther away. */
     private static void approach(Game g,Painter canvas,Painter river,Body b,float pulse) {
-        ControlView.ring(river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
+        ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
         float x=b.x,y=b.y;
         if(g.tug.x<210) {x=230;y=TrainingChannel.Y[TrainingChannel.Y.length-1];}
         float dx=x-g.tug.x,dy=y-g.tug.y,length=Math.max(1,Physics.length(dx,dy));
         float reach=Math.min(95,length);
-        ControlView.arrow(river,g.tug.x+dx/length*30,g.tug.y+dy/length*30,
+        ControlView.arrow(g,river,g.tug.x+dx/length*30,g.tug.y+dy/length*30,
                 g.tug.x+dx/length*reach,g.tug.y+dy/length*reach,VisualStyle.GOLD);
-        RiverPainter.center(river,"DRIVE THIS WAY",g.tug.x+dx/length*reach,g.tug.y+dy/length*reach-18,9,PAPER);
+        SoftCue.caption(river,"DRIVE THIS WAY",g.tug.x+dx/length*reach,g.tug.y+dy/length*reach-18,9,PAPER);
         RiverCamera c=g.layout.camera;
         float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y);
         if(sx<55 || sx>g.layout.width-55 || sy<210 || sy>g.layout.height-85) {
@@ -140,7 +138,7 @@ public final class TutorialView {
                     (g.layout.height*.32f)/Math.max(1,Math.abs(ey)));
             sx=cx+ex*fraction;sy=cy+ey*fraction;
         }
-        VisualStyle.panel(canvas,sx-51,sy+28,102,23,0xee101c30);
+        canvas.rect(sx-51,sy+28,102,23,0x40101c30);
         Lettering.center(canvas,"NEXT BARGE",sx,sy+33,10,VisualStyle.GOLD);
     }
     private static void gateFeedback(Game g,Painter p) {
@@ -163,6 +161,7 @@ public final class TutorialView {
     }
     private static void pushGesture(Game g,Painter canvas,Painter river,Body b,boolean assist) {
         boolean held=g.heldCargo()==b;
+        if(held)return; // Live drag feedback replaces the demonstration while the player acts.
         float x=held?g.downX:b.x,y=held?g.downY:b.y;
         float phase=(g.visualTicks%150)/150f;
         float travel=Physics.clamp((phase-.2f)/.5f,0,1);
@@ -171,18 +170,16 @@ public final class TutorialView {
         dx=assist?-65:dx/len*90;dy=assist?-65:dy/len*90;
         float sx=x+dx*from,sy=y+dy*from,tx=x+dx*to,ty=y+dy*to;
         ControlView.path(river,sx,sy,tx,ty,ControlView.BLUE);
-        ControlView.arrow(river,sx-8*(assist?-1:1),sy-8*(assist?-1:1),tx,ty,VisualStyle.GOLD);
+        ControlView.arrow(g,river,sx-8*(assist?-1:1),sy-8*(assist?-1:1),tx,ty,VisualStyle.GOLD);
         RiverCamera c=g.layout.camera;
         float fingerX=c.screenX(x+dx*position,y+dy*position),fingerY=c.screenY(x+dx*position,y+dy*position);
         float pulse=phase<.2f?2*(float)StrictMath.sin(phase*5*Math.PI):0;
-        canvas.circle(fingerX,fingerY,12+pulse,0x99101c30);
-        canvas.circle(fingerX,fingerY,8+pulse,VisualStyle.CREAM);
-        canvas.circle(fingerX,fingerY,4,VisualStyle.GOLD);
+        SoftCue.dot(canvas,fingerX,fingerY,7+pulse,SoftCue.animated(g,VisualStyle.GOLD));
         if(!held) {
             float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
-            VisualStyle.panel(canvas,bx-51,by-12,102,24,0xee101c30);
-            Lettering.center(canvas,assist?"HOLD STILL":"PRESS + DRAG",bx,by-4,10,VisualStyle.GOLD);
+            canvas.rect(bx-51,by+26,102,24,0x40101c30);
+            Lettering.center(canvas,assist?"HOLD STILL":"PRESS + DRAG",bx,by+34,10,SoftCue.alpha(VisualStyle.GOLD,.8f));
         }
-        Lettering.center(canvas,assist?"BACK TO THE RING":phase<.2f?"PRESS":phase<.7f?"DRAG":"KEEP HOLDING",fingerX,fingerY+20,10,PAPER);
+
     }
 }

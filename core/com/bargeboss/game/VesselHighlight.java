@@ -19,7 +19,7 @@ public final class VesselHighlight {
     static float opacity(int tick) {
         // A 1.5 second breath, with enough light at the trough to remain identifiable.
         float pulse=.5f-.5f*(float)StrictMath.cos((tick%90)*2*StrictMath.PI/90);
-        return .38f+.60f*pulse;
+        return .24f+.30f*pulse;
     }
     public static void draw(Game g,Painter p,Body b,boolean tug,float x,float y,float size) {
         if(!b.active)return;

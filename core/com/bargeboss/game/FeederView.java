@@ -7,17 +7,17 @@ public final class FeederView {
         if(g.tutorial!=null) return;
         for(int i=0;i<g.feeders.length;i++) {
             Feeder f=g.feeders[i];
-            int color=f.blocked?VisualStyle.RED:VisualStyle.GOLD;
+            int color=SoftCue.animated(g,f.blocked?VisualStyle.RED:VisualStyle.GOLD);
             p.rect(f.x-42,790,84,46,(f.blocked?0x44000000:0x22000000)|(color&0xffffff));
             for(int side=-1;side<=1;side+=2) {
-                p.line(f.x+side*42,789,f.x+side*42,836,3,color);
+                SoftCue.line(p,f.x+side*42,789,f.x+side*42,836,1,color);
                 float bob=g.water.height(f.x+side*42,805,g.visualTicks,null)*.8f;
                 p.circle(f.x+side*42+RiverCamera.riseX(bob),805+RiverCamera.riseY(bob),5,VisualStyle.OUTLINE);
                 p.circle(f.x+side*42+RiverCamera.riseX(bob),805+RiverCamera.riseY(bob),3,(g.visualTicks/18)%2==0?color:VisualStyle.CREAM);
             }
             for(int j=0;j<3;j++) {
                 float y=798+j*15-(g.visualTicks%30)/2f;
-                p.line(f.x-8,y+5,f.x,y,2,color); p.line(f.x,y,f.x+8,y+5,2,color);
+                SoftCue.line(p,f.x-8,y+5,f.x,y,1,color); SoftCue.line(p,f.x,y,f.x+8,y+5,1,color);
             }
             HarborView.badge(p,"FEED "+(i+1),f.x,820,7,color);
 
@@ -44,7 +44,7 @@ public final class FeederView {
             if(!hurry) {
                 int zone=f.destination;
                 float tx=c.screenX(Game.DOCK_X[zone],g.dockY(zone)),ty=c.screenY(Game.DOCK_X[zone],g.dockY(zone));
-                ControlView.ring(p,tx,ty,38+(150-f.shoutTicks)%30,1,color,3);
+                ControlView.ring(g,p,tx,ty,38+(150-f.shoutTicks)%30,1,color,3);
             }
         }
     }
