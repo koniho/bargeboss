@@ -16,6 +16,7 @@ public final class ShorelineReview {
             g.cargo[0]=new Body(1,0,g.tug.x-(bank==0?85:-3),g.tug.y-(bank==0?3:85),g.tug.angle);
             if(frameIndex>=2){g.tow.attach(g,g.cargo[0]);g.tug.angle+=(float)Math.PI;g.tow.catchTicks=0;}
             g.layout=Layout.focused(1333,600,g.tug.x,g.tug.y,1.7f,666,360);
+            for(int i=0;i<18;i++)g.buildingFades.step(g);
             BufferedImage frame=new BufferedImage(1333,600,BufferedImage.TYPE_INT_RGB);Graphics2D c=frame.createGraphics();
             c.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             g.render(new DesktopPainter(c));c.dispose();ImageIO.write(frame,"png",new File("out/shoreline-hulls-"+frameIndex+".png"));

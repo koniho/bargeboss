@@ -25,6 +25,7 @@ public final class Game {
     public Body tug;
     public WaterSurface water=new WaterSurface();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
+    public BuildingFades buildingFades=new BuildingFades();
     public Bridge bridge=new Bridge();
     public Body trafficBoat;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
@@ -98,8 +99,8 @@ public final class Game {
     public boolean inWater(float x,float y) {
         return tutorial!=null?TrainingChannel.contains(x,y):x>=Physics.LEFT && x<=Physics.RIGHT && y>=channelTop() && y<=Physics.BOTTOM;
     }
-    public static final float WORK_ZOOM=1.5f,DOCK_ZOOM=1.75f;
-    public static final float PRACTICE_DRIVE_ZOOM=1.9f,PRACTICE_CANAL_ZOOM=1.4f;
+    public static final float WORK_ZOOM=1.8f,DOCK_ZOOM=2.1f;
+    public static final float PRACTICE_DRIVE_ZOOM=2.2f,PRACTICE_CANAL_ZOOM=1.4f;
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
@@ -227,7 +228,7 @@ public final class Game {
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
-        bridge=new Bridge();
+        bridge=new Bridge();buildingFades=new BuildingFades();
         water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;
@@ -501,7 +502,7 @@ public final class Game {
                 visualAccumulator+=Math.min(.25,seconds);
                 while(visualAccumulator+1e-10>=1.0/60.0) {
                     visualAccumulator-=1.0/60.0; visualTicks++;
-                    if(mode==TITLE)titleSmoke.titleStep(this);else smoke.drift();
+                    if(mode==TITLE)titleSmoke.titleStep(this);else {smoke.drift();buildingFades.step(this);}
                 }
             } else visualAccumulator=0;
             return;
@@ -515,7 +516,7 @@ public final class Game {
         if(mode!=PLAY) return;
         visualTicks++;
         if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
-            smoke.step(this);
+            smoke.step(this);buildingFades.step(this);
             if(celebrationTicks>0) celebrationTicks--;
             if(impactTicks>0) impactTicks--;
             return;
@@ -575,6 +576,7 @@ public final class Game {
             }
         }
         updateCamera();
+        buildingFades.step(this);
     }
     /** Rope flight, catch and recoil are real-time events, independent of 2x boat motion. */
     private void updateRope() {

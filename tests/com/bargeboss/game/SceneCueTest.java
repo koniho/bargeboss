@@ -22,15 +22,20 @@ public final class SceneCueTest {
             scene.cargo[0]=barge;
             scene.layout=Layout.focused(1333,600,scene.tug.x,scene.tug.y,1.7f,666,360);
             Order painter=new Order(scene);TrainingChannelView.draw(scene,painter);
-            check(painter.tugs>0 && painter.barges>0 && painter.caps>0,"both vessel types remain above shoreline on each lower bank");
+            check(painter.tugs>0 && painter.barges>0 && painter.foregroundCaps>0,"solid lower banks occlude vessels on both foreground basin edges");
         }
-        for(boolean practice:new boolean[]{false,true})for(boolean release:new boolean[]{false,true}) {
+        for(boolean practice:new boolean[]{false,true})for(boolean release:new boolean[]{false,true})for(int heading=0;heading<4;heading++) {
             Game root=new Game();root.reset();if(practice)root.startTutorial();Game scene=root.activeGame();
-            Body barge=new Body(1,0,scene.tug.x+70,scene.tug.y,0);scene.cargo[0]=barge;
-            scene.tow.attach(scene,barge);scene.tug.angle=(float)Math.PI; // Rope crosses the hull in projection.
+            for(int i=0;i<scene.cargo.length;i++)scene.cargo[i]=null;
+            for(Feeder f:scene.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            scene.tug.x=practice?-1550:300;scene.tug.y=600;scene.tug.angle=heading*(float)Math.PI/2;
+            scene.tug.floatingInitialized=true;scene.tug.heave=0;
+            Body barge=new Body(1,0,scene.tug.x+70,scene.tug.y+20,-scene.tug.angle);barge.floatingInitialized=true;scene.cargo[0]=barge;
+            scene.layout=Layout.focused(960,600,scene.tug.x+35,scene.tug.y,1.5f,480,350);
+            scene.tow.attach(scene,barge);
             if(release)scene.tow.release(scene);
-            RopeOrder painter=new RopeOrder(scene.layout.camera.scale);Renderer.draw(root,painter);
-            check(painter.ropes==24 && painter.vessels>0,"connected and recoiling tow rope draw once beneath hulls in practice and shifts");
+            RopeOrder painter=new RopeOrder(scene);Renderer.draw(root,painter);
+            check(painter.ropes==24 && painter.vessels>0,"each connected or recoiling tow span draws exactly once in its world depth order");
         }
         for(float zoom:new float[]{.7f,1,2,4}) {
             Strokes strokes=new Strokes();Painter p=new RiverPainter(strokes,new RiverCamera(0,0,zoom));
@@ -54,22 +59,26 @@ public final class SceneCueTest {
         public void circle(float x,float y,float r,int color){circles++;}
     }
     private static final class RopeOrder extends Strokes {
-        final float scale;int vessels,ropes;
-        RopeOrder(float scale){this.scale=scale;}
-        public void sprite(int a,int f,float x,float y,float w,float h,float angle,float alpha){if(a==SpriteAtlas.TUG || a==SpriteAtlas.BARGE)vessels++;}
+        final float scale;final RiverCamera camera;final TowView.Segments segments;
+        int vessels,ropes;float lastBody=-Float.MAX_VALUE,lastSpan=-Float.MAX_VALUE;
+        RopeOrder(Game g){camera=g.layout.camera;scale=camera.scale;segments=new TowView.Segments(g);}
+        public void sprite(int a,int f,float x,float y,float w,float h,float angle,float alpha){
+            if(a==SpriteAtlas.TUG || a==SpriteAtlas.BARGE){check(lastSpan<=y+.01f,"far rope spans precede a hull, near spans follow it");lastBody=y;vessels++;}
+        }
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float angle,float blend,float alpha){sprite(a,f,x,y,w,h,angle,alpha);}
         public void layer(StaticLayer layer,float x,float y,float scale,float alpha){}
         public void line(float x,float y,float xx,float yy,float width,int color) {
             if((color&0xffffff)==0xffe3a1 && Math.abs(width-3*scale)<.001f) {
-                ropes++;check(vessels==0,"physical towline must not be painted over any hull");
+                float depth=segments.depth(camera,ropes++);
+                check(depth+.01f>=lastBody && depth>=lastSpan,"rope sections follow their attachment-dependent ground depth");lastSpan=depth;
             }
         }
     }
     private static final class Order extends Strokes {
-        int factories,vessels,caps,tugs,barges;
-        Order(Game g){}
+        final Game g;float factoryDepth=-Float.MAX_VALUE;int factories,vessels,caps,tugs,barges,foregroundCaps;
+        Order(Game g){this.g=g;}
         public void sprite(int a,int f,float x,float y,float w,float h,float angle,float alpha) {
-            if(a==SpriteAtlas.FACTORY)factories++;
+            if(a==SpriteAtlas.FACTORY){factories++;factoryDepth=y+GroundArt.LAND_RISE*g.layout.camera.scale;}
             if(a==SpriteAtlas.TUG){vessels++;tugs++;}
             if(a==SpriteAtlas.BARGE){vessels++;barges++;}
         }
@@ -85,7 +94,10 @@ public final class SceneCueTest {
         public void poly(float[] xy,int color) {
             if(color!=0xff43525a || xy.length!=8)return;
             caps++;
-            check(vessels==0 && factories==0,"no shoreline cap may overpaint hulls, roofs or chimneys");
+            check((color>>>24)==255,"shoreline geometry never fades for a nearby boat");
+            if(vessels>0)foregroundCaps++;
+            float depth=(xy[1]+xy[3]+xy[5]+xy[7])*.25f+GroundArt.LAND_RISE*g.layout.camera.scale;
+            check(depth+3*g.layout.camera.scale>=factoryDepth,"lower shoreline cannot overpaint nearer factory roofs or chimneys");
         }
     }
 }

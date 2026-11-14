@@ -5,10 +5,12 @@ import java.util.HashMap;
 
 /** Per-render foreground occlusion. Only already painted vessel pixels can trigger fading.
  * Masks are conservative opaque interiors, shared by every native host. No proximity radius,
- * smoke, wake, rope, objective or persistent game state participates. */
+ * smoke, wake, rope or objective participates. BuildingFades separately animates
+ * the overlap target at fixed steps; these mask queries are stateless. */
 public final class SceneryOcclusion implements Painter {
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
+    private float recordingDepth=Float.NEGATIVE_INFINITY;
     public SceneryOcclusion(Painter target) {this.target=target;}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
@@ -16,6 +18,7 @@ public final class SceneryOcclusion implements Painter {
     private interface Shape {boolean contains(float x,float y);float left();float top();float right();float bottom();}
     private static final class Sprite implements Shape {
         final long[] rows;final float x,y,w,h,px,py,c,s,l,t,r,b;
+        float groundDepth=Float.NEGATIVE_INFINITY;
         Sprite(int atlas,int frame,float x,float y,float w,float h,float rotation) {
             this.rows=OcclusionMasks.rows(atlas)[frame];this.x=x;this.y=y;
             this.w=w*SpriteAtlas.widthScale(atlas,frame);this.h=h*SpriteAtlas.heightScale(atlas,frame);
@@ -78,9 +81,10 @@ public final class SceneryOcclusion implements Painter {
         if(p instanceof RiverPainter)p=((RiverPainter)p).canvas();
         return p instanceof SceneryOcclusion?(SceneryOcclusion)p:null;
     }
-    private float opacity(Shape shape) {
+    private float opacity(Shape shape) {return opacity(shape,Float.POSITIVE_INFINITY);}
+    private float opacity(Shape shape,float depth) {
         int hits=0;
-        for(Sprite vessel:vessels){hits+=vessel.overlap(shape);if(hits>=4)return .28f;}
+        for(Sprite vessel:vessels)if(vessel.groundDepth<=depth){hits+=vessel.overlap(shape);if(hits>=4)return .28f;}
         // Easing starts inside actual opaque overlap, never outside the silhouette.
         float t=hits/4f;t=t*t*(3-2*t);return 1-.72f*t;
     }
@@ -111,6 +115,48 @@ public final class SceneryOcclusion implements Painter {
         if(placements.size()>1024)placements.clear();
         placements.put(key,new WaterPlacement(rise,size,overlaps));return overlaps;
     }
+    private static final Painter SINK=new Painter() {
+        public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}
+        public void line(float x,float y,float xx,float yy,float w,int c){}public void poly(float[] xy,int c){}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
+    };
+    /** Only vessel artwork is sampled; no effects or renderer calls advance the fade. */
+    static SceneryOcclusion snapshot(Game g) {
+        SceneryOcclusion scene=new SceneryOcclusion(SINK);
+        scene.register(g,g.tug);
+        for(Body b:g.cargo)if(b!=null && b.active)scene.register(g,b);
+        if(g.tutorial==null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){scene.register(g,f.boat);if(f.load!=null)scene.register(g,f.load);}
+        if(g.trafficActive())scene.register(g,g.trafficBoat);
+        return scene;
+    }
+    private void register(Game g,Body b) {
+        if(b==null || !b.active)return;
+        recordingDepth=g.layout.camera.screenY(b.x,b.y);
+        Painter p=new RiverPainter(this,g.layout.camera);boolean tug=b.berth<0;
+        float bob=WaterSurface.lift(g,b),x=b.x+RiverCamera.riseX(bob),y=b.y+RiverCamera.riseY(bob);
+        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
+        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,x,y,size,size,1);
+        if(tug)return;
+        if(b.berth==2){if(b.unloadingTicks<Game.UNLOAD_TICKS)SpriteAtlas.draw(p,SpriteAtlas.BULK,b.angle,x,y,size,size,1-b.unloadingTicks/(float)Game.UNLOAD_TICKS);return;}
+        int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
+        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle),cargoSize=b.berth==0?58:26;
+        for(int i=0;i<remaining;i++) {
+            float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
+            SpriteAtlas.draw(p,b.berth==0?SpriteAtlas.STEEL:SpriteAtlas.CONTAINER,b.angle,x+c*xx-s*yy,y+s*xx+c*yy,cargoSize,cargoSize,1);
+        }
+    }
+    float buildingTarget(Game g,int atlas,int frame,float wx,float wy,float rise,float size) {
+        RiverCamera c=g.layout.camera;float depth=c.screenY(wx,wy),x=c.screenX(wx,wy),y=depth-rise*c.scale;
+        float w=size*c.scale*SpriteAtlas.widthScale(atlas,frame),h=size*c.scale*SpriteAtlas.heightScale(atlas,frame);
+        float l=x-SpriteAtlas.pivotX(atlas,frame)*w,t=y-SpriteAtlas.pivotY(atlas,frame)*h;
+        // Reject distant silhouettes before allocating masks or checking water eligibility.
+        boolean candidate=false;
+        for(Sprite vessel:vessels)if(vessel.groundDepth<=depth && vessel.r>l && vessel.l<l+w && vessel.b>t && vessel.t<t+h){candidate=true;break;}
+        if(!candidate || !buildingOverWater(g,atlas,frame,wx,wy,rise,size))return 1;
+        return opacity(new Sprite(atlas,frame,x,y,size*c.scale,size*c.scale,0),depth);
+    }
+    /** Instant overlap target for diagnostics; production buildings read BuildingFades. */
     public static float buildingOpacity(Game g,Painter p,int atlas,int frame,float wx,float wy,float rise,float size) {
         if(!buildingOverWater(g,atlas,frame,wx,wy,rise,size))return 1;
         RiverCamera c=g.layout.camera;
@@ -136,7 +182,7 @@ public final class SceneryOcclusion implements Painter {
     }
     private void remember(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
         if(atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK && alpha>=.15f && w>0 && h>0)
-            vessels.add(new Sprite(atlas,frame,x,y,w,h,r));
+            {Sprite vessel=new Sprite(atlas,frame,x,y,w,h,r);vessel.groundDepth=recordingDepth;vessels.add(vessel);}
     }
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){remember(a,f,x,y,w,h,r,alpha);target.sprite(a,f,x,y,w,h,r,alpha);}
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){

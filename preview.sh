@@ -8,6 +8,7 @@ echo tools/GenerateShadowMasks.java >> build/preview/sources.txt
 echo tools/SpriteAffinePixelTest.java >> build/preview/sources.txt
 echo tools/GenerateVesselGlow.java >> build/preview/sources.txt
 echo tools/VesselGlowReview.java >> build/preview/sources.txt
+echo tools/BuildingFadeReview.java >> build/preview/sources.txt
 echo tools/ShorelineReview.java >> build/preview/sources.txt
 echo tools/SoftCueReview.java >> build/preview/sources.txt
 echo tools/EffectsPreview.java >> build/preview/sources.txt
@@ -48,6 +49,7 @@ if [ "${1:-}" = '--idle-water' ] || [ "${1:-}" = '--title' ]; then
 fi
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.Preview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ScreenSizesPreview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuildingFadeReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShorelineReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.SoftCueReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.EffectsPreview

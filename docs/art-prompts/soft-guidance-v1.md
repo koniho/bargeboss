@@ -1,10 +1,11 @@
 # Quiet gameplay guidance and shoreline depth
 
-All shoreline caps belong to the cached terrain pass, before vessels, road
-vehicles and factories. Do not redraw the lower bank caps after a vessel: their
-raised projection cuts across painted hulls close to shore. Buildings and boats
-still share far-to-near ordering, while the complete shoreline remains beneath
-both. Collision geometry continues to keep vessels inside the water.
+Lower shoreline caps are solid foreground geometry: they occlude watercraft
+and never fade. Short sections join the same far-to-near world ordering as
+vessels, road vehicles and factories, so a cap can cover the hull at the bank
+without being painted over a nearer factory roof or chimney. The underlying
+ground and bank walls remain cached. Only eligible buildings whose painted
+silhouettes actually obscure watercraft fade; shorelines are not buildings.
 
 `SoftCue` defines the shared gameplay guidance style: translucent feathered
 strokes, unfilled arrowheads, diffuse dots and slow visual-clock breathing.
@@ -23,6 +24,14 @@ viewport sizes, transparent open guidance and bounded stroke thickness.
 `SoftCueReview` exports wide-phone driving, pushing and lasso captures through
 the real shared renderer. The full render-budget checks remain enabled.
 
-Connected towlines and their release recoil also belong below the vessel sprites.
-`TowView.drawRope` runs in the world pass; `TowView.draw` draws only interaction
-cues afterward. Keep this separation in both tutorial and regular stages.
+Connected towlines and release recoil are split into 24 spans, sorted into the
+world pass by their attachment-dependent ground depth. The stern fitting follows
+the tug orientation and the chosen barge end follows its heading. Deck height,
+bob and vertical sag affect projection; near spans appear in front of a hull and
+far spans behind. Guidance stays separate from this physical rope pass.
+
+Building overlap computes a target opacity at the fixed 60 Hz step. `BuildingFades`
+retains opacity by world placement, fading out over 18 steps (0.3 seconds) and
+back in over 27 (0.45 seconds). Rendering only reads this state; repeated draws
+cannot change it and pause freezes it. Only the exact opaque vessel/cargo and
+building masks trigger fading. Wind, rope, lights and shoreline do not.
