@@ -74,9 +74,9 @@ public final class ResponsiveTest {
         tap(game,Layout.HELP); check(game.mode==Game.HELP,"responsive help target routes");
         tap(game,Layout.START); check(game.mode==Game.PLAY,"responsive help return routes");
         tap(game,Layout.PAUSE); tap(game,Layout.RESTART);
-        check(game.mode==Game.PLAY && game.ticks==0 && game.layout==layout,"restart preserves canvas and resets shift");
+        check(game.mode==Game.PLAY && game.ticks==0 && game.layout.width==layout.width && game.layout.height==layout.height,"restart preserves canvas and resets shift");
         game.mode=Game.FINISH; tap(game,Layout.AGAIN);
-        check(game.mode==Game.PLAY && game.layout==layout,"results replay uses responsive target");
+        check(game.mode==Game.PLAY && game.layout.width==layout.width && game.layout.height==layout.height,"results replay uses responsive target");
     }
     private static void practiceAndResize(Game game) {
         float originalX=game.tug.x,originalY=game.tug.y;
@@ -135,6 +135,7 @@ public final class ResponsiveTest {
         for(int i=0;i<60;i++) { first.step(); second.step(); }
         check(first.ticks==second.ticks && Math.abs(first.tug.x-second.tug.x)<.01f
                 && Math.abs(first.tug.y-second.tug.y)<.01f,"canvas aspect does not change movement speed or simulation geometry");
+        layout=first.layout; // Follow/zoom may have advanced during the sixty ticks.
         second.configureCanvas(1800,600);
         check(first.layout==layout && first.pointer,"resizing another game cannot cancel the first gesture");
     }

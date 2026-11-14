@@ -16,7 +16,7 @@ public final class ContinuousTutorialTest {
             Game root=new Game();root.configureCanvas(size[0],size[1]);root.startTutorial();
             Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0],towLoad=g.cargo[1];
             check(load!=null && towLoad!=null && load!=towLoad,"both teaching barges exist when practice begins");
-            int seen=0,transitions=0,waitAtTow=0;
+            int seen=0,transitions=0,waitAtTow=0;boolean closeWorkSeen=false;
             for(int tick=0;tick<12000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
                 int lesson=g.tutorial.lesson;seen|=1<<lesson;
                 float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;
@@ -33,8 +33,10 @@ public final class ContinuousTutorialTest {
                         "cargo moves physically instead of being replaced at a lesson boundary");
                 check(Math.abs(camera.screenX(tug.x,tug.y)-g.layout.camera.screenX(tug.x,tug.y))<20
                         && Math.abs(camera.screenY(tug.x,tug.y)-g.layout.camera.screenY(tug.x,tug.y))<20,
-                        "camera eases across lesson changes without a scene reset");
+                        "camera eases across lesson changes without a scene reset: tick="+tick+" lesson="+lesson+"->"+g.tutorial.lesson+" zoom="+camera.zoom+"->"+g.layout.camera.zoom+" delta="+(camera.screenX(tug.x,tug.y)-g.layout.camera.screenX(tug.x,tug.y))+","+(camera.screenY(tug.x,tug.y)-g.layout.camera.screenY(tug.x,tug.y)));
                 check(g.inWater(tug.x,tug.y),"continuous tutorial keeps the tug in connected water");
+                if(lesson<=Tutorial.CHANNEL && tug.x<=80) check(g.layout.camera.zoom<1.01f,"canal navigation keeps the wider transit view");
+                if(lesson>=Tutorial.HOLD && g.layout.camera.zoom>1.35f) closeWorkSeen=true;
                 if(g.tutorial.lesson!=lesson) {
                     transitions++;
                     if(lesson==Tutorial.CHANNEL) check(Math.abs(tug.x-TrainingChannel.X[7])<30,
@@ -47,6 +49,7 @@ public final class ContinuousTutorialTest {
             }
             check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,
                     "real gestures finish every lesson in one scene at "+size[0]+"x"+size[1]+"; stopped at "+g.tutorial.lesson);
+            check(closeWorkSeen,"cargo lessons use the closer working camera on each layout");
             check(g.cargo[0]==towLoad && load.active && g.delivered==1,"the second original barge becomes the tow exercise");
         }
         retryTow();

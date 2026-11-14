@@ -97,52 +97,80 @@ public final class Game {
     public boolean inWater(float x,float y) {
         return tutorial!=null?TrainingChannel.contains(x,y):x>=Physics.LEFT && x<=Physics.RIGHT && y>=channelTop() && y<=Physics.BOTTOM;
     }
+    public static final float WORK_ZOOM=1.5f,DOCK_ZOOM=1.75f;
+    /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
         float blend=Physics.clamp((tug.x-80)/160,0,1);
         blend=blend*blend*(3-2*blend);
-        float x=tug.x+(300-tug.x)*blend,y=tug.y+(580-tug.y)*blend;
-        return Layout.focused(layout.width,layout.height,x,y,1,layout.width*.5f,layout.height*(.62f-.08f*blend));
+        if(blend==0) return Layout.focused(layout.width,layout.height,tug.x,tug.y,1,layout.width*.5f,layout.height*.62f);
+        return workCamera(1+(WORK_ZOOM-1)*blend,blend,true);
     }
     void fitTutorialCamera() { layout=tutorialCamera(); }
+    private Body cameraLoad() {
+        Body held=workingCargo();
+        if(held!=null && !held.deliveryRecorded) return held;
+        if(tow.cargo!=null) return tow.cargo;
+        Body result=null;float nearest=190;
+        for(Body b:cargo) if(b!=null && b.active && !b.deliveryRecorded
+                && (tutorial==null || b==cargo[0])) {
+            float distance=Physics.length(tug.x-b.x,tug.y-b.y);
+            if(distance<nearest) {result=b;nearest=distance;}
+        }
+        return result;
+    }
+    private Layout workCamera(float zoom,float workBlend,boolean practiceView) {
+        Body load=cameraLoad();
+        boolean docking=load!=null && !load.awaitingPickup && tow.cargo!=load
+                && Physics.length(load.x-DOCK_X[load.berth],load.y-dockY(load.berth))<190;
+        if(docking && workBlend>0) {
+            float distance=Physics.length(load.x-DOCK_X[load.berth],load.y-dockY(load.berth));
+            zoom+=(DOCK_ZOOM-WORK_ZOOM)*workBlend*Physics.clamp((190-distance)/130,0,1);
+        }
+        // Fit the working hulls and, when relevant, their actual elevated tie point.
+        // Far-away held loads do not drag the camera away from the player.
+        if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230) {load=null;docking=false;}
+        RiverCamera base=RiverCamera.DEFAULT;
+        float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
+        int count=load==null?1:docking?3:2;
+        for(int i=0;i<count;i++) {
+            float wx=i==0?tug.x:i==1?load.x:bollardX(load.berth);
+            float wy=i==0?tug.y:i==1?load.y:bollardY(load.berth);
+            float x=base.screenX(wx,wy)/base.scale,y=base.screenY(wx,wy)/base.scale;
+            minX=Math.min(minX,x-48);maxX=Math.max(maxX,x+48);
+            minY=Math.min(minY,y-78);maxY=Math.max(maxY,y+36);
+        }
+        float availableHeight=layout.height-(practiceView?250:136);
+        float baseScale=layout.camera.scale/layout.camera.zoom;
+        float fit=Math.min((layout.width-120)/(maxX-minX),availableHeight/(maxY-minY))/baseScale;
+        zoom=Math.min(zoom,Math.max(1,fit));
+        float focusX=base.worldX((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
+        float focusY=base.worldY((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
+        return Layout.focused(layout.width,layout.height,focusX,focusY,zoom,layout.width*.5f,
+                layout.height*(practiceView?.59f:.52f));
+    }
     private void updateCamera() {
         RiverCamera c=layout.camera;
         if(ropeDragging || towAiming || ropePhase!=0) return;
-        if(tutorial!=null) {
-            Layout target=tutorialCamera();
-            changeCamera(new Layout(layout.width,layout.height,c.worldTop+(target.camera.worldTop-c.worldTop)*.12f,
-                    c.worldRight+(target.camera.worldRight-c.worldRight)*.12f,1));
-            return;
+        Layout desired;
+        if(tutorial!=null) desired=tutorialCamera();
+        else {
+            if(cameraOverviewTicks>0) cameraOverviewTicks--;
+            // The long bridge reach is a transit phase even when carrying a load.
+            boolean transit=bridgeStage() && tug.y<Feeder.DROP_Y-180 && tug.y>dockY(2)+230;
+            boolean overview=cameraOverviewTicks>0;
+            desired=workCamera(transit || overview?1:WORK_ZOOM,transit || overview?0:1,false);
         }
-        if(cameraOverviewTicks>0) cameraOverviewTicks--;
-        float zoom=1,focusX=300,focusY=bridgeStage()?Physics.clamp(tug.y,-176,492):492;
-        Body nearest=null;float nearestDistance=190;
-        for(Body b:cargo) if(cameraOverviewTicks==0 && b!=null && b.active && !b.awaitingPickup
-                && Physics.length(tug.x-b.x,tug.y-b.y)<170) {
-            float distance=Physics.length(b.x-DOCK_X[b.berth],b.y-dockY(b.berth));
-            if(distance<nearestDistance) { nearest=b;nearestDistance=distance; }
-        }
-        if(nearest!=null) {
-            zoom=1+.4f*Physics.clamp((190-nearestDistance)/130,0,1);
-            // Fit both hulls and the inland bollard in projected space, including sprite height.
-            float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
-            float[] xs={tug.x,nearest.x,TIE_X[nearest.berth]},ys={tug.y,nearest.y,dockY(nearest.berth)};
-            RiverCamera base=RiverCamera.DEFAULT;
-            for(int i=0;i<3;i++) {
-                float x=base.screenX(xs[i],ys[i])/base.scale,y=base.screenY(xs[i],ys[i])/base.scale;
-                minX=Math.min(minX,x-48);maxX=Math.max(maxX,x+48);
-                minY=Math.min(minY,y-78);maxY=Math.max(maxY,y+36);
-            }
-            float fit=Math.min((layout.width-96)/(maxX-minX),(layout.height-136)/(maxY-minY))/(c.scale/c.zoom);
-            zoom=Math.min(zoom,Math.max(1,fit));
-            focusX=base.worldX((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
-            focusY=base.worldY((minX+maxX)*.5f*base.scale,(minY+maxY)*.5f*base.scale);
-        }
-        zoom=c.zoom+(zoom-c.zoom)*.035f;
-        Layout target=Layout.focused(layout.width,layout.height,focusX,focusY,zoom,layout.width*.5f,layout.height*.5f);
-        float top=c.worldTop+(target.camera.worldTop-c.worldTop)*.055f;
-        float right=c.worldRight+(target.camera.worldRight-c.worldRight)*.055f;
-        if(Math.abs(top-c.worldTop)<.0001f && Math.abs(right-c.worldRight)<.0001f && Math.abs(zoom-c.zoom)<.000001f) return;
-        changeCamera(new Layout(layout.width,layout.height,top,right,zoom));
+        float zoom=c.zoom+(desired.camera.zoom-c.zoom)*.035f;
+        // Ease the world focus, not its zoom-dependent camera origin. This avoids
+        // a sideways sweep when zoom changes around a far-upstream position.
+        float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
+        float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
+        float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
+        float ease=tutorial!=null && tug.x<=80?.12f:.055f;
+        Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
+        if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
+                && Math.abs(zoom-c.zoom)<.000001f) return;
+        changeCamera(next);
     }
     private void changeCamera(Layout nextLayout) {
         RiverCamera c=layout.camera;

@@ -2,9 +2,8 @@ package com.bargeboss.game;
 
 /** One connected industrial practice yard, from the canal entrance to the working berth. */
 public final class TrainingChannelView {
-    public static final int FACTORY_PLACEMENTS=FactoryArt.COUNT+4;
-    private static final int[] HARBOR_FACTORIES={0,4,8,13};
-    private static final float[] HARBOR_FACTORY_Y={320,512,704,160};
+    private static final int[][] FACTORIES=makeFactories();
+    public static final int FACTORY_PLACEMENTS=FACTORIES.length;
     private TrainingChannelView() {}
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;Painter p=new RiverPainter(canvas,c);
@@ -13,7 +12,7 @@ public final class TrainingChannelView {
         ArcadeView.water(g,p);
         TrainingGroundView.walls(g,canvas);
         TrainingGroundView.ground(g,canvas);
-        factoryAprons(g,new RiverPainter(GroundArt.raisedCanvas(g,canvas),c));
+        IndustrialRoadView.draw(g,canvas);
         TrainingGroundView.caps(g,canvas);
         float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
@@ -71,63 +70,53 @@ public final class TrainingChannelView {
             water.circle(sx,sy,1+2*fade,i%2==0?white:mint);
         }
     }
-    /** Every footprint occupies whole 64-unit grid cells, including rectangular blocks. */
-    static int factoryCell(int slot) {
-        return slot<FactoryArt.COUNT?slot:HARBOR_FACTORIES[slot-FactoryArt.COUNT];
+    /** Packed factory blocks separated by whole-cell roads, built once in stable depth order. */
+    private static int[][] makeFactories() {
+        int width=IndustrialRoadView.MAX_COL-IndustrialRoadView.MIN_COL;
+        int height=IndustrialRoadView.MAX_ROW-IndustrialRoadView.MIN_ROW;
+        boolean[][] used=new boolean[height][width];
+        int[][] pending=new int[width*height][];int count=0;
+        for(int row=IndustrialRoadView.MIN_ROW;row<IndustrialRoadView.MAX_ROW;row++)
+            for(int col=IndustrialRoadView.MIN_COL;col<IndustrialRoadView.MAX_COL;col++) {
+                if(used[row-IndustrialRoadView.MIN_ROW][col-IndustrialRoadView.MIN_COL] || IndustrialRoadView.isRoadCell(col,row)) continue;
+                int seed=Math.floorMod(col*7+row*11,FactoryArt.COUNT);
+                for(int attempt=0;attempt<FactoryArt.COUNT;attempt++) {
+                    int cell=(seed+attempt)%FactoryArt.COUNT;
+                    int wide=(int)FactoryArt.footprintX(cell)/32,tall=(int)FactoryArt.footprintY(cell)/32;
+                    if(col+wide>IndustrialRoadView.MAX_COL || row+tall>IndustrialRoadView.MAX_ROW) continue;
+                    if(!IndustrialRoadView.clearance(col*64,row*64,wide*64,tall*64,setback(cell))) continue;
+                    boolean fits=true;
+                    for(int y=row;y<row+tall;y++) for(int x=col;x<col+wide;x++)
+                        if(used[y-IndustrialRoadView.MIN_ROW][x-IndustrialRoadView.MIN_COL] || IndustrialRoadView.isRoadCell(x,y)) fits=false;
+                    if(!fits) continue;
+                    pending[count++]=new int[]{cell,col,row};
+                    for(int y=row;y<row+tall;y++) for(int x=col;x<col+wide;x++)
+                        used[y-IndustrialRoadView.MIN_ROW][x-IndustrialRoadView.MIN_COL]=true;
+                    break;
+                }
+            }
+        int[][] result=new int[count][];System.arraycopy(pending,0,result,0,count);
+        // Camera translation and zoom never change isometric ground depth order.
+        for(int i=1;i<count;i++) {
+            int[] entry=result[i];float depth=factoryDepth(entry);int j=i-1;
+            while(j>=0 && factoryDepth(result[j])>depth) {result[j+1]=result[j];j--;}
+            result[j+1]=entry;
+        }
+        return result;
     }
-    static float factorySetback(int slot) {
-        int cell=factoryCell(slot);
+    private static float factoryDepth(int[] entry) {
+        return (entry[2]-entry[1])*64+FactoryArt.footprintY(entry[0])-FactoryArt.footprintX(entry[0]);
+    }
+    private static float setback(int cell) {
         return FactoryArt.height(cell)>=150?128:
                 Math.max(FactoryArt.footprintX(cell),FactoryArt.footprintY(cell))>32?96:72;
     }
-    static float factoryX(int slot) {
-        float half=FactoryArt.footprintX(factoryCell(slot));
-        if(slot>=FactoryArt.COUNT)
-            return (float)StrictMath.ceil((Physics.RIGHT+factorySetback(slot))/64)*64+half;
-        float nominal=TrainingChannel.X[0]+(slot/2)*192;
-        return (float)StrictMath.floor((nominal-half)/64)*64+half;
-    }
-    static float factoryY(int slot) {
-        int cell=factoryCell(slot);float hx=FactoryArt.footprintX(cell),hy=FactoryArt.footprintY(cell);
-        if(slot>=FactoryArt.COUNT) {
-            float nominal=HARBOR_FACTORY_Y[slot-FactoryArt.COUNT];
-            return (float)StrictMath.floor((nominal-hy)/64)*64+hy;
-        }
-        int side=slot%2==0?-1:1;float x=factoryX(slot),setback=factorySetback(slot);
-        float center=side>0?-Float.MAX_VALUE:Float.MAX_VALUE;
-        for(float[] r:TrainingChannel.WATER_RECTANGLES) {
-            float dx=Math.max(0,Math.max(r[0]-(x+hx),(x-hx)-r[2]));
-            if(dx>=setback) continue;
-            // Nearby canal corners count too, even if they are just outside
-            // the footprint's X span. Preserve the full radial apron clearance.
-            float distance=(float)StrictMath.sqrt(setback*setback-dx*dx);
-            float limit=side<0?r[1]-hy-distance:r[3]+hy+distance;
-            center=side<0?Math.min(center,limit):Math.max(center,limit);
-        }
-        return (float)(side<0?StrictMath.floor((center-hy)/64):StrictMath.ceil((center-hy)/64))*64+hy;
-    }
-    private static void factoryAprons(Game g,Painter world) {
-        for(int slot=0;slot<FACTORY_PLACEMENTS;slot++) {
-            int cell=factoryCell(slot);float x=factoryX(slot),y=factoryY(slot);
-            float hx=FactoryArt.footprintX(cell)+16,hy=FactoryArt.footprintY(cell)+16;
-            if(!HarborAtmosphere.visible(g,x,y,(hx+hy)*g.layout.camera.scale)) continue;
-            // A quiet service apron gives the registered slab a shared ground plane.
-            world.rect(x-hx,y-hy,hx*2,hy*2,0xff40494b);
-            world.line(x-hx,y+hy,x+hx,y+hy,1,0x88626c69);
-            world.line(x+hx,y-hy,x+hx,y+hy,1,0x88626c69);
-        }
-    }
+    static int factoryCell(int slot) {return FACTORIES[slot][0];}
+    static float factorySetback(int slot) {return setback(factoryCell(slot));}
+    static float factoryX(int slot) {return FACTORIES[slot][1]*64+FactoryArt.footprintX(factoryCell(slot));}
+    static float factoryY(int slot) {return FACTORIES[slot][2]*64+FactoryArt.footprintY(factoryCell(slot));}
     private static void factoriesAndVessels(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
-        float[] depth=new float[FACTORY_PLACEMENTS];int[] order=new int[FACTORY_PLACEMENTS];
-        for(int slot=0;slot<FACTORY_PLACEMENTS;slot++) {
-            order[slot]=slot;depth[slot]=c.screenY(factoryX(slot),factoryY(slot));
-        }
-        for(int i=1;i<FACTORY_PLACEMENTS;i++) {
-            float d=depth[i];int slot=order[i],j=i-1;
-            while(j>=0 && depth[j]>d) {depth[j+1]=depth[j];order[j+1]=order[j];j--;}
-            depth[j+1]=d;order[j+1]=slot;
-        }
         Body[] bodies=new Body[g.cargo.length+1];int count=0;
         bodies[count++]=g.tug;
         for(Body b:g.cargo) if(b!=null && b.active) bodies[count++]=b;
@@ -138,8 +127,8 @@ public final class TrainingChannelView {
         }
         Painter world=new RiverPainter(canvas,c);int boat=0;
         for(int i=0;i<FACTORY_PLACEMENTS;i++) {
-            while(boat<count && c.screenY(bodies[boat].x,bodies[boat].y)<=depth[i]) Renderer.body(g,world,bodies[boat++]);
-            int slot=order[i];
+            while(boat<count && c.screenY(bodies[boat].x,bodies[boat].y)<=c.screenY(factoryX(i),factoryY(i))) Renderer.body(g,world,bodies[boat++]);
+            int slot=i;
             FactoryArt.draw(g,canvas,factoryCell(slot),factoryX(slot),factoryY(slot));
         }
         while(boat<count) Renderer.body(g,world,bodies[boat++]);

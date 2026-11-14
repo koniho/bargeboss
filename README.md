@@ -32,7 +32,8 @@ screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
 the tug while keeping the original drag anchor fixed on the screen. The canal
 opens into the same practice harbor, with both teaching barges already waiting.
 Sixteen factory modules, varied building heights, active exhausts and warm
-lighting populate the raised industrial yards behind the quays.
+lighting populate packed industrial blocks behind the quays. Aligned road tiles
+separate the factory rows; the working shoreline apron stays clear.
 
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
   farther for more thrust. The control ring stays at your original touch point;
@@ -121,9 +122,11 @@ lighting populate the raised industrial yards behind the quays.
 
 First Watch asks you to deliver **6 loads in 3 minutes**, with **one feeder and one
 berth at the far left end**, opposite the feeder on the right. Hold a load to push it toward berth A; the camera
-smoothly moves into a **1.4× docking view** as the tug brings it close. The camera
+defaults to a **1.5× working view**, rising to **1.75× near a berth** when both
+hulls and the bollard fit. Canal and bridge transit use a wider **1× view**. The camera
 holds still during lasso aiming and flight, then eases back out after delivery
-and keeps the overview for three seconds even if another load is nearby. Inland
+and keeps the overview for three seconds even if another load is nearby, before
+returning to the closer working view. Inland
 bollards sit 50 world units behind the bank; camera framing and scenery fading
 keep the active target visible.
 Barges retain keel momentum, but stronger forward, sideways and turning resistance

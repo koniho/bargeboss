@@ -10,8 +10,8 @@ the same `Painter`. Do not add a second game implementation for any platform.
   Native haptic adapters consume shared semantic events; they never alter gameplay.
 - Use a responsive landscape canvas with a 960x600 reference size. Fill the available
   display using per-game Layout and RiverCamera; never stretch sprites or change physics based on screen size/frame rate.
-- Keep stage-aware camera behavior in shared Java: overview for short stages, tug
-  follow for the longer bridge route, and eased docking zoom near a loaded berth.
+- Keep stage-aware camera behavior in shared Java: close views for local work,
+  wider canal/bridge transit views, and eased docking zoom near a loaded berth.
   Freeze projection during lasso aiming/flight and preserve screen-space drag
   anchors during camera movement. Use paired forward/inverse transforms for input.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in

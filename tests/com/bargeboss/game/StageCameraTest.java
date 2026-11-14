@@ -12,7 +12,7 @@ public final class StageCameraTest {
         steps(g,180);Body b=g.cargo[0];
         check(g.feederDrops()==1 && b.berth==2 && g.berthLetter(b.berth)=='A',"first feeder announces its sole berth A");
         check(Feeder.DROP_Y-g.dockY(2)>400,"first berth is at the far end opposite the feeder");
-        check(g.layout.camera.zoom==1,"waiting feeder cargo does not trigger docking zoom");
+        check(Math.abs(g.layout.camera.zoom-Game.WORK_ZOOM)<.01f,"waiting feeder uses the closer working view");
         ReplayInput.down(g,b.x,b.y);float px=g.layout.camera.screenX(g.downX,g.downY),py=g.layout.camera.screenY(g.downX,g.downY);
         for(int i=0;i<1800 && !g.canTie(b);i++) g.step();
         steps(g,180);
@@ -30,8 +30,10 @@ public final class StageCameraTest {
         steps(g,15);check(g.layout.camera==frozen,"lasso aim holds the projection still");
         ReplayInput.up(g,Game.TIE_X[b.berth],g.dockY(b.berth));steps(g,18);
         check(b.lineAttached && g.layout.camera==frozen,"throw uses the same projected bollard until hit");
-        steps(g,Mooring.TIGHTEN_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS+180);
-        check(g.delivered==1 && g.layout.camera.zoom<1.01f,"camera returns to overview after the crew clears the load");
+        for(int i=0;i<Mooring.TIGHTEN_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS+60 && g.delivered==0;i++) g.step();
+        steps(g,135);
+        check(g.delivered==1 && g.layout.camera.zoom<1.01f && g.cameraOverviewTicks>0,"camera opens the view while leaving a completed delivery");
+        steps(g,240);check(g.layout.camera.zoom>1.49f,"camera restores the closer default after the delivery overview");
         g=stage(0);for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
         b=new Body(1,2,230,g.dockY(2),0);g.cargo[0]=b;g.tug.x=300;g.tug.y=b.y;
         steps(g,180);check(g.layout.camera.zoom>1.3f,"nearby cargo triggers docking view");
@@ -50,9 +52,11 @@ public final class StageCameraTest {
                 for(int disc=0;disc<3;disc++) check(side*(hull.discY(disc)-Bridge.Y)>=hull.radius+11.9f,"closed bridge blocks the full rotated hull from either direction");
             }
         }
+        steps(g,180);check(g.layout.camera.zoom>1.49f,"bridge feeder pickup uses the close working view");
         g.tug.x=300;g.tug.y=Bridge.Y+150;g.step();
         check(g.bridge.phase==Bridge.WAITING,"approaching requests an opening automatically");
         steps(g,359);check(!g.bridge.passable(),"bridge enforces the six-second wait");
+        check(g.layout.camera.zoom<1.01f,"bridge passage uses the wider transit view");
         steps(g,61);check(g.bridge.phase==Bridge.OPENING && !g.bridge.passable(),"moving bridge is blocked until clearance exists");
         int tick=g.bridge.ticks;RiverCamera paused=g.layout.camera;g.background();g.advance(.25);
         check(g.bridge.ticks==tick && g.layout.camera==paused,"background freezes bridge and camera");g.pause();steps(g,60);
@@ -61,6 +65,7 @@ public final class StageCameraTest {
         g.tug.y=-300;steps(g,1);check(g.bridge.phase==Bridge.CLOSING,"bridge closes after its passage window clears");
         g.tug.y=Bridge.Y;g.step();check(g.bridge.phase==Bridge.OPENING,"a vessel entering during closing reverses the bridge");
         g.tug.y=-400;steps(g,200);
+        check(g.layout.camera.zoom>1.45f,"upstream working berth returns to the close view");
         RiverCamera c=g.layout.camera;
         check(c.worldTop<0 && c.contains(c.screenX(g.tug.x,g.tug.y),c.screenY(g.tug.x,g.tug.y)),"camera follows the tug into the upstream reach");
         for(float x:new float[]{176,230,300,424}) for(float y:new float[]{-450,-400,-100,200}) {

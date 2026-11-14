@@ -17,6 +17,10 @@ rebuild the world, replace vessels, move a hull to its next exercise, clear
 the water, or snap the camera. The explicit Reset control may restart the
 current exercise. Camera follow eases into a basin view by position rather
 than lesson number, and lasso aiming/flight freezes projection as in a shift.
+Local work targets 1.5× zoom, rising toward 1.75× for docking while fitting the
+working hulls and raised bollard. The canal remains at 1×; zoom blends on entering
+the basin. The view follows the tug and nearby teaching barge rather than holding
+the entire harbor in frame.
 
 `TrainingChannel.WATER_RECTANGLES` and `WATER_BOUNDARY` define the complete
 connected waterway. Collision, surface effects, scenery clearance and the
@@ -37,6 +41,10 @@ single scoring, water clipping and the retained empty barge.
 
 Factory placements use a 64-unit planning grid with whole-cell footprints.
 Footprint edges, rather than arbitrary bitmap centers, align to the grid.
+Four-by-four-cell industrial blocks are packed with the sixteen approved modules;
+one-cell road lanes divide the rows. Every eligible non-road cell outside the
+shore apron is occupied, with 664 modules in the bounded tutorial yard. Placement
+and depth order are generated once; actual art/effect bounds cull offscreen work.
 Building height varies independently of footprint, and large/tall structures
 stand farther inland to leave the quays and working apron readable. Source
 perspective must match the shared 45-degree yaw / 35.264-degree elevation:
