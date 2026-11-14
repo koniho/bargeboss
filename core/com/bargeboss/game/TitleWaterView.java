@@ -4,6 +4,39 @@ package com.bargeboss.game;
 public final class TitleWaterView {
     private TitleWaterView() {}
     private static float sin(double a) { return (float)StrictMath.sin(a); }
+    /** Clip title wake geometry to its water plane before shore sprites cover it. */
+    public static Painter below(Painter target,float top) {return new WaterPlane(target,top);}
+    private static final class WaterPlane implements Painter {
+        final Painter p;final float top;
+        WaterPlane(Painter p,float top){this.p=p;this.top=top;}
+        public void line(float x,float y,float xx,float yy,float w,int color) {
+            float edge=top+w*.5f;
+            if(y<edge && yy<edge)return;
+            if(y<edge){x+=(xx-x)*(edge-y)/(yy-y);y=edge;}
+            else if(yy<edge){xx+=(x-xx)*(edge-yy)/(y-yy);yy=edge;}
+            p.line(x,y,xx,yy,w,color);
+        }
+        public void poly(float[] xy,int color) {
+            float[] clipped=new float[xy.length*2];int count=0;
+            for(int i=0,j=xy.length-2;i<xy.length;j=i,i+=2) {
+                float x=xy[i],y=xy[i+1],xx=xy[j],yy=xy[j+1];
+                if((y>=top)!=(yy>=top)){clipped[count++]=xx+(x-xx)*(top-yy)/(y-yy);clipped[count++]=top;}
+                if(y>=top){clipped[count++]=x;clipped[count++]=y;}
+            }
+            if(count<6)return;
+            float[] result=new float[count];System.arraycopy(clipped,0,result,0,count);p.poly(result,color);
+        }
+        public void rect(float x,float y,float w,float h,int color) {
+            float bottom=y+h;y=Math.max(y,top);if(bottom>y)p.rect(x,y,w,bottom-y,color);
+        }
+        public void circle(float x,float y,float r,int color) {
+            if(y+r<top)return;
+            if(y-r>=top){p.circle(x,y,r,color);return;}
+            float[] xy=new float[40];for(int i=0;i<20;i++){double a=i*Math.PI/10;xy[i*2]=x+r*(float)StrictMath.cos(a);xy[i*2+1]=y+r*sin(a);}poly(xy,color);
+        }
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new IllegalStateException("Title water uses geometry only");}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new IllegalStateException("Title water uses geometry only");}
+    }
     public static void water(Painter p,Body b,int tick,boolean tug) {
         float stern=b.y-b.half-b.radius;
         if(tug) {
@@ -24,14 +57,14 @@ public final class TitleWaterView {
         }
         // Each packet recedes astern while its curved crest expands sideways.
         // New packets form continuously; troughs add a stronger crest to the train.
-        int spacing=12,life=216;
+        int spacing=18,life=180;
         for(int packet=life/spacing;packet>=0;packet--) {
             int age=tick%spacing+packet*spacing;if(age>=life) continue;
             float t=age/(float)life;
             float impact=.55f+.45f*Math.max(0,sin((tick-age)*.048+Math.PI/2));
             float spread=b.radius*.6f+age*.15f,back=stern-age*.38f;
-            int alpha=(int)((tug?125:90)*(1-t)*(1-t)*impact);
-            arc(p,b.x,back,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,1.5f,(alpha<<24)|0xa4eee7);
+            int alpha=(int)((tug?85:55)*(1-t)*(1-t)*impact);
+            arc(p,b.x,back,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,1.1f,(alpha<<24)|0xa4eee7);
             arc(p,b.x,back-2,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,.55f,((alpha/2)<<24)|0xf1fff4);
         }
         // Water follows both sides of the displacement hull from bow to stern.

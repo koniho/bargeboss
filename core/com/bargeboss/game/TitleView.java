@@ -20,6 +20,9 @@ public final class TitleView {
         WaveView.draw(p,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
         float sun=scroll(skyWidth*.73f-skyDrift,skyPeriod);
         for(float x=sun-skyPeriod;x<g.layout.width;x+=skyPeriod) reflections(p,tick,x,horizon,g.layout.height);
+    }
+    private static void shore(Game g,Painter p) {
+        int tick=g.visualTicks;float horizon=310+g.layout.offsetY;
         // A separate transparent bridge/industrial shore passes in front of the
         // distant city. No close quay or bottom bank encloses the foreground water.
         float harborWidth=690,harborHeight=harborWidth/3;
@@ -63,7 +66,11 @@ public final class TitleView {
     public static void voyage(Game g,Painter canvas) {
         int tick=g.visualTicks;
         Painter centered=ScreenView.centered(g,canvas);
-        RiverCamera c=new RiverCamera(-110,85,3.4f);
+        // Fit the complete convoy in the water between the tagline, menu and rank
+        // bar. Anchor the barge on screen rather than reusing the old fixed camera translation.
+        float scale=2.5f;
+        RiverCamera origin=new RiverCamera(0,0,scale);
+        RiverCamera c=new RiverCamera(425-origin.screenX(300,300),484-origin.screenY(300,300),scale);
         Painter p=new RiverPainter(centered,c);
         Body tug=new Body(0,-1,300,230,(float)Math.PI/2);
         Body barge=new Body(1,1,300,300,(float)Math.PI/2);
@@ -76,7 +83,11 @@ public final class TitleView {
         tug.vy=barge.vy=48;tug.engineLoad=.75f+pressure*.2f;
         tug.wakeKickTicks=(int)(18*Math.max(0,sine(tick*.048+Math.PI/2)));
         barge.wakeKickTicks=(int)(16*Math.max(0,sine(tick*.048-.7+Math.PI/2)));
-        TitleWaterView.water(p,barge,tick,false);TitleWaterView.water(p,tug,tick,true);
+        Painter water=new RiverPainter(TitleWaterView.below(centered,310),c);
+        TitleWaterView.water(water,barge,tick,false);TitleWaterView.water(water,tug,tick,true);
+        // Wake stays beneath the shoreline and bridge artwork instead of washing
+        // over dry land. The vessels remain in the foreground open water.
+        shore(g,canvas);
         VesselView.draw(g,p,barge,false,false);
         TitleWaterView.contact(p,barge,tick);
         VesselView.draw(g,p,tug,true,false);

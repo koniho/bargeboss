@@ -390,14 +390,26 @@ glide, reverse motion, yaw inertia, wake timing, local wave amplitude and render
 
 ## Shared-style title voyage
 
-`TitleView` reuses `harbor-arcade-v2.png` and the gameplay tug, barge and cargo
-atlases. Scenery retains the gameplay projection and lighting. Two rows of quay
-props pan at different speeds for an endless voyage; menu hit targets stay fixed.
-The tug pushes its barge while both bob independently, with the same registered
-chimney smoke and short hull wash used in play. `WaveView` supplies moving curved
-waves beneath them. Every phase is a pure function of `visualTicks`, so drawing
-cannot alter game state and animation matches across display refresh rates.
-The previous low-angle title assets remain in source history but are not drawn.
+`TitleView` combines the panoramic sunset, separate industrial/bridge shore and
+varied land sprites with the gameplay tug, barge and cargo atlases. Sky and shore
+pan at different speeds for an endless voyage; menu hit targets stay fixed.
+The convoy's camera anchors the barge in the open water below the logo, entirely
+left of the menu and above the rank bar. This corrects the fixed-camera placement
+that let the isometric barge disappear behind the menu. Framing tests cover
+960×600, the screenshot's approximately 1243×600 safe canvas, wide phones and
+960×720 tablets throughout the bob animation.
+
+The tug pushes its barge while both bob independently, with registered chimney
+smoke. `WaveView` supplies moving curved waves. Wake geometry is clipped below
+the horizon and drawn before shoreline art; the vessels draw afterward. Fewer,
+lighter wake packets retain movement without piling bright rings over the scene.
+Every phase is a pure function of `visualTicks`, so drawing cannot alter game
+state and animation matches across display refresh rates. `TitleLayoutReview`
+exports the actual composition at four aspect ratios under `out/title-layout`.
+The layout fix was also reviewed in a native Android capture after installation
+(`BargeBoss-title-fixed-device-v1.png` in Downloads). The 438 title framing,
+water clipping and touch-target checks pass on JVM and ART; replay signature
+`e26e666a:11:8970` includes the intentional title drawing changes.
 `./preview.sh --title` exports eight seconds to `out/concept-title.gif`.
 `./preview.sh` also exports all 32 smoke headings and a seven-second wake trail
 sequence showing outward propagation after the tug stops.
