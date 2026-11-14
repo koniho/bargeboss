@@ -41,6 +41,12 @@ public final class ViewportPainter implements Painter {
             minX=Math.min(minX,sx);maxX=Math.max(maxX,sx);minY=Math.min(minY,sy);maxY=Math.max(maxY,sy);}
         return visible(minX,minY,maxX,maxY);
     }
+    public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+        if(alpha<=0)return;
+        float px=SpriteAtlas.pivotX(a,f),py=SpriteAtlas.pivotY(a,f),l=Float.MAX_VALUE,t=l,r=-l,b=-l;
+        for(int i=0;i<4;i++){float u=i%2-px,v=i/2-py,xx=x+ax*u+bx*v,yy=y+ay*u+by*v;l=Math.min(l,xx);r=Math.max(r,xx);t=Math.min(t,yy);b=Math.max(b,yy);}
+        if(visible(l,t,r,b))target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);
+    }
     public void sprite(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
         if(alpha>0 && spriteVisible(atlas,frame,x,y,w,h,r))target.sprite(atlas,frame,x,y,w,h,r,alpha);
     }

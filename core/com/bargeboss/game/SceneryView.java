@@ -33,6 +33,7 @@ public final class SceneryView {
         }
         HarborAtmosphere.bankHaze(g,p);
         LightingView.quays(g,p);
+        ShadowView.harbor(g,p);
     }
     public static void props(Game g,Painter p,boolean foreground) {
         if(!foreground) SceneryEffects.industrialStacks(g,p);
@@ -57,7 +58,6 @@ public final class SceneryView {
         float left=x-px*size,top=y-py*size;
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
         float alpha=SceneryOcclusion.buildingOpacity(g,p,SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,worldX,worldY,0,StaticHarborArt.WORLD_SIZE);
-        LightingView.shadow(p,x,foot,size*.83f,size*.14f,alpha);
         p.sprite(SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,x,y,size,size,0,alpha);
         StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
     }
@@ -69,7 +69,6 @@ public final class SceneryView {
             float bank=frame==0?Physics.RIGHT+35:Physics.LEFT-35;
             float x=c.screenX(bank,178),foot=c.screenY(bank,178),size=108*s,y=foot-size*.4f;
             float alpha=1;
-            LightingView.shadow(p,x,foot,size*.8f,size*.13f,alpha);
             p.sprite(SpriteAtlas.BRIDGE,frame,x,y,size,size,0,alpha);
         }
     }

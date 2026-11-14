@@ -1,0 +1,13 @@
+width,scene,averageActivityCalls,maxActivityCalls,averageTotalCalls,maxTotalCalls,maxActivityPercent
+960,basin-entry,0.98,6,5035.38,5061,0.119
+960,canal-entry,0.02,1,5316.81,5370,0.019
+960,canal-middle,5.31,15,6467.99,6508,0.232
+960,harbor-close,0.93,6,7598.98,7662,0.079
+1333,basin-entry,2.41,9,5597.56,5635,0.161
+1333,canal-entry,0.02,1,5792.08,5843,0.017
+1333,canal-middle,8.23,18,7230.08,7277,0.249
+1333,harbor-close,2.31,10,8228.73,8303,0.122
+1920,basin-entry,3.81,12,6229.51,6286,0.192
+1920,canal-entry,1.83,8,6292.04,6352,0.127
+1920,canal-middle,13.23,26,8231.19,8291,0.318
+1920,harbor-close,5.03,17,8823.78,8893,0.193

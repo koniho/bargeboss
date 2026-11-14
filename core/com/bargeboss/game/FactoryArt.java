@@ -28,6 +28,13 @@ public final class FactoryArt {
         float[] bounds=FactoryArtData.BOUNDS[i];
         float minX=left+bounds[0]*size,minY=top+bounds[1]*size;
         float maxX=left+bounds[2]*size,maxY=top+bounds[3]*size;
+        // Charge-cycle halos can extend beyond the painted building at screen edges.
+        for(int k=0;k<lightCount(i);k++) {
+            float sx=left+lightX(i,k)*size,sy=top+lightY(i,k)*size;
+            float r=FactoryArtData.LIGHTS[i][k*3+2]*c.scale*8.3f;
+            minX=Math.min(minX,sx-r);minY=Math.min(minY,sy-r);
+            maxX=Math.max(maxX,sx+r);maxY=Math.max(maxY,sy+r);
+        }
         // Visibility includes the plume; fading tests only the solid sprite silhouette.
         for(int k=0;k<smokeCount(i);k++) {
             float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
@@ -45,9 +52,11 @@ public final class FactoryArt {
         for(int k=0;k<lightCount(i);k++) {
             float sx=left+lightX(i,k)*size,sy=top+lightY(i,k)*size;
             float radius=FactoryArtData.LIGHTS[i][k*3+2]*c.scale;
-            if(sx+radius*5.5f<0 || sx-radius*5.5f>g.layout.width || sy+radius*5.5f<0 || sy-radius*5.5f>g.layout.height)continue;
-            if(compact)SceneryEffects.compactGlow(p,sx,sy,radius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
-            else SceneryEffects.glow(p,sx,sy,radius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
+            float activeRadius=radius*FactoryActivity.radiusGain(i,k,g.visualTicks,phase);
+            if(sx+activeRadius*5.5f<0 || sx-activeRadius*5.5f>g.layout.width || sy+activeRadius*5.5f<0 || sy-activeRadius*5.5f>g.layout.height)continue;
+            if(compact)SceneryEffects.compactGlow(p,sx,sy,activeRadius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
+            else SceneryEffects.glow(p,sx,sy,activeRadius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
+            FactoryActivity.light(p,i,k,sx,sy,radius,alpha,g.visualTicks,phase);
         }
         for(int k=0;k<smokeCount(i);k++) {
             float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
@@ -55,6 +64,7 @@ public final class FactoryArt {
             if(sx+6*c.scale+r*1.2f< -1 || sx-48*c.scale-r*1.3f>g.layout.width+1
                     || sy+r*1.1f< -1 || sy-91*c.scale-r*1.25f>g.layout.height+1)continue;
             SceneryEffects.smoke(p,sx,sy,radius,c.scale,alpha,g.visualTicks,phase+k*2.23f,compact);
+            FactoryActivity.steam(p,i,k,sx,sy,radius,c.scale,alpha,g.visualTicks,phase);
         }
     }
 }

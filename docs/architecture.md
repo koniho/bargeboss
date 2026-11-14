@@ -530,3 +530,28 @@ Overlapping soft lobes disperse beyond the lamp foot instead of ending in a
 filled triangle. A wide low-energy ground pool and water-clipped diffuse
 reflections soften the surrounding darkness. Dynamic intensity remains shared
 and deterministic; hosts cache the fixed shapes through `StaticLayer`.
+
+## Independent shadows and yard activity
+
+`ShadowArt` registers separate near/soft masks for watercraft and fixed scenery.
+`ShadowView` blends quay-light influence smoothly with ambient illumination,
+then projects masks through `Painter.spriteAffine`. All three native hosts draw
+the same normalized affine basis; viewport culling, opacity and screen transforms
+preserve that basis. Factory shadows render before scenery and vessels. Vessel
+shadows stay on the water plane through bob and heading changes. See
+[mask generation and projection limits](art-prompts/shadow-masks-v1.md).
+
+`FactoryActivity` adds deterministic furnace charge cycles, portal sparks,
+staggered window-bank surges and intermittent steam at reviewed anchors. Existing
+smoke and lights continue independently. Its two small immutable kernels use the
+bounded native layer cache. [The activity study](art-studies/factory-activity-v1/review.md)
+records anchor choices and measured additional submissions.
+
+`YardActivity` places small electric haulers on contiguous dry road runs. Their
+3-D box parts share the isometric camera and raised ground plane. They shuttle,
+pause at loading ends, vibrate slightly while moving and carry an amber beacon
+and headlight. At most six visible haulers render; their ground depth is merged
+with the existing factory/vessel ordering. Entire footprints stay on road cells
+and outside water. They are ambient actors, with no collision or scoring impact.
+All motion derives from `visualTicks`, so pause freezes the scene and rendering
+never advances gameplay.

@@ -22,7 +22,6 @@ public final class ChimneyArt {
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
         float outletX=x+(SX[frame]-PX[frame])*size,outletY=y+(SY[frame]-PY[frame])*size;
         float alpha=1;
-        LightingView.shadow(p,x,y,size*.28f,size*.07f,alpha);
         p.sprite(SpriteAtlas.CHIMNEYS,frame,x,y,size,size,0,alpha);
         SceneryEffects.glow(p,x+(LX[frame]-PX[frame])*size,y+(LY[frame]-PY[frame])*size,
                 size*.016f,0xffffb34f,alpha,g.visualTicks,frame*1.73f+wx*.011f+wy*.007f);

@@ -34,6 +34,10 @@ public final class RiverPainter implements Painter {
     public void line(float x,float y,float xx,float yy,float w,int c) {
         painter.line(camera.screenX(x,y),camera.screenY(x,y),camera.screenX(xx,yy),camera.screenY(xx,yy),w*camera.scale,c);
     }
+    public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){
+        float s=camera.scale;
+        painter.spriteAffine(a,f,camera.screenX(x,y),camera.screenY(x,y),RiverCamera.Q*(ax+ay)*s,RiverCamera.Q*RiverCamera.DEPTH*(ay-ax)*s,RiverCamera.Q*(bx+by)*s,RiverCamera.Q*RiverCamera.DEPTH*(by-bx)*s,alpha);
+    }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         painter.sprite(atlas,(frame+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),width*camera.scale,height*camera.scale,rotation,alpha);
     }

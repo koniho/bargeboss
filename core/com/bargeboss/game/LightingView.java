@@ -3,10 +3,6 @@ package com.bargeboss.game;
 /** Shared warm key light and cool shadows; all scenery uses the same light direction. */
 public final class LightingView {
     private LightingView() {}
-    public static void shadow(Painter p,float x,float y,float width,float depth,float alpha) {
-        p.poly(new float[]{x-width*.5f,y-depth*.3f,x+width*.4f,y-depth*.3f,
-                x+width*.65f,y+depth,x-width*.25f,y+depth},((int)(65*alpha)<<24)|0x162c40);
-    }
     public static void quays(Game g,Painter p) {
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int side=0;side<2;side++) for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++) {
@@ -26,10 +22,5 @@ public final class LightingView {
             p.rect(x-1.25f*s,y-1.6f*s,2.5f*s,2.3f*s,0xffffebba);
             p.line(x-3.7f*s,y-3.4f*s,x+3.7f*s,y-3.4f*s,1.2f*s,0xff4b4438);
         }
-    }
-    public static void hull(Painter p,Body b) {
-        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        // Offset to screen lower-right in the world plane; fixed across every heading.
-        p.line(b.x-c*b.half-4,b.y-s*b.half+5,b.x+c*b.half-4,b.y+s*b.half+5,b.radius*1.7f,0x44203443);
     }
 }

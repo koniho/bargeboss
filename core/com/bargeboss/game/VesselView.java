@@ -12,8 +12,8 @@ public final class VesselView {
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         if(wake) ArcadeView.wake(g,p,b,tick);
         if(tug) VesselLighting.reflection(g,p,b);
-        if(river) LightingView.hull(p,b);
         float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
+        ShadowView.vessel(g,p,b,tug,size);
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
         if(flash) {
             // A bright hull-shaped pulse under the fading sprite flashes the

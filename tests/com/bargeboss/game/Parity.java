@@ -36,6 +36,11 @@ public final class Parity implements Painter {
         value(SpriteAtlas.pivotX(atlas,frameB)); value(SpriteAtlas.pivotY(atlas,frameB));
         value(SpriteAtlas.widthScale(atlas,frameB)); value(SpriteAtlas.heightScale(atlas,frameB));
     }
+    public void spriteAffine(int atlas,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+        mark("spriteAffine");add(7);add(atlas);add(frame);value(x);value(y);value(ax);value(ay);value(bx);value(by);value(alpha);
+        add(filenameHash(SpriteAtlas.file(atlas,frame)));value(SpriteAtlas.pivotX(atlas,frame));value(SpriteAtlas.pivotY(atlas,frame));
+        value(SpriteAtlas.sourceLeft(atlas,frame));value(SpriteAtlas.sourceTop(atlas,frame));value(SpriteAtlas.sourceRight(atlas,frame));value(SpriteAtlas.sourceBottom(atlas,frame));
+    }
     public static int frame(Game g) { Parity p=new Parity(); Renderer.draw(g,p); return p.hash; }
     private void spriteGrades() {
         mark("spriteGrade");

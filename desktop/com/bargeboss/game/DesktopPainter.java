@@ -170,6 +170,20 @@ public final class DesktopPainter implements Painter {
         transform.scale(width/image.getWidth(),height/image.getHeight());
         sprite.drawImage(image,transform,null); sprite.dispose();
     }
+    /** Axes already include caller scaling; this path deliberately skips atlas size registration. */
+    public void spriteAffine(int id,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+        if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid affine sprite frame: "+frame);
+        if(!(alpha>0) || ax*by-ay*bx==0) return;
+        BufferedImage image=atlas(id)[frame];float px=SpriteAtlas.pivotX(id,frame),py=SpriteAtlas.pivotY(id,frame);
+        AffineTransform transform=new AffineTransform(ax/image.getWidth(),ay/image.getWidth(),
+                bx/image.getHeight(),by/image.getHeight(),x-ax*px-bx*py,y-ay*px-by*py);
+        Graphics2D target=(Graphics2D)g.create();
+        try {
+            target.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,Math.max(0,Math.min(1,alpha))));
+            target.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            target.drawImage(image,transform,null);
+        } finally {target.dispose();}
+    }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
                             float rotation,float blend,float alpha) {
         int count=SpriteAtlas.count(id);

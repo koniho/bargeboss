@@ -11,6 +11,7 @@ public final class TrainingChannelView {
         WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
         StaticTerrain.draw(g,canvas,false);
+        ShadowView.factories(g,canvas);
         float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
             float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
@@ -122,12 +123,17 @@ public final class TrainingChannelView {
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
-        Painter world=new RiverPainter(canvas,c);int boat=0;
-        for(int i=0;i<FACTORY_PLACEMENTS;i++) {
-            while(boat<count && c.screenY(bodies[boat].x,bodies[boat].y)<=c.screenY(factoryX(i),factoryY(i))) Renderer.body(g,world,bodies[boat++]);
-            int slot=i;
-            FactoryArt.draw(g,canvas,factoryCell(slot),factoryX(slot),factoryY(slot));
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0;int[] vehicles=YardActivity.visible(g);
+        for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
+            float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
+            while(boat<count || vehicle<vehicles.length) {
+                float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
+                float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
+                if(Math.min(bd,vd)>next)break;
+                if(bd<=vd && boat<count)Renderer.body(g,world,bodies[boat++]);
+                else YardActivity.drawVehicle(g,canvas,vehicles[vehicle++]);
+            }
+            if(i<FACTORY_PLACEMENTS)FactoryArt.draw(g,canvas,factoryCell(i),factoryX(i),factoryY(i));
         }
-        while(boat<count) Renderer.body(g,world,bodies[boat++]);
     }
 }

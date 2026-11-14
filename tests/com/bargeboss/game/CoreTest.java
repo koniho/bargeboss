@@ -102,8 +102,10 @@ public final class CoreTest {
         WaterPhysicsTest.run();
         WaterEffectsTest.run();
         SceneryEffectsTest.run();
+        FactoryActivityTest.run();
+        ShadowActivityTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("3df0e0d0:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("8ab35d10:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

@@ -169,6 +169,19 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     CGContextDrawImage(ctx,CGRectMake(0,0,width,height),image.CGImage);
     CGContextRestoreGState(ctx);
 }
+// Supplied axes span a complete source cell and already include all caller scaling.
+- (void)spriteAffineWithInt:(jint)atlas withInt:(jint)frame withFloat:(jfloat)x withFloat:(jfloat)y
+                 withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)alpha {
+    if(frame<0 || frame>=[BBSpriteAtlas countWithInt:atlas]) [NSException raise:@"InvalidSpriteFrame" format:@"Invalid affine sprite frame: %d",frame];
+    if(!(alpha>0) || ax*by-ay*bx==0) return;
+    UIImage *image=[self atlas:atlas][frame];float px=[BBSpriteAtlas pivotXWithInt:atlas withInt:frame],py=[BBSpriteAtlas pivotYWithInt:atlas withInt:frame];
+    CGContextRef ctx=self.context;CGContextSaveGState(ctx);
+    CGContextConcatCTM(ctx,CGAffineTransformMake(ax,ay,bx,by,x-ax*px-bx*py,y-ay*px-by*py));
+    CGContextTranslateCTM(ctx,0,1);CGContextScaleCTM(ctx,1,-1);
+    CGContextSetInterpolationQuality(ctx,kCGInterpolationLow);CGContextSetBlendMode(ctx,kCGBlendModeNormal);
+    CGContextSetAlpha(ctx,fmaxf(0,fminf(1,alpha)));CGContextDrawImage(ctx,CGRectMake(0,0,1,1),image.CGImage);
+    CGContextRestoreGState(ctx);
+}
 // Draw a registered cell inside an existing sprite-local transparency layer.
 - (void)cell:(UIImage *)image x:(float)x y:(float)y width:(float)width height:(float)height alpha:(float)alpha {
     CGContextRef ctx=self.context; CGContextSaveGState(ctx);

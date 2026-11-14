@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -21,6 +22,10 @@ public final class CanvasPainter implements Painter {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path=new Path();
     private final Paint spritePaint=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint affinePaint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+    private final Matrix affineMatrix=new Matrix();
+    private final float[] affineValues=new float[9];
+    private final RectF affineUnit=new RectF(0,0,1,1);
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
     private final Map<Integer,Atlas> atlases=new HashMap<Integer,Atlas>();
@@ -125,6 +130,19 @@ public final class CanvasPainter implements Painter {
         spritePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
         canvas.drawBitmap(atlas.images[frame],atlas.frames[frame],new RectF(left,top,left+width,top+height),spritePaint);
         canvas.restore();
+    }
+    /** Map the complete cropped source cell onto supplied axes without another size correction. */
+    public void spriteAffine(int id,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+        if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid affine sprite frame: "+frame);
+        if(!(alpha>0) || ax*by-ay*bx==0) return;
+        Atlas atlas=atlas(id);float px=SpriteAtlas.pivotX(id,frame),py=SpriteAtlas.pivotY(id,frame);
+        affineValues[0]=ax;affineValues[1]=bx;affineValues[2]=x-ax*px-bx*py;
+        affineValues[3]=ay;affineValues[4]=by;affineValues[5]=y-ay*px-by*py;
+        affineValues[6]=affineValues[7]=0;affineValues[8]=1;affineMatrix.setValues(affineValues);
+        affinePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
+        int saved=canvas.save();
+        try {canvas.concat(affineMatrix);canvas.drawBitmap(atlas.images[frame],atlas.frames[frame],affineUnit,affinePaint);}
+        finally {canvas.restoreToCount(saved);}
     }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
                             float rotation,float blend,float alpha) {

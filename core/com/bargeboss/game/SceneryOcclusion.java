@@ -10,6 +10,7 @@ public final class SceneryOcclusion implements Painter {
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
     public SceneryOcclusion(Painter target) {this.target=target;}
+    public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha){target.layer(layer,x,y,scale,alpha);}
     private interface Shape {boolean contains(float x,float y);float left();float top();float right();float bottom();}
