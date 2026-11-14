@@ -42,8 +42,9 @@ The current unload behavior draws the tied barge parallel to shore before
 equipment works for three seconds and returns to idle. Verify the current code
 before mapping new frames to those phases. Keep animation deterministic and
 render-pure in shared Java; native hosts only draw the same layers/frames.
-Scenery that covers playable vessels, ropes or targets must use the existing
-shared occlusion/translucency policy, including moving booms and loads.
+Follow the current shared occlusion policy: only eligible foreground buildings
+actually obscuring watercraft fade. Moving equipment, ropes, targets and shadow
+layers do not independently trigger scenery fading.
 
 Keep candidates in `docs/art-studies/`, prompts in `docs/art-prompts/`, and only
 accepted runtime atlases in `assets/sprites/`. Store source crops, pivots,
@@ -75,3 +76,39 @@ Distinguish guide-projected estimates from pixel-verified positions; generated
 art can add or relocate fixtures. Verify visibility, phase transitions and any
 interpolation before integrating effects. Keep the runtime metadata and emission
 rules in shared Java so Android, iOS and desktop use identical attachment points.
+
+## Required separate shadow layers
+
+Deliver independent near-contact and soft cast-shadow masks with new or revised
+shadow-casting sprites. Keep cast shadows out of the color artwork; do not remove
+its intentional surface shading. Generate masks deterministically from accepted
+source alpha or the source model, excluding smoke, glow, wakes and other effects.
+For an asset proof, keep the masks and previews with the candidate; generating
+shadows does not authorize runtime integration by itself.
+
+Before integration, read `docs/art-prompts/shadow-masks-v1.md`,
+`tools/GenerateShadowMasks.java`, and `ShadowArt` / `ShadowView` in the checkout.
+Use or extend that pipeline for the requested asset. Record source asset/frame,
+receiving plane, ground/waterline anchor, source-to-mask scale/padding/pivot
+transform, softness variants and whether the mask is alpha-derived or model-based.
+Preserve existing lighting, smoke and contact anchor IDs. Do not describe an
+alpha silhouette as reconstructed 3-D height or fully light-occluded geometry.
+
+Validate transparent mask gutters, exact pivot registration and frame coverage.
+Review contact and cast layers independently on light, dark and gameplay
+backgrounds, under several light directions and strengths. Shadows must stay on
+the receiving surface and below gameplay sprites, not paint across roofs or UI;
+they must not count as opaque sprite pixels for scenery fading. Cache masks or
+pose results; animate transforms/opacity in shared Java rather than blurring or
+allocating full-size bitmaps each frame. For integrated assets, regenerate masks,
+run their freshness checks in `preview.sh`, and verify native affine rendering.
+Save the shadow-generation settings and review outputs alongside the sprite's
+art notes, and copy versioned review images to Downloads.
+
+For moving equipment and crews, cover every supported phase/pose and transition,
+including idle, operation, return and loop seams. Keep parent rigid-part IDs and
+mechanical pivots shared between color art, shadow geometry and effect anchors.
+For mechanisms that change orientation, use the required skeleton/3-D model to
+project the current pose, or author registered per-pose masks; do not reuse one
+stationary shadow as a boom turns or a bridge opens. Identify receiver changes
+(ground, dock, water) and review moving loads separately to avoid doubled shadows.

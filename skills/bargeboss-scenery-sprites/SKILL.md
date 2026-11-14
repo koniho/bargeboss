@@ -87,3 +87,38 @@ Distinguish guide-projected estimates from pixel-verified positions; generated
 art can add or relocate fixtures. Verify visibility, phase transitions and any
 interpolation before integrating effects. Keep the runtime metadata and emission
 rules in shared Java so Android, iOS and desktop use identical attachment points.
+
+## Required separate shadow layers
+
+Deliver independent near-contact and soft cast-shadow masks with new or revised
+shadow-casting sprites. Keep cast shadows out of the color artwork; do not remove
+its intentional surface shading. Generate masks deterministically from accepted
+source alpha or the source model, excluding smoke, glow, wakes and other effects.
+For an asset proof, keep the masks and previews with the candidate; generating
+shadows does not authorize runtime integration by itself.
+
+Before integration, read `docs/art-prompts/shadow-masks-v1.md`,
+`tools/GenerateShadowMasks.java`, and `ShadowArt` / `ShadowView` in the checkout.
+Use or extend that pipeline for the requested asset. Record source asset/frame,
+receiving plane, ground/waterline anchor, source-to-mask scale/padding/pivot
+transform, softness variants and whether the mask is alpha-derived or model-based.
+Preserve existing lighting, smoke and contact anchor IDs. Do not describe an
+alpha silhouette as reconstructed 3-D height or fully light-occluded geometry.
+
+Validate transparent mask gutters, exact pivot registration and frame coverage.
+Review contact and cast layers independently on light, dark and gameplay
+backgrounds, under several light directions and strengths. Shadows must stay on
+the receiving surface and below gameplay sprites, not paint across roofs or UI;
+they must not count as opaque sprite pixels for scenery fading. Cache masks or
+pose results; animate transforms/opacity in shared Java rather than blurring or
+allocating full-size bitmaps each frame. For integrated assets, regenerate masks,
+run their freshness checks in `preview.sh`, and verify native affine rendering.
+Save the shadow-generation settings and review outputs alongside the sprite's
+art notes, and copy versioned review images to Downloads.
+
+For fixed scenery, register the mask to the real foundation/footprint pivot and
+raised deck elevation. Review modular joins, long cast silhouettes near water,
+and neighboring buildings together. Draw receiving-plane shadows before vessels
+and foreground structures; an inland building's shadow is not a reason to fade
+the building. Declare non-casting surfaces explicitly rather than adding a dark
+mask to flat ground or water tiles merely because they are sprites.

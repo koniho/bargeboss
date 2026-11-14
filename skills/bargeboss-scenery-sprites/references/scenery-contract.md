@@ -49,15 +49,18 @@ floor is at the same world elevation as the adjacent quay deck.
 
 ## Occlusion and read-through
 
-Store water/land boundaries separately from scenery pixels. Tall structures that
-can obscure the tug, barge, berth, bollard or interaction guide need a removable
-foreground layer or a whole-sprite alpha treatment controlled by shared Java.
-Keep the playable shoreline visible while tall visual mass becomes translucent.
-Do not make collision or lasso eligibility depend on the generated alpha mask.
+Store water/land boundaries separately from scenery pixels. Only foreground
+buildings whose opaque artwork extends over navigable water can fade, and only
+when they actually obscure already painted watercraft. Background/inland scenery,
+terrain and moving shore equipment remain opaque. Berths, bollards, interaction
+guides, glow and shadow masks do not trigger the fading decision. Keep this
+policy in shared Java; generated alpha never defines collision or lasso access.
 
-Review full opacity and a translucent state over a vessel silhouette. Check that
-roof overhangs, walls and foundations fade together where intended and that baked
-shadows or glow do not remain as opaque visual obstacles.
+Review eligible buildings at full and faded opacity over an actual vessel.
+Keep their animated emitters consistent with the building's opacity. Deliver
+cast/contact shadows separately as required by the skill: they render on the
+receiving plane beneath vessels and structures, not as an opaque extension of
+the building silhouette or as a reason to fade neighboring scenery.
 
 ## Useful prompt structure
 
