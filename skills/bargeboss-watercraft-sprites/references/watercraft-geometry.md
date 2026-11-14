@@ -54,6 +54,69 @@ do not acquire a different pivot or phase when hull art changes.
 
 ## Atlas metadata to retain
 
+### Required effect anchor collections
+
+Each vessel must declare `lights`, `smokestacks` and `tires`, even when a
+collection is empty. Give each physical feature a stable ID across all 32
+headings; frame number must not change its identity. Carry these with the hull
+through rotation, registration, camera zoom and heave.
+
+- **Lights:** lens/emitter center, role (navigation, mast, deck/work), intended
+  color and base intensity, height above water, and facing/visibility. Keep the
+  fixture in the hull sprite; animate glow and water reflection separately.
+- **Smokestacks:** outlet center at the top lip, opening radius and exhaust
+  direction. Smoke quantity follows engine load. A stack opening behind a cabin
+  still emits in world space; use depth/occlusion ordering rather than deleting
+  its emitter or drawing every puff in front of the boat.
+- **Tires:** center and contact radius, hull side/normal, height relative to the
+  waterline, and visibility. Record a contact point or derive it from center,
+  radius and outward normal for compression/scrape/splash effects. Port and
+  starboard tires must not swap IDs when the boat turns. Hidden tires remain
+  declared but should not paint foreground contact effects through the hull.
+
+Prefer local vessel-space XYZ definitions when the guide/source model supplies
+them, plus projected coordinates for every source frame. Record whether image
+coordinates are normalized to the full atlas cell or pixel crop; do not mix the
+two. Retain source-cell dimensions and pivot so the renderer applies the same
+transform to the sprite and its points. Specify radii in a declared coordinate
+space rather than silently mixing pixels and world units.
+
+A compact interchange record can use this shape (values illustrative only):
+
+```json
+{
+  "schemaVersion": 1,
+  "coordinateSpace": "normalized-source-cell",
+  "frame": 0,
+  "waterlinePivot": [0.5, 0.72],
+  "anchors": [
+    {"id": "stack.main", "kind": "smokestack", "position": [0.4, 0.3],
+     "localXYZ": [-12, 0, 50], "radius": 0.02,
+     "visibility": "visible", "reviewStatus": "guide-projected"},
+    {"id": "light.mast", "kind": "light", "position": [0.5, 0.2],
+     "color": "#ffca74", "visibility": "visible", "reviewStatus": "unverified"},
+    {"id": "tire.port.0", "kind": "tire", "position": [0.3, 0.7],
+     "radius": 0.04, "side": "port", "localNormal": [0, -1, 0],
+     "visibility": "occluded", "reviewStatus": "unverified"}
+  ]
+}
+```
+
+Generate an overlay with IDs, centers and radii for all headings, including the
+wrap seam. Verify points against actual generated lamps, stack lips and tires
+after registration. Guide-derived coordinates are starting estimates: the
+generator can move equipment independently of the hull. Save review status and
+manual corrections rather than presenting mathematical projection as a pixel
+measurement. Check anchor motion with the same frame/blend selection as the
+hull so effects do not snap to the neighboring pose early.
+
+For shared Java integration, keep the metadata and effect rules in core; native
+hosts must not rediscover emitter locations or tire contacts from image pixels.
+Missing frames, duplicate IDs, nonfinite positions, undeclared coordinate spaces
+or silently omitted anchor categories are validation failures.
+
+### Other atlas metadata
+
 Store measured image size, grid/source rectangles, heading convention and frame
 map, per-frame waterline pivot, uniform scale convention, attachment coordinates,
 alpha expectations, prompt/source provenance and review status. For odd image

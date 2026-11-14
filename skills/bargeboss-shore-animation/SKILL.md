@@ -51,3 +51,6 @@ attachment points, phase/frame maps and transition rules alongside shared
 metadata. Record observed failures and unresolved timing/geometry limits in the
 art notes. Report saved assets/prompts and generation mode; follow current repo
 checks/install instructions when integration is part of the authorized task.
+On the development phone, also copy concept/review images to
+`/storage/emulated/0/Download` with descriptive versioned names, following the
+repository workflow; keep source atlases and prompts in the repository.

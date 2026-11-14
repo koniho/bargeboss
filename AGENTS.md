@@ -26,6 +26,10 @@ the same `Painter`. Do not add a second game implementation for any platform.
 - Keep build artifacts, preview exports, credentials, signing keys and generated
   Objective-C untracked. Production PNG atlases in `assets/sprites/` are source
   assets; track them with their generation prompts in `docs/art-prompts/`.
+- When creating concept images or sprite sheets for user review on the development
+  phone, also copy them to `/storage/emulated/0/Download` with descriptive versioned
+  names (for example `BargeBoss-tug-v5-design.png`). Keep the canonical source in
+  the repository; do not leave the only copy in Downloads or the imagegen cache.
 - Preserve unrelated work. Do not modify the sibling DDDumpling repository.
 - Report native/device validation limits. Shared logic does not prove identical
   antialiasing, touch latency, safe areas or lifecycle behavior on real devices.

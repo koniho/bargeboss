@@ -24,6 +24,13 @@ bow/stern identity, cabin/stack/winch layout, cargo footprint and attachment
 points. Retain the same model at every heading. Separate machinery, cargo and
 effects only where the game needs them independently animated.
 
+**Track effect anchors while making the sprites.** Every vessel sheet needs
+named light points, smokestack outlets and tire fender/contact points alongside
+its waterline, tow and mooring anchors. Keep stable identities across headings
+and record visibility/occlusion. See the anchor contract in
+[watercraft geometry](references/watercraft-geometry.md). An absent feature is
+an explicitly empty collection, not missing metadata.
+
 For current directional vessels, the requested target is **32 actual poses**,
 11.25° apart. A 32-cell image or 16 poses duplicated/mirrored does not meet that
 target. Other animation dimensions, such as unloading or bobbing, do not count
@@ -44,6 +51,12 @@ barge, ferry or other requested craft. Preserve a fixed camera and waterline
 center while rotating the model, not the finished bitmap. Read
 [generation and review](references/generation-review.md) for the tested workflow,
 tool commands, and limits of guide fitting.
+
+Check the guide against the actual concept before generating a whole sheet.
+Do not remove a raised pilothouse, rounded hull, red lower deckhouse, railings,
+mast or prominent tires simply to improve registration. v4 fitted its guide
+well but the user rejected its squat, boxy design; silhouette/material fidelity
+to the intended vessel is a separate acceptance check from pose consistency.
 
 Target one observed defect per revision. Do not repeatedly submit the same
 angle-table prompt after it has already failed. If the guide is ignored, reduce
@@ -67,6 +80,12 @@ geometry. A silhouette fit proposes metadata; it does not prove heading,
 waterline or attachment-point accuracy. Review the bow knees, cabin and stack
 visually even when silhouette overlap is high.
 
+Export an anchor overlay for each heading and check it against generated pixels.
+Distinguish guide-projected estimates from points verified on finished art.
+Tire side/visibility, stack lip height and lamp centers can change despite a
+good hull silhouette fit. Keep unverified points labeled until reviewed; do
+not report them as production-ready effects metadata.
+
 For integration, put accepted PNGs in `assets/sprites/` and source rectangles,
 frame ordering, waterline pivots, cargo offsets and effect anchors in shared
 Java. Native hosts draw the same art and metadata. Keep experimental sheets and
@@ -77,3 +96,6 @@ are part of the task; this skill grants no additional publishing authorization.
 Record each experiment's inputs, prompt, actual dimensions, measured results,
 manual findings and acceptance status in the repository's art notes. Report
 saved asset and prompt paths, generation mode, and material limits to the user.
+For review images on the development phone, follow the repository's standing
+request to copy versioned exports to `/storage/emulated/0/Download` as well.
+Keep repository sources canonical and report the review-copy filenames.

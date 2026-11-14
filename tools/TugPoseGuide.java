@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import javax.imageio.ImageIO;
 
 /** Deterministic 3D blockout used only as image-generation pose guidance. */
@@ -15,8 +18,19 @@ public final class TugPoseGuide {
         Face(int n,int rgb) { x=new double[n];y=new double[n];z=new double[n];color=0xff000000|rgb; }
     }
     private final ArrayList<Face> faces=new ArrayList<Face>();
+    private final ArrayList<Anchor> anchors=new ArrayList<Anchor>();
+    private final int frame;
+    private final boolean concept;
     private final double angle,cx,cy,scale;
-    private TugPoseGuide(int frame) {
+    private static final class Anchor {
+        String id,kind,side,color,role; double x,y,z,r,nx,ny,nz;
+        Anchor(String id,String kind,double x,double y,double z,double r,double nx,double ny,double nz,String side,String color,String role) {
+            this.id=id;this.kind=kind;this.x=x;this.y=y;this.z=z;this.r=r;
+            this.nx=nx;this.ny=ny;this.nz=nz;this.side=side;this.color=color;this.role=role;
+        }
+    }
+    private TugPoseGuide(int frame,boolean concept) {
+        this.frame=frame;this.concept=concept;
         angle=frame*StrictMath.PI/16; cx=(frame%8+.5)*CELL;
         cy=(frame/8+.72)*CELL; scale=CELL*.78/100;
     }
@@ -49,6 +63,11 @@ public final class TugPoseGuide {
         prism(polygon,z,z+height,side,top);
     }
     private void draw(BufferedImage image,double[] depth) {
+        if(concept) conceptGeometry(); else originalGeometry();
+        // Per-pixel depth prevents a broad deck face incorrectly covering fittings.
+        for(Face f:faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
+    }
+    private void originalGeometry() {
         double[][] hull={{-50,-11},{-45,-20},{38,-20},{50,-14},{50,14},{38,20},{-45,20},{-50,11}};
         prism(hull,0,7,0x252d32,0xb85d27);
         box(12,0,38,27,7,12,0xd6cdb2,0xe5d7b5);
@@ -66,9 +85,75 @@ public final class TugPoseGuide {
             box(-36+i*17,-20.5,9,3,1,6,0x161d24,0x344048);
             box(-36+i*17,20.5,9,3,1,6,0x161d24,0x344048);
         }
-        // Per-pixel depth is essential: sorting whole faces can wrongly cover
-        // a distant winch with the broad deck face even when it is above deck.
-        for(Face f:faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
+    }
+    private void lamp(String id,double x,double y,double z,String role) {
+        cylinder(x,y,1.0,z-4,4,0x43433b,0x555449);
+        cylinder(x,y,1.3,z,2,0xe7b347,0xffdd7d);
+        anchors.add(new Anchor(id,"light",x,y,z+1,1.3,0,0,1,"","#ffca74",role));
+    }
+    private void tire(int index,double x,int side) {
+        double y=side*21.5,z=5,r=4.4,t=1.2;
+        for(int i=0;i<16;i++) for(int j=0;j<8;j++) {
+            double[][] quad=new double[4][3];int[][] ends={{i,j},{i+1,j},{i+1,j+1},{i,j+1}};
+            for(int k=0;k<4;k++) {
+                double a=ends[k][0]*Math.PI/8,b=ends[k][1]*Math.PI/4;
+                quad[k]=new double[]{x+(r+t*Math.cos(b))*Math.cos(a),y+t*Math.sin(b),z+(r+t*Math.cos(b))*Math.sin(a)};
+            }
+            face(quad,0x20272c);
+        }
+        String name=side<0?"port":"starboard";
+        anchors.add(new Anchor("tire."+name+"."+index,"tire",x,y,z,r+t,0,side,0,name,"","fender"));
+    }
+    private void conceptGeometry() {
+        // Rounded hull with the concept's layered red/white deckhouse and raised pilothouse.
+        double[][] hull=new double[32][2];
+        for(int i=0;i<32;i++) {
+            double a=i*Math.PI/16;
+            hull[i]=new double[]{Math.copySign(29,Math.cos(a))+21*Math.cos(a),21*Math.sin(a)};
+        }
+        prism(hull,0,9,0x262e33,0xc9662a);
+        box(3,0,53,28,9,12,0xa63421,0xc54827);
+        box(3,0,53,28,21,9,0xe2d5b6,0xc3c4b4);
+        box(3,0,57,32,30,1.5,0x48534d,0x616d61);
+        box(14,0,31,26,31.5,14,0xe8ddc2,0xe8ddc2);
+        box(14,0,31.5,26.5,36,7,0x243b47,0x243b47);
+        box(14,0,35,30,45.5,2,0xbd3c20,0xe66327);
+        cylinder(-17,0,4.3,9,42,0x2c3338,0x121c22);
+        cylinder(-17,0,4.4,39,3,0xd35b23,0xe2762d);
+        anchors.add(new Anchor("stack.main","smokestack",-17,0,51,4.3,0,0,1,"","","engine-exhaust"));
+        box(-37,0,10,12,9,5,0xb78b29,0xe3ad36);
+        // Short bow pads preserve the rounded bow instead of turning it into a square pontoon.
+        box(49,-10,3,7,1,10,0x30383c,0x495054);
+        box(49,10,3,7,1,10,0x30383c,0x495054);
+        for(int side:new int[]{-1,1}) {
+            for(int i=0;i<5;i++) tire(i,-34+i*17,side);
+            for(int i=0;i<7;i++) cylinder(-39+i*13,side*19,.45,9,6,0xd9d7c6,0xe2decb);
+            box(0,side*19,80,.65,15,.6,0xd9d7c6,0xe2decb);
+            for(int i=0;i<5;i++) cylinder(-23+i*12,side*15,.4,31.5,5,0xd9d7c6,0xe2decb);
+            box(1,side*15,49,.6,36,.6,0xd9d7c6,0xe2decb);
+        }
+        cylinder(7,0,.8,47.5,17,0x343b3c,0x444b4c);
+        box(7,0,1,12,59,.7,0x343b3c,0x444b4c);
+        lamp("light.mast",7,0,64.5,"mast");
+        lamp("light.bow.port",39,-14,15,"deck");
+        lamp("light.bow.starboard",39,14,15,"deck");
+        lamp("light.stern",-41,0,17,"deck");
+        lamp("light.roof.work",26,0,47.5,"work");
+    }
+    private void writeAnchors(StringBuilder csv,BufferedImage image,double[] depth) {
+        for(Anchor a:anchors) {
+            double x=a.x*Math.cos(angle)-a.y*Math.sin(angle),y=a.x*Math.sin(angle)+a.y*Math.cos(angle);
+            double sx=cx+x*scale,sy=cy+(y*DEPTH-a.z*HEIGHT)*scale,z=y*HEIGHT+a.z*DEPTH;
+            int px=(int)Math.floor(sx),py=(int)Math.floor(sy);
+            boolean inside=px>=0 && py>=0 && px<image.getWidth() && py<image.getHeight();
+            double normalY=a.nx*Math.sin(angle)+a.ny*Math.cos(angle);
+            boolean visible=inside && depth[py*image.getWidth()+px]<=z+2.0;
+            if(a.kind.equals("tire")) visible=normalY>.05;
+            csv.append(String.format(Locale.ROOT,"%d,%s,%s,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.7f,%.7f,%.7f,%s,%s,%s,%s%n",
+                frame,a.id,a.kind,a.x,a.y,a.z,a.nx,a.ny,a.nz,a.r,
+                (sx-frame%8*CELL)/CELL,(sy-frame/8*CELL)/CELL,a.r*scale/CELL,
+                visible?"visible":"occluded",a.side,a.color,a.role));
+        }
     }
     private static void triangle(BufferedImage image,double[] depth,Face f,int a,int b,int c) {
         int left=Math.max(0,(int)Math.floor(Math.min(f.x[a],Math.min(f.x[b],f.x[c]))));
@@ -87,19 +172,27 @@ public final class TugPoseGuide {
         }
     }
     public static void main(String[] args) throws Exception {
+        boolean concept=args.length==1 && args[0].equals("--concept");
+        if(args.length>0 && !concept)throw new IllegalArgumentException("Use no args for v4 or --concept for v5");
         BufferedImage guide=new BufferedImage(CELL*8,CELL*4,BufferedImage.TYPE_INT_ARGB);
         double[] depth=new double[guide.getWidth()*guide.getHeight()];Arrays.fill(depth,Double.NEGATIVE_INFINITY);
-        for(int frame=0;frame<32;frame++) new TugPoseGuide(frame).draw(guide,depth);
+        StringBuilder anchors=new StringBuilder("frame,id,kind,x,y,z,nx,ny,nz,radius,u,v,radius_uv,visibility,side,color,role\n");
+        for(int frame=0;frame<32;frame++) {
+            TugPoseGuide pose=new TugPoseGuide(frame,concept);pose.draw(guide,depth);
+            if(concept)pose.writeAnchors(anchors,guide,depth);
+        }
         // Regression: these known unobstructed winch tops must survive the deck.
-        for(int frame:new int[]{0,4,12,16,20,24,28}) {
+        if(!concept)for(int frame:new int[]{0,4,12,16,20,24,28}) {
             double angle=frame*Math.PI/16,scale=CELL*.78/100;
             int x=(int)Math.floor((frame%8+.5)*CELL-33*Math.cos(angle)*scale);
             int y=(int)Math.floor((frame/8+.72)*CELL+(-33*Math.sin(angle)*DEPTH-13*HEIGHT)*scale);
             if((guide.getRGB(x,y)&0xffffff)!=0xe7b93e)
                 throw new IllegalStateException("Winch top incorrectly occluded in frame "+frame);
         }
-        File out=new File("docs/art-studies/tug-isometric-v4-pose-guide.png");
+        String version=concept?"v5":"v4";
+        File out=new File("docs/art-studies/tug-isometric-"+version+"-pose-guide.png");
         ImageIO.write(guide,"png",out);
+        if(concept)Files.write(new File("docs/art-studies/tug-isometric-v5-guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
         System.out.println(out+" — 32 poses, 3072x1536, fixed 35.264-degree camera, 11.25-degree steps");
     }
 }

@@ -84,6 +84,35 @@ and moving land machinery/crew.
 
 ## Review checklist for future vessels
 
+### v5: design fidelity and effects
+
+The user rejected v4's squat shape because it did not resemble the concept.
+Its high guide-overlap score did not establish that the guide represented the
+right boat. v5 restores a rounded hull, red lower deckhouse, cream band, raised
+pilothouse, tall stack, mast, rails and large fenders. A new single-vessel design
+reference supplies materials while a new projected guide supplies the turn.
+The standalone design reference has atmospheric glow and is not a runtime cutout.
+
+The v5 sheet is 1774×887. Raw silhouette IoU is 0.699, registered mean 0.854,
+minimum 0.809; its single sheet scale is 0.8958. This is a lower geometric fit
+than v4 but a closer design match. Report these separately rather than optimizing
+the wrong hull to a high score. Pose and detailed fittings remain review work.
+
+The user also requires light, smoke-outlet and tire effect points while making
+vessel art. The v5 guide exports 16 stable authored features per pose (5 lights,
+1 stack, 10 tires), 512 records across 32 headings. Source-cell estimates are
+derived through registration and retain XYZ, radius, normal, identity, side,
+visibility and review status. The HTML preview overlays these by category.
+Generated extra cabin/roof fixtures and tire details mean the inventory is not
+yet pixel-verified; metadata explicitly records that limitation.
+
+Review images are now also copied to the phone's Downloads folder with versioned
+`BargeBoss-...` filenames. Repository originals and prompt provenance remain the
+canonical files. This delivery preference is recorded in `AGENTS.md` and the
+three art skills.
+
+### Checklist
+
 - Lock a vessel specification: bow/stern, length/beam, cabin placement, stack,
   winch, tire spacing and attachment points. Avoid contradictory reference views.
 - Keep camera, light, scale and all geometry fixed while changing only heading.

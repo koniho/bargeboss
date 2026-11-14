@@ -65,3 +65,6 @@ status. Share asset and prompt paths. For requested integration, keep anchors,
 depth ordering and dynamic translucency rules in shared Java, and use the
 repository's usual cross-platform checks and installation workflow. Do not add
 host-specific scenery layouts or treat art opacity as collision geometry.
+On the development phone, also copy concept/review images to
+`/storage/emulated/0/Download` with descriptive versioned names, as requested in
+the repository workflow. Preserve the canonical files and prompts in the repo.

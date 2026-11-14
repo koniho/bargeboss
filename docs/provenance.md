@@ -1,7 +1,7 @@
 # Provenance
 
 The newer three-quarter industrial tug study is documented in
-[isometric-tug-v4-review.md](art-studies/isometric-tug-v4-review.md), with its supplied
+[isometric-tug-v5-review.md](art-studies/isometric-tug-v5-review.md), with its supplied
 reference, built-in image generation prompt, candidate atlas and validation
 limits. It is not a production atlas and is not bundled into native builds.
 

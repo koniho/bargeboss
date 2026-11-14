@@ -69,3 +69,19 @@ an alpha defect. Check the measured PNG dimensions before promising resolution.
 Do not use width/height stretching, flat bitmap rotation or interpolated duplicate
 frames to disguise missing 3D views. Blending belongs after accurate source poses
 and waterline anchors have been established.
+
+## Effect-point export
+
+`TugPoseGuide --concept` creates the taller rounded v5 guide and a per-frame CSV
+of authored lights, stack outlets and tires. The no-argument command preserves
+the old v4 guide for reproducibility. The v5 guide carries five light identities,
+one stack and ten fenders through all 32 poses.
+
+`python tools/project-vessel-anchors.py guide.csv registration.csv atlas.png output.json`
+maps guide points into normalized source-cell coordinates after registration.
+It validates the frame/ID inventory, finite values and cell bounds, and retains
+local XYZ, normals, radii and visibility estimates. It edits no PNGs. The preview
+accepts this JSON as its fifth optional argument and can overlay each category.
+Pixels still need inspection: generated art may add fixtures, omit fenders or
+shift a stack independently. `featureInventoryVerified: false` and
+`guide-projected` statuses are intentional until that review is complete.

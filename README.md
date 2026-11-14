@@ -11,7 +11,7 @@ The original project code, tooling and documentation are open source under the
 supplied reference images and third-party notices.
 
 The three-quarter art conversion is currently an isolated
-[32-frame tug study](docs/art-studies/isometric-tug-v4-review.md) and
+[32-frame tug study](docs/art-studies/isometric-tug-v5-review.md) and
 [three-element scenery trial](docs/art-studies/scenery-trial/review.md), not the
 live game's camera. Reusable art workflows are maintained in
 [watercraft](skills/bargeboss-watercraft-sprites/SKILL.md),
