@@ -60,7 +60,7 @@ public final class TowTest {
         float endX=g.tug.x,endY=g.tug.y;
         for(int i=1;i<=12;i++) { ReplayInput.move(g,g.downX+(endX-g.downX)*i/12,g.downY+(endY-g.downY)*i/12);steps(g,4); }
         ReplayInput.up(g,endX,endY);steps(g,18);
-        check(g.tow.cargo==b,"slow drag can interrupt push assist and connect");
+        check(g.tow.cargo==null && g.ropePhase==0,"a slow drag after push assist cannot silently turn into a tow throw");
         g=fixture();aim(g);RiverCamera frozen=g.layout.camera;steps(g,20);
         check(g.layout.camera==frozen,"tow aiming freezes camera projection");
         g=fixture();connect(g);g.tug.y-=250;g.step();

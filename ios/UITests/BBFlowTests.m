@@ -130,11 +130,25 @@
         NSInteger gate=[[parts.lastObject componentsSeparatedByString:@";"].firstObject integerValue];
         if(gate>7) break;
         XCTAssertTrue(gate>=1 && gate<=7);
-        double ahead=fmin(xs[gate],boat.x+28);int segment=0;
-        while(segment<6 && ahead>=xs[segment+1]) segment++;
-        double t=fmax(0,fmin(1,(ahead-xs[segment])/(xs[segment+1]-xs[segment])));
-        double y=ys[segment]+(ys[segment+1]-ys[segment])*t*t*(3-2*t);
-        double dx=ahead-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
+        // Follow each horizontal / vertical / horizontal reach of the shared
+        // rectilinear course rather than steering through the solid inner corner.
+        double turn=(xs[gate-1]+xs[gate])/2;
+        double px[]={xs[gate-1],turn,turn,xs[gate]},py[]={ys[gate-1],ys[gate-1],ys[gate],ys[gate]};
+        double best=INFINITY,along=0,total=0;
+        for(int i=0;i<3;i++) {
+            double dx=px[i+1]-px[i],dy=py[i+1]-py[i],length=hypot(dx,dy);
+            double t=fmax(0,fmin(1,((boat.x-px[i])*dx+(boat.y-py[i])*dy)/(length*length)));
+            double ex=boat.x-px[i]-t*dx,ey=boat.y-py[i]-t*dy,distance=ex*ex+ey*ey;
+            if(distance<=best) {best=distance;along=total+t*length;}
+            total+=length;
+        }
+        double target=fmin(total,along+28),tx=xs[gate],ty=ys[gate];
+        for(int i=0;i<3;i++) {
+            double dx=px[i+1]-px[i],dy=py[i+1]-py[i],length=hypot(dx,dy);
+            if(target<=length || i==2) {double t=fmin(1,target/length);tx=px[i]+t*dx;ty=py[i]+t*dy;break;}
+            target-=length;
+        }
+        double dx=tx-boat.x,dy=ty-boat.y,length=fmax(1,hypot(dx,dy));
         [[self river:stage x:boat.x y:boat.y] pressForDuration:0.05
                 thenDragToCoordinate:[self river:stage x:boat.x+55*dx/length y:boat.y+55*dy/length]
                 withVelocity:500 thenHoldForDuration:0.35];

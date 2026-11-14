@@ -6,6 +6,7 @@ public final class TutorialView {
     private TutorialView() {}
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
+        gateFeedback(g,p);
         if(t.lesson==Tutorial.DONE) {
             p=ScreenView.menu(g,p);
             ScreenView.overlay(p,104,412);
@@ -21,9 +22,9 @@ public final class TutorialView {
         if(t.lesson==Tutorial.CHANNEL) {
             VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
             Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF 10",30,79,9,VisualStyle.GOLD);
-            Lettering.draw(p,"THREAD THE CHANNEL",30,100,16,PAPER);
+            Lettering.draw(p,"NAVIGATE THE CANAL",30,100,16,PAPER);
             Lettering.draw(p,"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
-            Lettering.draw(p,"EASE OFF FOR BENDS. LIFT TO COAST.",30,145,9,MUTED);
+            Lettering.draw(p,"SLOW AT CORNERS. LIFT TO COAST.",30,145,9,MUTED);
             p.rect(30,167,260,4,0xff35475a);
             p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
             return;
@@ -88,6 +89,24 @@ public final class TutorialView {
                 Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
+    }
+    private static void gateFeedback(Game g,Painter p) {
+        Tutorial t=g.tutorial;
+        if(t.gateClearTicks<=0 || t.clearedGate<1) return;
+        boolean complete=t.clearedGate==TrainingChannel.X.length-1;
+        float age=1-t.gateClearTicks/90f,alpha=Math.min(1,t.gateClearTicks/24f);
+        float x=g.layout.width*.5f,y=217;
+        if(g.trainingChannel()) {
+            RiverCamera c=g.layout.camera;
+            x=Physics.clamp(c.screenX(TrainingChannel.X[t.clearedGate],TrainingChannel.Y[t.clearedGate]),130,g.layout.width-130);
+            y=Physics.clamp(c.screenY(TrainingChannel.X[t.clearedGate],TrainingChannel.Y[t.clearedGate])-54-18*age,210,g.layout.height-100);
+        }
+        p=new OpacityPainter(p,alpha);
+        int cream=0xffffefcf,green=0xffb9df9c;
+        VisualStyle.panel(p,x-117,y-9,234,43,0xe1101c30);
+        float pop=1+2*(float)StrictMath.sin(Math.min(1,age*5)*Math.PI);
+        Lettering.center(p,complete?"CANAL CLEARED!":"GATE "+t.clearedGate+" CLEARED!",x,y,13+pop,cream);
+        Lettering.center(p,complete?"READY TO PUSH":"KEEP GOING, CAPTAIN",x,y+21,9,green);
     }
     private static void pushGesture(Game g,Painter canvas,Painter river,Body b,boolean assist) {
         boolean held=g.heldCargo()==b;

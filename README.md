@@ -10,10 +10,12 @@ The original project code, tooling and documentation are open source under the
 [MIT License](LICENSE). See [provenance](docs/provenance.md) for generated artwork,
 supplied reference images and third-party notices.
 
-The first playable [isometric conversion](docs/isometric-migration.md) uses the
-approved [32-frame tug](docs/art-studies/isometric-tug-v5-review.md) and a warehouse
-from the [scenery trial](docs/art-studies/scenery-trial/review.md). Barges and other
-shore equipment still use transitional art. Reusable art workflows are maintained in
+The shared [isometric conversion](docs/isometric-migration.md) uses the approved
+[32-frame tug](docs/art-studies/isometric-tug-v5-review.md), registered
+[barge and coal layers](docs/art-studies/isometric-barge-runtime-review.md), and
+industrial scenery with animated light and smoke. Water and wakes respect canal
+banks and piers. Steel/container cargo and unloading machinery still use
+transitional art. Reusable art workflows are maintained in
 [watercraft](skills/bargeboss-watercraft-sprites/SKILL.md),
 [static scenery](skills/bargeboss-scenery-sprites/SKILL.md), and
 [animated shore equipment](skills/bargeboss-shore-animation/SKILL.md) skills.
@@ -21,7 +23,7 @@ shore equipment still use transitional art. Reusable art workflows are maintaine
 ## Play
 
 Choose **Learn to Drive** for ten hands-on lessons without a timer, traffic or
-hull damage: driving, coasting, a scrolling winding channel, drag-to-push,
+hull damage: driving, coasting, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
 line, connecting a towline, pulling and releasing. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended shift. Before the cargo lessons, steer
@@ -181,20 +183,26 @@ Every host fills its safe display bounds with the same **responsive landscape la
 using 960×600 as the reference size. The river uses the largest uniform scale that
 fits the introductory stage, follows the tug on the longer bridge stage, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane uses a 45° yaw and 35.264° elevation; sprites retain their painted
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
-The introductory overview fits the whole stage. The bridge route and winding
-tutorial channel scroll, while docking zoom keeps the tug, barge and bollard visible.
+The introductory overview fits the whole stage. The bridge route and rectilinear
+tutorial canal scroll, while docking zoom keeps the tug, barge and bollard visible.
 Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring,
 traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
 
 The same PNG atlases are bundled on Android, iOS and desktop. Every rotating
-boat and payload has **32 headings**, spaced 11.25° apart. The tug uses one 8×4
-sheet with a single uniform scale and registered waterline pivots. Transitional
-barges and payloads interleave two 4×4 sheets with per-frame size calibration.
+boat and payload has **32 headings**, spaced 11.25° apart. The tug, barge and coal
+use individual 8×4 sheets with one uniform scale per sheet and registered
+waterline pivots. Steel and container payloads still interleave two 4×4 sheets
+with per-frame size calibration.
 Shared code holds each drawing crisp, then blends across a brief 2.25° transition. Native hosts sum their weighted premultiplied colors in one layer,
 so an opaque boat stays opaque between headings. This smooths transitions between
 painted views; it is not skeletal animation or a live 3D model. Native
 antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
+
+## Design a level
+
+Use a top-down sketch and the [level-design brief and template](docs/level-design.md).
+A shared level-file format and visual editor are still an authoring gap.
 
 ## Build and run
 

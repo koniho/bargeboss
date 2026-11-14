@@ -3,6 +3,7 @@ package com.bargeboss.game;
 /** Measured warehouse anchors; quay cells remain review candidates, not level geometry. */
 public final class StaticHarborArt {
     public static final int WAREHOUSE=2;
+    public static final float WORLD_SIZE=144, FOOTPRINT_HALF=44;
     private static final float CELL=724;
     // Center of the ground foundation inferred from its three visible bottom corners.
     private static final float PX=359/CELL,PY=518/CELL;
@@ -22,11 +23,9 @@ public final class StaticHarborArt {
     /** The roof pipe is a closed return bend; no visible exhaust opening was found. */
     public static int smokeCount(int frame) { return 0; }
     public static void lights(Painter p,float x,float y,float size,float alpha,int ticks) {
-        float pulse=.7f+.3f*(float)StrictMath.sin(ticks*.024);
         for(int i=0;i<LIGHT_IDS.length;i++) {
             float sx=x+(lightX(i)-PX)*size,sy=y+(lightY(i)-PY)*size;
-            for(int ring=3;ring>0;ring--) p.circle(sx,sy,(lightRadius(i)+ring*.007f)*size,
-                    ((int)((7+4*pulse)*alpha)<<24)|(lightColor(i)&0xffffff));
+            SceneryEffects.glow(p,sx,sy,lightRadius(i)*size,lightColor(i),alpha,ticks,i*.79f+x*.002f);
         }
     }
 }

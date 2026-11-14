@@ -52,7 +52,7 @@ public final class WaterPhysicsTest {
         public void line(float x,float y,float xx,float yy,float width,int color) { minY=Math.min(minY,Math.min(y,yy));maxY=Math.max(maxY,Math.max(y,yy)); }
         public void circle(float x,float y,float r,int color) {}
         public void rect(float x,float y,float w,float h,int color) {}
-        public void poly(float[] xy,int color) {}
+        public void poly(float[] xy,int color) { for(int i=1;i<xy.length;i+=2) {minY=Math.min(minY,xy[i]);maxY=Math.max(maxY,xy[i]);} }
         public void sprite(int atlas,int frame,float x,float y,float w,float h,float angle,float alpha) {}
         public void spriteBlend(int atlas,int a,int b,float x,float y,float w,float h,float angle,float blend,float alpha) {}
     }

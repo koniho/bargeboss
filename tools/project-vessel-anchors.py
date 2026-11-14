@@ -19,7 +19,9 @@ def project(guide_path, registration_path, image_path):
     if data[:8] != b'\x89PNG\r\n\x1a\n':
         raise ValueError('Expected PNG atlas')
     width, height = struct.unpack('>II', data[16:24])
-    kinds = {'light': 'lights', 'smokestack': 'smokestacks', 'tire': 'tires'}
+    kinds = {'light': 'lights', 'smokestack': 'smokestacks', 'tire': 'tires',
+             'contact': 'contacts', 'tow': 'towPoints', 'mooring': 'mooringPoints',
+             'cargo-origin': 'cargoOrigins'}
     frames = []
     expected = None
     for frame, reg in enumerate(registration):
@@ -28,7 +30,7 @@ def project(guide_path, registration_path, image_path):
             raise ValueError('Invalid registration')
         row = {'frame': frame, 'intendedYawDegrees': frame * 11.25,
                'waterlinePivot': [px, py], 'uniformScale': scale,
-               'lights': [], 'smokestacks': [], 'tires': []}
+               **{category: [] for category in kinds.values()}}
         ids = set()
         for point in (p for p in guide if int(p['frame']) == frame):
             identity, kind = point['id'], point['kind']
@@ -72,7 +74,7 @@ def project(guide_path, registration_path, image_path):
             'reviewStatus': 'guide-projected-unverified',
             'featureInventoryVerified': False,
             'reviewNotes': ['Compare each point to the finished sprite before effects integration.',
-                            'Generated artwork adds small cabin/roof fixtures beyond the guide; inventory and author these before claiming complete light coverage.',
+                            'Generated artwork can add or relocate fixtures; review its feature inventory before claiming complete anchor coverage.',
                             'Visibility is a guide estimate, not measured occlusion in the generated bitmap.'],
             'frames': frames}
 
@@ -89,7 +91,8 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2) + '\n')
     first = result['frames'][0]
-    counts = {k: len(first[k]) for k in ('lights', 'smokestacks', 'tires')}
+    counts = {k: len(first[k]) for k in ('lights', 'smokestacks', 'tires', 'contacts',
+                                      'towPoints', 'mooringPoints', 'cargoOrigins')}
     print(f'Wrote {output}: 32 frames, per-frame counts {counts}; guide estimates, not approved pixel anchors.')
 
 

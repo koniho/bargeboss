@@ -116,7 +116,10 @@ registration points. All five rotating assets use 32 logical views, ordered
 clockwise from east in 11.25° steps. The v5 tug uses one 8×4 sheet with a single
 uniform scale and registered waterline pivots. Its production smoke points are
 in `TugArt`; unverified light/fender guide points remain in the art-study metadata.
-The transitional barge and payload assets each use two physical 4×4 sheets:
+The barge and coal layer also use individual 8×4 sheets with uniform registration
+in `BargeArt`. The coal geometry guide includes foreground-coaming occlusion;
+unloading fades the layer without shifting or stretching that mask.
+The transitional steel and container payloads each use two physical 4×4 sheets:
 even logical frames use the corrected 16-view base sheet, and odd frames use
 intermediate headings (11.25°, 33.75°, …, 348.75°).
 `file(atlas, frame)` chooses the sheet; `sourceFrame(atlas, frame)` maps to the

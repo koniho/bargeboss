@@ -138,3 +138,26 @@ short blend, registered pivot and uniform scale. Review these through the actual
 native drawing contract, not only the art-study HTML. Square source cells need
 square runtime rectangles; retaining the old tug's 1.05 height factor deforms
 the approved isometric design.
+
+### Empty barge and cargo guide contracts
+
+The empty barge needs a real recessed floor in its guide: constructing a full
+solid deck before adding coaming conceals the well. Render the low hull top as
+the floor, then build the walkway/coaming as a ring. Keep a bow-only paint marker
+and stern-only fittings so a nearly symmetric barge still has a verifiable yaw.
+Track rope attachment and cargo-floor points alongside light/smoke/tire arrays;
+unpowered barges explicitly declare empty emitter arrays. Barge v1 exports28
+stable anchors per heading, including actual tire contact surfaces.
+
+Separate cargo must share the barge's world-to-cell scale and waterline pivot.
+A coal pile's smaller opaque bounds are not a reason to resize it to fill its
+cell. Registration is relative to the whole hull's datum, not the pile's ink
+center. A complete cargo sprite drawn after the hull can incorrectly cover the
+near coaming; inspect this compositing relationship before runtime integration.
+
+The bulk v1 guide now performs a depth-only hull/coaming pass before rendering
+coal. This removes coal pixels that should sit behind the near coaming without
+including hull pixels in the separate cargo layer. Preserve the resulting cutout
+silhouette during material generation. Masked cargo cannot be lowered or resized
+during unloading without invalidating the mask; a fixed-position scoop fade is
+compatible. Painted-hull differences still require composite inspection.

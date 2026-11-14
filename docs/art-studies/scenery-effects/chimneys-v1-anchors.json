@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "atlas": "assets/sprites/chimneys-v1.png",
+  "imageSize": [
+    1774,
+    887
+  ],
+  "grid": [
+    2,
+    1
+  ],
+  "coordinateSpace": "normalized-source-cell",
+  "localAxes": "X screen-right on ground, Y toward viewer, Z up; inferred from fixed view",
+  "worldSize": 172,
+  "frames": [
+    {
+      "frame": 0,
+      "asset": "steel-stack",
+      "groundPivot": [
+        0.5005636978579482,
+        0.895152198421646
+      ],
+      "groundPivotReviewStatus": "foundation-center-inferred",
+      "lights": [
+        {
+          "id": "lamp.steel.maintenance",
+          "kind": "light",
+          "position": [
+            0.46674182638105977,
+            0.47801578354002255
+          ],
+          "radius": 0.014656144306651634,
+          "localXYZ": [
+            -5.817361894024803,
+            0,
+            87.8723377850741
+          ],
+          "localNormal": [
+            0,
+            -1,
+            0
+          ],
+          "localGeometryReviewStatus": "inferred-from-fixed-view",
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "color": "#ffb34f"
+        }
+      ],
+      "smokestacks": [
+        {
+          "id": "stack.steel.top",
+          "kind": "smokestack",
+          "position": [
+            0.49943630214205187,
+            0.07553551296505073
+          ],
+          "radius": 0.04509582863585118,
+          "localXYZ": [
+            -0.1939120631341601,
+            0,
+            172.65726910742939
+          ],
+          "localNormal": [
+            0,
+            0,
+            1
+          ],
+          "localGeometryReviewStatus": "inferred-from-fixed-view",
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "color": null
+        }
+      ],
+      "notes": [
+        "One open top rim and one maintenance lamp; particles/glow rendered separately.",
+        "Local geometry estimates are not an authored 3D reconstruction."
+      ]
+    },
+    {
+      "frame": 1,
+      "asset": "brick-stack",
+      "groundPivot": [
+        0.5005636978579482,
+        0.8985343855693348
+      ],
+      "groundPivotReviewStatus": "foundation-center-inferred",
+      "lights": [
+        {
+          "id": "lamp.brick.inspection",
+          "kind": "light",
+          "position": [
+            0.3979706877113867,
+            0.7474633596392334
+          ],
+          "radius": 0.014656144306651634,
+          "localXYZ": [
+            -17.645997745208568,
+            0,
+            31.824035846486296
+          ],
+          "localNormal": [
+            0,
+            -1,
+            0
+          ],
+          "localGeometryReviewStatus": "inferred-from-fixed-view",
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "color": "#ffb34f"
+        }
+      ],
+      "smokestacks": [
+        {
+          "id": "stack.brick.top",
+          "kind": "smokestack",
+          "position": [
+            0.5005636978579482,
+            0.33032694475760993
+          ],
+          "radius": 0.06764374295377677,
+          "localXYZ": [
+            0.0,
+            0,
+            119.69637363156039
+          ],
+          "localNormal": [
+            0,
+            0,
+            1
+          ],
+          "localGeometryReviewStatus": "inferred-from-fixed-view",
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "color": null
+        }
+      ],
+      "notes": [
+        "One open top rim and one maintenance lamp; particles/glow rendered separately.",
+        "Local geometry estimates are not an authored 3D reconstruction."
+      ]
+    }
+  ]
+}

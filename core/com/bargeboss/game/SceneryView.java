@@ -47,11 +47,18 @@ public final class SceneryView {
                 alpha=Math.min(alpha,overlap(x,y,w,h,c.screenX(wx,wy),c.screenY(wx,wy),9*c.scale,9*c.scale,9*c.scale,20*c.scale));
             }
         }
+        if(g.trainingChannel()) {
+            int gate=Math.min(g.tutorial.channelGate,TrainingChannel.X.length-1);
+            RiverCamera c=g.layout.camera;float s=c.scale;
+            float gx=TrainingChannel.X[gate],gy=TrainingChannel.Y[gate];
+            for(int side=-1;side<=1;side++) alpha=Math.min(alpha,overlap(x,y,w,h,
+                    c.screenX(gx,gy+side*43),c.screenY(gx,gy+side*43),12*s,28*s,12*s,20*s));
+        }
         return alpha;
     }
     public static void ground(Game g,Painter p) {
         RiverCamera c=g.layout.camera;float s=c.scale;
-        WaveView.draw(p,g.visualTicks,0,0,g.layout.width,g.layout.height,s,c.screenX(300,148));
+        WaveView.draw(g,p);
         Painter world=new RiverPainter(p,c);
         // Clip the visible world with the real banks. Both coordinates of every
         // corner pass through the same camera as the collision footprints.
@@ -62,12 +69,12 @@ public final class SceneryView {
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
         minX-=80;maxX+=80;minY-=80;maxY+=80;
-        if(minX<Physics.LEFT) world.rect(minX,minY,Physics.LEFT-minX,maxY-minY,0xff67788c);
-        if(maxX>Physics.RIGHT) world.rect(Physics.RIGHT,minY,maxX-Physics.RIGHT,maxY-minY,0xff7c8a99);
+        if(minX<Physics.LEFT) world.rect(minX,minY,Physics.LEFT-minX,maxY-minY,HarborAtmosphere.SHORE_DARK);
+        if(maxX>Physics.RIGHT) world.rect(Physics.RIGHT,minY,maxX-Physics.RIGHT,maxY-minY,HarborAtmosphere.SHORE_LIT);
         for(int bank=0;bank<2;bank++) {
             float edge=bank==0?Physics.RIGHT:Physics.LEFT,side=bank==0?1:-1;
             world.line(edge,minY,edge,maxY,6,VisualStyle.OUTLINE);
-            world.line(edge+side*3,minY,edge+side*3,maxY,2,0xffc3b89b);
+            world.line(edge+side*3,minY,edge+side*3,maxY,2,HarborAtmosphere.QUAY_EDGE);
             for(int row=(int)StrictMath.floor(minY/64);row*64<maxY;row++) {
                 float y=row*64;
                 world.line(edge+side*5,y,edge+side*65,y,1,0x4446576b);
@@ -77,30 +84,35 @@ public final class SceneryView {
                 }
             }
         }
+        HarborAtmosphere.bankHaze(g,p);
         LightingView.quays(g,p);
     }
     public static void props(Game g,Painter p,boolean foreground) {
-        RiverCamera c=g.layout.camera;float s=c.scale;
+        if(!foreground) SceneryEffects.industrialStacks(g,p);
         int[] cells=foreground?new int[]{5,3,7,6}:new int[]{0,4,2,1};
         float[] along={70,250,465,625};
-        float[] sizes=foreground?new float[]{82,80,76,94}:new float[]{100,84,91,100};
         float bank=foreground?Physics.LEFT-82:Physics.RIGHT+48;
         for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++) for(int i=0;i<cells.length;i++) {
             float worldY=148+along[i]+segment*688;
             if(g.bridgeStage() && Math.abs(worldY-Bridge.Y)<95) continue;
-            boolean warehouse=cells[i]==0 || cells[i]==1;
-            float size=(warehouse?144:sizes[i])*s,x=c.screenX(bank,worldY),foot=c.screenY(bank,worldY);
-            float y=warehouse?foot:foot-size*.47f;
-            float px=warehouse?StaticHarborArt.pivotX(StaticHarborArt.WAREHOUSE):.5f;
-            float py=warehouse?StaticHarborArt.pivotY(StaticHarborArt.WAREHOUSE):.5f;
-            float left=x-px*size,top=y-py*size;
-            if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) continue;
-            float alpha=opacity(g,left,top,size,size);
-            LightingView.shadow(p,x,foot,size*.83f,size*.14f,alpha);
-            p.sprite(warehouse?SpriteAtlas.STATIC_HARBOR:SpriteAtlas.SCENERY,
-                    warehouse?StaticHarborArt.WAREHOUSE:cells[i],x,y,size,size,0,alpha);
-            if(warehouse) StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
+            prop(g,p,cells[i],bank,worldY);
         }
+    }
+    /** Buildings share one accepted view and ground pivot, including in practice. */
+    static void prop(Game g,Painter p,int cell,float worldX,float worldY) {
+        if(cell!=0 && cell!=1) {
+            TutorialSceneryArt.draw(g,p,TutorialSceneryArt.fromLegacy(cell),worldX,worldY);return;
+        }
+        RiverCamera c=g.layout.camera;float s=c.scale;
+        float size=StaticHarborArt.WORLD_SIZE*s;
+        float x=c.screenX(worldX,worldY),foot=c.screenY(worldX,worldY);
+        float y=foot,px=StaticHarborArt.pivotX(StaticHarborArt.WAREHOUSE),py=StaticHarborArt.pivotY(StaticHarborArt.WAREHOUSE);
+        float left=x-px*size,top=y-py*size;
+        if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
+        float alpha=opacity(g,left,top,size,size);
+        LightingView.shadow(p,x,foot,size*.83f,size*.14f,alpha);
+        p.sprite(SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,x,y,size,size,0,alpha);
+        StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
     }
     public static void bridge(Game g,Painter p) {
         if(g.challengeId==0) return;
@@ -121,9 +133,9 @@ public final class SceneryView {
             // Project the exact solid rectangle; the old painted pier crops had
             // baked-in axes and could no longer mark the playable edge reliably.
             world.rect(r[0],r[1],r[2]-r[0],r[3]-r[1],VisualStyle.OUTLINE);
-            world.rect(r[0]+2,r[1]+2,r[2]-r[0]-4,r[3]-r[1]-4,0xff7c8a99);
-            world.line(r[0],r[1],r[2],r[1],2,0xffc3b89b);
-            world.line(r[2],r[1],r[2],r[3],2,0xffc3b89b);
+            world.rect(r[0]+2,r[1]+2,r[2]-r[0]-4,r[3]-r[1]-4,HarborAtmosphere.SHORE_LIT);
+            world.line(r[0],r[1],r[2],r[1],2,HarborAtmosphere.QUAY_EDGE);
+            world.line(r[2],r[1],r[2],r[3],2,HarborAtmosphere.QUAY_EDGE);
             for(float y=r[1]+9;y<r[3]-4;y+=14) {
                 world.line(r[0]+3,y,r[0]+6,y+5,3,VisualStyle.GOLD);
                 world.line(r[2]-6,y,r[2]-3,y+5,3,VisualStyle.OUTLINE);

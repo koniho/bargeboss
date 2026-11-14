@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="760" viewBox="0 0 1000 760">
+ <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#c7cfd2" stroke-width="1"/></pattern></defs>
+ <rect width="1000" height="760" fill="#f5f2e9"/>
+ <g font-family="sans-serif" fill="#203640">
+  <text x="40" y="48" font-size="28" font-weight="bold">BARGE BOSS — LEVEL SKETCH</text>
+  <text x="40" y="78" font-size="16">Draw top-down. Gameplay first; isometric scenery comes afterward.</text>
+  <text x="40" y="114" font-size="17">Name: ________________________   Goal: ________________________</text>
+  <rect x="40" y="140" width="640" height="520" fill="white" stroke="#203640" stroke-width="2"/>
+  <rect x="40" y="140" width="640" height="520" fill="url(#grid)"/>
+  <text x="720" y="166" font-size="20" font-weight="bold">Map legend</text>
+  <rect x="720" y="190" width="28" height="24" fill="#3e8998"/><text x="762" y="208" font-size="16">Navigable water</text>
+  <rect x="720" y="234" width="28" height="24" fill="#737e83"/><text x="762" y="252" font-size="16">Solid land / piers</text>
+  <text x="720" y="296" font-size="19" font-weight="bold">T →</text><text x="778" y="296" font-size="16">Tug + heading</text>
+  <text x="720" y="340" font-size="19" font-weight="bold">F1</text><text x="762" y="340" font-size="16">Feeder slot + arrow</text>
+  <text x="720" y="384" font-size="19" font-weight="bold">A</text><text x="762" y="384" font-size="16">Berth + cargo type</text>
+  <circle cx="734" cy="420" r="9" fill="none" stroke="#203640" stroke-width="3"/><text x="762" y="426" font-size="16">Bollard on shore</text>
+  <path d="M720 464H749M720 458V470M749 458V470" stroke="#203640" stroke-width="3"/><text x="762" y="470" font-size="16">Bridge / waiting area</text>
+  <rect x="720" y="500" width="28" height="24" fill="none" stroke="#8a7557" stroke-width="2" stroke-dasharray="5 3"/><text x="762" y="518" font-size="16">Scenery footprint</text>
+  <text x="720" y="566" font-size="17" font-weight="bold">Check the route</text>
+  <text x="720" y="594" font-size="15">Can a loaded barge turn?</text>
+  <text x="720" y="618" font-size="15">Can the feeder boat leave?</text>
+  <text x="720" y="642" font-size="15">Are targets visible?</text>
+  <text x="40" y="696" font-size="16">Challenge / timing notes: _________________________________________________________</text>
+  <text x="40" y="730" font-size="13" fill="#626d72">Planning template only — not a playable level file. Grid spacing is for sketching, not a fixed world scale.</text>
+ </g>
+</svg>

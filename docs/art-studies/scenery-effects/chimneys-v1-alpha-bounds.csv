@@ -1,0 +1,4 @@
+# file=assets/sprites/chimneys-v1.png image=1774x887 grid=2x1 nominal_cell=887.000x887.000 alpha>=128 roi=0.000,0.000,1.000,1.000
+frame,source_x,source_y,cell_width,cell_height,min_x,min_y,max_x,max_y,pixels,ink_x,ink_y,alpha_center_x,alpha_center_y,largest_x,largest_y,dense_x,dense_y,axis_degrees,intended_degrees,axis_error_degrees,touches_border
+0,0,0,887,887,346,47,545,844,87015,0.502818,0.502818,0.501441,0.545871,0.502818,0.502818,0.502818,0.748027,89.895,0.000,89.895,false
+1,887,0,887,887,277,265,608,856,118492,0.499436,0.632469,0.499525,0.657163,0.499436,0.632469,0.499436,0.711950,89.982,180.000,89.982,false

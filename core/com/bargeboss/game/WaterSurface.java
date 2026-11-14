@@ -65,16 +65,21 @@ public final class WaterSurface {
         return g.water.height(b.x,b.y,g.visualTicks,b)*(b.lineAttached?.25f:b.berth>=0?.5f:.75f);
     }
     public void draw(Game g,Painter p) {
+        p=new WaterEffectsPainter(g,p);
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
             float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
             int alpha=(int)(200*strength[i]*(1-t)*(1-t));
             float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
             for(int j=0;j<16;j++) {
                 float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
-                float xx=x[i]+r*(float)StrictMath.cos(a),yy=y[i]+r*(float)StrictMath.sin(a);
-                float bx=x[i]+r*(float)StrictMath.cos(b),by=y[i]+r*(float)StrictMath.sin(b);
-                if(g.inWater(xx,yy) && g.inWater(bx,by))
-                    p.line(xx,yy,bx,by,1.5f+strength[i],(alpha<<24)|0xb9f6eb);
+                float ra=r*(1+.018f*(float)StrictMath.sin(a*7+i*1.1)),rb=r*(1+.018f*(float)StrictMath.sin(b*7+i*1.1));
+                float xx=x[i]+ra*(float)StrictMath.cos(a),yy=y[i]+ra*(float)StrictMath.sin(a);
+                float bx=x[i]+rb*(float)StrictMath.cos(b),by=y[i]+rb*(float)StrictMath.sin(b);
+                // Full stroke clipping prevents crests cutting across quay corners.
+                // A slight local swell keeps expanding packets from reading as compass arcs.
+                float crest=.55f+.45f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055);
+                if(crest<.17f && age[i]>45) continue;
+                p.line(xx,yy,bx,by,1.2f+strength[i]*.8f,((int)(alpha*crest)<<24)|0xb9f6eb);
             }
         }
     }

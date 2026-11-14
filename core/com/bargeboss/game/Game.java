@@ -39,6 +39,9 @@ public final class Game {
     public int control=IDLE;
     public boolean reversing, manualSteering;
     private boolean tapCandidate;
+    // A committed cargo push owns this touch until lift/cancel. Moving vessels
+    // must not reclassify the same steering finger as a towline throw.
+    private boolean cargoPushGesture;
     public float guideX, guideY, pushX=-1, pushY;
     public Tutorial tutorial;
     public static final int HAPTIC_TICK=1, HAPTIC_CONTACT=2, HAPTIC_IMPACT=3, HAPTIC_SUCCESS=4;
@@ -257,7 +260,7 @@ public final class Game {
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing) { navigating=false; reversing=false; control=COASTING; }
-        pointer=false; mapPointer=-1; mapInRiver=false; pushing=false; ropeDragging=false; towAiming=false; navigating=false; held=-1; pressTicks=0; manualSteering=false;
+        pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
@@ -288,7 +291,8 @@ public final class Game {
     public Body heldCargo() { return held>=0 && cargo[held]!=null && cargo[held].active?cargo[held]:null; }
     public Body workingCargo() { return heldCargo(); }
     public boolean canTow(Body b) {
-        return ropePhase==0 && canTowAtRelease(b) && (tutorial==null || tutorial.lesson>=Tutorial.CONNECT);
+        return !(pointer && cargoPushGesture && heldCargo()==b)
+                && ropePhase==0 && canTowAtRelease(b) && (tutorial==null || tutorial.lesson>=Tutorial.CONNECT);
     }
     public boolean towTarget(Body b,float x,float y) {
         return canTow(b) && tug.hit(x,y,22) && Physics.length(x-downX,y-downY)>26;
@@ -324,7 +328,7 @@ public final class Game {
         if(river) {
             if(!worldTouch(x,y)) return;
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
-        pointer=true; tapCandidate=true; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
+        pointer=true; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
         if(!river) return;
         Body connected=tow.cargo;
         boolean onConnected=connected!=null && connected.hit(x,y,12)
@@ -352,6 +356,7 @@ public final class Game {
             }
             if(distance<20 || (b!=null && canTie(b) && overTiePoint(b,x,y))) towAiming=false;
             if(towAiming) { pushing=false;navigating=false;reversing=false; }
+            else if(b!=null && !ropeDragging && distance>26) cargoPushGesture=true;
             boolean wasSteering=manualSteering;
             if(distance>42) manualSteering=true;
             else if(distance<26) manualSteering=false;
@@ -465,7 +470,14 @@ public final class Game {
         ticks++; if(celebrationTicks>0) celebrationTicks--; if(impactTicks>0) impactTicks--;
         if(noticeTicks>0) noticeTicks--; if(damageCooldown>0) damageCooldown--;
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
-        if(pointer) { pressTicks++; if(pressTicks>=12 && held!=-1 && !ropeDragging && !towAiming && !(held>=0 && tow.cargo!=null)) { if(!pushing) haptic(HAPTIC_TICK); pushing=true; reversing=false; } }
+        if(pointer) {
+            pressTicks++;
+            if(pressTicks>=12 && held!=-1 && !ropeDragging && !towAiming && !(held>=0 && tow.cargo!=null)) {
+                if(!pushing) haptic(HAPTIC_TICK);
+                pushing=true;reversing=false;
+                if(held>=0) cargoPushGesture=true;
+            }
+        }
         bridge.step(this);
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) {

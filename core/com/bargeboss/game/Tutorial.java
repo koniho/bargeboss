@@ -5,9 +5,11 @@ public final class Tutorial {
     public static final int MOVE=0, COAST=1, CHANNEL=2, HOLD=3, STEER=4, DOCK=5, TIE=6, CONNECT=7, PULL=8, RELEASE=9, DONE=10;
     public static final float PUSH_X=240,PUSH_Y=600,PUSH_RADIUS=24;
     public int lesson=MOVE, actionTicks,channelGate=1;
+    public int clearedGate,gateClearTicks;
     public boolean exitRequested, resumeShift;
-    private float startX,startY;
+    private float startX,startY,channelPreviousX,channelPreviousY;
     public void setup(Game g) {
+        clearedGate=gateClearTicks=0;
         g.cancelInputs(); g.reversing=false;
         // A lesson reset owns a fresh fixture; no line may keep targeting a removed hull.
         g.ropePhase=g.ropeTicks=0; g.ropeBody=null;g.ropeToTug=false;g.tow=new Towline();
@@ -16,6 +18,7 @@ public final class Tutorial {
         g.delivered=g.score=0; g.nextId=1; g.selected=-1; actionTicks=0;
         if(lesson==CHANNEL) {
             channelGate=1;g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
+            channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
             g.fitTutorialCamera();return;
         }
         g.fitTutorialCamera();
@@ -41,15 +44,20 @@ public final class Tutorial {
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
     public void update(Game g) {
+        if(gateClearTicks>0) gateClearTicks--;
         if(lesson==MOVE && g.navigating && Physics.length(g.tug.x-startX,g.tug.y-startY)>30) {
             lesson=COAST; g.haptic(Game.HAPTIC_TICK);
         } else if(lesson==COAST) {
             actionTicks=!g.pointer && !g.navigating?actionTicks+1:0;
             if(actionTicks>=60) { lesson=CHANNEL;setup(g);g.haptic(Game.HAPTIC_TICK); }
         } else if(lesson==CHANNEL) {
-            if(Physics.length(g.tug.x-TrainingChannel.X[channelGate],g.tug.y-TrainingChannel.Y[channelGate])<23) {
+            boolean reached=TrainingChannel.reachedGate(channelGate,channelPreviousX,channelPreviousY,g.tug.x,g.tug.y);
+            channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
+            if(reached) {
+                int cleared=channelGate;
                 channelGate++;g.haptic(Game.HAPTIC_CONTACT);
                 if(channelGate==TrainingChannel.X.length) { lesson=HOLD;setup(g);g.haptic(Game.HAPTIC_SUCCESS); }
+                clearedGate=cleared;gateClearTicks=90;
             }
         } else if(lesson==HOLD) {
             Body b=g.cargo[0];
@@ -76,7 +84,7 @@ public final class Tutorial {
         else if((lesson==PULL || lesson==RELEASE) && g.tow.cargo==null && g.ropePhase==0) { lesson=CONNECT;setup(g); }
     }
     public String title() {
-        return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","THREAD THE CHANNEL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","PULL YOUR BARGE","LET GO OF THE LINE","READY FOR YOUR SHIFT"}[lesson];
+        return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","PULL YOUR BARGE","LET GO OF THE LINE","READY FOR YOUR SHIFT"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
@@ -97,7 +105,7 @@ public final class Tutorial {
         switch(lesson) {
             case MOVE: return "PULL FARTHER FOR MORE THRUST.";
             case COAST: return "BOATS COAST. DRAG BACK TO SLOW DOWN.";
-            case CHANNEL: return "EASE OFF FOR BENDS. THE CAMERA FOLLOWS.";
+            case CHANNEL: return "SLOW FOR SQUARE TURNS. CAMERA FOLLOWS.";
             case HOLD: return "REACH THE MARKED ZONE TO CONTINUE.";
             case STEER: return "HOLD STILL FOR AN ASSISTED PUSH.";
             case DOCK: return "HOLD STILL TO ENTER THE BERTH.";

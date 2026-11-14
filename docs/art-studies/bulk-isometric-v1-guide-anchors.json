@@ -1,0 +1,1497 @@
+{
+  "schemaVersion": 1,
+  "atlas": "docs/art-studies/bulk-isometric-v1-pose-guide.png",
+  "imageSize": [
+    3072,
+    1536
+  ],
+  "grid": [
+    8,
+    4
+  ],
+  "coordinateSpace": "normalized-source-cell",
+  "localAxes": "X bow, Y starboard, Z above waterline",
+  "guide": "docs/art-studies/bulk-isometric-v1-guide-anchors.csv",
+  "registration": "docs/art-studies/bulk-isometric-v1-guide-registration.csv",
+  "reviewStatus": "guide-projected-unverified",
+  "featureInventoryVerified": false,
+  "reviewNotes": [
+    "Compare each point to the finished sprite before effects integration.",
+    "Generated artwork can add or relocate fixtures; review its feature inventory before claiming complete anchor coverage.",
+    "Visibility is a guide estimate, not measured occlusion in the generated bitmap."
+  ],
+  "frames": [
+    {
+      "frame": 0,
+      "intendedYawDegrees": 0.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 1,
+      "intendedYawDegrees": 11.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "intendedYawDegrees": 22.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "intendedYawDegrees": 33.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "intendedYawDegrees": 45.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "intendedYawDegrees": 56.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "intendedYawDegrees": 67.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "intendedYawDegrees": 78.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "intendedYawDegrees": 90.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "intendedYawDegrees": 101.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 10,
+      "intendedYawDegrees": 112.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 11,
+      "intendedYawDegrees": 123.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 12,
+      "intendedYawDegrees": 135.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 13,
+      "intendedYawDegrees": 146.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 14,
+      "intendedYawDegrees": 157.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 15,
+      "intendedYawDegrees": 168.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 16,
+      "intendedYawDegrees": 180.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 17,
+      "intendedYawDegrees": 191.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 18,
+      "intendedYawDegrees": 202.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 19,
+      "intendedYawDegrees": 213.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 20,
+      "intendedYawDegrees": 225.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 21,
+      "intendedYawDegrees": 236.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 22,
+      "intendedYawDegrees": 247.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 23,
+      "intendedYawDegrees": 258.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 24,
+      "intendedYawDegrees": 270.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 25,
+      "intendedYawDegrees": 281.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 26,
+      "intendedYawDegrees": 292.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 27,
+      "intendedYawDegrees": 303.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 28,
+      "intendedYawDegrees": 315.0,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 29,
+      "intendedYawDegrees": 326.25,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 30,
+      "intendedYawDegrees": 337.5,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    },
+    {
+      "frame": 31,
+      "intendedYawDegrees": 348.75,
+      "waterlinePivot": [
+        0.5,
+        0.72
+      ],
+      "uniformScale": 1.0,
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "contacts": [],
+      "towPoints": [],
+      "mooringPoints": [],
+      "cargoOrigins": [
+        {
+          "id": "cargo.origin",
+          "kind": "cargo-origin",
+          "position": [
+            0.5,
+            0.6949362
+          ],
+          "radius": 0.0100645,
+          "guidePosition": [
+            0.5,
+            0.6949362
+          ],
+          "guideRadius": 0.0100645,
+          "localXYZ": [
+            0.0,
+            0.0,
+            3.05
+          ],
+          "localNormal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "radiusWorld": 1.0,
+          "visibility": "occluded",
+          "visibilitySource": "guide-depth-or-facing-estimate",
+          "reviewStatus": "guide-projected",
+          "role": "hold-floor-registration"
+        }
+      ]
+    }
+  ]
+}

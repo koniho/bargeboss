@@ -70,3 +70,15 @@ Shizuku path, and launched successfully. `./desktop.sh --build-only` passed;
 Reviewed the overview, winding channel, bridge and 32 smoke headings. Review
 images were also copied to Downloads. Native iOS validation is delegated to CI;
 these local results are not a claim that its UI tests passed.
+
+## Verified CI build
+
+[Run 43563701732](https://github.com/koniho/bargeboss/actions/runs/43563701732)
+passed for commit `7fa87052aff4eaaa7d7be1a2aa174af439f1bd31` on 2026-11-14.
+Android and Windows/macOS/Linux desktop builds passed. The JVM and J2ObjC replay
+and drawing traces both produced `b53f5656:11:8974`. The iOS simulator passed all
+four native UI tests: saved captain progression, the complete interactive
+tutorial, lasso/unloading/lifecycle, and missed-lasso retraction without scoring.
+The unsigned iOS device build also passed. This verifies that specific commit;
+it does not establish physical iPhone touch/haptic behavior or validate later art
+changes. The focused development log is `out/ci-43563701732-ios.log` (untracked).

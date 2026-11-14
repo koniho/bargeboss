@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "atlas": "assets/sprites/tutorial-isometric-props-v2.png",
+  "imageSize": [
+    1254,
+    1254
+  ],
+  "grid": [
+    2,
+    2
+  ],
+  "coordinateSpace": "normalized-source-cell",
+  "cameraTarget": {
+    "elevationDegrees": 35.264,
+    "groundYawDegrees": 45
+  },
+  "cameraReview": "Fixed orthographic three-quarter appearance visually consistent; painted ground axes are approximate, not a geometry-guide calibration.",
+  "frames": [
+    {
+      "frame": 0,
+      "id": "crate-bundle",
+      "sourceRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "groundPivot": [
+        0.5151515151515151,
+        0.7017543859649122
+      ],
+      "groundPivotReview": "pixel-inspected visible ground-footprint corners with occluded corner inferred",
+      "foundationCornersPixels": [
+        [
+          166,
+          440
+        ],
+        [
+          337,
+          513
+        ],
+        [
+          480,
+          439
+        ],
+        [
+          309,
+          366
+        ]
+      ],
+      "worldSize": 128,
+      "conservativeFootprintHalf": 30,
+      "lights": [],
+      "smoke": [],
+      "featureInventoryVerified": true,
+      "smokeInventoryNotes": "No visible exhaust or steam outlet. Stored pipe openings are not emitters; tank plumbing is closed."
+    },
+    {
+      "frame": 1,
+      "id": "steel-pipe-rack",
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "groundPivot": [
+        0.4864433811802233,
+        0.7001594896331739
+      ],
+      "groundPivotReview": "pixel-inspected visible ground-footprint corners with occluded corner inferred",
+      "foundationCornersPixels": [
+        [
+          140,
+          473
+        ],
+        [
+          303,
+          533
+        ],
+        [
+          470,
+          429
+        ],
+        [
+          307,
+          369
+        ]
+      ],
+      "worldSize": 152,
+      "conservativeFootprintHalf": 44,
+      "lights": [],
+      "smoke": [],
+      "featureInventoryVerified": true,
+      "smokeInventoryNotes": "No visible exhaust or steam outlet. Stored pipe openings are not emitters; tank plumbing is closed."
+    },
+    {
+      "frame": 2,
+      "id": "tank-skid",
+      "sourceRect": [
+        0,
+        627,
+        627,
+        627
+      ],
+      "groundPivot": [
+        0.5247208931419458,
+        0.6283891547049442
+      ],
+      "groundPivotReview": "pixel-inspected visible ground-footprint corners with occluded corner inferred",
+      "foundationCornersPixels": [
+        [
+          144,
+          396
+        ],
+        [
+          347,
+          478
+        ],
+        [
+          512,
+          391
+        ],
+        [
+          309,
+          309
+        ]
+      ],
+      "worldSize": 152,
+      "conservativeFootprintHalf": 44,
+      "lights": [],
+      "smoke": [],
+      "featureInventoryVerified": true,
+      "smokeInventoryNotes": "No visible exhaust or steam outlet. Stored pipe openings are not emitters; tank plumbing is closed."
+    },
+    {
+      "frame": 3,
+      "id": "utility-shed",
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "groundPivot": [
+        0.4800637958532695,
+        0.6539074960127592
+      ],
+      "groundPivotReview": "pixel-inspected visible ground-footprint corners with occluded corner inferred",
+      "foundationCornersPixels": [
+        [
+          120,
+          423
+        ],
+        [
+          318,
+          500
+        ],
+        [
+          481,
+          398
+        ],
+        [
+          283,
+          321
+        ]
+      ],
+      "worldSize": 180,
+      "conservativeFootprintHalf": 44,
+      "lights": [
+        {
+          "id": "window.left.pane.left",
+          "kind": "light",
+          "role": "illuminated window pane",
+          "color": "#ffbd50",
+          "position": [
+            0.2966507177033493,
+            0.45933014354066987
+          ],
+          "radius": 0.009,
+          "localXYZ": [
+            -38,
+            -8.689,
+            57.551
+          ],
+          "localNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "localXYZReview": "approximate wall-plane reconstruction; runtime uses painted centers"
+        },
+        {
+          "id": "window.left.pane.right",
+          "kind": "light",
+          "role": "illuminated window pane",
+          "color": "#ffbd50",
+          "position": [
+            0.3413078149920255,
+            0.47368421052631576
+          ],
+          "radius": 0.009,
+          "localXYZ": [
+            -38,
+            2.678,
+            60.07
+          ],
+          "localNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "localXYZReview": "approximate wall-plane reconstruction; runtime uses painted centers"
+        },
+        {
+          "id": "window.right.pane.left",
+          "kind": "light",
+          "role": "illuminated window pane",
+          "color": "#ffbd50",
+          "position": [
+            0.4178628389154705,
+            0.5023923444976076
+          ],
+          "radius": 0.009,
+          "localXYZ": [
+            -38,
+            22.166,
+            63.485
+          ],
+          "localNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "localXYZReview": "approximate wall-plane reconstruction; runtime uses painted centers"
+        },
+        {
+          "id": "window.right.pane.right",
+          "kind": "light",
+          "role": "illuminated window pane",
+          "color": "#ffbd50",
+          "position": [
+            0.45614035087719296,
+            0.5151515151515151
+          ],
+          "radius": 0.009,
+          "localXYZ": [
+            -38,
+            31.91,
+            65.544
+          ],
+          "localNormal": [
+            -1,
+            0,
+            0
+          ],
+          "visibility": "visible",
+          "reviewStatus": "pixel-inspected",
+          "localXYZReview": "approximate wall-plane reconstruction; runtime uses painted centers"
+        }
+      ],
+      "smoke": [],
+      "featureInventoryVerified": true,
+      "smokeInventoryNotes": "No visible exhaust or steam outlet. Stored pipe openings are not emitters; tank plumbing is closed."
+    }
+  ]
+}

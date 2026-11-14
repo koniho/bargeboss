@@ -135,8 +135,8 @@ public final class DockView {
         } else {
             p.poly(new float[]{x-12,y-3,x+12,y-3,x+8,y+10,x-8,y+10},DARK);
             p.poly(new float[]{x-10,y-3,x+10,y-3,x+6,y+8,x-6,y+8},0xffc88a3e);
-            p.poly(new float[]{x-9,y-3,x-4,y-8,x+3,y-6,x+9,y-3},0xfff0c27b);
-            p.rect(x-2,y-6,3,2,0xffffdfa2);
+            p.poly(new float[]{x-9,y-3,x-4,y-8,x+3,y-6,x+9,y-3},0xff37434a);
+            p.rect(x-2,y-6,3,2,0xff84969a);
         }
     }
 }

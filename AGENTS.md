@@ -31,6 +31,10 @@ the same `Painter`. Do not add a second game implementation for any platform.
   names (for example `BargeBoss-tug-v5-design.png`). Keep the canonical source in
   the repository; do not leave the only copy in Downloads or the imagegen cache.
 - Preserve unrelated work. Do not modify the sibling DDDumpling repository.
+- When the user refers to a screenshot, check the phone's photos directory first:
+  `/storage/emulated/0/Pictures/Screenshots` (newest files first), then
+  `/storage/emulated/0/DCIM/Screenshots` if needed. Do not assume it must be attached
+  to the conversation. Inspect the relevant image before diagnosing the report.
 - Report native/device validation limits. Shared logic does not prove identical
   antialiasing, touch latency, safe areas or lifecycle behavior on real devices.
 

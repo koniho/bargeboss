@@ -10,10 +10,10 @@ public final class VesselView {
         boolean river=p instanceof RiverPainter;
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        if(wake) ArcadeView.wake(p,b,tick);
+        if(wake) ArcadeView.wake(g,p,b,tick);
         if(river) LightingView.hull(p,b);
-        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:.89f);
-        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size*(tug?1:1.2f),1);
+        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
+        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,1);
         if(tug) {
             boolean working=(b==g.tug && (g.pushing || g.navigating)) || b.speed()>8;
             boolean pushing=working && (b==g.tug?(g.control==Game.PUSHING || g.control==Game.STEERING || g.control==Game.ALIGNING):b.vy<0);
@@ -31,16 +31,30 @@ public final class VesselView {
         } else {
             int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
             int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
-            // Bulk fills the open hold as one broad pile, lowering with each scoop.
+            // Coal is registered to this hull and masked behind its coaming.
+            // Fade quantity without moving the mask through the painted rim.
             if(b.berth==2 && b.unloadingTicks<Game.UNLOAD_TICKS) {
                 float fill=1-b.unloadingTicks/(float)Game.UNLOAD_TICKS;
-                SpriteAtlas.draw(p,atlas,b.angle,hullX,hullY,74,48+26*fill,Math.min(1,fill*6));
+                SpriteAtlas.draw(p,atlas,b.angle,hullX,hullY,size,size,fill);
             }
-            // Discrete steel and container loads leave one per lift.
-            for(int i=0;b.berth!=2 && i<remaining;i++) {
-                float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
-                float cargoSize=b.berth==0?58:b.berth==2?27:26;
-                SpriteAtlas.draw(p,atlas,b.angle,hullX+c*xx-s*yy,hullY+s*xx+c*yy,cargoSize,cargoSize,1);
+            // Unloading removes the same indexed loads at every heading. Only
+            // painter order changes: farther deck positions must draw first.
+            if(b.berth!=2) {
+                float[] cargoX=new float[remaining],cargoY=new float[remaining],depth=new float[remaining];
+                int[] order=new int[remaining];
+                for(int i=0;i<remaining;i++) {
+                    float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
+                    cargoX[i]=hullX+c*xx-s*yy;cargoY[i]=hullY+s*xx+c*yy;
+                    depth[i]=river?((RiverPainter)p).camera.screenY(cargoX[i],cargoY[i]):cargoY[i];
+                    int j=i-1;
+                    while(j>=0 && depth[order[j]]>depth[i]) {order[j+1]=order[j];j--;}
+                    order[j+1]=i;
+                }
+                float cargoSize=b.berth==0?58:26;
+                for(int n=0;n<remaining;n++) {
+                    int i=order[n];
+                    SpriteAtlas.draw(p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,cargoSize,1);
+                }
             }
             if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
                 float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;
@@ -61,8 +75,9 @@ public final class VesselView {
         power=Physics.clamp(power,0,1);
         // A small throat plume closes the gap between discrete puffs and the mouth.
         p.circle(sx,sy,(1.8f+power)*scale,0xbb7b8495);
-        for(int i=19;i>=0;i--) {
-            float density=Physics.clamp(5+15*power-i,0,1);if(density==0) continue;
+        // Three times the previous emission count, retaining the engine-load curve.
+        for(int i=59;i>=0;i--) {
+            float density=Physics.clamp(3*(5+15*power)-i,0,1);if(density==0) continue;
             float t=((tick+i*31)%150)/150f;
             float r=(1.8f+t*(4+power*6))*scale;
             float x=sx+(-t*(12+power*18)-trailX*t*.16f+3*t*(float)StrictMath.sin(t*9+i))*scale;

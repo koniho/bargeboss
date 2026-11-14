@@ -1,0 +1,7 @@
+Edit the supplied Barge Boss four-prop sprite atlas. Keep exactly the same four industrial designs, materials, orthographic isometric camera, colors, lights and genuine transparent background. Change ONLY layout and size so each asset is fully isolated inside its own equal square cell with generous transparent gutters.
+
+The source has a specific defect: the upper-right steel-pipe rack's lowest foot crosses the horizontal row boundary into the lower-right shed's cell. Fix that and keep all feet, roofs, edges and antialiasing inside their own cells. Do not crop or erase any part of a prop.
+
+Use an exact 2-column by 2-row grid, four equal square cells. Uniformly shrink each entire prop by roughly 22 percent from its current size, maintaining proportions, then center it inside its cell with the footprint center at approximately 0.50 of cell width and 0.68 of cell height. At least 10 percent of each cell must be clear transparent margin on ALL four edges. Maximum silhouette height is 75 percent of cell height. None of the four objects may touch any cell boundary. No visible grid lines or labels.
+
+Upper-left woodcrate bundle, upper-right six-pipe steel rack, lower-left twin horizontal tank skid, lower-right small brickutilityshed with its same two glowing windows. Exactly these four props, no extras. True transparent alpha everywhere outside the props. No background, no smoke, no cast ground shadows, no detached glow. Preserve the fixed35.264degree threequarter isometric perspective and realistic smooth prerendered miniature look.

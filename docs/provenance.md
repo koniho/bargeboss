@@ -15,6 +15,14 @@ live scene. The [original prompt](art-prompts/scenery-trial-v1.txt) and measured
 window-light anchors remain tracked. Trial quay cells are not used as level
 geometry.
 
+The [barge/coal review](art-studies/isometric-barge-runtime-review.md) records
+built-in generated 32-pose hull and coal atlases, geometry guides, rejected gutter
+experiments and final registration. Static tutorial/harbor crates, pipe racks,
+tanks and utility shed are documented in
+[the tutorial scenery review](art-studies/tutorial-scenery/review.md). The
+chimney sheet, named light/outlet points and generation prompt are tracked under
+`docs/art-studies/scenery-effects/` and `docs/art-prompts/`.
+
 The project adopts the user's existing DDDumpling cross-platform design:
 pure Java game/renderer, a small Painter boundary, Android Canvas, and J2ObjC
 translation into a UIKit/Core Graphics host. The iOS `bootstrap.sh` is copied

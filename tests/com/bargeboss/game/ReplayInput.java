@@ -55,8 +55,8 @@ public final class ReplayInput {
     }
     public static void channel(Game root) {
         Game g=root.activeGame();
-        float ahead=Math.min(TrainingChannel.X[g.tutorial.channelGate],g.tug.x+28);
-        float dx=ahead-g.tug.x,dy=TrainingChannel.center(ahead)-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+        float[] target=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,g.tutorial.channelGate,target);
+        float dx=target[0]-g.tug.x,dy=target[1]-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
         if(!g.pointer) down(root,g.tug.x,g.tug.y);
         move(root,g.downX+dx/len*55,g.downY+dy/len*55);
     }
