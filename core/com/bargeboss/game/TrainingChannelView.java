@@ -10,6 +10,8 @@ public final class TrainingChannelView {
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
         WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
+        // The cached terrain includes every shoreline cap. Never redraw caps
+        // over elevated hull artwork or foreground factory sprites.
         StaticTerrain.draw(g,canvas,false);
         ShadowView.factories(g,canvas);
         float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
@@ -35,6 +37,7 @@ public final class TrainingChannelView {
         gateBurst(g,p);
         HarborAtmosphere.bankHaze(g,canvas);
         LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
+        TowView.drawRope(g,p);
         factoriesAndVessels(g,canvas);
         DockView.draw(g,canvas);
         if(g.trainingChannel()) {
@@ -122,15 +125,13 @@ public final class TrainingChannelView {
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
-        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0;int[] vehicles=YardActivity.visible(g);
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0;int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
-            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount()) {
+            while(boat<count || vehicle<vehicles.length) {
                 float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
                 float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
-                float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
-                if(Math.min(sd,Math.min(bd,vd))>next)break;
-                if(sd<=bd && sd<=vd && shore<TrainingGroundView.frontCount()){TrainingGroundView.frontSection(g,canvas,shore++);continue;}
+                if(Math.min(bd,vd)>next)break;
                 if(bd<=vd && boat<count)Renderer.body(g,world,bodies[boat++]);
                 else YardActivity.drawVehicle(g,canvas,vehicles[vehicle++]);
             }

@@ -3,36 +3,6 @@ package com.bargeboss.game;
 /** Raised industrial ground and corrugated steel retaining walls, sharing exact water geometry. */
 public final class TrainingGroundView {
     private TrainingGroundView() {}
-    // Short cap sections take part in the same depth ordering as boats and buildings.
-    private static final float[][] FRONT=frontSections();
-    private static float[][] frontSections() {
-        java.util.ArrayList<float[]> sections=new java.util.ArrayList<float[]>();
-        float[] bank=TrainingChannel.WATER_BOUNDARY;
-        for(int i=0;i<bank.length;i+=2) {
-            int next=(i+2)%bank.length;float x=bank[i],y=bank[i+1],dx=bank[next]-x,dy=bank[next+1]-y;
-            if(dx+dy>=0)continue;
-            float length=Physics.length(dx,dy);dx/=length;dy/=length;
-            for(float at=0;at<length;at+=24) {
-                float end=Math.min(length,at+24);
-                sections.add(new float[]{x+dx*at,y+dy*at,x+dx*end,y+dy*end,i});
-            }
-        }
-        float[][] result=sections.toArray(new float[sections.size()][]);
-        for(int i=1;i<result.length;i++) {
-            float[] v=result[i];int j=i-1;
-            while(j>=0 && depth(result[j])>depth(v)){result[j+1]=result[j];j--;}
-            result[j+1]=v;
-        }
-        return result;
-    }
-    private static float depth(float[] v){return (v[1]+v[3]-v[0]-v[2])*.5f;}
-    static int frontCount(){return FRONT.length;}
-    static float frontDepth(Game g,int i) {
-        float[] v=FRONT[i];return g.layout.camera.screenY((v[0]+v[2])*.5f,(v[1]+v[3])*.5f);
-    }
-    static void frontSection(Game g,Painter p,int i) {
-        float[] v=FRONT[i];wall(g,p,v[0],v[1],v[2],v[3],(int)v[4],true);
-    }
     public static void ground(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
         Painter raised=new RiverPainter(GroundArt.raisedCanvas(g,canvas),c);

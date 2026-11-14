@@ -47,6 +47,7 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
+        TowView.drawRope(g,p);
         for(int n=0;n<count;n++) body(g,p,ordered[n]);
         if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);
         DockView.draw(g,((RiverPainter)p).canvas());

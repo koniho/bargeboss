@@ -13,10 +13,7 @@ public final class TowView {
         }
         if(line.cargo!=null) {
             float x=line.cargoX(),y=line.cargoY(),xx=line.tugX(g.tug),yy=line.tugY(g.tug);
-            float distance=Physics.length(xx-x,yy-y);
-            float slack=Physics.clamp((line.length-distance)*.5f,0,20);
             int color=line.tension>180?VisualStyle.GOLD:0xffffe3a1;
-            MooringView.rope(p,x,y,xx,yy,slack,color);
             if(line.catchTicks>0) {
                 float t=1-line.catchTicks/24f;
                 int glow=((int)(220*(1-t))<<24)|0x92ecc2;
@@ -26,6 +23,16 @@ public final class TowView {
             ControlView.ring(g,p,line.cargo.x,line.cargo.y,44,1,0x9983c8d5,2);
             if(g.tutorial==null || g.tutorial.lesson!=Tutorial.RELEASE) SoftCue.caption(p,"TAP TO LET GO",line.cargo.x-47,line.cargo.y,8,ControlView.BLUE);
             SoftCue.caption(p,line.tension>12?"PULLING":"LINE SLACK",(x+xx)/2+15,(y+yy)/2,8,color);
+        }
+    }
+    /** Physical rope is painted before hulls; guidance remains in the cue pass. */
+    public static void drawRope(Game g,Painter p) {
+        Towline line=g.tow;
+        if(line.cargo!=null) {
+            float x=line.cargoX(),y=line.cargoY(),xx=line.tugX(g.tug),yy=line.tugY(g.tug);
+            float distance=Physics.length(xx-x,yy-y);
+            float slack=Physics.clamp((line.length-distance)*.5f,0,20);
+            MooringView.rope(p,x,y,xx,yy,slack,line.tension>180?VisualStyle.GOLD:0xffffe3a1);
         } else if(line.releaseTicks>0) {
             float t=line.releaseTicks/18f;
             MooringView.rope(p,line.releaseToX,line.releaseToY,
