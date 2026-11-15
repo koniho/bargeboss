@@ -28,6 +28,12 @@ the same `Painter`. Do not add a second game implementation for any platform.
   bitmap. Parent light/smoke anchors to their rigid parts, with stable IDs and
   local XYZ/normals, so effects follow the same transformation. Match the concept
   and shared camera, and review closed, moving and open/working states.
+- Follow [performance development rules](docs/performance/development-rules.md)
+  when adding levels, assets, effects, caches or renderer primitives. Keep runtime
+  textures frame-sized, caches bounded, and expensive raster preparation out of
+  active draws. One cache build per frame is not a time budget. Preserve drawing
+  order and anchors; verify end-to-end frame intervals and native pixels rather
+  than assuming fewer draw calls are faster. Record evidence and unresolved causes.
 - Fixed 60 Hz steps, ordered cargo slots and `StrictMath` keep replays repeatable.
   Rendering must not mutate gameplay or use wall-clock time/randomness.
 - `./check.sh` checks rules and bounded play. `./preview.sh` exports the actual

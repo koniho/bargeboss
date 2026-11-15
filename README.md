@@ -358,3 +358,7 @@ quay, work and lock lamps, plus tutorial factory lights, remove a soft navy
 shading layer from facing surfaces with continuous falloff. Unlit faces darken;
 lit faces recover their original colors. Navigation lamps and glowing cores stay bright. The shared response-mask system is ready for selected
 scenery receivers; see [surface lighting and rollout](docs/rendering/surface-lighting.md).
+
+Rendering and level work should follow the [performance development rules](docs/performance/development-rules.md)
+from the start. They capture tested texture/cache choices, profiling requirements,
+visual invariants and the remaining long-frame causes.

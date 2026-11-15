@@ -98,3 +98,7 @@ and repeated shoreline clipping around foam. Preserve the cropped-texture gain
 when evaluating static shoreline caches; extra raster textures can reintroduce
 resource pressure. Measure end-to-end intervals as well as UI draw time. A new GPU
 backend is not required to obtain the improvement measured in this round.
+
+Follow-up frame-by-frame analysis found repeated 12–19 ms synchronous layer builds.
+See the [development rules and spike table](development-rules.md#established-results-and-remaining-causes)
+for attribution, prevention and unresolved scheduling/render gaps.
