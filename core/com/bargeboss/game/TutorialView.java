@@ -59,6 +59,7 @@ public final class TutorialView {
         if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
             first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
         }
+        if(t.lesson==Tutorial.MOVE)second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% COMPLETE";
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
@@ -87,18 +88,11 @@ public final class TutorialView {
                         bx+Tutorial.DRIVE_RADIUS*(float)StrictMath.cos(next),by+Tutorial.DRIVE_RADIUS*(float)StrictMath.sin(next),0x99ffe6a1);
             }
             if(!t.orbitArmed)driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
-            RiverCamera c=g.layout.camera;float sx=c.screenX(bx,by),sy=c.screenY(bx,by);
-            sx=Physics.clamp(sx,105,g.layout.width-105);sy=Physics.clamp(sy+55,216,g.layout.height-90);
-            p.rect(sx-84,sy-12,168,25,0x60101c30);
-            Lettering.center(p,"BUOY "+(buoy+1)+" / 2 - "+(int)(100*t.orbitProgress())+"%",sx,sy-4,10,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.COAST) {
             SoftCue.caption(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
         } else if(t.lesson==Tutorial.RELEASE) {
             Body b=g.tow.primary();if(b==null)return;RiverCamera c=g.layout.camera;
             ControlView.ring(g,river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
-            float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
-            p.rect(x-54,y-12,108,24,0x40101c30);
-            Lettering.center(p,"TAP TO LET GO",x,y-4,10,ControlView.GREEN);
         } else if(t.lesson==Tutorial.DOUBLE) {
             Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];
             if(Physics.length(b.x-g.tug.x,b.y-g.tug.y)>150){approach(g,p,river,b,pulse);return;}
@@ -146,13 +140,6 @@ public final class TutorialView {
                     ControlView.arrow(g,river,b.x-25,b.y,g.bollardX(b.berth)+18,g.bollardY(b.berth),ControlView.GREEN);
                     ControlView.ring(g,river,g.bollardX(b.berth),g.bollardY(b.berth),20+pulse,1,PAPER,2);
                 }
-            } else {
-                // Put the instruction on the cargo's actual touch target. The old
-                // offset sat over the tug and taught players to press the wrong boat.
-                RiverCamera c=g.layout.camera;
-                float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
-                p.rect(x-43,y-12,86,24,0x40101c30);
-                Lettering.center(p,"HOLD HERE",x,y-4,10,VisualStyle.GOLD);
             }
         }
     }
@@ -171,16 +158,7 @@ public final class TutorialView {
         ControlView.arrow(g,river,g.tug.x+dx/length*30,g.tug.y+dy/length*30,
                 g.tug.x+dx/length*reach,g.tug.y+dy/length*reach,VisualStyle.GOLD);
         SoftCue.caption(river,"DRIVE THIS WAY",g.tug.x+dx/length*reach,g.tug.y+dy/length*reach-18,9,PAPER);
-        RiverCamera c=g.layout.camera;
-        float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y);
-        if(sx<55 || sx>g.layout.width-55 || sy<210 || sy>g.layout.height-85) {
-            float cx=g.layout.width*.5f,cy=g.layout.height*.55f,ex=sx-cx,ey=sy-cy;
-            float fraction=Math.min((g.layout.width*.5f-65)/Math.max(1,Math.abs(ex)),
-                    (g.layout.height*.32f)/Math.max(1,Math.abs(ey)));
-            sx=cx+ex*fraction;sy=cy+ey*fraction;
-        }
-        canvas.rect(sx-51,sy+28,102,23,0x40101c30);
-        Lettering.center(canvas,"NEXT BARGE",sx,sy+33,10,VisualStyle.GOLD);
+
     }
     private static void gateFeedback(Game g,Painter p) {
         Tutorial t=g.tutorial;
@@ -188,11 +166,6 @@ public final class TutorialView {
         boolean complete=t.clearedGate==TrainingChannel.X.length-1;
         float age=1-t.gateClearTicks/90f,alpha=Math.min(1,t.gateClearTicks/24f);
         float x=g.layout.width*.5f,y=217;
-        if(g.trainingChannel()) {
-            RiverCamera c=g.layout.camera;
-            x=Physics.clamp(c.screenX(TrainingChannel.X[t.clearedGate],TrainingChannel.Y[t.clearedGate]),130,g.layout.width-130);
-            y=Physics.clamp(c.screenY(TrainingChannel.X[t.clearedGate],TrainingChannel.Y[t.clearedGate])-54-18*age,210,g.layout.height-100);
-        }
         p=new OpacityPainter(p,alpha);
         int cream=0xffffefcf,green=0xffb9df9c;
         VisualStyle.panel(p,x-117,y-9,234,43,0xe1101c30);
@@ -216,11 +189,7 @@ public final class TutorialView {
         float fingerX=c.screenX(x+dx*position,y+dy*position),fingerY=c.screenY(x+dx*position,y+dy*position);
         float pulse=phase<.2f?2*(float)StrictMath.sin(phase*5*Math.PI):0;
         SoftCue.dot(canvas,fingerX,fingerY,7+pulse,SoftCue.animated(g,VisualStyle.GOLD));
-        if(!held) {
-            float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
-            canvas.rect(bx-51,by+26,102,24,0x40101c30);
-            Lettering.center(canvas,assist?"HOLD STILL":"PRESS + DRAG",bx,by+34,10,SoftCue.alpha(VisualStyle.GOLD,.8f));
-        }
+
 
     }
 }

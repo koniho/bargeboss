@@ -19,7 +19,6 @@ public final class FeederView {
                 float y=798+j*15-(g.visualTicks%30)/2f;
                 SoftCue.line(p,f.x-8,y+5,f.x,y,1,color); SoftCue.line(p,f.x,y,f.x+8,y+5,1,color);
             }
-            HarborView.badge(p,"FEED "+(i+1),f.x,820,7,color);
 
         }
     }
@@ -29,18 +28,8 @@ public final class FeederView {
         for(Feeder f:g.feeders) if(f.shoutTicks>0) {
             boolean hurry=f.shout.equals("HURRY UP!");
             int color=hurry?VisualStyle.RED:Game.COLORS[f.destination];
-            float anchorX=c.screenX(f.boat.x,f.boat.y),anchorY=c.screenY(f.boat.x,f.boat.y);
-            if(anchorX>g.layout.width+100 || anchorX<-100) {
-                Lettering.center(p,"FEED "+(f==g.feeders[0]?1:2)+" / "+f.shout,g.layout.width-150,58+(f==g.feeders[0]?0:20),10,color);continue;
-            }
-            float x=Physics.clamp(anchorX-220,8,g.layout.width-238),y=Physics.clamp(anchorY-78,60,g.layout.height-112);
-            float pulse=f.shoutTicks>132?(150-f.shoutTicks)%6:0;
-            p.poly(new float[]{x+174,y+48,x+216,y+48,Math.min(g.layout.width-8,anchorX),anchorY},VisualStyle.OUTLINE);
-            VisualStyle.panel(p,x,y-pulse,226,54,VisualStyle.OUTLINE);
-            p.rect(x+5,y+5-pulse,216,44,VisualStyle.CREAM);
-            Lettering.center(p,f.shout,x+113,y+13-pulse,20,hurry?0xffaa302f:0xff152c42);
-            p.line(x+12,y+44-pulse,x+214,y+44-pulse,3,color);
-            for(int j=0;j<3;j++) p.line(x-8-j*3,y+12+j*12,x-16-j*4,y+7+j*16,2,color);
+            // Captain announcements live in a fixed HUD lane, never over the vessels.
+            Lettering.center(p,"FEED "+(f==g.feeders[0]?1:2)+" / "+f.shout,g.layout.width-150,58+(f==g.feeders[0]?0:20),10,color);
             if(!hurry) {
                 int zone=f.destination;
                 float tx=c.screenX(g.dockX(zone),g.dockY(zone)),ty=c.screenY(g.dockX(zone),g.dockY(zone));

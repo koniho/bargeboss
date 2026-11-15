@@ -1,0 +1,2 @@
+30333600 water batch AA/compositing pixels are identical to individual polygon fills
+Old/new water: pixels=30333600 changed=0 total RGB error=0

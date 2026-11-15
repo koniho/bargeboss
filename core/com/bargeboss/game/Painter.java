@@ -27,5 +27,10 @@ public interface Painter {
     void rect(float x, float y, float width, float height, int argb);
     void circle(float x, float y, float radius, int argb);
     void poly(float[] xy, int argb);
+    /** Same-color polygons with disjoint antialiased coverage, in one fill.
+     * Arrays are borrowed only for this call. Fallbacks retain identical geometry. */
+    default void polygons(float[][] xy,int count,int argb) {
+        for(int i=0;i<count;i++)poly(xy[i],argb);
+    }
     void line(float x1, float y1, float x2, float y2, float width, int argb);
 }

@@ -116,6 +116,8 @@ public final class CoreTest {
         StaticTerrainTest.run();
         WaterPhysicsTest.run();
         WaterEffectsTest.run();
+        WaterBatchTest.run();
+        OverlayTextTest.run();
         SceneryEffectsTest.run();
         FactoryActivityTest.run();
         ShadowActivityTest.run();
@@ -125,7 +127,7 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        check(Parity.signature().equals("b3fcab9e:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("f9fd76a9:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

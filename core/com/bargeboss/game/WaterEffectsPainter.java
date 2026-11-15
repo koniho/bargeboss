@@ -10,10 +10,14 @@ public final class WaterEffectsPainter implements Painter {
     private static final float[][] RIVER={{Physics.LEFT,-LIMIT,Physics.RIGHT,LIMIT}};
     private static final float[][] CHANNEL=partition(TrainingChannel.WATER_RECTANGLES,null);
     private static final float[][] SHARED=partition(RIVER,PhysicalBerths.solids(PhysicalBerths.SHARED)),DEEP=partition(RIVER,PhysicalBerths.solids(PhysicalBerths.DEEP));
+    private static final float[] CIRCLE_X=new float[12],CIRCLE_Y=new float[12];
+    static {for(int i=0;i<12;i++){double a=i*StrictMath.PI/6;CIRCLE_X[i]=(float)StrictMath.cos(a);CIRCLE_Y[i]=(float)StrictMath.sin(a);}}
     private final Painter target;
+    private final RiverCamera camera;
+    private final float screenWidth,screenHeight;
     private final float[][] water;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;water=g.tutorial!=null?CHANNEL:g.sharedBerthStage()?SHARED:g.depthStage()?DEEP:RIVER;
+        this.target=target;camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.tutorial!=null?CHANNEL:g.sharedBerthStage()?SHARED:g.depthStage()?DEEP:RIVER;
     }
     public static boolean contains(Game g,float x,float y) {
         if(g.tutorial!=null) return TrainingChannel.contains(x,y);
@@ -59,11 +63,11 @@ public final class WaterEffectsPainter implements Painter {
     public void circle(float x,float y,float radius,int color) {
         if(radius<=0 || (color>>>24)==0) return;
         float[] points=new float[24];
-        for(int i=0;i<12;i++) {double a=i*StrictMath.PI/6;
-            points[i*2]=x+radius*(float)StrictMath.cos(a);points[i*2+1]=y+radius*(float)StrictMath.sin(a);}
+        for(int i=0;i<12;i++) {points[i*2]=x+radius*CIRCLE_X[i];points[i*2+1]=y+radius*CIRCLE_Y[i];}
         poly(points,color);
     }
     public void line(float x,float y,float xx,float yy,float width,int color) {
+        if((color>>>24)==0)return;
         float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);
         if(length<.0001f) {circle(x,y,width*.5f,color);return;}
         float nx=-dy/length*width*.5f,ny=dx/length*width*.5f;
@@ -76,11 +80,18 @@ public final class WaterEffectsPainter implements Painter {
             minX=Math.min(minX,points[i]);maxX=Math.max(maxX,points[i]);
             minY=Math.min(minY,points[i+1]);maxY=Math.max(maxY,points[i+1]);
         }
+        if(camera!=null && (camera.screenX(maxX,maxY)<-1 || camera.screenX(minX,minY)>screenWidth+1
+                || camera.screenY(minX,maxY)<-1 || camera.screenY(maxX,minY)>screenHeight+1))return;
         for(float[] r:water) {
             if(maxX<=r[0] || minX>=r[2] || maxY<=r[1] || minY>=r[3]) continue;
             if(minX>=r[0] && maxX<=r[2] && minY>=r[1] && maxY<=r[3]) {target.poly(points,color);return;}
             float[] clipped=points;
-            for(int side=0;side<4 && clipped.length>=6;side++) clipped=clip(clipped,side%2,r[side],side<2);
+            // Only crossing planes need clipping. Interior copies formerly allocated
+            // two arrays per plane even when every point already satisfied it.
+            if(minX<r[0])clipped=clip(clipped,0,r[0],true);
+            if(clipped.length>=6 && minY<r[1])clipped=clip(clipped,1,r[1],true);
+            if(clipped.length>=6 && maxX>r[2])clipped=clip(clipped,0,r[2],false);
+            if(clipped.length>=6 && maxY>r[3])clipped=clip(clipped,1,r[3],false);
             if(clipped.length>=6) target.poly(clipped,color);
         }
     }

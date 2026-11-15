@@ -111,7 +111,6 @@ public final class BuoyArt {
             float lx=pose.pointX(frame,lampX(frame),lampY(frame)),ly=pose.pointY(frame,lampX(frame),lampY(frame));
             SceneryEffects.glow(p,lx,ly,pose.size*.15f,color,power,g.visualTicks,wx*.013f);
             if(power>0){p.circle(lx,ly,pose.size*.032f,SoftCue.alpha(color,.75f*power));p.circle(lx,ly,pose.size*.012f,SoftCue.alpha(0xfffff5dc,power));}
-            if(number>0)Lettering.center(p,""+number,pose.pointX(frame,.5f,.783f),pose.pointY(frame,.5f,.783f)-pose.size*.0335f,pose.size*.067f,0xff263035);
         }finally{p.popClip();}
     }
     /** Independent contact/cast alpha, flattened onto water before the depth-sorted hull pass. */

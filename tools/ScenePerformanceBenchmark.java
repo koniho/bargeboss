@@ -83,6 +83,7 @@ public final class ScenePerformanceBenchmark {
         public void rect(float x,float y,float w,float h,int color){rects++;}
         public void line(float x,float y,float xx,float yy,float w,int color){lines++;}
         public void poly(float[] xy,int color){polys++;}
+        public void polygons(float[][] xy,int count,int color){polys+=nativeLayers?1:count;}
         public void circle(float x,float y,float r,int color){circles++;double a=area(x-r,y-r,x+r,y+r);circleArea+=a;if(a==0)offscreenCircles++;}
     }
     private static double percentile(long[] samples,int percent){Arrays.sort(samples);return samples[Math.min(samples.length-1,samples.length*percent/100)]/1e6;}

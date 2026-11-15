@@ -201,6 +201,15 @@ public final class CanvasPainter implements Painter {
         paint.setColor(c); path.reset(); path.moveTo(xy[0],xy[1]);
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.close(); canvas.drawPath(path,paint);
     }
+    public void polygons(float[][] xy,int count,int c) {
+        if(profile!=null)profile.polys++;
+        paint.setColor(c);path.reset();
+        for(int n=0;n<count;n++){
+            float[] q=xy[n];path.moveTo(q[0],q[1]);
+            for(int i=2;i<q.length;i+=2)path.lineTo(q[i],q[i+1]);path.close();
+        }
+        canvas.drawPath(path,paint);
+    }
     public void line(float x,float y,float xx,float yy,float width,int c) {
         if(profile!=null)profile.lines++;
         paint.setColor(c); paint.setStrokeWidth(width); paint.setStrokeCap(Paint.Cap.ROUND);

@@ -32,6 +32,10 @@ public final class ViewportPainter implements Painter {
         for(int i=0;i<xy.length;i+=2){left=Math.min(left,xy[i]);right=Math.max(right,xy[i]);top=Math.min(top,xy[i+1]);bottom=Math.max(bottom,xy[i+1]);}
         if(visible(left,top,right,bottom))target.poly(xy,color);
     }
+    public void polygons(float[][] xy,int count,int color) {
+        // WaterBatchPainter already culls individual members; native viewport clipping remains active.
+        if((color>>>24)!=0 && count>0)target.polygons(xy,count,color);
+    }
     private boolean spriteVisible(int atlas,int frame,float x,float y,float w,float h,float rotation) {
         w*=SpriteAtlas.widthScale(atlas,frame);h*=SpriteAtlas.heightScale(atlas,frame);
         float left=-SpriteAtlas.pivotX(atlas,frame)*w,top=-SpriteAtlas.pivotY(atlas,frame)*h;

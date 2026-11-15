@@ -51,18 +51,12 @@ public final class RiverPainter implements Painter {
         painter.spriteBlend(atlas,(frameA+RiverCamera.DIRECTION_OFFSET)%32,(frameB+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),
                 width*camera.scale,height*camera.scale,rotation,blend,alpha);
     }
-    /** UI labels stay upright instead of inheriting the world's quarter-turn. */
+    /** World rendering has no text. Screen-overlay callers retain authored lettering. */
     public static void center(Painter p,String value,float x,float y,float size,int color) {
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;
-            Lettering.center(river.painter,value,river.camera.screenX(x,y),river.camera.screenY(x,y),size*river.camera.scale,color);
-        } else Lettering.center(p,value,x,y,size,color);
+        if(!(p instanceof RiverPainter))Lettering.center(p,value,x,y,size,color);
     }
     public static void text(Painter p,String value,float x,float y,float size,int color) {
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;
-            Lettering.draw(river.painter,value,river.camera.screenX(x,y),river.camera.screenY(x,y),size*river.camera.scale,color);
-        } else Lettering.draw(p,value,x,y,size,color);
+        if(!(p instanceof RiverPainter))Lettering.draw(p,value,x,y,size,color);
     }
     public static void centerText(Painter p,String value,float x,float y,float size,int color) { center(p,value,x,y,size,color); }
     public static void drawText(Painter p,String value,float x,float y,float size,int color) { text(p,value,x,y,size,color); }

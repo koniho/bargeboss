@@ -93,9 +93,7 @@ public final class MooringView {
             SoftCue.line(canvas,x-dx*5-dy*4,y-dy*5+dx*4,x,y,1,SoftCue.animated(g,GREEN));
             SoftCue.line(canvas,x-dx*5+dy*4,y-dy*5-dx*4,x,y,1,SoftCue.animated(g,GREEN));
         }
-        float x=Physics.clamp(bx,110,g.layout.width-110),y=Math.max(82,by-62*c.scale);
-        canvas.rect(x-65,y-3,130,22,0x40102b35);
-        Lettering.center(canvas,"READY TO TIE",x,y+2,11,SoftCue.alpha(GREEN,.85f));
+
     }
     private static void bollard(Game g,Painter p,float x,float y) {
         if(p instanceof RiverPainter) {

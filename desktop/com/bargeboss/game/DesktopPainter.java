@@ -271,6 +271,14 @@ public final class DesktopPainter implements Painter {
         color(c); Path2D.Float path=new Path2D.Float(); path.moveTo(xy[0],xy[1]);
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.closePath(); g.fill(path);
     }
+    public void polygons(float[][] xy,int count,int c) {
+        color(c);Path2D.Float path=new Path2D.Float();
+        for(int n=0;n<count;n++){
+            float[] q=xy[n];path.moveTo(q[0],q[1]);
+            for(int i=2;i<q.length;i+=2)path.lineTo(q[i],q[i+1]);path.closePath();
+        }
+        g.fill(path);
+    }
     public void line(float x1,float y1,float x2,float y2,float width,int c) {
         color(c); g.setStroke(new BasicStroke(width,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
         g.draw(new java.awt.geom.Line2D.Float(x1,y1,x2,y2));

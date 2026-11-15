@@ -25,6 +25,8 @@ echo tools/NavigationReview.java >> build/preview/sources.txt
 echo tools/VesselNavigationReview.java >> build/preview/sources.txt
 echo tools/JoystickReview.java >> build/preview/sources.txt
 echo tools/TrainReview.java >> build/preview/sources.txt
+echo tools/ScenePerformanceBenchmark.java >> build/preview/sources.txt
+echo tools/WaterBatchReview.java >> build/preview/sources.txt
 echo tools/WaterlineReview.java >> build/preview/sources.txt
 echo tools/ShorelineReview.java >> build/preview/sources.txt
 echo tools/SoftCueReview.java >> build/preview/sources.txt
@@ -47,6 +49,7 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateVesse
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateShadowMasks --check
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateSurfaceLighting --check
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.SurfaceLightingReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.WaterBatchReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.SpriteAffinePixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.TitleLayoutReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.OcclusionPreview

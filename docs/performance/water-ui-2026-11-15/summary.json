@@ -1,0 +1,160 @@
+{
+  "before": {
+    "file": "before.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.494,
+      "p95": 0.625
+    },
+    "draw_ms": {
+      "p50": 11.135,
+      "p95": 15.43
+    },
+    "interval_ms": {
+      "p50": 39.049,
+      "p95": 46.906
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 25.955,
+      "p95": 25.955
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 3818.0,
+      "p95": 4371.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "cache_builds": 6,
+    "cache_fallbacks": 1,
+    "cache_evictions": 0,
+    "cold_decode_ms": 578.344,
+    "gfx_recent": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 10.058,
+        "p95": 13.661
+      },
+      "render_sync_ms": {
+        "p50": 5.593,
+        "p95": 7.692
+      },
+      "issue_to_swap_ms": {
+        "p50": 31.136,
+        "p95": 36.121
+      },
+      "intended_to_complete_ms": {
+        "p50": 103.076,
+        "p95": 120.361
+      }
+    }
+  },
+  "after": {
+    "file": "after.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.549,
+      "p95": 0.828
+    },
+    "draw_ms": {
+      "p50": 9.61,
+      "p95": 15.093
+    },
+    "interval_ms": {
+      "p50": 41.808,
+      "p95": 49.851
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.095
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2366.0,
+      "p95": 2717.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "cache_builds": 12,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "cold_decode_ms": 587.295,
+    "gfx_recent": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.324,
+        "p95": 12.644
+      },
+      "render_sync_ms": {
+        "p50": 6.891,
+        "p95": 9.8
+      },
+      "issue_to_swap_ms": {
+        "p50": 32.775,
+        "p95": 40.073
+      },
+      "intended_to_complete_ms": {
+        "p50": 111.595,
+        "p95": 130.021
+      }
+    }
+  }
+}

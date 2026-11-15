@@ -204,5 +204,6 @@ public final class SceneryOcclusion implements Painter {
     public void rect(float x,float y,float w,float h,int c){target.rect(x,y,w,h,c);}
     public void circle(float x,float y,float r,int c){target.circle(x,y,r,c);}
     public void poly(float[] xy,int c){target.poly(xy,c);}
+    public void polygons(float[][] xy,int count,int c){target.polygons(xy,count,c);}
     public void line(float x,float y,float xx,float yy,float w,int c){target.line(x,y,xx,yy,w,c);}
 }

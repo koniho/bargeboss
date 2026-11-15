@@ -306,3 +306,36 @@ use identical pivots, directional frames and blending; they are not new hulls fo
 building-fade detection. Existing glows, cast shadows, foam and navigation lamps
 keep their own order. Scenery receivers remain explicit opt-ins. See
 [surface lighting](surface-lighting.md) for the response data and rollout contract.
+
+## Water batches and overlay-only text
+
+`WaterBatchPainter` groups screen-space polygons of exactly the same ARGB color
+only when their padded bounds are disjoint. It cannot move a polygon across an
+intersecting later group. The two-logical-pixel padding per shape protects native
+antialias fringes; overlapping translucent water stays in painter order.
+Non-polygon draws and clip changes flush pending water. The buffer is bounded to
+256 polygons and a 48-group search window. This changes submission grouping,
+not geometry, wave phases, alpha, wake interaction or shoreline clipping.
+
+`Painter.polygons` fills separate same-color contours in one native path on
+Android, Java2D and Core Graphics. Its default expands to individual polygons for
+trace painters. Arrays are borrowed only for the call; hosts must not retain them.
+Only proven disjoint shapes may use this primitive. `WaterBatchReview` verifies
+native multi-contour fills against individual fills at three widths and multiple
+animation phases.
+
+Visible text belongs to screen UI: menus, HUD, tutorial coach panels, fixed
+notifications and offscreen navigation overlays. Vessels, berths, machinery,
+buoys, ropes and world control cues use lighting, colors, arrows and animations
+without captions. Do not add text by projecting a world point onto the screen:
+that is still a world label. Feeder captain calls now use fixed HUD lanes;
+gate-clear messages use a fixed overlay panel. Existing world caption helpers
+suppress `RiverPainter` text to enforce this boundary.
+
+`Lettering` caches the unchanged authored glyphs in immutable `StaticLayer`
+rasters, keyed by content, RGB and source size. Position and opacity remain live.
+Its bounded 128-entry source cache uses unique keys in namespace `0x60000000`;
+evictions never reuse an old native raster identity. Host raster caches retain
+the existing 48 MiB limit and one-build-per-frame allowance. Sheared/fallback
+painters still expand the exact glyph geometry. Test both cold and warm UI and
+retain text legibility when adjusting source density or caches.

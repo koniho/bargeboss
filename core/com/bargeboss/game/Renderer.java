@@ -75,7 +75,6 @@ public final class Renderer {
             if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
             if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
         }
-        if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);
         DockView.draw(g,((RiverPainter)p).canvas());
 
     }
@@ -83,7 +82,6 @@ public final class Renderer {
     static void body(Game g,Painter p,Body b) {
         if(b.berth<0) {
             VesselView.draw(g,p,b,true);
-            if(b!=g.tug && b.id==0) HarborView.badge(p,"DELIVERY",b.x,b.y+15,6,VisualStyle.CREAM);
             return;
         }
         if(b.id<0) { VesselView.draw(g,p,b,false);return; }
@@ -97,11 +95,6 @@ public final class Renderer {
             }
         }
         VesselView.draw(g,p,b,false);
-        tag(p,b.deliveryRecorded?"EMPTY":""+g.berthLetter(b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-44,10,color);
 
-    }
-    private static void tag(Painter p,String text,float x,float y,float size,int color) {
-        // Anchor labels beside the hull while keeping their glyphs horizontal.
-        SoftCue.caption(p,text,x,y,size,color);
     }
 }

@@ -20,7 +20,6 @@ public final class HarborView {
             SoftCue.line(p,xx,yy,xx+sx*14,yy,1,color);
             SoftCue.line(p,xx,yy,xx,yy+sy*18,1,color);
         }
-        badge(p,"EMPTY HOLDING",345,396,7,color);
     }
     static void lamp(Painter p,float x,float y,int tick) {
         int glow=120+(int)(30*StrictMath.sin(tick*.06));
@@ -56,13 +55,6 @@ public final class HarborView {
             float xx=x+side*width, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
             SoftCue.line(p,xx,yy,xx+sx*15,yy,1,color); SoftCue.line(p,xx,yy,xx,yy+sy*15,1,color);
         }
-        SoftCue.caption(p,g.sharedBerthStage()?"SLIP":""+g.berthLetter(index),x+width*.68f,y+53,g.sharedBerthStage()?12:22,0x6656bac1);
-        if(!g.orderStage())SoftCue.caption(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
-        String role=g.depthStage() && g.nextRequiredBerth()==index?"DEEP FIRST ":"BERTH ";
-        String name=g.sharedBerthStage()?"SLIP":""+g.berthLetter(index);
-        String badge=empty?"EMPTY":(working?"UNLOAD ":occupied?"OCCUPIED ":role)+name;
-        // Keep narrow-slip labels beyond the hull footprint instead of beneath the empty vessel.
-        badge(p,badge,g.orderStage()?g.dockX(index):x+width*.86f,g.orderStage()?y-14:y+53,8,color);
         boolean right=g.berthRight(index);float bank=right?433:143;
         Painter shore=g.tutorial!=null && p instanceof RiverPainter?
                 new RiverPainter(GroundArt.raisedCanvas(g,((RiverPainter)p).canvas()),g.layout.camera):p;
@@ -112,17 +104,4 @@ public final class HarborView {
         float bob=3*(float)StrictMath.sin(g.visualTicks*.10);
         ControlView.arrow(g,p,0,-54+bob,0,-22+bob,GOLD);
     }
-    static void badge(Painter p,String text,float x,float y,float size,int color) {
-        float width=Lettering.width(text,size)+10;
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
-            Painter canvas=river.canvas();float sx=c.screenX(x,y),sy=c.screenY(x,y),scale=c.scale;
-            canvas.rect(sx-width*scale/2,sy-3*scale,width*scale,(size+6)*scale,0x40101c30);
-            Lettering.center(canvas,text,sx,sy,size*scale,color);
-        } else {
-            p.rect(x-width/2,y-3,width,size+6,0x40101c30);
-            Lettering.center(p,text,x,y,size,color);
-        }
-    }
-
 }

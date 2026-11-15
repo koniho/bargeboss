@@ -22,7 +22,37 @@ public final class Lettering {
         return rows;
     }
     public static float width(String text,float size) { return Math.max(0,text.length()*6-1)*size/7f; }
+    private static final java.util.LinkedHashMap<Key,TextLayer> CACHE=new java.util.LinkedHashMap<Key,TextLayer>(32,.75f,true) {
+        protected boolean removeEldestEntry(java.util.Map.Entry<Key,TextLayer> entry){return size()>128;}
+    };
+    private static int nextKey=0x60000000;
+    private static final class Key {
+        final String text;final int color,unit;
+        Key(String text,int color,int unit){this.text=text;this.color=color;this.unit=unit;}
+        public int hashCode(){return (text.hashCode()*31+color)*31+unit;}
+        public boolean equals(Object other){if(!(other instanceof Key))return false;Key k=(Key)other;return color==k.color && unit==k.unit && text.equals(k.text);}
+    }
+    private static final class TextLayer extends StaticLayer {
+        final Key text;final int id;
+        TextLayer(Key text,int id){this.text=text;this.id=id;}
+        public int key(){return id;}
+        public float width(){return Lettering.width(text.text,text.unit*7)+2;}
+        public float height(){return text.unit*7+2;}
+        public void paint(Painter p){drawGlyphs(p,text.text,1,1,text.unit*7,0xff000000|text.color);}
+    }
+    private static synchronized TextLayer layer(String text,int color,int unit){
+        Key key=new Key(text,color&0xffffff,unit);TextLayer layer=CACHE.get(key);
+        if(layer==null){layer=new TextLayer(key,nextKey++);CACHE.put(key,layer);}
+        return layer;
+    }
+    /** Cached authored text: pulse alpha/placement stay live, glyph cells are painted once. */
     public static void draw(Painter p,String text,float x,float y,float size,int color) {
+        if(text.isEmpty() || size<=0 || (color>>>24)==0)return;
+        int unit=Math.max(1,(int)StrictMath.ceil(size/5));
+        TextLayer image=layer(text,color,unit);float scale=size/(unit*7);
+        p.layer(image,x-scale,y-scale,scale,(color>>>24)/255f);
+    }
+    static void drawGlyphs(Painter p,String text,float x,float y,float size,int color) {
         float unit=size/7f;
         for(int n=0;n<text.length();n++) {
             char ch=text.charAt(n); if(ch>='a' && ch<='z') ch=(char)(ch-32);

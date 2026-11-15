@@ -1,5 +1,6 @@
 #import "BBPainter.h"
 #import "IOSPrimitiveArray.h"
+#import "IOSObjectArray.h"
 #import "com/bargeboss/game/SpriteAtlas.h"
 #import "com/bargeboss/game/SpriteGrade.h"
 #import "com/bargeboss/game/StaticLayer.h"
@@ -249,6 +250,16 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     CGContextMoveToPoint(self.context,xy->buffer_[0],xy->buffer_[1]);
     for(jint i=2;i<xy->size_;i+=2) CGContextAddLineToPoint(self.context,xy->buffer_[i],xy->buffer_[i+1]);
     CGContextClosePath(self.context); CGContextFillPath(self.context);
+}
+- (void)polygonsWithFloatArray2:(IOSObjectArray *)xy withInt:(jint)count withInt:(jint)c {
+    [self color:c];CGContextBeginPath(self.context);
+    for(jint n=0;n<count;n++) {
+        IOSFloatArray *q=(IOSFloatArray *)IOSObjectArray_Get(xy,n);
+        CGContextMoveToPoint(self.context,q->buffer_[0],q->buffer_[1]);
+        for(jint i=2;i<q->size_;i+=2)CGContextAddLineToPoint(self.context,q->buffer_[i],q->buffer_[i+1]);
+        CGContextClosePath(self.context);
+    }
+    CGContextFillPath(self.context);
 }
 - (void)lineWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)xx withFloat:(jfloat)yy withFloat:(jfloat)width withInt:(jint)c {
     [self color:c]; CGContextSetLineWidth(self.context,width); CGContextSetLineCap(self.context,kCGLineCapRound);

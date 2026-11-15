@@ -13,12 +13,9 @@ public final class SoftCue {
         p.line(x,y,xx,yy,core+2.5f/zoom,alpha(color,.11f));
         p.line(x,y,xx,yy,core,alpha(color,.52f));
     }
-    /** World labels stay modest in screen space when the camera closes in. */
+    /** Text belongs to screen overlays; world cues use shape, color and motion only. */
     public static void caption(Painter p,String text,float x,float y,float size,int color) {
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
-            Lettering.center(river.canvas(),text,c.screenX(x,y),c.screenY(x,y),Math.min(12,size*c.scale),alpha(color,.78f));
-        } else Lettering.center(p,text,x,y,size,alpha(color,.78f));
+        if(!(p instanceof RiverPainter))Lettering.center(p,text,x,y,size,alpha(color,.78f));
     }
     public static void dot(Painter p,float x,float y,float radius,int color) {
         p.circle(x,y,radius*1.8f,alpha(color,.045f));

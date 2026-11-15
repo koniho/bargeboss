@@ -37,7 +37,9 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     }
     public Game game(){return root;}
     public void configure(float width,float height) {
-        if(configured)return;
+        // Activity startup can briefly report the previous portrait window.
+        // Do not prepare or time a landscape fixture against that transient layout.
+        if(configured || width<height)return;
         ProfileScenario.prepare(root,scene,width,height);configured=true;
         root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.

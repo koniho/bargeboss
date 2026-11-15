@@ -124,7 +124,8 @@ public final class ControlView {
         if(g.noticeTicks>0 && (g.notice.startsWith("DELIVERED") || g.notice.startsWith("HARD IMPACT")
                 || g.notice.startsWith("CONTRACT"))) {
             RiverCamera c=g.layout.camera;
-            label(p,g.notice,c.worldX(g.layout.width/2,88),c.worldY(g.layout.width/2,88),PAPER);
+            Painter canvas=p instanceof RiverPainter?((RiverPainter)p).canvas():p;
+            Lettering.center(canvas,g.notice,g.layout.width/2,88,10,PAPER);
         }
         TowView.draw(g,p);
         if(!g.trainingChannel()) MooringView.draw(g,p);
@@ -140,20 +141,6 @@ public final class ControlView {
         }
     }
     private static void label(Painter p,String text,float x,float y,int color) {
-        float size=10,w=Lettering.width(text,size)+10;
-        if(p instanceof RiverPainter) {
-            RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
-            float sx=Physics.clamp(c.screenX(x,y),w*c.scale/2+4,2*c.left+c.width()-w*c.scale/2-4);
-            float sy=Physics.clamp(c.screenY(x,y),60,2*c.top+c.height()-(size+4)*c.scale);
-            Painter canvas=river.canvas();
-            canvas.rect(sx-w*c.scale/2,sy-3*c.scale,w*c.scale,(size+6)*c.scale,0x60101e25);
-            Lettering.center(canvas,text,sx,sy,size*c.scale,color);
-            return;
-        } else {
-            x=Physics.clamp(x,w/2+4,Layout.WIDTH-w/2-4);
-            y=Physics.clamp(y,4,Layout.HEIGHT-size-4);
-            p.rect(x-w/2,y-3,w,size+6,0x60101e25);
-        }
-        RiverPainter.center(p,text,x,y,size,color);
+        if(!(p instanceof RiverPainter))Lettering.center(p,text,x,y,10,color);
     }
 }
