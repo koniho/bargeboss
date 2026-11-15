@@ -41,6 +41,7 @@ public final class ControlView {
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
         if(g.noticeTicks>0 && g.notice.startsWith("TOWLINE RELEASED")) return "LINE BLOCKED OR TOO LONG / RECONNECT NEARBY";
+        if(g.lockStage() && g.lock.phase==Lock.FILLING)return "CROSS CURRENT / STEER TO HOLD THE CONVOY";
         if(g.holdingTug()) return "DRAG FOR THRUST / CENTER TO COAST";
         if(emptyToMove(g)!=null) return "DRAG EMPTY TO TUG / PULL CLEAR OF BERTH";
         switch(g.control) {

@@ -58,7 +58,7 @@ public final class StageCameraTest {
         steps(g,180);check(g.layout.camera.zoom>1.49f,"lock feeder pickup uses the close working view");
         g.tug.x=300;g.tug.y=Lock.ENTRY_Y+130;g.step();
         check(g.lock.phase==Lock.ENTRY,"loaded lock approach starts entry window");
-        steps(g,180);check(g.lock.entryPassable() && !g.lock.exitPassable(),"only the lower gate opens for entry");
+        steps(g,Lock.GATE_TICKS);check(g.lock.entryPassable() && !g.lock.exitPassable(),"only the lower gate opens for entry");
         check(g.layout.camera.zoom<Game.WORK_ZOOM,"lock transit retains room ahead");
         int tick=g.lock.ticks;RiverCamera paused=g.layout.camera;g.background();g.advance(.25);
         check(g.lock.ticks==tick && g.layout.camera==paused,"background freezes lock window and camera");g.pause();

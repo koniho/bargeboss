@@ -750,12 +750,12 @@ public final class Game {
         }
         tow.step(this);
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
-        Physics.integrate(tug);
+        if(lockStage())lock.integrate(tug);else Physics.integrate(tug);
         if(tutorial!=null) TrainingChannel.collideWater(tug);
         else damage(orderStage()?PhysicalBerths.collide(challengeId,tug):Physics.banks(tug,channelTop(),Physics.BOTTOM,false));
         if(hasBridge()) damage(bridge.collide(tug));
         if(lockStage()) damage(lock.collide(tug));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(orderStage()?PhysicalBerths.collide(challengeId,b):Physics.banks(b,channelTop(),Physics.BOTTOM,false));if(hasBridge()) damage(bridge.collide(b));if(lockStage()) damage(lock.collide(b)); }
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(orderStage()?PhysicalBerths.collide(challengeId,b):Physics.banks(b,channelTop(),Physics.BOTTOM,false));if(hasBridge()) damage(bridge.collide(b));if(lockStage()) damage(lock.collide(b)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;

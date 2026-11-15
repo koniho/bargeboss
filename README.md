@@ -172,11 +172,13 @@ quay. The last unload completes each stage without requiring a final cleanup.
 Lock Run has timed obstacles within an otherwise untimed level. Preparing the
 convoy has no deadline. On approach with both loads available, the entry gate
 starts a **45-second window**, including its opening motion. Bring the tug and
-both complete barge hulls inside. The entry closes over **1.5 seconds**, the lock
-fills for **8 seconds**, and the exit opens over **1.5 seconds**. Once the exit is
+both complete barge hulls inside. The entry closes over **5 seconds**, the lock
+fills for **8 seconds**, and the exit opens over **5 seconds**. Once the exit is
 fully open, clear both complete barge hulls within **35 seconds**. Missing either
-window ends the attempt with a reason and a replay option. Water gauges, a moving
-wet line and local turbulence communicate the level change; vessel navigation
+window ends the attempt with a reason and a replay option. Steer against the
+opposing entrance/exit flow and shifting filling currents; drifting water streaks
+show their direction. A persistent water-level bar and percentage, wall gauges
+and a rising wet line make the level change visible; vessel navigation
 still uses the shared fixed water plane. See the [goal rules and authoring notes](docs/gameplay/goal-levels.md).
 
 The camera defaults to a **2.15× working view**, rising to **2.5× near a berth**

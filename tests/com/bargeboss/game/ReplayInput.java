@@ -91,7 +91,7 @@ public final class ReplayInput {
             if(g.pointer)up(g,g.pointerX,g.pointerY);
             down(g,next.x,next.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
         }
-        drive(g,300,g.lock.phase>=Lock.EXIT?-190:90);
+        drive(g,300,g.lock.phase>=Lock.EXIT?-280:90);
     }
     private static void drive(Game g,float x,float y) {
         if(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(g.tug.y,y)) y=Bridge.Y+(g.tug.y>Bridge.Y?90:-90);

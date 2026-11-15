@@ -47,14 +47,18 @@ public final class LockView {
         float mid=(Lock.EXIT_Y+Lock.ENTRY_Y)*.5f,px=c.screenX(300,mid),py=c.screenY(300,mid),s=c.scale;
         if(px+500*s<0 || px-500*s>g.layout.width || py+300*s<0 || py-300*s>g.layout.height)return;
         world.rect(Physics.LEFT+2,Lock.EXIT_Y+2,Physics.RIGHT-Physics.LEFT-4,Lock.ENTRY_Y-Lock.EXIT_Y-4,0x182f6570);
-        float wet=-8+lock.waterLevel()*18;
+        flow(g,lock,new WaterEffectsPainter(g,world));
+        float wet=-8+lock.waterLevel()*32;
         for(int side=0;side<2;side++){
             float x=side==0?Physics.LEFT+1:Physics.RIGHT-1;
-            line3(g,canvas,x,Lock.EXIT_Y+10,wet,x,Lock.ENTRY_Y-10,wet,1.2f,0x886da6a2);
+            line3(g,canvas,x,Lock.EXIT_Y+10,wet,x,Lock.ENTRY_Y-10,wet,2.4f,0xcc8de2ce);
             for(int mark=0;mark<=4;mark++){
-                float z=-8+mark*4.5f;
+                float z=-8+mark*8;
                 line3(g,canvas,x,Lock.ENTRY_Y-48,z,x,Lock.ENTRY_Y-36,z,1,0x88909a87);
             }
+            // A high/low staff on each wall makes the rising wet line readable in-world.
+            line3(g,canvas,x,Lock.ENTRY_Y-42,-8,x,Lock.ENTRY_Y-42,24,2,0xaa738d94);
+            line3(g,canvas,x,Lock.ENTRY_Y-42,-8,x,Lock.ENTRY_Y-42,wet,3,0xdd8de2ce);
             // Sluice turbulence is local to the chamber and fades outside the filling phase.
             if(lock.phase==Lock.FILLING)for(int ripple=0;ripple<4;ripple++){
                 float age=(g.visualTicks*.014f+ripple*.25f);age-=(float)StrictMath.floor(age);
@@ -69,6 +73,20 @@ public final class LockView {
         }
         if(lock.phase==Lock.FILLING || lock.phase==Lock.CLOSING || lock.phase==Lock.OPENING)
             SoftCue.caption(world,"WATER LEVEL "+Math.round(lock.waterLevel()*100)+"%",300,mid,11,VisualStyle.CREAM);
+    }
+    /** Sparse drifting streaks sample the same velocity field that acts on hulls. */
+    private static void flow(Game g,Lock lock,Painter p){
+        for(int row=0;row<12;row++)for(int col=0;col<3;col++){
+            float x=220+col*80,y=-130+row*50;
+            float age=(g.ticks*.009f+row*.173f+col*.317f)%1;
+            float vx=lock.currentX(x,y),vy=lock.currentY(x,y),speed=Physics.length(vx,vy);
+            if(speed<2)continue;
+            float xx=x+vx*(age-.5f)*1.7f,yy=y+vy*(age-.5f)*1.7f;
+            float alpha=.55f*(float)StrictMath.sin(age*Math.PI)*Math.min(1,speed/22);
+            int color=SoftCue.alpha(0xffa4e2d3,alpha);
+            SoftCue.line(p,xx-vx*.6f,yy-vy*.6f,xx,yy,1.2f,color);
+            SoftCue.dot(p,xx,yy,1.7f,color);
+        }
     }
     private static void line3(Game g,Painter p,float x,float y,float z,float xx,float yy,float zz,float width,int color){
         RiverCamera c=g.layout.camera;

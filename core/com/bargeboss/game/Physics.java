@@ -11,7 +11,9 @@ public final class Physics {
         while (a < -Math.PI) a += (float) (2 * Math.PI);
         return a;
     }
-    public static void integrate(Body b) {
+    public static void integrate(Body b) { integrate(b,0,0); }
+    public static void integrate(Body b,float waterX,float waterY) {
+        b.vx-=waterX;b.vy-=waterY;
         float c = (float) StrictMath.cos(b.angle), s = (float) StrictMath.sin(b.angle);
         float forward = b.vx * c + b.vy * s;
         float side = -b.vx * s + b.vy * c;
@@ -30,6 +32,7 @@ public final class Physics {
             b.spin+=flow*Math.min(1,b.speed()/35)*.28f*DT;
         }
         b.spin/=1+(barge?.8f+.015f*Math.abs(forward):2.6f)*DT;
+        b.vx+=waterX;b.vy+=waterY;
         b.x += b.vx * DT; b.y += b.vy * DT;
         b.angle = angle(b.angle + b.spin * DT);
     }

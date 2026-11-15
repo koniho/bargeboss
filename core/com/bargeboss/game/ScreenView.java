@@ -25,7 +25,14 @@ public final class ScreenView {
         }
         VisualStyle.panel(p,timerX+112,8,124,48,0xed101c30);
         int rating=g.goalComplete()?Challenges.stars(g.challengeId,g.goalProgress(),g.lost,g.hull):0;
-        for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
+        if(g.lockStage()) {
+            float level=g.lock.waterLevel();
+            center(p,"WATER "+Math.round(level*100)+"%",timerX+174,14,9,PAPER);
+            p.rect(timerX+124,30,100,8,0xff233f4c);
+            p.rect(timerX+124,30,100*level,8,0xff71cfca);
+            for(int mark=0;mark<=4;mark++)p.rect(timerX+124+mark*25,29,1,10,0x998bd0c5);
+            center(p,g.lock.phase==Lock.FILLING?"RISING":level>=1?"HIGH / MATCHED":"LOW",timerX+174,44,7,GOLD);
+        } else for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
         VisualStyle.panel(p,12,layout.height-48,170,40,0xed101c30);
         text(p,"SCORE",24,layout.height-39,8,MUTED);
         text(p,""+g.score,81,layout.height-37,18,PAPER);

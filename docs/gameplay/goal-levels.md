@@ -50,10 +50,10 @@ Y=-520. Navigation continues toward decreasing world Y.
 | Phase | Rule |
 | --- | --- |
 | READY | Preparation is untimed. With both feeder loads available, approaching within 140 world units downstream of the entry starts the entry window. |
-| ENTRY | 45 seconds total, including 1.5 seconds opening the gate. Bring the tug and both complete barge hulls inside with clearance from both gates. |
-| CLOSING | Once all are safely inside, the entry seals over 1.5 seconds. |
+| ENTRY | 45 seconds total, including 5 seconds opening the gate. Bring the tug and both complete barge hulls inside with clearance from both gates. |
+| CLOSING | Once all are safely inside, the entry seals over 5 seconds. |
 | FILLING | Both gates remain closed for an 8-second water-level cycle. |
-| OPENING | The exit opens over 1.5 seconds. This motion is outside the exit deadline. |
+| OPENING | The exit opens over 5 seconds. This motion is outside the exit deadline. |
 | EXIT | 35 seconds begin when the exit is fully open. Both complete barge hulls must clear the upper gate. |
 | COMPLETE | Both target barges are beyond the exit: the level ends immediately. The tug need not satisfy an additional exit quota. |
 | FAILED | A missed entry/exit window or missing target cargo ends the attempt with a reason and a replay option. |
@@ -67,8 +67,28 @@ unfinished cargo. Pause/background freezes the phase and remaining time.
 The central HUD shows only the active entry/exit deadline. Other phases show
 goal clearance progress, with the current lock state in the status line. Moving
 gate leaves are rigid parts of `ArticulatedModel`, with stable hinge pivots and
-attached signal lamps. Red/green lights, wet-height marks, a gauge and local
-filling turbulence communicate the cycle. The water-level display is a visual
+attached signal lamps. Five-second travel eases in and out; red remains lit until
+full opening. Red/green lights, brighter rising wet-height marks, staff gauges on
+both walls and a persistent HUD water percentage/bar communicate the cycle.
+The HUD shows LOW, RISING, or HIGH / MATCHED even when a wall is offscreen.
+
+The open entry and exit reaches push downstream against upstream travel. During
+filling, shifting sluice currents move hulls sideways within the sealed chamber;
+steer to hold the tug and convoy away from the banks. The filling force ramps up
+and settles to zero at the matched level. Its influence ends at the chamber walls,
+and through currents stop when gates seal. Translucent drifting streaks sample the
+same `Lock.currentX/Y` field as physics, so their direction describes actual drift.
+
+`Physics.integrate(body,waterX,waterY)` applies the existing keel/broadside drag to
+velocity relative to water, then restores world velocity for movement. Towed and
+free barges both respond; loads still waiting in a feeder are secured. All samples
+use fixed simulation ticks, including during the game's two motion substeps;
+pause freezes current-driven motion and the water cycle. These are tuned gameplay
+currents, not a hydraulic simulation. The entry window remains 45 seconds including
+opening, and the 35-second exit window begins only at full opening. Pull the tug
+far enough beyond the exit for the whole trailing convoy to clear against the flow.
+
+The water-level display is a visual
 abstraction: vessel movement and collision retain one fixed navigation plane;
 the game does not independently raise hull sprites or rebuild wake coordinates.
 
@@ -121,7 +141,8 @@ maximum star total derive from the catalog. The `BB1` save reader accepts old
 three-entry careers and initializes the new fourth entry to zero, preserving
 records and selection. Existing rank thresholds are unchanged.
 
-`LockTest` validates the timed phase cycle, hull clearance, failure and gate
+`LockCurrentTest` checks slow gate travel, local current forces, broadside response,
+frame-rate equivalence, pause behavior and changing level feedback. `LockTest` validates the timed phase cycle, hull clearance, failure and gate
 collision behavior. Goal and bounded replay tests cover finite dispatch,
 no-expiry behavior, persistent empties, physical occupancy and immediate completion. `GoalLevelReview`
 exports actual shared title, selection, delivery progress and lock-phase views

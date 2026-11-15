@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Goal-based lock passage. Only entry/exit windows are timed; preparation is free. */
 public final class Lock {
     public static final float ENTRY_Y=330,EXIT_Y=0,GATE_HALF=6,SAFE_GAP=3;
-    public static final int REQUIRED=2,ENTRY_TICKS=45*60,EXIT_TICKS=35*60,CYCLE_TICKS=8*60,GATE_TICKS=90;
+    public static final int REQUIRED=2,ENTRY_TICKS=45*60,EXIT_TICKS=35*60,CYCLE_TICKS=8*60,GATE_TICKS=5*60;
     public static final int READY=0,ENTRY=1,CLOSING=2,FILLING=3,OPENING=4,EXIT=5,COMPLETE=6,FAILED=7;
     public int phase,ticks;
     private final int[] targets=new int[REQUIRED];
@@ -14,8 +14,33 @@ public final class Lock {
     public boolean failed(){return phase==FAILED;}
     public String failure(){return failure;}
     public float waterLevel(){return failed()?failedLevel:phase<FILLING?0:phase==FILLING?Physics.clamp(ticks/(float)CYCLE_TICKS,0,1):1;}
-    public float entryOpening(){return failed()?failedEntry:phase==ENTRY?Math.min(1,ticks/(float)GATE_TICKS):phase==CLOSING?1-Math.min(1,ticks/(float)GATE_TICKS):0;}
-    public float exitOpening(){return failed()?failedExit:phase==OPENING?Math.min(1,ticks/(float)GATE_TICKS):phase==EXIT || phase==COMPLETE?1:0;}
+    public float entryOpening(){return failed()?failedEntry:phase==ENTRY?gateProgress():phase==CLOSING?1-gateProgress():0;}
+    public float exitOpening(){return failed()?failedExit:phase==OPENING?gateProgress():phase==EXIT || phase==COMPLETE?1:0;}
+    private float gateProgress(){float t=Physics.clamp(ticks/(float)GATE_TICKS,0,1);return t*t*(3-2*t);}
+    /** Shared water velocity field, in world units per motion-second. No random/render state.
+     * Open-gate reaches oppose upstream travel; filling sluices stir the sealed chamber. */
+    private float gateFlow(float y){
+        if(phase==ENTRY)return entryOpening()*Physics.clamp(1-Math.abs(y-ENTRY_Y)/180,0,1);
+        if(phase==OPENING || phase==EXIT)return exitOpening()*Physics.clamp(1-Math.abs(y-EXIT_Y)/180,0,1);
+        return 0;
+    }
+    private float fillingFlow(float x,float y){
+        if(phase!=FILLING || x<=Physics.LEFT || x>=Physics.RIGHT || y<=EXIT_Y || y>=ENTRY_Y)return 0;
+        float ends=Physics.clamp(Math.min(y-EXIT_Y,ENTRY_Y-y)/45,0,1);
+        return ends*(float)StrictMath.sin(Math.PI*waterLevel());
+    }
+    public float currentX(float x,float y){
+        if(x<=Physics.LEFT || x>=Physics.RIGHT)return 0;
+        float bank=(float)StrictMath.sin(Math.PI*(x-Physics.LEFT)/(Physics.RIGHT-Physics.LEFT));
+        return bank*(6*gateFlow(y)*(float)StrictMath.sin(ticks*.018)
+                +30*fillingFlow(x,y)*(float)StrictMath.sin(y*.025+ticks*.018));
+    }
+    public float currentY(float x,float y){
+        if(x<=Physics.LEFT || x>=Physics.RIGHT)return 0;
+        return 26*gateFlow(y)+16*fillingFlow(x,y)*(float)StrictMath.sin(x*.025+ticks*.014);
+    }
+    /** Relative-water drag preserves hull orientation and tow mass response. */
+    public void integrate(Body b){Physics.integrate(b,currentX(b.x,b.y),currentY(b.x,b.y));}
     public boolean entryPassable(){return phase==ENTRY && ticks>=GATE_TICKS;}
     public boolean exitPassable(){return phase==EXIT || phase==COMPLETE;}
     public int secondsRemaining(){return phase==ENTRY?Math.max(0,(ENTRY_TICKS-ticks+59)/60):phase==EXIT?Math.max(0,(EXIT_TICKS-ticks+59)/60):0;}
@@ -34,24 +59,25 @@ public final class Lock {
         if(phase==COMPLETE || phase==FAILED)return;
         if(phase==READY){
             // Do not spend the entry window while the feeders are still arriving.
-            if(g.tug.y<=ENTRY_Y+140 && g.tug.y>=ENTRY_Y && acquire(g))change(g,ENTRY,"LOCK ENTRY OPEN / BRING BOTH BARGES INSIDE");
+            if(g.tug.y<=ENTRY_Y+140 && g.tug.y>=ENTRY_Y && acquire(g))change(g,ENTRY,"ENTRY OPENING / WAIT FOR GREEN");
             return;
         }
         ticks++;
         for(int i=0;i<targets.length;i++)if(target(g,i)==null){fail(g,"LOCK CARGO MISSING");return;}
         switch(phase){
             case ENTRY:
+                if(ticks==GATE_TICKS)g.tell("ENTRY OPEN / STEER AGAINST THE CURRENT");
                 if(entryPassable() && inside(g.tug) && insideCount(g)==REQUIRED)change(g,CLOSING,"ALL ABOARD / KEEP CLEAR OF THE GATES");
                 else if(ticks>=ENTRY_TICKS)fail(g,"ENTRY WINDOW MISSED");
                 break;
             case CLOSING:
-                if(ticks>=GATE_TICKS)change(g,FILLING,"LOCK FILLING / WAIT FOR GREEN");
+                if(ticks>=GATE_TICKS)change(g,FILLING,"LOCK FILLING / STEER TO HOLD POSITION");
                 break;
             case FILLING:
                 if(ticks>=CYCLE_TICKS)change(g,OPENING,"WATER LEVEL MATCHED / EXIT OPENING");
                 break;
             case OPENING:
-                if(ticks>=GATE_TICKS)change(g,EXIT,"EXIT OPEN / CLEAR BOTH BARGES");
+                if(ticks>=GATE_TICKS)change(g,EXIT,"EXIT OPEN / CURRENT AHEAD / CLEAR BOTH BARGES");
                 break;
             case EXIT:
                 if(clearedCount(g)==REQUIRED)change(g,COMPLETE,"BOTH BARGES THROUGH / LOCK COMPLETE");
@@ -92,7 +118,7 @@ public final class Lock {
     }
     public String signal(){
         if(phase==READY)return "APPROACH WITH TWO BARGES";
-        if(phase==ENTRY)return "ENTER / "+secondsRemaining()+"S";
+        if(phase==ENTRY)return (entryPassable()?"ENTER / CURRENT / ":"ENTRY OPENING / ")+secondsRemaining()+"S";
         if(phase==CLOSING)return "GATES CLOSING";
         if(phase==FILLING)return "FILLING / "+((CYCLE_TICKS-ticks+59)/60)+"S";
         if(phase==OPENING)return "EXIT OPENING";

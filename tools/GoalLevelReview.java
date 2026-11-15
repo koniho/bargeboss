@@ -26,6 +26,16 @@ public final class GoalLevelReview {
             g=fixture(id);g.visualTicks=15;capture(g,"goal-level-"+(id+1)+"-start");
             g.delivered=1;capture(g,"goal-level-"+(id+1)+"-progress");
         }
+        for(int width:new int[]{960,1333})for(int fill:new int[]{0,50,100}){
+            g=fixture(2);g.tug.x=280;g.tug.y=95;
+            int slot=0;for(Body load:g.cargo)if(load!=null){load.x=245+slot++*105;load.y=200;load.awaitingPickup=false;}
+            g.layout=Layout.focused(width,600,300,165,1.2f,650,340);
+            for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.shoutTicks=0;}
+            g.noticeTicks=0;
+            g.lock.phase=fill==100?Lock.OPENING:Lock.FILLING;g.lock.ticks=fill==100?0:Lock.CYCLE_TICKS*fill/100;
+            g.ticks=240+g.lock.ticks;
+            capture(g,"goal-lock-water-"+fill+"-"+width);
+        }
         g=fixture(2);g.tug.x=300;g.tug.y=440;
         g.layout=Layout.focused(1333,600,300,200,1.2f,660,340);
         g.lock.step(g);
