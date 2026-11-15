@@ -43,7 +43,7 @@ public final class FeederView {
             for(int j=0;j<3;j++) p.line(x-8-j*3,y+12+j*12,x-16-j*4,y+7+j*16,2,color);
             if(!hurry) {
                 int zone=f.destination;
-                float tx=c.screenX(Game.DOCK_X[zone],g.dockY(zone)),ty=c.screenY(Game.DOCK_X[zone],g.dockY(zone));
+                float tx=c.screenX(g.dockX(zone),g.dockY(zone)),ty=c.screenY(g.dockX(zone),g.dockY(zone));
                 ControlView.ring(g,p,tx,ty,38+(150-f.shoutTicks)%30,1,color,3);
             }
         }

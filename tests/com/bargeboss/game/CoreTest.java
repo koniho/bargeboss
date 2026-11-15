@@ -32,10 +32,10 @@ public final class CoreTest {
         g=playing(); for(int i=0;i<1200;i++) { ReplayInput.work(g); g.step(); }
         check(g.delivered>=1,"assisted first delivery within 20 seconds: tug="+g.tug.x+","+g.tug.y+" cargo="+g.cargo[0].x+","+g.cargo[0].y);
         check(g.score>0,"delivery scores"); int score=g.score; steps(g,10); check(g.score==score,"delivery scores only once");
-        g=playing(); Body b=g.cargo[0]; b.x=Game.DOCK_X[0]; b.y=Game.DOCK_Y[0];
-        check(!g.inDock(b),"wrong berth does not accept cargo"); b.x=Game.DOCK_X[2]; b.y=Game.DOCK_Y[2];
+        g=playing(); Body b=g.cargo[0]; b.x=g.dockX(1); b.y=g.dockY(1);
+        check(!g.inDock(b),"wrong berth does not accept cargo"); b.x=g.dockX(2); b.y=g.dockY(2);
         check(g.inDock(b),"whole hull fits correct berth"); b.x+=40; check(!g.inDock(b),"center alone insufficient for delivery");
-        g=playing(); b=g.cargo[0]; b.x=Game.DOCK_X[2]; b.y=Game.DOCK_Y[2]; b.vx=60; steps(g,1);
+        g=playing(); b=g.cargo[0]; b.x=g.dockX(2); b.y=g.dockY(2); b.vx=60; steps(g,1);
         check(b.dockTime==0,"must slow down to moor");
         Body a=new Body(0,-1,300,500,0), c=new Body(1,0,342,500,0); a.vx=70;
         float momentum=a.vx*a.mass+c.vx*c.mass; Physics.collide(a,c);
@@ -48,8 +48,8 @@ public final class CoreTest {
         g=playing(); g.down(-1,500); check(!g.pointer,"letterbox tap ignored");
         g=playing(); g.tug.x=415; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
         steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
-        g=playing(); g.ticks=1200; g.tug.x=g.trafficX()+31; g.tug.y=Game.TRAFFIC_Y; steps(g,1);
-        check(g.hull<100,"cross traffic is a physical hazard");
+        g=playing(); g.ticks=1200; steps(g,1);
+        check(!g.trafficActive(),"berth puzzles retain clear navigation rather than unrelated crossing traffic");
         Game low=playing(), high=playing(); low.down(low.tug.x,low.tug.y); low.move(low.downX,low.downY-100);
         high.down(high.tug.x,high.tug.y); high.move(high.downX,high.downY-100);
         for(int i=0;i<300;i++) low.advance(1.0/30); for(int i=0;i<1440;i++) high.advance(1.0/144);
@@ -118,7 +118,9 @@ public final class CoreTest {
         ShadowActivityTest.run();
         StageCameraTest.run();
         LockTest.run();
-        check(Parity.signature().equals("459322ac:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        PersistentBargeTest.run();
+        PhysicalBerthsTest.run();
+        check(Parity.signature().equals("a56ee656:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

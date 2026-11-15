@@ -16,7 +16,7 @@ public final class Towline {
     public float speedFactor(Body tug){return 1/(1+.075f*loadMass(tug));}
     public float pullLoad(Body tug){float sum=0;for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null && l.cargo!=null && l.leader==tug)sum+=l.tension;}return sum;}
     public boolean canAttach(Game g,Body b,Body parent) {
-        if(b==null || parent==null || b==parent || b.id<=0 || !b.active || b.lineAttached || incoming(b)!=null || count()>=CAPACITY)return false;
+        if(b==null || parent==null || b==parent || b.id<=0 || !b.active || b.lineAttached && !b.deliveryRecorded || incoming(b)!=null || count()>=CAPACITY)return false;
         if(parent!=g.tug && (parent.id<=0 || !parent.active || parent.lineAttached))return false;
         for(Body cursor=parent;cursor!=null;) {if(cursor==b)return false;Towline l=incoming(cursor);cursor=l==null?null:l.leader;}
         return true;
@@ -40,13 +40,14 @@ public final class Towline {
             return true;
         }
         return !(g.lockStage() && g.lock.blocksLine(x,y,xx,yy))
-                && (!g.orderStage() || HarborGeometry.clear(x,y,xx,yy,3));
+                && (!g.orderStage() || PhysicalBerths.clear(g.challengeId,x,y,xx,yy,3));
     }
     public void attach(Game g,Body b) {attach(g,b,g.tug);}
     public boolean attach(Game g,Body b,Body parent) {
         if(!canAttach(g,b,parent))return false;
         Towline slot=null;
         for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l==null){additional[i-1]=l=new Towline();}if(l.cargo==null){slot=l;break;}}
+        if(b.deliveryRecorded){b.lineAttached=false;b.dockTime=0;b.lineSnapTicks=0;}
         slot.cargo=b;slot.leader=parent;b.awaitingPickup=false;parent.awaitingPickup=false;
         float dot=(parent.x-b.x)*(float)StrictMath.cos(b.angle)+(parent.y-b.y)*(float)StrictMath.sin(b.angle);
         slot.cargoEnd=(dot>=0?1:-1)*(b.half+7);

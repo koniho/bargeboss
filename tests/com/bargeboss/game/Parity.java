@@ -101,10 +101,12 @@ public final class Parity implements Painter {
         for(int id=1;id<Challenges.COUNT;id++) {
             Game g=new Game();g.challengeId=id;g.reset();
             int phases=0;
-            for(int i=0;i<9000 && g.mode==Game.PLAY;i++) {
+            for(int i=0;i<g.shiftTicks() && g.mode==Game.PLAY;i++) {
                 int oldPhase=g.lock.phase;ReplayInput.work(g);g.step();phases|=1<<g.lock.phase;
                 if(i%30==0 || oldPhase!=g.lock.phase) {
                     p.add(g.goalProgress());p.add(g.nextRequiredBerth());p.add(g.mode);
+                    for(Body b:g.cargo)if(b!=null){p.add(b.id);p.add(b.active?1:0);p.add(b.deliveryRecorded?1:0);p.add(b.lineAttached?1:0);p.value(b.x);p.value(b.y);p.value(b.angle);}
+                    p.add(g.tow.count());
                     p.value(g.tug.x);p.value(g.tug.y);p.add(g.lock.phase);p.add(g.lock.ticks);
                     p.value(g.lock.waterLevel());p.value(g.lock.entryOpening());p.value(g.lock.exitOpening());
                     p.add(g.lock.insideCount(g));p.add(g.lock.clearedCount(g));

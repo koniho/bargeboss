@@ -12,6 +12,7 @@ echo tools/BuildingFadeReview.java >> build/preview/sources.txt
 echo tools/ShoreOcclusionPixelTest.java >> build/preview/sources.txt
 echo tools/FoamPixelTest.java >> build/preview/sources.txt
 echo tools/GoalLevelReview.java >> build/preview/sources.txt
+echo tools/BerthSwapReview.java >> build/preview/sources.txt
 echo tools/LandMarkerReview.java >> build/preview/sources.txt
 echo tools/BuoySpriteReview.java >> build/preview/sources.txt
 echo tools/BuoyReview.java >> build/preview/sources.txt
@@ -64,6 +65,7 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuildingFadeR
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShoreOcclusionPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.FoamPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GoalLevelReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BerthSwapReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.LandMarkerReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoySpriteReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoyReview

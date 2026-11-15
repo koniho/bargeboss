@@ -6,24 +6,24 @@ public final class DockView {
     private DockView() {}
     public static void draw(Game g,Painter canvas) {
         for(int berth=0;berth<3;berth++) {
-            if(!g.berthEnabled(berth)) continue;
+            if(!g.berthDisplayEnabled(berth)) continue;
             Body load=null,mooring=null;
             boolean ready=false;
-            for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && b.berth==berth) {
+            for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && (g.sharedBerthStage() || b.berth==berth)) {
                 if(b.unloadingTicks>0) load=b;
                 else if(b.lineAttached) mooring=b;
                 ready|=g.canTie(b);
             }
             boolean working=load!=null,tying=mooring!=null;
-            boolean throwing=(g.ropePhase==1 || g.ropePhase==3) && g.ropeBody!=null && g.ropeBody.berth==berth;
+            boolean throwing=(g.ropePhase==1 || g.ropePhase==3) && g.ropeBody!=null && (g.sharedBerthStage() || g.ropeBody.berth==berth);
             boolean celebrating=g.celebrationTicks>0 && Math.abs(g.celebrationY-g.dockY(berth))<54;
             int tick=g.visualTicks;
             RiverCamera camera=g.layout.camera;
-            float anchorX=camera.screenX(berth==1?445:155,g.dockY(berth));
-            float anchorY=camera.screenY(berth==1?445:155,g.dockY(berth))-(g.tutorial!=null?GroundArt.LAND_RISE*camera.scale:0);
+            float anchorX=camera.screenX(g.berthRight(berth)?445:155,g.dockY(berth));
+            float anchorY=camera.screenY(g.berthRight(berth)?445:155,g.dockY(berth))-(g.tutorial!=null?GroundArt.LAND_RISE*camera.scale:0);
             float scale=camera.scale*.55f;
             Painter p=ScreenView.scaled(canvas,anchorX,anchorY,scale);
-            float sign=berth==1?-1:1,base=0,y=0;
+            float sign=g.berthRight(berth)?-1:1,base=0,y=0;
             float phase=working?(load.unloadingTicks%60)/60f:0;
             float lift=working?Physics.clamp((phase-.16f)/.62f,0,1):1;
             float loadX=working?(camera.screenX(load.x,load.y)-anchorX)/scale:0;

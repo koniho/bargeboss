@@ -5,9 +5,10 @@ public final class HarborGeometry {
     // left, top, right, bottom. North finger pier and south finger pier.
     public static final float[][] PIERS={{381,248,430,322},{170,345,212,390}};
     private HarborGeometry() {}
-    public static float collide(Body b) {
+    public static float collide(Body b) { return collide(b,PIERS); }
+    public static float collide(Body b,float[][] solids) {
         float impact=0;
-        for(float[] r:PIERS) for(int i=0;i<3;i++) {
+        for(float[] r:solids) for(int i=0;i<3;i++) {
             float x=b.discX(i),y=b.discY(i),cx=Physics.clamp(x,r[0],r[2]),cy=Physics.clamp(y,r[1],r[3]);
             float dx=x-cx,dy=y-cy,d=Physics.length(dx,dy);
             if(d>=b.radius) continue;
@@ -26,8 +27,9 @@ public final class HarborGeometry {
         }
         return impact;
     }
-    static boolean clear(float x,float y,float xx,float yy,float pad) {
-        for(float[] r:PIERS) {
+    static boolean clear(float x,float y,float xx,float yy,float pad) { return clear(x,y,xx,yy,pad,PIERS); }
+    static boolean clear(float x,float y,float xx,float yy,float pad,float[][] solids) {
+        for(float[] r:solids) {
             float lo=0,hi=1; boolean outside=false;
             for(int axis=0;axis<2;axis++) {
                 float min=r[axis]-pad,max=r[axis+2]+pad;
@@ -45,17 +47,30 @@ public final class HarborGeometry {
         waypoint(x,y,tx,ty,pad,Physics.TOP,Physics.BOTTOM,out);
     }
     public static void waypoint(float x,float y,float tx,float ty,float pad,float top,float bottom,float[] out) {
+        waypoint(x,y,tx,ty,pad,top,bottom,out,PIERS);
+    }
+    public static void waypoint(float x,float y,float tx,float ty,float pad,float top,float bottom,float[] out,float[][] solids) {
         out[0]=tx;out[1]=ty;
         // A hull can be physically clear while inside the conservative planning margin.
         // Escape toward the channel before building a route; never deadlock against that margin.
-        for(float[] r:PIERS) if(x>r[0]-pad && x<r[2]+pad && y>r[1]-pad && y<r[3]+pad) {
-            out[0]=r[0]>300?r[0]-pad-4:r[2]+pad+4;out[1]=y;return;
+        for(float[] r:solids) if(x>r[0]-pad && x<r[2]+pad && y>r[1]-pad && y<r[3]+pad) {
+            float best=Float.MAX_VALUE;
+            for(int edge=0;edge<4;edge++) {
+                float ex=edge==0?r[0]-pad-4:edge==1?r[2]+pad+4:x;
+                float ey=edge==2?r[1]-pad-4:edge==3?r[3]+pad+4:y;
+                if(ex<Physics.LEFT+pad || ex>Physics.RIGHT-pad || ey<top+pad || ey>bottom-pad)continue;
+                float distance=Physics.length(ex-x,ey-y);
+                if(distance<best){best=distance;out[0]=ex;out[1]=ey;}
+            }
+            if(best<Float.MAX_VALUE)return;
+
         }
-        if(clear(x,y,tx,ty,pad)) return;
-        float[] xs=new float[10],ys=new float[10],cost=new float[10]; int[] previous=new int[10]; boolean[] used=new boolean[10];
+        if(clear(x,y,tx,ty,pad,solids)) return;
+        int capacity=2+solids.length*4;
+        float[] xs=new float[capacity],ys=new float[capacity],cost=new float[capacity]; int[] previous=new int[capacity]; boolean[] used=new boolean[capacity];
         xs[0]=x;ys[0]=y;xs[1]=tx;ys[1]=ty;
         int n=2;
-        for(float[] r:PIERS) for(int side=0;side<4;side++) {
+        for(float[] r:solids) for(int side=0;side<4;side++) {
             xs[n]=(side%2==0?r[0]-pad-1:r[2]+pad+1);
             ys[n]=(side<2?r[1]-pad-1:r[3]+pad+1);n++;
         }
@@ -65,7 +80,7 @@ public final class HarborGeometry {
             if(a<0 || cost[a]==Float.MAX_VALUE) break;
             used[a]=true;if(a==1) break;
             for(int b=1;b<n;b++) if(!used[b] && xs[b]>=Physics.LEFT+pad && xs[b]<=Physics.RIGHT-pad
-                    && ys[b]>=top+pad && ys[b]<=bottom-pad && clear(xs[a],ys[a],xs[b],ys[b],pad)) {
+                    && ys[b]>=top+pad && ys[b]<=bottom-pad && clear(xs[a],ys[a],xs[b],ys[b],pad,solids)) {
                 float distance=cost[a]+Physics.length(xs[b]-xs[a],ys[b]-ys[a]);
                 if(distance<cost[b]) { cost[b]=distance;previous[b]=a; }
             }

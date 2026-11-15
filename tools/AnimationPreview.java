@@ -52,8 +52,8 @@ public final class AnimationPreview {
             if(phase==1 && age>=30) { ReplayInput.down(g,b.x,b.y); ropeX=b.x; ropeY=b.y; phase=2; age=0; }
             if(phase==2) {
                 float t=Math.min(1,age/45f);
-                ReplayInput.move(g,ropeX+(Game.TIE_X[2]-ropeX)*t,ropeY+(Game.DOCK_Y[2]-ropeY)*t);
-                if(age==60) { ReplayInput.up(g,Game.TIE_X[2],Game.DOCK_Y[2]); phase=3; age=0; }
+                ReplayInput.move(g,ropeX+(g.bollardX(b.berth)-ropeX)*t,ropeY+(g.bollardY(b.berth)-ropeY)*t);
+                if(age==60) { ReplayInput.up(g,g.bollardX(b.berth),g.bollardY(b.berth)); phase=3; age=0; }
             }
             g.step(); age++;
             if(tick%5==0) frame(g,"mooring",frame++);

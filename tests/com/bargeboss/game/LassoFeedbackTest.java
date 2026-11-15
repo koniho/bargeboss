@@ -17,7 +17,7 @@ public final class LassoFeedbackTest {
     }
     private static Game fixture() {
         Game g=new Game();ReplayInput.controlFixture(g);
-        g.cargo[0].x=Game.DOCK_X[2];g.cargo[0].y=g.dockY(2);return g;
+        g.cargo[0].x=g.dockX(2);g.cargo[0].y=g.dockY(2);return g;
     }
     public static void run() {
         float[] edge=new float[2],point=new float[2];

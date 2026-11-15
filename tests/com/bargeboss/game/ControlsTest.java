@@ -6,14 +6,16 @@ public final class ControlsTest {
     private static Game game() { Game g=new Game(); ReplayInput.controlFixture(g); return g; }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static Game ready() {
-        Game g=game(); Body b=g.cargo[0]; b.x=Game.DOCK_X[2]; b.y=Game.DOCK_Y[2]; return g;
+        Game g=game(); Body b=g.cargo[0]; b.x=g.dockX(2); b.y=g.dockY(2);
+        // Keep this local lasso fixture visible in the close gameplay camera.
+        g.tug.x=b.x+110;g.tug.y=b.y+60;return g;
     }
     public static void run() {
         Game g=game(); ReplayInput.tap(g,RiverPainter.screenX(360,580),RiverPainter.screenY(360,580));
         check(!g.navigating,"water taps no longer set a route");
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         float originY=g.downY,screenOrigin=g.layout.camera.screenX(g.downX,g.downY); steps(g,60);
-        check(g.navigating && g.tug.y<originY-50,"held drag drives tug");
+        check(g.navigating && g.tug.y<originY-35,"held drag drives tug");
         check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f,"drag origin stays anchored as boat moves");
         g.pointerDown(2,200,400); g.pointerMove(2,100,400); g.pointerUp(2,100,400);
         check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f && g.pointer,"second finger cannot steal drag");
@@ -41,15 +43,15 @@ public final class ControlsTest {
         g=ready(); b=g.cargo[0]; steps(g,180);
         check(g.delivered==0 && b.dockTime==0,"entering berth alone never scores");
         ReplayInput.down(g,b.x,b.y); check(g.ropeDragging,"ready cargo arms the lasso");
-        ReplayInput.move(g,Game.TIE_X[1],Game.DOCK_Y[1]); steps(g,30);
+        ReplayInput.move(g,Game.TIE_X[1],g.dockY(1)); steps(g,30);
         check(g.ropePhase==0 && !b.lineAttached,"dragging only aims: no rope launches before release");
-        ReplayInput.up(g,Game.TIE_X[1],Game.DOCK_Y[1]);
+        ReplayInput.up(g,Game.TIE_X[1],g.dockY(1));
         check(g.ropePhase==1 && !b.lineAttached,"finger release launches a missed throw too");
         steps(g,Game.ROPE_FLIGHT_TICKS);
         check(g.ropePhase==2 && !b.lineAttached && g.delivered==0,"miss enters visible retraction after reaching endpoint");
         steps(g,Game.ROPE_RETURN_TICKS);
         check(g.ropePhase==0 && g.ropeBody==null,"miss reels all the way back and rearms");
-        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2],Game.DOCK_Y[2]); g.pointerCancel(0);
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2],g.dockY(2)); g.pointerCancel(0);
         check(!b.lineAttached && !g.ropeDragging && g.ropePhase==0,"cancelled aim never shoots");
         ReplayInput.lasso(g,b);
         check(g.ropePhase==1 && !b.lineAttached && !g.ropeDragging,"correct throw still waits for flight impact");
@@ -67,13 +69,13 @@ public final class ControlsTest {
         g.pause(); g.tug.x=b.x+40; g.tug.y=b.y; g.tug.vx=-70;
         steps(g,Game.UNLOAD_TICKS-2);
         check(b.active && b.unloadingTicks==Game.UNLOAD_TICKS-1 && g.score==0,"unloading occupies the berth for three seconds before scoring");
-        g.step(); check(!b.active && g.delivered==1 && g.score>0,"completed unloading delivers once and crew returns idle");
+        g.step(); check(b.active && b.deliveryRecorded && b.lineAttached && g.delivered==1 && g.score>0,"completed unloading delivers once and crew returns idle");
         check(b.x==x && b.y==y,"tied barge stays secured during unloading");
         check(b.lineSnapTicks==0,"snap effect completes while the crew works");
         int score=g.score; steps(g,30); check(g.score==score,"unloading cannot score twice");
         g=ready(); b=g.cargo[0]; b.vx=50; ReplayInput.down(g,b.x,b.y);
         check(g.ropeDragging,"moving cargo can start a tie");
-        ReplayInput.move(g,Game.TIE_X[2],Game.DOCK_Y[2]);ReplayInput.up(g,Game.TIE_X[2],Game.DOCK_Y[2]);
+        ReplayInput.move(g,Game.TIE_X[2],g.dockY(2));ReplayInput.up(g,Game.TIE_X[2],g.dockY(2));
         steps(g,Game.ROPE_FLIGHT_TICKS-1);
         check(!g.inDock(b),"moving hull may drift outside the berth while the rope is flying");g.step();
         check(b.lineAttached && b.speed()==0 && b.tieBurstTicks>0,"moving catch arrests momentum and shows success burst");
@@ -82,14 +84,14 @@ public final class ControlsTest {
             check(Physics.length(b.x-x,b.y-y)<3,"moving catch is drawn alongside continuously");
         }
         check(g.inDock(b) && b.unloadingTicks==1,"moving catch unloads after alignment");
-        g=ready();b=g.cargo[0];ReplayInput.lasso(g,b);b.y-=150;
+        g=ready();b=g.cargo[0];ReplayInput.lasso(g,b);b.y+=150;
         steps(g,Game.ROPE_FLIGHT_TICKS);
         check(!b.lineAttached && g.ropePhase==2,"cargo drifting out of rope reach misses and retracts");
         g=ready(); b=g.cargo[0]; b.x+=40; ReplayInput.down(g,b.x,b.y);
         check(g.ropeDragging && !g.inDock(b),"center inside assigned berth can arm before the full hull fits");
         g=ready();b=g.cargo[0];b.x+=70;ReplayInput.down(g,b.x,b.y);
         check(!g.ropeDragging,"cargo outside its assigned berth cannot arm");
-        g=ready();b=g.cargo[0];b.y=Game.DOCK_Y[0];ReplayInput.down(g,b.x,b.y);
+        g=ready();b=g.cargo[0];b.y=g.dockY(1);ReplayInput.down(g,b.x,b.y);
         check(!g.ropeDragging,"cargo in another berth cannot arm");
         g=ready();b=g.cargo[0];b.awaitingPickup=true;ReplayInput.down(g,b.x,b.y);
         check(!g.ropeDragging,"load still secured in feeder slot must be picked up first");

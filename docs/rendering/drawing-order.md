@@ -56,8 +56,13 @@ not a comparison with the vessel's roof or the top of its sprite rectangle.
 | Hull portion already hidden by land | Those hidden pixels cannot independently trigger building fading. |
 
 The tutorial uses `TrainingChannel.WATER_RECTANGLES`, including its open mouths,
-basin and harbor. Ordinary stages use the river banks and, in the pier stage,
-`HarborGeometry.PIERS`. Title artwork has its own open-water composition and is
+basin and harbor. Ordinary stages use the river banks; shared-slip and deep-channel
+levels also use `PhysicalBerths.solids(challengeId)`. These same footprints drive
+collision, route planning, water-effect clipping and opaque shore cutouts. Do not
+substitute the legacy `HarborGeometry.PIERS` in a career level. Unloaded barges
+remain active vessels: they retain normal hull depth, water effects, collision and
+shore-line rendering until a successful tow catch transfers the attachment.
+Title artwork has its own open-water composition and is
 explicitly excluded from gameplay shore clipping.
 
 `VesselView` clips hull, cargo, damage flash and hull glow together. Its

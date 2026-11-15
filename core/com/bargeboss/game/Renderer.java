@@ -89,7 +89,7 @@ public final class Renderer {
             SoftCue.dot(p,b.x,b.y,30,SoftCue.animated(g,0x66fff0ce));
             for(int j=1;j<10;j++) {
                 float t=j/10f;
-                SoftCue.dot(p,b.x+(Game.DOCK_X[b.berth]-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,SoftCue.animated(g,color));
+                SoftCue.dot(p,b.x+(g.dockX(b.berth)-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,SoftCue.animated(g,color));
             }
         }
         VesselView.draw(g,p,b,false);

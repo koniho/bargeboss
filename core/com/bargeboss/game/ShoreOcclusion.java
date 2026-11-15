@@ -18,7 +18,7 @@ public final class ShoreOcclusion {
         else {
             if(left<Physics.LEFT)dry.add(new float[]{left,top,Math.min(right,Physics.LEFT),bottom});
             if(right>Physics.RIGHT)dry.add(new float[]{Math.max(left,Physics.RIGHT),top,right,bottom});
-            if(g.orderStage())for(float[] r:HarborGeometry.PIERS) {
+            if(g.orderStage())for(float[] r:PhysicalBerths.solids(g.challengeId)) {
                 float l=Math.max(Physics.LEFT,Math.max(left,r[0])),t=Math.max(top,r[1]),rr=Math.min(Physics.RIGHT,Math.min(right,r[2])),bb=Math.min(bottom,r[3]);
                 if(rr>l && bb>t)dry.add(new float[]{l,t,rr,bb});
             }

@@ -75,7 +75,7 @@ public final class SceneryView {
     public static void piers(Game g,Painter p) {
         if(!g.orderStage()) return;
         RiverCamera c=g.layout.camera;Painter world=new RiverPainter(p,c);
-        for(float[] r:HarborGeometry.PIERS) {
+        for(float[] r:PhysicalBerths.solids(g.challengeId)) {
             // Project the exact solid rectangle; the old painted pier crops had
             // baked-in axes and could no longer mark the playable edge reliably.
             world.rect(r[0],r[1],r[2]-r[0],r[3]-r[1],VisualStyle.OUTLINE);

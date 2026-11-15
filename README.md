@@ -79,7 +79,9 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   a successful shore-bollard catch also releases the tow. Link multiple barges
   directly to the tug or to another barge within 170 river units; heavier trains
   reduce the resulting speed. Pick up feeder loads as soon as they are dropped off;
-  secured loads and loads still aboard an incoming feeder cannot be towed.
+  secured loaded barges and loads still aboard an incoming feeder cannot be towed.
+  Unloaded barges remain physical hulls: drag an empty to the tug or another
+  barge to tow it clear. Its shore line releases only after a successful tow catch.
   Blocked or overstretched lines release. Practice includes connecting, pulling
   the load a real distance, and explicitly releasing it.
 - **Slow down:** drag against your motion to apply counter-thrust, then release
@@ -95,7 +97,8 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   taut immediately, and starts drawing it parallel to shore over **1.2 seconds**.
   Then a crane, forklift and dock crew
   unload the barge for **3 seconds**. The barge stays secured while you work on
-  another load. Scoring happens once unloading finishes, with a floating score
+  another load, and stays in the water after delivery. Pull empties away to free
+  occupied berths. Scoring happens once per barge when unloading finishes, with a floating score
   and burst of stars. The crew and equipment then return to idle.
 - Movement, turning, pushing and passing workboats run at **2× the original
   pace**, using two original-size physics steps per real tick. Hold gestures,
@@ -156,8 +159,15 @@ and feeders dispatch only the barges required by that level.
 | Level | Goal | Unlock |
 | --- | --- | --- |
 | Two Banks | Deliver two barges, one to berth A on the left bank and one to B on the right | Available immediately |
-| Right Order | Deliver three barges to A, then B, then C; arrivals come in a different order | Complete Two Banks |
-| Lock Run | Get both barges into the lock, wait for its water cycle, then clear the exit with both | Complete Right Order |
+| Shared Slip | Unload three loads through one narrow slip; pull each empty clear before swapping in another | Complete Two Banks |
+| Lock Run | Get both barges into the lock, wait for its water cycle, then clear the exit with both | Complete Shared Slip |
+| Deep First | Work three berths in a dead-end channel; outer barges physically block the inner ones | Complete Lock Run |
+
+Shared Slip and Deep First use solid quay geometry and single-file entrances.
+There is no enforced A-B-C sequence: the hulls themselves limit access. After
+unloading, drag the empty to the tug and tow it out through the channel mouth.
+Shared Slip marks an optional empty holding area in the open water beyond its
+quay. The last unload completes each stage without requiring a final cleanup.
 
 Lock Run has timed obstacles within an otherwise untimed level. Preparing the
 convoy has no deadline. On approach with both loads available, the entry gate
@@ -180,8 +190,8 @@ berth fender damping for aiming.
 Two NPC pushers bring the level's loads in from edge slots, call their target
 berth or **TO THE LOCK!**, and back out. A blocked captain calls **HURRY UP!** at
 four-second intervals. Queued loads wait outside the tug's pickup approach, and
-slot fenders hold handed-off barges until pickup. Right Order's remaining third
-load waits for a free feeder lane. The calls are visual speech bubbles; there is
+slot fenders hold handed-off barges until pickup. In both three-load stages, the
+remaining third load waits for a free feeder lane. The calls are visual speech bubbles; there is
 no voice audio yet. The opening bridge remains part of the continuous towing
 tutorial. Pause is in the upper-right corner (Escape on desktop).
 
@@ -195,7 +205,9 @@ Unique stars earn gold captain stripes and playful ranks: **Deck Duck** (0),
 (9). The challenge board and results show your badge, promotions and next unlock.
 Progress and selected challenge are saved locally on each device; there is no
 cloud synchronization. Android/iOS use native preference storage; desktop uses
-`~/.bargeboss/progress.dat`.
+`~/.bargeboss/progress.dat`. The catalog uses stable append-only level IDs; old
+three-level careers retain their records and initialize the fourth level empty.
+The board shows three cards per page, with twelve total unique stars available.
 
 The prototype is offline and silent. Audio, more stages, fleet/upgrades and store
 releases remain future work, tracked in the [concept backlog](https://github.com/koniho/bargeboss/issues).

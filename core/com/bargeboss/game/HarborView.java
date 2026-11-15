@@ -8,7 +8,19 @@ public final class HarborView {
         berths(g,p);
     }
     static void berths(Game g,Painter p) {
-        for(int i=0;i<3;i++) if(g.berthEnabled(i)) berth(g,p,i);
+        if(g.sharedBerthStage())emptyHolding(g,p);
+        for(int i=0;i<3;i++) if(g.berthDisplayEnabled(i)) berth(g,p,i);
+    }
+    /** A suggested parking area only: no snapping, mooring or collision changes. */
+    private static void emptyHolding(Game g,Painter p) {
+        float x=305,y=405,w=80,h=150;
+        int color=SoftCue.animated(g,0x6687bbaf);
+        for(int side=0;side<2;side++)for(int end=0;end<2;end++){
+            float xx=x+side*w,yy=y+end*h,sx=side==0?1:-1,sy=end==0?1:-1;
+            SoftCue.line(p,xx,yy,xx+sx*14,yy,1,color);
+            SoftCue.line(p,xx,yy,xx,yy+sy*18,1,color);
+        }
+        badge(p,"EMPTY HOLDING",345,396,7,color);
     }
     static void lamp(Painter p,float x,float y,int tick) {
         int glow=120+(int)(30*StrictMath.sin(tick*.06));
@@ -21,43 +33,47 @@ public final class HarborView {
         }
     }
     private static void berth(Game g,Painter p,int index) {
-        float x=Game.DOCK_X[index]-55,y=g.dockY(index)-53;
-        boolean ready=false,occupied=false,working=false,selected=false;
-        for(Body b:g.cargo) if(b!=null && b.active && b.berth==index) {
-            ready|=g.canTie(b); occupied|=b.lineAttached && !b.deliveryRecorded; working|=b.unloadingTicks>0 && !b.deliveryRecorded;
+        float width=g.dockHalfWidth()*2,x=g.dockX(index)-width*.5f,y=g.dockY(index)-53;
+        Body occupant=g.berthBlocker(index,null);
+        boolean ready=false,occupied=occupant!=null,empty=occupied && occupant.deliveryRecorded,working=false,selected=false;
+        for(Body b:g.cargo) if(b!=null && b.active && (g.sharedBerthStage() || b.berth==index)) {
+            ready|=g.canTie(b); working|=b.lineAttached && b.unloadingTicks>0 && !b.deliveryRecorded;
             selected|=g.workingCargo()==b;
         }
-        int color=occupied?0xff8ce7c2:ready || focused(g)==index?GOLD:(Game.COLORS[index]&0xffffff)|0x88000000;
-        p.rect(x,y,110,106,(selected?0x27000000:0x14000000)|(color&0xffffff));
+        int color=empty?GOLD:occupied?0xff8ce7c2:ready || focused(g)==index?GOLD:(Game.COLORS[index]&0xffffff)|0x88000000;
+        p.rect(x,y,width,106,(selected?0x27000000:0x14000000)|(color&0xffffff));
         color=SoftCue.animated(g,color);
         int run=(g.visualTicks/6)%16;
-        for(int k=0;k<110;k+=16) {
-            float xx=x+(k+run)%110;
-            SoftCue.line(p,xx,y,Math.min(xx+8,x+110),y,1,color); SoftCue.line(p,xx,y+104,Math.min(xx+8,x+110),y+104,1,color);
+        for(int k=0;k<width;k+=16) {
+            float xx=x+(k+run)%width;
+            SoftCue.line(p,xx,y,Math.min(xx+8,x+width),y,1,color); SoftCue.line(p,xx,y+104,Math.min(xx+8,x+width),y+104,1,color);
         }
         for(int k=0;k<106;k+=16) {
             float yy=y+(k+run)%106;
-            SoftCue.line(p,x,yy,x,Math.min(yy+8,y+106),1,color); SoftCue.line(p,x+108,yy,x+108,Math.min(yy+8,y+106),1,color);
+            SoftCue.line(p,x,yy,x,Math.min(yy+8,y+106),1,color); SoftCue.line(p,x+width,yy,x+width,Math.min(yy+8,y+106),1,color);
         }
         for(int side=0;side<2;side++) for(int end=0;end<2;end++) {
-            float xx=x+side*110, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
+            float xx=x+side*width, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
             SoftCue.line(p,xx,yy,xx+sx*15,yy,1,color); SoftCue.line(p,xx,yy,xx,yy+sy*15,1,color);
         }
-        SoftCue.caption(p,""+g.berthLetter(index),x+75,y+53,22,0x6656bac1);
-        SoftCue.caption(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
-        String role=g.orderStage()?(g.berthLetter(index)-'A'<g.delivered?"DONE ":g.nextRequiredBerth()==index?"NEXT ":"LATER "):"BERTH ";
-        String badge=(working?"UNLOAD ":occupied?"TYING ":role)+g.berthLetter(index);
-        badge(p,badge,x+95,y+53,8,color);
-        float bank=index==1?433:143;
+        SoftCue.caption(p,g.sharedBerthStage()?"SLIP":""+g.berthLetter(index),x+width*.68f,y+53,g.sharedBerthStage()?12:22,0x6656bac1);
+        if(!g.orderStage())SoftCue.caption(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
+        String role=g.depthStage() && g.nextRequiredBerth()==index?"DEEP FIRST ":"BERTH ";
+        String name=g.sharedBerthStage()?"SLIP":""+g.berthLetter(index);
+        String badge=empty?"EMPTY":(working?"UNLOAD ":occupied?"OCCUPIED ":role)+name;
+        // Keep narrow-slip labels beyond the hull footprint instead of beneath the empty vessel.
+        badge(p,badge,g.orderStage()?g.dockX(index):x+width*.86f,g.orderStage()?y-14:y+53,8,color);
+        boolean right=g.berthRight(index);float bank=right?433:143;
         Painter shore=g.tutorial!=null && p instanceof RiverPainter?
                 new RiverPainter(GroundArt.raisedCanvas(g,((RiverPainter)p).canvas()),g.layout.camera):p;
         shore.rect(bank,g.dockY(index)-52,24,3,DARK);
         for(int i=0;i<3;i++) shore.rect(bank+i*8,g.dockY(index)-52,4,3,GOLD);
-        if(working) lamp(shore,index==1?429:171,g.dockY(index)+40,g.visualTicks*3);
+        if(working) lamp(shore,right?429:171,g.dockY(index)+40,g.visualTicks*3);
     }
     private static int focused(Game g) {
-        if(g.orderStage())return g.nextRequiredBerth();
-        Body held=g.heldCargo(); if(held!=null && !held.lineAttached) return held.berth;
+        if(g.sharedBerthStage())return 2;
+        if(g.depthStage())return g.nextRequiredBerth();
+        Body held=g.heldCargo(); if(held!=null && !held.lineAttached && !held.deliveryRecorded) return held.berth;
         if(g.selected>=0) { Body b=g.cargo[g.selected]; if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth; }
         for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth;
         return -1;
@@ -73,9 +89,11 @@ public final class HarborView {
         // The early lessons teach a touch target, before the berth destination.
         if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.CONNECT)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
-        boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) ready|=g.canTie(b);
+        Body blocker=g.berthBlocker(berth,null);
+        if(blocker!=null && blocker.deliveryRecorded){destination(g,canvas,blocker.x,blocker.y,"TOW EMPTY CLEAR");return;}
+        boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && (g.sharedBerthStage() || b.berth==berth)) ready|=g.canTie(b);
         if(ready) return;
-        destination(g,canvas,Game.DOCK_X[berth],g.dockY(berth),"BERTH "+g.berthLetter(berth));
+        destination(g,canvas,g.dockX(berth),g.dockY(berth),g.sharedBerthStage()?"UNLOADING SLIP":"BERTH "+g.berthLetter(berth));
     }
     private static void destination(Game g,Painter canvas,float wx,float wy,String label) {
         RiverCamera c=g.layout.camera;

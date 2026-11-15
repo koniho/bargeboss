@@ -19,23 +19,22 @@ The normal pushing, lasso, parallel-to-shore mooring and three-second unloading
 mechanics apply. A load counts only after unloading completes, not on entering
 the berth or catching its bollard. The level ends on the second delivery.
 
-## Right Order — level 2
+## Shared Slip — level 2
 
-Deliver three barges in the displayed order **A, B, C**. The internal berth IDs
-are `{2,0,1}`; the player-facing letters always come from `Game.berthLetter`.
-The feed order is deliberately `{1,2,0}`: C, A, then B. The first two feeder
-lanes bring C and A, and B waits for a free feeder lane. Clearing a drop slot
-and choosing which barge to work first are part of the challenge.
+Unload three barges through one narrow unloading slip. All cargo assignments use
+its same berth at world `(199,480)`. The slip is 58 units wide, with a solid quay
+on its eastern side and a single opening to the south at Y=570. Aligned vessels
+fit one at a time; a barge occupying the berth physically blocks the next load.
+There is no letter-sequence eligibility rule. The order comes from moving real
+hulls through the constrained space.
 
-`Game.nextRequiredBerth()` and `correctOrder()` are the shared ordering authority.
-Tie eligibility, catch validation, mooring advancement and delivery accounting
-reject later berths until their turn. Being physically inside the right berth
-does not override the required delivery order. A wrong-order attempt leaves the
-load available for later and reports the next required letter.
-
-The HUD shows the next letter and full A-B-C sequence. Berth cues show NEXT,
-LATER or DONE; the destination arrow follows the required berth even when a
-different load was fed first. The third valid completed unload ends the level.
+After each unload, drag the empty barge to the tug and release to cast a towline.
+The shore line releases only when the towline successfully catches; a missed
+throw leaves the barge safely secured. Pull the empty south through the mouth,
+then around the quay into the open water east of it. The translucent **EMPTY
+HOLDING** outline suggests a place to leave empties; it has no automatic snapping,
+mooring or collision behavior. Make room before bringing the next load inside.
+The third completed unload ends the level; clearing that final empty is optional.
 
 ## Lock Run — level 3
 
@@ -73,15 +72,40 @@ filling turbulence communicate the cycle. The water-level display is a visual
 abstraction: vessel movement and collision retain one fixed navigation plane;
 the game does not independently raise hull sprites or rebuild wake coordinates.
 
+## Deep First — level 4
+
+Three berths occupy one dead-end, single-file channel. Berth A is deepest at
+`(199,220)`, B is at `(199,350)` and C is closest to the mouth at `(199,480)`.
+Their internal IDs remain `{2,0,1}`. Solid quay geometry leaves the same 58-unit
+passage used by the slip. An outer barge blocks access to the inner berths,
+including after its cargo has been unloaded. Work deepest first, or rearrange
+barges to make a clear route. Wrong-order arrivals are physically recoverable by
+towing them back out; the game never rejects a tie simply because its letter is
+later in the suggested order. `nextRequiredBerth()` supplies a planning cue;
+`correctOrder()` does not impose a sequence gate.
+
+`PhysicalBerths` supplies the same quay rectangles to collision, navigation,
+water clipping, shoreline cutouts and scenery drawing. Berth outlines use the
+stage's actual half-width. The first two feeder lanes bring A and B; C waits for
+a free lane. The third completed unload ends the stage.
+
 ## Shared completion, cargo and rewards
 
 `Game.goalComplete()` and `goalFailed()` replace the old global shift deadline.
-The feeder queue is finite: two, three and two loads respectively. Cargo no
+The feeder queue is finite: two, three, two and three loads respectively. Cargo no
 longer expires; a barge can wait while the player works another load. Existing
 `SHIFT_TICKS`, `shiftTicks()` and `contractSeconds()` values are retained only
 where legacy tooling needs a bounded replay budget or age scale; they are not
 player deadlines. They must not be restored as finish/expiry conditions in new
 gameplay or HUD code.
+
+Unloading records delivery once without deactivating or deleting the hull. The
+empty keeps its position, collision, mooring and visible empty hold. It cannot
+score again or resume unloading. Secured loaded barges remain unavailable for
+towing; completed empty barges accept the normal drag-to-tug or drag-to-barge
+tow gesture. A successful catch transfers the attachment from the shore line to
+the towline. Tapping a linked empty releases its tow as with any other barge.
+This applies to all unloading stages and tutorial deliveries.
 
 Completing a level with a working tug earns bronze and unlocks the next level.
 No lost loads and at least 80% hull each add one star. Unique career stars award
@@ -90,8 +114,32 @@ the stored best result without duplicating career stars. Hull depletion remains
 a failure condition. Practice neither awards stars nor changes the suspended
 career attempt.
 
+The append-only `Challenges` catalog defines titles, quotas, kinds and menu copy.
+IDs 0–2 remain stable and the deep channel is appended at ID 3. The challenge
+board paginates three cards at a time; counts, page totals, save slots and the
+maximum star total derive from the catalog. The `BB1` save reader accepts old
+three-entry careers and initializes the new fourth entry to zero, preserving
+records and selection. Existing rank thresholds are unchanged.
+
 `LockTest` validates the timed phase cycle, hull clearance, failure and gate
 collision behavior. Goal and bounded replay tests cover finite dispatch,
-no-expiry behavior, required order and immediate completion. `GoalLevelReview`
+no-expiry behavior, persistent empties, physical occupancy and immediate completion. `GoalLevelReview`
 exports actual shared title, selection, delivery progress and lock-phase views
-under `out/goal-*.png`; `preview.sh` includes it.
+under `out/goal-*.png`. `BerthSwapReview` exports locked/unlocked second-page
+menus, occupied shared slips and all deep-channel berths at 960 and 1333 widths.
+`preview.sh` includes both tools.
+
+## Adding another level
+
+Append a `Definition` to `Challenges.LEVELS`; never reorder or reuse a published
+ID. A new level can reuse an existing kind, while a new puzzle geometry needs
+its own shared rules and footprint source. Keep berth positions, collision,
+route planning, water masks, shore cutouts and scenery on that same source.
+Catalog entries supply quotas and replay budgets; the latter are never timers.
+Menu pages and save migration grow with the catalog automatically.
+
+For every new entry, add a bounded replay using actual player gestures, verify
+completion and recovery from the intended obstacle, and capture the actual
+renderer at both reference and wide landscape sizes. Extend geometry-specific
+collision and occlusion checks when the footprint changes. Run the shared JVM
+and Android ART checks; native iOS parity remains part of the macOS workflow.

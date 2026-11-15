@@ -9,16 +9,16 @@ public final class WaterEffectsPainter implements Painter {
     private static final float LIMIT=100000;
     private static final float[][] RIVER={{Physics.LEFT,-LIMIT,Physics.RIGHT,LIMIT}};
     private static final float[][] CHANNEL=partition(TrainingChannel.WATER_RECTANGLES,null);
-    private static final float[][] PIERS=partition(RIVER,HarborGeometry.PIERS);
+    private static final float[][] SHARED=partition(RIVER,PhysicalBerths.solids(PhysicalBerths.SHARED)),DEEP=partition(RIVER,PhysicalBerths.solids(PhysicalBerths.DEEP));
     private final Painter target;
     private final float[][] water;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;water=g.tutorial!=null?CHANNEL:g.orderStage()?PIERS:RIVER;
+        this.target=target;water=g.tutorial!=null?CHANNEL:g.sharedBerthStage()?SHARED:g.depthStage()?DEEP:RIVER;
     }
     public static boolean contains(Game g,float x,float y) {
         if(g.tutorial!=null) return TrainingChannel.contains(x,y);
         if(x<Physics.LEFT || x>Physics.RIGHT) return false;
-        if(g.orderStage()) for(float[] r:HarborGeometry.PIERS)
+        if(g.orderStage()) for(float[] r:PhysicalBerths.solids(g.challengeId))
             if(x>r[0] && x<r[2] && y>r[1] && y<r[3]) return false;
         return true;
     }

@@ -9,15 +9,15 @@ public final class CareerTest {
         System.out.println(assertions+" challenge, rank and progress persistence assertions passed");
     }
     private static void challengeRules() {
-        check(Challenges.COUNT==3 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
-        check(Challenges.quota(1)==3 && Challenges.quota(2)==2,"ordered berthing uses three loads; lock passage uses two");
+        check(Challenges.COUNT==4 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
+        check(Challenges.quota(1)==3 && Challenges.quota(2)==2 && Challenges.quota(3)==3,"shared slip and deep channel use three loads; lock passage uses two");
         check(Challenges.stars(0,1,0,100)==0 && Challenges.stars(0,2,0,0)==0,"incomplete goal or wreck earns no stars");
         check(Challenges.stars(0,2,1,79)==1 && Challenges.stars(0,2,0,79)==2
                 && Challenges.stars(0,2,1,80)==2 && Challenges.stars(0,2,0,80)==3,"stars reward completion, safe cargo and hull condition");
         Game g=new Game();g.reset();Body waiting=new Body(90,2,260,730,0);waiting.age=g.contractSeconds()+400;g.cargo[0]=waiting;g.step();
         check(waiting.active && g.lost==0 && g.mode==Game.PLAY,"cargo never expires while a goal remains unfinished");
-        g=quickTurn();Body early=new Body(1,1,Game.DOCK_X[1],g.dockY(1),0),first=new Body(2,2,Game.DOCK_X[2],g.dockY(2),0);
-        check(g.berthLetter(early.berth)=='C' && g.nextRequiredBerth()==2 && !g.canTie(early) && g.canTie(first),"ordered challenge visibly requires A and refuses an early C tie-up");
+        g=quickTurn();Body early=new Body(1,1,g.dockX(1),g.dockY(1),-(float)Math.PI/2),first=new Body(2,2,g.dockX(2),g.dockY(2),-(float)Math.PI/2);
+        check(g.sharedBerthStage() && g.canTie(early) && g.canTie(first),"an empty shared slip accepts any load rather than a scripted letter order");
     }
     private static void uniqueRewards() {
         Career career=new Career();
@@ -33,12 +33,15 @@ public final class CareerTest {
         check(career.bestStars(0)==3 && career.bestScore(0)==150 && career.totalStars()==3,"better score cannot lower stars");
         career.record(1,3,200); check(career.rank()==3 && career.totalStars()==6,"six unique stars earn Harbor Hero");
         career.record(2,3,300); check(career.rank()==4 && career.stripes()==4 && career.rankTitle().equals("CAPTAIN QUACK"),"nine unique stars earn Captain Quack");
-        check(!career.unlocked(-1) && !career.unlocked(3) && !career.select(99),"challenge indices are bounded");
+        check(!career.unlocked(-1) && !career.unlocked(Challenges.COUNT) && !career.select(99),"challenge indices are bounded");
     }
     private static void persistence() {
         Career source=new Career(); source.record(0,3,1700); source.record(1,2,2000); source.select(2);
         Career restored=new Career(); check(restored.restore(source.save()),"valid career restores");
         check(restored.save().equals(source.save()) && restored.selectedChallenge()==2 && restored.version()==0,"save round trip retains selection, stars and scores without dirtying host");
+        Career legacy=new Career();
+        check(legacy.restore("BB1|2|3,1700|2,2000|1,900") && legacy.bestStars(3)==0 && legacy.unlocked(3),"three-level careers retain progress and append an empty fourth level");
+        check(legacy.select(3) && new Career().restore(legacy.save()),"newly unlocked page-two level persists in expanded saves");
         String before=restored.save();
         String[] invalid={null,"","BB2|0|0,0|0,0|0,0","BB1|3|3,100|3,100|3,100","BB1|-1|0,0|0,0|0,0",
                 "BB1|0|4,0|0,0|0,0","BB1|0|3,-1|0,0|0,0","BB1|0|3,1000000000|0,0|0,0",
@@ -110,17 +113,30 @@ public final class CareerTest {
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[2]); ReplayInput.tap(game,Layout.CHALLENGE_START);
         check(game.challengeId==2 && game.quota()==2 && game.lockStage() && game.mode==Game.PLAY,"board card selection starts the lock passage");
         finishFixture(game,game.quota(),0,100,1200); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
-        check(game.mode==Game.FINISH && game.challengeId==2,"final challenge has no out-of-range next shift");
-        ReplayInput.tap(game,Layout.FINISH_CHALLENGES); ReplayInput.tap(game,Layout.BACK);
+        check(game.mode==Game.PLAY && game.challengeId==3 && game.depthStage(),"lock completion unlocks the appended deep-channel level");
+        finishFixture(game,game.quota(),0,100,1300);ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
+        check(game.mode==Game.FINISH && game.challengeId==3,"final catalog level has no out-of-range next level");
+        ReplayInput.tap(game,Layout.FINISH_CHALLENGES);
+        check(game.challengePage==1,"challenge board opens on the selected level page");
+        ReplayInput.tap(game,Layout.CHALLENGE_PREV_PAGE);check(game.challengePage==0,"previous page reveals the original three levels");
+        ReplayInput.tap(game,Layout.CHALLENGE_NEXT_PAGE);check(game.challengePage==1,"next page reveals appended levels");
+        ReplayInput.tap(game,Layout.CHALLENGE_CARDS[0]);check(game.challengeId==3,"page-two card maps to its stable catalog ID");
+        ReplayInput.tap(game,Layout.CHALLENGE_CARDS[1]);check(game.challengeId==3,"empty page slots cannot select nonexistent levels");
+        ReplayInput.tap(game,Layout.BACK);
         check(game.mode==Game.TITLE,"challenge board back returns to title");
     }
     private static void boundedChallenges() {
-        Career unlocks=new Career(); unlocks.record(0,1,1); unlocks.record(1,1,1);
+        Career unlocks=new Career(); unlocks.record(0,1,1); unlocks.record(1,1,1); unlocks.record(2,1,1);
         for(int id=0;id<Challenges.COUNT;id++) {
             Game game=new Game(); game.restoreProgress(unlocks.save()); game.selectChallenge(id); game.reset();
             for(int i=0;i<game.shiftTicks() && game.mode==Game.PLAY;i++) { ReplayInput.work(game); game.step(); }
             check(game.mode==Game.FINISH && game.ticks<game.shiftTicks(),"bounded player completes the goal before its replay bound "+id);
             check(game.goalComplete() && game.goalProgress()>=game.quota() && game.earnedStars>0,"bounded player can complete challenge "+id+": "+game.goalProgress()+" goals, quota "+game.quota()+", hull "+game.hull);
+            if(!game.lockStage()){
+                int empties=0;for(Body b:game.cargo)if(b!=null && b.active && b.deliveryRecorded)empties++;
+                check(empties==game.quota(),"all delivered hulls survive successful level completion "+id);
+            }
+            if(game.sharedBerthStage())check(game.towReleases>=2,"actual tow catches and release gestures clear the shared slip for both following loads");
             check(game.career.bestStars(id)>=game.earnedStars && game.career.bestScore(id)==game.score,"actual challenge completion records earned career rewards");
             System.out.println(game.challengeTitle()+": "+game.goalProgress()+" goals, score "+game.score+", hull "+game.hull+", "+game.earnedStars+" stars");
         }

@@ -66,7 +66,7 @@ public final class ScreenView {
         VisualStyle.panel(rank,28,536,545,40,0xe8101c30);
         captainBadge(rank,52,556,.37f,g.career.stripes());
         text(rank,g.career.rankTitle(),77,548,13,PAPER);
-        text(rank,g.career.totalStars()+" / 9 CAREER STARS",367,549,10,GOLD);
+        text(rank,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",367,549,10,GOLD);
     }
 
     private static void logo(Painter p,String word,float x,float y,float size,int fill) {
@@ -171,7 +171,7 @@ public final class ScreenView {
         captainBadge(p,174,211,1.1f,g.career.stripes());
         center(p,g.career.rankTitle(),174,280,14,PAPER);
         center(p,g.rankPromoted?"PROMOTED, CAPTAIN!":"CAPTAIN'S RANK",174,306,10,g.rankPromoted?GOLD:MUTED);
-        center(p,g.career.totalStars()+" / 9 CAREER STARS",174,329,10,GOLD);
+        center(p,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",174,329,10,GOLD);
         center(p,"PERSONAL BEST",784,183,11,MUTED);
         center(p,""+g.career.bestScore(g.challengeId),784,207,26,GOLD);
         for(int i=0;i<3;i++) star(p,748+i*36,264,12,g.career.bestStars(g.challengeId)>i?GOLD:0xff465366);
@@ -184,28 +184,33 @@ public final class ScreenView {
         if(next) button(g,p,Layout.NEXT_CHALLENGE,"NEXT LEVEL",true);
     }
     private static String goalSummary(int id) {
-        return id==0?"2 BARGES / OPPOSITE BANKS":id==1?"3 BARGES / BERTH IN ORDER":"2 BARGES / THROUGH THE LOCK";
+        return Challenges.summary(id);
     }
     /** Persistent career board; levels finish when their displayed goal is complete. */
     public static void challenges(Game g,Painter p) {
         harbor(g,p); p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
         Painter screen=p; p=centered(g,p);
         center(p,"CAPTAIN'S CHALLENGES",480,37,28,PAPER);
-        center(p,"ONE INDUSTRIAL REACH. THREE WAYS TO MASTER IT.",480,79,11,MUTED);
+        center(p,Challenges.COUNT+" HARBOR CHALLENGES. PICK YOUR NEXT JOB.",480,79,11,MUTED);
         captainBadge(p,85,130,.7f,g.career.stripes());
         text(p,g.career.rankTitle(),125,109,19,GOLD);
-        text(p,g.career.totalStars()+" / 9 UNIQUE STARS",126,140,11,PAPER);
+        text(p,g.career.totalStars()+" / "+Challenges.maxStars()+" UNIQUE STARS",126,140,11,PAPER);
         text(p,"BRONZE OPENS THE NEXT LEVEL",529,113,12,GOLD);
         text(p,"BETTER STARS EARN CAPTAIN STRIPES",529,140,10,MUTED);
-        for(int i=0;i<Challenges.COUNT;i++) {
-            Layout.Box card=Layout.CHALLENGE_CARDS[i];
+        int page=Math.max(0,Math.min(Challenges.pageCount()-1,g.challengePage));
+        for(int slot=0;slot<Layout.CHALLENGE_CARDS.length;slot++) {
+            int i=page*Challenges.PAGE_SIZE+slot;
+            if(!Challenges.valid(i))continue;
+            Layout.Box card=Layout.CHALLENGE_CARDS[slot];
             boolean open=g.career.unlocked(i),selected=g.challengeId==i;
             VisualStyle.panel(p,card.x,card.y,card.w,card.h,selected?0xff294656:open?0xff1c3045:0xff162334);
             p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
             center(p,"0"+(i+1)+(open?" / CALUMET":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
             center(p,Challenges.title(i),card.centerX(),card.y+47,20,open?PAPER:MUTED);
-            center(p,i==0?"2 BARGES / 2 BANKS":i==1?"ORDER A - B - C":"TIMED LOCK GATES",card.centerX(),card.y+84,12,open?GOLD:MUTED);
-            center(p,i==2?"NO OVERALL TIME LIMIT":"FINISH THE GOAL TO ADVANCE",card.centerX(),card.y+105,8,MUTED);
+            String goal=Challenges.cardGoal(i);
+            float goalSize=Math.min(12,12*(card.w-20)/Lettering.width(goal,12));
+            center(p,goal,card.centerX(),card.y+84,goalSize,open?GOLD:MUTED);
+            center(p,Challenges.cardHint(i),card.centerX(),card.y+105,8,MUTED);
             if(open) {
                 for(int j=0;j<3;j++) star(p,card.centerX()-42+j*42,card.y+132,17,g.career.bestStars(i)>j?GOLD:0xff465366);
                 center(p,"BEST "+g.career.bestScore(i),card.centerX(),card.y+165,12,MUTED);
@@ -217,10 +222,16 @@ public final class ScreenView {
                 center(p,Challenges.title(i-1),card.centerX(),card.y+193,12,PAPER);
             }
         }
-        center(p,Challenges.description(g.challengeId),480,444,13,PAPER);
+        boolean selectionHere=Challenges.pageFor(g.challengeId)==page;
+        center(p,selectionHere?Challenges.description(g.challengeId):"EARN BRONZE TO OPEN THE NEXT HARBOR JOB.",480,444,13,PAPER);
         center(p,"BRONZE: GOAL / SILVER: NO LOST LOADS OR 80% HULL / GOLD: BOTH",480,475,10,MUTED);
         button(g,p,Layout.BACK,"BACK",false);
-        button(g,p,Layout.CHALLENGE_START,"START LEVEL",true);
+        button(g,p,Layout.CHALLENGE_START,selectionHere?"START LEVEL":"SELECT LEVEL",selectionHere);
+        if(Challenges.pageCount()>1){
+            if(page>0)button(g,p,Layout.CHALLENGE_PREV_PAGE,"PREV",false);
+            if(page+1<Challenges.pageCount())button(g,p,Layout.CHALLENGE_NEXT_PAGE,"NEXT",false);
+            center(p,"PAGE "+(page+1)+" / "+Challenges.pageCount(),480,539,11,MUTED);
+        }
         haptics(g,screen);
     }
     private static void lock(Painter p,float x,float y) {

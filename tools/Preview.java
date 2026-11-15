@@ -40,8 +40,8 @@ public final class Preview {
         ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,b.x+65,b.y-60); capture(g,"aim-miss");
         ReplayInput.up(g,b.x+65,b.y-60); steps(g,Game.ROPE_FLIGHT_TICKS+8); capture(g,"retracting");
         steps(g,Game.ROPE_RETURN_TICKS-8);
-        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); capture(g,"aiming");
-        ReplayInput.up(g,Game.TIE_X[2]+8,Game.DOCK_Y[2]-8); steps(g,9); capture(g,"lasso");
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,g.bollardX(b.berth)+8,g.bollardY(b.berth)-8); capture(g,"aiming");
+        ReplayInput.up(g,g.bollardX(b.berth)+8,g.bollardY(b.berth)-8); steps(g,9); capture(g,"lasso");
         steps(g,9); capture(g,"bollard-hit"); steps(g,4);capture(g,"line-snap");
         steps(g,8);capture(g,"tying-up");
         steps(g,24);capture(g,"drawing-alongside");

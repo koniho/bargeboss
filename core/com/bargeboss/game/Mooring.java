@@ -13,6 +13,7 @@ public final class Mooring {
         return b.lineAttached && b.mooringTicks>=TIGHTEN_TICKS && b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS;
     }
     public static void step(Game g,Body b) {
+        if(g.berthBlocker(b.berth,b)!=null)return;
         if(b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS) b.mooringTicks++;
         b.dockTime=1.2f;
         if(b.mooringTicks<=TIGHTEN_TICKS) return;
@@ -20,13 +21,13 @@ public final class Mooring {
         float eased=t*t*(3-2*t);
         float heading=(float)(StrictMath.sin(b.mooringAngle)>=0?Math.PI/2:-Math.PI/2);
         b.angle=Physics.angle(b.mooringAngle+Physics.angle(heading-b.mooringAngle)*eased);
-        float targetX=b.berth==1?Physics.RIGHT-b.radius-10:Physics.LEFT+b.radius+10;
+        float targetX=g.orderStage()?g.dockX(b.berth):g.berthRight(b.berth)?Physics.RIGHT-b.radius-10:Physics.LEFT+b.radius+10;
         b.x=b.mooringX+(targetX-b.mooringX)*eased;
         b.y=b.mooringY+(g.dockY(b.berth)-b.mooringY)*eased;
         // Keep the complete rotating hull in the berth, even when caught near its edge.
         float ex=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(b.angle));
         float ey=b.radius+b.half*(float)StrictMath.abs(StrictMath.sin(b.angle));
-        float minX=Math.max(Physics.LEFT+ex,Game.DOCK_X[b.berth]-55+ex),maxX=Math.min(Physics.RIGHT-ex,Game.DOCK_X[b.berth]+55-ex);
+        float minX=Math.max(Physics.LEFT+ex,g.dockX(b.berth)-g.dockHalfWidth()+ex),maxX=Math.min(Physics.RIGHT-ex,g.dockX(b.berth)+g.dockHalfWidth()-ex);
         float minY=g.dockY(b.berth)-53+ey,maxY=g.dockY(b.berth)+53-ey;
         // A moving throw may catch just outside the berth. Reduce its initial
         // overshoot smoothly instead of teleporting the hull back inside.

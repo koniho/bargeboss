@@ -4,13 +4,29 @@ package com.bargeboss.game;
 public final class MooringAccessTest {
     private static int checks;
     private static void check(boolean ok,String why) { checks++;if(!ok) throw new AssertionError(why); }
+    private static void narrow(int stage,int berth){
+        for(float width:new float[]{960,1333.3334f})for(float heading:new float[]{-(float)Math.PI/2,(float)Math.PI/2}){
+            Game g=new Game();g.challengeId=stage;g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            Body b=new Body(1,berth,g.dockX(berth),g.dockY(berth)+10,heading);g.cargo[0]=b;
+            g.tug.x=PhysicalBerths.CENTER;g.tug.y=b.y+95;
+            g.layout=Layout.focused(width,600,b.x,b.y,1.5f,width*.5f,330);
+            check(g.inDock(b) && g.canTie(b),"a complete aligned hull in the narrow berth can be lassod");
+            b.angle=0;check(!g.canTie(b),"a sideways barge cannot winch through concrete walls");b.angle=heading;
+            ReplayInput.down(g,b.x,b.y);check(g.ropeDragging && g.heldCargo()==b,"narrow berth arms the same native lasso gesture");
+            ReplayInput.move(g,g.bollardX(berth),g.bollardY(berth));ReplayInput.up(g,g.bollardX(berth),g.bollardY(berth));
+            for(int tick=0;tick<Game.ROPE_FLIGHT_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS;tick++)g.step();
+            check(b.active && b.deliveryRecorded && b.lineAttached && g.delivered==1,"narrow berth unloads once and retains its moored empty hull");
+            int score=g.score;for(int tick=0;tick<60;tick++)g.step();
+            check(g.delivered==1 && g.score==score,"persistent empty cannot unload or score again");
+        }
+    }
     public static void run() {
-        for(int stage=0;stage<3;stage++) for(int berth=0;berth<3;berth++) {
+        for(int stage=0;stage<Challenges.COUNT;stage++) for(int berth=0;berth<3;berth++) {
             Game probe=new Game();probe.challengeId=stage;probe.reset();if(!probe.berthEnabled(berth)) continue;
+            if(probe.orderStage()){narrow(stage,berth);continue;}
             for(float width:new float[]{960,1333.3334f}) for(int heading=0;heading<8;heading++) for(float offset:new float[]{-40,40}) {
                 Game g=new Game();g.challengeId=stage;g.reset();
-                // Advance only the ordered-level fixture to this berth's legal turn.
-                int deliveredBefore=g.orderStage()?(berth==2?0:berth==0?1:2):0;
+                int deliveredBefore=0;
                 g.delivered=deliveredBefore;
                 for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
                 Body b=new Body(1,berth,0,g.dockY(berth)+offset,(float)(heading*Math.PI/4));
@@ -33,7 +49,7 @@ public final class MooringAccessTest {
                 }
                 check(g.inDock(b) && b.unloadingTicks==1,"crew waits until the shore catch is fully aligned");
                 for(int i=1;i<Game.UNLOAD_TICKS;i++) g.step();
-                check(g.delivered==deliveredBefore+1 && !b.active,"shore catch unloads and scores exactly once");
+                check(g.delivered==deliveredBefore+1 && b.active && b.deliveryRecorded,"shore catch unloads and scores exactly once");
             }
         }
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();

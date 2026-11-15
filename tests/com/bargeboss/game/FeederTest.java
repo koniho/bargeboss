@@ -15,7 +15,7 @@ public final class FeederTest {
             check(cargo(g)==0,"NPC cargo cannot score or age before handoff");
             steps(g,105);
             check(cargo(g)==g.feeders.length && g.feederDrops()==g.feeders.length,"both slots hand off exactly one barge");
-            check(g.feeders[0].shout.equals(id==2?"TO THE LOCK!":id==1?"ZONE C!":"ZONE A!") && g.feeders[1].shout.equals(id==2?"TO THE LOCK!":id==1?"ZONE A!":"ZONE B!"),"each captain calls the actual destination");
+            check(g.feeders[0].shout.equals(id==2?"TO THE LOCK!":"ZONE A!") && g.feeders[1].shout.equals(id==2?"TO THE LOCK!":"ZONE B!"),"each captain calls the actual destination");
             check(g.cargo[0].age<.1f && g.cargo[1].age<.1f,"cargo age starts at handoff");
             float y=g.feeders[0].boat.y; steps(g,30);
             check(g.feeders[0].boat.y>y && g.feeders[0].drops==1,"pusher backs out without dropping duplicates");
@@ -45,12 +45,14 @@ public final class FeederTest {
         g.startTutorial(); Game practice=g.activeGame(); steps(g,240);
         check(practice.feederDrops()==0,"practice does not feed extra cargo into lessons");
         g.reset(); check(g.feeders[0].drops==0 && !g.feeders[0].blocked && cargo(g)==0,"restart clears queues, warnings and old loads");
-        g=new Game();g.challengeId=1;g.reset();steps(g,2100);
-        check(g.feederDrops()==2 && g.feeders[0].phase==Feeder.IDLE && g.feeders[1].phase==Feeder.IDLE,
-                "third ordered delivery waits for a free lane without sealing the tug's stern approach");
-        g.cargo[0].y=g.cargo[0].tiedY=580;steps(g,180);
-        check(g.feederDrops()==3 && g.cargo[2].berth==0,"clearing either lane admits the final B load");
-        steps(g,1800);check(g.feederDrops()==3 && cargo(g)==3,"ordered level supplies exactly three loads and none expire");
+        for(int id:new int[]{1,3}){
+            g=new Game();g.challengeId=id;g.reset();steps(g,2100);
+            check(g.feederDrops()==2 && g.feeders[0].phase==Feeder.IDLE && g.feeders[1].phase==Feeder.IDLE,
+                    "third puzzle delivery waits for a free lane without sealing the tug's stern approach");
+            g.cargo[0].y=g.cargo[0].tiedY=580;steps(g,180);
+            check(g.feederDrops()==3 && g.cargo[2].berth==1,"clearing either lane admits the final C load");
+            steps(g,1800);check(g.feederDrops()==3 && cargo(g)==3,"three-load puzzle supplies exactly three loads and none expire");
+        }
         for(int id:new int[]{0,2}){
             g=new Game();g.challengeId=id;g.reset();steps(g,2100);
             check(g.feederDrops()==2 && cargo(g)==2 && g.feeders[0].phase==Feeder.IDLE && g.feeders[1].phase==Feeder.IDLE,

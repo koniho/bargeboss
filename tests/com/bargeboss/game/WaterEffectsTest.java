@@ -30,13 +30,17 @@ public final class WaterEffectsTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha) {throw new AssertionError("Unclipped sprite");}
     }
     public static void run() {
-        Game g=new Game();g.challengeId=1;g.reset();
-        Capture pier=new Capture(g);Painter p=new WaterEffectsPainter(g,pier);
-        p.rect(100,200,400,650,0xffffffff);
-        check(Math.abs(pier.area-(260*650-49*74-42*45))<.01,"solid piers subtracted exactly without double alpha");
-        p.line(370,235,445,340,18,0xffffffff);p.circle(382,275,28,0xffffffff);
-        // Both endpoints are water, but the diagonal crosses the finger pier.
-        p.line(370,250,420,335,7,0xffffffff);
+        Game g;Painter p;
+        for(int stage:new int[]{1,3}){
+            g=new Game();g.challengeId=stage;g.reset();
+            Capture pier=new Capture(g);p=new WaterEffectsPainter(g,pier);
+            p.rect(100,100,400,750,0xffffffff);
+            int wet=0;
+            for(int x=100;x<500;x++)for(int y=100;y<850;y++)if(WaterEffectsPainter.contains(g,x+.5f,y+.5f))wet++;
+            check(Math.abs(pier.area-wet)<.1,"physical berth quays and dead-end cap are subtracted exactly without double alpha");
+            p.line(180,480,350,480,18,0xffffffff);p.circle(228,480,28,0xffffffff);
+            p.line(199,300,350,620,7,0xffffffff);
+        }
         g=new Game();g.startTutorial();g=g.activeGame();g.tutorial.lesson=Tutorial.CHANNEL;
         Capture channel=new Capture(g);p=new WaterEffectsPainter(g,channel);
         p.rect(TrainingChannel.BASIN_LEFT-20,200,Physics.RIGHT-TrainingChannel.BASIN_LEFT+40,650,0xffffffff);

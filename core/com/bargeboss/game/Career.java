@@ -44,14 +44,17 @@ public final class Career {
     }
     /** Invalid or unsupported input is ignored atomically; no partial unlocks survive corruption. */
     public boolean restore(String value) {
-        if(value==null || value.length()>160) return false;
+        if(value==null || value.length()>32+Challenges.COUNT*24) return false;
         String[] parts=value.split("\\|",-1);
-        if(parts.length!=Challenges.COUNT+2 || !parts[0].equals("BB1")) return false;
-        int nextSelected=number(parts[1],Challenges.COUNT-1);
+        // Historical BB1 saves contain three levels. Appending catalog entries adds
+        // empty slots without discarding earned stripes or reinterpreting stable IDs.
+        int stored=parts.length-2;
+        if(stored<3 || stored>Challenges.COUNT || !parts[0].equals("BB1")) return false;
+        int nextSelected=number(parts[1],stored-1);
         if(nextSelected<0) return false;
         int[] nextStars=new int[Challenges.COUNT],nextScores=new int[Challenges.COUNT];
         boolean predecessorComplete=true;
-        for(int i=0;i<Challenges.COUNT;i++) {
+        for(int i=0;i<stored;i++) {
             String[] pair=parts[i+2].split(",",-1);
             if(pair.length!=2) return false;
             nextStars[i]=number(pair[0],3); nextScores[i]=number(pair[1],MAX_SCORE);

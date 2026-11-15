@@ -71,7 +71,7 @@ public final class WaveView {
         } else {
             edge(g,p,Physics.LEFT,minY,Physics.LEFT,maxY);
             edge(g,p,Physics.RIGHT,minY,Physics.RIGHT,maxY);
-            if(g.orderStage()) for(float[] r:HarborGeometry.PIERS) {
+            if(g.orderStage()) for(float[] r:PhysicalBerths.solids(g.challengeId)) {
                 edge(g,p,r[0],r[1],r[2],r[1]);edge(g,p,r[2],r[1],r[2],r[3]);
                 edge(g,p,r[2],r[3],r[0],r[3]);edge(g,p,r[0],r[3],r[0],r[1]);
             }

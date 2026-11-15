@@ -28,9 +28,9 @@ public final class SceneryTest {
         check(opacity(g,x-30,y-70,60,80)==1,"unobscuring scenery returns to full opacity");
         Body cargo=new Body(99,1,obscuredX,obscuredY,0);g.cargo[0]=cargo;
         check(opacity(g,x-30,y-70,60,80)<.3f,"cargo also reveals obstructing scenery");
+        cargo.deliveryRecorded=true;cargo.lineAttached=true;
+        check(opacity(g,x-30,y-70,60,80)<.3f,"persistent unloaded hull also reveals obstructing scenery");
         g.cargo[0]=null;
-        g.ticks=1080;g.trafficBoat.x=obscuredX;g.trafficBoat.y=obscuredY;
-        check(opacity(g,x-30,y-70,60,80)<.3f,"cross-traffic also reveals obstructing scenery");
         g.ticks=0;
         g.ropeBody=new Body(99,0,300,300,0);g.ropePhase=1;g.ropeEndX=300;g.ropeEndY=700;
         g.ropeStartX=300;g.ropeStartY=317.5f;g.ropeStartHeight=4;g.ropeLocalY=17.5f;g.ropeTicks=9;

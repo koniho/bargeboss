@@ -14,6 +14,16 @@ public final class ControlView {
         if(g.control==Game.REVERSING) return Game.COLORS[2];
         return g.control==Game.IDLE || g.control==Game.COASTING?PAPER:AMBER;
     }
+    /** An unloaded hull remains a real obstacle until it is towed away. */
+    private static Body emptyToMove(Game g) {
+        if(g.tutorial!=null)return null;
+        Body held=g.heldCargo();
+        if(held!=null)return held.active && held.deliveryRecorded?held:null;
+        if(g.selected>=0){Body b=g.cargo[g.selected];if(b!=null && b.active && b.deliveryRecorded && g.tow.incoming(b)==null)return b;}
+        if(g.sharedBerthStage()){Body b=g.berthBlocker(2,null);if(b!=null && b.deliveryRecorded)return b;}
+        if(g.control==Game.IDLE)for(Body b:g.cargo)if(b!=null && b.active && b.deliveryRecorded && b.lineAttached)return b;
+        return null;
+    }
     public static String hint(Game g) {
         if(g.towAiming) return "RELEASE OVER THE HIGHLIGHTED BOAT TO LINK";
         if(g.ropeToTug && g.ropePhase==1) return "TOWLINE AWAY / WATCH THE TARGET";
@@ -25,13 +35,14 @@ public final class ControlView {
         if(g.ropePhase==1) return "LINE AWAY / WATCH THE BOLLARD";
         if(g.ropePhase==2) return "MISSED / REELING BACK FOR ANOTHER THROW";
         if(g.ropePhase==3) return "BOLLARD CAUGHT / LINE TAUT / WINCHING";
-        for(Body b:g.cargo) if(b!=null && b.active && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
+        for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
         for(Body b:g.cargo) if(b!=null && b.active && Mooring.aligning(b)) return "WINCHING ALONGSIDE / LINING UP WITH SHORE";
         for(Body b:g.cargo) if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) return b.unloadingTicks>0?"CREW UNLOADING / NEXT LOAD IS YOURS":"LINE ATTACHED / SECURING THE LOAD";
         for(Body b:g.cargo) if(g.canTie(b)) return "LIFT, DRAG CARGO TO AIM, RELEASE TO THROW";
         if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
         if(g.noticeTicks>0 && g.notice.startsWith("TOWLINE RELEASED")) return "LINE BLOCKED OR TOO LONG / RECONNECT NEARBY";
         if(g.holdingTug()) return "DRAG FOR THRUST / CENTER TO COAST";
+        if(emptyToMove(g)!=null) return "DRAG EMPTY TO TUG / PULL CLEAR OF BERTH";
         switch(g.control) {
             case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
             case Game.HOLDING: return "FILL THE RING TO ENGAGE THE TUG";
@@ -49,6 +60,8 @@ public final class ControlView {
         if(!g.ropeDragging && !g.towAiming && g.tow.count()==0 && g.ropePhase==0) for(Body b:g.cargo) if(g.canTie(b)) { label="READY TO TIE";break; }
         if(g.control==Game.IDLE || g.control==Game.REVERSING) for(Body b:g.cargo)
             if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
+        if(g.ropePhase==0 && !g.towAiming && !g.ropeDragging && g.tow.count()==0
+                && (g.control==Game.IDLE || g.heldCargo()!=null) && emptyToMove(g)!=null)label="EMPTY / TOW CLEAR";
         Layout layout=g.layout;
         Lettering.center(p,label,layout.statusX(),layout.statusY(),14,label.equals("READY TO TIE")?GREEN:color(g));
         Lettering.center(p,hint(g),layout.statusX(),layout.statusHintY(),10,PAPER);
@@ -84,8 +97,8 @@ public final class ControlView {
         if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0 && !g.canTie(b)) {
             if(!g.pushing) ring(g,p,b.x,b.y,46,g.holdProgress(),AMBER,5);
             else {
-                float bx=Game.DOCK_X[b.berth],by=g.dockY(b.berth);
-                ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
+                float bx=g.dockX(b.berth),by=g.dockY(b.berth);
+                if(!b.deliveryRecorded && g.berthEnabled(b.berth))ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
                     path(p,g.tug.x,g.tug.y,g.guideX,g.guideY,AMBER);
                     ring(g,p,g.guideX,g.guideY,15,1,AMBER,2);
