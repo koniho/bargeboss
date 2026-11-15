@@ -96,8 +96,10 @@ optimized runs, frames 114, 115 and 319 construct large layers during drawing:
 Each of those builds adds 2.25 MiB, consistent with a 256×256 terrain chunk
 rasterized at 3× density. The trace does not yet record layer identity, so the
 specific terrain key is an inference. Frames 114–116 also record direct fallback
-draws. **Prebuilding upcoming terrain and bounding raster work is the next concrete
-optimization**, with layer key/type/size telemetry to verify the attribution.
+draws. **This cause is now addressed by [bounded background terrain preparation](terrain-preparation.md)**
+on Android. Shared offscreen hints, visible-work priority and layer-key/size
+telemetry support verification. Keep the synchronous switch for future comparisons;
+preparation must fit the cache budget and retain a complete drawing fallback.
 
 Other long gaps remain unresolved: pass 2 has a 63.18 ms draw-start interval after
 a preceding 11.97 ms UI draw, without a source decode or layer build in that draw.

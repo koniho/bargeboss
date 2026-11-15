@@ -14,14 +14,14 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final CanvasPainter.Profile stats;
     private final String scene,mode;
     private final int warmup,samples;
-    private final boolean trace,compoundPaths,frameTextures;
+    private final boolean trace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
-    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions\n";
+    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height\n";
     private int frame;
     private boolean configured,finished,tracing,reviewStarted,reviewDone;
     private final Activity activity;
-    private final boolean pixelReview;
+    private final boolean pixelReview,terrainReview;
     private long drawStart,previousDraw,advanceNs;
     public AndroidProfileSession(Activity activity,CanvasPainter painter) {
         this.activity=activity;Intent intent=activity.getIntent();this.painter=painter;stats=painter.enableProfile();
@@ -34,24 +34,26 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
         pixelReview=intent.getBooleanExtra("bb_texture_review",false);
+        terrainReview=intent.getBooleanExtra("bb_terrain_review",false);
         compoundPaths=intent.getBooleanExtra("bb_compound_paths",false);
         frameTextures=intent.getBooleanExtra("bb_frame_textures",true);
         painter.profileStrategies(compoundPaths,frameTextures);
+        asyncLayers=intent.getBooleanExtra("bb_async_layers",true);painter.profileAsyncLayers(asyncLayers);
         directory=new File(activity.getExternalFilesDir(null),"profiles");
         if(!directory.isDirectory() && !directory.mkdirs())throw new IllegalStateException("Cannot create profile directory");
-        rows=new double[warmup+samples][28];
+        rows=new double[warmup+samples][36];
     }
     public Game game(){return root;}
     public void configure(float width,float height) {
         // Activity startup can briefly report the previous portrait window.
         // Do not prepare or time a landscape fixture against that transient layout.
         if(configured || width<height)return;
-        if(pixelReview && !reviewDone) {
+        if((pixelReview || terrainReview) && !reviewDone) {
             if(!reviewStarted){
                 reviewStarted=true;
                 new Thread(()->{
-                    try{AndroidTextureReview.run(activity.getAssets(),directory);}
-                    catch(java.io.IOException e){throw new IllegalStateException(e);}
+                    try{if(pixelReview)AndroidTextureReview.run(activity.getAssets(),directory);if(terrainReview)AndroidTerrainReview.run(activity.getAssets(),directory);}
+                    catch(Exception e){throw new IllegalStateException(e);}
                     activity.runOnUiThread(()->{reviewDone=true;configure(width,height);});
                 },"bargeboss-texture-review").start();
             }
@@ -61,7 +63,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.
         if(!mode.equals("replay"))root.cancelInputs();
-        Log.i("BargeBossProfile","READY scene="+scene+" mode="+mode+" width="+width+" height="+height+" warmup="+warmup+" samples="+samples+" compound_paths="+compoundPaths+" frame_textures="+frameTextures);
+        Log.i("BargeBossProfile","READY scene="+scene+" mode="+mode+" width="+width+" height="+height+" warmup="+warmup+" samples="+samples+" compound_paths="+compoundPaths+" frame_textures="+frameTextures+" async_layers="+asyncLayers);
     }
     public void advance(double seconds) {
         if(!configured || finished)return;
@@ -91,6 +93,8 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         r[20]=drawStart;r[21]=end;
         r[22]=stats.textureBytes/1048576.0;r[23]=painter.profileSourceBytes()/1048576.0;r[24]=painter.profileFrameBytes()/1048576.0;
         r[25]=stats.frameBuildNs/1e6;r[26]=stats.frameBuilds;r[27]=stats.frameEvictions;
+        r[28]=painter.profilePendingBytes()/1048576.0;r[29]=painter.profileWorkerSourceBytes()/1048576.0;
+        r[30]=stats.backgroundNs/1e6;r[31]=stats.backgroundBuilds;r[32]=stats.asyncMisses;r[33]=stats.layerKey;r[34]=stats.layerWidth;r[35]=stats.layerHeight;
         advanceNs=0;frame++;
         if(frame==warmup)Log.i("BargeBossProfile","SAMPLING "+scene+" "+mode);
         if(frame>=warmup+samples)finish("complete");

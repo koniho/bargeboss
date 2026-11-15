@@ -1,0 +1,3 @@
+compound_paths=false
+frame_textures=true
+async_layers=true

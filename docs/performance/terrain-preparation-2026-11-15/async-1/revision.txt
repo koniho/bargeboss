@@ -1,0 +1,16 @@
+ab17b1b580113e23fd41a078e6a704c6308d1888
+ android/com/bargeboss/game/CanvasPainter.java      | 78 +++++++++++++++++-----
+ android/com/bargeboss/game/MainActivity.java       |  1 +
+ core/com/bargeboss/game/OpacityPainter.java        |  2 +
+ core/com/bargeboss/game/Painter.java               |  3 +
+ core/com/bargeboss/game/SceneryOcclusion.java      |  2 +
+ core/com/bargeboss/game/ScreenView.java            |  2 +
+ core/com/bargeboss/game/StaticLayer.java           |  2 +
+ core/com/bargeboss/game/StaticTerrain.java         | 18 +++++
+ core/com/bargeboss/game/ViewportPainter.java       |  2 +
+ core/com/bargeboss/game/WaterBatchPainter.java     |  2 +
+ .../com/bargeboss/game/AndroidProfileSession.java  | 11 +--
+ ios/BargeBoss/BBPainter.m                          |  2 +
+ tools/profile-android.sh                           |  5 +-
+ tools/summarize-profile.py                         |  4 +-
+ 14 files changed, 109 insertions(+), 25 deletions(-)

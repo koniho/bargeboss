@@ -43,14 +43,39 @@ public final class CanvasPainter implements Painter {
     private int layerBuilds;
     private boolean paintingLayer;
     private Canvas canvas;
+    private TerrainRasterizer terrain;
+    private boolean asyncLayers=true;
+    public void profileAsyncLayers(boolean enabled){asyncLayers=enabled;}
+    public long profilePendingBytes(){return terrain==null?0:terrain.reservedBytes();}
+    public long profileWorkerSourceBytes(){return terrain==null?0:terrain.sourceBytes();}
+    public void close(){if(terrain!=null){terrain.close();terrain=null;}}
+    public boolean preparesLayers(){return asyncLayers && !paintingLayer;}
+    public void prepareLayer(StaticLayer layer,float scale) {
+        if(!preparesLayers() || !layer.backgroundSafe() || !(scale>0) || !Float.isFinite(scale))return;
+        float density=StaticLayer.rasterScale(scale);long key=layerKey(layer,density);
+        if(!layers.containsKey(key))requestLayer(layer,density,key,false);
+    }
+    private static long layerKey(StaticLayer layer,float density){return ((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);}
+    private boolean requestLayer(StaticLayer layer,float density,long key,boolean visible) {
+        double size=StrictMath.ceil(layer.width()*density)*StrictMath.ceil(layer.height()*density)*4;
+        if(!(size>0) || size>StaticLayer.cacheBudgetBytes() || !Double.isFinite(size))return false;
+        long bytes=(long)size;
+        if(terrain==null)terrain=new TerrainRasterizer(assets);
+        if(terrain.request(key,layer,density,bytes,StaticLayer.cacheBudgetBytes()-layerBytes,visible))return true;
+        // Visible misses must still progress when the retained cache is full.
+        // Speculation never evicts visible cache entries to make room for itself.
+        return visible && roomForLayer(bytes) && terrain.request(key,layer,density,bytes,StaticLayer.cacheBudgetBytes()-layerBytes,true);
+    }
     /** Opt-in host telemetry; no counters or clocks are read by gameplay. */
     public static final class Profile {
         public long buildNs,decodeNs,frameBuildNs,textureBytes;
-        public int frameBuilds,frameEvictions;
+        public int frameBuilds,frameEvictions,backgroundBuilds,asyncMisses;
+        public long backgroundNs;
+        public int layerKey;public float layerWidth,layerHeight;
         private final ArrayList<Bitmap> textures=new ArrayList<Bitmap>();
         void texture(Bitmap image){if(!textures.contains(image)){textures.add(image);textureBytes+=image.getAllocationByteCount();}}
         public int hits,builds,fallbacks,evictions,sprites,blends,affines,circles,polys,lines,clips;
-        void clear(){textures.clear();textureBytes=0;frameBuildNs=0;frameBuilds=frameEvictions=0;buildNs=decodeNs=0;hits=builds=fallbacks=evictions=sprites=blends=affines=circles=polys=lines=clips=0;}
+        void clear(){backgroundNs=0;backgroundBuilds=asyncMisses=0;layerKey=0;layerWidth=layerHeight=0;textures.clear();textureBytes=0;frameBuildNs=0;frameBuilds=frameEvictions=0;buildNs=decodeNs=0;hits=builds=fallbacks=evictions=sprites=blends=affines=circles=polys=lines=clips=0;}
     }
     private Profile profile;
     // This device's native compound water paths cost more than their separate
@@ -71,7 +96,7 @@ public final class CanvasPainter implements Painter {
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
     public void popClip(){canvas.restore();}
-    public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();}}
+    public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
         if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;
@@ -79,25 +104,27 @@ public final class CanvasPainter implements Painter {
         if(paintingLayer) {drawLayerDirect(layer,x,y,scale,alpha);return;}
         float density=StaticLayer.rasterScale(scale);
         double pw=StrictMath.ceil(layer.width()*density),ph=StrictMath.ceil(layer.height()*density);
-        long key=((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);
+        long key=layerKey(layer,density);
         Bitmap image=layers.get(key);
         if(profile!=null && image!=null)profile.hits++;
+        if(image==null && asyncLayers && layer.backgroundSafe()) {
+            if(terrain!=null)image=terrain.take(key);
+            if(image!=null){roomForLayer(image.getAllocationByteCount());layers.put(key,image);layerBytes+=image.getAllocationByteCount();}
+            else {
+                requestLayer(layer,density,key,true);
+                if(profile!=null){profile.fallbacks++;profile.asyncMisses++;}
+                drawLayerDirect(layer,x,y,scale,alpha);return;
+            }
+        }
         if(image==null) {
             if(pw<=0 || ph<=0 || pw*ph*4>StaticLayer.cacheBudgetBytes()
                     || layerBuilds>=StaticLayer.maxBuildsPerFrame()) {if(profile!=null)profile.fallbacks++;drawLayerDirect(layer,x,y,scale,alpha);return;}
             long buildStart=profile==null?0:System.nanoTime();
             if(profile!=null)profile.builds++;
             long bytes=4L*(int)pw*(int)ph;layerBuilds++;
-            Iterator<Map.Entry<Long,Bitmap>> entries=layers.entrySet().iterator();
-            while(layerBytes+bytes>StaticLayer.cacheBudgetBytes() && entries.hasNext()) {
-                Bitmap old=entries.next().getValue();if(profile!=null)profile.evictions++;layerBytes-=old.getAllocationByteCount();entries.remove();
-                // Hardware display lists may still reference this frame's images;
-                // let the VM release evictions after those references disappear.
-            }
-            image=Bitmap.createBitmap((int)pw,(int)ph,Bitmap.Config.ARGB_8888);image.setDensity(Bitmap.DENSITY_NONE);
-            Canvas previous=canvas;Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);
-            paintingLayer=true;canvas=new Canvas(image);canvas.scale(density,density);canvas.clipRect(0,0,layer.width(),layer.height());
-            try {layer.paint(this);} finally {canvas=previous;paintingLayer=false;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+            if(!roomForLayer(bytes)){if(profile!=null)profile.fallbacks++;drawLayerDirect(layer,x,y,scale,alpha);return;}
+            if(profile!=null){profile.layerKey=layer.key();profile.layerWidth=layer.width();profile.layerHeight=layer.height();}
+            image=rasterLayer(layer,density);
             layers.put(key,image);layerBytes+=image.getAllocationByteCount();
             if(profile!=null)profile.buildNs+=System.nanoTime()-buildStart;
         }
@@ -109,6 +136,26 @@ public final class CanvasPainter implements Painter {
             canvas.drawBitmap(image,0,0,layerPaint);
         } finally {canvas.restoreToCount(saved);}
     }
+    private boolean roomForLayer(long bytes) {
+        if(terrain!=null)terrain.trimTo(Math.max(0,StaticLayer.cacheBudgetBytes()-layerBytes-bytes));
+        long reserved=profilePendingBytes();
+        Iterator<Map.Entry<Long,Bitmap>> entries=layers.entrySet().iterator();
+        while(layerBytes+reserved+bytes>StaticLayer.cacheBudgetBytes() && entries.hasNext()) {
+            Bitmap old=entries.next().getValue();layerBytes-=old.getAllocationByteCount();entries.remove();
+            if(profile!=null)profile.evictions++;
+        }
+        return layerBytes+reserved+bytes<=StaticLayer.cacheBudgetBytes();
+    }
+    /** Used by a private worker painter too. No bitmap is published until painting finishes. */
+    Bitmap rasterLayer(StaticLayer layer,float density) {
+        Bitmap image=Bitmap.createBitmap((int)StrictMath.ceil(layer.width()*density),(int)StrictMath.ceil(layer.height()*density),Bitmap.Config.ARGB_8888);
+        image.setDensity(Bitmap.DENSITY_NONE);
+        Canvas previous=canvas;boolean wasPainting=paintingLayer;
+        Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);
+        paintingLayer=true;canvas=new Canvas(image);canvas.scale(density,density);canvas.clipRect(0,0,layer.width(),layer.height());
+        try {layer.paint(this);} finally {canvas=previous;paintingLayer=wasPainting;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+        return image;
+    }
     private void drawLayerDirect(StaticLayer layer,float x,float y,float scale,float alpha) {
         int saved=canvas.save();boolean previousLayer=paintingLayer;
         Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);paintingLayer=true;
@@ -118,10 +165,10 @@ public final class CanvasPainter implements Painter {
             canvas.translate(x,y);canvas.scale(scale,scale);layer.paint(this);
         } finally {canvas.restoreToCount(saved);paintingLayer=previousLayer;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
     }
-    public CanvasPainter(AssetManager assets) {
-        this.assets=assets;
-        spritePaint.setFilterBitmap(false);
-        atlas(0); atlas(1);
+    public CanvasPainter(AssetManager assets) {this(assets,true);}
+    CanvasPainter(AssetManager assets,boolean preloadVessels) {
+        this.assets=assets;spritePaint.setFilterBitmap(false);
+        if(preloadVessels){atlas(0);atlas(1);}
     }
     private static final class Atlas {
         final Bitmap[] images;

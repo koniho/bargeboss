@@ -357,3 +357,16 @@ Eviction drops references without recycling bitmaps that recorded hardware draw
 commands may still use. Atlas metadata, gameplay, clipping and depth order are
 unchanged. Native software pixel review and hardware screenshots cover sampling
 rounding differences; shared trace parity alone cannot establish raster parity.
+
+
+### Prepared terrain rasters
+
+Terrain may be rasterized before visibility using the optional painter cache
+hints. Preparation has no drawing position or opacity and never changes the
+visible chunk pass, depth merge, raised shore geometry or building fades. Only
+immutable `StaticLayer` implementations explicitly marked background-safe may be
+painted off the UI thread. A prepared image uses the same chunk key, trimmed
+bounds and raster density as the synchronous path. Publish only complete images;
+late results use the existing direct fallback. Never replace a missing terrain
+raster with transparent pixels or flatten foreground vessels/ropes into a cache.
+See [terrain preparation](../performance/terrain-preparation.md).

@@ -1,0 +1,260 @@
+[
+  {
+    "file": "docs/performance/terrain-preparation-2026-11-15/sync-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.465,
+      "p95": 0.959
+    },
+    "draw_ms": {
+      "p50": 9.11,
+      "p95": 11.724
+    },
+    "interval_ms": {
+      "p50": 16.612,
+      "p95": 21.272
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.102
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 493.0
+    },
+    "polys": {
+      "p50": 2519.0,
+      "p95": 2911.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.938
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.396
+    },
+    "pending_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "worker_source_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "background_builds": 0,
+    "async_misses": 0,
+    "cold_decode_ms": 593.223,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "async_layers": "false"
+    },
+    "throughput_fps": 60.76,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.637,
+        "p95": 11.16
+      },
+      "render_sync_ms": {
+        "p50": 0.386,
+        "p95": 0.716
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.758,
+        "p95": 22.545
+      },
+      "intended_to_complete_ms": {
+        "p50": 42.215,
+        "p95": 52.831
+      }
+    },
+    "slow_sync_frames_including_warmup": 4,
+    "maximum": {
+      "draw_ms": 26.776911,
+      "interval_ms": 35.552683,
+      "layer_build_ms": 18.806432,
+      "cache_mib": 30.325820922851562,
+      "pending_mib": 0.0,
+      "worker_source_mib": 0.0
+    },
+    "max_layer_plus_pending_mib": 30.325820922851562
+  },
+  {
+    "file": "docs/performance/terrain-preparation-2026-11-15/async-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.466,
+      "p95": 0.862
+    },
+    "draw_ms": {
+      "p50": 8.601,
+      "p95": 11.263
+    },
+    "interval_ms": {
+      "p50": 16.446,
+      "p95": 20.312
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 493.0
+    },
+    "polys": {
+      "p50": 2519.0,
+      "p95": 2911.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.938
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.389
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 9,
+    "cache_fallbacks": 3,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "background_builds": 1,
+    "async_misses": 0,
+    "cold_decode_ms": 588.415,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "async_layers": "true"
+    },
+    "throughput_fps": 62.58,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.653,
+        "p95": 11.49
+      },
+      "render_sync_ms": {
+        "p50": 0.377,
+        "p95": 0.653
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.831,
+        "p95": 22.124
+      },
+      "intended_to_complete_ms": {
+        "p50": 41.84,
+        "p95": 45.835
+      }
+    },
+    "slow_sync_frames_including_warmup": 5,
+    "maximum": {
+      "draw_ms": 15.013463,
+      "interval_ms": 30.361641,
+      "layer_build_ms": 0.306744,
+      "cache_mib": 30.325820922851562,
+      "pending_mib": 9.0,
+      "worker_source_mib": 5.9986724853515625
+    },
+    "max_layer_plus_pending_mib": 34.82582092285156
+  }
+]

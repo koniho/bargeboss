@@ -1,0 +1,5 @@
+barge-arrival pixels=792000 changed=0 max_error=0 cache_bytes=23493072 pending_bytes=9437184
+harbor-close pixels=792000 changed=0 max_error=0 cache_bytes=23476448 pending_bytes=9437184
+barge-bridge pixels=792000 changed=0 max_error=0 cache_bytes=16669504 pending_bytes=9437184
+canal-middle pixels=792000 changed=0 max_error=0 cache_bytes=19779952 pending_bytes=8340480
+queue bounds, duplicate requests, visible priority, full-cache progress, nonblocking close and unpublished-result shutdown passed

@@ -1,0 +1,4 @@
+--------- beginning of main
+11-15 17:07:57.011 14834 14834 I BargeBossProfile: READY scene=canal-middle mode=replay width=1320.3539 height=600.0 warmup=90 samples=240 compound_paths=false frame_textures=true async_layers=false
+11-15 17:07:59.171 14834 14834 I BargeBossProfile: SAMPLING canal-middle replay
+11-15 17:08:02.437 14834 14955 I BargeBossProfile: SAVED complete /storage/emulated/0/Android/data/com.bargeboss.game/files/profiles/canal-middle-replay.csv frames=330

@@ -20,6 +20,23 @@ public final class StaticTerrain {
             Tile tile=tile(col,row,foreground);
             if(!tile.commands.isEmpty())p.layer(tile,ox+(col*CHUNK+tile.left)*c.scale,oy+(row*CHUNK+tile.top)*c.scale,c.scale,1);
         }
+        if(p.preparesLayers())prepareNearby(g,p,foreground,ox,oy,unit,firstX,lastX,firstY,lastY);
+    }
+    /** Nearest four cells outside the viewport. Hints do not alter visible ordering. */
+    private static void prepareNearby(Game g,Painter p,boolean foreground,float ox,float oy,float unit,int firstX,int lastX,int firstY,int lastY) {
+        int[] cols=new int[4],rows=new int[4];float[] scores={Float.MAX_VALUE,Float.MAX_VALUE,Float.MAX_VALUE,Float.MAX_VALUE};
+        for(int row=firstY-1;row<=lastY+1;row++)for(int col=firstX-1;col<=lastX+1;col++) {
+            if(col>=firstX && col<=lastX && row>=firstY && row<=lastY)continue;
+            float x=ox+col*unit,y=oy+row*unit;
+            float dx=Math.max(0,Math.max(-x-unit,x-g.layout.width)),dy=Math.max(0,Math.max(-y-unit,y-g.layout.height));
+            float cx=x+unit*.5f-g.layout.width*.5f,cy=y+unit*.5f-g.layout.height*.5f;
+            float score=dx*dx+dy*dy+.01f*(cx*cx+cy*cy);
+            for(int i=0;i<4;i++)if(score<scores[i]) {
+                for(int j=3;j>i;j--){scores[j]=scores[j-1];cols[j]=cols[j-1];rows[j]=rows[j-1];}
+                scores[i]=score;cols[i]=col;rows[i]=row;break;
+            }
+        }
+        for(int i=0;i<4;i++)if(scores[i]!=Float.MAX_VALUE){Tile t=tile(cols[i],rows[i],foreground);if(!t.commands.isEmpty())p.prepareLayer(t,g.layout.camera.scale);}
     }
     static synchronized Tile tile(int col,int row,boolean foreground) {
         if(col< -2048 || col>=2048 || row< -2048 || row>=2048)throw new IllegalArgumentException("Terrain chunk outside key range");
@@ -44,6 +61,7 @@ public final class StaticTerrain {
             w=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.right))-left);
             h=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.bottom))-top);
         }
+        public boolean backgroundSafe(){return true;}
         public int key(){return key;}public float width(){return w;}public float height(){return h;}
         public void paint(Painter p){p=ScreenView.offset(p,-left,-top);for(Command command:commands)command.paint(p);}
     }

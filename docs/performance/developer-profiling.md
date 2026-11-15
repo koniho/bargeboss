@@ -160,3 +160,13 @@ This rejects mismatched scene/mode/dimensions, interrupted sessions, different
 lesson/tick sequences and camera scale differences above 0.5%. Smaller camera
 scale differences are explicitly reported in the JSON. See the
 [texture/path comparison](texture-paths.md) for measured results and limits.
+
+## Terrain preparation
+
+Use `BARGEBOSS_PROFILE_ASYNC_LAYERS=false` / `true` to compare synchronous raster
+construction against the bounded worker and nearby-chunk hints. The default is
+true. Both modes use the same terrain geometry and native raster density. See
+[terrain preparation](terrain-preparation.md) for memory accounting, added counters,
+validation and device evidence. `--ez bb_terrain_review true` runs the expensive
+native queue/cache/pixel check before configuring a fixture; keep that review out
+of timed comparisons.

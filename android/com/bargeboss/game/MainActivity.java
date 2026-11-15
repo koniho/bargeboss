@@ -34,6 +34,7 @@ public final class MainActivity extends Activity {
         }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
+    protected void onDestroy(){if(gameView!=null)gameView.painter.close();super.onDestroy();}
     protected void onPause() { gameView.stop(); super.onPause(); }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);

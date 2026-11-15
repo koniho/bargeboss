@@ -1,0 +1,20 @@
+{
+  "matched_recent_frames": 120,
+  "app_measured_frames": 240,
+  "ui_record_ms": {
+    "p50": 8.653,
+    "p95": 11.49
+  },
+  "render_sync_ms": {
+    "p50": 0.377,
+    "p95": 0.653
+  },
+  "issue_to_swap_ms": {
+    "p50": 15.831,
+    "p95": 22.124
+  },
+  "intended_to_complete_ms": {
+    "p50": 41.84,
+    "p95": 45.835
+  }
+}

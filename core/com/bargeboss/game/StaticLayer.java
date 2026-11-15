@@ -4,6 +4,8 @@ package com.bargeboss.game;
  * Native layer draws clip to [0,width]x[0,height] and apply alpha to the whole group.
  * The default expansion exists for deterministic traces and non-raster painters. */
 public abstract class StaticLayer {
+    /** Explicit opt-in: paint uses only immutable commands and sprite metadata. */
+    public boolean backgroundSafe(){return false;}
     public abstract int key();
     public abstract float width();
     public abstract float height();

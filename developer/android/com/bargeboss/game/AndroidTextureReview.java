@@ -11,6 +11,7 @@ final class AndroidTextureReview {
     static void run(AssetManager assets,File directory) throws java.io.IOException {
         CanvasPainter full=new CanvasPainter(assets),cells=new CanvasPainter(assets);
         full.profileStrategies(true,false);cells.profileStrategies(true,true);
+        full.profileAsyncLayers(false);cells.profileAsyncLayers(false);
         Bitmap a=Bitmap.createBitmap(512,384,Bitmap.Config.ARGB_8888),b=Bitmap.createBitmap(512,384,Bitmap.Config.ARGB_8888);
         Canvas ca=new Canvas(a),cb=new Canvas(b);full.bind(ca);cells.bind(cb);
         int[] pa=new int[512*384],pb=new int[pa.length];long pixels=0,different=0;int cases=0,maxError=0;

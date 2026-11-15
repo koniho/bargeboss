@@ -42,6 +42,8 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     CGContextEOClip(c);
 }
 - (void)popClip {CGContextRestoreGState(self.context);}
+- (jboolean)preparesLayers {return NO;}
+- (void)prepareLayerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)scale {(void)layer;(void)scale;}
 - (void)beginFrame {
     if(!self.paintingStaticLayer) self.staticLayerBuilds=0;
 }

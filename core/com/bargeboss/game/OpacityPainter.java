@@ -11,6 +11,8 @@ public final class OpacityPainter implements Painter {
     public void circle(float x,float y,float r,int c) { p.circle(x,y,r,color(c)); }
     public void poly(float[] xy,int c) { p.poly(xy,color(c)); }
     public void line(float x,float y,float xx,float yy,float w,int c) { p.line(x,y,xx,yy,w,color(c)); }
+    public boolean preparesLayers(){return p.preparesLayers();}
+    public void prepareLayer(StaticLayer layer,float scale){p.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float opacity){p.layer(layer,x,y,scale,opacity*alpha);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float opacity){p.spriteAffine(a,f,x,y,ax,ay,bx,by,opacity*alpha);}
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float opacity) { p.sprite(a,f,x,y,w,h,r,opacity*alpha); }

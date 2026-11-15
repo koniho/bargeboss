@@ -9,6 +9,8 @@ public final class ViewportPainter implements Painter {
     public void pushClipOutside(float[] triangles){target.pushClipOutside(triangles);}
     public void popClip(){target.popClip();}
     public void beginFrame(){target.beginFrame();}
+    public boolean preparesLayers(){return target.preparesLayers();}
+    public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         if(alpha>0 && visible(x,y,x+layer.width()*scale,y+layer.height()*scale))target.layer(layer,x,y,scale,alpha);
     }

@@ -22,6 +22,8 @@ public final class SceneryOcclusion implements Painter {
     public SceneryOcclusion(Painter target) {this.target=target;}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
+    public boolean preparesLayers(){return target.preparesLayers();}
+    public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha){target.layer(layer,x,y,scale,alpha);}
     private interface Shape {boolean contains(float x,float y);float left();float top();float right();float bottom();}
     private static final class Sprite implements Shape {

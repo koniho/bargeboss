@@ -9,6 +9,9 @@ public interface Painter {
     default void pushClipOutside(float[] triangles) {}
     /** Restore the matching saved clip. Scopes must be balanced, including on errors. */
     default void popClip() {}
+    /** Optional native cache preparation. Hints never draw pixels or advance gameplay. */
+    default boolean preparesLayers(){return false;}
+    default void prepareLayer(StaticLayer layer,float scale) {}
     /** Immutable static content, clipped to layer bounds with group opacity. */
     default void layer(StaticLayer layer,float x,float y,float scale,float alpha) {layer.draw(this,x,y,scale,alpha);}
     /** Affine cell basis, already scaled by caller; normalized atlas pivot stays at x,y.

@@ -49,6 +49,18 @@ public final class StaticTerrainTest {
         check(g.ticks==ticks && g.visualTicks==visual && g.tutorial.channelGate==gate && g.tug.x==x && g.tug.y==y
                 && g.layout==layout && progress.equals(g.saveProgress()),"terrain rendering cannot mutate gameplay camera clocks or progress");
         for(int i=0;i<boundary.length;i++)check(boundary[i]==TrainingChannel.WATER_BOUNDARY[i],"retained terrain leaves collision geometry unchanged");
+        Capture hinted=new Capture(true);
+        Painter wrapped=new SceneryOcclusion(new ViewportPainter(hinted,g.layout.width,g.layout.height));
+        StaticTerrain.draw(g,wrapped,false);
+        check(hinted.hints.size()>0 && hinted.hints.size()<=4,"native preparation receives a bounded nearby set through wrappers");
+        for(StaticLayer hint:hinted.hints.values()) {
+            check(hint.backgroundSafe(),"terrain explicitly permits immutable background painting");
+            check(!repeat.calls.containsKey(hint.key()),"prefetch hints stay outside the visible chunk set");
+        }
+        Capture visibleOnly=new Capture();StaticTerrain.draw(g,new SceneryOcclusion(new ViewportPainter(visibleOnly,g.layout.width,g.layout.height)),false);
+        check(hinted.calls.keySet().equals(visibleOnly.calls.keySet()),"preparation never adds visible layer draws");
+        for(Call call:hinted.calls.values()){Call old=visibleOnly.calls.get(call.layer.key());check(old.hash==call.hash && old.x==call.x && old.y==call.y,"preparation preserves visible commands and anchors");}
+        check(g.ticks==ticks && g.visualTicks==visual && g.layout==layout && g.tug.x==x && g.tug.y==y,"preparation leaves live game and camera untouched");
         System.out.println(checks+" retained terrain key, foreground separation and render-purity assertions passed");
     }
     private static final class Call {
@@ -66,6 +78,11 @@ public final class StaticTerrainTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha){throw new AssertionError("static terrain must not retain animated vessel blends");}
     }
     private static final class Capture extends Trace {
+        private final boolean prepare;
+        Capture(){this(false);}Capture(boolean prepare){this.prepare=prepare;}
+        final Map<Integer,StaticLayer> hints=new HashMap<Integer,StaticLayer>();
+        public boolean preparesLayers(){return prepare;}
+        public void prepareLayer(StaticLayer layer,float scale){check(scale>0,"preparation uses a valid projected scale");hints.put(layer.key(),layer);}
         final Map<Integer,Call> calls=new HashMap<Integer,Call>();
         public void layer(StaticLayer layer,float x,float y,float scale,float alpha){
             check(alpha==1,"terrain layer opacity stays solid independently of vessel occlusion");
