@@ -657,6 +657,9 @@ public final class Game {
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) {
             feeder.step(this);
+            if(lockStage() && feeder.phase!=Feeder.IDLE){
+                lock.collide(feeder.boat,splashes);if(feeder.load!=null)lock.collide(feeder.load,splashes);
+            }
             float load=feeder.phase==Feeder.IDLE || feeder.blocked?0:feeder.phase==Feeder.INBOUND?.9f:.45f;
             feeder.boat.engineLoad+=(load-feeder.boat.engineLoad)*.08f;
         }
@@ -785,6 +788,12 @@ public final class Game {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
         buoys.step(this);
+        if(lockStage()){
+            // Cargo/float contact correction happens after integration: it cannot push hulls through doors.
+            damage(lock.collide(tug,splashes));
+            for(Body b:cargo)if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup)damage(lock.collide(b,splashes));
+            if(trafficActive())lock.collide(trafficBoat,splashes);
+        }
         // Fender damping follows motion time; mooring confirmation uses real time.
         for(Body b:cargo) if(b!=null && b.active) {
             if(inDock(b) && b.speed()<65) { b.vx*=.990f; b.vy*=.990f; b.spin*=.985f; }

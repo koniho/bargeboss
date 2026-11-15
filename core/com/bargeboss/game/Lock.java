@@ -86,23 +86,23 @@ public final class Lock {
             default:break;
         }
     }
-    /** A closed gate also blocks a new towline across its water-level face. */
+    /** Tow throws respect each visible door panel, including folded and frozen machinery. */
     public boolean blocksLine(float x,float y,float xx,float yy){
-        return !entryPassable() && crosses(x,y,xx,yy,ENTRY_Y)
-                || !exitPassable() && crosses(x,y,xx,yy,EXIT_Y);
+        return LockDoors.blocksLine(0,exitOpening(),x,y,xx,yy)
+                || LockDoors.blocksLine(1,entryOpening(),x,y,xx,yy);
     }
-    private static boolean crosses(float x,float y,float xx,float yy,float gate){
-        if(Math.min(y,yy)>gate || Math.max(y,yy)<gate)return false;
-        if(y==yy)return Math.max(x,xx)>=Physics.LEFT && Math.min(x,xx)<=Physics.RIGHT;
-        float at=x+(xx-x)*(gate-y)/(yy-y);return at>=Physics.LEFT && at<=Physics.RIGHT;
-    }
-    /** Full oriented hull discs stop against each closed gate; no position-center shortcut. */
+    /** All watercraft collide with actual leaves; closed hull contacts retain full-disc clearance. */
     public float collide(Body b){return collide(b,null);}
-    public float collide(Body b,CollisionSplashes splashes){
-        if(!b.active || failed())return 0;
+    public float collide(Watercraft craft,CollisionSplashes splashes){
+        Body b=craft instanceof Body?(Body)craft:null;
+        if(b!=null && !b.active)return 0;
         float impact=0;
-        if(!entryPassable())impact=Math.max(impact,gateCollision(b,ENTRY_Y,splashes));
-        if(!exitPassable())impact=Math.max(impact,gateCollision(b,EXIT_Y,splashes));
+        for(int gate=0;gate<2;gate++){
+            float opening=gate==0?exitOpening():entryOpening();
+            // A sealed pair is one continuous face; keep a straddling hull on its center's side.
+            float hit=b!=null && opening==0?gateCollision(b,LockDoors.hingeY(gate),splashes):LockDoors.collide(craft,gate,opening,splashes);
+            impact=Math.max(impact,hit);
+        }
         return impact;
     }
     private static float gateCollision(Body b,float y,CollisionSplashes splashes){

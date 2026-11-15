@@ -6,7 +6,7 @@ public final class LockView {
     private static final float[] OPENINGS={Float.NaN,Float.NaN};
     private static final int STEEL=0xff52646a,RUST=0xff97643e,CONCRETE=0xff53616a;
     private LockView(){}
-    public static float gateY(int index){return index==0?Lock.EXIT_Y:Lock.ENTRY_Y;}
+    public static float gateY(int index){return LockDoors.hingeY(index);}
     public static float gateDepth(Game g,int index){return g.layout.camera.screenY((Physics.LEFT+Physics.RIGHT)*.5f,gateY(index));}
     private static float opening(Lock lock,int index){return index==0?lock.exitOpening():lock.entryOpening();}
     private static boolean passable(Lock lock,int index){return index==0?lock.exitPassable():lock.entryPassable();}
@@ -14,7 +14,7 @@ public final class LockView {
     static ArticulatedModel model(int index,float opening){
         if(MODELS[index]!=null && Float.floatToIntBits(OPENINGS[index])==Float.floatToIntBits(opening))return MODELS[index];
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();
-        float y=gateY(index),angle=opening*(float)Math.PI*.5f*(index==0?-1:1),half=(Physics.RIGHT-Physics.LEFT)*.5f;
+        float y=gateY(index),half=LockDoors.LENGTH;
         int fixed=b.node("bank-machinery",-1,0,0,0,0,0);
         for(int side=0;side<2;side++){
             float x=side==0?Physics.LEFT-10:Physics.RIGHT+10;
@@ -26,8 +26,8 @@ public final class LockView {
             b.box(fixed,side==0?Physics.LEFT-1:Physics.RIGHT+1,y,18,6,12,36,RUST);
         }
         for(int side=0;side<2;side++){
-            float x=side==0?Physics.LEFT:Physics.RIGHT;
-            int leaf=b.node(side==0?"left-leaf":"right-leaf",-1,x,y,0,side==0?angle:(float)Math.PI-angle,0);
+            float x=LockDoors.hingeX(side);
+            int leaf=b.node(side==0?"left-leaf":"right-leaf",-1,x,y,0,LockDoors.angle(index,side,opening),0);
             b.box(leaf,half*.5f,0,12,half,8,24,STEEL);
             b.box(leaf,half*.5f,0,25,half+2,10,3,RUST);
             b.box(leaf,half*.5f,0,2,half+2,10,3,0xff253741);

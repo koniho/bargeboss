@@ -45,6 +45,7 @@ public final class Buoys {
             b.rollVelocity+=(-24*b.roll-3.4f*b.rollVelocity+(force[0]+force[1])*.025f)*Physics.DT;
             b.roll=Physics.clamp(b.roll+b.rollVelocity*Physics.DT,-.19f,.19f);
             constrain(g,b);
+            if(g.lockStage())g.lock.collide(b,g.splashes);
             for(int pass=0;pass<4;pass++){
                 contact(g,b,g.tug,false);
                 for(Body body:g.cargo)if(body!=null && body.active)
@@ -53,6 +54,7 @@ public final class Buoys {
                     contact(g,b,f.boat,true);if(f.load!=null)contact(g,b,f.load,true);
                 }
                 if(g.trafficActive())contact(g,b,g.trafficBoat,true);
+                if(g.lockStage()){constrain(g,b);g.lock.collide(b,g.splashes);}
             }
         }
     }

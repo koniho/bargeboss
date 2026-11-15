@@ -15,6 +15,10 @@ lock gate collisions report through the same path, independently of damage or
 player ownership. Floating marks also report when their footprint hits a bank;
 reaching a mooring-chain limit alone does not count as a water collision.
 
+Lock door targets follow the visible rigid leaves in every pose, including their
+folded bank-side positions. See [lock door collision](../gameplay/lock-door-collision.md)
+for geometry registration, all-watercraft coverage and post-contact resolution.
+
 ## Direction and lifetime
 
 The faster incoming participant is the striker. Its velocity relative to the

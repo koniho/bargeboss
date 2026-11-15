@@ -283,6 +283,10 @@ to their fixed machinery or moving leaf nodes, and model self-occlusion controls
 their visibility. Never rotate a painted isometric gate bitmap or leave a lamp
 at its closed-position screen coordinate.
 
+`LockDoors` supplies the same bank hinges, leaf length and opening angles to
+`LockView` and watercraft collision. Folded leaves remain solid at their visible
+bank-side locations; see [lock-door collision](../gameplay/lock-door-collision.md).
+
 `Renderer.river` merges each gate at its unraised world-ground depth among
 vessels, individual rope spans and navigation markers. Gate mechanisms are solid
 equipment, not building-fade candidates. The model sorts its own faces; the

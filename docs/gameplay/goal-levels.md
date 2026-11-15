@@ -64,6 +64,12 @@ beyond each gate's six-unit half-thickness. Closed gates physically block those
 discs. A failed deadline stops the attempt instead of forcing a gate through
 unfinished cargo. Pause/background freezes the phase and remaining time.
 
+Watercraft collision follows the actual rigid door panels through their swing
+and folded bank-side positions. Buoys and floating channel marks use the same
+targets as vessel hulls. Collision is checked again after craft push each other;
+the center gap is physically open once the panels leave enough clearance, while
+green signals still wait for full travel. See [lock-door collision](lock-door-collision.md).
+
 The central HUD shows only the active entry/exit deadline. Other phases show
 goal clearance progress, with the current lock state in the status line. Moving
 gate leaves are rigid parts of `ArticulatedModel`, with stable hinge pivots and
