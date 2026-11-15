@@ -35,6 +35,7 @@ public final class VesselView {
                     2*b.radius+1,0xffffedc0);
         }
         SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
+        SurfaceLighting.directional(g,p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
         if(tug) {
             VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);
@@ -51,6 +52,7 @@ public final class VesselView {
             if(b.berth==2 && b.unloadingTicks<Game.UNLOAD_TICKS) {
                 float fill=1-b.unloadingTicks/(float)Game.UNLOAD_TICKS;
                 SpriteAtlas.draw(p,atlas,b.angle,hullX,hullY,size,size,fill);
+                SurfaceLighting.directional(g,p,atlas,b.angle,hullX,hullY,size,fill,b);
             }
             // Unloading removes the same indexed loads at every heading. Only
             // painter order changes: farther deck positions must draw first.
@@ -69,6 +71,7 @@ public final class VesselView {
                 for(int n=0;n<remaining;n++) {
                     int i=order[n];
                     SpriteAtlas.draw(p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,cargoSize,1);
+                    SurfaceLighting.directional(g,p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,1,b);
                 }
             }
             VesselHighlight.draw(g,p,b,false,hullX,hullY,size);

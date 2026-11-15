@@ -96,6 +96,10 @@ public final class BuoyArt {
         p.pushClipOutside(ShoreOcclusion.region(g,c,wx-size,wy-size,wx+size,wy+size,c.screenY(wx,wy)));
         try{
             hull(p,frame,pose);
+            p.pushClipOutside(submerged(pose));
+            try{SurfaceLighting.affine(g,p,SpriteAtlas.BUOY,frame,wx,wy,pose.x,pose.y,
+                    pose.size*pose.cos,pose.size*pose.sin,-pose.size*pose.sin,pose.size*pose.cos,(float)StrictMath.atan2(pose.sin,pose.cos));}
+            finally{p.popClip();}
             contact(p,pose);
             float lx=pose.pointX(frame,lampX(frame),lampY(frame)),ly=pose.pointY(frame,lampX(frame),lampY(frame));
             SceneryEffects.glow(p,lx,ly,pose.size*.15f,color,power,g.visualTicks,wx*.013f);

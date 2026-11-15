@@ -112,6 +112,7 @@ public final class RotationTest {
             spriteBlend(atlas,frame,frame,cx,cy,width,height,rotation,0,alpha);
         }
         public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,float rotation,float blend,float alpha) {
+            if(SurfaceLightArt.atlas(atlas))return; // Response registration is checked by SurfaceLightingTest.
             if(count>=draws.length) throw new AssertionError("Unexpected sprite layer count");
             Draw d=new Draw(); d.atlas=atlas;d.frameA=frameA;d.frameB=frameB;d.cx=cx;d.cy=cy;
             d.width=width;d.height=height;d.rotation=rotation;d.blend=blend;d.alpha=alpha;draws[count++]=d;

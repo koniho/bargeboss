@@ -283,3 +283,13 @@ hulls. The water-level cycle is a visual abstraction on the fixed navigation
 plane: it does not independently lift hull sprites, shift towline attachments,
 or change the projection of emitted wakes. See the
 [phase and goal contract](../gameplay/goal-levels.md) before changing that rule.
+
+### Surface-light response passes
+
+Dynamic surface lighting follows each watercraft/cargo base sprite immediately,
+inside the same shore clip and before nearer cargo or scenery. Floating markers
+also retain their moving waterline clip for the lighting pass. Response layers
+use identical pivots, directional frames and blending; they are not new hulls for
+building-fade detection. Existing glows, cast shadows, foam and navigation lamps
+keep their own order. Scenery receivers remain explicit opt-ins. See
+[surface lighting](surface-lighting.md) for the response data and rollout contract.

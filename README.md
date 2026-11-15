@@ -352,3 +352,8 @@ type. Bulk is one broad grain pile that lowers as the crew unloads it. Source
 atlases are `assets/sprites/barge-arcade-v3-16.png` and
 `assets/sprites/barge-arcade-v3-half.png`; exact built-in image generation prompts
 and input roles are in `docs/art-prompts/barge-arcade-v3-*.txt`.
+
+Dynamic surface lighting now covers watercraft, cargo and floating buoys. Nearby
+quay, work and lock lamps, plus tutorial factory lights, brighten facing surfaces
+with continuous falloff. The shared response-mask system is ready for selected
+scenery receivers; see [surface lighting and rollout](docs/rendering/surface-lighting.md).
