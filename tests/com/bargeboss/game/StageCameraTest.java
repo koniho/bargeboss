@@ -56,7 +56,7 @@ public final class StageCameraTest {
         g.tug.x=300;g.tug.y=Bridge.Y+150;g.step();
         check(g.bridge.phase==Bridge.WAITING,"approaching requests an opening automatically");
         steps(g,359);check(!g.bridge.passable(),"bridge enforces the six-second wait");
-        check(g.layout.camera.zoom<1.01f,"bridge passage uses the wider transit view");
+        check(Math.abs(g.layout.camera.zoom-Game.TRANSIT_ZOOM)<.01f,"bridge passage uses the closer transit view with room ahead");
         steps(g,61);check(g.bridge.phase==Bridge.OPENING && !g.bridge.passable(),"moving bridge is blocked until clearance exists");
         int tick=g.bridge.ticks;RiverCamera paused=g.layout.camera;g.background();g.advance(.25);
         check(g.bridge.ticks==tick && g.layout.camera==paused,"background freezes bridge and camera");g.pause();steps(g,60);

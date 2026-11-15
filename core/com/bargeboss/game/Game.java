@@ -112,8 +112,8 @@ public final class Game {
     public boolean inWater(float x,float y) {
         return tutorial!=null?TrainingChannel.contains(x,y):x>=Physics.LEFT && x<=Physics.RIGHT && y>=channelTop() && y<=Physics.BOTTOM;
     }
-    public static final float WORK_ZOOM=1.8f,DOCK_ZOOM=2.1f;
-    public static final float PRACTICE_DRIVE_ZOOM=2.2f,PRACTICE_CANAL_ZOOM=1.4f;
+    public static final float WORK_ZOOM=2.15f,DOCK_ZOOM=2.5f,TRANSIT_ZOOM=1.2f;
+    public static final float PRACTICE_DRIVE_ZOOM=2.4f,PRACTICE_CANAL_ZOOM=1.65f;
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
         if(tutorial.lesson==Tutorial.MOVE) {
@@ -122,9 +122,9 @@ public final class Game {
             // Keep the tug touchable while crossing between the two orbits.
             float lead=Math.min(.65f,95/Math.max(1,Physics.length(dx,dy)));
             return Layout.focused(layout.width,layout.height,tug.x+dx*lead,tug.y+dy*lead,
-                    PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.59f);
+                    PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.57f);
         }
-        if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.3f,0,true);
+        if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.5f,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
         float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;
@@ -189,9 +189,9 @@ public final class Game {
             // The long bridge reach is a transit phase even when carrying a load.
             boolean transit=bridgeStage() && tug.y<Feeder.DROP_Y-180 && tug.y>dockY(2)+230;
             boolean overview=cameraOverviewTicks>0;
-            desired=workCamera(transit || overview?1:WORK_ZOOM,transit || overview?0:1,false);
+            desired=workCamera(overview?1:transit?TRANSIT_ZOOM:WORK_ZOOM,transit || overview?0:1,false);
         }
-        float zoom=c.zoom+(desired.camera.zoom-c.zoom)*.035f;
+        float zoom=c.zoom+(desired.camera.zoom-c.zoom)*(tutorial==null && cameraOverviewTicks>0?.04f:.035f);
         // Ease the world focus, not its zoom-dependent camera origin. This avoids
         // a sideways sweep when zoom changes around a far-upstream position.
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);

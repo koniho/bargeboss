@@ -245,6 +245,10 @@ visible hit circle owns the native pointer before water-plane projection; see
 Entrance navigation markers and the two practice buoys join the same depth merge
 as vessels, rope spans, shore caps and factories; lantern halos stay with those
 fixtures. Their water reflections draw before hulls and use water-only clipping.
+Buoy contact/cast shadows also draw before hulls. Sprite roll and delayed heave
+share a waterline pivot with the lamp anchors; a separate horizontal surface clip
+hides the submerged float. This clip follows the water height, never the sprite
+roll, and nests inside the solid-shore cutout. Buoys do not use building fading.
 Vessel navigation fittings stay inside each vessel's shore clip and cargo layering.
 See [entrance marks](navigation-lights.md) and [vessel navigation lamps](vessel-navigation-lights.md)
 for fixed returning directions versus hull-local port/starboard anchors.

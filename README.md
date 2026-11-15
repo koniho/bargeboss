@@ -45,10 +45,13 @@ the last hull clears the exit. All of this stays in the same continuous scene.
 
 The harbor uses a dark industrial palette with animated warm factory lights,
 while boats retain bright, saturated paintwork and registered vessel lamps.
-Harbor/channel entrances have flashing green and red navigation marks, fixed to
-the returning direction (red on the right). Every watercraft carries steady
+Only mouths between distinct regions have paired red and green navigation buoys,
+fixed to the returning direction (red on the right). Screenshot-based steel lantern
+sprites rock and bob with the waves; the water surface masks their submerged bases. Every watercraft carries steady
 red port, green starboard and white stern lights; powered craft also have a white
 masthead light. Their visibility changes naturally as the vessels turn.
+The working camera is closer by default, with tighter docking and modestly closer
+transit framing. Automatic fitting keeps the current tow and berth targets visible.
 Shared visibility culling and redraw scheduling reduce work in wide views;
 see the [night harbor rendering notes](docs/performance/night-harbor.md).
 

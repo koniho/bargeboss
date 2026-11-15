@@ -15,24 +15,12 @@ public final class TrainingChannelView {
         // order so they cover hulls without cutting through nearer buildings.
         StaticTerrain.draw(g,canvas,false);
         ShadowView.factories(g,canvas);
-        float low=Float.MAX_VALUE,high=-Float.MAX_VALUE;
-        for(int corner=0;corner<4;corner++) {
-            float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
-            low=Math.min(low,c.worldX(sx,sy)-35);high=Math.max(high,c.worldX(sx,sy)+35);
-        }
         int gate=g.tutorial.channelGate;
-        for(int i=1;i<TrainingChannel.X.length;i++) {
-            float x=TrainingChannel.X[i],y=TrainingChannel.Y[i];
-            if(x<low || x>high) continue;
-            int color=i<gate?ControlView.GREEN:i==gate?VisualStyle.GOLD:VisualStyle.MUTED;
-            for(int side=-1;side<=1;side+=2) {
-                float yy=y+side*43;
-                p.circle(x,yy,6,VisualStyle.OUTLINE);p.circle(x,yy,4,color);
-                p.line(x,yy,x+13,yy,2,VisualStyle.CREAM);
-                p.poly(new float[]{x+13,yy,x+7,yy,x+10,yy+side*10},color);
-            }
-            for(int j=-5;j<=5;j++) SoftCue.line(p,x,y+j*10-3,x,y+j*10+3,1,SoftCue.animated(g,color));
-            SoftCue.caption(p,i==TrainingChannel.X.length-1?"HARBOR":"GATE "+i,x+20,y,9,color);
+        // One transient lesson cue; physical markers belong only at region mouths.
+        if(g.trainingChannel() && gate<TrainingChannel.X.length) {
+            float x=TrainingChannel.X[gate],y=TrainingChannel.Y[gate];
+            for(int j=-4;j<=4;j++)SoftCue.line(p,x,y+j*10-3,x,y+j*10+3,1,SoftCue.animated(g,0x88ffc52f));
+            SoftCue.caption(p,gate==TrainingChannel.X.length-1?"HARBOR":"NEXT TURN",x+20,y,9,VisualStyle.GOLD);
         }
         HarborView.berths(g,p);
         gateBurst(g,p);

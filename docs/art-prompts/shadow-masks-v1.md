@@ -1,9 +1,9 @@
 # Independent sprite shadow masks
 
 `GenerateShadowMasks` derives shadow alpha from the production tug, barge,
-factory, chimney, yard-prop, warehouse and legacy bridge sprites. It does not
-change their artwork. Seven PNG atlases contain 182 masks: one near-contact
-and one softer cast variant for each of 91 source frames, including all 32
+factory, chimney, yard-prop, warehouse, legacy bridge and lantern-buoy sprites. It does not
+change their artwork. Eight PNG atlases contain 188 masks: one near-contact
+and one softer cast variant for each of 94 source frames, including all 32
 headings of both hull types. Static scenery retains its exact source frame.
 
 Every cell is 128px: the source crop is resampled to 96px with 16px transparent
@@ -43,3 +43,14 @@ shared JVM/ART/J2ObjC command traces.
 shows one unchanged factory sprite over three separately projected soft masks.
 `ShadowActivityPreview` also exports an eight-second actual-render canal animation
 with live factory/yard activity under `out/ambient-review/`; copies are in Downloads.
+
+The buoy shadow atlas adds three variants × contact/cast = six cells. Atlas33
+uses source atlas32; `ShadowArt.atlases()` explicitly skips foam atlas31. Buoy
+color artwork is unchanged; each mask retains its measured waterline pivot.
+
+The buoy atlas adds red, green and yellow near-contact cells 0–2 and soft-cast
+cells 3–5 in `shadow-buoy-v1.png` (768×128). `BuoyArt` rolls these alpha masks
+about each source waterline pivot before flattening them onto water. Both layers
+are clipped to navigable water and drawn before hulls. Atlas 33 is separate from
+foam 31 and color buoy 32; tools must use `ShadowArt.atlases()` rather than a
+contiguous numeric range when enumerating all masks.

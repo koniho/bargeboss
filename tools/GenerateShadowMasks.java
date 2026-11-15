@@ -19,7 +19,7 @@ public final class GenerateShadowMasks {
     }
     public static void main(String[] args)throws Exception {
         boolean check=args.length>0 && args[0].equals("--check");int frames=0;
-        for(int atlas=ShadowArt.FIRST;atlas<=ShadowArt.LAST;atlas++) {
+        for(int atlas:ShadowArt.atlases()) {
             int source=ShadowArt.source(atlas),count=SpriteAtlas.count(source),cols=ShadowArt.columns(atlas);
             BufferedImage sheet=new BufferedImage(cols*N,ShadowArt.rows(atlas)*N,BufferedImage.TYPE_INT_ARGB);
             BufferedImage image=null;String previous="";

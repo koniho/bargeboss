@@ -6,7 +6,7 @@ public final class ShadowActivityTest {
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static boolean near(float a,float b){return Math.abs(a-b)<.00001f;}
     public static void run() {
-        for(int atlas=ShadowArt.FIRST;atlas<=ShadowArt.LAST;atlas++) {
+        for(int atlas:ShadowArt.atlases()) {
             int source=ShadowArt.source(atlas),count=SpriteAtlas.count(source);
             check(SpriteAtlas.count(atlas)==2*count,"each source frame has separate near/soft masks");
             check(!SpriteGrade.applies(atlas),"shadow masks are independent of scenery color grading");
