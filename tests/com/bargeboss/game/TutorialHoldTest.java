@@ -30,7 +30,7 @@ public final class TutorialHoldTest {
             check(g.tutorial.lesson==Tutorial.STEER,"hold must finish after real "+(drag?"steered":"assisted")+" push on "+size[0]+"x"+size[1]);
             check(Physics.length(b.x-Tutorial.PUSH_X,b.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,"lesson requires pushing cargo into the destination zone");
             ReplayInput.up(root,g.pointerX,g.pointerY);
-            for(int i=0;i<2400 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
+            for(int i=0;i<7000 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
             check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding");
         }
         Game root=lesson(960,600),g=root.activeGame();Body b=g.cargo[0];

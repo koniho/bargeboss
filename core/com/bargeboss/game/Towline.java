@@ -33,12 +33,13 @@ public final class Towline {
     public float cargoX() { return cargo.x+cargoEnd*(float)StrictMath.cos(cargo.angle); }
     public float cargoY() { return cargo.y+cargoEnd*(float)StrictMath.sin(cargo.angle); }
     public static boolean clear(Game g,float x,float y,float xx,float yy) {
+        if(g.hasBridge() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))return false;
         if(g.tutorial!=null) {
             int steps=Math.max(1,(int)(Physics.length(xx-x,yy-y)/4));
             for(int i=0;i<=steps;i++) if(!TrainingChannel.contains(x+(xx-x)*i/steps,y+(yy-y)*i/steps)) return false;
             return true;
         }
-        return !(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(y,yy))
+        return !(g.bridgeStage() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))
                 && (g.challengeId!=2 || HarborGeometry.clear(x,y,xx,yy,3));
     }
     public void attach(Game g,Body b) {attach(g,b,g.tug);}

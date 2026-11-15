@@ -22,25 +22,37 @@ transitional art. Reusable art workflows are maintained in
 
 ## Play
 
-Choose **Learn to Drive** for ten hands-on lessons without a timer, traffic or
+Choose **Learn to Drive** for fourteen hands-on lessons without a timer, traffic or
 hull damage: driving, coasting, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
-line, connecting a towline, pulling and releasing. Lessons advance only after the action. **Reset Lesson** gives another try;
+line, towing to a berth, double towing under a bridge, reconfiguring a train,
+narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended shift. Before the cargo lessons, steer
 upstream through seven gates along a narrow industrial channel spanning several
 screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
 the tug while keeping the original drag anchor fixed on the screen. The canal
-opens into the same practice harbor, with both teaching barges already waiting.
+opens into the same practice harbor, with all three teaching barges already waiting.
 Sixteen factory modules, varied building heights, active exhausts and warm
 lighting populate packed industrial blocks behind the quays. Aligned road tiles
 separate the factory rows; the working shoreline apron stays clear.
+Towing practice continues by bringing a barge to the marked berth, connecting a
+second barge directly to the tug, and pulling both underneath the opening bridge.
+Then release one tug line and reconnect that same barge to the other barge to form
+a train. Pull both through the narrow seawalled channel; the lesson waits until
+the last hull clears the exit. All of this stays in the same continuous scene.
+
 The harbor uses a dark industrial palette with animated warm factory lights,
 while boats retain bright, saturated paintwork and registered vessel lamps.
 Shared visibility culling and redraw scheduling reduce work in wide views;
 see the [night harbor rendering notes](docs/performance/night-harbor.md).
 
+- **Joystick:** move the bottom-corner thumb stick toward the direction you want
+  to travel on screen. More travel gives more thrust; release to coast. It responds
+  immediately. **Settings → Joystick position → Left / Right / Off** is available
+  on the title screen and during play, and is saved across restarts.
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
-  farther for more thrust. The control ring stays at your original touch point;
+  farther for more thrust. Keep your finger down for 0.2 seconds to engage; you
+  can start dragging immediately. The control ring stays at your original touch point;
   there is no need to chase the boat. Center the control or release to coast.
   Drag behind the tug to apply astern thrust without turning it around. Tapping the water does not set a route.
 - **Push:** press a cargo barge, then drag to steer the push. Keep your finger

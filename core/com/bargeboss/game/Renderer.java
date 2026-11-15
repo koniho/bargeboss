@@ -7,6 +7,7 @@ public final class Renderer {
         p.beginFrame();
         Game g=root.activeGame();
         p=new SceneryOcclusion(new ViewportPainter(p,g.layout.width,g.layout.height));
+        if(g.mode==Game.SETTINGS){ScreenView.settings(g,p);return;}
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         if(g.tutorial!=null) TrainingChannelView.draw(g,p);
@@ -29,6 +30,7 @@ public final class Renderer {
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);
         else if(g.tutorial!=null) TutorialView.draw(g,p);
+        Joystick.draw(g,p);
     }
     private static void river(Game g,Painter p) {
         HarborView.draw(g,p);

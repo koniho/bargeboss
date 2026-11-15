@@ -1,0 +1,11 @@
+package com.bargeboss.game;
+
+/** Shared player preferences; practice shares these without sharing career rewards. */
+public final class GameSettings {
+    public static final int OFF=0,LEFT=1,RIGHT=2;
+    private int side=LEFT,version;
+    public int joystickSide(){return side;}
+    public int version(){return version;}
+    public void setJoystickSide(int next){if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}
+    void restore(int next){side=next;version=0;}
+}

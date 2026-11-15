@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** All gameplay, timers, gestures and lifecycle behavior live here, never in native hosts. */
 public final class Game {
-    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5;
+    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6;
     public static final int SHIFT_TICKS=180*60, QUOTA=6;
     // Two original-size motion steps per real tick: 2x travel/turning with the
     // same collision resolution, stopping distances and impact thresholds.
@@ -64,25 +64,37 @@ public final class Game {
 
     public Layout layout=Layout.DEFAULT;
     public final Career career=new Career();
+    public GameSettings settings=new GameSettings();
+    public final Joystick joystick=new Joystick();
+    private int settingsReturnMode=TITLE;
     public int challengeId,earnedStars;
     public boolean rankPromoted;
     public Game() { reset(); mode=TITLE; }
     public int quota() { return Challenges.quota(challengeId); }
     public int shiftTicks() { return Challenges.shiftTicks(challengeId); }
     public String challengeTitle() { return Challenges.title(challengeId); }
+    public boolean hasBridge() { return bridgeStage() || tutorial!=null; }
     public boolean bridgeStage() { return challengeId==1 && tutorial==null; }
     public boolean berthEnabled(int berth) { return tutorial==null && challengeId==2 || berth==2; }
     public char berthLetter(int berth) { return tutorial==null && challengeId==2?(char)('A'+berth):'A'; }
     public float dockY(int berth) { return bridgeStage()?-400:challengeId==0 && tutorial==null && berth==2?290:DOCK_Y[berth]; }
-    public float channelTop() { return bridgeStage()?-520:Physics.TOP; }
+    public float channelTop() { return tutorial!=null?TrainingChannel.TOW_END:bridgeStage()?-520:Physics.TOP; }
     public int contractSeconds() { return bridgeStage()?130:68; }
     public int feedInterval() { return bridgeStage()?30*60:14*60; }
     public int feederDrops() { int count=0;for(Feeder f:feeders) count+=f.drops;return count; }
     public void restoreProgress(String value) {
-        if(career.restore(value)) challengeId=career.selectedChallenge();
+        if(value==null || value.length()>192)return;
+        String progress=value;int side=GameSettings.LEFT;
+        if(value.startsWith("BBG1\n")) {
+            String[] parts=value.split("\n",-1);
+            if(parts.length!=3 || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
+            progress=parts[1];side=parts[2].charAt(0)-'0';
+        }
+        if(career.restore(progress)){challengeId=career.selectedChallenge();settings.restore(side);}
     }
-    public String saveProgress() { return career.save(); }
-    public int progressVersion() { return career.version(); }
+    public String saveProgress() { return "BBG1\n"+career.save()+"\n"+settings.joystickSide(); }
+    public int progressVersion() { return career.version()+settings.version(); }
+    public void openSettings(){if(mode==SETTINGS)return;settingsReturnMode=mode;cancelInputs();accumulator=visualAccumulator=0;mode=SETTINGS;}
     public boolean selectChallenge(int id) {
         if(!career.select(id)) return false;
         challengeId=id; return true;
@@ -104,6 +116,7 @@ public final class Game {
     public static final float PRACTICE_DRIVE_ZOOM=2.2f,PRACTICE_CANAL_ZOOM=1.4f;
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
+        if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.3f,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
         float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;
@@ -115,7 +128,7 @@ public final class Game {
     void fitTutorialCamera() { layout=tutorialCamera(); }
     private Body cameraLoad() {
         Body held=workingCargo();
-        if(tutorial!=null && tutorial.lesson==Tutorial.LINK && held==null)return cargo[2];
+        if(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE) && held==null)return cargo[2];
         if(held!=null && !held.deliveryRecorded) return held;
         if(tow.primary()!=null) return tow.primary();
         Body result=null;float nearest=190;
@@ -136,7 +149,7 @@ public final class Game {
         }
         // Fit the working hulls and, when relevant, their actual elevated tie point.
         // Far-away held loads do not drag the camera away from the player.
-        if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230 && !(tutorial!=null && tutorial.lesson==Tutorial.LINK)) {load=null;docking=false;}
+        if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230 && !(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE))) {load=null;docking=false;}
         RiverCamera base=RiverCamera.DEFAULT;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         int count=load==null?1:docking?3:2;
@@ -197,9 +210,14 @@ public final class Game {
         if(practice!=null) return practice.automationStatus();
         RiverCamera c=layout.camera;
         Body load=null;for(Body b:cargo) if(b!=null && b.active) { load=b;break; }
+        Body spare=cargo[2];Towline lead=tow.incoming(load),spareLead=tow.incoming(spare);
         return status()+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
                 +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
-                +"; camera "+c.left+","+c.top+","+c.scale+","+c.worldTop+","+c.worldRight;
+                +"; spare "+(spare==null?"none":spare.x+","+spare.y)
+                +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
+                +"; spare leader "+(spareLead==null?-1:spareLead.leader.id)
+                +(tutorial==null?"":"; tow target "+tutorial.towTargetX()+","+tutorial.towTargetY(this))
+                +"; cast phase "+ropePhase+"; joystick side "+settings.joystickSide()+"; camera "+c.left+","+c.top+","+c.scale+","+c.worldTop+","+c.worldRight;
     }
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
@@ -207,6 +225,7 @@ public final class Game {
         returnToShift=mode!=TITLE && mode!=FINISH && mode!=CHALLENGES;
         practice=new Game(); practice.reset(); practice.tutorial=new Tutorial();
         practice.restoreProgress(saveProgress());
+        practice.settings=settings;
         practice.layout=layout.camera.zoom==1 && layout.camera.worldTop==148?layout:new Layout(layout.width,layout.height);
         practice.hapticsEnabled=hapticsEnabled;
         practice.tutorial.setup(practice);practice.fitTutorialCamera();
@@ -215,7 +234,7 @@ public final class Game {
     public void render(Painter painter) { Renderer.draw(this,painter); }
     public String status() {
         if(practice!=null) return practice.status();
-        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
+        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==SETTINGS?"Settings":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
         String activity=ropePhase==1?"; rope flying":ropePhase==2?"; rope retracting":ropePhase==3?ropeToTug?"; towline caught":"; bollard hit":"";
         if(tow.count()>0) activity="; towing "+tow.loadCount(tug)+" barges";
         for(Body b:cargo) if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) activity="; securing load";
@@ -268,6 +287,9 @@ public final class Game {
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(mapPointer!=-1 || pointer || x<0 || x>layout.width || y<0 || y>layout.height) return;
+        if(Joystick.hit(this,x,y)) {
+            beginDown(x,y,false);mapPointer=id;joystick.begin(this,x,y);haptic(HAPTIC_TICK);return;
+        }
         boolean river=liveRiverInput() && layout.camera.contains(x,y);
         if(river && liveButton(x,y)) river=false;
         if(river) beginDown(layout.camera.worldX(x,y),layout.camera.worldY(x,y),true);
@@ -277,16 +299,18 @@ public final class Game {
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(id!=mapPointer) return;
+        if(joystick.active){pointerX=x;pointerY=y;joystick.move(this,x,y);return;}
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(id!=mapPointer) return;
         mapPointer=-1;
+        if(joystick.active){cancel();return;}
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
     private boolean liveButton(float x,float y) {
-        return layout.box(Layout.HAPTICS).contains(x,y) || layout.box(Layout.PAUSE).contains(x,y)
+        return layout.box(Layout.SETTINGS).contains(x,y) || layout.box(Layout.HAPTICS).contains(x,y) || layout.box(Layout.PAUSE).contains(x,y)
                 || layout.box(Layout.HELP).contains(x,y)
                 || layout.box(Layout.PRACTICE).contains(x,y);
     }
@@ -303,7 +327,8 @@ public final class Game {
     }
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
-        if(pushing) { navigating=false; reversing=false; control=COASTING; }
+        if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
+        joystick.cancel();
         pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
@@ -392,21 +417,26 @@ public final class Game {
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
         pointer=true; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
         if(!river) return;
-        Body connected=null;float closest=Float.MAX_VALUE;
-        for(Body candidate:cargo)if(candidate!=null && tow.incoming(candidate)!=null && candidate.hit(x,y,12)) {
-            float distance=Physics.length(x-candidate.x,y-candidate.y);if(distance<closest){connected=candidate;closest=distance;}
+        // Pick the nearest eligible hull before classifying the gesture. A
+        // connected neighbor's padded hit area must not steal the spare's center
+        // while the player is reconfiguring a close pair of barges.
+        int cargoHit=-1;float closest=Float.MAX_VALUE;
+        for(int i=0;i<cargo.length;i++) {
+            Body b=cargo[i];if(b==null || !b.active || !b.hit(x,y,tow.incoming(b)!=null?12:22))continue;
+            float distance=Physics.length(x-b.x,y-b.y);
+            if(distance<closest){closest=distance;cargoHit=i;}
         }
-        boolean onConnected=connected!=null && connected.hit(x,y,12)
-                && (!tug.hit(x,y,0) || Physics.length(x-connected.x,y-connected.y)<Physics.length(x-tug.x,y-tug.y));
-        if(tug.hit(x,y,8) && !onConnected) {
-            held=-2; reversing=false; control=HOLDING; haptic(HAPTIC_TICK); return;
+        if(tug.hit(x,y,8) && Physics.length(x-tug.x,y-tug.y)<=closest) {
+            held=-2;reversing=false;control=HOLDING;haptic(HAPTIC_TICK);return;
         }
-        for(int i=0;i<cargo.length;i++) if(cargo[i]!=null && cargo[i].active && (onConnected?cargo[i]==connected:cargo[i].hit(x,y,22))) {
-            if(cargo[i].lineAttached || ((ropePhase==1 || ropePhase==2) && cargo[i]==ropeBody)) { selected=i; return; }
-            held=selected=i; navigating=false; reversing=false; control=HOLDING;
-            ropeDragging=canTie(cargo[i]); haptic(HAPTIC_TICK); return;
+        if(cargoHit>=0) {
+            Body b=cargo[cargoHit];
+            if(b.lineAttached || ((ropePhase==1 || ropePhase==2) && b==ropeBody)){selected=cargoHit;return;}
+            held=selected=cargoHit;navigating=false;reversing=false;control=HOLDING;
+            ropeDragging=canTie(b);haptic(HAPTIC_TICK);
         }
     }
+
     public void move(float x,float y) {
         if(practice!=null) { practice.move(x,y); return; }
         if(pointer) {
@@ -472,6 +502,16 @@ public final class Game {
             cancel(); return;
         }
         boolean tap=Physics.length(x-downX,y-downY)<22;
+        if(mode==SETTINGS) {
+            if(tap) {
+                if(tapped(Layout.JOYSTICK_LEFT,x,y))settings.setJoystickSide(GameSettings.LEFT);
+                else if(tapped(Layout.JOYSTICK_RIGHT,x,y))settings.setJoystickSide(GameSettings.RIGHT);
+                else if(tapped(Layout.JOYSTICK_OFF,x,y))settings.setJoystickSide(GameSettings.OFF);
+                else if(tapped(Layout.SETTINGS_BACK,x,y))mode=settingsReturnMode;
+            }
+            cancel();return;
+        }
+        if(tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
         if(tap && tapped(Layout.HAPTICS,x,y)) {
             hapticsEnabled=!hapticsEnabled; hapticPending=0; if(hapticsEnabled) haptic(HAPTIC_TICK);
         } else if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
@@ -627,7 +667,21 @@ public final class Game {
     }
     private void motionStep() {
         engineDemand=0;reversing=false;
-        if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) pushCargo(cargo[held]);
+        if(joystick.active) {
+            float throttle=joystick.throttle();
+            if(throttle>0) {
+                float dx=(joystick.x-joystick.y/RiverCamera.DEPTH)/(2*RiverCamera.Q);
+                float dy=(joystick.x+joystick.y/RiverCamera.DEPTH)/(2*RiverCamera.Q);
+                float len=Math.max(.001f,Physics.length(dx,dy));
+                navigating=true;targetX=tug.x+dx/len*200;targetY=tug.y+dy/len*200;
+                reversing=dx*(float)StrictMath.cos(tug.angle)+dy*(float)StrictMath.sin(tug.angle)<-.5f*len;
+                control=reversing?REVERSING:MOVING;
+                navigate(targetX,targetY,(reversing?60:88)*throttle,reversing);
+            } else {
+                navigating=false;control=tug.speed()>3?COASTING:IDLE;
+                tug.vx*=.985f;tug.vy*=.985f;tug.spin*=.985f;
+            }
+        } else if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) pushCargo(cargo[held]);
         else if(pushing && held==-2) {
             float dx=pointerX-downX,dy=pointerY-downY,len=Physics.length(dx,dy);
             if(manualSteering) {
@@ -650,8 +704,8 @@ public final class Game {
         Physics.integrate(tug);
         if(tutorial!=null) TrainingChannel.collideWater(tug);
         else damage(Physics.banks(tug,channelTop(),Physics.BOTTOM,challengeId==2));
-        if(bridgeStage()) damage(bridge.collide(tug));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(Physics.banks(b,channelTop(),Physics.BOTTOM,challengeId==2));if(bridgeStage()) damage(bridge.collide(b)); }
+        if(hasBridge()) damage(bridge.collide(tug));
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(Physics.banks(b,channelTop(),Physics.BOTTOM,challengeId==2));if(hasBridge()) damage(bridge.collide(b)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;

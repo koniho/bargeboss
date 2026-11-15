@@ -82,7 +82,20 @@ public final class Parity implements Painter {
         progression(p);
         feeders(p);
         bridge(p);
+        joystick(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    private static void joystick(Parity p) {
+        Game g=new Game();g.configureCanvas(1333.3334f,600);g.startTutorial();
+        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}) {
+            ReplayInput.tap(g,Layout.SETTINGS);
+            ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:side==GameSettings.RIGHT?Layout.JOYSTICK_RIGHT:Layout.JOYSTICK_OFF);
+            Renderer.draw(g,p);p.add(filenameHash(g.saveProgress()));ReplayInput.tap(g,Layout.SETTINGS_BACK);
+            Game active=g.activeGame();float x=Joystick.centerX(active),y=Joystick.centerY(active);
+            g.pointerDown(4,x,y);g.pointerMove(4,x+28,y-28);
+            for(int tick=0;tick<30;tick++){g.step();p.value(active.tug.x);p.value(active.tug.y);p.value(active.tug.angle);}
+            Renderer.draw(g,p);g.pointerUp(4,x+28,y-28);g.step();Renderer.draw(g,p);
+        }
     }
     private static void bridge(Parity p) {
         Game g=new Game();g.challengeId=1;g.reset();

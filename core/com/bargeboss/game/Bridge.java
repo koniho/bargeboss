@@ -8,14 +8,22 @@ public final class Bridge {
     public float lift() { return phase==OPEN?1:phase==OPENING?ticks/120f:phase==CLOSING?1-ticks/120f:0; }
     public boolean passable() { return lift()>=.95f; }
     public boolean separates(float y,float target) { return (y-Y)*(target-Y)<0; }
+    /** The bridge spans this harbor, not every waterway sharing its Y value. */
+    public boolean crosses(float x,float y,float xx,float yy) {
+        if(!separates(y,yy))return false;
+        float at=x+(xx-x)*(Y-y)/(yy-y);return at>=Physics.LEFT && at<=Physics.RIGHT;
+    }
+    private boolean near(Body b,float distance) {
+        return b.active && Math.abs(b.y-Y)<distance && b.x>=Physics.LEFT-distance && b.x<=Physics.RIGHT+distance;
+    }
     private boolean near(Game g,float distance) {
-        for(int i=0;i<Towline.CAPACITY;i++){Towline l=g.tow.link(i);if(l!=null && l.cargo!=null && separates(l.leader.y,l.cargo.y))return true;}
-        if(Math.abs(g.tug.y-Y)<distance) return true;
-        for(Body b:g.cargo) if(b!=null && b.active && Math.abs(b.y-Y)<distance) return true;
+        for(int i=0;i<Towline.CAPACITY;i++){Towline l=g.tow.link(i);if(l!=null && l.cargo!=null && crosses(l.leader.x,l.leader.y,l.cargo.x,l.cargo.y))return true;}
+        if(near(g.tug,distance)) return true;
+        for(Body b:g.cargo) if(b!=null && near(b,distance)) return true;
         return false;
     }
     public void step(Game g) {
-        if(!g.bridgeStage()) return;
+        if(!g.hasBridge()) return;
         ticks++;
         switch(phase) {
             case CLOSED: if(near(g,190)) { phase=WAITING;ticks=0;g.tell("BRIDGE REQUESTED / WAIT FOR GREEN"); } break;
@@ -33,6 +41,7 @@ public final class Bridge {
         if(passable() || !b.active) return 0;
         float impact=0;
         for(int i=0;i<3;i++) {
+            if(b.discX(i)+b.radius<Physics.LEFT || b.discX(i)-b.radius>Physics.RIGHT)continue;
             float delta=b.discY(i)-Y,reach=b.radius+12;
             if(Math.abs(delta)>=reach) continue;
             float side=b.y>=Y?1:-1;

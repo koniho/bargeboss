@@ -15,18 +15,19 @@ public final class TrainReview {
     }
     public static void main(String[] args)throws Exception {
         Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
-        g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);boolean aim=false,pull=false,release=false;
+        g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);boolean aim=false,pull=false,release=false,bridge=false;
         int trainTicks=0;
-        for(int tick=0;tick<2400 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
-            if(g.tutorial.lesson==Tutorial.LINK && !aim && g.ropePhase==0) {
+        for(int tick=0;tick<10000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
+            if(g.tutorial.lesson==Tutorial.LINK && !aim && g.ropePhase==0 && g.tow.incoming(g.cargo[2])==null) {
                 Body b=g.cargo[2],parent=g.cargo[0];ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,parent.x,parent.y);
                 capture(root,"train-link-aim");ReplayInput.up(root,parent.x,parent.y);aim=true;
             } else ReplayInput.tutorial(root);
             root.step();
-            if(g.tutorial.lesson==Tutorial.TRAIN && ++trainTicks==40){capture(root,"train-pulling");pull=true;}
+            if(g.tutorial.lesson==Tutorial.TRAIN && !pull && g.cargo[0].y<-240){capture(root,"train-pulling");pull=true;}
+            if(g.tutorial.lesson==Tutorial.BRIDGE && !bridge && g.bridge.passable() && g.tug.y<Bridge.Y && g.cargo[2].y>Bridge.Y){capture(root,"train-double-bridge");bridge=true;}
             if(g.tutorial.lesson==Tutorial.RELEASE && !release){capture(root,"train-uncouple");release=true;}
         }
-        if(!aim || !pull || !release || g.tutorial.lesson!=Tutorial.DONE)throw new AssertionError("Train tutorial review did not complete: "+g.tutorial.lesson);
+        if(!aim || !pull || !release || !bridge || g.tutorial.lesson!=Tutorial.DONE)throw new AssertionError("Train tutorial review did not complete: "+g.tutorial.lesson);
         capture(root,"train-tutorial-complete");System.out.println("Barge train linking, loaded pull and uncoupling exported to out/");
     }
 }

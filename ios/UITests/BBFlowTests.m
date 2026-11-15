@@ -139,6 +139,53 @@
         thenDragToCoordinate:[self river:stage x:boat.x+thrust*dx/length y:boat.y+thrust*dy/length status:status]
         withVelocity:500 thenHoldForDuration:0.35];
 }
+// Tow-course driving also exercises the new native joystick transport. The
+// fixed pad is stable while camera pan/zoom and the heavy tow keep moving.
+- (void)joystickDrive:(XCUIElement *)stage to:(CGPoint)target status:(NSString *)status {
+    CGPoint tug=[self worldPositionInStatus:status tag:@"tug"];
+    double dx=target.x-tug.x,dy=target.y-tug.y,distance=hypot(dx,dy);
+    double sx=dx+dy,sy=(dy-dx)*0.57735027,length=fmax(1,hypot(sx,sy));
+    CGSize size=[self logicalSize:stage];
+    NSInteger side=[self integerInStatus:status tag:@"joystick side"];
+    double x=side==2?size.width-86:86,y=size.height-118;
+    double travel=distance<20?0:distance<60?30:42;
+    [[self point:stage x:x y:y] pressForDuration:0.05
+        thenDragToCoordinate:[self point:stage x:x+sx/length*travel y:y+sy/length*travel]
+        withVelocity:500 thenHoldForDuration:distance<80?0.6:1.3];
+}
+- (void)castFrom:(CGPoint)source to:(CGPoint)target stage:(XCUIElement *)stage status:(NSString *)status {
+    [[self river:stage x:source.x y:source.y status:status] pressForDuration:0.05
+        thenDragToCoordinate:[self river:stage x:target.x y:target.y status:status]
+        withVelocity:300 thenHoldForDuration:0.1];
+}
+- (void)finishTowCourse:(XCUIElement *)stage {
+    NSUInteger seen=0;
+    for(int attempt=0;attempt<600;attempt++) {
+        NSString *status=(NSString *)stage.value;NSInteger lesson=[self integerInStatus:status tag:@"lesson"];
+        if(lesson==14)break;
+        XCTAssertTrue(lesson>=7 && lesson<14,@"Unexpected tow lesson: %@",status);seen|=1u<<lesson;
+        if([self integerInStatus:status tag:@"cast phase"]!=0){[self waitFor:@"; cast phase 0;" on:stage];continue;}
+        CGPoint tug=[self worldPositionInStatus:status tag:@"tug"],cargo=[self worldPositionInStatus:status tag:@"cargo"],spare=[self worldPositionInStatus:status tag:@"spare"];
+        NSInteger cargoLeader=[self integerInStatus:status tag:@"cargo leader"],spareLeader=[self integerInStatus:status tag:@"spare leader"];
+        if(lesson==8 || lesson==10 || lesson==12) {
+            [self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
+        } else if(lesson==7 || lesson==9) {
+            CGPoint b=cargoLeader==0?spare:cargo;NSInteger leader=cargoLeader==0?spareLeader:cargoLeader;
+            if(leader>=0)[[self river:stage x:b.x y:b.y status:status] tap];
+            else if(hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
+            else [self castFrom:b to:tug stage:stage status:status];
+        } else if(lesson==11) {
+            if(spareLeader>=0)[[self river:stage x:spare.x y:spare.y status:status] tap];
+            else if(cargoLeader<0)[self castFrom:cargo to:tug stage:stage status:status];
+            else [self castFrom:spare to:cargo stage:stage status:status];
+        } else if(lesson==13) {
+            CGPoint b=cargoLeader>=0?cargo:spare;
+            [[self river:stage x:b.x y:b.y status:status] tap];
+        }
+    }
+    [self waitFor:@"lesson 14;" on:stage];
+    XCTAssertEqual(seen & 0x3f00u,0x3f00u,@"Native gestures visit berth, double tow, bridge, reconfiguration, channel and release lessons");
+}
 - (void)driveOpenWaterPractice:(XCUIElement *)stage {
     NSInteger previousMarker=0;NSUInteger seenMarkers=0;
     for(int attempt=0;attempt<100;attempt++) {
@@ -266,14 +313,7 @@
             thenDragToCoordinate:[self river:stage x:boat.x y:boat.y status:towStatus]
             withVelocity:300 thenHoldForDuration:0.1];
     [self waitFor:@"lesson 8" on:stage];
-    NSString *pullStatus=(NSString *)stage.value;
-    boat=[self worldPositionInStatus:pullStatus tag:@"tug"];
-    [[self river:stage x:boat.x y:boat.y status:pullStatus] pressForDuration:0.35
-            thenDragToCoordinate:[self river:stage x:boat.x y:boat.y-100 status:pullStatus]
-            withVelocity:100 thenHoldForDuration:2.5];
-    [self waitFor:@"lesson 9" on:stage];
-    b=[self worldPosition:stage tag:@"cargo"];[[self river:stage x:b.x y:b.y] tap];
-    [self waitFor:@"lesson 10" on:stage];
+    [self finishTowCourse:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
     [self tapMenu:stage x:770 y:446];

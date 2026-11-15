@@ -103,13 +103,24 @@ public final class ReplayInput {
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
                 } break;
             case Tutorial.PULL:
+            case Tutorial.BRIDGE:
             case Tutorial.TRAIN:
-                if(!g.pointer) down(root,g.tug.x,g.tug.y);
-                move(root,g.downX,g.downY-100);break;
+                drive(g,g.tutorial.towTargetX(),g.tutorial.towTargetY(g));break;
+            case Tutorial.DOUBLE:
+                if(g.ropePhase==0) {
+                    Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];
+                    if(Tutorial.direct(g,b))break;
+                    if(g.tow.incoming(b)!=null){if(g.pointer)up(root,g.pointerX,g.pointerY);down(root,b.x,b.y);up(root,b.x,b.y);break;}
+                    if(Physics.length(b.x-g.tug.x,b.y-g.tug.y)>145){drive(g,b.x-65,b.y-85);break;}
+                    if(g.pointer)up(root,g.pointerX,g.pointerY);
+                    down(root,b.x,b.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
+                }break;
             case Tutorial.LINK:
-                if(g.ropePhase==0 && !g.tow.connected(g.cargo[2],g.tug)) {
+                if(g.ropePhase==0) {
                     if(g.pointer)up(root,g.pointerX,g.pointerY);
                     Body spare=g.cargo[2],parent=g.cargo[0];
+                    if(g.tow.incoming(spare)!=null){down(root,spare.x,spare.y);up(root,spare.x,spare.y);break;}
+                    if(!g.tow.connected(parent,g.tug)){down(root,parent.x,parent.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);break;}
                     down(root,spare.x,spare.y);move(root,parent.x,parent.y);up(root,parent.x,parent.y);
                 }break;
             case Tutorial.RELEASE:

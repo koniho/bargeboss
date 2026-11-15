@@ -236,3 +236,8 @@ Run `./check.sh`, `./check-art.sh` on the development phone and `./preview.sh`.
 checks protect ordering, timing and cost. Review `out/shoreline-hulls-*.png` and
 the fade sequence, then validate the native build. CI runs translated iOS/JVM
 parity. Copy requested visual reviews to Downloads.
+
+The optional joystick is a screen-space HUD overlay drawn after tutorial cues.
+It never participates in vessel/rope/shore depth sorting or scenery fades. Its
+visible hit circle owns the native pointer before water-plane projection; see
+[joystick input and settings](../gameplay/joystick.md).

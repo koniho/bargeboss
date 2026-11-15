@@ -42,7 +42,7 @@ public final class TutorialView {
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
         Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
-        Body target=t.lesson==Tutorial.LINK?g.cargo[2]:g.cargo[0];
+        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
         boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
         boolean unloading=secured && target.unloadingTicks>0;
         Lettering.draw(coach,secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title(),54,137,19,PAPER);
@@ -54,6 +54,12 @@ public final class TutorialView {
                 wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine();
         String second=secured?(unloading?"THE NEXT BARGE IS WAITING UPSTREAM.":"THE CREW WILL UNLOAD HER NEXT."):
                 approach?"APPROACH THE GLOWING BARGE.":wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine();
+        if(t.lesson==Tutorial.LINK && (g.tow.incoming(g.cargo[2])==null || g.tow.incoming(g.cargo[0])==null)) {
+            first="DRAG THE FREE BARGE TO THE TOWED ONE.";second="RELEASE TO MAKE A SINGLE-FILE TRAIN.";
+        }
+        if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
+            first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
+        }
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
@@ -90,14 +96,40 @@ public final class TutorialView {
             float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
             p.rect(x-54,y-12,108,24,0x40101c30);
             Lettering.center(p,"TAP TO LET GO",x,y-4,10,ControlView.GREEN);
+        } else if(t.lesson==Tutorial.DOUBLE) {
+            Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];
+            if(Physics.length(b.x-g.tug.x,b.y-g.tug.y)>150){approach(g,p,river,b,pulse);return;}
+            ControlView.ring(g,river,b.x,b.y,44+pulse,1,VisualStyle.GOLD,2);
+            ControlView.arrow(g,river,b.x,b.y,g.tug.x,g.tug.y,ControlView.GREEN);
+            SoftCue.caption(river,g.tow.incoming(b)!=null?"TAP TO UNLINK":"DRAG TO TUG",b.x,b.y+38,9,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.LINK) {
+            if(!g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
+                Body head=g.tow.incoming(g.cargo[0])==null?g.cargo[0]:g.cargo[2];
+                if(Physics.length(head.x-g.tug.x,head.y-g.tug.y)>150){approach(g,p,river,head,pulse);return;}
+                ControlView.ring(g,river,head.x,head.y,44+pulse,1,VisualStyle.GOLD,2);
+                ControlView.arrow(g,river,head.x,head.y,g.tug.x,g.tug.y,ControlView.GREEN);return;
+            }
             Body spare=g.cargo[2],parent=g.cargo[0];
+            if(g.tow.incoming(parent)==null){spare=g.cargo[0];parent=g.cargo[2];}
+            if(g.tow.incoming(spare)!=null) {
+                ControlView.ring(g,river,spare.x,spare.y,44+pulse,1,VisualStyle.GOLD,2);
+                SoftCue.caption(river,"TAP TO UNLINK",spare.x,spare.y+35,9,VisualStyle.GOLD);return;
+            }
             ControlView.ring(g,river,spare.x,spare.y,44+pulse,1,VisualStyle.GOLD,2);
             ControlView.ring(g,river,parent.x,parent.y,44+pulse,1,ControlView.GREEN,2);
             ControlView.arrow(g,river,spare.x,spare.y-30,parent.x,parent.y+30,ControlView.GREEN);
             SoftCue.caption(river,"DRAG THIS BARGE",spare.x,spare.y+35,9,VisualStyle.GOLD);
-        } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.TRAIN) {
-            ControlView.arrow(g,river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.BRIDGE || t.lesson==Tutorial.TRAIN) {
+            driveArrow(g,river,t.towTargetX(),t.towTargetY(g),t.lesson==Tutorial.BRIDGE && !g.bridge.passable()?"WAIT FOR GREEN":null);
+            if(t.lesson==Tutorial.PULL) {
+                ControlView.ring(g,river,Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,Tutorial.TOW_BERTH_RADIUS+pulse,1,ControlView.GREEN,2);
+                SoftCue.caption(river,"TOW BERTH",Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,10,ControlView.GREEN);
+            } else {
+                float y=t.lesson==Tutorial.BRIDGE?Tutorial.BRIDGE_CLEAR_Y:Tutorial.TRAIN_CLEAR_Y;
+                int mask=t.lesson==Tutorial.BRIDGE?t.bridgeCrossed:t.trainCrossed;
+                SoftCue.line(river,t.lesson==Tutorial.TRAIN?270:200,y,t.lesson==Tutorial.TRAIN?330:400,y,2,SoftCue.animated(g,ControlView.GREEN));
+                SoftCue.caption(river,"CLEAR BOTH LOADS: "+Integer.bitCount(mask)+" / 2",300,y-20,9,ControlView.GREEN);
+            }
         } else if(g.cargo[0]!=null && g.cargo[0].active) {
             Body b=g.cargo[0];
             if(!b.lineAttached && g.heldCargo()!=b && !g.canTie(b))ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,2);

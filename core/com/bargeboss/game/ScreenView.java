@@ -29,6 +29,9 @@ public final class ScreenView {
         p.rect(pause.centerX()-10,pause.y+10,6,20,PAPER); p.rect(pause.centerX()+4,pause.y+10,6,20,PAPER);
     }
     private static void haptics(Game g,Painter p) {
+        Layout.Box setup=g.layout.box(Layout.SETTINGS);
+        VisualStyle.panel(p,setup.x,setup.y,setup.w,setup.h,0xff203047);
+        center(p,"SETTINGS",setup.centerX(),setup.y+15,10,PAPER);
         Layout.Box b=g.layout.box(Layout.HAPTICS);
         VisualStyle.panel(p,b.x,b.y,b.w,b.h,0xff203047);
         center(p,"HAPTICS",b.centerX(),b.y+7,9,MUTED);
@@ -107,7 +110,7 @@ public final class ScreenView {
         p=menu(g,p);
         overlay(p,105,411);
         center(p,"CAPTAIN'S FIELD GUIDE",480,133,24,GOLD);
-        instruction(p,1,185,"DRAG THE TUG","Pull farther for thrust. Release to coast.");
+        instruction(p,1,185,"DRAG OR USE JOYSTICK","Pull farther for thrust. Release to coast.");
         instruction(p,2,251,"DRAG THE CARGO","Press, drag and hold. Center for assist.");
         instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
         instruction(p,4,383,"LINK A BARGE TRAIN","Drag cargo to tug or barge. Release to link.");
@@ -120,6 +123,19 @@ public final class ScreenView {
     private static void instruction(Painter p,int index,float y,String title,String detail) {
         VisualStyle.panel(p,106,y-3,39,39,0xff344453); center(p,""+index,126,y+6,20,GOLD);
         text(p,title,159,y,16,PAPER); text(p,detail,159,y+28,10,MUTED);
+    }
+    public static void settings(Game g,Painter p) {
+        p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);overlay(p,100,405);
+        center(p,"SETTINGS",480,138,28,GOLD);
+        center(p,"JOYSTICK POSITION",480,208,18,PAPER);
+        center(p,"TAP-AND-DRAG DRIVING REMAINS AVAILABLE.",480,244,11,MUTED);
+        int side=g.settings.joystickSide();
+        button(g,p,Layout.JOYSTICK_LEFT,"LEFT",side==GameSettings.LEFT);
+        button(g,p,Layout.JOYSTICK_RIGHT,"RIGHT",side==GameSettings.RIGHT);
+        button(g,p,Layout.JOYSTICK_OFF,"OFF",side==GameSettings.OFF);
+        center(p,"POINT YOUR THUMB WHERE YOU WANT TO GO.",480,365,12,PAPER);
+        center(p,"PUSH FARTHER FOR THRUST. RELEASE TO COAST.",480,387,10,MUTED);
+        button(g,p,Layout.SETTINGS_BACK,"BACK",true);
     }
     public static void pause(Game g,Painter p) {
         p=menu(g,p);

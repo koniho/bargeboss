@@ -4,7 +4,10 @@ package com.bargeboss.game;
 public final class BridgeView {
     private BridgeView() {}
     public static void draw(Game g,Painter canvas) {
-        RiverCamera c=g.layout.camera;Painter world=new RiverPainter(canvas,c);
+        RiverCamera c=g.layout.camera;
+        float centerX=c.screenX(300,Bridge.Y),centerY=c.screenY(300,Bridge.Y);
+        if(centerX+440*c.scale<0 || centerX-440*c.scale>g.layout.width || centerY+230*c.scale<0 || centerY-350*c.scale>g.layout.height)return;
+        Painter world=new RiverPainter(canvas,c);
         ArticulatedModel.Pose pose=BridgeModel.MODEL.pose(g.bridge.lift());
         BridgeModel.MODEL.draw(g,canvas,pose);
         for(int i=0;i<BridgeModel.LIGHTS.length;i++) {

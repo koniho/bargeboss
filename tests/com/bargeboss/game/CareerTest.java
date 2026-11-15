@@ -83,7 +83,7 @@ public final class CareerTest {
         practice.tutorial.lesson=Tutorial.TIE;practice.tutorial.setup(practice);
         practice.delivered=10; practice.score=10000;
         practice.ticks=practice.shiftTicks()-1; practice.step();
-        for(int i=0;i<1200 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
+        for(int i=0;i<7000 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
         check(practice.tutorial.lesson==Tutorial.DONE && practice.earnedStars==0,"tutorial completion never records challenge rewards");
         check(game.progressVersion()==version && game.saveProgress().equals(saved),"practice leaves parent career and dirty version unchanged");
         ReplayInput.tap(game,Layout.START);

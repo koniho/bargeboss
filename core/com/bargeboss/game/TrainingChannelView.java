@@ -38,6 +38,7 @@ public final class TrainingChannelView {
         HarborAtmosphere.bankHaze(g,canvas);
         LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
         factoriesAndVessels(g,canvas);
+        BridgeView.draw(g,canvas);
         DockView.draw(g,canvas);
         if(g.trainingChannel()) {
             int next=Math.min(gate,TrainingChannel.X.length-1);
