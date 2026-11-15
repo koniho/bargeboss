@@ -354,6 +354,7 @@ atlases are `assets/sprites/barge-arcade-v3-16.png` and
 and input roles are in `docs/art-prompts/barge-arcade-v3-*.txt`.
 
 Dynamic surface lighting now covers watercraft, cargo and floating buoys. Nearby
-quay, work and lock lamps, plus tutorial factory lights, brighten facing surfaces
-with continuous falloff. The shared response-mask system is ready for selected
+quay, work and lock lamps, plus tutorial factory lights, remove a soft navy
+shading layer from facing surfaces with continuous falloff. Unlit faces darken;
+lit faces recover their original colors. Navigation lamps and glowing cores stay bright. The shared response-mask system is ready for selected
 scenery receivers; see [surface lighting and rollout](docs/rendering/surface-lighting.md).

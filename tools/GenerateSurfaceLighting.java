@@ -9,6 +9,18 @@ import javax.imageio.ImageIO;
  * per receiver when available; the runtime directional response contract stays unchanged. */
 public final class GenerateSurfaceLighting {
     private static final int N=SurfaceLightArt.CELL;
+    static float emissiveProtection(int source,int frame,float u,float v){
+        float protection=0;
+        if(source==SpriteAtlas.TUG)for(int k=0;k<TugLightArt.COUNT;k++)if(TugLightArt.visible(k,frame)){
+            float distance=Physics.length(u-TugLightArt.u(k,frame),v-TugLightArt.v(k,frame));
+            protection=Math.max(protection,Physics.clamp((.032f-distance)/.012f,0,1));
+        }
+        if(source==SpriteAtlas.BUOY){
+            float distance=Physics.length(u-BuoyArt.lampX(frame),v-BuoyArt.lampY(frame));
+            protection=Physics.clamp((.065f-distance)/.02f,0,1);
+        }
+        return protection;
+    }
     public static void main(String[] args)throws Exception{
         boolean check=args.length>0 && args[0].equals("--check");int frames=0;
         for(int source:SurfaceLightArt.sources()){
@@ -31,8 +43,11 @@ public final class GenerateSurfaceLighting {
                         red+=((pixel>>>16)&255)*a;green+=((pixel>>>8)&255)*a;blue+=(pixel&255)*a;total+=a;
                     }
                     if(x==0 || y==0 || x==N-1 || y==N-1 || alpha<245 || total==0)continue;
-                    int rr=Math.min(255,(int)(red/(double)total*1.5+42)),gg=Math.min(255,(int)(green/(double)total*1.42+30)),bb=Math.min(255,(int)(blue/(double)total*1.25+18));
-                    pixels[y*N+x]=(alpha<<24)|(rr<<16)|(gg<<8)|bb;
+                    int rr=(int)(red/total),gg=(int)(green/total),bb=(int)(blue/total);
+                    float protect=emissiveProtection(source,f,(x+.5f)/N,(y+.5f)/N);
+                    // Preserve painted warm window cores, not white cabin paint or yellow hull rails.
+                    if(source==SpriteAtlas.TUG && y>N*.14f && y<N*.52f && rr>220 && gg>155 && bb<gg*.85f)protect=1;
+                    pixels[y*N+x]=(Math.round(alpha*(1-protect))<<24)|0x081220;
                     minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
                 }
                 float cx=(minX+maxX)*.5f,cy=(minY+maxY)*.5f,rx=Math.max(1,(maxX-minX)*.5f),ry=Math.max(1,(maxY-minY)*.5f);
@@ -45,7 +60,9 @@ public final class GenerateSurfaceLighting {
                         if(len>1){nx/=len;ny/=len;}
                         float nz=(float)StrictMath.sqrt(Math.max(0,1-nx*nx-ny*ny));
                         float response=Physics.clamp((nx*lx+ny*ly)*.85f+nz*.35f,0,1);
-                        int alpha=Math.round((pixel>>>24)*response);
+                        float sum=0;
+                        for(int face=0;face<4;face++)sum+=Physics.clamp((nx*(float)StrictMath.cos(face*Math.PI/2)+ny*(float)StrictMath.sin(face*Math.PI/2))*.85f+nz*.35f,0,1);
+                        int alpha=Math.round((pixel>>>24)*response/Math.max(.001f,sum));
                         sheet.setRGB(out%8*N+x,out/8*N+y,(alpha<<24)|(pixel&0xffffff));
                     }
                 }
@@ -57,6 +74,6 @@ public final class GenerateSurfaceLighting {
                 for(int y=0;y<old.getHeight();y++)for(int x=0;x<old.getWidth();x++)if(old.getRGB(x,y)!=sheet.getRGB(x,y))throw new AssertionError("Regenerate surface atlas: "+file);
             }else ImageIO.write(sheet,"png",file);
         }
-        System.out.println(frames+" surface response frames match source support and materials");
+        System.out.println(frames+" directional shade frames match source support and preserve lamp cores");
     }
 }

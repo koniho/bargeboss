@@ -4,6 +4,15 @@ package com.bargeboss.game;
  * No per-frame image processing, nearest-light switching or camera-dependent light strength. */
 public final class SurfaceLighting {
     private SurfaceLighting(){}
+    public static final float MAX_SHADE=.68f;
+    /** Darkness is removed from faces reached by light; overlapping masks partition the surface. */
+    static float shade(float[] light,int face){
+        float total=0;for(float value:light)total+=value;
+        float reach=light[face]*3f+.65f*(light[(face+1)%4]+light[(face+3)%4])+.15f*total;
+        return MAX_SHADE*(1-Physics.clamp(reach,0,1));
+    }
+    private static float ambience(Game g){return g.mode==Game.TITLE?.45f:1;}
+
     /** Order: right, down, left, up in the upright sprite's coordinate system. */
     static void add(float[] weights,float x,float y,float lx,float ly,float height,float radius,float energy){
         float dx=lx-x,dy=ly-y,d2=dx*dx+dy*dy;
@@ -91,8 +100,10 @@ public final class SurfaceLighting {
         float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
         float sx=river==null?x:c.screenX(x,y),sy=river==null?y:c.screenY(x,y),s=river==null?size:size*c.scale;
         float[] weights=sample(g,body.x,body.y,body);
-        for(int d=0;d<4;d++)if(weights[d]>.004f)
-            canvas.spriteBlend(atlas,SurfaceLightArt.frame(source,d,a),SurfaceLightArt.frame(source,d,b),sx,sy,s,s,0,mix,weights[d]*.62f*alpha);
+        for(int d=0;d<4;d++){
+            float shade=shade(weights,d)*ambience(g)*alpha;
+            if(shade>.004f)canvas.spriteBlend(atlas,SurfaceLightArt.frame(source,d,a),SurfaceLightArt.frame(source,d,b),sx,sy,s,s,0,mix,shade);
+        }
     }
     /** Affine receiver path also supports future explicitly enabled static/rigid scenery. */
     public static void affine(Game g,Painter p,int source,int frame,float wx,float wy,float x,float y,float ax,float ay,float bx,float by,float roll){
@@ -103,6 +114,9 @@ public final class SurfaceLighting {
             double angle=d*Math.PI/2-roll;float dx=(float)StrictMath.cos(angle),dy=(float)StrictMath.sin(angle),sum=Math.abs(dx)+Math.abs(dy);
             local[dx>=0?0:2]+=world[d]*Math.abs(dx)/sum;local[dy>=0?1:3]+=world[d]*Math.abs(dy)/sum;
         }
-        for(int d=0;d<4;d++)if(local[d]>.004f)p.spriteAffine(atlas,SurfaceLightArt.frame(source,d,frame),x,y,ax,ay,bx,by,local[d]*.62f);
+        for(int d=0;d<4;d++){
+            float shade=shade(local,d)*ambience(g);
+            if(shade>.004f)p.spriteAffine(atlas,SurfaceLightArt.frame(source,d,frame),x,y,ax,ay,bx,by,shade);
+        }
     }
 }

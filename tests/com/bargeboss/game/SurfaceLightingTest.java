@@ -21,6 +21,13 @@ public final class SurfaceLightingTest {
         check(left[2]>0 && left[0]==0 && right[0]>0 && right[2]==0,"passing a lamp changes the illuminated face");
         float[] outside=new float[4];SurfaceLighting.add(outside,300,400,900,900,0,155,1);
         check(sum(outside)==0,"distant lamps cannot light the receiver");
+        float[] dark={0,0,0,0},lamp={1,0,0,0};
+        check(SurfaceLighting.shade(dark,0)==SurfaceLighting.MAX_SHADE,"unlit surfaces receive the bounded navy shading layer");
+        check(SurfaceLighting.shade(lamp,0)==0 && SurfaceLighting.shade(lamp,2)>.5f,"near light reveals its facing surface while the reverse remains shaded");
+        for(int step=0;step<100;step++){
+            float[] before={step/100f,0,0,0},after={(step+1)/100f,0,0,0};
+            check(SurfaceLighting.shade(after,0)<=SurfaceLighting.shade(before,0),"approaching light smoothly removes shading");
+        }
         Game g=new Game();g.reset();g.visualTicks=71;
         float[] a=SurfaceLighting.sample(g,220,440,g.tug);g.configureCanvas(1600,600);float[] b=SurfaceLighting.sample(g,220,440,g.tug);
         for(int i=0;i<4;i++)check(a[i]==b[i],"camera size cannot change surface energy");

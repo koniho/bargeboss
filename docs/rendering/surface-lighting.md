@@ -1,4 +1,4 @@
-# Dynamic sprite surface lighting
+# Dynamic sprite surface lighting and shading
 
 Water receivers opt in through `SurfaceLightArt`: tugs (including feeders), empty
 and loaded barge hulls, steel, containers, coal, and all three floating buoy types.
@@ -6,7 +6,9 @@ Land beacons and scenery are not enabled as receivers. Existing water reflection
 lamps, navigation lights, hull glows and ground/water shadows remain separate passes.
 
 `SurfaceLighting` samples world-space lamp positions and combines four directional
-responses. Initial emitters are quay lamps, other vessels' warm work/service lamps,
+shading responses. Away from lights, a bounded navy layer darkens the sprite.
+Nearby light removes shading on its facing surface, revealing the original
+painted colors. This replaces v1 additive surface brightening. Initial emitters are quay lamps, other vessels' warm work/service lamps,
 lock machinery lamps, and nearby tutorial factory furnace/window anchors. Factory
 anchors use a lazy 192-unit spatial index; each receiver inspects nine cells rather
 than scanning the entire yard. Furnace activity modulates the same emitters used
@@ -15,6 +17,10 @@ position, zoom, and screen size never change the light energy. Title vessels use
 the title's warm key rather than invisible gameplay lamps.
 
 Falloff is continuous and overlapping sources share a bounded energy budget.
+The four directional shade masks partition each source silhouette rather than
+stacking four full-strength dark coats. Maximum per-face shading is 68%; the
+combined interior darkening is typically about 50%. Title shading is reduced
+to 45% of gameplay strength for the sunset composition.
 There is no nearest-lamp switch. Source directions are projected into the upright
 sprite's axes; buoy roll rotates the response back into local axes. Only visual
 state is read. The field does not alter hull physics, lock currents or timing.
@@ -31,9 +37,12 @@ primitives. It does not process image pixels or allocate lighting textures per f
 These first masks estimate broad rounded surfaces from the artwork's occupied
 bounds. They are **not authored geometry normal maps** and do not reconstruct
 cabin faces, cargo self-shadowing, or cast-light occlusion. Baked highlights stay
-in the original art. Response colors brighten the sampled material with a warm
-bias, retaining the painted colors and detail. New sources currently share that
-warm palette; red/green navigation lenses do not recolor nearby surfaces.
+in the original art. Response pixels use a dark navy tint (`#081220`). Light reduces their opacity
+instead of adding brightness over baked highlights. Other existing warm rim
+glows and fixture halos remain separate. Red/green navigation lenses do not
+recolor nearby surfaces. Reviewed tug lantern anchors, buoy lens anchors and
+bright warm tug-window cores are excluded from shading. Lamp/nav effects are
+drawn afterward and retain their normal brightness.
 
 Masks are conservatively restricted to source pixels with alpha at least 245,
 including a one-source-pixel guard around each response texel. Most production
@@ -69,6 +78,9 @@ Lamp halos, contact foam, gameplay highlights and smoke retain their existing or
 `SurfaceLightingTest` checks registration across all headings, blend alignment,
 continuous falloff, opt-in boundaries, camera independence and render purity.
 `SurfaceLightingReview` checks all 652 responses against actual native sprite
-pixels and exports left/right/source comparisons plus the harbor view.
+pixels and exports source/unlit/left/right comparisons plus the harbor view. Pixel checks
+require unlit materials to be visibly darker and near lamps to reveal them.
+The shading comparisons are `out/surface-shading-materials-v2.png` and
+`out/surface-shading-harbor-v2.png`.
 `preview.sh` verifies reproducible masks and runs those pixel checks, alongside
 existing shore, buoy-waterline, cargo-depth and rendering-budget regressions.

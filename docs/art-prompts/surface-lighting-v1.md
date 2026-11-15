@@ -1,4 +1,7 @@
-# Surface-light response masks v1
+# Surface-light response masks v1 (superseded)
+
+The additive v1 PNGs were replaced by [directional shading v2](surface-shading-v2.md).
+This record describes the earlier experiment; the runtime uses v2.
 
 These are procedural rendering data, not AI-generated replacement artwork.
 The original watercraft, cargo and buoy PNGs are unchanged.

@@ -15,7 +15,7 @@ public final class SurfaceLightArt {
     public static int count(int atlas){return DIRECTIONS*SpriteAtlas.count(source(atlas));}
     public static int columns(int atlas){return 8;}
     public static int rows(int atlas){return (count(atlas)+7)/8;}
-    public static String file(int atlas){return "surface-light-"+NAMES[atlas-FIRST]+"-v1.png";}
+    public static String file(int atlas){return "surface-shade-"+NAMES[atlas-FIRST]+"-v2.png";}
     public static float pivot(int atlas,int frame,boolean y){int s=source(atlas),f=sourceFrame(atlas,frame);return y?SpriteAtlas.pivotY(s,f):SpriteAtlas.pivotX(s,f);}
     public static float scale(int atlas,int frame,boolean y){int s=source(atlas),f=sourceFrame(atlas,frame);return y?SpriteAtlas.heightScale(s,f):SpriteAtlas.widthScale(s,f);}
 }
