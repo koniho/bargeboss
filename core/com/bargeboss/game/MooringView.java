@@ -111,9 +111,10 @@ public final class MooringView {
     }
     private static void aim(Game g,Painter p,Body b) {
         boolean tow=g.towAiming;
-        boolean onPoint=tow?g.towTarget(b,g.pointerX,g.pointerY):g.canTie(b) && g.overTiePoint(b,g.pointerX,g.pointerY);
-        float x=tow?(onPoint?g.tug.x:g.pointerX):g.aimX(b,g.pointerX,g.pointerY);
-        float y=tow?(onPoint?g.tug.y:g.pointerY):g.aimY(b,g.pointerX,g.pointerY);
+        Body target=tow?g.towTargetBody(b,g.pointerX,g.pointerY):null;
+        boolean onPoint=tow?target!=null:g.canTie(b) && g.overTiePoint(b,g.pointerX,g.pointerY);
+        float x=tow?(onPoint?target.x:g.pointerX):g.aimX(b,g.pointerX,g.pointerY);
+        float y=tow?(onPoint?target.y:g.pointerY):g.aimY(b,g.pointerX,g.pointerY);
         int color=onPoint?GREEN:VisualStyle.GOLD;
         // This thin continuous trajectory is a guide; the rope remains coiled on deck.
         float[] edge=new float[2],point=new float[2];LassoPath.edge(b,x,y,edge);

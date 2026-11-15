@@ -110,7 +110,7 @@ public final class ScreenView {
         instruction(p,1,185,"DRAG THE TUG","Pull farther for thrust. Release to coast.");
         instruction(p,2,251,"DRAG THE CARGO","Press, drag and hold. Center for assist.");
         instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
-        instruction(p,4,383,"THROW A TOWLINE","Drag cargo to tug. Release, then drive.");
+        instruction(p,4,383,"LINK A BARGE TRAIN","Drag cargo to tug or barge. Release to link.");
         text(p,"TAP THE CONNECTED BARGE TO LET GO.",159,447,10,GOLD);
         button(g,p,Layout.LEARN,"PRACTICE CONTROLS",false);
         button(g,p,Layout.START,"RESUME SHIFT",true);

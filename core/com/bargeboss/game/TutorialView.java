@@ -22,7 +22,7 @@ public final class TutorialView {
         if(t.lesson==Tutorial.CHANNEL) {
             boolean entering=g.tug.x<TrainingChannel.X[0];
             VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
-            Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF 10",30,79,9,VisualStyle.GOLD);
+            Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF "+Tutorial.DONE,30,79,9,VisualStyle.GOLD);
             Lettering.draw(p,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",30,100,16,PAPER);
             Lettering.draw(p,entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
             Lettering.draw(p,"SLOW AT CORNERS. LIFT TO COAST.",30,145,9,MUTED);
@@ -42,7 +42,7 @@ public final class TutorialView {
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
         Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
-        Body target=g.cargo[0];
+        Body target=t.lesson==Tutorial.LINK?g.cargo[2]:g.cargo[0];
         boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
         boolean unloading=secured && target.unloadingTicks>0;
         Lettering.draw(coach,secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title(),54,137,19,PAPER);
@@ -57,8 +57,8 @@ public final class TutorialView {
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
-            coach.rect(54+i*40,210,32,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
-            if(i==t.lesson) coach.rect(54+i*40+(g.visualTicks%60)/60f*25,208,7,2,PAPER);
+            coach.rect(54+i*(400f/Tutorial.DONE),210,400f/Tutorial.DONE-8,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
+            if(i==t.lesson) coach.rect(54+i*(400f/Tutorial.DONE)+(g.visualTicks%60)/60f*(400f/Tutorial.DONE-15),208,7,2,PAPER);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
@@ -85,12 +85,18 @@ public final class TutorialView {
         } else if(t.lesson==Tutorial.COAST) {
             SoftCue.caption(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
         } else if(t.lesson==Tutorial.RELEASE) {
-            Body b=g.cargo[0];RiverCamera c=g.layout.camera;
+            Body b=g.tow.primary();if(b==null)return;RiverCamera c=g.layout.camera;
             ControlView.ring(g,river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
             float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y);
             p.rect(x-54,y-12,108,24,0x40101c30);
             Lettering.center(p,"TAP TO LET GO",x,y-4,10,ControlView.GREEN);
-        } else if(t.lesson==Tutorial.PULL) {
+        } else if(t.lesson==Tutorial.LINK) {
+            Body spare=g.cargo[2],parent=g.cargo[0];
+            ControlView.ring(g,river,spare.x,spare.y,44+pulse,1,VisualStyle.GOLD,2);
+            ControlView.ring(g,river,parent.x,parent.y,44+pulse,1,ControlView.GREEN,2);
+            ControlView.arrow(g,river,spare.x,spare.y-30,parent.x,parent.y+30,ControlView.GREEN);
+            SoftCue.caption(river,"DRAG THIS BARGE",spare.x,spare.y+35,9,VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.TRAIN) {
             ControlView.arrow(g,river,g.tug.x,g.tug.y-25,g.tug.x,g.tug.y-100,VisualStyle.GOLD);
         } else if(g.cargo[0]!=null && g.cargo[0].active) {
             Body b=g.cargo[0];

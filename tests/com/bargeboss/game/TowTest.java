@@ -75,7 +75,7 @@ public final class TowTest {
         g.cargo[0].awaitingPickup=false;g.cargo[0].lineAttached=true;
         check(!g.canTow(g.cargo[0]),"secured loads cannot be towed");
         g=fixture();connect(g);g.cargo[1]=new Body(2,1,350,650,0);
-        check(!g.canTow(g.cargo[1]),"one towline at a time");
+        steps(g,Game.ROPE_HIT_TICKS);check(g.canTow(g.cargo[1]),"another barge may link after the previous catch completes");
         g.background();y=g.cargo[0].y;steps(g,60);
         check(g.tow.cargo==g.cargo[0] && g.cargo[0].y==y,"background holds tow without advancing");
         g.configureCanvas(1333,600);g.pause();steps(g,5);

@@ -14,7 +14,7 @@ public final class ReplayInput {
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void releaseTow(Game root) {
-        Body b=root.activeGame().tow.cargo;
+        Body b=root.activeGame().tow.primary();
         if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y); }
     }
     public static void lasso(Game root,Body b) {
@@ -103,8 +103,15 @@ public final class ReplayInput {
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
                 } break;
             case Tutorial.PULL:
+            case Tutorial.TRAIN:
                 if(!g.pointer) down(root,g.tug.x,g.tug.y);
                 move(root,g.downX,g.downY-100);break;
+            case Tutorial.LINK:
+                if(g.ropePhase==0 && !g.tow.connected(g.cargo[2],g.tug)) {
+                    if(g.pointer)up(root,g.pointerX,g.pointerY);
+                    Body spare=g.cargo[2],parent=g.cargo[0];
+                    down(root,spare.x,spare.y);move(root,parent.x,parent.y);up(root,parent.x,parent.y);
+                }break;
             case Tutorial.RELEASE:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
                 releaseTow(root);break;

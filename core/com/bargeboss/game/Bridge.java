@@ -9,7 +9,7 @@ public final class Bridge {
     public boolean passable() { return lift()>=.95f; }
     public boolean separates(float y,float target) { return (y-Y)*(target-Y)<0; }
     private boolean near(Game g,float distance) {
-        if(g.tow.cargo!=null && separates(g.tug.y,g.tow.cargo.y)) return true;
+        for(int i=0;i<Towline.CAPACITY;i++){Towline l=g.tow.link(i);if(l!=null && l.cargo!=null && separates(l.leader.y,l.cargo.y))return true;}
         if(Math.abs(g.tug.y-Y)<distance) return true;
         for(Body b:g.cargo) if(b!=null && b.active && Math.abs(b.y-Y)<distance) return true;
         return false;

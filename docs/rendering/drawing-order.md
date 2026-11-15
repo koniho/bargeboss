@@ -117,10 +117,11 @@ reuse the gameplay banks to clip the title's open water.
 
 Do not place an entire towline permanently above or below both vessels.
 
-`Towline` keeps the stern fitting at `-(tug.half + 7)` along the tug's heading.
+Each `Towline` link keeps its own leader/follower fittings and catch/release
+state; see [barge trains](../gameplay/barge-trains.md). The tug keeps the stern fitting at `-(tug.half + 7)` along the tug's heading.
 The selected barge end is `+(barge.half + 7)` or its negative, and rotates with
-the barge. `TowView.Segments` constructs 24 spans between those fittings, adding
-deck height, each hull's heave and vertical sag. Order spans by their unraised
+the barge. `TowView.Segments` constructs 24 spans per link between those fittings, adding
+deck height, each hull's heave and vertical sag. Merge spans from **all** links by their unraised
 world midpoint depth alongside vessels and scenery. Thus far-side fittings and
 spans can pass behind a hull while near-side spans remain visible in front.
 

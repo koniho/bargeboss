@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Drag-control practice with action gates and no clock, damage or traffic. */
 public final class Tutorial {
-    public static final int MOVE=0, COAST=1, CHANNEL=2, HOLD=3, STEER=4, DOCK=5, TIE=6, CONNECT=7, PULL=8, RELEASE=9, DONE=10;
+    public static final int MOVE=0, COAST=1, CHANNEL=2, HOLD=3, STEER=4, DOCK=5, TIE=6, CONNECT=7, PULL=8, LINK=9, TRAIN=10, RELEASE=11, DONE=12;
     public static final float PUSH_X=240,PUSH_Y=600,PUSH_RADIUS=24;
     public static final float START_X=-1740,START_Y=650,DRIVE_RADIUS=36;
     public static final float[] DRIVE_X={-1570,-1450},DRIVE_Y={650,440};
@@ -15,11 +15,12 @@ public final class Tutorial {
     public void setup(Game g) {
         clearedGate=gateClearTicks=driveMarker=0;channelGate=1;
         g.cancelInputs();g.reversing=false;
-        g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeToTug=false;g.tow=new Towline();
+        g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.delivered=g.score=0;g.nextId=1;g.selected=-1;actionTicks=0;
         g.addCargo(2,292,700);park(g.cargo[0]);
-        g.addCargo(2,350,440);g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
+        g.addCargo(2,350,490);g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
+        g.addCargo(2,390,590);g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
         g.tug=new Body(0,-1,START_X,START_Y,0);
         if(lesson==COAST) {
             driveMarker=DRIVE_X.length;g.tug.x=DRIVE_X[driveMarker-1];g.tug.y=DRIVE_Y[driveMarker-1];g.tug.vx=25;g.tug.vy=-25;
@@ -38,11 +39,13 @@ public final class Tutorial {
             g.cargo[0]=towPractice;g.cargo[1]=finished;g.delivered=1;
             towPractice.x=300;towPractice.y=690;park(towPractice);
             g.tug=new Body(0,-1,300,570,-(float)Math.PI/2);
+            g.cargo[2].x=350;g.cargo[2].y=770;park(g.cargo[2]);
             if(lesson>=PULL) g.tow.attach(g,towPractice);
+            if(lesson>=TRAIN)g.tow.attach(g,g.cargo[2],towPractice);
             actionTicks=g.towReleases;
         }
-        startX=lesson>=HOLD?g.cargo[0].x:g.tug.x;
-        startY=lesson>=HOLD?g.cargo[0].y:g.tug.y;
+        startX=lesson==TRAIN?g.cargo[2].x:lesson>=HOLD?g.cargo[0].x:g.tug.x;
+        startY=lesson==TRAIN?g.cargo[2].y:lesson>=HOLD?g.cargo[0].y:g.tug.y;
         channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         g.fitTutorialCamera();
     }
@@ -100,18 +103,25 @@ public final class Tutorial {
             lesson=CONNECT;actionTicks=0;g.selected=-1;g.cancelInputs();
             g.haptic(Game.HAPTIC_SUCCESS);
         }
-        else if(lesson==CONNECT && g.tow.cargo==g.cargo[0]) {
+        else if(lesson==CONNECT && g.tow.connected(g.cargo[0],g.tug)) {
             lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==PULL && g.navigating && g.tow.cargo==g.cargo[0]
+        } else if(lesson==PULL && g.navigating && g.tow.connected(g.cargo[0],g.tug)
                 && Physics.length(g.cargo[0].x-startX,g.cargo[0].y-startY)>45) {
+            lesson=LINK;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
+        } else if(lesson==LINK && g.tow.connected(g.cargo[2],g.tug)) {
+            lesson=TRAIN;startX=g.cargo[2].x;startY=g.cargo[2].y;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+        } else if(lesson==TRAIN && g.navigating && g.tow.loadCount(g.tug)>=2
+                && Physics.length(g.cargo[2].x-startX,g.cargo[2].y-startY)>45) {
             lesson=RELEASE;actionTicks=g.towReleases;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
-        } else if(lesson==RELEASE && g.tow.cargo==null && g.towReleases>actionTicks) { lesson=DONE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS); }
-        else if((lesson==PULL || lesson==RELEASE) && g.tow.cargo==null && g.ropePhase==0) { lesson=CONNECT;actionTicks=0;g.cancelInputs(); }
+        } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=DONE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+        else if(lesson>=PULL && lesson<=TRAIN && !g.tow.connected(g.cargo[0],g.tug) && g.ropePhase==0) {lesson=CONNECT;actionTicks=0;g.cancelInputs();}
+        else if(lesson==TRAIN && !g.tow.connected(g.cargo[2],g.tug) && g.ropePhase==0){lesson=LINK;g.cancelInputs();}
+        else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases==actionTicks && g.ropePhase==0){lesson=CONNECT;g.cancelInputs();}
     }
     public float driveTargetX() {return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)];}
     public float driveTargetY() {return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)];}
     public String title() {
-        return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","PULL YOUR BARGE","LET GO OF THE LINE","READY FOR YOUR SHIFT"}[lesson];
+        return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","PULL YOUR BARGE","BUILD A BARGE TRAIN","PULL TWO BARGES","UNCOUPLE YOUR TRAIN","READY FOR YOUR SHIFT"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
@@ -124,8 +134,10 @@ public final class Tutorial {
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
             case CONNECT: return "APPROACH THE SECOND BARGE. DRAG TO TUG.";
             case PULL: return "DRAG ALONG THE ARROW TO PULL.";
-            case RELEASE: return "TAP THE CONNECTED BARGE TO LET GO.";
-            default: return "YOU PUSHED, TIED UP AND TOWED.";
+            case LINK: return "DRAG THE SPARE BARGE TO YOUR TOWED ONE.";
+            case TRAIN: return "DRAG THE TUG TO MOVE BOTH BARGES.";
+            case RELEASE: return "TAP EACH LINKED BARGE TO UNCOUPLE.";
+            default: return "YOU PUSHED, TIED UP AND TOWED A TRAIN.";
         }
     }
     public String secondLine() {
@@ -139,7 +151,9 @@ public final class Tutorial {
             case TIE: return "RELEASE TO THROW. MISSES REEL BACK.";
             case CONNECT: return "RELEASE OVER THE TUG TO THROW.";
             case PULL: return "TAKE UP THE SLACK. THE BARGE FOLLOWS.";
-            case RELEASE: return "THE BARGE KEEPS ITS MOMENTUM.";
+            case LINK: return "RELEASE TO LINK. YOU CAN ALSO USE THE TUG.";
+            case TRAIN: return "MORE LOAD MEANS SLOWER TOWING.";
+            case RELEASE: return "EACH TAP RELEASES ITS INCOMING LINE.";
             default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }
     }
