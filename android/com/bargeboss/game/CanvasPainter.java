@@ -36,13 +36,24 @@ public final class CanvasPainter implements Painter {
     private int layerBuilds;
     private boolean paintingLayer;
     private Canvas canvas;
+    /** Opt-in host telemetry; no counters or clocks are read by gameplay. */
+    public static final class Profile {
+        public long buildNs,decodeNs;
+        public int hits,builds,fallbacks,evictions,sprites,blends,affines,circles,polys,lines,clips;
+        void clear(){buildNs=decodeNs=0;hits=builds=fallbacks=evictions=sprites=blends=affines=circles=polys=lines=clips=0;}
+    }
+    private Profile profile;
+    public Profile enableProfile(){if(profile==null)profile=new Profile();return profile;}
+    public long profileCacheBytes(){return layerBytes;}
+
     public void pushClipOutside(float[] triangles) {
+        if(profile!=null)profile.clips++;
         canvas.save();path.reset();path.setFillType(Path.FillType.WINDING);
         for(int i=0;i<triangles.length;i+=6){path.moveTo(triangles[i],triangles[i+1]);path.lineTo(triangles[i+2],triangles[i+3]);path.lineTo(triangles[i+4],triangles[i+5]);path.close();}
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
     public void popClip(){canvas.restore();}
-    public void beginFrame() {if(!paintingLayer) layerBuilds=0;}
+    public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
         if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;
@@ -52,13 +63,16 @@ public final class CanvasPainter implements Painter {
         double pw=StrictMath.ceil(layer.width()*density),ph=StrictMath.ceil(layer.height()*density);
         long key=((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);
         Bitmap image=layers.get(key);
+        if(profile!=null && image!=null)profile.hits++;
         if(image==null) {
             if(pw<=0 || ph<=0 || pw*ph*4>StaticLayer.cacheBudgetBytes()
-                    || layerBuilds>=StaticLayer.maxBuildsPerFrame()) {drawLayerDirect(layer,x,y,scale,alpha);return;}
+                    || layerBuilds>=StaticLayer.maxBuildsPerFrame()) {if(profile!=null)profile.fallbacks++;drawLayerDirect(layer,x,y,scale,alpha);return;}
+            long buildStart=profile==null?0:System.nanoTime();
+            if(profile!=null)profile.builds++;
             long bytes=4L*(int)pw*(int)ph;layerBuilds++;
             Iterator<Map.Entry<Long,Bitmap>> entries=layers.entrySet().iterator();
             while(layerBytes+bytes>StaticLayer.cacheBudgetBytes() && entries.hasNext()) {
-                Bitmap old=entries.next().getValue();layerBytes-=old.getAllocationByteCount();entries.remove();
+                Bitmap old=entries.next().getValue();if(profile!=null)profile.evictions++;layerBytes-=old.getAllocationByteCount();entries.remove();
                 // Hardware display lists may still reference this frame's images;
                 // let the VM release evictions after those references disappear.
             }
@@ -67,6 +81,7 @@ public final class CanvasPainter implements Painter {
             paintingLayer=true;canvas=new Canvas(image);canvas.scale(density,density);canvas.clipRect(0,0,layer.width(),layer.height());
             try {layer.paint(this);} finally {canvas=previous;paintingLayer=false;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
             layers.put(key,image);layerBytes+=image.getAllocationByteCount();
+            if(profile!=null)profile.buildNs+=System.nanoTime()-buildStart;
         }
         int saved=canvas.save();
         try {
@@ -124,11 +139,15 @@ public final class CanvasPainter implements Painter {
     private Atlas atlas(int id) {
         Atlas cached=atlases.get(id); if(cached!=null) return cached;
         try {
-            cached=new Atlas(id,assets,sourceImages); atlases.put(id,cached); return cached;
+            long decodeStart=profile==null?0:System.nanoTime();
+            cached=new Atlas(id,assets,sourceImages); atlases.put(id,cached);
+            if(profile!=null)profile.decodeNs+=System.nanoTime()-decodeStart;
+            return cached;
         } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas for asset "+id,e); }
     }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
+        if(profile!=null)profile.sprites++;
         width*=SpriteAtlas.widthScale(id,frame); height*=SpriteAtlas.heightScale(id,frame);
         Atlas atlas=atlas(id);
         float left=-SpriteAtlas.pivotX(id,frame)*width,top=-SpriteAtlas.pivotY(id,frame)*height;
@@ -141,6 +160,7 @@ public final class CanvasPainter implements Painter {
     public void spriteAffine(int id,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid affine sprite frame: "+frame);
         if(!(alpha>0) || ax*by-ay*bx==0) return;
+        if(profile!=null)profile.affines++;
         Atlas atlas=atlas(id);float px=SpriteAtlas.pivotX(id,frame),py=SpriteAtlas.pivotY(id,frame);
         affineValues[0]=ax;affineValues[1]=bx;affineValues[2]=x-ax*px-bx*py;
         affineValues[3]=ay;affineValues[4]=by;affineValues[5]=y-ay*px-by*py;
@@ -158,6 +178,7 @@ public final class CanvasPainter implements Painter {
         int weight=Math.round(Math.max(0,Math.min(1,blend))*255);
         if(weight==0 || frameA==frameB) { sprite(id,frameA,cx,cy,width,height,rotation,alpha); return; }
         if(weight==255) { sprite(id,frameB,cx,cy,width,height,rotation,alpha); return; }
+        if(profile!=null)profile.blends++;
         Atlas atlas=atlas(id);
         float aw=width*SpriteAtlas.widthScale(id,frameA),ah=height*SpriteAtlas.heightScale(id,frameA);
         float bw=width*SpriteAtlas.widthScale(id,frameB),bh=height*SpriteAtlas.heightScale(id,frameB);
@@ -174,12 +195,14 @@ public final class CanvasPainter implements Painter {
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }
     public void rect(float x,float y,float w,float h,int c) { paint.setColor(c); canvas.drawRect(x,y,x+w,y+h,paint); }
-    public void circle(float x,float y,float r,int c) { paint.setColor(c); canvas.drawCircle(x,y,r,paint); }
+    public void circle(float x,float y,float r,int c) { if(profile!=null)profile.circles++;paint.setColor(c); canvas.drawCircle(x,y,r,paint); }
     public void poly(float[] xy,int c) {
+        if(profile!=null)profile.polys++;
         paint.setColor(c); path.reset(); path.moveTo(xy[0],xy[1]);
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.close(); canvas.drawPath(path,paint);
     }
     public void line(float x,float y,float xx,float yy,float width,int c) {
+        if(profile!=null)profile.lines++;
         paint.setColor(c); paint.setStrokeWidth(width); paint.setStrokeCap(Paint.Cap.ROUND);
         canvas.drawLine(x,y,xx,yy,paint);
     }

@@ -57,9 +57,10 @@ public final class MainActivity extends Activity {
     @Override public void onBackPressed() { gameView.togglePause(); }
 
     private final class GameView extends View implements Choreographer.FrameCallback {
-        private final Game game=new Game();
         private final FrameGate frames=new FrameGate();
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
+        private final DeveloperHooks.Session developer=DeveloperHooks.create(MainActivity.this,painter);
+        private final Game game=developer==null?new Game():developer.game();
         private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
         private long last;
         private boolean running;
@@ -68,13 +69,14 @@ public final class MainActivity extends Activity {
         GameView() {
             super(MainActivity.this);
             setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up.");
-            try {
+            if(developer==null)try {
                 progress=getSharedPreferences("captain-progress",MODE_PRIVATE);
                 game.restoreProgress(progress.getString("snapshot",null));
             } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not read captain progress",e); }
             savedVersion=attemptedVersion=game.progressVersion();
         }
         void saveProgress(boolean flush) {
+            if(developer!=null)return;
             int version=game.progressVersion();
             if(progress==null || version==savedVersion || (!flush && version==attemptedVersion)) return;
             attemptedVersion=version;
@@ -84,11 +86,12 @@ public final class MainActivity extends Activity {
             } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not save captain progress",e); }
         }
         void requestRedraw() { frames.markDirty(); invalidate(); }
-        void togglePause() { game.pause(); requestRedraw(); }
+        void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.pause(); requestRedraw(); }
         void start() { requestRedraw(); if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { running=false; last=0; game.background(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
+        void stop() { running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
-            if(!running) return; if(last!=0) game.advance((now-last)/1e9); last=now;
+            if(!running) return;
+            if(last!=0) {if(developer==null)game.advance((now-last)/1e9);else developer.advance((now-last)/1e9);} last=now;
             int event=game.pollHaptic();
             if(event!=0) {
                 int feedback=event==Game.HAPTIC_IMPACT?HapticFeedbackConstants.LONG_PRESS:
@@ -96,19 +99,23 @@ public final class MainActivity extends Activity {
                 if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
                 performHapticFeedback(feedback);
             }
-            saveProgress(false); if(frames.needsFrame(game)) invalidate(); Choreographer.getInstance().postFrameCallback(this);
+            saveProgress(false); if(developer!=null && developer.running() || frames.needsFrame(game)) invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }
         protected void onSizeChanged(int w,int h,int oldW,int oldH) {
             viewport=new Viewport(w,h);
             game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight()); game.cancelInputs();
+            if(developer!=null)developer.configure(viewport.logicalWidth(),viewport.logicalHeight());
             requestRedraw();
         }
         protected void onDraw(Canvas canvas) {
+            if(developer!=null)developer.beforeDraw();
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,viewport.logicalWidth(),viewport.logicalHeight()); painter.bind(canvas); game.render(painter); canvas.restore();
             frames.rendered(game);
+            if(developer!=null)developer.afterDraw();
         }
         public boolean onTouchEvent(MotionEvent event) {
+            if(developer!=null)return true; // Reproducible captures ignore user gestures; relaunch normally to play.
             int action=event.getActionMasked(), index=event.getActionIndex();
             if(action==MotionEvent.ACTION_DOWN || action==MotionEvent.ACTION_POINTER_DOWN) {
                 game.pointerDown(event.getPointerId(index),viewport.worldX(event.getX(index)),viewport.worldY(event.getY(index)));

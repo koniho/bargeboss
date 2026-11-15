@@ -1,0 +1,65 @@
+#!/bin/sh
+# Install an opt-in BARGEBOSS_PROFILE=1 build first. Requires authorized Shizuku/rish.
+set -eu
+cd "$(dirname "$0")/.."
+scene=${1:-barge-push}
+mode=${2:-live}
+case "$scene" in basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
+case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
+bargeboss_frames=${BARGEBOSS_PROFILE_FRAMES:-360}
+bargeboss_warmup=${BARGEBOSS_PROFILE_WARMUP:-120}
+case "$bargeboss_frames:$bargeboss_warmup" in *[!0-9:]*) echo 'Frame counts must be integers' >&2; exit 2;; esac
+trace=${BARGEBOSS_PROFILE_TRACE:-false}
+case "$trace" in true|false) ;; *) exit 2;; esac
+export RISH_APPLICATION_ID=com.termux
+# Respect an awake scope already owned by the surrounding development round.
+if [ ! -f out/phone-screen-timeout-before.txt ]; then
+    ./tools/phone-awake.sh on
+    trap './tools/phone-awake.sh off' 0
+    trap 'exit 130' 2
+    trap 'exit 143' 15
+else
+    ./tools/phone-awake.sh on
+fi
+remote=/storage/emulated/0/Android/data/com.bargeboss.game/files/profiles
+output=out/profiles/$(date +%Y%m%d-%H%M%S)-$scene-$mode
+mkdir -p "$output"
+rish -c "rm -f '$remote/$scene-$mode.csv'"
+rish -c 'input keyevent KEYCODE_WAKEUP'
+rish -c 'dumpsys gfxinfo com.bargeboss.game reset' > "$output/reset.txt" 2>&1
+rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace" > "$output/launch.txt" 2>&1
+started=$(date +%s)
+ready=
+while [ "$(($(date +%s)-started))" -lt 180 ]; do
+    ready=$(rish -c "if test -s '$remote/$scene-$mode.csv'; then printf ready; fi" 2>&1)
+    if [ "$ready" = ready ]; then break; fi
+    sleep 1
+done
+if [ "$ready" != ready ]; then echo "Timed out waiting for profile export; keep the phone unlocked" >&2; exit 1; fi
+# rish can interleave large stdout/stderr transfers. Stage files and copy them
+# through shared storage instead; this also preserves binary method traces.
+staging=/storage/emulated/0/Download/BargeBoss-profiles
+rish -c "mkdir -p '$staging'
+cp '$remote/$scene-$mode.csv' '$staging/frames.csv'
+dumpsys gfxinfo com.bargeboss.game framestats > '$staging/gfxinfo.txt'
+dumpsys meminfo com.bargeboss.game > '$staging/meminfo.txt'
+logcat -d --pid=\$(pidof com.bargeboss.game) -s BargeBossProfile:I AndroidRuntime:E > '$staging/logcat.txt'
+screencap -p '$staging/scene.png'"
+for name in frames.csv gfxinfo.txt meminfo.txt logcat.txt scene.png; do cp "$staging/$name" "$output/$name"; done
+if [ "$trace" = true ]; then
+    rish -c "cp '$remote/$scene-$mode.trace' '$staging/methods.trace'"
+    cp "$staging/methods.trace" "$output/methods.trace"
+    python3 tools/summarize-method-trace.py "$output/methods.trace" > "$output/method-hotspots.txt"
+fi
+git rev-parse HEAD > "$output/revision.txt"
+git diff --stat >> "$output/revision.txt"
+printf 'Profile saved to %s\n' "$output"
+python3 - "$output/frames.csv" "$bargeboss_frames" <<'PYCOUNT'
+import csv,sys
+rows=list(csv.DictReader(open(sys.argv[1])))
+measured=sum(row.get('phase')=='sample' for row in rows)
+expected=max(30,min(3600,int(sys.argv[2])))
+if measured!=expected:raise SystemExit('Incomplete capture: %d of %d frames' % (measured,expected))
+PYCOUNT
+python3 tools/summarize-profile.py "$output/frames.csv"
+python3 tools/summarize-gfx-profile.py "$output" > "$output/gfx-summary.json"

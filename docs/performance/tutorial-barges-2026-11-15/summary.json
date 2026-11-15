@@ -1,0 +1,239 @@
+[
+  {
+    "file": "barge-push-live.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 1.278,
+      "p95": 1.65
+    },
+    "draw_ms": {
+      "p50": 12.962,
+      "p95": 15.055
+    },
+    "interval_ms": {
+      "p50": 43.73,
+      "p95": 47.372
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 7.625,
+      "p95": 7.625
+    },
+    "sprites": {
+      "p50": 52.0,
+      "p95": 52.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "affines": {
+      "p50": 57.0,
+      "p95": 58.0
+    },
+    "circles": {
+      "p50": 455.0,
+      "p95": 464.0
+    },
+    "polys": {
+      "p50": 3180.0,
+      "p95": 3206.0
+    },
+    "clips": {
+      "p50": 14.0,
+      "p95": 14.0
+    },
+    "cache_builds": 0,
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "cold_decode_ms": 1031.708,
+    "retained_android_frames": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 13.143,
+        "p95": 14.113
+      },
+      "render_sync_ms": {
+        "p50": 1.196,
+        "p95": 1.625
+      },
+      "issue_to_swap_ms": {
+        "p50": 41.708,
+        "p95": 44.143
+      },
+      "intended_to_complete_ms": {
+        "p50": 120.657,
+        "p95": 128.847
+      }
+    }
+  },
+  {
+    "file": "harbor-close-live.csv",
+    "samples": 240,
+    "lessons": [
+      4
+    ],
+    "advance_ms": {
+      "p50": 0.797,
+      "p95": 1.628
+    },
+    "draw_ms": {
+      "p50": 10.383,
+      "p95": 16.878
+    },
+    "interval_ms": {
+      "p50": 28.172,
+      "p95": 45.155
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 21.178,
+      "p95": 21.178
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 58.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 9.0
+    },
+    "affines": {
+      "p50": 74.0,
+      "p95": 76.0
+    },
+    "circles": {
+      "p50": 667.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 3843.0,
+      "p95": 3921.0
+    },
+    "clips": {
+      "p50": 14.0,
+      "p95": 14.0
+    },
+    "cache_builds": 0,
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "cold_decode_ms": 962.791,
+    "retained_android_frames": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 10.283,
+        "p95": 10.861
+      },
+      "render_sync_ms": {
+        "p50": 0.862,
+        "p95": 1.116
+      },
+      "issue_to_swap_ms": {
+        "p50": 26.246,
+        "p95": 28.283
+      },
+      "intended_to_complete_ms": {
+        "p50": 78.537,
+        "p95": 86.645
+      }
+    }
+  },
+  {
+    "file": "barge-arrival-replay.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.521,
+      "p95": 0.768
+    },
+    "draw_ms": {
+      "p50": 11.204,
+      "p95": 18.77
+    },
+    "interval_ms": {
+      "p50": 31.761,
+      "p95": 50.439
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 25.955,
+      "p95": 25.955
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 3818.0,
+      "p95": 4371.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "cache_builds": 6,
+    "cache_fallbacks": 1,
+    "cache_evictions": 0,
+    "cold_decode_ms": 592.503,
+    "retained_android_frames": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 10.249,
+        "p95": 11.688
+      },
+      "render_sync_ms": {
+        "p50": 1.593,
+        "p95": 2.886
+      },
+      "issue_to_swap_ms": {
+        "p50": 28.098,
+        "p95": 33.365
+      },
+      "intended_to_complete_ms": {
+        "p50": 83.709,
+        "p95": 97.402
+      }
+    }
+  }
+]

@@ -53,3 +53,9 @@ After each completed development round, run the relevant checks, build the Andro
 APK and install it on the connected development phone, then launch it. The user
 has requested this as the ongoing workflow. Reuse the existing debug signing key
 and authorized Shizuku/rish installation path when adb is unavailable.
+
+During device development and profiling, keep the phone awake with
+`./tools/phone-awake.sh on` and restore its previous display timeout with
+`./tools/phone-awake.sh off` when the work is finished. The user requested this
+as an ongoing workflow. Profiling scripts manage their own awake scope when a
+development round has not already opened one. Never change keyguard security.

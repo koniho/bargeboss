@@ -25,6 +25,7 @@ jobs:
         shell: bash
         run: |
           ./check.sh
+          ./tools/check-profile.sh
           ./desktop.sh --build-only
       - name: Shared renderer captures
         if: runner.os == 'Linux'
@@ -55,6 +56,12 @@ jobs:
           sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
           export PATH="$ANDROID_HOME/build-tools/36.0.0:$PATH"
           ./build-android.sh
+      - name: Compile optional developer profiling hooks
+        run: |
+          mkdir -p build/android/profile-check
+          find developer/shared developer/android -name '*.java' | sort > build/android/profile-sources.txt
+          echo tests/com/bargeboss/game/ReplayInput.java >> build/android/profile-sources.txt
+          javac --release 8 -cp "$ANDROID_HOME/platforms/android-36/android.jar:build/android/classes" -d build/android/profile-check @build/android/profile-sources.txt
       - uses: actions/upload-artifact@v6
         with:
           name: bargeboss-android-debug
