@@ -24,7 +24,12 @@ public final class BuoyArtTest {
                 check(Math.abs(Physics.length(dx,dy)-expected)<.001f,"lamp rigidly follows rotated sprite");
                 Capture capture=new Capture();BuoyArt.hull(capture,frame,a);
                 check(capture.push==1 && capture.pop==1 && capture.frame==frame,"sprite waterplane clipping always balances");
-                check(capture.top==a.waterY && capture.secondTop==a.waterY,"submergence is horizontal despite rolled sprite");
+                BuoyArt.Pose upright=new BuoyArt.Pose(a.x,a.y,a.size,0,a.waterY,a.phase);
+                float[] surface=BuoyArt.submerged(upright);
+                check(java.util.Arrays.equals(surface,capture.triangles),"surface meniscus never tilts with rolled sprite");
+                check(BuoyArt.surfaceY(a,a.x)>BuoyArt.surfaceY(a,a.x+a.size*.275f),"front water contact curves around cylindrical float");
+                float bottom=a.pointY(frame,.5f,1198/1254f);
+                check(bottom-BuoyArt.surfaceY(a,a.x)>a.size*.07f,"lower float stays visibly immersed throughout wave cycle");
                 check(near(capture.ax,a.size*a.cos) && near(capture.ay,a.size*a.sin),"sprite uses same rigid transform as lamp");
                 minRoll=Math.min(minRoll,a.roll);maxRoll=Math.max(maxRoll,a.roll);minY=Math.min(minY,a.y);maxY=Math.max(maxY,a.y);
             }
@@ -36,22 +41,27 @@ public final class BuoyArtTest {
         int tick=g.ticks,emitted=g.water.emitted;BuoyArt.Pose wake=BuoyArt.pose(g,wx,wy,48);
         Game calm=new Game();calm.layout=g.layout;calm.visualTicks=g.visualTicks;BuoyArt.Pose idle=BuoyArt.pose(calm,wx,wy,48);
         check(wake.y!=idle.y && wake.roll!=idle.roll,"nearby wake changes both heave and roll");
+        Capture contact=new Capture();BuoyArt.contact(contact,wake);
+        check(contact.foam==5 && contact.maxAlpha<.65f && contact.lines==56,"soft bounded sprite foam and spreading crests explain water contact without opaque bands");
+        BuoyArt.Pose later=new BuoyArt.Pose(wake.x,wake.y,wake.size,wake.roll,wake.waterY,wake.phase+1);
+        Capture changed=new Capture();BuoyArt.contact(changed,later);
+        check(contact.alphaSum!=changed.alphaSum,"foam changes continuously while buoy stays in place");
         Capture c=new Capture();BuoyArt.draw(g,c,wx,wy,48,BuoyArt.YELLOW,NavigationLights.YELLOW,1,1);BuoyArt.shadows(g,c,wx,wy,48,BuoyArt.YELLOW);
         check(c.push==c.pop && g.ticks==tick && g.water.emitted==emitted,"all depth/surface clips balance without gameplay mutation");
         check(!ShadowArt.atlas(SpriteAtlas.FOAM) && !ShadowArt.atlas(SpriteAtlas.BUOY) && ShadowArt.source(ShadowArt.BUOY)==SpriteAtlas.BUOY,"new shadows skip foam and colored source IDs");
         System.out.println(checks+" buoy sprite, waterline, wave response and anchor assertions passed");
     }
     private static final class Capture implements Painter {
-        int push,pop,frame;float top,secondTop,ax,ay;
-        public void pushClipOutside(float[] t){push++;if(t.length>=12){top=t[1];secondTop=t[3];}}
+        int push,pop,frame,foam,lines;float ax,ay,maxAlpha,alphaSum;float[] triangles;
+        public void pushClipOutside(float[] t){push++;triangles=t;}
         public void popClip(){pop++;}
         public void rect(float x,float y,float w,float h,int c){}
         public void circle(float x,float y,float r,int c){}
-        public void line(float x,float y,float xx,float yy,float w,int c){}
+        public void line(float x,float y,float xx,float yy,float w,int c){lines++;maxAlpha=Math.max(maxAlpha,(c>>>24)/255f);}
         public void poly(float[] xy,int c){}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
-        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){frame=f;this.ax=ax;this.ay=ay;}
+        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){frame=f;this.ax=ax;this.ay=ay;if(a==SpriteAtlas.FOAM){foam++;maxAlpha=Math.max(maxAlpha,alpha);alphaSum+=alpha;}}
     }
     public static void main(String[] args){run();}
 }

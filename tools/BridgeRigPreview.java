@@ -9,7 +9,8 @@ import javax.imageio.ImageIO;
 /** The production shared bridge view, captured across its articulation cycle. */
 public final class BridgeRigPreview {
     private static Game fixture() {
-        Game g=new Game();g.challengeId=1;g.reset();g.ticks=500;
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.BRIDGE;g.tutorial.setup(g);g.ticks=500;
         g.layout=Layout.focused(960,600,300,Bridge.Y,1.65f,480,405);
         g.tug.x=300;g.tug.y=Bridge.Y+500;g.trafficBoat.x=8000;g.trafficBoat.y=8000;
         for(Body b:g.cargo)if(b!=null)b.active=false;

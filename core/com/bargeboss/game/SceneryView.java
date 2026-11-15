@@ -41,9 +41,8 @@ public final class SceneryView {
         int[] cells=foreground?new int[]{5,3,7,6}:new int[]{0,4,2,1};
         float[] along={70,250,465,625};
         float bank=foreground?Physics.LEFT-82:Physics.RIGHT+48;
-        for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++) for(int i=0;i<cells.length;i++) {
+        for(int segment=g.lockStage()?-2:0;segment<=0;segment++) for(int i=0;i<cells.length;i++) {
             float worldY=148+along[i]+segment*688;
-            if(g.bridgeStage() && Math.abs(worldY-Bridge.Y)<95) continue;
             prop(g,p,cells[i],bank,worldY);
         }
     }
@@ -63,7 +62,7 @@ public final class SceneryView {
         StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
     }
     public static void bridge(Game g,Painter p) {
-        if(g.challengeId==0) return;
+        if(g.challengeId==0 || g.lockStage()) return;
         if(g.bridgeStage()) { BridgeView.draw(g,p);return; }
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int frame=0;frame<2;frame++) {
@@ -74,7 +73,7 @@ public final class SceneryView {
         }
     }
     public static void piers(Game g,Painter p) {
-        if(g.challengeId!=2) return;
+        if(!g.orderStage()) return;
         RiverCamera c=g.layout.camera;Painter world=new RiverPainter(p,c);
         for(float[] r:HarborGeometry.PIERS) {
             // Project the exact solid rectangle; the old painted pier crops had

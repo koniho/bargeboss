@@ -246,9 +246,35 @@ Entrance navigation markers and the two practice buoys join the same depth merge
 as vessels, rope spans, shore caps and factories; lantern halos stay with those
 fixtures. Their water reflections draw before hulls and use water-only clipping.
 Buoy contact/cast shadows also draw before hulls. Sprite roll and delayed heave
-share a waterline pivot with the lamp anchors; a separate horizontal surface clip
-hides the submerged float. This clip follows the water height, never the sprite
-roll, and nests inside the solid-shore cutout. Buoys do not use building fading.
+share a waterline pivot with the lamp anchors; a separate curved meniscus clip
+hides the submerged float, with translucent sprite foam along the contact edge.
+This clip follows the water height, never the sprite roll, and nests inside the solid-shore cutout. Buoys do not use building fading.
 Vessel navigation fittings stay inside each vessel's shore clip and cargo layering.
 See [entrance marks](navigation-lights.md) and [vessel navigation lamps](vessel-navigation-lights.md)
 for fixed returning directions versus hull-local port/starboard anchors.
+
+Tutorial entrance beacons stand on dry concrete foundations at the shared raised
+quay elevation. Their sprite/lamp transforms never sample waves. Ground light
+and separate shadow masks draw after cached ground, with a deck-height water
+cutout, before the ordinary world depth merge. Only the yellow practice targets
+remain floating in this scene. Fixed beacons never use building fades.
+
+## Lock machinery and water-level cues
+
+The third career level uses two `LockView` gates; the opening bridge remains in
+the tutorial. Each lock gate is an `ArticulatedModel` with fixed bank machinery
+and independently hinged rigid leaves. Their steel faces, braces and top rails
+rotate in XYZ about the bank pivots before projection. Lantern anchors belong
+to their fixed machinery or moving leaf nodes, and model self-occlusion controls
+their visibility. Never rotate a painted isometric gate bitmap or leave a lamp
+at its closed-position screen coordinate.
+
+`Renderer.river` merges each gate at its unraised world-ground depth among
+vessels, individual rope spans and navigation markers. Gate mechanisms are solid
+equipment, not building-fade candidates. The model sorts its own faces; the
+world merge orders the gate assembly relative to nearby boats and towlines.
+Water tint, wall wet-height marks, gauge and filling turbulence draw before
+hulls. The water-level cycle is a visual abstraction on the fixed navigation
+plane: it does not independently lift hull sprites, shift towline attachments,
+or change the projection of emitted wakes. See the
+[phase and goal contract](../gameplay/goal-levels.md) before changing that rule.

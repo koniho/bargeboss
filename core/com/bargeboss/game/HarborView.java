@@ -45,7 +45,8 @@ public final class HarborView {
         }
         SoftCue.caption(p,""+g.berthLetter(index),x+75,y+53,22,0x6656bac1);
         SoftCue.caption(p,Game.CARGO_NAMES[index],x+34,y+53,8,0x99b8d9cf);
-        String badge=(working?"UNLOAD ":occupied?"TYING ":"BERTH ")+g.berthLetter(index);
+        String role=g.orderStage()?(g.berthLetter(index)-'A'<g.delivered?"DONE ":g.nextRequiredBerth()==index?"NEXT ":"LATER "):"BERTH ";
+        String badge=(working?"UNLOAD ":occupied?"TYING ":role)+g.berthLetter(index);
         badge(p,badge,x+95,y+53,8,color);
         float bank=index==1?433:143;
         Painter shore=g.tutorial!=null && p instanceof RiverPainter?
@@ -55,19 +56,30 @@ public final class HarborView {
         if(working) lamp(shore,index==1?429:171,g.dockY(index)+40,g.visualTicks*3);
     }
     private static int focused(Game g) {
+        if(g.orderStage())return g.nextRequiredBerth();
         Body held=g.heldCargo(); if(held!=null && !held.lineAttached) return held.berth;
         if(g.selected>=0) { Body b=g.cargo[g.selected]; if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth; }
         for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached && !b.deliveryRecorded) return b.berth;
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
+        if(g.lockStage()) {
+            if(g.ropeDragging || g.ropePhase!=0)return;
+            if(g.lock.phase==Lock.READY)destination(g,canvas,300,Lock.ENTRY_Y+85,"LOCK ENTRY");
+            else if(g.lock.phase==Lock.ENTRY)destination(g,canvas,300,(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,"INTO LOCK");
+            else if(g.lock.phase==Lock.EXIT)destination(g,canvas,300,Lock.EXIT_Y-120,"LOCK EXIT");
+            return;
+        }
         // The early lessons teach a touch target, before the berth destination.
         if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.CONNECT)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
         boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) ready|=g.canTie(b);
         if(ready) return;
+        destination(g,canvas,Game.DOCK_X[berth],g.dockY(berth),"BERTH "+g.berthLetter(berth));
+    }
+    private static void destination(Game g,Painter canvas,float wx,float wy,String label) {
         RiverCamera c=g.layout.camera;
-        float x=c.screenX(Game.DOCK_X[berth],g.dockY(berth)),y=c.screenY(Game.DOCK_X[berth],g.dockY(berth));
+        float x=c.screenX(wx,wy),y=c.screenY(wx,wy);
         if(x<32 || x>g.layout.width-32 || y<80 || y>g.layout.height-70) {
             float cx=g.layout.width/2,cy=g.layout.height/2,dx=x-cx,dy=y-cy;
             float fraction=Math.min((g.layout.width/2-32)/Math.max(1,Math.abs(dx)),
@@ -75,7 +87,7 @@ public final class HarborView {
             float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
             float ux=dx/distance,uy=dy/distance;
             ControlView.arrow(g,canvas,ex-ux*32,ey-uy*32,ex,ey,GOLD);
-            Lettering.center(canvas,"BERTH "+g.berthLetter(berth),Physics.clamp(ex,85,g.layout.width-85),
+            Lettering.center(canvas,label,Physics.clamp(ex,85,g.layout.width-85),
                     Physics.clamp(ey+22,85,g.layout.height-62),12,GOLD);return;
         }
         Painter p=ScreenView.scaled(canvas,x,y,c.scale);

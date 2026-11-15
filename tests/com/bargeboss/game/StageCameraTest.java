@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Exercise camera motion together with real gestures and the physical bridge gate. */
+/** Exercise camera motion together with real gestures and timed lock passage. */
 public final class StageCameraTest {
     private static int checks;
     private static void check(boolean ok,String message) { checks++;if(!ok) throw new AssertionError(message); }
@@ -8,9 +8,9 @@ public final class StageCameraTest {
     private static Game stage(int id) { Game g=new Game();g.challengeId=id;g.reset();return g; }
     public static void run() {
         Game g=stage(0);
-        check(g.feeders.length==1 && g.berthEnabled(2) && !g.berthEnabled(0) && !g.berthEnabled(1),"first watch has one feeder and one berth");
+        check(g.feeders.length==2 && g.berthEnabled(2) && g.berthEnabled(1) && !g.berthEnabled(0),"first level has two feeder slots and opposite-bank berths");
         steps(g,180);Body b=g.cargo[0];
-        check(g.feederDrops()==1 && b.berth==2 && g.berthLetter(b.berth)=='A',"first feeder announces its sole berth A");
+        check(g.feederDrops()==2 && b.berth==2 && g.berthLetter(b.berth)=='A',"first feeder announces berth A while the second supplies B");
         check(Feeder.DROP_Y-g.dockY(2)>400,"first berth is at the far end opposite the feeder");
         check(Math.abs(g.layout.camera.zoom-Game.WORK_ZOOM)<.01f,"waiting feeder uses the closer working view");
         ReplayInput.down(g,b.x,b.y);float px=g.layout.camera.screenX(g.downX,g.downY),py=g.layout.camera.screenY(g.downX,g.downY);
@@ -39,41 +39,39 @@ public final class StageCameraTest {
         steps(g,180);check(g.layout.camera.zoom>1.3f,"nearby cargo triggers docking view");
         Mooring.attach(b);b.mooringTicks=Mooring.ALIGN_TICKS;b.x=197.5f;b.angle=(float)Math.PI/2;
         b.unloadingTicks=Game.UNLOAD_TICKS-1;
-        Body next=new Body(2,2,265,b.y+100,0);g.cargo[1]=next;
+        Body next=new Body(2,1,265,b.y+100,0);g.cargo[1]=next;
         g.step();check(g.delivered==1 && g.cameraOverviewTicks>0,"delivery starts an overview grace period");
         int grace=g.cameraOverviewTicks;g.background();steps(g,60);
         check(g.cameraOverviewTicks==grace,"pause freezes overview grace period");g.pause();steps(g,120);
         check(next.active && g.layout.camera.zoom<1.02f && g.cameraOverviewTicks>0,"nearby next load cannot prevent delivery zoom-out");
         g.reset();check(g.cameraOverviewTicks==0,"restart clears overview grace period");
-        g=stage(1);check(g.channelTop()<Physics.TOP-688 && g.feeders.length==2,"bridge run extends beyond a screen and has two feeders");
-        for(int side=-1;side<=1;side+=2) for(int angle=0;angle<8;angle++) {
+        g=stage(1);check(g.orderStage() && !g.hasBridge(),"ordered-berth challenge has no unrelated bridge timer");
+        // The continuous tutorial still uses the bridge; preserve its all-heading collision regression.
+        for(int side=-1;side<=1;side+=2)for(int angle=0;angle<8;angle++){
             Body hull=new Body(1,2,300,Bridge.Y+side*100,(float)(angle*Math.PI/4));hull.vy=-side*100;
-            for(int i=0;i<120;i++) { Physics.integrate(hull);g.bridge.collide(hull);
-                for(int disc=0;disc<3;disc++) check(side*(hull.discY(disc)-Bridge.Y)>=hull.radius+11.9f,"closed bridge blocks the full rotated hull from either direction");
+            for(int i=0;i<120;i++){
+                Physics.integrate(hull);g.bridge.collide(hull);
+                for(int disc=0;disc<3;disc++)check(side*(hull.discY(disc)-Bridge.Y)>=hull.radius+11.9f,"closed tutorial bridge blocks the full rotated hull from either direction");
             }
         }
-        steps(g,180);check(g.layout.camera.zoom>1.49f,"bridge feeder pickup uses the close working view");
-        g.tug.x=300;g.tug.y=Bridge.Y+150;g.step();
-        check(g.bridge.phase==Bridge.WAITING,"approaching requests an opening automatically");
-        steps(g,359);check(!g.bridge.passable(),"bridge enforces the six-second wait");
-        check(Math.abs(g.layout.camera.zoom-Game.TRANSIT_ZOOM)<.01f,"bridge passage uses the closer transit view with room ahead");
-        steps(g,61);check(g.bridge.phase==Bridge.OPENING && !g.bridge.passable(),"moving bridge is blocked until clearance exists");
-        int tick=g.bridge.ticks;RiverCamera paused=g.layout.camera;g.background();g.advance(.25);
-        check(g.bridge.ticks==tick && g.layout.camera==paused,"background freezes bridge and camera");g.pause();steps(g,60);
-        check(g.bridge.phase==Bridge.OPEN && g.bridge.passable(),"raised bridge grants passage");
-        g.tug.y=Bridge.Y;steps(g,750);check(g.bridge.phase==Bridge.OPEN,"bridge never closes on a vessel underneath");
-        g.tug.y=-300;steps(g,1);check(g.bridge.phase==Bridge.CLOSING,"bridge closes after its passage window clears");
-        g.tug.y=Bridge.Y;g.step();check(g.bridge.phase==Bridge.OPENING,"a vessel entering during closing reverses the bridge");
-        g.tug.y=-400;steps(g,200);
-        check(g.layout.camera.zoom>1.45f,"upstream working berth returns to the close view");
+        g=stage(2);check(g.lockStage() && g.channelTop()<Physics.TOP-688 && g.feeders.length==2,"lock reach extends beyond a screen and has two feeders");
+        steps(g,180);check(g.layout.camera.zoom>1.49f,"lock feeder pickup uses the close working view");
+        g.tug.x=300;g.tug.y=Lock.ENTRY_Y+130;g.step();
+        check(g.lock.phase==Lock.ENTRY,"loaded lock approach starts entry window");
+        steps(g,180);check(g.lock.entryPassable() && !g.lock.exitPassable(),"only the lower gate opens for entry");
+        check(g.layout.camera.zoom<Game.WORK_ZOOM,"lock transit retains room ahead");
+        int tick=g.lock.ticks;RiverCamera paused=g.layout.camera;g.background();g.advance(.25);
+        check(g.lock.ticks==tick && g.layout.camera==paused,"background freezes lock window and camera");g.pause();
+        g.lock.phase=Lock.EXIT;g.lock.ticks=0;g.tug.y=-300;steps(g,180);
+        check(g.layout.camera.zoom>=Game.TRANSIT_ZOOM-.01f,"upstream passage keeps a readable vessel scale");
         RiverCamera c=g.layout.camera;
         check(c.worldTop<0 && c.contains(c.screenX(g.tug.x,g.tug.y),c.screenY(g.tug.x,g.tug.y)),"camera follows the tug into the upstream reach");
         for(float x:new float[]{176,230,300,424}) for(float y:new float[]{-450,-400,-100,200}) {
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
             check(Math.abs(c.worldX(sx,sy)-x)<.001f && Math.abs(c.worldY(sx,sy)-y)<.001f,"scrolled camera has an exact input inverse");
         }
-        int frame=Parity.frame(g);check(frame==Parity.frame(g) && c==g.layout.camera,"drawing bridge and scrolling scene does not mutate the camera");
-        g.reset();check(g.layout.camera.zoom==1 && g.layout.camera.worldTop==148 && g.bridge.phase==Bridge.CLOSED,"restart restores overview and closed bridge");
-        System.out.println(checks+" stage, docking zoom, gesture stability and bridge safety assertions passed");
+        int frame=Parity.frame(g);check(frame==Parity.frame(g) && c==g.layout.camera,"drawing lock and scrolling scene does not mutate the camera");
+        g.reset();check(g.layout.camera.zoom==1 && g.layout.camera.worldTop==148 && g.lock.phase==Lock.READY,"restart restores overview and ready lock");
+        System.out.println(checks+" stage, docking zoom, gesture stability, lock lifecycle and bridge collision assertions passed");
     }
 }

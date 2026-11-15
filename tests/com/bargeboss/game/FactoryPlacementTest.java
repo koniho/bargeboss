@@ -59,8 +59,10 @@ public final class FactoryPlacementTest {
             int slot=owner[row-minRow][col-minCol];
             if(slot>=0)occupied++;
             if(clearRoad)roads++;
-            if(!road && distance>=72)check(slot>=0,"no unexplained empty ground cells between factories and roads");
-            if(!road && slot<0){check(distance<72,"unfilled factory cells are required shoreline clearance");apron++;}
+            boolean navigation=TrainingChannelView.navigationApron(col,row);
+            if(navigation)check(slot<0,"train-exit beacon retains its reserved foreground sightline");
+            if(!road && distance>=72 && !navigation)check(slot>=0,"no unexplained empty ground cells between factories and roads");
+            if(!road && slot<0){check(distance<72 || navigation,"unfilled factory cells are required shore or navigation clearance");apron++;}
         }
         check(occupied>roads,"industrial land remains factory-dense rather than mostly road");
         check(roads>0 && apron>0,"continuous roads and navigable shoreline aprons remain represented");

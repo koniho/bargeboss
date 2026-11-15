@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Stable lateral sides, flash rhythm, water registration and render-only animation. */
+/** Stable lateral sides, flash rhythm, land/water registration and render-only animation. */
 public final class NavigationLightsTest {
     private static int checks;
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
@@ -8,15 +8,22 @@ public final class NavigationLightsTest {
         for(int stage=-1;stage<3;stage++){
             Game g=new Game();if(stage<0){g.startTutorial();g=g.activeGame();}else {g.challengeId=stage;g.reset();}
             NavigationLights.Entrance[] entrances=NavigationLights.entrances(g);
-            check(entrances.length==(stage<0?4:stage==1?2:1),"only distinct region mouths carry a navigation pair");
+            check(entrances.length==(stage<0?4:stage==2?2:1),"only distinct region mouths carry a navigation pair");
             for(NavigationLights.Entrance e:entrances){
                 float rx=e.markerX(true)-e.x,ry=e.markerY(true)-e.y,gx=e.markerX(false)-e.x,gy=e.markerY(false)-e.y;
                 check(rx*(-e.dy)+ry*e.dx>0 && gx*(-e.dy)+gy*e.dx<0,"red is starboard and green port in the declared returning direction");
                 check(Math.abs(rx+gx)<.001f && Math.abs(ry+gy)<.001f,"markers flank the entrance symmetrically");
-                check(WaterEffectsPainter.contains(g,e.markerX(true),e.markerY(true)) && WaterEffectsPainter.contains(g,e.markerX(false),e.markerY(false)),"floating marks sit on navigable water beside their entrance");
+                for(boolean red:new boolean[]{false,true}) {
+                    float mx=e.markerX(red),my=e.markerY(red);
+                    if(stage<0) {
+                        float half=LandMarkerArt.FOOTPRINT_HALF;
+                        check(!TrainingGroundView.intersectsWater(mx-half,my-half,half*2,half*2),"complete concrete foundation sits back on dry land");
+                    } else check(WaterEffectsPainter.contains(g,mx,my),"shift floating marks sit on navigable water beside their entrance");
+                }
             }
             for(int i=0;i<NavigationLights.count(g);i++){
                 float x=NavigationLights.x(g,i),y=NavigationLights.y(g,i);int color=NavigationLights.color(g,i);
+                check(NavigationLights.land(g,i)==(stage<0 && i<entrances.length*2),"only tutorial entrance markers use fixed land variants");
                 g.tug.angle+=1.7f;g.configureCanvas(1333,600);
                 check(NavigationLights.x(g,i)==x && NavigationLights.y(g,i)==y && NavigationLights.color(g,i)==color,"heading or screen aspect never flips lateral markers");
             }
@@ -24,8 +31,8 @@ public final class NavigationLightsTest {
             int[] order=NavigationLights.ordered(g);
             for(int i=1;i<order.length;i++)check(NavigationLights.depth(g,order[i-1])<=NavigationLights.depth(g,order[i]),"markers join increasing world depth order");
             int ticks=g.ticks,visual=g.visualTicks,water=g.water.emitted;float tx=g.tug.x,ty=g.tug.y;
-            Capture a=new Capture(),b=new Capture();NavigationLights.reflections(g,a);for(int i:order)NavigationLights.draw(g,a,i);
-            NavigationLights.reflections(g,b);for(int i:order)NavigationLights.draw(g,b,i);
+            Capture a=new Capture(),b=new Capture();NavigationLights.reflections(g,a);NavigationLights.landShadows(g,a);for(int i:order)NavigationLights.draw(g,a,i);
+            NavigationLights.reflections(g,b);NavigationLights.landShadows(g,b);for(int i:order)NavigationLights.draw(g,b,i);
             check(a.hash==b.hash && a.calls==b.calls,"same frame produces identical lights and reflections");
             check(g.ticks==ticks && g.visualTicks==visual && g.water.emitted==water && g.tug.x==tx && g.tug.y==ty,"buoy animation never advances gameplay or water");
             g.visualTicks=15;Capture bright=new Capture();for(int i:order)NavigationLights.draw(g,bright,i);
@@ -45,7 +52,7 @@ public final class NavigationLightsTest {
         Game g=new Game();g.startTutorial();g=g.activeGame();
         int first=NavigationLights.count(g)-2;
         for(int i=0;i<2;i++)check(NavigationLights.x(g,first+i)==Tutorial.DRIVE_X[i] && NavigationLights.y(g,first+i)==Tutorial.DRIVE_Y[i] && NavigationLights.color(g,first+i)==NavigationLights.YELLOW,"practice buoy models stay at actual circling centers and use distinct yellow lamps");
-        System.out.println(checks+" lateral light side, flash, water placement, depth and animation assertions passed");
+        System.out.println(checks+" lateral light side, flash, land/water placement, depth and animation assertions passed");
     }
     private static final class Capture implements Painter {
         int hash=1,calls;

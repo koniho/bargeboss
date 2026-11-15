@@ -1,0 +1,3 @@
+# file=assets/sprites/land-marker-red-v1.png image=1254x1254 grid=1x1 nominal_cell=1254.000x1254.000 alpha>=32 roi=0.000,0.000,1.000,1.000
+frame,source_x,source_y,cell_width,cell_height,min_x,min_y,max_x,max_y,pixels,ink_x,ink_y,alpha_center_x,alpha_center_y,largest_x,largest_y,dense_x,dense_y,axis_degrees,intended_degrees,axis_error_degrees,touches_border
+0,0,0,1254,1254,278,33,974,1236,419058,0.499601,0.506380,0.499926,0.599520,0.499601,0.506380,0.499601,0.774721,90.251,0.000,89.749,false

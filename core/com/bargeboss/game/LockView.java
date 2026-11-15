@@ -1,0 +1,101 @@
+package com.bargeboss.game;
+
+/** Fixed-view XYZ lock machinery. Rigid leaves rotate about bank hinges; lamps follow parts. */
+public final class LockView {
+    private static final ArticulatedModel[] MODELS=new ArticulatedModel[2];
+    private static final float[] OPENINGS={Float.NaN,Float.NaN};
+    private static final int STEEL=0xff52646a,RUST=0xff97643e,CONCRETE=0xff53616a;
+    private LockView(){}
+    public static float gateY(int index){return index==0?Lock.EXIT_Y:Lock.ENTRY_Y;}
+    public static float gateDepth(Game g,int index){return g.layout.camera.screenY((Physics.LEFT+Physics.RIGHT)*.5f,gateY(index));}
+    private static float opening(Lock lock,int index){return index==0?lock.exitOpening():lock.entryOpening();}
+    private static boolean passable(Lock lock,int index){return index==0?lock.exitPassable():lock.entryPassable();}
+    /** All moving parts have explicit pivots, stable names and local geometry. */
+    static ArticulatedModel model(int index,float opening){
+        if(MODELS[index]!=null && Float.floatToIntBits(OPENINGS[index])==Float.floatToIntBits(opening))return MODELS[index];
+        ArticulatedModel.Builder b=new ArticulatedModel.Builder();
+        float y=gateY(index),angle=opening*(float)Math.PI*.5f*(index==0?-1:1),half=(Physics.RIGHT-Physics.LEFT)*.5f;
+        int fixed=b.node("bank-machinery",-1,0,0,0,0,0);
+        for(int side=0;side<2;side++){
+            float x=side==0?Physics.LEFT-10:Physics.RIGHT+10;
+            b.box(fixed,x,y,17,20,34,34,CONCRETE);
+            b.box(fixed,x,y,35,24,38,4,STEEL);
+            b.box(fixed,x,y+12,43,10,10,12,RUST);
+            b.box(fixed,x,y+12,51,7,7,4,0xff202f38);
+            // Thick exposed hinge shafts and driven crank housings remain on land.
+            b.box(fixed,side==0?Physics.LEFT-1:Physics.RIGHT+1,y,18,6,12,36,RUST);
+        }
+        for(int side=0;side<2;side++){
+            float x=side==0?Physics.LEFT:Physics.RIGHT;
+            int leaf=b.node(side==0?"left-leaf":"right-leaf",-1,x,y,0,side==0?angle:(float)Math.PI-angle,0);
+            b.box(leaf,half*.5f,0,12,half,8,24,STEEL);
+            b.box(leaf,half*.5f,0,25,half+2,10,3,RUST);
+            b.box(leaf,half*.5f,0,2,half+2,10,3,0xff253741);
+            for(float at=12;at<half;at+=24)b.box(leaf,at,-4.5f,13,4,3,24,RUST);
+            b.beam(leaf,5,-5,5,half-5,-5,22,3,0xff73868b);
+            b.box(leaf,half-6,0,29,5,5,5,0xff24323b);
+        }
+        OPENINGS[index]=opening;MODELS[index]=b.build();return MODELS[index];
+    }
+    private static boolean visible(Game g,int index){
+        RiverCamera c=g.layout.camera;float x=c.screenX(300,gateY(index)),y=c.screenY(300,gateY(index)),s=c.scale;
+        return x+250*s>=0 && x-250*s<=g.layout.width && y+180*s>=0 && y-100*s<=g.layout.height;
+    }
+    /** Below-hull water treatment and moving wet marks communicate the enclosed level cycle. */
+    public static void water(Game g,Lock lock,Painter canvas){
+        RiverCamera c=g.layout.camera;Painter world=new RiverPainter(canvas,c);
+        float mid=(Lock.EXIT_Y+Lock.ENTRY_Y)*.5f,px=c.screenX(300,mid),py=c.screenY(300,mid),s=c.scale;
+        if(px+500*s<0 || px-500*s>g.layout.width || py+300*s<0 || py-300*s>g.layout.height)return;
+        world.rect(Physics.LEFT+2,Lock.EXIT_Y+2,Physics.RIGHT-Physics.LEFT-4,Lock.ENTRY_Y-Lock.EXIT_Y-4,0x182f6570);
+        float wet=-8+lock.waterLevel()*18;
+        for(int side=0;side<2;side++){
+            float x=side==0?Physics.LEFT+1:Physics.RIGHT-1;
+            line3(g,canvas,x,Lock.EXIT_Y+10,wet,x,Lock.ENTRY_Y-10,wet,1.2f,0x886da6a2);
+            for(int mark=0;mark<=4;mark++){
+                float z=-8+mark*4.5f;
+                line3(g,canvas,x,Lock.ENTRY_Y-48,z,x,Lock.ENTRY_Y-36,z,1,0x88909a87);
+            }
+            // Sluice turbulence is local to the chamber and fades outside the filling phase.
+            if(lock.phase==Lock.FILLING)for(int ripple=0;ripple<4;ripple++){
+                float age=(g.visualTicks*.014f+ripple*.25f);age-=(float)StrictMath.floor(age);
+                float radius=5+age*19,alpha=.3f*(float)StrictMath.sin(age*Math.PI);
+                float centerX=x+(side==0?22:-22),centerY=Lock.EXIT_Y+65+side*135;
+                for(int segment=0;segment<12;segment++){
+                    double a=segment*Math.PI/6,b=(segment+.7)*Math.PI/6;
+                    SoftCue.line(world,centerX+radius*(float)StrictMath.cos(a),centerY+radius*(float)StrictMath.sin(a),
+                            centerX+radius*(float)StrictMath.cos(b),centerY+radius*(float)StrictMath.sin(b),1,SoftCue.alpha(0xffa6d9c8,alpha));
+                }
+            }
+        }
+        if(lock.phase==Lock.FILLING || lock.phase==Lock.CLOSING || lock.phase==Lock.OPENING)
+            SoftCue.caption(world,"WATER LEVEL "+Math.round(lock.waterLevel()*100)+"%",300,mid,11,VisualStyle.CREAM);
+    }
+    private static void line3(Game g,Painter p,float x,float y,float z,float xx,float yy,float zz,float width,int color){
+        RiverCamera c=g.layout.camera;
+        p.line(c.screenX(x,y),c.screenY(x,y)-z*ArticulatedModel.Z_SCALE*c.scale,c.screenX(xx,yy),c.screenY(xx,yy)-zz*ArticulatedModel.Z_SCALE*c.scale,width*c.scale,color);
+    }
+    private static void lamp(Game g,Painter p,ArticulatedModel.Pose pose,int node,float x,float y,float z,int color,float strength,int seed){
+        float[] xyz=pose.point(node,x,y,z);if(pose.occluded(xyz))return;
+        RiverCamera c=g.layout.camera;float sx=c.screenX(xyz[0],xyz[1]),sy=c.screenY(xyz[0],xyz[1])-xyz[2]*ArticulatedModel.Z_SCALE*c.scale;
+        SceneryEffects.glow(p,sx,sy,4*c.scale,color,strength,g.visualTicks,seed*.73f);
+        p.circle(sx,sy,1.6f*c.scale,SoftCue.alpha(color,strength));
+    }
+    /** Insert each gate at its unraised world depth among vessels and rope spans. */
+    public static void drawGate(Game g,Lock lock,Painter canvas,int index){
+        if(!visible(g,index))return;
+        ArticulatedModel m=model(index,opening(lock,index));ArticulatedModel.Pose pose=m.pose(0);m.draw(g,canvas,pose);
+        boolean green=passable(lock,index);int signal=green?0xff8ff2a1:0xffff6750;
+        float flash=green?.85f:.55f+.45f*(.5f+.5f*(float)StrictMath.sin(g.visualTicks*.08));
+        int fixed=m.nodeId("bank-machinery");float y=gateY(index);
+        lamp(g,canvas,pose,fixed,Physics.LEFT-10,y+12,54,signal,flash,index*4);
+        lamp(g,canvas,pose,fixed,Physics.RIGHT+10,y+12,54,signal,flash,index*4+1);
+        float half=(Physics.RIGHT-Physics.LEFT)*.5f;
+        lamp(g,canvas,pose,m.nodeId("left-leaf"),half-6,0,32,0xffffc779,.8f,index*4+2);
+        lamp(g,canvas,pose,m.nodeId("right-leaf"),half-6,0,32,0xffffc779,.8f,index*4+3);
+        Painter world=new RiverPainter(canvas,g.layout.camera);
+        String label=index==1?(lock.phase<=Lock.CLOSING?lock.signal():"ENTRY SEALED"):(lock.phase>=Lock.OPENING?lock.signal():"EXIT SEALED");
+        SoftCue.caption(world,label,300,y+(index==1?42:-42),10,green?0xffa5edb6:VisualStyle.GOLD);
+        if(!green && lock.phase!=Lock.COMPLETE)for(int x=230;x<370;x+=24)SoftCue.line(world,x,y+(index==1?70:-70),x+11,y+(index==1?70:-70),1,0x77ffd086);
+    }
+    public static void draw(Game g,Lock lock,Painter canvas){drawGate(g,lock,canvas,0);drawGate(g,lock,canvas,1);}
+}

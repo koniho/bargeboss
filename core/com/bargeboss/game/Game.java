@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** All gameplay, timers, gestures and lifecycle behavior live here, never in native hosts. */
 public final class Game {
     public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6;
-    public static final int SHIFT_TICKS=180*60, QUOTA=6;
+    public static final int SHIFT_TICKS=180*60, QUOTA=2;
     // Two original-size motion steps per real tick: 2x travel/turning with the
     // same collision resolution, stopping distances and impact thresholds.
     // Gesture, contract and shift clocks stay at 60 real ticks per second.
@@ -28,6 +28,7 @@ public final class Game {
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
     public Bridge bridge=new Bridge();
+    public Lock lock=new Lock();
     public Body trafficBoat;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
     public int visualTicks;
@@ -73,14 +74,28 @@ public final class Game {
     public int quota() { return Challenges.quota(challengeId); }
     public int shiftTicks() { return Challenges.shiftTicks(challengeId); }
     public String challengeTitle() { return Challenges.title(challengeId); }
-    public boolean hasBridge() { return bridgeStage() || tutorial!=null; }
-    public boolean bridgeStage() { return challengeId==1 && tutorial==null; }
-    public boolean berthEnabled(int berth) { return tutorial==null && challengeId==2 || berth==2; }
-    public char berthLetter(int berth) { return tutorial==null && challengeId==2?(char)('A'+berth):'A'; }
-    public float dockY(int berth) { return bridgeStage()?-400:challengeId==0 && tutorial==null && berth==2?290:DOCK_Y[berth]; }
-    public float channelTop() { return tutorial!=null?TrainingChannel.TOW_END:bridgeStage()?-520:Physics.TOP; }
-    public int contractSeconds() { return bridgeStage()?130:68; }
-    public int feedInterval() { return bridgeStage()?30*60:14*60; }
+    public boolean hasBridge() { return tutorial!=null; }
+    /** Bridges remain in the continuous tutorial; the third career level uses a lock. */
+    public boolean bridgeStage() { return false; }
+    public boolean lockStage() { return tutorial==null && challengeId==2; }
+    public boolean orderStage() { return tutorial==null && challengeId==1; }
+    public boolean berthEnabled(int berth) { return tutorial!=null?berth==2:!lockStage() && (orderStage() || berth==2 || berth==1); }
+    public char berthLetter(int berth) { return tutorial!=null?'A':orderStage()?(berth==2?'A':berth==0?'B':'C'):berth==1?'B':'A'; }
+    public float dockY(int berth) { return challengeId==0 && tutorial==null && berth==2?290:DOCK_Y[berth]; }
+    public float channelTop() { return tutorial!=null?TrainingChannel.TOW_END:lockStage()?-520:Physics.TOP; }
+    /** Kept as a score-age scale for legacy previews; cargo never expires. */
+    public int contractSeconds() { return 68; }
+    public int feedInterval() { return 14*60; }
+    public int nextRequiredBerth() { return orderStage() && delivered<3?new int[]{2,0,1}[delivered]:-1; }
+    public boolean correctOrder(Body b) { return !orderStage() || b!=null && b.berth==nextRequiredBerth(); }
+    public int goalProgress() { return lockStage()?lock.clearedCount(this):delivered; }
+    public boolean goalComplete() { return tutorial==null && (lockStage()?lock.complete():delivered>=quota()); }
+    public boolean goalFailed() { return hull<=0 || lockStage() && lock.failed(); }
+    public String goalStatus() {
+        if(lockStage())return lock.signal();
+        if(orderStage())return delivered>=quota()?"ORDER COMPLETE":"NEXT "+berthLetter(nextRequiredBerth())+" / ORDER A-B-C";
+        return "DELIVER BOTH / OPPOSITE BANKS";
+    }
     public int feederDrops() { int count=0;for(Feeder f:feeders) count+=f.drops;return count; }
     public void restoreProgress(String value) {
         if(value==null || value.length()>192)return;
@@ -149,7 +164,7 @@ public final class Game {
     }
     private Layout workCamera(float zoom,float workBlend,boolean practiceView) {
         Body load=cameraLoad();
-        boolean docking=load!=null && !load.awaitingPickup && tow.incoming(load)==null
+        boolean docking=load!=null && berthEnabled(load.berth) && !load.awaitingPickup && tow.incoming(load)==null
                 && Physics.length(load.x-DOCK_X[load.berth],load.y-dockY(load.berth))<190;
         if(docking && workBlend>0) {
             float distance=Physics.length(load.x-DOCK_X[load.berth],load.y-dockY(load.berth));
@@ -187,7 +202,7 @@ public final class Game {
         else {
             if(cameraOverviewTicks>0) cameraOverviewTicks--;
             // The long bridge reach is a transit phase even when carrying a load.
-            boolean transit=bridgeStage() && tug.y<Feeder.DROP_Y-180 && tug.y>dockY(2)+230;
+            boolean transit=lockStage() && tug.y<Feeder.DROP_Y-180;
             boolean overview=cameraOverviewTicks>0;
             desired=workCamera(overview?1:transit?TRANSIT_ZOOM:WORK_ZOOM,transit || overview?0:1,false);
         }
@@ -259,17 +274,17 @@ public final class Game {
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
-        bridge=new Bridge();buildingFades=new BuildingFades();
+        bridge=new Bridge();lock=new Lock();buildingFades=new BuildingFades();
         water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
         tug=new Body(0,-1,330,650,(float)Math.PI);
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
-        feeders=challengeId==0?new Feeder[]{new Feeder(260)}:new Feeder[]{new Feeder(260),new Feeder(360)};
-        feeders[0].request(2);if(feeders.length>1) feeders[1].request(challengeId==1?2:1);nextFeedTick=feedInterval();
+        feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
+        feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
-        mode=PLAY; tell(challengeId==0?"ONE FEEDER / DELIVER TO BERTH A":"DELIVERY PUSHERS INBOUND - KEEP BOTH SLOTS CLEAR");
+        mode=PLAY; tell(goalStatus());
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
@@ -347,13 +362,13 @@ public final class Game {
     private boolean tieEligible(Body b) {
         // The winch aligns the hull after a catch. Requiring the complete hull to
         // fit here rejects vessels touching the bank or arriving at an angle.
-        return b!=null && b.active && !b.lineAttached
+        return b!=null && b.active && !b.lineAttached && berthEnabled(b.berth) && correctOrder(b)
                 && (!b.awaitingPickup || tutorial!=null) // Practice parks the teaching hull in place.
                 && inTieArea(b)
                 && (tutorial==null || tutorial.lesson==Tutorial.TIE && b==cargo[0]);
     }
     private boolean ropeWithinReach(Body b) {
-        return b!=null && b.active && !b.lineAttached
+        return b!=null && b.active && !b.lineAttached && berthEnabled(b.berth) && correctOrder(b)
                 && Math.abs(b.x-DOCK_X[b.berth])<105 && Math.abs(b.y-dockY(b.berth))<105;
     }
     /** Raised quay fittings share the exact projection used by touch and rope drawing. */
@@ -439,6 +454,7 @@ public final class Game {
         }
         if(cargoHit>=0) {
             Body b=cargo[cargoHit];
+            if(orderStage() && !correctOrder(b) && inTieArea(b))tell("BERTH "+berthLetter(nextRequiredBerth())+" FIRST / "+berthLetter(b.berth)+" MUST WAIT");
             if(b.lineAttached || ((ropePhase==1 || ropePhase==2) && b==ropeBody)){selected=cargoHit;return;}
             held=selected=cargoHit;navigating=false;reversing=false;control=HOLDING;
             ropeDragging=canTie(b);haptic(HAPTIC_TICK);
@@ -608,6 +624,7 @@ public final class Game {
             }
         }
         bridge.step(this);
+        if(lockStage())lock.step(this);
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) {
             feeder.step(this);
@@ -623,28 +640,26 @@ public final class Game {
             if(b.lineSnapTicks>0) b.lineSnapTicks--;
             if(b.tieBurstTicks>0) b.tieBurstTicks--;
             if(tutorial==null && !b.lineAttached) b.age+=Physics.DT;
-            if(b.lineAttached) { if(!b.deliveryRecorded) Mooring.step(this,b); }
+            if(b.lineAttached) { if(!b.deliveryRecorded && correctOrder(b)) Mooring.step(this,b); }
             else { b.dockTime=0; b.lineAttached=false; }
-            if(b.unloadingTicks>=UNLOAD_TICKS && !b.deliveryRecorded) {
-                b.deliveryRecorded=true;b.active=tutorial!=null;cameraOverviewTicks=180; delivered++; combo++; int points=300+Math.max(0,180-(int)b.age)*2+Math.min(4,combo)*50;
+            if(b.unloadingTicks>=UNLOAD_TICKS && !b.deliveryRecorded && berthEnabled(b.berth) && correctOrder(b)) {
+                b.deliveryRecorded=true;b.active=tutorial!=null;cameraOverviewTicks=180; delivered++; combo++; int points=600+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
                 score+=points; tell("DELIVERED +"+points+" / "+delivered+" OF "+quota());
                 haptic(HAPTIC_SUCCESS);
                 if(selected==i) selected=-1;
                 if(held==i) { cancel(); navigating=false; }
-            } else if(!b.lineAttached && b.age>contractSeconds()) {
-                b.active=false; lost++; combo=0; score=Math.max(0,score-100); tell("CONTRACT EXPIRED -100");
-                if(held==i) { cancel(); navigating=false; } if(selected==i) selected=-1;
             }
         }
         tow.prune(this);
         if(tutorial!=null) tutorial.update(this);
         else {
-            if(ticks>=nextFeedTick && ticks<shiftTicks()-1800 && spawn()) nextFeedTick=ticks+feedInterval();
-            if(ticks>=shiftTicks() || hull<=0) {
+            if(ticks>=nextFeedTick && spawn()) nextFeedTick=ticks+feedInterval();
+            if(goalComplete() || goalFailed()) {
                 mode=FINISH; cancel();
-                if(ticks>=shiftTicks() && hull>0) {
-                    earnedStars=Challenges.stars(challengeId,delivered,lost,hull);
+                if(goalComplete() && !goalFailed()) {
+                    if(lockStage()) {score+=1200;delivered=quota();haptic(HAPTIC_SUCCESS);}
+                    earnedStars=Challenges.stars(challengeId,goalProgress(),lost,hull);
                     int before=career.rank(); career.record(challengeId,earnedStars,score);
                     rankPromoted=career.rank()>before;
                 }
@@ -711,9 +726,10 @@ public final class Game {
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
         Physics.integrate(tug);
         if(tutorial!=null) TrainingChannel.collideWater(tug);
-        else damage(Physics.banks(tug,channelTop(),Physics.BOTTOM,challengeId==2));
+        else damage(Physics.banks(tug,channelTop(),Physics.BOTTOM,orderStage()));
         if(hasBridge()) damage(bridge.collide(tug));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(Physics.banks(b,channelTop(),Physics.BOTTOM,challengeId==2));if(hasBridge()) damage(bridge.collide(b)); }
+        if(lockStage()) damage(lock.collide(tug));
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(Physics.banks(b,channelTop(),Physics.BOTTOM,orderStage()));if(hasBridge()) damage(bridge.collide(b));if(lockStage()) damage(lock.collide(b)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;
@@ -754,16 +770,19 @@ public final class Game {
         }
     }
     public boolean inDock(Body b) {
+        if(!berthEnabled(b.berth))return false;
         for(int i=0;i<3;i++) if(Math.abs(b.discX(i)-DOCK_X[b.berth])+b.radius>55
                 || Math.abs(b.discY(i)-dockY(b.berth))+b.radius>53) return false;
         return true;
     }
+    private int feedBerth(int index) { return orderStage()?new int[]{1,2,0}[index]:index==0?2:1; }
     private boolean spawn() {
-        for(int i=0;i<feeders.length;i++) {
-            Feeder feeder=feeders[(spawnIndex+i)%feeders.length];
-            if(feeder.phase==Feeder.IDLE) {
-                feeder.request(challengeId<2?2:spawnIndex%3); spawnIndex++; return true;
-            }
+        if(spawnIndex>=quota())return false;
+        for(Feeder feeder:feeders) if(feeder.phase==Feeder.IDLE) {
+            boolean occupied=false;
+            for(Body b:cargo)if(b!=null && b.active && Math.abs(b.x-feeder.x)<55 && b.y>Feeder.DROP_Y-80)occupied=true;
+            if(occupied)continue;
+            feeder.request(feedBerth(spawnIndex++));return true;
         }
         return false;
     }
@@ -783,7 +802,7 @@ public final class Game {
         tug.vx+=dvx; tug.vy+=dvy;
     }
     private void pushCargo(Body b) {
-        float gx=DOCK_X[b.berth], gy=dockY(b.berth);
+        float gx=lockStage()?300:DOCK_X[b.berth], gy=lockStage()?(lock.phase<Lock.EXIT?90:-190):dockY(b.berth);
         // Drag from the original contact point to override the assisted berth heading.
         float dragX=pointerX-downX, dragY=pointerY-downY;
         boolean steering=manualSteering;
@@ -797,7 +816,7 @@ public final class Game {
         // Holding assist deliberately settles a fitting load; released cargo keeps its own glide.
         if(!steering && inDock(b)) { b.vx*=.93f;b.vy*=.93f;b.spin*=.94f; }
         float finalDistance=Physics.length(gx-b.x,gy-b.y);
-        if(!steering && challengeId==2 && tutorial==null) {
+        if(!steering && orderStage()) {
             HarborGeometry.waypoint(b.x,b.y,gx,gy,b.half+b.radius+4,channelTop(),Physics.BOTTOM,route); gx=route[0]; gy=route[1];
         }
         float dx=gx-b.x, dy=gy-b.y, distance=Physics.length(dx,dy);
@@ -819,7 +838,7 @@ public final class Game {
             if(along>-20) { sx-=ny*sideSign*78; sy+=nx*sideSign*78; }
             guideX=Physics.clamp(sx,198,402); guideY=Physics.clamp(sy,channelTop()+30,787);
             control=steering?STEERING:ALIGNING;
-            if(!steering && challengeId==2 && tutorial==null) {
+            if(!steering && orderStage()) {
                 HarborGeometry.waypoint(tug.x,tug.y,guideX,guideY,tug.half+tug.radius+2,channelTop(),Physics.BOTTOM,route);
                 navigate(route[0],route[1],95);
             } else navigateToLoad(guideX,guideY,95);
@@ -853,8 +872,8 @@ public final class Game {
         haptic(HAPTIC_IMPACT);
     }
     public int trafficPhase() { return ticks%(28*60); }
-    public boolean trafficWarning() { return challengeId==2 && tutorial==null && ticks>=600 && trafficPhase()>=900 && trafficPhase()<1080; }
-    public boolean trafficActive() { return challengeId==2 && tutorial==null && ticks>=600 && trafficPhase()>=1080 && trafficPhase()<1080+400/MOTION_STEPS; }
+    public boolean trafficWarning() { return orderStage() && ticks>=600 && trafficPhase()>=900 && trafficPhase()<1080; }
+    public boolean trafficActive() { return orderStage() && ticks>=600 && trafficPhase()>=1080 && trafficPhase()<1080+400/MOTION_STEPS; }
     public float trafficX() { return 110+(trafficPhase()-1080)*.95f*MOTION_STEPS; }
     private void traffic() {
         if(!trafficActive()) return;

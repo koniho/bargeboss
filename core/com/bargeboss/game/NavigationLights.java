@@ -12,15 +12,15 @@ public final class NavigationLights {
         public float markerY(boolean red){return y+(red?1:-1)*dx*halfWidth;}
     }
     private static final Entrance[] PRACTICE={
-        new Entrance("OPEN BASIN / CANAL",TrainingChannel.MIN+10,500,1,0,50),
-        new Entrance("CANAL / HARBOR",TrainingChannel.MAX-10,500,1,0,50),
-        new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP+10,0,-1,24),
-        new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT-10,0,-1,24)
+        new Entrance("OPEN BASIN / CANAL",TrainingChannel.MIN+26,500,1,0,76),
+        new Entrance("CANAL / HARBOR",TrainingChannel.MAX-26,500,1,0,76),
+        new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP-26,0,-1,48),
+        new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48)
     };
     private static final Entrance[] LOCAL={new Entrance("HARBOR ENTRANCE",300,Physics.BOTTOM-45,0,-1,120)};
     private static final Entrance[] TRANSIT={LOCAL[0],new Entrance("UPSTREAM HARBOR",300,-280,0,-1,120)};
     private NavigationLights(){}
-    public static Entrance[] entrances(Game g){return g.tutorial!=null?PRACTICE:g.bridgeStage()?TRANSIT:LOCAL;}
+    public static Entrance[] entrances(Game g){return g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
     /** One single flash every two seconds; long dark interval preserves the marine rhythm. */
     public static float flash(int ticks,int phase){
         int t=Math.floorMod(ticks+phase,120);
@@ -31,6 +31,7 @@ public final class NavigationLights {
     }
     public static int count(Game g){return entrances(g).length*2+(g.tutorial!=null?2:0);}
     private static boolean practice(Game g,int i){return i>=entrances(g).length*2;}
+    public static boolean land(Game g,int i){return g.tutorial!=null && !practice(g,i);}
     private static int practiceIndex(Game g,int i){return i-entrances(g).length*2;}
     public static float x(Game g,int i){return practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
     public static float y(Game g,int i){return practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
@@ -52,7 +53,7 @@ public final class NavigationLights {
     /** Water effects stay below all hulls and are clipped against actual waterways. */
     public static void reflections(Game g,Painter canvas){
         Painter water=new WaterEffectsPainter(g,new RiverPainter(canvas,g.layout.camera));
-        for(int i=0;i<count(g);i++)if(visible(g,i)){
+        for(int i=0;i<count(g);i++)if(visible(g,i) && !land(g,i)){
             float wx=x(g,i),wy=y(g,i),power=power(g,i);
             BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i));
             if(power<=0)continue;
@@ -71,11 +72,17 @@ public final class NavigationLights {
             }
         }
     }
+    /** Raised-deck shadows and light spill, after cached ground and before depth-sorted objects. */
+    public static void landShadows(Game g,Painter canvas){
+        for(int i=0;i<count(g);i++)if(land(g,i) && visible(g,i))
+            LandMarkerArt.ground(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));
+    }
     private static int frame(Game g,int i){return practice(g,i)?BuoyArt.YELLOW:color(g,i)==RED?BuoyArt.RED:BuoyArt.GREEN;}
     private static float size(Game g,int i){return practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
-    /** Each colored entrance mark shares the practice buoy's wave roll and waterline masking. */
+    /** Tutorial entrances use fixed shore beacons; other fixtures float with the waves. */
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;
+        if(land(g,i)){LandMarkerArt.draw(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));return;}
         BuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),frame(g,i),color(g,i),power(g,i),practice(g,i)?practiceIndex(g,i)+1:0);
     }
 }

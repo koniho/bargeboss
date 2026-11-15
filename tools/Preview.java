@@ -52,14 +52,17 @@ public final class Preview {
         g.background(); capture(g,"pause"); g.pause();
         ReplayInput.tap(g,Layout.HELP); capture(g,"help"); ReplayInput.tap(g,Layout.START);
         g.tug.x=Physics.RIGHT-15; g.tug.vx=100; g.step(); capture(g,"impact");
-        g.reset(); g.ticks=1000; capture(g,"traffic-warning");
+        g.challengeId=1;g.reset(); g.ticks=1000; capture(g,"traffic-warning");
         g.ticks=1200; capture(g,"traffic");
-        g.reset();
-        for(int i=0;i<Game.SHIFT_TICKS;i++) { ReplayInput.work(g); g.step(); }
-        capture(g,"shift-complete");
+        g.challengeId=0;g.reset();
+        for(int i=0;i<Game.SHIFT_TICKS && g.mode==Game.PLAY;i++) { ReplayInput.work(g); g.step(); }
+        if(!g.goalComplete())throw new IllegalStateException("Goal preview did not finish Two Banks");
+        capture(g,"level-complete");
         for(int i=0;i<60;i++) g.advance(1.0/60); capture(g,"results-animated");
         g.mode=Game.CHALLENGES; capture(g,"challenges-unlocked");
-        g.reset(); steps(g,Game.SHIFT_TICKS); capture(g,"shift-ended");
+        g.reset(); steps(g,Game.SHIFT_TICKS);
+        if(g.mode!=Game.PLAY)throw new IllegalStateException("Idle level unexpectedly ended at the old shift deadline");
+        capture(g,"untimed-level");
         g=new Game(); ReplayInput.tap(g,Layout.LEARN); capture(g,"tutorial-0");
         int previous=0;
         for(int i=0;i<9000;i++) {
@@ -87,27 +90,29 @@ public final class Preview {
         steps(g,60);capture(g,"tow-pulling");
         ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.releaseTow(g);steps(g,5);capture(g,"tow-release");
         sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-9"});
-        g=new Game();g.reset();steps(g,180);capture(g,"first-watch-overview");
+        g=new Game();g.reset();steps(g,180);capture(g,"two-banks-overview");
         ReplayInput.down(g,260,730);for(int i=0;i<1800 && !g.canTie(g.cargo[0]);i++) g.step();steps(g,180);capture(g,"docking-zoom");
-        g=new Game();g.challengeId=1;g.reset();capture(g,"bridge-start");
-        boolean wait=false,opening=false,open=false,dock=false;
-        for(int i=0;i<9000 && !dock;i++) {
-            ReplayInput.work(g);g.step();
-            if(!wait && g.bridge.phase==Bridge.WAITING && g.bridge.ticks>240) { capture(g,"bridge-wait");wait=true; }
-            if(!opening && g.bridge.phase==Bridge.OPENING && g.bridge.ticks>60) { capture(g,"bridge-opening");opening=true; }
-            if(!open && g.bridge.phase==Bridge.OPEN && Math.abs(g.tug.y-Bridge.Y)<100) { capture(g,"bridge-open");open=true; }
-            for(Body load:g.cargo) if(load!=null && load.active && load.unloadingTicks>30) { capture(g,"bridge-destination");dock=true;break; }
+        g=new Game();g.challengeId=1;g.reset();capture(g,"ordered-level-start");
+        g=new Game();g.startTutorial();Game bridge=g.activeGame();
+        bridge.tutorial.lesson=Tutorial.BRIDGE;bridge.tutorial.setup(bridge);capture(g,"tutorial-bridge-start");
+        boolean wait=false,opening=false,open=false,cleared=false;
+        for(int i=0;i<9000 && !cleared;i++) {
+            ReplayInput.tutorial(g);g.step();
+            if(!wait && bridge.bridge.phase==Bridge.WAITING && bridge.bridge.ticks>240) { capture(g,"bridge-wait");wait=true; }
+            if(!opening && bridge.bridge.phase==Bridge.OPENING && bridge.bridge.ticks>60) { capture(g,"bridge-opening");opening=true; }
+            if(!open && bridge.bridge.phase==Bridge.OPEN && Math.abs(bridge.tug.y-Bridge.Y)<100) { capture(g,"bridge-open");open=true; }
+            if(bridge.tutorial.lesson>Tutorial.BRIDGE) { capture(g,"bridge-cleared");cleared=true; }
         }
-        if(!wait || !opening || !open || !dock) throw new IllegalStateException("Bridge preview did not complete passage");
+        if(!wait || !opening || !open || !cleared) throw new IllegalStateException("Tutorial bridge preview did not complete passage");
         g=new Game();g.reset();for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
         b=new Body(1,2,Physics.LEFT+17.5f,g.dockY(2),(float)Math.PI/2);g.cargo[0]=b;
         g.tug.x=300;g.tug.y=b.y+120;g.layout=new Layout(960,600,148,380,1.25f);
         capture(g,"shore-ready-to-tie");ReplayInput.lasso(g,b);steps(g,Game.ROPE_FLIGHT_TICKS+5);
         capture(g,"shore-lasso-catch");
-        sheet("bridge-progression",new String[]{"first-watch-overview","docking-zoom","bridge-wait","bridge-opening","bridge-open","bridge-destination"});
+        sheet("bridge-progression",new String[]{"two-banks-overview","docking-zoom","bridge-wait","bridge-opening","bridge-open","bridge-cleared"});
         sheet("lasso-phases",new String[]{"aim-miss","retracting","aiming","lasso","bollard-hit","line-snap"});
-        sheet("screens",new String[]{"title","title-animated","help","pause","shift-complete","shift-ended"});
-        sheet("all-phases",new String[]{"stage","driving","coasting","reverse-thrust","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","shift-complete"});
+        sheet("screens",new String[]{"title","title-animated","help","pause","level-complete","untimed-level"});
+        sheet("all-phases",new String[]{"stage","driving","coasting","reverse-thrust","holding","aligning","push","steering","ready-to-tie","lasso","tying-up","unloading","delivery","crew-idle","impact","traffic-warning","traffic","level-complete"});
         sheet("control-states",new String[]{"driving","holding","steering","lasso","unloading","delivery"});
         sheet("tutorial",new String[]{"tutorial-0","tutorial-1","tutorial-2","tutorial-3","tutorial-4","tutorial-5","tutorial-6","tutorial-7","tutorial-8","tutorial-9","tutorial-10"});
         sheet("assist-states",new String[]{"holding","aligning","steering"});

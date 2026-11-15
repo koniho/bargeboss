@@ -30,7 +30,7 @@ public final class WaterEffectsTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha) {throw new AssertionError("Unclipped sprite");}
     }
     public static void run() {
-        Game g=new Game();g.reset();g.challengeId=2;
+        Game g=new Game();g.challengeId=1;g.reset();
         Capture pier=new Capture(g);Painter p=new WaterEffectsPainter(g,pier);
         p.rect(100,200,400,650,0xffffffff);
         check(Math.abs(pier.area-(260*650-49*74-42*45))<.01,"solid piers subtracted exactly without double alpha");

@@ -24,7 +24,7 @@ public final class WaterEffectsPreview {
             g.step();if(i%10!=0)continue;
             save(g,"frames/"+String.format("%03d",i/10));
         }
-        g=new Game();g.reset();g.challengeId=2;g.visualTicks=210;
+        g=new Game();g.challengeId=1;g.reset();g.visualTicks=210;
         g.tug.x=366;g.tug.y=286;g.tug.vx=32;g.tug.vy=18;
         g.water.x[0]=370;g.water.y[0]=280;g.water.age[0]=75;g.water.strength[0]=1;
         save(g,"pier-wake");

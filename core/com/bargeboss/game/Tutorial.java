@@ -208,7 +208,7 @@ public final class Tutorial {
     public float driveTargetX(){return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"CIRCLE TWO BUOYS","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR SHIFT"}[lesson];
+        return new String[]{"CIRCLE TWO BUOYS","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {

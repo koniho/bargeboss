@@ -42,18 +42,18 @@ public final class ShadowView {
         for(int side=0;side<2;side++) {
             int[] cells=side==0?new int[]{0,4,2,1}:new int[]{5,3,7,6};float[] along={70,250,465,625};
             float bank=side==0?Physics.RIGHT+48:Physics.LEFT-82;
-            for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++)for(int i=0;i<4;i++) {
-                float y=148+along[i]+segment*688;if(g.bridgeStage() && Math.abs(y-Bridge.Y)<95)continue;
+            for(int segment=g.lockStage()?-2:0;segment<=0;segment++)for(int i=0;i<4;i++) {
+                float y=148+along[i]+segment*688;
                 int f=cells[i],src=f==0 || f==1?SpriteAtlas.STATIC_HARBOR:SpriteAtlas.TUTORIAL_SCENERY;
                 f=src==SpriteAtlas.STATIC_HARBOR?StaticHarborArt.WAREHOUSE:TutorialSceneryArt.fromLegacy(f);
                 scenery(g,p,src,f,bank,y,0,src==SpriteAtlas.STATIC_HARBOR?StaticHarborArt.WORLD_SIZE:TutorialSceneryArt.size(f));
             }
         }
-        for(int segment=g.bridgeStage()?-1:0;segment<=0;segment++) {
+        for(int segment=g.lockStage()?-1:0;segment<=0;segment++) {
             scenery(g,p,SpriteAtlas.CHIMNEYS,1,Physics.RIGHT+78,520+segment*688,0,ChimneyArt.WORLD_SIZE);
             scenery(g,p,SpriteAtlas.CHIMNEYS,0,Physics.RIGHT+78,740+segment*688,0,ChimneyArt.WORLD_SIZE);
         }
-        if(g.challengeId==2)for(int frame=0;frame<2;frame++)scenery(g,p,SpriteAtlas.BRIDGE,frame,frame==0?Physics.RIGHT+35:Physics.LEFT-35,178,0,108);
+        if(g.orderStage())for(int frame=0;frame<2;frame++)scenery(g,p,SpriteAtlas.BRIDGE,frame,frame==0?Physics.RIGHT+35:Physics.LEFT-35,178,0,108);
     }
     public static void vessel(Game g,Painter p,Body b,boolean tug,float size) {
         if(!(p instanceof RiverPainter))return;

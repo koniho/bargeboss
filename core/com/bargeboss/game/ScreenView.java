@@ -9,16 +9,22 @@ public final class ScreenView {
     private static void center(Painter p,String s,float x,float y,float size,int c) { Lettering.center(p,s,x,y,size,c); }
     public static void hud(Game g,Painter p) {
         Layout layout=g.layout;
-        int seconds=Math.max(0,(g.shiftTicks()-g.ticks+59)/60);
-        String time=g.tutorial==null?(seconds/60)+":"+(seconds%60<10?"0":"")+(seconds%60):"FREE";
+        boolean lockWindow=g.tutorial==null && g.lockStage() && (g.lock.phase==Lock.ENTRY || g.lock.phase==Lock.EXIT);
+        int seconds=lockWindow?g.lock.secondsRemaining():0;
+        String progress=g.tutorial!=null?"FREE":lockWindow?seconds+"S":g.goalProgress()+"/"+g.quota();
         VisualStyle.panel(p,12,8,316,48,0xed101c30);
-        text(p,g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":"SHIFT "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
-        text(p,g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.tutorial!=null?"LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE+" - NO TIME LIMIT":g.delivered+" / "+g.quota()+" LOADS   HULL "+g.hull+"%",24,39,9,GOLD);
+        text(p,g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":"LEVEL "+(g.challengeId+1)+" - "+g.challengeTitle(),24,18,12,PAPER);
+        String status=g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.tutorial!=null?"LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE+" - NO TIME LIMIT":g.goalStatus()+" / HULL "+g.hull+"%";
+        text(p,status,24,39,Math.min(9,292*7f/Math.max(1,status.length()*6-1)),GOLD);
         float timerX=layout.width/2-130;
         VisualStyle.panel(p,timerX,8,104,48,0xed101c30);
-        center(p,time,timerX+52,20,23,seconds<30?GOLD:PAPER);
+        if(g.tutorial!=null)center(p,progress,timerX+52,20,23,PAPER);
+        else {
+            center(p,lockWindow?(g.lock.phase==Lock.ENTRY?"ENTRY CLOSES":"EXIT CLOSES"):"GOAL",timerX+52,14,8,MUTED);
+            center(p,progress,timerX+52,30,18,lockWindow && seconds<=10?GOLD:PAPER);
+        }
         VisualStyle.panel(p,timerX+112,8,124,48,0xed101c30);
-        int rating=Challenges.stars(g.challengeId,g.delivered,g.lost,g.hull);
+        int rating=g.goalComplete()?Challenges.stars(g.challengeId,g.goalProgress(),g.lost,g.hull):0;
         for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
         VisualStyle.panel(p,12,layout.height-48,170,40,0xed101c30);
         text(p,"SCORE",24,layout.height-39,8,MUTED);
@@ -50,11 +56,11 @@ public final class ScreenView {
         sign.rect(99,263,15*lamp,4,GOLD); sign.rect(496,91,5,19*lamp,PAPER);
         Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
         VisualStyle.panel(menu,608,180,324,368,0xf5101c30);
-        center(menu,"SHIFT 0"+(g.challengeId+1),770,200,11,GOLD);
+        center(menu,"LEVEL 0"+(g.challengeId+1),770,200,11,GOLD);
         center(menu,g.challengeTitle(),770,230,22,PAPER);
-        center(menu,g.quota()+" LOADS / "+time(g.shiftTicks()),770,274,13,GOLD);
+        center(menu,goalSummary(g.challengeId),770,274,12,GOLD);
         button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
-        button(g,menu,Layout.START,"START SHIFT",true);
+        button(g,menu,Layout.START,"START LEVEL",true);
         button(g,menu,Layout.CHALLENGES,"CHALLENGES",false);
         Painter rank=offset(p,0,g.layout.height-Layout.HEIGHT);
         VisualStyle.panel(rank,28,536,545,40,0xe8101c30);
@@ -116,9 +122,9 @@ public final class ScreenView {
         instruction(p,4,383,"LINK A BARGE TRAIN","Drag cargo to tug or barge. Release to link.");
         text(p,"TAP THE CONNECTED BARGE TO LET GO.",159,447,10,GOLD);
         button(g,p,Layout.LEARN,"PRACTICE CONTROLS",false);
-        button(g,p,Layout.START,"RESUME SHIFT",true);
-        center(p,"YOUR SHIFT WAITS HERE.",770,231,12,MUTED);
-        center(p,"PRACTICE HAS NO TIME LIMIT.",770,257,11,MUTED);
+        button(g,p,Layout.START,"RESUME LEVEL",true);
+        center(p,"YOUR LEVEL WAITS HERE.",770,231,12,MUTED);
+        center(p,"COMPLETE THE GOAL TO ADVANCE.",770,257,11,MUTED);
     }
     private static void instruction(Painter p,int index,float y,String title,String detail) {
         VisualStyle.panel(p,106,y-3,39,39,0xff344453); center(p,""+index,126,y+6,20,GOLD);
@@ -141,21 +147,22 @@ public final class ScreenView {
         p=menu(g,p);
         overlay(p,113,370);
         p.rect(451,142,18,37,GOLD); p.rect(492,142,18,37,GOLD);
-        center(p,"SHIFT PAUSED",480,203,28,PAPER);
+        center(p,"LEVEL PAUSED",480,203,28,PAPER);
         center(p,"LINES HELD. ENGINES QUIET.",480,253,12,MUTED);
-        button(g,p,Layout.RESUME,"RESUME",true); button(g,p,Layout.RESTART,"RESTART SHIFT",false);
+        button(g,p,Layout.RESUME,"RESUME",true); button(g,p,Layout.RESTART,"RESTART LEVEL",false);
     }
     public static void finish(Game g,Painter p) {
         p=menu(g,p);
         overlay(p,82,454);
-        boolean complete=g.delivered>=g.quota() && g.hull>0;
-        center(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"SHIFT COMPLETE":"SHIFT ENDED",480,106,26,PAPER);
+        boolean complete=g.goalComplete() && g.hull>0;
+        center(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"LEVEL COMPLETE":"TRY AGAIN, CAPTAIN",480,106,26,PAPER);
         center(p,g.challengeTitle(),480,148,12,MUTED);
         int earned=g.earnedStars;
         for(int i=0;i<3;i++) star(p,400+i*80,200+(earned>i?2*(float)StrictMath.sin(g.visualTicks*.05+i):0),25,earned>i?GOLD:0xff465366);
-        center(p,earned==3?"GOLD SHIFT":earned==2?"SILVER SHIFT":earned==1?"BRONZE SHIFT":"KEEP PRACTICING",480,238,11,earned>0?GOLD:MUTED);
+        center(p,earned==3?"GOLD STRIPES":earned==2?"SILVER STRIPES":earned==1?"BRONZE STRIPES":"KEEP PRACTICING",480,238,11,earned>0?GOLD:MUTED);
         center(p,""+g.score,480,271,38,GOLD);
-        center(p,g.delivered+" DELIVERED / "+g.lost+" EXPIRED / HULL "+g.hull+"%",480,323,12,PAPER);
+        center(p,g.goalProgress()+" / "+g.quota()+(g.lockStage()?" THROUGH LOCK":" DELIVERED")+" / HULL "+g.hull+"%",480,323,12,PAPER);
+        if(g.lockStage() && g.lock.failed())center(p,g.lock.failure(),480,349,11,GOLD);
         if(g.rankPromoted) for(int i=0;i<6;i++) {
             double angle=i*Math.PI/3+g.visualTicks*.008;
             star(p,174+(float)StrictMath.cos(angle)*70,211+(float)StrictMath.sin(angle)*65,
@@ -168,19 +175,18 @@ public final class ScreenView {
         center(p,"PERSONAL BEST",784,183,11,MUTED);
         center(p,""+g.career.bestScore(g.challengeId),784,207,26,GOLD);
         for(int i=0;i<3;i++) star(p,748+i*36,264,12,g.career.bestStars(g.challengeId)>i?GOLD:0xff465366);
-        center(p,g.rankPromoted?"NEW STRIPES. SAME GOOD TUG.":complete?"GOOD WORK, CAPTAIN.":"THE NEXT SHIFT IS YOURS.",480,378,14,PAPER);
+        center(p,g.rankPromoted?"NEW STRIPES. SAME GOOD TUG.":complete?"GOOD WORK, CAPTAIN.":"TRY THE GOAL AGAIN.",480,378,14,PAPER);
         boolean next=g.challengeId+1<Challenges.COUNT && g.career.unlocked(g.challengeId+1);
         if(next) center(p,"NEXT: "+Challenges.title(g.challengeId+1),480,409,11,GOLD);
         else center(p,"REPLAY TO IMPROVE YOUR STARS AND BEST SCORE",480,409,10,MUTED);
         button(g,p,Layout.FINISH_CHALLENGES,"CHALLENGES",false);
-        button(g,p,Layout.AGAIN,"REPLAY SHIFT",!next);
-        if(next) button(g,p,Layout.NEXT_CHALLENGE,"NEXT SHIFT",true);
+        button(g,p,Layout.AGAIN,"REPLAY LEVEL",!next);
+        if(next) button(g,p,Layout.NEXT_CHALLENGE,"NEXT LEVEL",true);
     }
-    private static String time(int ticks) {
-        int seconds=ticks/60;
-        return seconds/60+":"+(seconds%60<10?"0":"")+(seconds%60);
+    private static String goalSummary(int id) {
+        return id==0?"2 BARGES / OPPOSITE BANKS":id==1?"3 BARGES / BERTH IN ORDER":"2 BARGES / THROUGH THE LOCK";
     }
-    /** Persistent career board; selecting a card never starts the clock. */
+    /** Persistent career board; levels finish when their displayed goal is complete. */
     public static void challenges(Game g,Painter p) {
         harbor(g,p); p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
         Painter screen=p; p=centered(g,p);
@@ -189,7 +195,7 @@ public final class ScreenView {
         captainBadge(p,85,130,.7f,g.career.stripes());
         text(p,g.career.rankTitle(),125,109,19,GOLD);
         text(p,g.career.totalStars()+" / 9 UNIQUE STARS",126,140,11,PAPER);
-        text(p,"BRONZE OPENS THE NEXT SHIFT",529,113,12,GOLD);
+        text(p,"BRONZE OPENS THE NEXT LEVEL",529,113,12,GOLD);
         text(p,"BETTER STARS EARN CAPTAIN STRIPES",529,140,10,MUTED);
         for(int i=0;i<Challenges.COUNT;i++) {
             Layout.Box card=Layout.CHALLENGE_CARDS[i];
@@ -198,7 +204,8 @@ public final class ScreenView {
             p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
             center(p,"0"+(i+1)+(open?" / CALUMET":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
             center(p,Challenges.title(i),card.centerX(),card.y+47,20,open?PAPER:MUTED);
-            center(p,Challenges.quota(i)+" LOADS / "+time(Challenges.shiftTicks(i)),card.centerX(),card.y+84,13,open?GOLD:MUTED);
+            center(p,i==0?"2 BARGES / 2 BANKS":i==1?"ORDER A - B - C":"TIMED LOCK GATES",card.centerX(),card.y+84,12,open?GOLD:MUTED);
+            center(p,i==2?"NO OVERALL TIME LIMIT":"FINISH THE GOAL TO ADVANCE",card.centerX(),card.y+105,8,MUTED);
             if(open) {
                 for(int j=0;j<3;j++) star(p,card.centerX()-42+j*42,card.y+132,17,g.career.bestStars(i)>j?GOLD:0xff465366);
                 center(p,"BEST "+g.career.bestScore(i),card.centerX(),card.y+165,12,MUTED);
@@ -211,9 +218,9 @@ public final class ScreenView {
             }
         }
         center(p,Challenges.description(g.challengeId),480,444,13,PAPER);
-        center(p,"BRONZE: QUOTA / SILVER: NO LOST LOADS OR 80% HULL / GOLD: BOTH",480,475,10,MUTED);
+        center(p,"BRONZE: GOAL / SILVER: NO LOST LOADS OR 80% HULL / GOLD: BOTH",480,475,10,MUTED);
         button(g,p,Layout.BACK,"BACK",false);
-        button(g,p,Layout.CHALLENGE_START,"START SHIFT",true);
+        button(g,p,Layout.CHALLENGE_START,"START LEVEL",true);
         haptics(g,screen);
     }
     private static void lock(Painter p,float x,float y) {

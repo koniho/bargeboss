@@ -11,7 +11,7 @@ public final class HarborAtmosphere {
         RiverCamera c=g.layout.camera;float sx=c.screenX(x,y),sy=c.screenY(x,y);
         return sx>-margin && sx<g.layout.width+margin && sy>-margin && sy<g.layout.height+margin;
     }
-    static int firstLamp(Game g) { return g.bridgeStage()?-7:0; }
+    static int firstLamp(Game g) { return g.lockStage()?-7:0; }
     /** Warm, broken reflections follow the same bank lamps, with dark water between glints. */
     public static void reflections(Game g,Painter world) {
         world=new WaterEffectsPainter(g,world);

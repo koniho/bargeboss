@@ -13,12 +13,12 @@ public final class WaterEffectsPainter implements Painter {
     private final Painter target;
     private final float[][] water;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;water=g.tutorial!=null?CHANNEL:g.challengeId==2?PIERS:RIVER;
+        this.target=target;water=g.tutorial!=null?CHANNEL:g.orderStage()?PIERS:RIVER;
     }
     public static boolean contains(Game g,float x,float y) {
         if(g.tutorial!=null) return TrainingChannel.contains(x,y);
         if(x<Physics.LEFT || x>Physics.RIGHT) return false;
-        if(g.challengeId==2) for(float[] r:HarborGeometry.PIERS)
+        if(g.orderStage()) for(float[] r:HarborGeometry.PIERS)
             if(x>r[0] && x<r[2] && y>r[1] && y<r[3]) return false;
         return true;
     }

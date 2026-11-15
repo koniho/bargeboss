@@ -8,15 +8,15 @@ public final class FeederTest {
     public static void run() {
         for(int id=0;id<Challenges.COUNT;id++) {
             Game g=new Game(); g.restoreProgress("BB1|0|3,1|3,1|3,1"); g.selectChallenge(id); g.reset();
-            check(g.feeders.length==(id==0?1:2) && cargo(g)==0,"challenge begins with its configured edge feeders and no teleported cargo");
+            check(g.feeders.length==2 && cargo(g)==0,"challenge begins with its configured edge feeders and no teleported cargo");
             float previous=g.feeders[0].load.y;
             steps(g,60);
             check(g.feeders[0].load.y<previous && g.feeders[0].load.y>Feeder.DROP_Y,"cargo visibly moves in from the boundary");
             check(cargo(g)==0,"NPC cargo cannot score or age before handoff");
             steps(g,105);
             check(cargo(g)==g.feeders.length && g.feederDrops()==g.feeders.length,"both slots hand off exactly one barge");
-            check(g.feeders[0].shout.equals(id==2?"ZONE C!":"ZONE A!") && (id==0 || g.feeders[1].shout.equals(id==2?"ZONE B!":"ZONE A!")),"each captain calls the actual destination");
-            check(g.cargo[0].age<.1f && (id==0 || g.cargo[1].age<.1f),"contract age starts at handoff");
+            check(g.feeders[0].shout.equals(id==2?"TO THE LOCK!":id==1?"ZONE C!":"ZONE A!") && g.feeders[1].shout.equals(id==2?"TO THE LOCK!":id==1?"ZONE A!":"ZONE B!"),"each captain calls the actual destination");
+            check(g.cargo[0].age<.1f && g.cargo[1].age<.1f,"cargo age starts at handoff");
             float y=g.feeders[0].boat.y; steps(g,30);
             check(g.feeders[0].boat.y>y && g.feeders[0].drops==1,"pusher backs out without dropping duplicates");
             steps(g,180); check(g.feeders[0].phase==Feeder.IDLE,"delivery pusher leaves the play area");
@@ -33,7 +33,7 @@ public final class FeederTest {
         int clock=g.ticks,blocked=f.blockedTicks; g.background(); g.advance(.25);
         check(g.ticks==clock && f.blockedTicks==blocked,"pause freezes feeder and callout clocks");
         g.pause(); g.tug.x=400; g.tug.y=600; steps(g,180);
-        check(f.drops==1 && !f.blocked && f.shout.equals("ZONE C!"),"cleared lane resumes delivery and announces the correct zone");
+        check(f.drops==1 && !f.blocked && f.shout.equals("TO THE LOCK!"),"cleared lane resumes delivery and announces the correct zone");
         g.reset(); g.tug.x=260; g.tug.y=760; steps(g,400);
         check(g.feeders[0].shoutTicks>0 && g.feeders[0].shout.equals("HURRY UP!"),"blocked captain repeats a throttled reminder");
         g.reset(); steps(g,165); Body waiting=g.cargo[0]; float px=waiting.x,py=waiting.y;
@@ -46,8 +46,16 @@ public final class FeederTest {
         check(practice.feederDrops()==0,"practice does not feed extra cargo into lessons");
         g.reset(); check(g.feeders[0].drops==0 && !g.feeders[0].blocked && cargo(g)==0,"restart clears queues, warnings and old loads");
         g=new Game();g.challengeId=1;g.reset();steps(g,2100);
-        check(g.feeders[0].blocked && g.feeders[0].load!=null && g.feeders[0].load.y>Physics.BOTTOM+45,
-                "queued feeder waits outside the tug's stern approach to an uncollected load");
+        check(g.feederDrops()==2 && g.feeders[0].phase==Feeder.IDLE && g.feeders[1].phase==Feeder.IDLE,
+                "third ordered delivery waits for a free lane without sealing the tug's stern approach");
+        g.cargo[0].y=g.cargo[0].tiedY=580;steps(g,180);
+        check(g.feederDrops()==3 && g.cargo[2].berth==0,"clearing either lane admits the final B load");
+        steps(g,1800);check(g.feederDrops()==3 && cargo(g)==3,"ordered level supplies exactly three loads and none expire");
+        for(int id:new int[]{0,2}){
+            g=new Game();g.challengeId=id;g.reset();steps(g,2100);
+            check(g.feederDrops()==2 && cargo(g)==2 && g.feeders[0].phase==Feeder.IDLE && g.feeders[1].phase==Feeder.IDLE,
+                    "two-load objectives never feed extra work");
+        }
         System.out.println(assertions+" feeder entry, handoff, blockage, callout and lifecycle assertions passed");
     }
 }

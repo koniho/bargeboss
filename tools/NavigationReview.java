@@ -17,8 +17,12 @@ public final class NavigationReview {
         capture(g,"navigation-practice-buoys");
         g.tutorial.lesson=Tutorial.CHANNEL;g.tug.x=TrainingChannel.MIN-80;g.tug.y=500;
         g.layout=Layout.focused(1333,600,TrainingChannel.MIN,500,1.7f,650,360);capture(g,"navigation-canal-entrance");
+        g.tug.x=TrainingChannel.MAX-90;
+        g.layout=Layout.focused(1333,600,TrainingChannel.MAX,500,1.7f,650,360);g.visualTicks=116;capture(g,"navigation-canal-exit");
         g.tutorial.lesson=Tutorial.TRAIN;g.tug.x=300;g.tug.y=-140;
         g.layout=Layout.focused(1333,600,300,-200,1.7f,650,360);g.visualTicks=15-2*19+120;capture(g,"navigation-narrow-entrance");
+        g.tug.y=TrainingChannel.NARROW_EXIT+70;
+        g.layout=Layout.focused(1333,600,300,TrainingChannel.NARROW_EXIT,1.7f,650,360);g.visualTicks=15-3*19+120;capture(g,"navigation-narrow-exit");
         g=new Game();g.configureCanvas(1333,600);g.reset();g.visualTicks=15;
         g.layout=Layout.focused(1333,600,300,Physics.BOTTOM-45,1.3f,650,360);capture(g,"navigation-harbor-entrance");
         System.out.println("Lit practice buoys and red-right-returning entrance frames exported to out/");

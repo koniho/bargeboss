@@ -1,9 +1,9 @@
 # Independent sprite shadow masks
 
 `GenerateShadowMasks` derives shadow alpha from the production tug, barge,
-factory, chimney, yard-prop, warehouse, legacy bridge and lantern-buoy sprites. It does not
-change their artwork. Eight PNG atlases contain 188 masks: one near-contact
-and one softer cast variant for each of 94 source frames, including all 32
+factory, chimney, yard-prop, warehouse, legacy bridge, lantern-buoy and fixed channel-beacon sprites. It does not
+change their artwork. Nine PNG atlases contain 192 masks: one near-contact
+and one softer cast variant for each of 96 source frames, including all 32
 headings of both hull types. Static scenery retains its exact source frame.
 
 Every cell is 128px: the source crop is resampled to 96px with 16px transparent
@@ -54,3 +54,12 @@ about each source waterline pivot before flattening them onto water. Both layers
 are clipped to navigable water and drawn before hulls. Atlas 33 is separate from
 foam 31 and color buoy 32; tools must use `ShadowArt.atlases()` rather than a
 contiguous numeric range when enumerating all masks.
+
+
+Fixed channel beacons add `shadow-land-marker-v1.png`: red/green contact cells,
+then red/green cast cells, generated from unchanged `land-marker-*-v1.png` alpha.
+All four use the same 128px cell, 96px source resample, 16px padding and sigma
+1.0/3.2 blur. The pivot is the foundation bottom-footprint center; masks land on
+the raised quay and are excluded from water at the deck plane. The silhouettes
+are alpha-derived, not reconstructed 3-D geometry. See the
+[registration notes](../art-studies/land-markers-v1/README.md).

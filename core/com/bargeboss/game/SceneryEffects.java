@@ -31,7 +31,7 @@ public final class SceneryEffects {
     /** Inland landmarks sit behind foreground props and never change collision geometry. */
     public static void industrialStacks(Game g,Painter p) {
         if(g.trainingChannel()) return;
-        for(int segment=g.bridgeStage()?-1:0;segment<=0;segment++) {
+        for(int segment=g.lockStage()?-1:0;segment<=0;segment++) {
             ChimneyArt.draw(g,p,1,Physics.RIGHT+78,520+segment*688);
             ChimneyArt.draw(g,p,0,Physics.RIGHT+78,740+segment*688);
         }

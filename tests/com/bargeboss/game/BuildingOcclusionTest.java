@@ -54,8 +54,8 @@ public final class BuildingOcclusionTest {
         // memoized eligibility must distinguish stage water geometry.
         g=new Game();g.reset();
         check(!SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,300,-400,0,size),"upstream factory is outside first-watch water");
-        g.challengeId=1;
-        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,300,-400,0,size),"bridge reach uses its own upstream water eligibility");
+        g.challengeId=2;
+        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,300,-400,0,size),"lock reach uses its own upstream water eligibility");
         g.challengeId=0;
         check(!SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,-1550,500,rise,size),"practice basin placement is inland during ordinary shifts");
         g.tutorial=new Tutorial();

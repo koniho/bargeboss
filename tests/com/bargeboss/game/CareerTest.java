@@ -9,12 +9,15 @@ public final class CareerTest {
         System.out.println(assertions+" challenge, rank and progress persistence assertions passed");
     }
     private static void challengeRules() {
-        check(Challenges.COUNT==3 && Challenges.quota(0)==Game.QUOTA && Challenges.shiftTicks(0)==Game.SHIFT_TICKS,"first watch preserves original rules");
-        check(Challenges.quota(1)==4 && Challenges.shiftTicks(1)==240*60,"bridge run requires four loads in240seconds");
-        check(Challenges.quota(2)==8 && Challenges.shiftTicks(2)==180*60,"heavy shift requires eight loads in180seconds");
-        check(Challenges.stars(0,5,0,100)==0 && Challenges.stars(0,6,0,0)==0,"quota failure or wreck earns no stars");
-        check(Challenges.stars(0,6,1,79)==1 && Challenges.stars(0,6,0,79)==2
-                && Challenges.stars(0,6,1,80)==2 && Challenges.stars(0,6,0,80)==3,"stars separately reward quota, no expiry and80percent hull");
+        check(Challenges.COUNT==3 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
+        check(Challenges.quota(1)==3 && Challenges.quota(2)==2,"ordered berthing uses three loads; lock passage uses two");
+        check(Challenges.stars(0,1,0,100)==0 && Challenges.stars(0,2,0,0)==0,"incomplete goal or wreck earns no stars");
+        check(Challenges.stars(0,2,1,79)==1 && Challenges.stars(0,2,0,79)==2
+                && Challenges.stars(0,2,1,80)==2 && Challenges.stars(0,2,0,80)==3,"stars reward completion, safe cargo and hull condition");
+        Game g=new Game();g.reset();Body waiting=new Body(90,2,260,730,0);waiting.age=g.contractSeconds()+400;g.cargo[0]=waiting;g.step();
+        check(waiting.active && g.lost==0 && g.mode==Game.PLAY,"cargo never expires while a goal remains unfinished");
+        g=quickTurn();Body early=new Body(1,1,Game.DOCK_X[1],g.dockY(1),0),first=new Body(2,2,Game.DOCK_X[2],g.dockY(2),0);
+        check(g.berthLetter(early.berth)=='C' && g.nextRequiredBerth()==2 && !g.canTie(early) && g.canTie(first),"ordered challenge visibly requires A and refuses an early C tie-up");
     }
     private static void uniqueRewards() {
         Career career=new Career();
@@ -52,29 +55,34 @@ public final class CareerTest {
         Game game=new Game(); game.restoreProgress(career.save()); game.selectChallenge(1); game.reset(); return game;
     }
     private static void finishFixture(Game game,int delivered,int lost,int hull,int score) {
-        game.ticks=game.shiftTicks()-1; game.delivered=delivered; game.lost=lost; game.hull=hull; game.score=score;
+        game.ticks=120; game.delivered=delivered; game.lost=lost; game.hull=hull; game.score=score;
         for(int i=0;i<game.cargo.length;i++) game.cargo[i]=null;
+        if(game.lockStage()){
+            game.lock.reset();game.tug.x=300;game.tug.y=Lock.ENTRY_Y+120;
+            game.cargo[0]=new Body(1,2,260,580,0);game.cargo[1]=new Body(2,1,340,580,0);game.lock.step(game);
+            game.cargo[0].y=game.cargo[1].y=-100;game.lock.phase=Lock.COMPLETE;
+        }
         game.step();
     }
     private static void completedShifts() {
-        Game game=quickTurn(); int version=game.progressVersion();
-        game.delivered=6; game.score=500; game.ticks=game.shiftTicks()-2;
-        for(int i=0;i<game.cargo.length;i++) game.cargo[i]=null;
-        game.step(); check(game.mode==Game.PLAY && game.progressVersion()==version,"meeting quota before timer cannot award unfinished work");
-        game.step(); check(game.mode==Game.FINISH && game.earnedStars==3 && game.career.unlocked(2),"quick turn finishes at its own timer and unlocks heavy shift");
-        check(game.rankPromoted && game.career.bestScore(1)==500,"successful finish records score and promotion exactly once");
-        version=game.progressVersion(); String saved=game.saveProgress();
-        game.step(); game.advance(.25);
+        Game game=quickTurn();int version=game.progressVersion();
+        game.ticks=game.shiftTicks()*3;game.step();
+        check(game.mode==Game.PLAY && game.progressVersion()==version,"elapsed global watch time never ends an unfinished goal");
+        finishFixture(game,game.quota(),0,100,500);
+        check(game.mode==Game.FINISH && game.earnedStars==3 && game.career.unlocked(2),"last ordered delivery immediately completes level and unlocks lock");
+        check(game.rankPromoted && game.career.bestScore(1)==500,"successful goal records score and promotion exactly once");
+        version=game.progressVersion();String saved=game.saveProgress();
+        game.step();game.advance(.25);
         check(game.progressVersion()==version && game.saveProgress().equals(saved),"results animation cannot award again");
-        game.reset(); check(game.challengeId==1 && game.shiftTicks()==14400 && game.earnedStars==0 && !game.rankPromoted,"replay keeps challenge and clears only current result");
-        finishFixture(game,6,1,70,400);
-        check(game.earnedStars==1 && game.career.bestStars(1)==3 && game.progressVersion()==version,"weaker replay displays earned star without farming or reducing best result");
-        Game failed=new Game(); failed.reset(); finishFixture(failed,5,0,100,5000);
-        check(failed.mode==Game.FINISH && failed.earnedStars==0 && failed.progressVersion()==0,"under-quota timer expiry has no rewards");
-        failed.reset(); failed.delivered=8; failed.score=9000; failed.hull=0; failed.step();
-        check(failed.mode==Game.FINISH && failed.progressVersion()==0 && failed.career.totalStars()==0,"wreck before shift end awards nothing even after quota");
-        failed.reset(); failed.delivered=10; failed.score=10000; failed.reset();
-        check(failed.progressVersion()==0,"abandoning a shift cannot award progress");
+        game.reset();check(game.challengeId==1 && game.earnedStars==0 && !game.rankPromoted,"replay keeps challenge and clears only current result");
+        finishFixture(game,game.quota(),1,70,400);
+        check(game.earnedStars==1 && game.career.bestStars(1)==3 && game.progressVersion()==version,"weaker replay cannot farm or reduce best result");
+        Game failed=new Game();failed.reset();failed.ticks=failed.shiftTicks()*4;failed.step();
+        check(failed.mode==Game.PLAY && failed.earnedStars==0 && failed.progressVersion()==0,"uncompleted goal stays playable without a global deadline");
+        failed.hull=0;failed.step();
+        check(failed.mode==Game.FINISH && failed.progressVersion()==0 && failed.career.totalStars()==0,"wreck before goal earns nothing");
+        failed.reset();failed.delivered=1;failed.score=10000;failed.reset();
+        check(failed.progressVersion()==0,"abandoning a goal cannot award progress");
     }
     private static void practiceIsolation() {
         Game game=quickTurn(); String saved=game.saveProgress(); int version=game.progressVersion();
@@ -96,25 +104,25 @@ public final class CareerTest {
         check(game.ticks==ticks && game.visualTicks>visual,"challenge menu animates without advancing shift");
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[1]); check(game.challengeId==0,"locked card cannot replace active selection");
         ReplayInput.tap(game,Layout.CHALLENGE_START); check(game.mode==Game.PLAY && game.challengeId==0,"challenge start launches selected first watch");
-        finishFixture(game,6,0,100,1000); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
-        check(game.mode==Game.PLAY && game.challengeId==1 && game.quota()==4 && game.shiftTicks()==14400,"results next starts the unlocked challenge");
-        finishFixture(game,6,0,100,1100); ReplayInput.tap(game,Layout.FINISH_CHALLENGES);
+        finishFixture(game,game.quota(),0,100,1000); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
+        check(game.mode==Game.PLAY && game.challengeId==1 && game.quota()==3 && game.orderStage(),"results next starts the unlocked challenge");
+        finishFixture(game,game.quota(),0,100,1100); ReplayInput.tap(game,Layout.FINISH_CHALLENGES);
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[2]); ReplayInput.tap(game,Layout.CHALLENGE_START);
-        check(game.challengeId==2 && game.quota()==8 && game.mode==Game.PLAY,"board card selection starts heavy shift");
-        finishFixture(game,8,0,100,1200); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
+        check(game.challengeId==2 && game.quota()==2 && game.lockStage() && game.mode==Game.PLAY,"board card selection starts the lock passage");
+        finishFixture(game,game.quota(),0,100,1200); ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
         check(game.mode==Game.FINISH && game.challengeId==2,"final challenge has no out-of-range next shift");
         ReplayInput.tap(game,Layout.FINISH_CHALLENGES); ReplayInput.tap(game,Layout.BACK);
         check(game.mode==Game.TITLE,"challenge board back returns to title");
     }
     private static void boundedChallenges() {
         Career unlocks=new Career(); unlocks.record(0,1,1); unlocks.record(1,1,1);
-        for(int id=1;id<Challenges.COUNT;id++) {
+        for(int id=0;id<Challenges.COUNT;id++) {
             Game game=new Game(); game.restoreProgress(unlocks.save()); game.selectChallenge(id); game.reset();
             for(int i=0;i<game.shiftTicks() && game.mode==Game.PLAY;i++) { ReplayInput.work(game); game.step(); }
-            check(game.mode==Game.FINISH && game.ticks==game.shiftTicks(),"bounded player survives full challenge "+id);
-            check(game.delivered>=game.quota() && game.earnedStars>0,"bounded player can complete challenge "+id+": "+game.delivered+" loads, quota "+game.quota()+", hull "+game.hull);
+            check(game.mode==Game.FINISH && game.ticks<game.shiftTicks(),"bounded player completes the goal before its replay bound "+id);
+            check(game.goalComplete() && game.goalProgress()>=game.quota() && game.earnedStars>0,"bounded player can complete challenge "+id+": "+game.goalProgress()+" goals, quota "+game.quota()+", hull "+game.hull);
             check(game.career.bestStars(id)>=game.earnedStars && game.career.bestScore(id)==game.score,"actual challenge completion records earned career rewards");
-            System.out.println(game.challengeTitle()+": "+game.delivered+" delivered, score "+game.score+", hull "+game.hull+", "+game.earnedStars+" stars");
+            System.out.println(game.challengeTitle()+": "+game.goalProgress()+" goals, score "+game.score+", hull "+game.hull+", "+game.earnedStars+" stars");
         }
     }
 }

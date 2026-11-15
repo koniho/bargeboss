@@ -2,17 +2,17 @@ package com.bargeboss.game;
 
 /** Independent soft silhouette layers; source art, pivots and artwork remain untouched. */
 public final class ShadowArt {
-    public static final int FIRST=24,LAST=30,BUOY=33,CELL=128,INNER=96,PAD=16;
+    public static final int FIRST=24,LAST=30,BUOY=33,LAND_MARKER=35,CELL=128,INNER=96,PAD=16;
     private static final int[] SOURCES={SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.FACTORY,SpriteAtlas.CHIMNEYS,SpriteAtlas.TUTORIAL_SCENERY,SpriteAtlas.STATIC_HARBOR,SpriteAtlas.BRIDGE};
     private static final String[] NAMES={"tug","barge","factory","chimney","yard-props","warehouse","bridge"};
     private ShadowArt() {}
-    /** Foam 31 and color buoys 32 are not shadow atlases. */
-    public static int[] atlases(){return new int[]{24,25,26,27,28,29,30,BUOY};}
-    public static boolean atlas(int atlas){return (atlas>=FIRST && atlas<=LAST) || atlas==BUOY;}
-    public static int source(int atlas){return atlas==BUOY?SpriteAtlas.BUOY:SOURCES[atlas-FIRST];}
+    /** Foam 31 and color atlases 32/34 are not shadow atlases. */
+    public static int[] atlases(){return new int[]{24,25,26,27,28,29,30,BUOY,LAND_MARKER};}
+    public static boolean atlas(int atlas){return (atlas>=FIRST && atlas<=LAST) || atlas==BUOY || atlas==LAND_MARKER;}
+    public static int source(int atlas){return atlas==LAND_MARKER?SpriteAtlas.LAND_MARKER:atlas==BUOY?SpriteAtlas.BUOY:SOURCES[atlas-FIRST];}
     public static int sourceFrame(int atlas,int frame){return frame%SpriteAtlas.count(source(atlas));}
-    public static int forSource(int source){if(source==SpriteAtlas.BUOY)return BUOY;for(int i=0;i<SOURCES.length;i++)if(SOURCES[i]==source)return FIRST+i;throw new IllegalArgumentException("No shadow source "+source);}
-    public static String file(int atlas){return atlas==BUOY?"shadow-buoy-v1.png":"shadow-"+NAMES[atlas-FIRST]+"-v1.png";}
+    public static int forSource(int source){if(source==SpriteAtlas.LAND_MARKER)return LAND_MARKER;if(source==SpriteAtlas.BUOY)return BUOY;for(int i=0;i<SOURCES.length;i++)if(SOURCES[i]==source)return FIRST+i;throw new IllegalArgumentException("No shadow source "+source);}
+    public static String file(int atlas){return atlas==LAND_MARKER?"shadow-land-marker-v1.png":atlas==BUOY?"shadow-buoy-v1.png":"shadow-"+NAMES[atlas-FIRST]+"-v1.png";}
     public static int count(int atlas){return SpriteAtlas.count(source(atlas))*2;}
     public static int columns(int atlas){return Math.min(8,count(atlas));}
     public static int rows(int atlas){return (count(atlas)+columns(atlas)-1)/columns(atlas);}

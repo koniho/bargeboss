@@ -5,7 +5,8 @@ public final class TowTrainTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static Game fixture(int loads) {
-        Game g=new Game();g.challengeId=1;g.reset();g.bridge.phase=Bridge.OPEN;
+        Game g=new Game();g.reset();g.tutorial=new Tutorial();g.tutorial.lesson=Tutorial.LINK;g.bridge.phase=Bridge.OPEN;
+        // The connected practice waterway retains a long physical reach after career level 2 became ordered berthing.
         for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         g.tug=new Body(0,-1,300,100,-(float)Math.PI/2);
         for(int i=0;i<loads;i++){g.addCargo(2,300,100+110*(i+1));g.cargo[i].angle=-(float)Math.PI/2;}
@@ -35,7 +36,7 @@ public final class TowTrainTest {
         check(b.vx==avx && b.vy==avy,"uncoupling preserves momentum");
         g.tow.detachBody(g,a);check(g.tow.loadCount(g.tug)==0,"mooring releases incident links without dragging secured hull");
         check(g.tow.attach(g,b,g.tug) && g.tow.loadCount(g.tug)==2,"reconnecting the train head brings downstream load back onto tug");
-        b.active=false;g.tow.prune(g);check(g.tow.count()==0,"expired parent removes both incident links in the same tick");
+        b.active=false;g.tow.prune(g);check(g.tow.count()==0,"removed parent clears both incident links in the same tick");
         g=fixture(2);a=g.cargo[0];b=g.cargo[1];
         check(g.tow.attach(g,b,a) && !g.tow.canAttach(g,a,b),"prebuilt floating train cannot form a cycle");
         check(g.tow.attach(g,a,g.tug) && g.tow.loadCount(g.tug)==2,"prebuilt train can subsequently be connected to tug");
@@ -43,6 +44,8 @@ public final class TowTrainTest {
         check(g.tow.loadCount(g.tug)==2 && g.tow.incoming(b).leader==g.tug,"multiple independent tug-to-barge lines supported");
         g.background();float bx=b.x,by=b.y;steps(g,50);check(b.x==bx && b.y==by && g.tow.count()==2,"pause preserves the complete link graph");
         g.pause();g.configureCanvas(1333,600);check(g.tow.count()==2,"resize and resume preserve links");
+        // This valid two-load state can display the uncoupling lesson without a nonexistent third teaching hull.
+        g.tutorial.lesson=Tutorial.RELEASE;
         for(int heading=0;heading<32;heading++) {
             g.tug.angle=heading*(float)Math.PI/16;b.angle=-g.tug.angle;g.cargo[0].angle=g.tug.angle+1;
             TowView.Segments spans=new TowView.Segments(g);check(spans.count==48,"every link contributes its own 24 spans");

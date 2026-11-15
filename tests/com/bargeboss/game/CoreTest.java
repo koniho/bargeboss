@@ -41,8 +41,8 @@ public final class CoreTest {
         float momentum=a.vx*a.mass+c.vx*c.mass; Physics.collide(a,c);
         check(c.vx>0,"physical collision transfers motion");
         check(Math.abs(a.vx*a.mass+c.vx*c.mass-momentum)<.001,"collision conserves linear momentum");
-        g=playing(); steps(g,Game.SHIFT_TICKS); check(g.mode==Game.FINISH,"shift ends");
-        check(g.lost>0,"unhandled cargo expires"); g.reset(); check(g.lost==0 && g.ticks==0 && g.hull==100,"restart clears state");
+        g=playing(); steps(g,Game.SHIFT_TICKS); check(g.mode==Game.PLAY,"goals have no overall deadline");
+        check(g.lost==0,"waiting cargo never expires"); g.reset(); check(g.lost==0 && g.ticks==0 && g.hull==100,"restart clears state");
         g.down(300,700); g.move(360,700); g.cancel(); check(!g.pointer,"cancelled drag cannot stick");
         Viewport v=new Viewport(1200,1000); check(Math.abs(v.worldX(v.x+300*v.scale)-300)<.001,"letterboxed coordinate mapping");
         g=playing(); g.down(-1,500); check(!g.pointer,"letterbox tap ignored");
@@ -117,7 +117,8 @@ public final class CoreTest {
         FactoryActivityTest.run();
         ShadowActivityTest.run();
         StageCameraTest.run();
-        check(Parity.signature().equals("e17e9679:11:8970"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        LockTest.run();
+        check(Parity.signature().equals("459322ac:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

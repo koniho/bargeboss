@@ -81,7 +81,7 @@ public final class Parity implements Painter {
         responsive(p);
         progression(p);
         feeders(p);
-        bridge(p);
+        goalLevels(p);
         joystick(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
     }
@@ -97,15 +97,25 @@ public final class Parity implements Painter {
             Renderer.draw(g,p);g.pointerUp(4,x+28,y-28);g.step();Renderer.draw(g,p);
         }
     }
-    private static void bridge(Parity p) {
-        Game g=new Game();g.challengeId=1;g.reset();
-        for(int i=0;i<9000;i++) {
-            ReplayInput.work(g);g.step();
-            if(i%30==0) {
-                p.value(g.tug.x);p.value(g.tug.y);p.add(g.bridge.phase);p.add(g.bridge.ticks);
-                p.value(g.layout.camera.zoom);p.value(g.layout.camera.worldTop);p.value(g.layout.camera.worldRight);
+    private static void goalLevels(Parity p) {
+        for(int id=1;id<Challenges.COUNT;id++) {
+            Game g=new Game();g.challengeId=id;g.reset();
+            int phases=0;
+            for(int i=0;i<9000 && g.mode==Game.PLAY;i++) {
+                int oldPhase=g.lock.phase;ReplayInput.work(g);g.step();phases|=1<<g.lock.phase;
+                if(i%30==0 || oldPhase!=g.lock.phase) {
+                    p.add(g.goalProgress());p.add(g.nextRequiredBerth());p.add(g.mode);
+                    p.value(g.tug.x);p.value(g.tug.y);p.add(g.lock.phase);p.add(g.lock.ticks);
+                    p.value(g.lock.waterLevel());p.value(g.lock.entryOpening());p.value(g.lock.exitOpening());
+                    p.add(g.lock.insideCount(g));p.add(g.lock.clearedCount(g));
+                    for(int cargo=0;cargo<Lock.REQUIRED;cargo++)p.add(g.lock.targetId(cargo));
+                    p.value(g.layout.camera.zoom);p.value(g.layout.camera.worldTop);p.value(g.layout.camera.worldRight);
+                }
+                if(i%120==0 || oldPhase!=g.lock.phase)Renderer.draw(g,p);
             }
-            if(i%120==0) Renderer.draw(g,p);
+            if(!g.goalComplete())throw new IllegalStateException("Goal replay did not finish "+id);
+            if(id==2 && (phases&127)!=127)throw new IllegalStateException("Lock replay missed a cycle phase");
+            p.add(g.earnedStars);p.add(g.score);p.add(g.tow.count());Renderer.draw(g,p);
         }
     }
     private static void feeders(Parity p) {
@@ -153,7 +163,7 @@ public final class Parity implements Painter {
         Game g=new Game(); g.restoreProgress("BB1|0|3,7000|0,0|0,0");
         g.mode=Game.CHALLENGES; Renderer.draw(g,p);
         g.selectChallenge(1); g.reset();
-        g.ticks=g.shiftTicks()-1; g.delivered=g.quota(); g.hull=95; g.lost=0; g.score=7500;
+        g.ticks=120; g.delivered=g.quota(); g.hull=95; g.lost=0; g.score=7500;
         g.step(); p.add(g.earnedStars); p.add(g.career.rank()); p.add(g.progressVersion());
         p.add(filenameHash(g.saveProgress())); Renderer.draw(g,p);
         Game restored=new Game(); restored.restoreProgress(g.saveProgress());

@@ -15,7 +15,8 @@ public final class BridgeRigBenchmark implements Painter {
         for(float v:xy)if(!Float.isFinite(v))throw new AssertionError("Non-finite bridge projection");polygons++;
     }
     public static void main(String[] args) {
-        Game g=new Game();g.challengeId=1;g.reset();g.layout=Layout.focused(960,600,300,Bridge.Y,1.5f,480,360);
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.BRIDGE;g.tutorial.setup(g);g.layout=Layout.focused(960,600,300,Bridge.Y,1.5f,480,360);
         g.tug.x=300;g.tug.y=Bridge.Y+500;g.trafficBoat.x=8000;g.trafficBoat.y=8000;
         for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         for(Body b:g.cargo)if(b!=null)b.active=false;

@@ -33,9 +33,8 @@ public final class BuildingFades {
             }
         } else {
             // Only the foreground shed is a fading building in the ordinary stages.
-            for(int segment=g.bridgeStage()?-2:0;segment<=0;segment++) {
+            for(int segment=g.lockStage()?-2:0;segment<=0;segment++) {
                 float x=Physics.LEFT-82,y=218+segment*688;
-                if(g.bridgeStage() && Math.abs(y-Bridge.Y)<95)continue;
                 target(SpriteAtlas.TUTORIAL_SCENERY,TutorialSceneryArt.SHED,x,y,
                         scene.buildingTarget(g,SpriteAtlas.TUTORIAL_SCENERY,TutorialSceneryArt.SHED,x,y,0,TutorialSceneryArt.size(TutorialSceneryArt.SHED)));
             }

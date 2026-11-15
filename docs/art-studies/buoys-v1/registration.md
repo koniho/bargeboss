@@ -29,11 +29,18 @@ vessel wakes amplify the sampled water field. Render queries do not change
 simulation, use random numbers, or sample wall-clock time. Lantern position is
 transformed by the exact same rotation as the source image.
 
-The water surface excludes all sprite pixels below a horizontal screen-space
-cut at surface elevation plus0.028 source sizes. This moving cut is independent
-of roll and delayed heave, so the lower hull submerges rather than tilting the
-water plane with the buoy. The ground-depth cutout separately prevents shore
-pixels being overwritten; only buildings follow the building-fade rules.
+The water surface excludes all sprite pixels below a curved front meniscus at
+surface elevation minus0.022 source sizes. This places the lower float visibly
+underwater. The curve follows the cylindrical float's water contact ellipse,
+with a small traveling surface undulation; it is independent of sprite roll.
+Heave samples the water ten ticks earlier at1.1 amplitude, making the float lag
+the waves. The water never tilts with the sprite. Soft teal wet-contact strokes
+and five translucent animated patches from the existing foam atlas explain the
+moving edge without an opaque band or sharp rectangular water overlay. Two faint,
+broken front crests spread outward and fade. Foam maximum opacity is0.6; crest
+maximum opacity is0.18. No new particles or persistent simulation state are added.
+The ground-depth cutout separately prevents shore pixels being overwritten;
+only buildings follow the building-fade rules.
 
 `shadow-buoy-v1.png` is a separate six-cell128px atlas: red/green/yellow contact
 masks followed by red/green/yellow cast masks. Each unchanged source alpha is
@@ -45,7 +52,7 @@ and are clipped off dry land. No painted shadows are added to the color PNGs.
 Validation: `BuoyArtTest` covers deterministic wave motion, wake response,
 registered lamp transforms, stationary pivots, clip balancing and unchanged
 simulation state. `BuoySpriteReview` checks source dimensions and opaque lantern
-anchors, then checks actual rendered pixels below the waterline at −6°,0°,+6°
+anchors, then checks actual rendered pixels below the curved waterline at −6°,0°,+6°
 for all three variants. `ShadowActivityTest` includes every padded buoy mask;
 `GenerateShadowMasks --check` compares decoded masks against source alpha.
 

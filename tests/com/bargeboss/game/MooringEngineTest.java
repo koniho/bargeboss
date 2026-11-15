@@ -6,7 +6,8 @@ public final class MooringEngineTest {
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     public static void run() {
         for(int berth=0;berth<3;berth++) for(float heading:new float[]{0,.6f,2.8f,-.6f,-2.8f}) {
-            Game g=new Game();g.challengeId=2;g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            Game g=new Game();g.challengeId=1;g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            int deliveredBefore=berth==2?0:berth==0?1:2;g.delivered=deliveredBefore;
             g.tug.x=300;g.tug.y=600;
             Body b=new Body(1,berth,Game.DOCK_X[berth],Game.DOCK_Y[berth]+10,heading);g.cargo[0]=b;
             Mooring.attach(b);float startX=b.x,startY=b.y;
@@ -23,10 +24,10 @@ public final class MooringEngineTest {
             }
             check(Math.abs(StrictMath.cos(b.angle))<.0001 && Math.abs(Physics.angle(b.angle-heading))<=Math.PI/2+.0001,"parallel berth heading uses the shortest turn");
             check(b.y==Game.DOCK_Y[berth] && Math.abs(b.x-(berth==1?402.5f:197.5f))<.001,"hull ends alongside the correct bank with fender clearance");
-            check(b.unloadingTicks==1 && g.delivered==0,"three-second unload starts after alignment");
-            steps(g,Game.UNLOAD_TICKS-1);check(g.delivered==1 && !b.active,"aligned cargo scores exactly once after full unloading");
+            check(b.unloadingTicks==1 && g.delivered==deliveredBefore,"three-second unload starts after alignment");
+            steps(g,Game.UNLOAD_TICKS-1);check(g.delivered==deliveredBefore+1 && !b.active,"aligned cargo scores exactly once after full unloading");
         }
-        Game g=new Game();g.challengeId=2;g.reset();steps(g,60);check(g.tug.engineLoad<.01f,"idle engine carries no propulsion load");
+        Game g=new Game();g.challengeId=1;g.reset();steps(g,60);check(g.tug.engineLoad<.01f,"idle engine carries no propulsion load");
         ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-100);steps(g,45);
         check(g.tug.engineLoad>.5f,"acceleration increases exhaust load");
         ReplayInput.up(g,g.pointerX,g.pointerY);steps(g,90);

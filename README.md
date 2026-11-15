@@ -1,8 +1,9 @@
 # Barge Boss
 
 A landscape industrial river action game with an isometric harbor and directional boat sprites. Drive a heavy tug, push container barges
-into matching berths and manage incoming cargo before a three-minute shift ends.
-Stage 01 is a stylized **Calumet River industrial corridor** with steel yards,
+into matching berths, solve delivery order, and move a convoy through a timed lock.
+Levels finish when their goals are complete; there is no overall countdown.
+The setting is a stylized **Calumet River industrial corridor** with steel yards,
 freight rail, bulk storage, cranes, a lift bridge and crossing workboats. It is
 an original gameplay layout, not a navigational map of the real river.
 
@@ -27,7 +28,7 @@ hull damage: circling two lit buoys, coasting, a scrolling rectilinear industria
 assisted pushing, docking, throwing a mooring
 line, towing to a berth, double towing under a bridge, reconfiguring a train,
 narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;
-**Exit Practice** restores your suspended shift. Circle each gold beacon once in either direction, following the soft water ring;
+**Exit Practice** restores your suspended level. Circle each gold beacon once in either direction, following the soft water ring;
 its percentage shows your lap progress. Stay near the ring—cutting across the buoy
 or leaving its area restarts that unfinished lap. Then steer
 upstream through seven gates along a narrow industrial channel spanning several
@@ -47,7 +48,9 @@ The harbor uses a dark industrial palette with animated warm factory lights,
 while boats retain bright, saturated paintwork and registered vessel lamps.
 Only mouths between distinct regions have paired red and green navigation buoys,
 fixed to the returning direction (red on the right). Screenshot-based steel lantern
-sprites rock and bob with the waves; the water surface masks their submerged bases. Every watercraft carries steady
+sprites rock and bob with the waves; curved waterline masking and soft foam show
+their submerged bases. Tutorial entrances use fixed lights on concrete plinths
+beside the canal, while the two yellow circling buoys stay afloat. Every watercraft carries steady
 red port, green starboard and white stern lights; powered craft also have a white
 masthead light. Their visibility changes naturally as the vessels turn.
 The working camera is closer by default, with tighter docking and modestly closer
@@ -73,15 +76,16 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   guide turns green over it. Drive the tug to take up slack and pull the barge.
   The line applies force at the ends of the hulls, so cargo trails, swings and
   retains momentum. **Tap the connected barge** to release it before pushing again;
-  a successful shore-bollard catch also releases the tow. One load at a time,
-  within 170 river units. Pick up feeder loads as soon as they are dropped off;
+  a successful shore-bollard catch also releases the tow. Link multiple barges
+  directly to the tug or to another barge within 170 river units; heavier trains
+  reduce the resulting speed. Pick up feeder loads as soon as they are dropped off;
   secured loads and loads still aboard an incoming feeder cannot be towed.
   Blocked or overstretched lines release. Practice includes connecting, pulling
   the load a real distance, and explicitly releasing it.
 - **Slow down:** drag against your motion to apply counter-thrust, then release
   to coast. There is no brake button. Pausing or backgrounding cancels input.
-- **Tie up:** once the barge center enters its matching **A / steel**, **B / freight**,
-  or **C / bulk** zone, the hull and its bank bollard glow with a **READY TO TIE**
+- **Tie up:** once the barge center enters the zone matching its displayed berth
+  letter, the hull and its bank bollard glow with a **READY TO TIE**
   badge. Moving barges are eligible too. Lift your finger,
   then drag from the barge to aim. A curved trajectory guide and landing marker
   show the throw while the rope stays coiled. **Release to throw**: the lasso
@@ -95,7 +99,7 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   and burst of stars. The crew and equipment then return to idle.
 - Movement, turning, pushing and passing workboats run at **2× the original
   pace**, using two original-size physics steps per real tick. Hold gestures,
-  the shift clock, contracts, mooring and unloading retain their real durations.
+  lock windows, mooring and unloading retain their real durations.
 - The supplied concept guides the pixel-styled harbor: a red/cream tug with
   raised wheelhouse and tire fenders, charcoal-blue steel barges with orange coamings carrying steel, containers or
   bulk, shaded concrete quays, yellow machinery, teal reflections and foam wakes.
@@ -145,48 +149,46 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
 
-First Watch asks you to deliver **6 loads in 3 minutes**, with **one feeder and one
-berth at the far left end**, opposite the feeder on the right. Hold a load to push it toward berth A; the camera
-defaults to a **1.5× working view**, rising to **1.75× near a berth** when both
-hulls and the bollard fit. Canal and bridge transit use a wider **1× view**. The camera
-holds still during lasso aiming and flight, then eases back out after delivery
-and keeps the overview for three seconds even if another load is nearby, before
-returning to the closer working view. Inland
-bollards sit 50 world units behind the bank; camera framing and scenery fading
-keep the active target visible.
-Barges retain keel momentum, but stronger forward, sideways and turning resistance
-make released loads settle sooner. Gentle berth fender damping helps with aiming.
+Open **Challenges** from the title or results screen to build your captain career.
+Each level ends immediately when its goal is complete. Cargo does not expire,
+and feeders dispatch only the barges required by that level.
 
-NPC pushers bring loads in from the right edge, call **ZONE A!**, **ZONE B!**, or
-**ZONE C!**, and back out. A blocked captain calls **HURRY UP!** at four-second
-intervals. Queued deliveries wait outside the tug's pickup approach. These calls
-are visual speech bubbles; there is no voice audio yet. Slot fenders hold waiting
-barges until physical push contact. First Watch and Heavy Shift dispatch every
-14 seconds; Bridge Run uses 30 seconds between dispatches. Contract life is
-68 seconds after handoff, or 130 seconds on the longer bridge route.
+| Level | Goal | Unlock |
+| --- | --- | --- |
+| Two Banks | Deliver two barges, one to berth A on the left bank and one to B on the right | Available immediately |
+| Right Order | Deliver three barges to A, then B, then C; arrivals come in a different order | Complete Two Banks |
+| Lock Run | Get both barges into the lock, wait for its water cycle, then clear the exit with both | Complete Right Order |
 
-Open **Challenges** from the title or results screen to build your captain career:
+Lock Run has timed obstacles within an otherwise untimed level. Preparing the
+convoy has no deadline. On approach with both loads available, the entry gate
+starts a **45-second window**, including its opening motion. Bring the tug and
+both complete barge hulls inside. The entry closes over **1.5 seconds**, the lock
+fills for **8 seconds**, and the exit opens over **1.5 seconds**. Once the exit is
+fully open, clear both complete barge hulls within **35 seconds**. Missing either
+window ends the attempt with a reason and a replay option. Water gauges, a moving
+wet line and local turbulence communicate the level change; vessel navigation
+still uses the shared fixed water plane. See the [goal rules and authoring notes](docs/gameplay/goal-levels.md).
 
-| Challenge | Target | Stage | Unlock |
-| --- | --- | --- | --- |
-| First Watch | 6 loads in 3:00 | One feeder, one berth | Available immediately |
-| Bridge Run | 4 loads in 4:00 | Two feeders, scrolling river, one upstream berth | Complete First Watch |
-| Heavy Shift | 8 loads in 3:00 | Two feeders, three berths, piers and crossing traffic | Complete Bridge Run |
+The camera defaults to a **2.15× working view**, rising to **2.5× near a berth**
+when the tug, load and bollard fit. Lock transit uses a wider **1.2× view**. The
+camera holds still during lasso aiming and flight, eases out after delivery, and
+keeps the overview for three seconds before returning to the close working view.
+Inland bollards sit 50 world units behind the bank. Barges retain keel momentum;
+forward, sideways and turning resistance help released loads settle, with gentle
+berth fender damping for aiming.
 
-Bridge Run extends the river beyond one screen. The camera follows the tug.
-Approaching its closed bridge requests an opening: **wait six seconds**, then
-watch the leaves rise over two seconds. Holding cargo keeps the tug and load in
-the waiting area until the signal turns green. The bridge stays open for at
-least twelve seconds, and waits for the channel underneath to clear before
-closing. A vessel entering during closing makes it reopen. Dragging manually
-still requires you to stop for the red signal. Pause is in the upper-right
-corner (Escape on desktop).
+Two NPC pushers bring the level's loads in from edge slots, call their target
+berth or **TO THE LOCK!**, and back out. A blocked captain calls **HURRY UP!** at
+four-second intervals. Queued loads wait outside the tug's pickup approach, and
+slot fenders hold handed-off barges until pickup. Right Order's remaining third
+load waits for a free feeder lane. The calls are visual speech bubbles; there is
+no voice audio yet. The opening bridge remains part of the continuous towing
+tutorial. Pause is in the upper-right corner (Escape on desktop).
 
-Survive until the shift timer ends and meet its quota to earn one star. Earn an
-additional star for no expired loads, and another for finishing with at least
-80% hull. Each challenge saves its best stars and best successful score. Replays
-can improve records; duplicate stars do not count again. Practice earns no career
-rewards and leaves your suspended shift intact.
+Completing the goal earns one star. Earn an additional star for no lost loads,
+and another for finishing with at least 80% hull. Each level saves its best stars
+and best successful score. Replays can improve records; duplicate stars do not
+count again. Practice earns no career rewards and preserves the suspended level.
 
 Unique stars earn gold captain stripes and playful ranks: **Deck Duck** (0),
 **Line Tamer** (1), **Wake Wrangler** (3), **Harbor Hero** (6), and **Captain Quack**
@@ -212,9 +214,9 @@ or separate JavaScript/Swift gameplay implementation.
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
 using 960×600 as the reference size. The river uses the largest uniform scale that
-fits the introductory stage, follows the tug on the longer bridge stage, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane uses a 45° yaw and 35.264° elevation; sprites retain their painted
+frames the active work, follows the tug along the lock route, and zooms for docking, with compact HUD/control overlays along the shore. The ground plane uses a 45° yaw and 35.264° elevation; sprites retain their painted
 proportions, and Android uses immersive fullscreen with swipe-accessible system bars.
-The introductory overview fits the whole stage. The bridge route and rectilinear
+The delivery overview shows more of the harbor. The lock route and rectilinear
 tutorial canal scroll, while docking zoom keeps the tug, barge and bollard visible.
 Touch/mouse gestures, hold thresholds, haptic timing, tutorial, physics, scoring,
 traffic, HUD, menus, glyphs and sprite animation all live in shared Java.
@@ -301,7 +303,7 @@ build for compilation validation only. Store provisioning/distribution is not co
 ## Verification
 
 ```sh
-./check.sh       # Rules, physics, gestures, timing, full-shift bounded player
+./check.sh       # Rules, physics, gestures, timing, bounded goal-completion player
 ./preview.sh     # Real phase, title/menu and tutorial contact sheets in out/
 ./preview.sh --animations # Phase sequences plus rotation; GIFs when ffmpeg is installed
 ./preview.sh --rotation   # 240 frames at 30 fps; fixed crosshairs for boats and payloads

@@ -23,11 +23,22 @@ remain visible between flashes. Practice buoys use numbered yellow daymarks and
 yellow lanterns with a steady base glow between pulses, so the two driving targets
 stay conspicuous without being confused for lateral navigation aids.
 
-All fixtures use the same [screenshot-based sprite family](../art-studies/buoys-v1/README.md),
-scaled down beside the narrow train passage. `BuoyArt` registers each unchanged
+Floating markers use the [screenshot-based sprite family](../art-studies/buoys-v1/README.md).
+Tutorial entrance pairs instead use [fixed shore beacons](../art-studies/land-markers-v1/README.md),
+with square concrete foundations entirely on dry ground. They stand 18 world units
+back from each canal bank and 26 units inside the narrow reach at its mouths.
+The two yellow practice buoys remain floating. Regular shifts retain red/green
+floating markers. Fixed beacons have no heave, roll, submergence or building fade;
+their ground pivot sits on the raised quay, and their lamp pulses remain animated.
+Their independent contact/cast shadows and soft light spill draw after cached
+terrain, before depth-sorted vessels, shore caps, beacons and buildings. A deck-height
+water cutout keeps those ground effects off the channel.
+
+For floating fixtures, `BuoyArt` registers each unchanged
 PNG to its waterline pivot and lantern center. Shared wave slope drives bounded
-sprite roll, with delayed heave for bounce. A horizontal moving-water clip hides
-the lower float independently of sprite rotation; the lamp and glow follow the
+sprite roll, with delayed heave for bounce. A curved moving meniscus hides
+the lower float independently of sprite rotation; soft sprite foam and faint
+outward crests make the wet contact visible; the lamp and glow follow the
 same rigid transform as the tower. Separate contact/cast shadow masks flatten on
 the water before hulls, with shoreline clipping.
 
@@ -37,7 +48,7 @@ They are not HUD overlays and never participate in building fading. Each fixture
 is culled before wave sampling or glow work. Static glow kernels are reused;
 animation depends only on shared simulation wave state and `visualTicks`.
 
-`NavigationLightsTest` validates returning sides, entrance water placement,
+`NavigationLightsTest` validates returning sides, entrance land/water placement,
 heading/aspect stability, depth ordering, flash/dark phases, culling and render
 purity. `NavigationReview` captures practice, canal and harbor entrance scenes
 through the actual shared renderer. A new stage entrance must add a named entry

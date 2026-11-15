@@ -16,7 +16,7 @@ public final class TutorialView {
             Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
             Lettering.center(p,"DRAG TUG. DRAG CARGO.",770,241,12,PAPER);
             Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
-            ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO SHIFT":"START SHIFT",true);
+            ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
             return;
         }
         if(t.lesson==Tutorial.CHANNEL) {

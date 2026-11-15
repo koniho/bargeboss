@@ -83,7 +83,8 @@ public final class TowTest {
         ReplayInput.releaseTow(g);check(g.tow.cargo==null,"responsive barge tap releases tow");
         g=fixture();connect(g);g.reset();check(g.tow.cargo==null,"restart clears tow references");
         g=fixture();connect(g);g.cargo[0].age=g.contractSeconds()+1;g.step();
-        check(g.tow.cargo==null && !g.cargo[0].active,"expiry clears tow in same tick");
+        check(g.tow.cargo==g.cargo[0] && g.cargo[0].active,"old cargo retains its tow because goal levels have no expiry");
+        ReplayInput.releaseTow(g);check(g.tow.cargo==null && g.cargo[0].active,"explicit detach releases an old load without removing it");
 
         g=new Game();g.reset();steps(g,180);b=g.cargo[0];
         check(b!=null && b.awaitingPickup,"feeder parks delivered load for pickup");
@@ -112,11 +113,11 @@ public final class TowTest {
         steps(g,Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS);
         check(g.delivered==1,"towed load can finish ordinary delivery");
 
-        g=fixture();g.challengeId=2;g.tug.x=240;g.tug.y=410;g.cargo[0].x=190;g.cargo[0].y=320;
+        g=fixture();g.challengeId=1;g.tug.x=240;g.tug.y=410;g.cargo[0].x=190;g.cargo[0].y=320;
         check(!g.canTow(g.cargo[0]),"cannot cast through finger pier");
-        g=fixture();g.challengeId=1;g.tug.y=140;g.cargo[0].y=260;
+        g=fixture();g.tutorial=new Tutorial();g.tutorial.lesson=Tutorial.LINK;g.tug.y=140;g.cargo[0].y=260;
         check(!g.canTow(g.cargo[0]),"cannot cast across closed bridge");
-        g.bridge.phase=Bridge.OPEN;connect(g);g.bridge.ticks=720;g.bridge.step(g);
+        g.bridge.phase=Bridge.OPEN;connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.bridge.ticks=720;g.bridge.step(g);
         check(g.bridge.phase==Bridge.OPEN,"bridge holds open for tow connection");
 
         // A bank overlap must not erase outward momentum while a hull turns.

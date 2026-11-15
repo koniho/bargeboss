@@ -2,6 +2,7 @@ package com.bargeboss.game;
 
 /** One connected industrial practice yard, from the canal entrance to the working berth. */
 public final class TrainingChannelView {
+    private static final int NAVIGATION_APRON_COL=2,NAVIGATION_APRON_ROW=-7;
     private static final int[][] FACTORIES=makeFactories();
     public static final int FACTORY_PLACEMENTS=FACTORIES.length;
     private TrainingChannelView() {}
@@ -14,6 +15,7 @@ public final class TrainingChannelView {
         // Ground is cached; solid lower-bank caps also join the world depth
         // order so they cover hulls without cutting through nearer buildings.
         StaticTerrain.draw(g,canvas,false);
+        NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
         int gate=g.tutorial.channelGate;
         // One transient lesson cue; physical markers belong only at region mouths.
@@ -64,6 +66,10 @@ public final class TrainingChannelView {
         int width=IndustrialRoadView.MAX_COL-IndustrialRoadView.MIN_COL;
         int height=IndustrialRoadView.MAX_ROW-IndustrialRoadView.MIN_ROW;
         boolean[][] used=new boolean[height][width];
+        // Keep the green train-exit beacon's foreground sightline open. The pump
+        // house formerly in this one cell covered its lantern and almost all of
+        // its tower; ground remains a normal raised quay apron, not a HUD layer.
+        used[NAVIGATION_APRON_ROW-IndustrialRoadView.MIN_ROW][NAVIGATION_APRON_COL-IndustrialRoadView.MIN_COL]=true;
         int[][] pending=new int[width*height][];int count=0;
         for(int row=IndustrialRoadView.MIN_ROW;row<IndustrialRoadView.MAX_ROW;row++)
             for(int col=IndustrialRoadView.MIN_COL;col<IndustrialRoadView.MAX_COL;col++) {
@@ -96,6 +102,7 @@ public final class TrainingChannelView {
     private static float factoryDepth(int[] entry) {
         return (entry[2]-entry[1])*64+FactoryArt.footprintY(entry[0])-FactoryArt.footprintX(entry[0]);
     }
+    static boolean navigationApron(int col,int row){return col==NAVIGATION_APRON_COL && row==NAVIGATION_APRON_ROW;}
     private static float setback(int cell) {
         return FactoryArt.height(cell)>=150?128:
                 Math.max(FactoryArt.footprintX(cell),FactoryArt.footprintY(cell))>32?96:72;

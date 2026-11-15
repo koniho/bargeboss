@@ -39,8 +39,8 @@ public final class Towline {
             for(int i=0;i<=steps;i++) if(!TrainingChannel.contains(x+(xx-x)*i/steps,y+(yy-y)*i/steps)) return false;
             return true;
         }
-        return !(g.bridgeStage() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))
-                && (g.challengeId!=2 || HarborGeometry.clear(x,y,xx,yy,3));
+        return !(g.lockStage() && g.lock.blocksLine(x,y,xx,yy))
+                && (!g.orderStage() || HarborGeometry.clear(x,y,xx,yy,3));
     }
     public void attach(Game g,Body b) {attach(g,b,g.tug);}
     public boolean attach(Game g,Body b,Body parent) {

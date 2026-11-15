@@ -5,7 +5,7 @@ public final class ReplayInput {
     private ReplayInput() {}
     /** Stable local cargo fixture for isolated control/art tests, separate from feeder replays. */
     public static void controlFixture(Game g) {
-        g.challengeId=2;g.reset(); g.tug=new Body(0,-1,376,700,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
+        g.challengeId=1;g.reset(); g.tug=new Body(0,-1,376,700,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
         g.addCargo(2,292,700); g.addCargo(1,320,480);
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
@@ -23,11 +23,24 @@ public final class ReplayInput {
         up(root,g.bollardX(b.berth),g.bollardY(b.berth));
     }
     public static void work(Game g) {
-        if(g.ropePhase!=0) return;
+        if(g.mode!=Game.PLAY || g.ropePhase!=0) return;
+        if(g.lockStage()){lockPassage(g);return;}
+        if(g.orderStage() && g.delivered==0 && stageEarlyLoad(g))return;
         // A covered or drifting hull can make a press miss; lift before retrying.
         if(g.pointer && g.heldCargo()==null && !g.holdingTug()) up(g,g.pointerX,g.pointerY);
         Body target=null;
-        for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached) { target=b; break; }
+        for(Body b:g.cargo) if(b!=null && b.active && !b.lineAttached && (!g.orderStage() || b.berth==g.nextRequiredBerth())) { target=b; break; }
+        if(target==null && g.orderStage()){
+            for(Feeder f:g.feeders)if(f.phase==Feeder.INBOUND && f.blocked && f.load!=null)
+                for(Body b:g.cargo)if(b!=null && b.active && !b.lineAttached && Math.abs(b.x-f.x)<55 && b.y>Feeder.DROP_Y-105){
+                    // Park an early out-of-order load farther into the basin, freeing the next delivery slot.
+                    if(g.holdingTug() || g.heldCargo()!=null && g.heldCargo()!=b)up(g,g.pointerX,g.pointerY);
+                    if(!g.pointer)down(g,b.x,b.y);
+                    float dx=300-b.x,dy=570-b.y,len=Math.max(1,Physics.length(dx,dy));
+                    move(g,g.downX+90*dx/len,g.downY+90*dy/len);return;
+                }
+        }
+        if(g.pointer && g.heldCargo()!=null && g.heldCargo()!=target)up(g,g.pointerX,g.pointerY);
         if(target!=null && (!g.pointer || g.holdingTug()) && !g.layout.camera.contains(g.layout.camera.screenX(target.x,target.y),g.layout.camera.screenY(target.x,target.y))) {
             drive(g,300,target.y);return;
         }
@@ -46,6 +59,33 @@ public final class ReplayInput {
                 move(g,g.downX+dx/len*90,g.downY+dy/len*90);
             }
         }
+    }
+    /** The early C load initially blocks A's sideways route; move it into the waiting basin first. */
+    private static boolean stageEarlyLoad(Game g){
+        Body early=null;for(Body b:g.cargo)if(b!=null && b.active && b.berth==1){early=b;break;}
+        if(early==null)return false;
+        if(g.tow.incoming(early)!=null){
+            if(early.y>615){drive(g,340,520);return true;}
+            if(g.pointer)up(g,g.pointerX,g.pointerY);releaseTow(g);return true;
+        }
+        if(early.y<=640)return false;
+        if(g.pointer && !g.holdingTug())up(g,g.pointerX,g.pointerY);
+        if(Physics.length(g.tug.x-early.x,g.tug.y-early.y)>140 || g.tug.y>early.y-60){drive(g,300,early.y-100);return true;}
+        if(g.pointer)up(g,g.pointerX,g.pointerY);
+        down(g,early.x,early.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return true;
+    }
+    /** Actual feeder handoff and two lasso gestures, followed by a fully physical loaded passage. */
+    private static void lockPassage(Game g){
+        if(g.pointer && !g.holdingTug())up(g,g.pointerX,g.pointerY);
+        int loads=0;Body next=null;
+        for(Body b:g.cargo)if(b!=null && b.active && b.id>0){loads++;if(g.tow.incoming(b)==null && next==null)next=b;}
+        if(loads<Lock.REQUIRED){drive(g,300,600);return;}
+        if(next!=null){
+            if(Physics.length(g.tug.x-next.x,g.tug.y-next.y)>135 || g.tug.y>next.y-65){drive(g,300,next.y-95);return;}
+            if(g.pointer)up(g,g.pointerX,g.pointerY);
+            down(g,next.x,next.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
+        }
+        drive(g,300,g.lock.phase>=Lock.EXIT?-190:90);
     }
     private static void drive(Game g,float x,float y) {
         if(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(g.tug.y,y)) y=Bridge.Y+(g.tug.y>Bridge.Y?90:-90);

@@ -9,6 +9,9 @@ public final class MooringAccessTest {
             Game probe=new Game();probe.challengeId=stage;probe.reset();if(!probe.berthEnabled(berth)) continue;
             for(float width:new float[]{960,1333.3334f}) for(int heading=0;heading<8;heading++) for(float offset:new float[]{-40,40}) {
                 Game g=new Game();g.challengeId=stage;g.reset();
+                // Advance only the ordered-level fixture to this berth's legal turn.
+                int deliveredBefore=g.orderStage()?(berth==2?0:berth==0?1:2):0;
+                g.delivered=deliveredBefore;
                 for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
                 Body b=new Body(1,berth,0,g.dockY(berth)+offset,(float)(heading*Math.PI/4));
                 float extent=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(b.angle));
@@ -30,7 +33,7 @@ public final class MooringAccessTest {
                 }
                 check(g.inDock(b) && b.unloadingTicks==1,"crew waits until the shore catch is fully aligned");
                 for(int i=1;i<Game.UNLOAD_TICKS;i++) g.step();
-                check(g.delivered==1 && !b.active,"shore catch unloads and scores exactly once");
+                check(g.delivered==deliveredBefore+1 && !b.active,"shore catch unloads and scores exactly once");
             }
         }
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();

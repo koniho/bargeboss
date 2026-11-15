@@ -52,7 +52,7 @@ public final class Feeder {
                     delivered.heave=load.heave;delivered.heaveVelocity=load.heaveVelocity;delivered.floatingInitialized=load.floatingInitialized;
                     delivered.awaitingPickup=true; delivered.tiedX=delivered.x; delivered.tiedY=delivered.y; delivered.tiedAngle=delivered.angle;
                     g.cargo[i]=delivered; drops++; phase=RETURNING;
-                    call(g,"ZONE "+g.berthLetter(load.berth)+"!"); g.haptic(Game.HAPTIC_TICK); break;
+                    call(g,g.lockStage()?"TO THE LOCK!":"ZONE "+g.berthLetter(load.berth)+"!"); g.haptic(Game.HAPTIC_TICK); break;
                 }
                 load=null;
             }

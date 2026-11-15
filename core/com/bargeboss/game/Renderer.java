@@ -35,6 +35,7 @@ public final class Renderer {
     private static void river(Game g,Painter p) {
         HarborView.draw(g,p);
         NavigationLights.reflections(g,((RiverPainter)p).canvas());
+        if(g.lockStage())LockView.water(g,g.lock,((RiverPainter)p).canvas());
         if(g.trafficWarning() || g.trafficActive()) {
             for(int x=173;x<426;x+=18) p.line(x,Game.TRAFFIC_Y,x+8,Game.TRAFFIC_Y,2,0x88ffc52f);
             if(g.trafficWarning()) SoftCue.caption(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
@@ -50,20 +51,24 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
-        TowView.Segments rope=new TowView.Segments(g);int span=0,mark=0;int[] lights=NavigationLights.ordered(g);
+        TowView.Segments rope=new TowView.Segments(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0;int[] lights=NavigationLights.ordered(g);
         for(int n=0;n<count;n++) {
             float depth=g.layout.camera.screenY(ordered[n].x,ordered[n].y);
-            while(span<rope.count || mark<lights.length) {
+            while(span<rope.count || mark<lights.length || gate<gateCount) {
                 float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
-                if(Math.min(rd,ld)>depth)break;
+                float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
+                if(Math.min(gd,Math.min(rd,ld))>depth)break;
+                if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
                 if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
             }
             body(g,p,ordered[n]);
         }
-        while(span<rope.count || mark<lights.length) {
+        while(span<rope.count || mark<lights.length || gate<gateCount) {
             float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
             float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
+            float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
+            if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
             if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
         }
         if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);
@@ -80,7 +85,7 @@ public final class Renderer {
         if(b.id<0) { VesselView.draw(g,p,b,false);return; }
         int i=-1; for(int slot=0;slot<g.cargo.length;slot++) if(g.cargo[slot]==b) { i=slot;break; }
         int color=Game.COLORS[b.berth];
-        if(g.selected==i && !b.lineAttached) {
+        if(g.selected==i && !b.lineAttached && g.berthEnabled(b.berth)) {
             SoftCue.dot(p,b.x,b.y,30,SoftCue.animated(g,0x66fff0ce));
             for(int j=1;j<10;j++) {
                 float t=j/10f;
@@ -89,10 +94,7 @@ public final class Renderer {
         }
         VesselView.draw(g,p,b,false);
         tag(p,b.deliveryRecorded?"EMPTY":""+g.berthLetter(b.berth)+"-"+(b.id<10?"0":"")+b.id,b.x,b.y-44,10,color);
-        if(!b.lineAttached) {
-            p.rect(b.x-23,b.y+31,46,4,VisualStyle.OUTLINE);
-            p.rect(b.x-22,b.y+32,44*Math.max(0,1-b.age/g.contractSeconds()),2,b.age>g.contractSeconds()-20?VisualStyle.RED:color);
-        }
+
     }
     private static void tag(Painter p,String text,float x,float y,float size,int color) {
         // Anchor labels beside the hull while keeping their glyphs horizontal.

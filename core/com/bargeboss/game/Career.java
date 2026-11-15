@@ -29,7 +29,7 @@ public final class Career {
         if(selected!=id) { selected=id; version++; }
         return true;
     }
-    /** Called once by Game when a successful shift reaches its timer. */
+    /** Called once by Game when a level goal is completed. */
     boolean record(int id,int earnedStars,int score) {
         if(!unlocked(id) || earnedStars<1 || earnedStars>3) return false;
         int boundedScore=Math.max(0,Math.min(MAX_SCORE,score));
