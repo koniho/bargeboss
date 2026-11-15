@@ -26,6 +26,7 @@ public final class Game {
     public Body tug;
     public WaterSurface water=new WaterSurface();
     public Buoys buoys=new Buoys();
+    public CollisionSplashes splashes=new CollisionSplashes();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
     public Bridge bridge=new Bridge();
@@ -309,7 +310,7 @@ public final class Game {
         feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
         mode=PLAY; tell(goalStatus());
-        buoys=new Buoys();buoys.reset(this);
+        buoys=new Buoys();buoys.reset(this);splashes=new CollisionSplashes();
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
@@ -621,7 +622,7 @@ public final class Game {
                 visualAccumulator+=Math.min(.25,seconds);
                 while(visualAccumulator+1e-10>=1.0/60.0) {
                     visualAccumulator-=1.0/60.0; visualTicks++;
-                    if(mode==TITLE)titleSmoke.titleStep(this);else {smoke.drift();buildingFades.step(this);}
+                    if(mode==TITLE)titleSmoke.titleStep(this);else {smoke.drift();splashes.step(this);buildingFades.step(this);}
                 }
             } else visualAccumulator=0;
             return;
@@ -633,7 +634,7 @@ public final class Game {
     public void step() {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
-        visualTicks++;
+        visualTicks++;splashes.step(this);
         if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
             smoke.step(this);buildingFades.step(this);
             if(celebrationTicks>0) celebrationTicks--;
@@ -753,16 +754,16 @@ public final class Game {
         tow.step(this);
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
         if(lockStage())lock.integrate(tug);else Physics.integrate(tug);
-        if(tutorial!=null) TrainingChannel.collideWater(tug);
-        else damage(orderStage()?PhysicalBerths.collide(challengeId,tug):Physics.banks(tug,channelTop(),Physics.BOTTOM,false));
-        if(hasBridge()) damage(bridge.collide(tug));
-        if(lockStage()) damage(lock.collide(tug));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b);else damage(orderStage()?PhysicalBerths.collide(challengeId,b):Physics.banks(b,channelTop(),Physics.BOTTOM,false));if(hasBridge()) damage(bridge.collide(b));if(lockStage()) damage(lock.collide(b)); }
+        if(tutorial!=null) TrainingChannel.collideWater(tug,splashes);
+        else damage(orderStage()?PhysicalBerths.collide(challengeId,tug,splashes):Physics.banks(tug,channelTop(),Physics.BOTTOM,false,splashes));
+        if(hasBridge()) damage(bridge.collide(tug,splashes));
+        if(lockStage()) damage(lock.collide(tug,splashes));
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(tutorial!=null) TrainingChannel.collideWater(b,splashes);else damage(orderStage()?PhysicalBerths.collide(challengeId,b,splashes):Physics.banks(b,channelTop(),Physics.BOTTOM,false,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;
-                damage(Physics.collide(tug,a));
-                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null) damage(Physics.collide(a,cargo[j]));
+                damage(Physics.collide(tug,a,splashes));
+                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null) damage(Physics.collide(a,cargo[j],splashes));
             }
         }
         if(tutorial==null) for(Feeder f:feeders) if(f.phase!=Feeder.IDLE) {
@@ -791,10 +792,10 @@ public final class Game {
     }
     private void feederContact(Body obstacle) {
         float x=obstacle.x,y=obstacle.y,vx=obstacle.vx,vy=obstacle.vy,spin=obstacle.spin;
-        damage(Physics.collide(tug,obstacle));
+        damage(Physics.collide(tug,obstacle,splashes));
         obstacle.x=x; obstacle.y=y; obstacle.vx=vx; obstacle.vy=vy; obstacle.spin=spin;
         for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) {
-            Physics.collide(b,obstacle);
+            Physics.collide(b,obstacle,splashes);
             obstacle.x=x; obstacle.y=y; obstacle.vx=vx; obstacle.vy=vy; obstacle.spin=spin;
         }
     }
@@ -914,8 +915,8 @@ public final class Game {
         Body ship=trafficBoat;ship.x=trafficX();ship.y=TRAFFIC_Y;ship.angle=0;ship.vx=57;ship.vy=0;
         ship.engineLoad=.55f;
         float beforeX=ship.x, beforeY=ship.y;
-        float hit=Physics.collide(ship,tug);
-        for(Body b:cargo) if(b!=null && b.active) hit=Math.max(hit,Physics.collide(ship,b));
+        float hit=Physics.collide(ship,tug,splashes);
+        for(Body b:cargo) if(b!=null && b.active) hit=Math.max(hit,Physics.collide(ship,b,splashes));
         boolean collided=hit>25 || Math.abs(ship.x-beforeX)+Math.abs(ship.y-beforeY)>2;
         ship.x=beforeX;ship.y=beforeY;
         if(collided) damage(90);

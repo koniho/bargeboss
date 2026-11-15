@@ -51,23 +51,27 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
-        TowView.Segments rope=new TowView.Segments(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0;int[] lights=NavigationLights.ordered(g);
+        TowView.Segments rope=new TowView.Segments(g);int spray=0;int[] splashes=g.splashes.ordered(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0;int[] lights=NavigationLights.ordered(g);
         for(int n=0;n<count;n++) {
             float depth=g.layout.camera.screenY(ordered[n].x,ordered[n].y);
-            while(span<rope.count || mark<lights.length || gate<gateCount) {
+            while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length) {
                 float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
                 float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
-                if(Math.min(gd,Math.min(rd,ld))>depth)break;
+                float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
+                if(Math.min(ed,Math.min(gd,Math.min(rd,ld)))>depth)break;
+                if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){g.splashes.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
                 if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
                 if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
             }
             body(g,p,ordered[n]);
         }
-        while(span<rope.count || mark<lights.length || gate<gateCount) {
+        while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length) {
             float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
             float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
             float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
+            float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
+            if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){g.splashes.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
             if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
             if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
         }

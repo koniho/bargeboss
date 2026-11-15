@@ -27,11 +27,12 @@ public final class PhysicalBerths {
         return HarborGeometry.clear(x,y,xx,yy,pad,solids(id));
     }
     /** Alternate banks and quay constraints so a corner cannot push a hull through the opposite bank. */
-    public static float collide(int id,Body b){
+    public static float collide(int id,Body b){return collide(id,b,null);}
+    public static float collide(int id,Body b,CollisionSplashes splashes){
         float impact=0;
         for(int i=0;i<4;i++){
-            impact=Math.max(impact,Physics.banks(b,top(id),Physics.BOTTOM,false));
-            impact=Math.max(impact,HarborGeometry.collide(b,solids(id)));
+            impact=Math.max(impact,Physics.banks(b,top(id),Physics.BOTTOM,false,splashes));
+            impact=Math.max(impact,HarborGeometry.collide(b,solids(id),splashes));
         }
         return impact;
     }

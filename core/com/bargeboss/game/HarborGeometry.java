@@ -6,7 +6,8 @@ public final class HarborGeometry {
     public static final float[][] PIERS={{381,248,430,322},{170,345,212,390}};
     private HarborGeometry() {}
     public static float collide(Body b) { return collide(b,PIERS); }
-    public static float collide(Body b,float[][] solids) {
+    public static float collide(Body b,float[][] solids){return collide(b,solids,null);}
+    public static float collide(Body b,float[][] solids,CollisionSplashes splashes) {
         float impact=0;
         for(float[] r:solids) for(int i=0;i<3;i++) {
             float x=b.discX(i),y=b.discY(i),cx=Physics.clamp(x,r[0],r[2]),cy=Physics.clamp(y,r[1],r[3]);
@@ -20,6 +21,7 @@ public final class HarborGeometry {
                 else if(nearest==top) { dx=0;dy=-1;d=-top; }
                 else { dx=0;dy=1;d=-bottom; }
             } else { dx/=d;dy/=d; }
+            Physics.wallSplash(splashes,b,x-dx*d+dx*.75f,y-dy*d+dy*.75f,dx,dy,x,y);
             b.x+=dx*(b.radius-d);b.y+=dy*(b.radius-d);
             float inward=b.vx*dx+b.vy*dy;
             if(inward<0) { impact=Math.max(impact,-inward); b.vx-=1.15f*inward*dx;b.vy-=1.15f*inward*dy; }

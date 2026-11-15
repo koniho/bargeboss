@@ -31,10 +31,13 @@ public final class FoamPixelTest {
             b.angle=heading*(float)StrictMath.PI/4;b.engineLoad=1;
             b.vx=(float)StrictMath.cos(b.angle)*40;b.vy=(float)StrictMath.sin(b.angle)*40;
             for(int tick=0;tick<100;tick++){g.visualTicks=tick;g.water.foam.step();g.water.foam.emit(g,b);}
+            g.splashes.contact(b,null,b.x,b.y,b.vx,b.vy,0,0,40);
+            for(int tick=0;tick<20;tick++)g.splashes.step(g);
             g.layout=Layout.focused(384,384,b.x,b.y,1.8f,192,230);RiverCamera c=g.layout.camera;
             BufferedImage image=new BufferedImage(384,384,BufferedImage.TYPE_INT_ARGB_PRE);Graphics2D graphics=image.createGraphics();
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-            g.water.foam.draw(g,new RiverPainter(new DesktopPainter(graphics),c));graphics.dispose();
+            g.water.foam.draw(g,new RiverPainter(new DesktopPainter(graphics),c));
+            g.splashes.water(g,new RiverPainter(new DesktopPainter(graphics),c));graphics.dispose();
             for(int y=2;y<382;y+=3)for(int x=2;x<382;x+=3) {
                 float wx=c.worldX(x+.5f,y+.5f+GroundArt.LAND_RISE*c.scale),wy=c.worldY(x+.5f,y+.5f+GroundArt.LAND_RISE*c.scale);
                 boolean dry=!TrainingChannel.contains(wx,wy) && !TrainingChannel.contains(wx-2,wy) && !TrainingChannel.contains(wx+2,wy)
@@ -44,6 +47,6 @@ public final class FoamPixelTest {
             }
         }
         check(wet>100,"foam remains visible on navigable water");
-        System.out.println(checks+" foam atlas transparency and detached shoreline pixel assertions passed");
+        System.out.println(checks+" foam/splash stamp transparency and detached shoreline pixel assertions passed");
     }
 }

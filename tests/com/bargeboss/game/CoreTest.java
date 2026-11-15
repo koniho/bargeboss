@@ -74,6 +74,7 @@ public final class CoreTest {
         BuoyOrbitTest.run();
         BuoyArtTest.run();
         BuoyPhysicsTest.run();
+        CollisionSplashTest.run();
         NavigationLightsTest.run();
         TutorialHoldTest.run();
         ChannelTest.run();
@@ -123,7 +124,7 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        check(Parity.signature().equals("5255edc0:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("df552690:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

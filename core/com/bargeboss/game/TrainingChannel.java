@@ -131,9 +131,10 @@ public final class TrainingChannel {
         }
     }
     /** Resolve every hull disc against the exterior boundary of the rectangle union. */
-    public static void collide(Body b) { collide(b,BOUNDARY,false); }
-    public static void collideWater(Body b) { collide(b,WATER_BOUNDARY,true); }
-    private static void collide(Body b,float[] boundary,boolean harbor) {
+    public static void collide(Body b) { collide(b,BOUNDARY,false,null); }
+    public static void collideWater(Body b){collideWater(b,null);}
+    public static void collideWater(Body b,CollisionSplashes splashes){collide(b,WATER_BOUNDARY,true,splashes);}
+    private static void collide(Body b,float[] boundary,boolean harbor,CollisionSplashes splashes) {
         for(int iteration=0;iteration<4;iteration++) for(int disc=0;disc<3;disc++) {
             float x=b.discX(disc),y=b.discY(disc),best=Float.MAX_VALUE,qx=0,qy=0,nx=0,ny=0;
             for(int i=0;i<boundary.length;i+=2) {
@@ -150,6 +151,7 @@ public final class TrainingChannel {
             float penetration=inside?b.radius-distance:b.radius+distance;
             if(penetration<=0) continue;
             if(distance>.0001f) {float sign=inside?1:-1;nx=sign*(x-qx)/distance;ny=sign*(y-qy)/distance;}
+            Physics.wallSplash(splashes,b,qx+nx*.75f,qy+ny*.75f,nx,ny,x,y);
             b.x+=nx*penetration;b.y+=ny*penetration;
             float inward=b.vx*nx+b.vy*ny;
             if(inward<0) {b.vx-=inward*nx*1.08f;b.vy-=inward*ny*1.08f;}

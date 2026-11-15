@@ -19,6 +19,7 @@ echo tools/LandMarkerReview.java >> build/preview/sources.txt
 echo tools/BuoySpriteReview.java >> build/preview/sources.txt
 echo tools/BuoyReview.java >> build/preview/sources.txt
 echo tools/BuoyCollisionReview.java >> build/preview/sources.txt
+echo tools/CollisionSplashReview.java >> build/preview/sources.txt
 echo tools/NavigationReview.java >> build/preview/sources.txt
 echo tools/VesselNavigationReview.java >> build/preview/sources.txt
 echo tools/JoystickReview.java >> build/preview/sources.txt
@@ -75,6 +76,7 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.LandMarkerRev
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoySpriteReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoyReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoyCollisionReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CollisionSplashReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.NavigationReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.VesselNavigationReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.JoystickReview

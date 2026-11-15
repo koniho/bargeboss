@@ -1,7 +1,7 @@
 package com.bargeboss.game;
 
 /** Three overlapping collision discs approximate an oriented hull and transfer torque. */
-public final class Body {
+public final class Body implements Watercraft {
     public final int id, berth;
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
@@ -23,6 +23,8 @@ public final class Body {
         inertia = mass * (half * half + radius * radius) * .8f;
     }
     public float speed() { return (float) StrictMath.sqrt(vx * vx + vy * vy); }
+    public float waterX(){return x;}
+    public float waterY(){return y;}
     public float discX(int i) { return x + (i - 1) * half * (float) StrictMath.cos(angle); }
     public float discY(int i) { return y + (i - 1) * half * (float) StrictMath.sin(angle); }
     public boolean hit(float px, float py, float padding) {

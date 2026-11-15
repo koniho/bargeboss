@@ -5,21 +5,9 @@ public final class ArcadeView {
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
         HarborAtmosphere.reflections(g,p);
-        g.water.draw(g,p);
+        g.water.draw(g,p);g.splashes.water(g,p);
     }
     public static void effects(Game g,Painter p) {
-        if(g.impactTicks>0) {
-            float t=1-g.impactTicks/45f;
-            ring(p,g.impactX,g.impactY,10+40*t,0x99b8f9e8,1.4f);
-            for(int i=0;i<10;i++) {
-                double a=i*Math.PI/5;
-                float r=12+37*t;
-                float x=g.impactX+(float)StrictMath.cos(a)*r,y=g.impactY+(float)StrictMath.sin(a)*r-12*(float)StrictMath.sin(t*Math.PI);
-                float size=3*(1-t)+1;
-                p.rect(x-size,y,size*2,size,0xddfff5d0);
-                p.rect(x,y-size,size,size*2,0xaad7fff2);
-            }
-        }
         if(g.celebrationTicks>0) {
             float t=1-g.celebrationTicks/90f;
             if(t<.6f) ring(p,g.celebrationX,g.celebrationY,15+95*t,0xbb8bffd0,3*(1-t));

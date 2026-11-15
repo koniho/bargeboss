@@ -2,10 +2,12 @@ package com.bargeboss.game;
 
 /** Small displacement floats on damped seabed moorings. Simulation only; rendering is read-only. */
 public final class Buoys {
-    public static final class Buoy {
+    public static final class Buoy implements Watercraft {
         public final float anchorX,anchorY,radius,mass,reach;
         public float x,y,vx,vy,roll,rollVelocity;
         int contactTicks;
+        public float waterX(){return x;}
+        public float waterY(){return y;}
         Buoy(float x,float y,float size){
             anchorX=this.x=x;anchorY=this.y=y;radius=size*.27f;mass=size*.014f;reach=size*.55f;
         }
@@ -95,7 +97,10 @@ public final class Buoys {
             }
             b.x=b.anchorX+dx*lo;b.y=b.anchorY+dy*lo;
             float len=Physics.length(dx,dy),outward=len>.001f?(b.vx*dx+b.vy*dy)/len:0;
-            if(outward>0){b.vx-=outward*dx/len;b.vy-=outward*dy/len;}
+            if(outward>0){
+                g.splashes.contact(b,null,b.x,b.y,b.vx,b.vy,0,0,outward);
+                b.vx-=outward*dx/len;b.vy-=outward*dy/len;
+            }
         }
     }
     /** Disc contact transfers linear impulse and torque; a taut tether transfers resistance to the hull. */
@@ -109,6 +114,9 @@ public final class Buoys {
             touched=true;
             float nx=d>.001f?dx/d:-(float)StrictMath.cos(body.angle);
             float ny=d>.001f?dy/d:-(float)StrictMath.sin(body.angle);
+            float cvx=body.vx-body.spin*(hy-body.y),cvy=body.vy+body.spin*(hx-body.x);
+            g.splashes.contact(body,b,hx+nx*body.radius,hy+ny*body.radius,
+                    cvx,cvy,b.vx,b.vy,(cvx-b.vx)*nx+(cvy-b.vy)*ny);
             float invHull=fixed?0:1/body.mass,invBuoy=1/b.mass;
             float correction=Math.max(0,r-d-.025f)*.85f,ox=b.x,oy=b.y;
             b.x+=nx*correction*invBuoy/(invHull+invBuoy);b.y+=ny*correction*invBuoy/(invHull+invBuoy);
@@ -131,9 +139,9 @@ public final class Buoys {
         }
         // Contact correction cannot displace a hull through the bank beside a moored mark.
         if(touched && !fixed){
-            if(g.tutorial!=null)TrainingChannel.collideWater(body);
-            else if(g.orderStage())PhysicalBerths.collide(g.challengeId,body);
-            else Physics.banks(body,g.channelTop(),Physics.BOTTOM,false);
+            if(g.tutorial!=null)TrainingChannel.collideWater(body,g.splashes);
+            else if(g.orderStage())PhysicalBerths.collide(g.challengeId,body,g.splashes);
+            else Physics.banks(body,g.channelTop(),Physics.BOTTOM,false,g.splashes);
         }
     }
 }

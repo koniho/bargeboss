@@ -36,7 +36,8 @@ public final class Physics {
         b.x += b.vx * DT; b.y += b.vy * DT;
         b.angle = angle(b.angle + b.spin * DT);
     }
-    public static float collide(Body a, Body b) {
+    public static float collide(Body a,Body b){return collide(a,b,null);}
+    public static float collide(Body a, Body b,CollisionSplashes splashes) {
         if (!a.active || !b.active || Math.abs(a.x-b.x)>100 || Math.abs(a.y-b.y)>100) return 0;
         float impact = 0;
         for (int i=0; i<3; i++) for (int j=0; j<3; j++) {
@@ -44,6 +45,12 @@ public final class Physics {
             float dx=bx-ax, dy=by-ay, distance=length(dx,dy), reach=a.radius+b.radius;
             if (distance >= reach) continue;
             float nx=distance>.001f?dx/distance:1, ny=distance>.001f?dy/distance:0;
+            if(splashes!=null){
+                float avx=a.vx-a.spin*(ay-a.y),avy=a.vy+a.spin*(ax-a.x);
+                float bvx=b.vx-b.spin*(by-b.y),bvy=b.vy+b.spin*(bx-b.x);
+                splashes.contact(a,b,(ax+nx*a.radius+bx-nx*b.radius)*.5f,(ay+ny*a.radius+by-ny*b.radius)*.5f,
+                        avx,avy,bvx,bvy,(avx-bvx)*nx+(avy-bvy)*ny);
+            }
             float invA=1/a.mass, invB=1/b.mass;
             float correction=Math.max(0,reach-distance-.15f)*.45f/(invA+invB);
             a.x-=nx*correction*invA; a.y-=ny*correction*invA;
@@ -60,6 +67,12 @@ public final class Physics {
         }
         return impact;
     }
+    /** Inward normal belongs to the water side; spray uses the incoming contact velocity. */
+    static void wallSplash(CollisionSplashes splashes,Body b,float px,float py,float nx,float ny,float hx,float hy){
+        if(splashes==null)return;
+        float vx=b.vx-b.spin*(hy-b.y),vy=b.vy+b.spin*(hx-b.x);
+        splashes.contact(b,null,px,py,vx,vy,0,0,-vx*nx-vy*ny);
+    }
     public static boolean touching(Body a,Body b,float padding) {
         float reach=a.radius+b.radius+padding;
         for(int i=0;i<3;i++) for(int j=0;j<3;j++)
@@ -68,17 +81,18 @@ public final class Physics {
     }
     public static float banks(Body b) { return banks(b,TOP,BOTTOM); }
     public static float banks(Body b,float top,float bottom) { return banks(b,top,bottom,true); }
-    public static float banks(Body b,float top,float bottom,boolean piers) {
+    public static float banks(Body b,float top,float bottom,boolean piers){return banks(b,top,bottom,piers,null);}
+    public static float banks(Body b,float top,float bottom,boolean piers,CollisionSplashes splashes) {
         float impact=0;
         // A rotating tip can still overlap the bank while the hull pulls away.
         // Correct penetration, but only rebound velocity directed into the bank.
         for(int i=0;i<3;i++) {
             float x=b.discX(i), y=b.discY(i), r=b.radius;
-            if(x-r<LEFT) { impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; if(b.vx<0) b.vx=-b.vx*.2f; b.spin*=.8f; }
-            if(x+r>RIGHT) { impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; if(b.vx>0) b.vx=-b.vx*.2f; b.spin*=.8f; }
-            if(y-r<top) { impact=Math.max(impact,-b.vy); b.y+=top-y+r; if(b.vy<0) b.vy=-b.vy*.2f; }
-            if(y+r>bottom) { impact=Math.max(impact,b.vy); b.y-=y+r-bottom; if(b.vy>0) b.vy=-b.vy*.2f; }
+            if(x-r<LEFT) { wallSplash(splashes,b,LEFT+.75f,y,1,0,x,y); impact=Math.max(impact,-b.vx); b.x+=LEFT-x+r; if(b.vx<0) b.vx=-b.vx*.2f; b.spin*=.8f; }
+            if(x+r>RIGHT) { wallSplash(splashes,b,RIGHT-.75f,y,-1,0,x,y); impact=Math.max(impact,b.vx); b.x-=x+r-RIGHT; if(b.vx>0) b.vx=-b.vx*.2f; b.spin*=.8f; }
+            if(y-r<top) { wallSplash(splashes,b,x,top+.75f,0,1,x,y); impact=Math.max(impact,-b.vy); b.y+=top-y+r; if(b.vy<0) b.vy=-b.vy*.2f; }
+            if(y+r>bottom) { wallSplash(splashes,b,x,bottom-.75f,0,-1,x,y); impact=Math.max(impact,b.vy); b.y-=y+r-bottom; if(b.vy>0) b.vy=-b.vy*.2f; }
         }
-        return Math.max(impact,piers?HarborGeometry.collide(b):0);
+        return Math.max(impact,piers?HarborGeometry.collide(b,HarborGeometry.PIERS,splashes):0);
     }
 }

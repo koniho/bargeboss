@@ -72,6 +72,12 @@ inside the hull's ground clip.
 
 ### Animated vessel waterline and foam
 
+Collision surface stamps join the water pass below hulls. Airborne collision
+stamps join the same depth merge as vessels, buoys, rope spans, shore sections,
+factories and lock gates; use each stamp's water-plane position, then apply its
+ballistic height only to its drawn position. They are never a late global
+overlay. See [directional collision stamps](collision-splashes.md).
+
 `VesselWaterline` derives contact positions from the 32 registered lower-hull
 silhouettes with the same sector blend as the hull. Small transparent foam
 sprites appear intermittently along that contour; do not restore a continuous

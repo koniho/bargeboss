@@ -97,3 +97,8 @@ lead, without an unnecessary half-turn in a narrow slip.
 `BuoyCollisionReview` exports an actual drive-in/back-away/settle sequence to
 `out/buoy-collision-motion/` and a comparison board to
 `out/buoy-collision-review.png`.
+
+Floating buoy/marker bodies also implement `Watercraft` and report collisions
+through the shared [directional splash-stamp pipeline](collision-splashes.md).
+Their actual relative contact velocity determines the spray direction and
+strength; a tether reaching its limit does not emit a collision splash.

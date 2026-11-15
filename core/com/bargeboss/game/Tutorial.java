@@ -22,7 +22,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
-        g.buoys.reset(g);
+        g.buoys.reset(g);g.splashes=new CollisionSplashes();
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
         orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;
         g.cancelInputs();g.reversing=false;

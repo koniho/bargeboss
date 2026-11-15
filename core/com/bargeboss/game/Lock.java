@@ -97,20 +97,23 @@ public final class Lock {
         float at=x+(xx-x)*(gate-y)/(yy-y);return at>=Physics.LEFT && at<=Physics.RIGHT;
     }
     /** Full oriented hull discs stop against each closed gate; no position-center shortcut. */
-    public float collide(Body b){
+    public float collide(Body b){return collide(b,null);}
+    public float collide(Body b,CollisionSplashes splashes){
         if(!b.active || failed())return 0;
         float impact=0;
-        if(!entryPassable())impact=Math.max(impact,gateCollision(b,ENTRY_Y));
-        if(!exitPassable())impact=Math.max(impact,gateCollision(b,EXIT_Y));
+        if(!entryPassable())impact=Math.max(impact,gateCollision(b,ENTRY_Y,splashes));
+        if(!exitPassable())impact=Math.max(impact,gateCollision(b,EXIT_Y,splashes));
         return impact;
     }
-    private static float gateCollision(Body b,float y){
+    private static float gateCollision(Body b,float y,CollisionSplashes splashes){
         float impact=0;
         for(int i=0;i<3;i++){
             if(b.discX(i)+b.radius<Physics.LEFT || b.discX(i)-b.radius>Physics.RIGHT)continue;
             float delta=b.discY(i)-y,reach=b.radius+GATE_HALF;
             if(Math.abs(delta)>=reach)continue;
-            float side=b.y>=y?1:-1;b.y+=side*reach-delta;
+            float side=b.y>=y?1:-1;
+            Physics.wallSplash(splashes,b,b.discX(i),y+side*(GATE_HALF+.75f),0,side,b.discX(i),b.discY(i));
+            b.y+=side*reach-delta;
             if(b.vy*side<0){impact=Math.max(impact,Math.abs(b.vy));b.vy=-b.vy*.08f;}
             b.spin*=.6f;
         }
