@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Registered single-view floats. Only wave roll rotates these sprites, never vessel heading.
+/** Registered single-view floats. Only wave/contact roll rotates these sprites, never vessel heading.
  * Source PNGs remain unchanged; the moving water plane hides their submerged lower body.
  * Per-variant inventory: lantern (neutral glass), no smoke outlets, no tire effect anchors.
  * The solar panel and lifting/mooring rings are not emitters. */
@@ -27,10 +27,14 @@ public final class BuoyArt {
         public float pointY(int frame,float u,float v){return y+size*((u-pivotX(frame))*sin+(v-pivotY(frame))*cos);}
     }
     public static Pose pose(Game g,float wx,float wy,float size){
+        return pose(g,wx,wy,size,0);
+    }
+    public static Pose pose(Game g,float wx,float wy,float size,float contactRoll){
         RiverCamera c=g.layout.camera;int tick=g.visualTicks;
         float surface=g.water.height(wx,wy,tick,null),heave=g.water.height(wx,wy,tick-10,null)*1.1f;
         float across=g.water.height(wx+6,wy+6,tick,null)-g.water.height(wx-6,wy-6,tick,null);
         float roll=Physics.clamp(across*.07f+.018f*(float)StrictMath.sin(tick*.032+wx*.017+wy*.009),-MAX_ROLL,MAX_ROLL);
+        roll=Physics.clamp(roll+contactRoll,-.26f,.26f);
         return new Pose(c.screenX(wx,wy),c.screenY(wx,wy)-heave*c.scale,size*c.scale,roll,
                 c.screenY(wx,wy)-surface*c.scale-size*c.scale*.022f,tick*.045f+wx*.017f+wy*.009f);
     }
@@ -92,7 +96,10 @@ public final class BuoyArt {
         }
     }
     public static void draw(Game g,Painter p,float wx,float wy,float size,int frame,int color,float power,int number){
-        Pose pose=pose(g,wx,wy,size);RiverCamera c=g.layout.camera;
+        draw(g,p,wx,wy,size,frame,color,power,number,0);
+    }
+    public static void draw(Game g,Painter p,float wx,float wy,float size,int frame,int color,float power,int number,float contactRoll){
+        Pose pose=pose(g,wx,wy,size,contactRoll);RiverCamera c=g.layout.camera;
         p.pushClipOutside(ShoreOcclusion.region(g,c,wx-size,wy-size,wx+size,wy+size,c.screenY(wx,wy)));
         try{
             hull(p,frame,pose);
@@ -109,7 +116,10 @@ public final class BuoyArt {
     }
     /** Independent contact/cast alpha, flattened onto water before the depth-sorted hull pass. */
     public static void shadows(Game g,Painter p,float wx,float wy,float size,int frame){
-        RiverCamera c=g.layout.camera;Pose pose=pose(g,wx,wy,size);float[] light=new float[3];ShadowView.light(g,wx,wy,light);
+        shadows(g,p,wx,wy,size,frame,0);
+    }
+    public static void shadows(Game g,Painter p,float wx,float wy,float size,int frame,float contactRoll){
+        RiverCamera c=g.layout.camera;Pose pose=pose(g,wx,wy,size,contactRoll);float[] light=new float[3];ShadowView.light(g,wx,wy,light);
         p.pushClipOutside(ShoreOcclusion.region(g,c,wx-size,wy-size,wx+size,wy+size,Float.NEGATIVE_INFINITY));
         try{
             int atlas=ShadowArt.BUOY;float s=pose.size*SpriteAtlas.widthScale(atlas,frame);

@@ -33,8 +33,11 @@ public final class NavigationLights {
     private static boolean practice(Game g,int i){return i>=entrances(g).length*2;}
     public static boolean land(Game g,int i){return g.tutorial!=null && !practice(g,i);}
     private static int practiceIndex(Game g,int i){return i-entrances(g).length*2;}
-    public static float x(Game g,int i){return practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
-    public static float y(Game g,int i){return practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
+    public static float anchorX(Game g,int i){return practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
+    public static float anchorY(Game g,int i){return practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
+    public static float x(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorX(g,i):b.x;}
+    public static float y(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorY(g,i):b.y;}
+    private static float roll(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?0:b.roll;}
     public static int color(Game g,int i){return practice(g,i)?YELLOW:i%2==1?RED:GREEN;}
     public static float depth(Game g,int i){return g.layout.camera.screenY(x(g,i),y(g,i));}
     public static boolean visible(Game g,int i){
@@ -55,7 +58,7 @@ public final class NavigationLights {
         Painter water=new WaterEffectsPainter(g,new RiverPainter(canvas,g.layout.camera));
         for(int i=0;i<count(g);i++)if(visible(g,i) && !land(g,i)){
             float wx=x(g,i),wy=y(g,i),power=power(g,i);
-            BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i));
+            BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
             if(power<=0)continue;
             int rgb=color(g,i)&0xffffff;float radius=practice(g,i)?29:17;
             for(int shell=4;shell>=1;shell--)water.circle(wx,wy,radius*shell/4,((int)(power*(7+(4-shell)*3))<<24)|rgb);
@@ -78,11 +81,11 @@ public final class NavigationLights {
             LandMarkerArt.ground(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));
     }
     private static int frame(Game g,int i){return practice(g,i)?BuoyArt.YELLOW:color(g,i)==RED?BuoyArt.RED:BuoyArt.GREEN;}
-    private static float size(Game g,int i){return practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
+    public static float size(Game g,int i){return practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
     /** Tutorial entrances use fixed shore beacons; other fixtures float with the waves. */
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;
         if(land(g,i)){LandMarkerArt.draw(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));return;}
-        BuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),frame(g,i),color(g,i),power(g,i),practice(g,i)?practiceIndex(g,i)+1:0);
+        BuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),frame(g,i),color(g,i),power(g,i),practice(g,i)?practiceIndex(g,i)+1:0,roll(g,i));
     }
 }

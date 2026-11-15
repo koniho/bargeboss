@@ -34,6 +34,41 @@ Their independent contact/cast shadows and soft light spill draw after cached
 terrain, before depth-sorted vessels, shore caps, beacons and buildings. A deck-height
 water cutout keeps those ground effects off the channel.
 
+## Floating collision and moorings
+
+`Buoys` owns one lightweight circular body per floating marker, initialized on stage
+or tutorial reset. `NavigationLights.anchorX/anchorY` remain fixed seabed mooring
+locations; `x/y` return the simulated waterline position. The numbered tutorial
+course stays centered on the fixed moorings so float drift cannot award orbit
+progress or move the player's target. Land beacons have no floating body.
+
+Buoy radius is 27% of displayed world size, matching the float base rather than
+the tall tower. Tugs and barges exchange linear impulse and off-center torque
+with the float. Secured hulls and scripted feeder craft push it without moving
+off their berth or path. Buoy impacts give contact haptics without hull damage.
+Pickup assistance leaves clearance on the open-water side of entrance floats;
+direct player steering can still drive into them.
+
+Each float has a damped spring toward its mooring, progressive chain resistance,
+and a finite excursion of 55% of its displayed size. The footprint remains on
+water, and collision corrections reapply vessel bank constraints. Contact also
+excites a damped roll oscillator. Positions, velocities and contact roll advance
+in the same two fixed motion substeps as vessel physics; they freeze on pause
+and never depend on camera visibility or rendering frequency.
+
+`WaterSurface.buoyForce` samples the arriving bands of existing rear wake fans
+for horizontal push/drawback, with ambient wave drift and lock current where
+applicable. An intervening dry bank/quay screens that horizontal force. Existing
+wave-height sampling supplies vertical bob and slope-driven roll; it remains the
+shared visual wave field, not a full fluid/shore diffraction simulation. No
+additional wake particles or per-step lighting textures are allocated.
+
+Every displaced float uses its current position for visibility, depth, shadows,
+waterline, reflections and lighting. The sprite and lamp rotate together about
+the registered waterline pivot; the water meniscus stays independent of roll.
+Contact roll is bounded separately and combines with wave roll to at most 0.26
+radians. No sprite is rotated to invent a different isometric heading.
+
 For floating fixtures, `BuoyArt` registers each unchanged
 PNG to its waterline pivot and lantern center. Shared wave slope drives bounded
 sprite roll, with delayed heave for bounce. A curved moving meniscus hides
@@ -53,3 +88,12 @@ heading/aspect stability, depth ordering, flash/dark phases, culling and render
 purity. `NavigationReview` captures practice, canal and harbor entrance scenes
 through the actual shared renderer. A new stage entrance must add a named entry
 with a normalized returning vector; do not infer it from the current tug heading.
+
+`BuoyPhysicsTest` covers all 32 tug/barge contact headings, momentum, off-center
+torque, chain limits, settling, bank constraints, fixed NPC/secured hulls, wake
+arrival and screening, pause/reset, render purity and 30/144 Hz parity. It also
+guards nearest-keel barge alignment after contact: either end of a barge may
+lead, without an unnecessary half-turn in a narrow slip.
+`BuoyCollisionReview` exports an actual drive-in/back-away/settle sequence to
+`out/buoy-collision-motion/` and a comparison board to
+`out/buoy-collision-review.png`.

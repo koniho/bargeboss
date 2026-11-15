@@ -250,6 +250,9 @@ visible hit circle owns the native pointer before water-plane projection; see
 Entrance navigation markers and the two practice buoys join the same depth merge
 as vessels, rope spans, shore caps and factories; lantern halos stay with those
 fixtures. Their water reflections draw before hulls and use water-only clipping.
+Floating fixtures use their simulated `Buoys.Buoy` position for this entire pass,
+including culling and depth; their fixed mooring anchors are not drawing pivots.
+Contact roll combines with wave roll without rotating the water plane.
 Buoy contact/cast shadows also draw before hulls. Sprite roll and delayed heave
 share a waterline pivot with the lamp anchors; a separate curved meniscus clip
 hides the submerged float, with translucent sprite foam along the contact edge.

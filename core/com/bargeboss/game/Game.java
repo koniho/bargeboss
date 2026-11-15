@@ -25,6 +25,7 @@ public final class Game {
     public final Body[] cargo=new Body[9];
     public Body tug;
     public WaterSurface water=new WaterSurface();
+    public Buoys buoys=new Buoys();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
     public Bridge bridge=new Bridge();
@@ -308,6 +309,7 @@ public final class Game {
         feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
         mode=PLAY; tell(goalStatus());
+        buoys=new Buoys();buoys.reset(this);
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
@@ -781,6 +783,7 @@ public final class Game {
         for(Body b:cargo) if(b!=null && b.active && (b.lineAttached || b.awaitingPickup)) {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
+        buoys.step(this);
         // Fender damping follows motion time; mooring confirmation uses real time.
         for(Body b:cargo) if(b!=null && b.active) {
             if(inDock(b) && b.speed()<65) { b.vx*=.990f; b.vy*=.990f; b.spin*=.985f; }
@@ -866,7 +869,7 @@ public final class Game {
             control=steering?STEERING:ALIGNING;
             if(!steering && orderStage()) {
                 PhysicalBerths.waypoint(challengeId,tug.x,tug.y,guideX,guideY,tug.half+tug.radius+2,route);
-                navigate(route[0],route[1],95);
+                navigateToLoad(route[0],route[1],95);
             } else navigateToLoad(guideX,guideY,95);
         } else {
             if(Physics.touching(tug,b,3)) b.awaitingPickup=false;
@@ -875,12 +878,17 @@ public final class Game {
             navigateToLoad(b.x+nx*26,b.y+ny*26,Math.min(76,18+distance*.85f));
             // A broad fender steadies the contact, while collisions still supply linear momentum.
             float heading=(float)StrictMath.atan2(ny,nx);
-            b.spin+=Physics.clamp(Physics.angle(heading-b.angle)*1.25f-b.spin*1.1f,-.75f,.75f)*Physics.DT;
+            // Both barge ends can lead. A contact deflection must not trigger a half-turn in a slip.
+            float keelError=Physics.angle(heading-b.angle);
+            if(keelError>Math.PI/2)keelError-=(float)Math.PI;
+            if(keelError<-Math.PI/2)keelError+=(float)Math.PI;
+            b.spin+=Physics.clamp(keelError*1.25f-b.spin*1.1f,-.75f,.75f)*Physics.DT;
             if(distance<43 && !steering) { b.vx*=.988f; b.vy*=.988f; }
         }
     }
     /** Assisted pickup enters through the same open mouth the player can sail. */
     private void navigateToLoad(float x,float y,float speed) {
+        if(control==ALIGNING && !manualSteering){buoys.pickupWaypoint(this,x,y,route);x=route[0];y=route[1];}
         if(tutorial!=null && x>=Physics.LEFT && tug.x<Physics.LEFT+40) {
             if(tug.x<TrainingChannel.X[TrainingChannel.X.length-1]-23) {
                 int next=1;

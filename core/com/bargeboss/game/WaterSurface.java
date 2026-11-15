@@ -25,6 +25,26 @@ public final class WaterSurface {
         float cross=(float)StrictMath.sin(tick*.031-wx*.013+wy*.021);
         return (.65f+local*1.2f)*wave+.22f*cross;
     }
+    /** Horizontal orbital motion of floats: arriving wake packets push then draw back.
+     * Only nearby crest bands need a shoreline visibility check. No temporary allocations. */
+    public void buoyForce(Game g,float wx,float wy,float[] out){
+        out[0]=.65f*(float)StrictMath.sin(g.visualTicks*.048+wx*.017+wy*.009);
+        out[1]=.5f*(float)StrictMath.sin(g.visualTicks*.031-wx*.013+wy*.021);
+        for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE && source[i]!=null){
+            float dx=wx-x[i],dy=wy-y[i],distance=Physics.length(dx,dy),offset=distance-(9+age[i]*.55f);
+            if(Math.abs(offset)>=26 || distance<.001f)continue;
+            // Match the rear-facing fan used by draw(), not a full circular blast.
+            float angle=Physics.angle((float)StrictMath.atan2(dy,dx)-heading[i]-(float)StrictMath.PI);
+            if(Math.abs(angle)>(float)StrictMath.PI*.4f)continue;
+            boolean clear=true;int samples=Math.max(1,(int)(distance/8));
+            for(int k=0;k<=samples;k++)if(!WaterEffectsPainter.contains(g,x[i]+dx*k/samples,y[i]+dy*k/samples)){clear=false;break;}
+            if(!clear)continue;
+            float envelope=1-Math.abs(offset)/26;
+            float push=22*strength[i]*(1-age[i]/(float)LIFE)*envelope*(float)StrictMath.sin(offset*StrictMath.PI/26);
+            out[0]+=push*dx/distance;out[1]+=push*dy/distance;
+        }
+        out[0]=Physics.clamp(out[0],-35,35);out[1]=Physics.clamp(out[1],-35,35);
+    }
     public void step(Game g) {
         foam.step();
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) age[i]++;
