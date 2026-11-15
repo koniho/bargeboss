@@ -9,6 +9,7 @@ public final class ViewportPainter implements Painter {
     public void pushClipOutside(float[] triangles){target.pushClipOutside(triangles);}
     public void popClip(){target.popClip();}
     public void beginFrame(){target.beginFrame();}
+    public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
     public boolean preparesLayers(){return target.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
@@ -31,7 +32,10 @@ public final class ViewportPainter implements Painter {
     public void poly(float[] xy,int color) {
         if((color>>>24)==0 || xy.length<6)return;
         float left=Float.MAX_VALUE,top=Float.MAX_VALUE,right=-Float.MAX_VALUE,bottom=-Float.MAX_VALUE;
-        for(int i=0;i<xy.length;i+=2){left=Math.min(left,xy[i]);right=Math.max(right,xy[i]);top=Math.min(top,xy[i+1]);bottom=Math.max(bottom,xy[i+1]);}
+        for(int i=0;i<xy.length;i+=2){
+            float x=xy[i],y=xy[i+1];if(x!=x || y!=y)return;
+            if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y;
+        }
         if(visible(left,top,right,bottom))target.poly(xy,color);
     }
     public void polygons(float[][] xy,int count,int color) {

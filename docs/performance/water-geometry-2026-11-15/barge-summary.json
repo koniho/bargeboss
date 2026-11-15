@@ -1,0 +1,849 @@
+[
+  {
+    "file": "out/profiles/20261115-174209-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.489,
+      "p95": 0.717
+    },
+    "draw_ms": {
+      "p50": 9.183,
+      "p95": 10.776
+    },
+    "interval_ms": {
+      "p50": 16.653,
+      "p95": 19.089
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.708
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 636.085,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "true",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.8,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.909,
+        "p95": 10.688
+      },
+      "render_sync_ms": {
+        "p50": 0.564,
+        "p95": 1.037
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.677,
+        "p95": 18.35
+      },
+      "intended_to_complete_ms": {
+        "p50": 43.414,
+        "p95": 50.012
+      }
+    },
+    "slow_sync_frames_including_warmup": 56
+  },
+  {
+    "file": "out/profiles/20261115-174231-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.49,
+      "p95": 0.86
+    },
+    "draw_ms": {
+      "p50": 9.144,
+      "p95": 10.81
+    },
+    "interval_ms": {
+      "p50": 16.67,
+      "p95": 20.313
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.707
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 634.203,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.75,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.815,
+        "p95": 11.089
+      },
+      "render_sync_ms": {
+        "p50": 0.513,
+        "p95": 0.938
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.519,
+        "p95": 18.254
+      },
+      "intended_to_complete_ms": {
+        "p50": 43.792,
+        "p95": 49.139
+      }
+    },
+    "slow_sync_frames_including_warmup": 56
+  },
+  {
+    "file": "out/profiles/20261115-174259-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.49,
+      "p95": 0.852
+    },
+    "draw_ms": {
+      "p50": 8.93,
+      "p95": 11.074
+    },
+    "interval_ms": {
+      "p50": 16.631,
+      "p95": 20.083
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.688
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 596.981,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.99,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.814,
+        "p95": 11.322
+      },
+      "render_sync_ms": {
+        "p50": 0.533,
+        "p95": 1.03
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.477,
+        "p95": 22.739
+      },
+      "intended_to_complete_ms": {
+        "p50": 45.366,
+        "p95": 63.113
+      }
+    },
+    "slow_sync_frames_including_warmup": 3
+  },
+  {
+    "file": "out/profiles/20261115-174319-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.492,
+      "p95": 0.825
+    },
+    "draw_ms": {
+      "p50": 9.121,
+      "p95": 10.881
+    },
+    "interval_ms": {
+      "p50": 16.716,
+      "p95": 20.026
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.718
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 598.594,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "true",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.33,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.93,
+        "p95": 11.413
+      },
+      "render_sync_ms": {
+        "p50": 0.539,
+        "p95": 0.905
+      },
+      "issue_to_swap_ms": {
+        "p50": 16.097,
+        "p95": 23.355
+      },
+      "intended_to_complete_ms": {
+        "p50": 46.6,
+        "p95": 64.942
+      }
+    },
+    "slow_sync_frames_including_warmup": 3
+  },
+  {
+    "file": "out/profiles/20261115-174559-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.493,
+      "p95": 0.78
+    },
+    "draw_ms": {
+      "p50": 8.696,
+      "p95": 10.262
+    },
+    "interval_ms": {
+      "p50": 16.624,
+      "p95": 19.693
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.678
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 611.096,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.81,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.406,
+        "p95": 10.504
+      },
+      "render_sync_ms": {
+        "p50": 0.549,
+        "p95": 0.961
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.657,
+        "p95": 18.493
+      },
+      "intended_to_complete_ms": {
+        "p50": 42.805,
+        "p95": 49.942
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-174620-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.493,
+      "p95": 0.892
+    },
+    "draw_ms": {
+      "p50": 8.762,
+      "p95": 10.787
+    },
+    "interval_ms": {
+      "p50": 16.629,
+      "p95": 20.106
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.716
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 596.107,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.61,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.429,
+        "p95": 11.047
+      },
+      "render_sync_ms": {
+        "p50": 0.575,
+        "p95": 0.921
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.613,
+        "p95": 19.341
+      },
+      "intended_to_complete_ms": {
+        "p50": 44.023,
+        "p95": 52.018
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-174838-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.495,
+      "p95": 0.791
+    },
+    "draw_ms": {
+      "p50": 8.916,
+      "p95": 10.386
+    },
+    "interval_ms": {
+      "p50": 16.88,
+      "p95": 20.706
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.715
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 609.584,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 57.7,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.855,
+        "p95": 11.044
+      },
+      "render_sync_ms": {
+        "p50": 0.579,
+        "p95": 1.004
+      },
+      "issue_to_swap_ms": {
+        "p50": 17.195,
+        "p95": 25.581
+      },
+      "intended_to_complete_ms": {
+        "p50": 51.053,
+        "p95": 68.351
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  }
+]

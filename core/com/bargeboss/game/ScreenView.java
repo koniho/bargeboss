@@ -315,6 +315,7 @@ public final class ScreenView {
         public void circle(float xx,float yy,float r,int c) { p.circle(tx(xx,yy),ty(yy),r*scale,c); }
         public void poly(float[] a,int c) { float[] b=new float[a.length]; for(int i=0;i<a.length;i+=2) { b[i]=tx(a[i],a[i+1]); b[i+1]=ty(a[i+1]); } p.poly(b,c); }
         public void line(float xx,float yy,float bx,float by,float w,int c) { p.line(tx(xx,yy),ty(yy),tx(bx,by),ty(by),w*scale,c); }
+        public boolean prefersPolygonBatches(){return p.prefersPolygonBatches();}
         public boolean preparesLayers(){return shear==0 && p.preparesLayers();}
         public void prepareLayer(StaticLayer layer,float size){if(shear==0)p.prepareLayer(layer,size*scale);}
         public void layer(StaticLayer layer,float xx,float yy,float size,float alpha) {

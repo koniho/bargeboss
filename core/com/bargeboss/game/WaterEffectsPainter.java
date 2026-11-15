@@ -77,8 +77,11 @@ public final class WaterEffectsPainter implements Painter {
         if(points.length<6 || (color>>>24)==0) return;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         for(int i=0;i<points.length;i+=2) {
-            minX=Math.min(minX,points[i]);maxX=Math.max(maxX,points[i]);
-            minY=Math.min(minY,points[i+1]);maxY=Math.max(maxY,points[i+1]);
+            // Bounds only: ordered comparisons avoid Math's signed-zero bit work
+            // on Android. Keep every authored vertex untouched; reject NaN input.
+            float x=points[i],y=points[i+1];if(x!=x || y!=y)return;
+            if(x<minX)minX=x;if(x>maxX)maxX=x;
+            if(y<minY)minY=y;if(y>maxY)maxY=y;
         }
         if(camera!=null && (camera.screenX(maxX,maxY)<-1 || camera.screenX(minX,minY)>screenWidth+1
                 || camera.screenY(minX,maxY)<-1 || camera.screenY(maxX,minY)>screenHeight+1))return;

@@ -79,8 +79,10 @@ public final class CanvasPainter implements Painter {
     }
     private Profile profile;
     // This device's native compound water paths cost more than their separate
-    // contours. Keep the shared batch order, but submit individual native paths.
-    private boolean compoundPaths=false,frameTextures=true;
+    // contours. Skip shared grouping as well when individual paths are preferred.
+    private boolean compoundPaths=false,frameTextures=true,forceWaterGrouping=false;
+    public boolean prefersPolygonBatches(){return compoundPaths || forceWaterGrouping;}
+    public void profileWaterGrouping(boolean enabled){forceWaterGrouping=enabled;}
     /** Diagnostic host strategies; only the debuggable session calls this. */
     public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}
     public long profileSourceBytes(){long bytes=0;for(Bitmap b:sourceImages.values())bytes+=b.getAllocationByteCount();return bytes;}

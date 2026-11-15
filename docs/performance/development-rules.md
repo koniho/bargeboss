@@ -35,8 +35,10 @@ development phone's measurements, not guarantees for every device/backend.
 
 - Fewer draw calls are not automatically faster. Android's compound water paths
   reduced submissions but were slower than separate contours on the measured
-  Skia/Vulkan backend. Its default expands batches; Java2D/Core Graphics retain
-  compound paths. Re-measure before changing a backend's strategy.
+  Skia/Vulkan backend. Android skips optional shared grouping and submits paths
+  directly; Java2D/Core Graphics retain compound paths. Forward host preferences
+  through painter wrappers so core does not pay to group work a host expands
+  again. Re-measure before changing a backend's strategy.
 - Reject dry/offscreen/transparent water work early. Reuse fixed geometry and
   constants, skip clip planes a polygon cannot cross, and preserve shoreline
   masks and translucent overlap order. Share effect clipping only when the masks,
@@ -104,7 +106,9 @@ preparation must fit the cache budget and retain a complete drawing fallback.
 Other long gaps remain unresolved: pass 2 has a 63.18 ms draw-start interval after
 a preceding 11.97 ms UI draw, without a source decode or layer build in that draw.
 Do not label this GC, thermal throttling or GPU work from these counters alone.
-A native/system trace covering scheduling, GC and render-thread waits is needed.
+An incomplete native trace now records path processing and render-thread waits;
+see [water geometry findings](water-geometry.md). Its buffer overwrite and tracing
+overhead prevent attributing every gap. A narrower complete trace is still needed.
 Steady native issue-to-swap p95 is still 21–22 ms; repeated effect clipping and
 path processing are candidates, not yet isolated causes. Cold source decoding
 also remains expensive and should be measured separately from warm gameplay.
@@ -113,3 +117,9 @@ Raw input for the table is the two `cell-single-*` frame CSVs in
 [texture-paths-2026-11-15](texture-paths-2026-11-15/summary.json). `interval_ms` runs
 from the **previous** draw start to the current one; attribute a long draw's effect
 to the following interval, rather than correlating only values on the same row.
+
+The [water geometry round](water-geometry.md) removes grouping that Android would
+immediately expand and simplifies polygon-bound scans. Median drawing improved
+modestly, with unchanged pixels, but interval tails did not improve consistently.
+Do not equate less Java work with guaranteed presentation at 60 FPS. Keep native
+path processing, effect clipping and scheduler/presentation waits measurable.

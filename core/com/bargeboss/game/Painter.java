@@ -30,6 +30,8 @@ public interface Painter {
     void rect(float x, float y, float width, float height, int argb);
     void circle(float x, float y, float radius, int argb);
     void poly(float[] xy, int argb);
+    /** Host preference only: skipping batches preserves geometry and translucent overlap order. */
+    default boolean prefersPolygonBatches(){return true;}
     /** Same-color polygons with disjoint antialiased coverage, in one fill.
      * Arrays are borrowed only for this call. Fallbacks retain identical geometry. */
     default void polygons(float[][] xy,int count,int argb) {

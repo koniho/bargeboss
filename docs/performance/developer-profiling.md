@@ -109,7 +109,7 @@ background activity affect timings; repeat controlled runs before claiming a gai
 
 ## Native texture and path comparisons
 
-The debug session accepts two independent host rendering switches. They do not
+The debug session accepts independent host rendering switches. They do not
 change shared geometry, artwork, sprite frames, pivots, clipping or simulation:
 
 ```sh
@@ -122,7 +122,11 @@ BARGEBOSS_PROFILE_FRAME_TEXTURES=true BARGEBOSS_PROFILE_COMPOUND_PATHS=false \
 The default is cropped frames with separate native paths.
 `bb_frame_textures` selects retained cropped frame bitmaps versus whole source
 sheets. `bb_compound_paths` selects a compound native path versus expanding the
-same water batch into individual paths. `strategies.txt` records both settings.
+same water batch into individual paths. Android now skips shared grouping when
+compound paths are disabled. Set `BARGEBOSS_PROFILE_WATER_GROUPING=true`
+(`bb_water_grouping`) to force the previous grouping-then-expansion path for a
+controlled comparison; the default is false. Compound paths always request
+shared grouping. `strategies.txt` records these settings.
 Run the four combinations, repeat in reverse order, and keep the phone free of
 builds/tests/other activity while measuring. Compare lesson/tick/zoom sequences
 as well as dimensions; exclude interrupted captures. Replay now advances in
@@ -170,3 +174,13 @@ true. Both modes use the same terrain geometry and native raster density. See
 validation and device evidence. `--ez bb_terrain_review true` runs the expensive
 native queue/cache/pixel check before configuring a fixture; keep that review out
 of timed comparisons.
+
+## Water grouping review
+
+`--ez bb_water_review true` compares grouped/expanded versus direct individual
+wave fills in the native software rasterizer: all eight tutorial fixtures, three
+widths and three animation phases. It writes `water-pixels.txt` before starting
+the selected fixture. Keep this session out of timing comparisons. The desktop
+`WaterBatchReview` also compares direct source order against compound batches.
+The host preference only changes optional submission grouping; water geometry,
+shore clipping, alpha and world animation remain shared.

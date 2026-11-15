@@ -5,6 +5,7 @@ public final class WaterBatchTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Count implements Painter {
+        boolean batches=true;public boolean prefersPolygonBatches(){return batches;}
         int calls,polys,groups;final java.util.ArrayList<Float> order=new java.util.ArrayList<Float>();
         public void poly(float[] q,int c){calls++;polys++;order.add(q[0]);}
         public void polygons(float[][] q,int count,int c){calls++;groups++;polys+=count;
@@ -31,6 +32,12 @@ public final class WaterBatchTest {
         check(c.polys==1000,"capacity flushes never drop polygons");
         Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);
         c=new Count();WaveView.surface(g,c);check(c.groups>0 && c.calls<c.polys,"real harbor waves reduce native submissions");
+        int groupedPolygons=c.polys;
+        c=new Count();c.batches=false;
+        Painter wrapped=new SceneryOcclusion(new OpacityPainter(new ViewportPainter(c,g.layout.width,g.layout.height),1));
+        check(!wrapped.prefersPolygonBatches(),"native preference passes through renderer wrappers");
+        WaveView.surface(g,wrapped);
+        check(c.groups==0 && c.calls==c.polys && c.polys==groupedPolygons,"individual preference preserves wave count without grouped calls");
         System.out.println(checks+" water batching, overlap, capacity and submission assertions passed");
     }
     public static void main(String[] args){run();}

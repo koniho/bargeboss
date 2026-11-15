@@ -16,6 +16,7 @@ public final class WaterBatchReview {
     }
     static final class Expanded implements Painter {
         final Painter p;Expanded(Painter p){this.p=p;}
+        public boolean prefersPolygonBatches(){return false;}
         public void poly(float[] xy,int c){p.poly(xy,c);}
         public void rect(float x,float y,float w,float h,int c){p.rect(x,y,w,h,c);}
         public void circle(float x,float y,float r,int c){p.circle(x,y,r,c);}

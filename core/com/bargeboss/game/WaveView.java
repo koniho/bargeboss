@@ -17,8 +17,9 @@ public final class WaveView {
     /** Wave detail without clearing a scene that has already drawn its land/water mask. */
     public static void surface(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
-        WaterBatchPainter batch=new WaterBatchPainter(canvas,g.layout.width,g.layout.height);
-        Painter p=new WaterEffectsPainter(g,new RiverPainter(batch,c));
+        // Hosts that expand batches should not pay to collect and reorder them first.
+        WaterBatchPainter batch=canvas.prefersPolygonBatches()?new WaterBatchPainter(canvas,g.layout.width,g.layout.height):null;
+        Painter p=new WaterEffectsPainter(g,new RiverPainter(batch==null?canvas:batch,c));
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
             float sx=corner%2*g.layout.width,sy=corner/2*g.layout.height;
@@ -62,7 +63,7 @@ public final class WaveView {
                         .8f,((int)((life-.58f)*175)<<24)|0xb3d5cb);
             }
         }
-        batch.flush();
+        if(batch!=null)batch.flush();
     }
 
     private static void shorelines(Game g,Painter p,float minY,float maxY) {

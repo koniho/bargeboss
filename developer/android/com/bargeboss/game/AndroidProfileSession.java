@@ -21,7 +21,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private int frame;
     private boolean configured,finished,tracing,reviewStarted,reviewDone;
     private final Activity activity;
-    private final boolean pixelReview,terrainReview;
+    private final boolean pixelReview,terrainReview,waterReview,waterGrouping;
     private long drawStart,previousDraw,advanceNs;
     public AndroidProfileSession(Activity activity,CanvasPainter painter) {
         this.activity=activity;Intent intent=activity.getIntent();this.painter=painter;stats=painter.enableProfile();
@@ -34,6 +34,9 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
         pixelReview=intent.getBooleanExtra("bb_texture_review",false);
+        waterReview=intent.getBooleanExtra("bb_water_review",false);
+        waterGrouping=intent.getBooleanExtra("bb_water_grouping",false);
+        painter.profileWaterGrouping(waterGrouping);
         terrainReview=intent.getBooleanExtra("bb_terrain_review",false);
         compoundPaths=intent.getBooleanExtra("bb_compound_paths",false);
         frameTextures=intent.getBooleanExtra("bb_frame_textures",true);
@@ -48,11 +51,11 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         // Activity startup can briefly report the previous portrait window.
         // Do not prepare or time a landscape fixture against that transient layout.
         if(configured || width<height)return;
-        if((pixelReview || terrainReview) && !reviewDone) {
+        if((pixelReview || terrainReview || waterReview) && !reviewDone) {
             if(!reviewStarted){
                 reviewStarted=true;
                 new Thread(()->{
-                    try{if(pixelReview)AndroidTextureReview.run(activity.getAssets(),directory);if(terrainReview)AndroidTerrainReview.run(activity.getAssets(),directory);}
+                    try{if(waterReview)AndroidWaterReview.run(activity.getAssets(),directory);if(pixelReview)AndroidTextureReview.run(activity.getAssets(),directory);if(terrainReview)AndroidTerrainReview.run(activity.getAssets(),directory);}
                     catch(Exception e){throw new IllegalStateException(e);}
                     activity.runOnUiThread(()->{reviewDone=true;configure(width,height);});
                 },"bargeboss-texture-review").start();
@@ -63,7 +66,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.
         if(!mode.equals("replay"))root.cancelInputs();
-        Log.i("BargeBossProfile","READY scene="+scene+" mode="+mode+" width="+width+" height="+height+" warmup="+warmup+" samples="+samples+" compound_paths="+compoundPaths+" frame_textures="+frameTextures+" async_layers="+asyncLayers);
+        Log.i("BargeBossProfile","READY scene="+scene+" mode="+mode+" width="+width+" height="+height+" warmup="+warmup+" samples="+samples+" compound_paths="+compoundPaths+" frame_textures="+frameTextures+" async_layers="+asyncLayers+" water_grouping="+waterGrouping);
     }
     public void advance(double seconds) {
         if(!configured || finished)return;

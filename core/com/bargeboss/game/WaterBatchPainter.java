@@ -46,6 +46,7 @@ public final class WaterBatchPainter implements Painter {
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){flush();target.sprite(a,f,x,y,w,h,r,alpha);}
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){flush();target.spriteBlend(a,f,ff,x,y,w,h,r,mix,alpha);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){flush();target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
+    public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
     public boolean preparesLayers(){return target.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha){flush();target.layer(layer,x,y,scale,alpha);}
