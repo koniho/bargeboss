@@ -1,0 +1,842 @@
+[
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/cell-batched-1/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.513,
+      "p95": 0.61
+    },
+    "draw_ms": {
+      "p50": 9.099,
+      "p95": 10.943
+    },
+    "interval_ms": {
+      "p50": 21.545,
+      "p95": 29.174
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.089
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2356.0,
+      "p95": 2716.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.876
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.647
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "cold_decode_ms": 741.524,
+    "strategies": {
+      "compound_paths": "true",
+      "frame_textures": "true"
+    },
+    "throughput_fps": 45.61,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.578,
+        "p95": 9.671
+      },
+      "render_sync_ms": {
+        "p50": 0.563,
+        "p95": 1.106
+      },
+      "issue_to_swap_ms": {
+        "p50": 19.453,
+        "p95": 29.325
+      },
+      "intended_to_complete_ms": {
+        "p50": 62.837,
+        "p95": 74.541
+      }
+    },
+    "slow_sync_frames_including_warmup": 11
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/cell-batched-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.533,
+      "p95": 0.66
+    },
+    "draw_ms": {
+      "p50": 9.331,
+      "p95": 11.141
+    },
+    "interval_ms": {
+      "p50": 24.461,
+      "p95": 29.586
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.1
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2356.0,
+      "p95": 2716.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.876
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.67
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "cold_decode_ms": 685.067,
+    "strategies": {
+      "compound_paths": "true",
+      "frame_textures": "true"
+    },
+    "throughput_fps": 41.23,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.662,
+        "p95": 9.953
+      },
+      "render_sync_ms": {
+        "p50": 0.627,
+        "p95": 1.073
+      },
+      "issue_to_swap_ms": {
+        "p50": 21.787,
+        "p95": 29.265
+      },
+      "intended_to_complete_ms": {
+        "p50": 69.462,
+        "p95": 82.688
+      }
+    },
+    "slow_sync_frames_including_warmup": 15
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/cell-single-1/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.464,
+      "p95": 0.86
+    },
+    "draw_ms": {
+      "p50": 9.223,
+      "p95": 12.156
+    },
+    "interval_ms": {
+      "p50": 16.595,
+      "p95": 20.966
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.115
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 493.0
+    },
+    "polys": {
+      "p50": 2519.0,
+      "p95": 2911.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.938
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.602
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "cold_decode_ms": 609.741,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true"
+    },
+    "throughput_fps": 60.26,
+    "max_zoom_delta": 0.003138303756713867,
+    "max_zoom_relative_delta": 0.0013475413998132709,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.914,
+        "p95": 11.361
+      },
+      "render_sync_ms": {
+        "p50": 0.42,
+        "p95": 0.769
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.797,
+        "p95": 21.005
+      },
+      "intended_to_complete_ms": {
+        "p50": 42.066,
+        "p95": 45.58
+      }
+    },
+    "slow_sync_frames_including_warmup": 8
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/cell-single-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.485,
+      "p95": 0.602
+    },
+    "draw_ms": {
+      "p50": 9.313,
+      "p95": 11.211
+    },
+    "interval_ms": {
+      "p50": 17.023,
+      "p95": 27.015
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.134
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2517.0,
+      "p95": 2907.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 90.694,
+      "p95": 96.876
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 17.191
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.639
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 98,
+    "frame_evictions": 0,
+    "cold_decode_ms": 1147.459,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true"
+    },
+    "throughput_fps": 54.77,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.747,
+        "p95": 9.899
+      },
+      "render_sync_ms": {
+        "p50": 0.562,
+        "p95": 0.995
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.504,
+        "p95": 22.219
+      },
+      "intended_to_complete_ms": {
+        "p50": 45.062,
+        "p95": 61.527
+      }
+    },
+    "slow_sync_frames_including_warmup": 12
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/full-batched-1/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.747,
+      "p95": 0.906
+    },
+    "draw_ms": {
+      "p50": 11.817,
+      "p95": 15.716
+    },
+    "interval_ms": {
+      "p50": 46.35,
+      "p95": 55.177
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.096
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2356.0,
+      "p95": 2716.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 138.333,
+      "p95": 144.398
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 0,
+    "frame_evictions": 0,
+    "cold_decode_ms": 860.604,
+    "strategies": {
+      "compound_paths": "true",
+      "frame_textures": "false"
+    },
+    "throughput_fps": 22.14,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 12.48,
+        "p95": 14.721
+      },
+      "render_sync_ms": {
+        "p50": 8.212,
+        "p95": 11.908
+      },
+      "issue_to_swap_ms": {
+        "p50": 36.869,
+        "p95": 41.437
+      },
+      "intended_to_complete_ms": {
+        "p50": 124.101,
+        "p95": 138.306
+      }
+    },
+    "slow_sync_frames_including_warmup": 199
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/full-batched-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.579,
+      "p95": 0.799
+    },
+    "draw_ms": {
+      "p50": 10.267,
+      "p95": 14.67
+    },
+    "interval_ms": {
+      "p50": 41.892,
+      "p95": 50.616
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.108
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2356.0,
+      "p95": 2716.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 138.333,
+      "p95": 144.398
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 0,
+    "frame_evictions": 0,
+    "cold_decode_ms": 702.213,
+    "strategies": {
+      "compound_paths": "true",
+      "frame_textures": "false"
+    },
+    "throughput_fps": 24.53,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 9.225,
+        "p95": 13.738
+      },
+      "render_sync_ms": {
+        "p50": 7.337,
+        "p95": 10.005
+      },
+      "issue_to_swap_ms": {
+        "p50": 32.716,
+        "p95": 37.254
+      },
+      "intended_to_complete_ms": {
+        "p50": 110.662,
+        "p95": 126.176
+      }
+    },
+    "slow_sync_frames_including_warmup": 213
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/full-single-1/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.532,
+      "p95": 0.751
+    },
+    "draw_ms": {
+      "p50": 9.492,
+      "p95": 14.095
+    },
+    "interval_ms": {
+      "p50": 39.237,
+      "p95": 47.123
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.09
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 125.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 493.0
+    },
+    "polys": {
+      "p50": 2519.0,
+      "p95": 2911.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 138.333,
+      "p95": 144.398
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 0,
+    "frame_evictions": 0,
+    "cold_decode_ms": 627.055,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "false"
+    },
+    "throughput_fps": 26.19,
+    "max_zoom_delta": 0.003138303756713867,
+    "max_zoom_relative_delta": 0.0013475413998132709,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 8.822,
+        "p95": 13.64
+      },
+      "render_sync_ms": {
+        "p50": 7.095,
+        "p95": 10.098
+      },
+      "issue_to_swap_ms": {
+        "p50": 30.084,
+        "p95": 37.414
+      },
+      "intended_to_complete_ms": {
+        "p50": 103.267,
+        "p95": 120.552
+      }
+    },
+    "slow_sync_frames_including_warmup": 238
+  },
+  {
+    "file": "docs/performance/texture-paths-2026-11-15/full-single-2/frames.csv",
+    "samples": 240,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.75,
+      "p95": 0.888
+    },
+    "draw_ms": {
+      "p50": 12.492,
+      "p95": 16.212
+    },
+    "interval_ms": {
+      "p50": 47.094,
+      "p95": 54.782
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.152
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 28.076
+    },
+    "sprites": {
+      "p50": 51.0,
+      "p95": 56.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 6.0
+    },
+    "affines": {
+      "p50": 116.0,
+      "p95": 124.0
+    },
+    "circles": {
+      "p50": 447.0,
+      "p95": 491.0
+    },
+    "polys": {
+      "p50": 2517.0,
+      "p95": 2907.0
+    },
+    "clips": {
+      "p50": 39.0,
+      "p95": 56.0
+    },
+    "texture_mib": {
+      "p50": 138.333,
+      "p95": 144.398
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 13,
+    "cache_fallbacks": 6,
+    "cache_evictions": 0,
+    "frame_builds": 0,
+    "frame_evictions": 0,
+    "cold_decode_ms": 920.482,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "false"
+    },
+    "throughput_fps": 21.93,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 240,
+      "ui_record_ms": {
+        "p50": 12.745,
+        "p95": 15.049
+      },
+      "render_sync_ms": {
+        "p50": 8.836,
+        "p95": 12.269
+      },
+      "issue_to_swap_ms": {
+        "p50": 36.838,
+        "p95": 40.632
+      },
+      "intended_to_complete_ms": {
+        "p50": 122.443,
+        "p95": 138.835
+      }
+    },
+    "slow_sync_frames_including_warmup": 210
+  }
+]

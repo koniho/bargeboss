@@ -1,0 +1,2 @@
+compound_paths=true
+frame_textures=false

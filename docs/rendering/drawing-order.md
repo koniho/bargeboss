@@ -317,9 +317,12 @@ Non-polygon draws and clip changes flush pending water. The buffer is bounded to
 256 polygons and a 48-group search window. This changes submission grouping,
 not geometry, wave phases, alpha, wake interaction or shoreline clipping.
 
-`Painter.polygons` fills separate same-color contours in one native path on
-Android, Java2D and Core Graphics. Its default expands to individual polygons for
-trace painters. Arrays are borrowed only for the call; hosts must not retain them.
+`Painter.polygons` may fill separate same-color contours in one native path.
+Java2D and Core Graphics use compound paths. Android expands the contours to
+individual paths by default: device comparisons found this faster end-to-end
+than fewer, larger native paths. A debug switch retains the compound-path
+implementation for future device comparisons. Trace painters also expand the
+contours. Arrays are borrowed only for the call; hosts must not retain them.
 Only proven disjoint shapes may use this primitive. `WaterBatchReview` verifies
 native multi-contour fills against individual fills at three widths and multiple
 animation phases.
@@ -339,3 +342,18 @@ evictions never reuse an old native raster identity. Host raster caches retain
 the existing 48 MiB limit and one-build-per-frame allowance. Sheared/fallback
 painters still expand the exact glyph geometry. Test both cold and warm UI and
 retain text legibility when adjusting source density or caches.
+
+
+### Android sprite texture storage
+
+Android retains cropped frame bitmaps (24 MiB LRU) instead of referencing an
+entire directional sheet for every sprite draw. Desktop and iOS already use
+cropped frame images. This is a native cache policy: `SpriteAtlas` remains the
+only source of cell rectangles, heading counts, size corrections and pivots.
+Do not trim alpha margins, rescale source pixels or move effect anchors as part
+of this optimization. Full-image frames reuse the decoded bitmap. The title sky
+fade strips retain their shared source texture to preserve filtered edge samples.
+Eviction drops references without recycling bitmaps that recorded hardware draw
+commands may still use. Atlas metadata, gameplay, clipping and depth order are
+unchanged. Native software pixel review and hardware screenshots cover sampling
+rounding differences; shared trace parity alone cannot establish raster parity.

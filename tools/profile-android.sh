@@ -11,6 +11,9 @@ bargeboss_warmup=${BARGEBOSS_PROFILE_WARMUP:-120}
 case "$bargeboss_frames:$bargeboss_warmup" in *[!0-9:]*) echo 'Frame counts must be integers' >&2; exit 2;; esac
 trace=${BARGEBOSS_PROFILE_TRACE:-false}
 case "$trace" in true|false) ;; *) exit 2;; esac
+compound_paths=${BARGEBOSS_PROFILE_COMPOUND_PATHS:-false}
+frame_textures=${BARGEBOSS_PROFILE_FRAME_TEXTURES:-true}
+case "$compound_paths:$frame_textures" in true:true|true:false|false:true|false:false) ;; *) echo 'Strategy switches must be true or false' >&2; exit 2;; esac
 export RISH_APPLICATION_ID=com.termux
 # Respect an awake scope already owned by the surrounding development round.
 if [ ! -f out/phone-screen-timeout-before.txt ]; then
@@ -24,10 +27,11 @@ fi
 remote=/storage/emulated/0/Android/data/com.bargeboss.game/files/profiles
 output=out/profiles/$(date +%Y%m%d-%H%M%S)-$scene-$mode
 mkdir -p "$output"
+printf 'compound_paths=%s\nframe_textures=%s\n' "$compound_paths" "$frame_textures" > "$output/strategies.txt"
 rish -c "rm -f '$remote/$scene-$mode.csv'"
 rish -c 'input keyevent KEYCODE_WAKEUP'
 rish -c 'dumpsys gfxinfo com.bargeboss.game reset' > "$output/reset.txt" 2>&1
-rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace" > "$output/launch.txt" 2>&1
+rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures" > "$output/launch.txt" 2>&1
 started=$(date +%s)
 ready=
 while [ "$(($(date +%s)-started))" -lt 180 ]; do

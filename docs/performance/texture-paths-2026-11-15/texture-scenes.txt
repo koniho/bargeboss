@@ -1,0 +1,5 @@
+barge-arrival pixels=792000 changed=3 max_error=1
+harbor-close pixels=792000 changed=24 max_error=1
+barge-bridge pixels=792000 changed=11 max_error=2
+canal-middle pixels=792000 changed=3 max_error=1
+title pixels=792000 changed=0 max_error=0

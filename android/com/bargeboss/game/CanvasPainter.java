@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.ArrayList;
 
 public final class CanvasPainter implements Painter {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -30,6 +31,12 @@ public final class CanvasPainter implements Painter {
     private final AssetManager assets;
     private final Map<Integer,Atlas> atlases=new HashMap<Integer,Atlas>();
     private final Map<String,Bitmap> sourceImages=new HashMap<String,Bitmap>();
+    // Only cropped cells allocate extra CPU storage. Full-image cells reuse the source.
+    // Bound this independently of terrain/UI rasters; never recycle a bitmap that a
+    // hardware display list may still reference.
+    private static final long FRAME_TEXTURE_BUDGET=24L*1024*1024;
+    private final LinkedHashMap<Long,Bitmap> frameImages=new LinkedHashMap<Long,Bitmap>(64,.75f,true);
+    private long frameBytes;
     private final LinkedHashMap<Long,Bitmap> layers=new LinkedHashMap<Long,Bitmap>(16,.75f,true);
     private final Paint layerPaint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
     private long layerBytes;
@@ -38,11 +45,22 @@ public final class CanvasPainter implements Painter {
     private Canvas canvas;
     /** Opt-in host telemetry; no counters or clocks are read by gameplay. */
     public static final class Profile {
-        public long buildNs,decodeNs;
+        public long buildNs,decodeNs,frameBuildNs,textureBytes;
+        public int frameBuilds,frameEvictions;
+        private final ArrayList<Bitmap> textures=new ArrayList<Bitmap>();
+        void texture(Bitmap image){if(!textures.contains(image)){textures.add(image);textureBytes+=image.getAllocationByteCount();}}
         public int hits,builds,fallbacks,evictions,sprites,blends,affines,circles,polys,lines,clips;
-        void clear(){buildNs=decodeNs=0;hits=builds=fallbacks=evictions=sprites=blends=affines=circles=polys=lines=clips=0;}
+        void clear(){textures.clear();textureBytes=0;frameBuildNs=0;frameBuilds=frameEvictions=0;buildNs=decodeNs=0;hits=builds=fallbacks=evictions=sprites=blends=affines=circles=polys=lines=clips=0;}
     }
     private Profile profile;
+    // This device's native compound water paths cost more than their separate
+    // contours. Keep the shared batch order, but submit individual native paths.
+    private boolean compoundPaths=false,frameTextures=true;
+    /** Diagnostic host strategies; only the debuggable session calls this. */
+    public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}
+    public long profileSourceBytes(){long bytes=0;for(Bitmap b:sourceImages.values())bytes+=b.getAllocationByteCount();return bytes;}
+    public long profileFrameBytes(){return frameBytes;}
+    void profileResetTextures(){atlases.clear();sourceImages.clear();frameImages.clear();frameBytes=0;}
     public Profile enableProfile(){if(profile==null)profile=new Profile();return profile;}
     public long profileCacheBytes(){return layerBytes;}
 
@@ -87,6 +105,7 @@ public final class CanvasPainter implements Painter {
         try {
             canvas.clipRect(x,y,x+width,y+height);canvas.translate(x,y);canvas.scale(scale/density,scale/density);
             layerPaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
+            if(profile!=null)profile.texture(image);
             canvas.drawBitmap(image,0,0,layerPaint);
         } finally {canvas.restoreToCount(saved);}
     }
@@ -107,9 +126,15 @@ public final class CanvasPainter implements Painter {
     private static final class Atlas {
         final Bitmap[] images;
         final Rect[] frames;
+        final int id;
+        final Rect[] cellFrames;
+        // The title sky uses very thin adjacent fade strips. Keep their shared
+        // texture so filtered sampling at the strip edges remains unchanged.
+        boolean cropped(boolean enabled){return enabled && id!=SpriteAtlas.TITLE_BACKDROP;}
+        Rect source(int frame,boolean cropped){return cropped(cropped)?cellFrames[frame]:frames[frame];}
         Atlas(int atlas,AssetManager assets,Map<String,Bitmap> sources) throws IOException {
             int count=SpriteAtlas.count(atlas);
-            images=new Bitmap[count]; frames=new Rect[count];
+            id=atlas;images=new Bitmap[count];frames=new Rect[count];cellFrames=new Rect[count];
             for(int f=0;f<count;f++) {
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
                 String key=SpriteGrade.cacheKey(atlas,path);
@@ -133,6 +158,7 @@ public final class CanvasPainter implements Painter {
                 images[f]=image;
                 frames[f]=new Rect(Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,f)),
                         Math.round(image.getWidth()*SpriteAtlas.sourceRight(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceBottom(atlas,f)));
+                cellFrames[f]=new Rect(0,0,frames[f].width(),frames[f].height());
             }
         }
     }
@@ -145,6 +171,31 @@ public final class CanvasPainter implements Painter {
             return cached;
         } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas for asset "+id,e); }
     }
+    private Bitmap frameImage(Atlas atlas,int frame) {
+        Bitmap original=atlas.images[frame],image=original;
+        Rect r=atlas.frames[frame];
+        if(atlas.cropped(frameTextures) && (r.left!=0 || r.top!=0 || r.right!=original.getWidth() || r.bottom!=original.getHeight())) {
+            long key=((long)atlas.id<<32)|(frame&0xffffffffL);
+            image=frameImages.get(key);
+            if(image==null) {
+                long start=profile==null?0:System.nanoTime();
+                // Pixel-identical cell copy. Preserve the complete authored crop,
+                // including transparent margins, so pivots and effect anchors do not move.
+                image=Bitmap.createBitmap(original,r.left,r.top,r.width(),r.height());
+                image.setDensity(Bitmap.DENSITY_NONE);
+                long bytes=image.getAllocationByteCount();
+                Iterator<Map.Entry<Long,Bitmap>> entries=frameImages.entrySet().iterator();
+                while(frameBytes+bytes>FRAME_TEXTURE_BUDGET && entries.hasNext()) {
+                    frameBytes-=entries.next().getValue().getAllocationByteCount();entries.remove();
+                    if(profile!=null)profile.frameEvictions++;
+                }
+                if(bytes<=FRAME_TEXTURE_BUDGET){frameImages.put(key,image);frameBytes+=bytes;}
+                if(profile!=null){profile.frameBuildNs+=System.nanoTime()-start;profile.frameBuilds++;}
+            }
+        }
+        if(profile!=null)profile.texture(image);
+        return image;
+    }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         if(profile!=null)profile.sprites++;
@@ -153,7 +204,7 @@ public final class CanvasPainter implements Painter {
         float left=-SpriteAtlas.pivotX(id,frame)*width,top=-SpriteAtlas.pivotY(id,frame)*height;
         canvas.save(); canvas.translate(cx,cy); canvas.rotate(rotation*180f/(float)Math.PI);
         spritePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
-        canvas.drawBitmap(atlas.images[frame],atlas.frames[frame],new RectF(left,top,left+width,top+height),spritePaint);
+        canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),new RectF(left,top,left+width,top+height),spritePaint);
         canvas.restore();
     }
     /** Map the complete cropped source cell onto supplied axes without another size correction. */
@@ -167,7 +218,7 @@ public final class CanvasPainter implements Painter {
         affineValues[6]=affineValues[7]=0;affineValues[8]=1;affineMatrix.setValues(affineValues);
         affinePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
         int saved=canvas.save();
-        try {canvas.concat(affineMatrix);canvas.drawBitmap(atlas.images[frame],atlas.frames[frame],affineUnit,affinePaint);}
+        try {canvas.concat(affineMatrix);canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),affineUnit,affinePaint);}
         finally {canvas.restoreToCount(saved);}
     }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
@@ -188,9 +239,9 @@ public final class CanvasPainter implements Painter {
         canvas.saveLayerAlpha(Math.min(ax,bx)-2,Math.min(ay,by)-2,
                 Math.max(ax+aw,bx+bw)+2,Math.max(ay+ah,by+bh)+2,Math.round(Math.max(0,Math.min(1,alpha))*255));
         spritePaint.setAlpha(255-weight);
-        canvas.drawBitmap(atlas.images[frameA],atlas.frames[frameA],new RectF(ax,ay,ax+aw,ay+ah),spritePaint);
+        canvas.drawBitmap(frameImage(atlas,frameA),atlas.source(frameA,frameTextures),new RectF(ax,ay,ax+aw,ay+ah),spritePaint);
         spritePaint.setAlpha(weight); spritePaint.setXfermode(ADD);
-        canvas.drawBitmap(atlas.images[frameB],atlas.frames[frameB],new RectF(bx,by,bx+bw,by+bh),spritePaint);
+        canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }
@@ -202,6 +253,7 @@ public final class CanvasPainter implements Painter {
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.close(); canvas.drawPath(path,paint);
     }
     public void polygons(float[][] xy,int count,int c) {
+        if(!compoundPaths){for(int i=0;i<count;i++)poly(xy[i],c);return;}
         if(profile!=null)profile.polys++;
         paint.setColor(c);path.reset();
         for(int n=0;n<count;n++){

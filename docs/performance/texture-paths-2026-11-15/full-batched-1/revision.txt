@@ -1,0 +1,8 @@
+0c9467b51239245db0b5036cd4cfd0ca548ea689
+ android/com/bargeboss/game/CanvasPainter.java      | 64 +++++++++++++++++++---
+ .../com/bargeboss/game/AndroidProfileSession.java  | 37 ++++++++++---
+ docs/performance/developer-profiling.md            | 47 +++++++++++++++-
+ docs/rendering/drawing-order.md                    | 15 +++++
+ tools/profile-android.sh                           |  6 +-
+ tools/summarize-profile.py                         |  4 ++
+ 6 files changed, 154 insertions(+), 19 deletions(-)

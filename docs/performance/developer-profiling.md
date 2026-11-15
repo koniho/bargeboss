@@ -50,9 +50,9 @@ fixture runner contains no Android APIs and can also drive JVM captures.
 | --- | --- | --- |
 | `freeze` | Repeatedly draw the same world/animation tick | Stable-pose rendering and cache diagnosis |
 | `live` | Release input and use the normal real-time `Game.advance` path | Idle animation, momentum, normal fixed-step cost |
-| `replay` | Apply real gestures and advance one `Game.step` per callback | Repeatable movement, effects, camera and lesson transitions |
+| `replay` | Apply real gestures and advance one `Game.step` per recorded draw | Repeatable movement, effects, camera and lesson transitions |
 
-Replay mode deliberately measures one simulation tick per callback, not real-time
+Replay mode deliberately measures one simulation tick per recorded draw, not real-time
 catch-up behavior. Compare the same mode, dimensions, warmup and sample count.
 A live scene can advance tutorial/camera state; the CSV includes actual lesson,
 visual tick and zoom so this is visible.
@@ -101,8 +101,62 @@ python3 tools/summarize-method-trace.py out/profiles/<run>/methods.trace
 ```
 
 `check-profile.sh` verifies all eight fixtures are repeatable, validates exactly
-one shared tick per replay callback, and rejects invalid names. The regular
+one shared tick per replay input, and rejects invalid names. The regular
 shared suite remains `./check.sh`. Native telemetry is Android-specific; the
 fixtures and gameplay remain shared. These results do not establish iOS device
 performance or release-build FPS. CPU frequency, thermals, debug/JIT behavior and
 background activity affect timings; repeat controlled runs before claiming a gain.
+
+## Native texture and path comparisons
+
+The debug session accepts two independent host rendering switches. They do not
+change shared geometry, artwork, sprite frames, pivots, clipping or simulation:
+
+```sh
+BARGEBOSS_PROFILE_FRAME_TEXTURES=false BARGEBOSS_PROFILE_COMPOUND_PATHS=true \
+  ./tools/profile-android.sh barge-arrival replay
+BARGEBOSS_PROFILE_FRAME_TEXTURES=true BARGEBOSS_PROFILE_COMPOUND_PATHS=false \
+  ./tools/profile-android.sh barge-arrival replay
+```
+
+The default is cropped frames with separate native paths.
+`bb_frame_textures` selects retained cropped frame bitmaps versus whole source
+sheets. `bb_compound_paths` selects a compound native path versus expanding the
+same water batch into individual paths. `strategies.txt` records both settings.
+Run the four combinations, repeat in reverse order, and keep the phone free of
+builds/tests/other activity while measuring. Compare lesson/tick/zoom sequences
+as well as dimensions; exclude interrupted captures. Replay now advances in
+`beforeDraw`, because Android may issue a callback without actually drawing.
+
+Additional CSV columns:
+
+- `texture_mib`: sum of unique bitmap allocation sizes referenced during the draw,
+  including terrain/UI layers. This is a working-set estimate, **not GPU resident
+  memory or measured transfer bytes**. A cold layer build can include its sources.
+- `source_mib`: retained decoded source storage.
+- `frame_mib`: additional retained cropped-cell storage, bounded to 24 MiB;
+  full-image cells alias their existing source and do not count again.
+- `frame_build_ms`, `frame_builds`, `frame_evictions`: cell creation and cache
+  pressure, separate from PNG decode and terrain/UI raster construction.
+
+For native software-raster pixel review, launch the instrumented APK with
+`--ez bb_texture_review true` alongside the usual scene/mode extras. A worker
+compares all production atlas frames with rotation, filtering, alpha and blends,
+then four complete tutorial scenes and the title. It also forces cache eviction
+and checks a reloaded tug frame. It writes `texture-pixels.txt`,
+`texture-scenes.txt`, `texture-cache.txt` and comparison PNGs to the same external profiles directory.
+This deliberately expensive review runs before the fixture; do **not** use its
+session for performance numbers. Reports count exact differences and maximum
+channel errors rather than assuming all bitmap storage strategies rasterize
+identically. Hardware screenshots and device timing remain separate checks.
+
+Compare complete runs with:
+
+```sh
+python3 tools/compare-profile-strategies.py out/profiles/<run-a> out/profiles/<run-b>
+```
+
+This rejects mismatched scene/mode/dimensions, interrupted sessions, different
+lesson/tick sequences and camera scale differences above 0.5%. Smaller camera
+scale differences are explicitly reported in the JSON. See the
+[texture/path comparison](texture-paths.md) for measured results and limits.

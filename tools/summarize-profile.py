@@ -13,7 +13,11 @@ for path in sys.argv[1:]:
     result={'file':path,'samples':len(rows),'lessons':sorted({int(float(r['lesson'])) for r in rows})}
     for key in ('advance_ms','draw_ms','interval_ms','layer_build_ms','decode_ms','cache_mib','sprites','blends','affines','circles','polys','clips'):
         result[key]={'p50':percentile(key,.5),'p95':percentile(key,.95)}
+    for key in ('texture_mib','source_mib','frame_mib','frame_build_ms'):
+        if key in rows[0]:result[key]={'p50':percentile(key,.5),'p95':percentile(key,.95)}
     for key in ('cache_builds','cache_fallbacks','cache_evictions'):
         result[key]=sum(int(float(r[key])) for r in rows)
+    for key in ('frame_builds','frame_evictions'):
+        if key in rows[0]:result[key]=sum(int(float(r[key])) for r in rows)
     result['cold_decode_ms']=round(sum(float(r['decode_ms']) for r in all_rows if r['phase']=='warmup'),3)
     print(json.dumps(result,indent=2))
