@@ -11,6 +11,9 @@ echo tools/VesselGlowReview.java >> build/preview/sources.txt
 echo tools/BuildingFadeReview.java >> build/preview/sources.txt
 echo tools/ShoreOcclusionPixelTest.java >> build/preview/sources.txt
 echo tools/FoamPixelTest.java >> build/preview/sources.txt
+echo tools/BuoyReview.java >> build/preview/sources.txt
+echo tools/NavigationReview.java >> build/preview/sources.txt
+echo tools/VesselNavigationReview.java >> build/preview/sources.txt
 echo tools/JoystickReview.java >> build/preview/sources.txt
 echo tools/TrainReview.java >> build/preview/sources.txt
 echo tools/WaterlineReview.java >> build/preview/sources.txt
@@ -57,6 +60,9 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ScreenSizesPr
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuildingFadeReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShoreOcclusionPixelTest
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.FoamPixelTest
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.BuoyReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.NavigationReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.VesselNavigationReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.JoystickReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.TrainReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.WaterlineReview

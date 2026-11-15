@@ -36,8 +36,7 @@ public final class TutorialView {
         }
         // The tow route runs through the upper-left harbor. Keep its touch
         // targets visible by placing those two cards on the opposite side.
-        boolean markerOnLeft=t.lesson==Tutorial.MOVE && g.layout.camera.screenX(t.driveTargetX(),t.driveTargetY())<g.layout.width*.5f;
-        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || markerOnLeft?g.layout.width-486:-18,-30);
+        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || t.lesson==Tutorial.MOVE?g.layout.width-486:-18,-30);
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
@@ -76,18 +75,22 @@ public final class TutorialView {
             SoftCue.caption(river,"PUSH HERE",Tutorial.PUSH_X,Tutorial.PUSH_Y,11,ControlView.GREEN);
         }
         if(t.lesson==Tutorial.MOVE) {
-            for(int i=0;i<Tutorial.DRIVE_X.length;i++) {
-                float x=Tutorial.DRIVE_X[i],y=Tutorial.DRIVE_Y[i];int color=i<t.driveMarker?ControlView.GREEN:VisualStyle.GOLD;
-                if(i>t.driveMarker)continue;
-                if(i==t.driveMarker)river.circle(x,y,Tutorial.DRIVE_RADIUS,0x0a35c8bd);
-                if(i==t.driveMarker)ControlView.ring(g,river,x,y,Tutorial.DRIVE_RADIUS+pulse,1,color,1.2f);
-                SoftCue.dot(river,x,y,4,SoftCue.animated(g,color));
+            int buoy=Math.min(t.driveMarker,Tutorial.DRIVE_X.length-1);
+            float bx=Tutorial.DRIVE_X[buoy],by=Tutorial.DRIVE_Y[buoy];
+            // The course is a soft projected circle; tall lit buoys live in world depth.
+            SoftCue.ring(river,bx,by,Tutorial.DRIVE_RADIUS,1,0x5595d7d1,1);
+            SoftCue.ring(river,bx,by,Tutorial.DRIVE_RADIUS,t.orbitProgress(),0xbb6fffc2,2);
+            float a=t.orbitArmed?t.orbitAngle:(float)StrictMath.PI,d=t.orbitDirection();
+            for(int k=1;k<=3;k++) {
+                float angle=a+d*(.42f+k*.36f),next=angle+d*.14f;
+                SoftCue.arrow(river,bx+Tutorial.DRIVE_RADIUS*(float)StrictMath.cos(angle),by+Tutorial.DRIVE_RADIUS*(float)StrictMath.sin(angle),
+                        bx+Tutorial.DRIVE_RADIUS*(float)StrictMath.cos(next),by+Tutorial.DRIVE_RADIUS*(float)StrictMath.sin(next),0x99ffe6a1);
             }
-            if(!g.holdingTug())driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
-            RiverCamera c=g.layout.camera;float sx=c.screenX(t.driveTargetX(),t.driveTargetY()),sy=c.screenY(t.driveTargetX(),t.driveTargetY());
-            sx=Physics.clamp(sx,75,g.layout.width-75);sy=Physics.clamp(sy+48,216,g.layout.height-90);
-            p.rect(sx-47,sy-12,94,24,0x40101c30);
-            Lettering.center(p,"BUOY "+(t.driveMarker+1)+" / 2",sx,sy-4,10,VisualStyle.GOLD);
+            if(!t.orbitArmed)driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
+            RiverCamera c=g.layout.camera;float sx=c.screenX(bx,by),sy=c.screenY(bx,by);
+            sx=Physics.clamp(sx,105,g.layout.width-105);sy=Physics.clamp(sy+55,216,g.layout.height-90);
+            p.rect(sx-84,sy-12,168,25,0x60101c30);
+            Lettering.center(p,"BUOY "+(buoy+1)+" / 2 - "+(int)(100*t.orbitProgress())+"%",sx,sy-4,10,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.COAST) {
             SoftCue.caption(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
         } else if(t.lesson==Tutorial.RELEASE) {

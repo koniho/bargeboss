@@ -22,6 +22,7 @@ public final class VesselView {
         if(surface.length>0)canvas.pushClipOutside(surface);
         try {
             if(tug)VesselLighting.reflection(g,p,b);
+            VesselNavigationLights.reflections(g,p,b,tug);
             ShadowView.vessel(g,p,b,tug,size);
         } finally {if(surface.length>0)canvas.popClip();}
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
@@ -37,10 +38,12 @@ public final class VesselView {
         if(tug) {
             VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);
+            VesselNavigationLights.draw(g,p,b,true,bob,true);
             exhaust(p,b,tick,b.engineLoad,bob);
         } else {
             // Coaming fittings sit behind cargo; the painted loads occlude them.
             VesselLighting.barge(g,p,b,bob);
+            VesselNavigationLights.draw(g,p,b,false,bob,false);
             int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
             int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
             // Coal is registered to this hull and masked behind its coaming.
@@ -69,6 +72,7 @@ public final class VesselView {
                 }
             }
             VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
+            VesselNavigationLights.draw(g,p,b,false,bob,true);
             if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
                 float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;
                 p.circle(b.x-c*28+s*9,b.y-s*28-c*9,1.7f+pulse,b.lineAttached?0xffd3e8a1:0xffffd34e);

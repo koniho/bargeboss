@@ -194,7 +194,7 @@
         XCTAssertTrue(marker>=previousMarker && marker<=2,@"Driving markers must remain ordered: %@",status);
         previousMarker=marker;
         if(![status containsString:@"lesson 0;"]) break;
-        XCTAssertLessThan(marker,2,@"Both markers should advance into the coast lesson: %@",status);
+        XCTAssertLessThan(marker,2,@"Both completed buoy laps should advance into the coast lesson: %@",status);
         seenMarkers|=(1u<<marker);
         CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
         CGPoint target=[self worldPositionInStatus:status tag:@"drive target"];
@@ -207,8 +207,8 @@
         [self drivePracticeTug:stage toX:target.x toY:target.y status:status thrust:thrust];
     }
     NSString *status=(NSString *)stage.value;
-    XCTAssertEqual(seenMarkers,(NSUInteger)3,@"Both driving targets must be exercised: %@",status);
-    XCTAssertEqual([self integerInStatus:status tag:@"drive marker"],2,@"Opening must reach both targets: %@",status);
+    XCTAssertEqual(seenMarkers,(NSUInteger)3,@"Both buoy orbits must be exercised: %@",status);
+    XCTAssertEqual([self integerInStatus:status tag:@"drive marker"],2,@"Opening must circle both buoys: %@",status);
     // Every synthesized drag releases its finger. Stop sending steering once
     // the second goal is reached and wait for the actual coast completion gate.
     // A slow accessibility snapshot may already show CHANNEL, so do not require

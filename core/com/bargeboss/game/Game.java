@@ -116,6 +116,14 @@ public final class Game {
     public static final float PRACTICE_DRIVE_ZOOM=2.2f,PRACTICE_CANAL_ZOOM=1.4f;
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
+        if(tutorial.lesson==Tutorial.MOVE) {
+            int buoy=Math.min(tutorial.driveMarker,Tutorial.DRIVE_X.length-1);
+            float dx=Tutorial.DRIVE_X[buoy]-tug.x,dy=Tutorial.DRIVE_Y[buoy]-tug.y;
+            // Keep the tug touchable while crossing between the two orbits.
+            float lead=Math.min(.65f,95/Math.max(1,Physics.length(dx,dy)));
+            return Layout.focused(layout.width,layout.height,tug.x+dx*lead,tug.y+dy*lead,
+                    PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.59f);
+        }
         if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.3f,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
@@ -189,7 +197,7 @@ public final class Game {
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
         float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
         float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
-        float ease=tutorial!=null && tug.x<=80?.12f:.055f;
+        float ease=tutorial!=null && tutorial.lesson!=Tutorial.MOVE && tug.x<=80?.12f:.055f;
         Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
         if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
                 && Math.abs(zoom-c.zoom)<.000001f) return;
@@ -212,7 +220,7 @@ public final class Game {
         Body load=null;for(Body b:cargo) if(b!=null && b.active) { load=b;break; }
         Body spare=cargo[2];Towline lead=tow.incoming(load),spareLead=tow.incoming(spare);
         return status()+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
-                +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
+                +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
                 +"; spare leader "+(spareLead==null?-1:spareLead.leader.id)

@@ -83,10 +83,13 @@ public final class ContinuousTutorialTest {
                         && Math.abs(g.layout.camera.screenX(g.downX,g.downY)-ax)<.003f && Math.abs(g.layout.camera.screenY(g.downX,g.downY)-ay)<.003f,
                         "close open-water camera preserves screen-space steering anchors");
                 check(g.inWater(tug.x,tug.y) && tug.x<TrainingChannel.MIN,"driving goals are reached entirely inside the open basin");
+                float screenX=g.layout.camera.screenX(tug.x,tug.y),screenY=g.layout.camera.screenY(tug.x,tug.y);
+                check(screenX>30 && screenX<g.layout.width-30 && screenY>80 && screenY<g.layout.height-50,
+                        "orbit camera keeps the tug touchable while circling and approaching the next buoy");
                 if(Math.abs(Physics.angle(tug.angle-previousAngle))>.4f)turns++;
             }
             check(seen==3 && turns>0 && g.tutorial.driveMarker==2 && g.tutorial.lesson==Tutorial.COAST,
-                    "two real driving destinations teach a direction change before coast");
+                    "two full buoy orbits teach continuous steering before coast");
             check(Physics.length(tug.x-Tutorial.START_X,tug.y-Tutorial.START_Y)>250,"opening requires a meaningful drive, not a thirty-unit nudge");
             check(g.tutorial.channelGate==1,"open-water targets cannot skip canal gates");
             ReplayInput.up(root,g.pointerX,g.pointerY);float cx=tug.x,cy=tug.y;
@@ -116,7 +119,7 @@ public final class ContinuousTutorialTest {
             }
             for(int tick=0;tick<60;tick++)root.step();
             check(g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.driveMarker==2 && g.tutorial.channelGate==1,
-                    "native opening gestures reach both markers then coast without skipping gates, with "+idle+" idle ticks at width "+width);
+                    "native opening gestures circle both buoys then coast without skipping gates, with "+idle+" idle ticks at width "+width+"; lesson="+g.tutorial.lesson+", buoy="+g.tutorial.driveMarker+", lap="+g.tutorial.orbitProgress()+", attempts="+attempts);
             check(attempts<100,"feedback-guided native opening converges within its gesture budget");
         }
     }

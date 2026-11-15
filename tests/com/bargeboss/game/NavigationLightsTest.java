@@ -1,0 +1,62 @@
+package com.bargeboss.game;
+
+/** Stable lateral sides, flash rhythm, water registration and render-only animation. */
+public final class NavigationLightsTest {
+    private static int checks;
+    private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
+    public static void run(){
+        for(int stage=-1;stage<3;stage++){
+            Game g=new Game();if(stage<0){g.startTutorial();g=g.activeGame();}else {g.challengeId=stage;g.reset();}
+            NavigationLights.Entrance[] entrances=NavigationLights.entrances(g);
+            check(entrances.length==(stage<0?5:stage==1 || stage==2?3:1),"every named harbor and channel opening has a pair");
+            for(NavigationLights.Entrance e:entrances){
+                float rx=e.markerX(true)-e.x,ry=e.markerY(true)-e.y,gx=e.markerX(false)-e.x,gy=e.markerY(false)-e.y;
+                check(rx*(-e.dy)+ry*e.dx>0 && gx*(-e.dy)+gy*e.dx<0,"red is starboard and green port in the declared returning direction");
+                check(Math.abs(rx+gx)<.001f && Math.abs(ry+gy)<.001f,"markers flank the entrance symmetrically");
+                check(WaterEffectsPainter.contains(g,e.markerX(true),e.markerY(true)) && WaterEffectsPainter.contains(g,e.markerX(false),e.markerY(false)),"floating marks sit on navigable water beside their entrance");
+            }
+            for(int i=0;i<NavigationLights.count(g);i++){
+                float x=NavigationLights.x(g,i),y=NavigationLights.y(g,i);int color=NavigationLights.color(g,i);
+                g.tug.angle+=1.7f;g.configureCanvas(1333,600);
+                check(NavigationLights.x(g,i)==x && NavigationLights.y(g,i)==y && NavigationLights.color(g,i)==color,"heading or screen aspect never flips lateral markers");
+            }
+            g.layout=Layout.focused(1333,600,entrances[0].x,entrances[0].y,1.5f,650,350);
+            int[] order=NavigationLights.ordered(g);
+            for(int i=1;i<order.length;i++)check(NavigationLights.depth(g,order[i-1])<=NavigationLights.depth(g,order[i]),"markers join increasing world depth order");
+            int ticks=g.ticks,visual=g.visualTicks,water=g.water.emitted;float tx=g.tug.x,ty=g.tug.y;
+            Capture a=new Capture(),b=new Capture();NavigationLights.reflections(g,a);for(int i:order)NavigationLights.draw(g,a,i);
+            NavigationLights.reflections(g,b);for(int i:order)NavigationLights.draw(g,b,i);
+            check(a.hash==b.hash && a.calls==b.calls,"same frame produces identical lights and reflections");
+            check(g.ticks==ticks && g.visualTicks==visual && g.water.emitted==water && g.tug.x==tx && g.tug.y==ty,"buoy animation never advances gameplay or water");
+            g.visualTicks=15;Capture bright=new Capture();for(int i:order)NavigationLights.draw(g,bright,i);
+            g.visualTicks=70;Capture dark=new Capture();for(int i:order)NavigationLights.draw(g,dark,i);
+            check(bright.hash!=dark.hash && dark.calls>0,"flash visibly changes while the unlit colored buoy remains present");
+            g.layout=Layout.focused(960,600,10000,10000,1,480,300);
+            check(NavigationLights.ordered(g).length==0,"offscreen marks are culled before lighting work");
+        }
+        for(int phase:new int[]{0,19,38,57,76}){
+            int lit=0,dark=0;for(int tick=0;tick<120;tick++){
+                float f=NavigationLights.flash(tick,phase);
+                check(f>=0 && f<=1 && f==NavigationLights.flash(tick+120,phase),"flash has stable two-second period and finite energy");
+                if(f>0)lit++;else dark++;
+            }
+            check(lit>0 && dark>lit,"single flashes have a longer true dark interval");
+        }
+        Game g=new Game();g.startTutorial();g=g.activeGame();
+        int first=NavigationLights.count(g)-2;
+        for(int i=0;i<2;i++)check(NavigationLights.x(g,first+i)==Tutorial.DRIVE_X[i] && NavigationLights.y(g,first+i)==Tutorial.DRIVE_Y[i] && NavigationLights.color(g,first+i)==NavigationLights.YELLOW,"practice buoy models stay at actual circling centers and use distinct yellow lamps");
+        System.out.println(checks+" lateral light side, flash, water placement, depth and animation assertions passed");
+    }
+    private static final class Capture implements Painter {
+        int hash=1,calls;
+        private void add(float f){hash=31*hash+Float.floatToIntBits(f);}
+        private void mark(int color){hash=31*hash+color;calls++;}
+        public void rect(float x,float y,float w,float h,int c){mark(c);add(x);add(y);add(w);add(h);}
+        public void circle(float x,float y,float r,int c){mark(c);add(x);add(y);add(r);}
+        public void line(float x,float y,float xx,float yy,float w,int c){mark(c);add(x);add(y);add(xx);add(yy);add(w);}
+        public void poly(float[] xy,int c){mark(c);for(float v:xy)add(v);}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){mark(a);add(f);add(x);add(y);add(w);add(h);add(r);add(alpha);}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){sprite(a,f,x,y,w,h,r,alpha);add(ff);add(mix);}
+    }
+    public static void main(String[] args){run();}
+}

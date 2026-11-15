@@ -34,6 +34,7 @@ public final class Renderer {
     }
     private static void river(Game g,Painter p) {
         HarborView.draw(g,p);
+        NavigationLights.reflections(g,((RiverPainter)p).canvas());
         if(g.trafficWarning() || g.trafficActive()) {
             for(int x=173;x<426;x+=18) p.line(x,Game.TRAFFIC_Y,x+8,Game.TRAFFIC_Y,2,0x88ffc52f);
             if(g.trafficWarning()) SoftCue.caption(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
@@ -49,13 +50,22 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
-        TowView.Segments rope=new TowView.Segments(g);int span=0;
+        TowView.Segments rope=new TowView.Segments(g);int span=0,mark=0;int[] lights=NavigationLights.ordered(g);
         for(int n=0;n<count;n++) {
             float depth=g.layout.camera.screenY(ordered[n].x,ordered[n].y);
-            while(span<rope.count && rope.depth(g.layout.camera,span)<=depth)rope.draw(p,span++);
+            while(span<rope.count || mark<lights.length) {
+                float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
+                float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
+                if(Math.min(rd,ld)>depth)break;
+                if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
+            }
             body(g,p,ordered[n]);
         }
-        while(span<rope.count)rope.draw(p,span++);
+        while(span<rope.count || mark<lights.length) {
+            float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
+            float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
+            if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
+        }
         if(g.ticks<360) tag(p,"YOU",g.tug.x,g.tug.y+35,9,VisualStyle.CREAM);
         DockView.draw(g,((RiverPainter)p).canvas());
 

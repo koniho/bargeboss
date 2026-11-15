@@ -241,3 +241,10 @@ The optional joystick is a screen-space HUD overlay drawn after tutorial cues.
 It never participates in vessel/rope/shore depth sorting or scenery fades. Its
 visible hit circle owns the native pointer before water-plane projection; see
 [joystick input and settings](../gameplay/joystick.md).
+
+Entrance navigation markers and the two practice buoys join the same depth merge
+as vessels, rope spans, shore caps and factories; lantern halos stay with those
+fixtures. Their water reflections draw before hulls and use water-only clipping.
+Vessel navigation fittings stay inside each vessel's shore clip and cargo layering.
+See [entrance marks](navigation-lights.md) and [vessel navigation lamps](vessel-navigation-lights.md)
+for fixed returning directions versus hull-local port/starboard anchors.

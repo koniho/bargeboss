@@ -9,7 +9,11 @@ public final class Tutorial {
     private final float[] previousTowY=new float[2];
     private int reconfigureRelease;
     public static final float PUSH_X=240,PUSH_Y=600,PUSH_RADIUS=24;
-    public static final float START_X=-1740,START_Y=650,DRIVE_RADIUS=36;
+    public static final float START_X=-1740,START_Y=650,DRIVE_RADIUS=90;
+    public static final float ORBIT_INNER=50,ORBIT_OUTER=150,ORBIT_TURN=(float)(2*StrictMath.PI);
+    public boolean orbitArmed;
+    public float orbitSweep,orbitAngle;
+    private float orbitPreviousX,orbitPreviousY;
     public static final float[] DRIVE_X={-1570,-1450},DRIVE_Y={650,440};
     public int lesson=MOVE, actionTicks,channelGate=1;
     public int driveMarker;
@@ -19,6 +23,7 @@ public final class Tutorial {
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
+        orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;
         g.cancelInputs();g.reversing=false;
         g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
@@ -28,7 +33,7 @@ public final class Tutorial {
         g.addCargo(2,390,430);g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
         g.tug=new Body(0,-1,START_X,START_Y,0);
         if(lesson==COAST) {
-            driveMarker=DRIVE_X.length;g.tug.x=DRIVE_X[driveMarker-1];g.tug.y=DRIVE_Y[driveMarker-1];g.tug.vx=25;g.tug.vy=-25;
+            driveMarker=DRIVE_X.length;g.tug.x=DRIVE_X[driveMarker-1]-DRIVE_RADIUS;g.tug.y=DRIVE_Y[driveMarker-1];g.tug.vx=25;g.tug.vy=-25;
         }
         if(lesson==CHANNEL) g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
         // Reset can restart the current exercise; normal progression preserves
@@ -87,11 +92,7 @@ public final class Tutorial {
             channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         }
         if(lesson==MOVE) {
-            if(g.navigating) actionTicks++;
-            if(actionTicks>=6 && Physics.length(g.tug.x-driveTargetX(),g.tug.y-driveTargetY())<=DRIVE_RADIUS) {
-                driveMarker++;actionTicks=0;g.haptic(Game.HAPTIC_CONTACT);
-                if(driveMarker==DRIVE_X.length) {lesson=COAST;g.haptic(Game.HAPTIC_TICK);}
-            }
+            updateOrbit(g);
         } else if(lesson==COAST) {
             actionTicks=!g.pointer && !g.navigating?actionTicks+1:0;
             if(actionTicks>=60) {
@@ -179,14 +180,39 @@ public final class Tutorial {
         return TrainingChannel.TOW_END+80;
     }
 
-    public float driveTargetX() {return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)];}
-    public float driveTargetY() {return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)];}
+    /** Credit one continuous winding around each buoy, never proximity or elapsed time. */
+    private void updateOrbit(Game g) {
+        float dx=g.tug.x-DRIVE_X[driveMarker],dy=g.tug.y-DRIVE_Y[driveMarker];
+        float radius=Physics.length(dx,dy),angle=(float)StrictMath.atan2(dy,dx);
+        if(radius<ORBIT_INNER || radius>ORBIT_OUTER) {orbitArmed=false;orbitSweep=0;return;}
+        if(!orbitArmed) {
+            if(!g.navigating)return;
+            orbitArmed=true;orbitSweep=0;orbitAngle=angle;
+        } else {
+            float delta=Physics.angle(angle-orbitAngle);
+            // Physical fixed-step movement is small; relocation cannot award an arc.
+            if(Math.abs(delta)>.35f || Physics.length(g.tug.x-orbitPreviousX,g.tug.y-orbitPreviousY)>12)orbitSweep=0;
+            else orbitSweep+=delta; // Reversing retraces and cancels the same arc.
+            orbitAngle=angle;
+        }
+        orbitPreviousX=g.tug.x;orbitPreviousY=g.tug.y;
+        if(Math.abs(orbitSweep)>=ORBIT_TURN) {
+            driveMarker++;actionTicks=0;orbitArmed=false;orbitSweep=0;
+            g.haptic(Game.HAPTIC_SUCCESS);
+            if(driveMarker==DRIVE_X.length)lesson=COAST;
+        }
+    }
+    public float orbitProgress(){return Physics.clamp(Math.abs(orbitSweep)/ORBIT_TURN,0,1);}
+    public float orbitDirection(){return orbitSweep<-.04f?-1:1;}
+    private float guideAngle(){return orbitArmed?orbitAngle+orbitDirection()*.65f:(float)StrictMath.PI;}
+    public float driveTargetX(){return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
+    public float driveTargetY(){return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"DRAG TO DRIVE","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR SHIFT"}[lesson];
+        return new String[]{"CIRCLE TWO BUOYS","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR SHIFT"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
-            case MOVE: return driveMarker==0?"DRAG TUG OR USE JOYSTICK TO REACH BUOY.":"TURN TOWARD THE SECOND BUOY.";
+            case MOVE: return "DRAG TUG OR USE JOYSTICK TO CIRCLE.";
             case COAST: return "LIFT YOUR FINGER TO CUT THRUST.";
             case CHANNEL: return "STEER UPSTREAM THROUGH EVERY GATE.";
             case HOLD: return "PRESS AND DRAG THE BARGE TO PUSH HERE.";
@@ -205,7 +231,7 @@ public final class Tutorial {
     }
     public String secondLine() {
         switch(lesson) {
-            case MOVE: return "PUSH FARTHER FOR THRUST. LIFT TO COAST.";
+            case MOVE: return "STAY NEAR THE RING. EITHER WAY ROUND.";
             case COAST: return "BOATS COAST. DRAG BACK TO SLOW DOWN.";
             case CHANNEL: return "SLOW FOR SQUARE TURNS. CAMERA FOLLOWS.";
             case HOLD: return "REACH THE MARKED ZONE TO CONTINUE.";

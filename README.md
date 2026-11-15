@@ -23,11 +23,13 @@ transitional art. Reusable art workflows are maintained in
 ## Play
 
 Choose **Learn to Drive** for fourteen hands-on lessons without a timer, traffic or
-hull damage: driving, coasting, a scrolling rectilinear industrial canal, drag-to-push,
+hull damage: circling two lit buoys, coasting, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
 line, towing to a berth, double towing under a bridge, reconfiguring a train,
 narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;
-**Exit Practice** restores your suspended shift. Before the cargo lessons, steer
+**Exit Practice** restores your suspended shift. Circle each gold beacon once in either direction, following the soft water ring;
+its percentage shows your lap progress. Stay near the ring—cutting across the buoy
+or leaving its area restarts that unfinished lap. Then steer
 upstream through seven gates along a narrow industrial channel spanning several
 screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
 the tug while keeping the original drag anchor fixed on the screen. The canal
@@ -43,6 +45,10 @@ the last hull clears the exit. All of this stays in the same continuous scene.
 
 The harbor uses a dark industrial palette with animated warm factory lights,
 while boats retain bright, saturated paintwork and registered vessel lamps.
+Harbor/channel entrances have flashing green and red navigation marks, fixed to
+the returning direction (red on the right). Every watercraft carries steady
+red port, green starboard and white stern lights; powered craft also have a white
+masthead light. Their visibility changes naturally as the vessels turn.
 Shared visibility culling and redraw scheduling reduce work in wide views;
 see the [night harbor rendering notes](docs/performance/night-harbor.md).
 
