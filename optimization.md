@@ -500,3 +500,33 @@ layer-preparation/working-set checks and4748 raised-shore/cache checks. Normal
 existing debug key; developer scenario sources are excluded from the final APK.
 Closer-view preview copied to Downloads. Shared Java keeps all platforms on the
 same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
+
+### Tutorial reverse lesson — shared behavior and bounded cues
+
+- Added explicit reverse-driving practice after coast and before the winding canal. The same tug, momentum, water and scene persist. A one-time hull-clearance search latches a target normally 60 world units astern, with bounded nearby-angle/shorter alternatives; an unsafe location retries every 30 fixed ticks while asking the player to make room. No navigation search or new texture preparation occurs during drawing.
+- Completion requires genuine reverse control, at least 40 units of credited backward movement and net displacement, and entry into the soft target ring. Idle time, coast momentum and bow-first driving cannot substitute. The card teaches joystick or tug drag; progress text stays in UI. Rings/arrows reuse existing soft animated cues with no new assets/caches.
+- Java8 shared validation passed: 170 reverse-control assertions, 268,843 continuous-tutorial assertions (including full bounded pointer replay and late coast after all canal gates), and 107 joystick assertions. Actual Java2D reverse screen reviewed at 1333×600: target/arrow and coach remain readable; `out/tutorial-reverse-v1.png`. Parent integrates camera/joystick sectors and native automation; device/translated-iOS validation remains in that round. No frame-rate claim for this gameplay addition.
+
+### Reverse-drive guide and initial tutorial (shared HUD)
+
+- Added eight translucent amber joystick segments covering the actual reverse
+  thrust cone. Boundaries are projected from the same world-space120/240-degree
+  thresholds; the screen-space arc changes with heading under the isometric
+  projection. Driving and guide verification share the existing reverse rule.
+- Guide opacity eases on fixed60Hz steps: out while a pointer is held, in when
+  released/cancelled. Mid-fade reversal preserves the current opacity. Rendering
+  never advances the fade. The mark is screen-overlay-only, uses a reusable
+  per-thread polygon buffer and adds at most24 small fills plus two soft boundary
+  strokes when visible; no new texture family, blur pass or heading cache.
+- Added explicit reverse lesson after coasting and before the canal. Player must
+  command reverse thrust and physically back into a safe marked region; waiting,
+  momentum-only drift and turning around to drive forward do not pass. The same
+  continuous tug/scene/gates remain in place. Native iOS flow test lesson IDs now
+  use named constants and consume published reverse target/armed/progress fields.
+- Verified92430 direction/fade/input assertions,170 reverse-action assertions,
+  continuous public tutorial replay and actual shared-renderer HUD/state previews.
+  No new native FPS claim for this HUD change; native iOS tests cannot run here.
+- Final validation: complete shared checks passed in the Android build, with
+  replay signature `f4bd57b2:2:1350`. Debug APK installed successfully and launched
+  on the development phone. Review images were copied to Downloads. Native iOS
+  XCTest execution remains unverified in this Termux environment.

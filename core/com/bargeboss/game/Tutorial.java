@@ -2,9 +2,13 @@ package com.bargeboss.game;
 
 /** Drag-control practice with action gates and no clock, damage or traffic. */
 public final class Tutorial {
-    public static final int MOVE=0, COAST=1, CHANNEL=2, HOLD=3, STEER=4, DOCK=5, TIE=6, CONNECT=7, PULL=8, DOUBLE=9, BRIDGE=10, LINK=11, TRAIN=12, RELEASE=13, DONE=14;
+    public static final int MOVE=0, COAST=1, REVERSE=2, CHANNEL=3, HOLD=4, STEER=5, DOCK=6, TIE=7, CONNECT=8, PULL=9, DOUBLE=10, BRIDGE=11, LINK=12, TRAIN=13, RELEASE=14, DONE=15;
     public static final float TOW_BERTH_X=245,TOW_BERTH_Y=310,TOW_BERTH_RADIUS=58;
     public static final float BRIDGE_CLEAR_Y=Bridge.Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
+    public static final float REVERSE_DISTANCE=60,REVERSE_REQUIRED=40,REVERSE_RADIUS=22;
+    public boolean reverseArmed;
+    public float reverseTargetX,reverseTargetY,reverseTravel;
+    private float reverseStartX,reverseStartY,reverseDX,reverseDY,reversePreviousX,reversePreviousY,reverseNet;
     public int bridgeCrossed,trainCrossed;
     private final float[] previousTowY=new float[2];
     private int reconfigureRelease;
@@ -24,7 +28,7 @@ public final class Tutorial {
     public void setup(Game g) {
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
-        orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;
+        orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;reverseArmed=false;reverseTravel=0;
         g.cancelInputs();g.reversing=false;
         g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
@@ -33,7 +37,7 @@ public final class Tutorial {
         g.addCargo(2,350,490);g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
         g.addCargo(2,390,430);g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
         g.tug=new Body(0,-1,START_X,START_Y,0);
-        if(lesson==COAST) {
+        if(lesson==COAST || lesson==REVERSE) {
             driveMarker=DRIVE_X.length;g.tug.x=DRIVE_X[driveMarker-1]-DRIVE_RADIUS;g.tug.y=DRIVE_Y[driveMarker-1];g.tug.vx=25;g.tug.vy=-25;
         }
         if(lesson==CHANNEL) g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
@@ -75,6 +79,7 @@ public final class Tutorial {
         startX=lesson==TRAIN?g.cargo[2].x:lesson>=HOLD?g.cargo[0].x:g.tug.x;
         startY=lesson==TRAIN?g.cargo[2].y:lesson>=HOLD?g.cargo[0].y:g.tug.y;
         channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
+        if(lesson==REVERSE)armReverse(g);
         g.fitTutorialCamera();
     }
     private static void park(Body b) {
@@ -97,10 +102,12 @@ public final class Tutorial {
         } else if(lesson==COAST) {
             actionTicks=!g.pointer && !g.navigating?actionTicks+1:0;
             if(actionTicks>=60) {
-                lesson=CHANNEL;actionTicks=0;
+                lesson=REVERSE;actionTicks=0;armReverse(g);
                 channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
                 g.haptic(Game.HAPTIC_TICK);
             }
+        } else if(lesson==REVERSE) {
+            updateReverse(g);
         } else if(lesson==CHANNEL) {
             if(channelGate==TrainingChannel.X.length) {
                 lesson=HOLD;actionTicks=0;g.haptic(Game.HAPTIC_SUCCESS);
@@ -156,6 +163,39 @@ public final class Tutorial {
         } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=DONE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
         else if(lesson==RELEASE && g.tow.count()==0 && g.ropePhase==0){lesson=LINK;g.cancelInputs();}
     }
+    /** Choose reachable water behind the current bow; never relocate the player or reset momentum. */
+    private void armReverse(Game g){
+        reverseArmed=false;reverseTravel=reverseNet=0;reversePreviousX=reverseStartX=g.tug.x;reversePreviousY=reverseStartY=g.tug.y;
+        for(float distance:new float[]{REVERSE_DISTANCE,50,45})for(float turn:new float[]{0,.35f,-.35f,.7f,-.7f,.95f,-.95f}){
+            float angle=g.tug.angle+(float)StrictMath.PI+turn,dx=(float)StrictMath.cos(angle),dy=(float)StrictMath.sin(angle);
+            if(!Joystick.reverseWorld(g.tug.angle,dx,dy) || !reverseClear(g,dx,dy,distance))continue;
+            reverseDX=dx;reverseDY=dy;reverseTargetX=g.tug.x+dx*distance;reverseTargetY=g.tug.y+dy*distance;reverseArmed=true;return;
+        }
+    }
+    private static boolean reverseClear(Game g,float dx,float dy,float distance){
+        float c=(float)StrictMath.cos(g.tug.angle),s=(float)StrictMath.sin(g.tug.angle);
+        for(int step=1;step<=10;step++)for(int disc=0;disc<3;disc++){
+            float x=g.tug.x+dx*distance*step/10+c*(disc-1)*g.tug.half,y=g.tug.y+dy*distance*step/10+s*(disc-1)*g.tug.half;
+            for(int edge=0;edge<8;edge++){double a=edge*StrictMath.PI/4;
+                if(!TrainingChannel.contains(x+(g.tug.radius+2)*(float)StrictMath.cos(a),y+(g.tug.radius+2)*(float)StrictMath.sin(a)))return false;}
+            for(int i=0;i<NavigationLights.count(g);i++){Buoys.Buoy buoy=g.buoys.get(g,i);
+                if(buoy!=null && Physics.length(x-buoy.x,y-buoy.y)<g.tug.radius+buoy.radius+2)return false;}
+        }
+        return true;
+    }
+    private void updateReverse(Game g){
+        if(!reverseArmed){if(actionTicks++%30==0)armReverse(g);return;}
+        float dx=g.tug.x-reversePreviousX,dy=g.tug.y-reversePreviousY;reversePreviousX=g.tug.x;reversePreviousY=g.tug.y;
+        float astern=-dx*(float)StrictMath.cos(g.tug.angle)-dy*(float)StrictMath.sin(g.tug.angle);
+        float toward=dx*reverseDX+dy*reverseDY;
+        boolean thrust=g.navigating && g.reversing && g.control==Game.REVERSING;
+        if(thrust && astern>0 && toward>0 && Physics.length(dx,dy)<8)reverseTravel+=Math.min(astern,toward);
+        float net=reverseNet=(g.tug.x-reverseStartX)*reverseDX+(g.tug.y-reverseStartY)*reverseDY;
+        if(thrust && reverseTravel>=REVERSE_REQUIRED && net>=REVERSE_REQUIRED && Physics.length(g.tug.x-reverseTargetX,g.tug.y-reverseTargetY)<=REVERSE_RADIUS){
+            lesson=CHANNEL;actionTicks=0;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+        }
+    }
+    public float reverseProgress(){return Physics.clamp(Math.min(reverseTravel,reverseNet)/REVERSE_REQUIRED,0,1);}
     public static boolean direct(Game g,Body b){Towline link=g.tow.incoming(b);return link!=null && link.leader==g.tug;}
     public static boolean doubleTow(Game g){return direct(g,g.cargo[0]) && direct(g,g.cargo[2]);}
     public static boolean chain(Game g){
@@ -209,12 +249,13 @@ public final class Tutorial {
     public float driveTargetX(){return DRIVE_X[Math.min(driveMarker,DRIVE_X.length-1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return DRIVE_Y[Math.min(driveMarker,DRIVE_Y.length-1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"CIRCLE TWO BUOYS","RELEASE TO COAST","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR LEVEL"}[lesson];
+        return new String[]{"CIRCLE TWO BUOYS","RELEASE TO COAST","BACK UP THE TUG","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
             case MOVE: return "DRAG TUG OR USE JOYSTICK TO CIRCLE.";
             case COAST: return "LIFT YOUR FINGER TO CUT THRUST.";
+            case REVERSE: return reverseArmed?"JOYSTICK OR TUG DRAG TOWARD THE STERN.":"STEER INTO CLEAR WATER TO MAKE ROOM.";
             case CHANNEL: return "STEER UPSTREAM THROUGH EVERY GATE.";
             case HOLD: return "PRESS AND DRAG THE BARGE TO PUSH HERE.";
             case STEER: return "LIFT, THEN HOLD THE BARGE STILL.";
@@ -234,6 +275,7 @@ public final class Tutorial {
         switch(lesson) {
             case MOVE: return "STAY NEAR THE RING. EITHER WAY ROUND.";
             case COAST: return "BOATS COAST. DRAG BACK TO SLOW DOWN.";
+            case REVERSE: return "BACK INTO THE RING. KEEP THE BOW AHEAD.";
             case CHANNEL: return "SLOW FOR SQUARE TURNS. CAMERA FOLLOWS.";
             case HOLD: return "REACH THE MARKED ZONE TO CONTINUE.";
             case STEER: return "HOLD STILL FOR AN ASSISTED PUSH.";

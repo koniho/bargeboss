@@ -167,6 +167,9 @@ public final class Game {
             return Layout.focused(layout.width,layout.height,tug.x+dx*lead,tug.y+dy*lead,
                     PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.57f);
         }
+        if(tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
+                tutorial.reverseArmed?(tug.x+tutorial.reverseTargetX)*.5f:tug.x,tutorial.reverseArmed?(tug.y+tutorial.reverseTargetY)*.5f:tug.y,
+                PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.59f);
         if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.5f,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
@@ -266,6 +269,7 @@ public final class Game {
         Body spare=cargo[2];Towline lead=tow.incoming(load),spareLead=tow.incoming(spare);
         return status()+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
                 +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
+                +(tutorial==null?"":"; reverse target "+tutorial.reverseTargetX+","+tutorial.reverseTargetY+"; reverse progress "+tutorial.reverseProgress()+"; reverse armed "+(tutorial.reverseArmed?1:0))
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
                 +"; spare leader "+(spareLead==null?-1:spareLead.leader.id)
@@ -301,6 +305,7 @@ public final class Game {
     public void reset() {
         practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
+        joystick.resetGuide();
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
@@ -642,7 +647,7 @@ public final class Game {
     public void step() {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
-        visualTicks++;splashes.step(this);
+        visualTicks++;joystick.step(this);splashes.step(this);
         if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
             smoke.step(this);buildingFades.step(this);
             if(celebrationTicks>0) celebrationTicks--;
@@ -738,7 +743,7 @@ public final class Game {
                 float dy=(joystick.x+joystick.y/RiverCamera.DEPTH)/(2*RiverCamera.Q);
                 float len=Math.max(.001f,Physics.length(dx,dy));
                 navigating=true;targetX=tug.x+dx/len*200;targetY=tug.y+dy/len*200;
-                reversing=dx*(float)StrictMath.cos(tug.angle)+dy*(float)StrictMath.sin(tug.angle)<-.5f*len;
+                reversing=Joystick.reverseWorld(tug.angle,dx,dy);
                 control=reversing?REVERSING:MOVING;
                 navigate(targetX,targetY,(reversing?60:88)*throttle,reversing);
             } else {
@@ -751,7 +756,7 @@ public final class Game {
             if(manualSteering) {
                 navigating=true; reversing=false; control=MOVING;
                 targetX=tug.x+dx/len*200; targetY=tug.y+dy/len*200;
-                reversing=dx*(float)StrictMath.cos(tug.angle)+dy*(float)StrictMath.sin(tug.angle)<-.5f*len;
+                reversing=Joystick.reverseWorld(tug.angle,dx,dy);
                 control=reversing?REVERSING:MOVING;
                 navigate(targetX,targetY,(reversing?60:88)*Physics.clamp((len-26)/60,0,1),reversing);
             } else {

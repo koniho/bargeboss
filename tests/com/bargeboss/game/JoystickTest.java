@@ -69,7 +69,7 @@ public final class JoystickTest {
             if(!g.pointer)hold(g,0,0);g.pointerMove(3,Joystick.centerX(g)+42*dx/len,Joystick.centerY(g)+42*dy/len);g.step();
         }
         check(g.tutorial.lesson==Tutorial.COAST && g.tutorial.driveMarker==2,"joystick alone completes both real driving goals");
-        release(g);steps(g,60);check(g.tutorial.lesson==Tutorial.CHANNEL,"lifting joystick completes coast lesson");
+        release(g);steps(g,60);check(g.tutorial.lesson==Tutorial.REVERSE,"lifting joystick completes coast and starts backing practice");
         float empty=loadedSpeed(0),one=loadedSpeed(1),two=loadedSpeed(2);
         check(empty>one*1.08f && one>two*1.08f,"joystick speed falls with actual linked load: "+empty+","+one+","+two);
         Game low=playing(),high=playing();hold(low,42,0);hold(high,42,0);

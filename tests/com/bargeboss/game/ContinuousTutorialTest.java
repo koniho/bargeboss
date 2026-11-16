@@ -94,8 +94,10 @@ public final class ContinuousTutorialTest {
             check(g.tutorial.channelGate==1,"open-water targets cannot skip canal gates");
             ReplayInput.up(root,g.pointerX,g.pointerY);float cx=tug.x,cy=tug.y;
             for(int tick=0;tick<60;tick++)root.step();
-            check(g.tutorial.lesson==Tutorial.CHANNEL && g.tug==tug && Physics.length(tug.x-cx,tug.y-cy)>5,
+            check(g.tutorial.lesson==Tutorial.REVERSE && g.tug==tug && Physics.length(tug.x-cx,tug.y-cy)>5,
                     "release teaches actual coasting and preserves momentum into the next lesson");
+            for(int tick=0;tick<600 && g.tutorial.lesson==Tutorial.REVERSE;tick++){ReplayInput.tutorial(root);root.step();}
+            check(g.tutorial.lesson==Tutorial.CHANNEL,"Backing into the target unlocks canal navigation");
             for(int tick=0;tick<1200 && tug.x<TrainingChannel.X[0];tick++) {ReplayInput.channel(root);root.step();}
             check(tug.x>=TrainingChannel.X[0] && g.tutorial.channelGate==1 && g.tutorial.lesson==Tutorial.CHANNEL,
                     "basin navigation reaches the first canal reach through its open mouth without a teleport or gate shortcut");
@@ -118,7 +120,7 @@ public final class ContinuousTutorialTest {
                 for(int tick=0;tick<idle;tick++)root.step();
             }
             for(int tick=0;tick<60;tick++)root.step();
-            check(g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.driveMarker==2 && g.tutorial.channelGate==1,
+            check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.driveMarker==2 && g.tutorial.channelGate==1,
                     "native opening gestures circle both buoys then coast without skipping gates, with "+idle+" idle ticks at width "+width+"; lesson="+g.tutorial.lesson+", buoy="+g.tutorial.driveMarker+", lap="+g.tutorial.orbitProgress()+", attempts="+attempts);
             check(attempts<100,"feedback-guided native opening converges within its gesture budget");
         }
@@ -216,9 +218,12 @@ public final class ContinuousTutorialTest {
                 "gates crossed while the coast instruction is visible still receive credit");
         ReplayInput.up(root,g.pointerX,g.pointerY);
         for(int tick=0;tick<61;tick++) root.step();
+        check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.channelGate==TrainingChannel.X.length,"Late coast still teaches reverse while preserving all cleared gates");
+        for(int tick=0;tick<600 && g.tutorial.lesson==Tutorial.REVERSE;tick++){ReplayInput.tutorial(root);root.step();}
+        root.step();
         check(g.tutorial.lesson==Tutorial.HOLD && g.tug==tug && g.cargo[0]==load,
                 "lifting late advances into cargo practice without losing the course or resetting the scene");
-        check(Math.abs(tug.x-TrainingChannel.X[7])<50,"late coast keeps the tug at the actual canal exit");
+        check(Math.abs(tug.x-TrainingChannel.X[7])<100,"late coast keeps the tug at the actual canal exit");
     }
     private static void canalMouth() {
         for(float mouth:new float[]{170,TrainingChannel.MIN}) for(int heading=0;heading<16;heading++) for(int direction:new int[]{-1,1}) {

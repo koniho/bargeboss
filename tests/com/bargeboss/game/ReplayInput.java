@@ -147,6 +147,13 @@ public final class ReplayInput {
             case Tutorial.COAST:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
                 break;
+            case Tutorial.REVERSE:
+                if(g.tutorial.reverseArmed){
+                    float dx=g.tutorial.reverseTargetX-g.tug.x,dy=g.tutorial.reverseTargetY-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+                    if(!g.pointer)down(root,g.tug.x,g.tug.y);move(root,g.downX+dx/len*65,g.downY+dy/len*65);
+                }
+                else drive(g,TrainingChannel.MIN-170,500);
+                break;
             case Tutorial.CHANNEL:
                 channel(root);break;
             case Tutorial.HOLD:

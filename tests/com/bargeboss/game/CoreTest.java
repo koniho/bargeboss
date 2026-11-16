@@ -71,6 +71,8 @@ public final class CoreTest {
         MooringAccessTest.run();
         ControlsTest.run();
         JoystickTest.run();
+        JoystickReverseTest.run();
+        ReverseTutorialTest.run();
         BuoyOrbitTest.run();
         BuoyArtTest.run();
         BuoyPhysicsTest.run();
@@ -133,8 +135,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Closer Montrose camera and tightly bounded static layers intentionally change the visual trace.
-        check(Parity.signature().equals("713089de:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Reverse-sector HUD and interactive reverse lesson intentionally change the visual trace.
+        check(Parity.signature().equals("f4bd57b2:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

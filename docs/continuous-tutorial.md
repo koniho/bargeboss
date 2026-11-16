@@ -1,9 +1,9 @@
 # Continuous practice harbor
 
-Practice uses one connected world for all ten lessons. The tug starts at
+Practice uses one connected world for all fifteen lessons. The tug starts at
 (-1740, 650) in an open basin spanning x=-1856..-1260, y=192..832. The player
-drives to two ordered markers at (-1570, 650) and (-1450, 440), learning both
-thrust and turning, then releases to feel the boat coast. The basin connects
+circles two ordered buoys at (-1570, 650) and (-1450, 440), learning both
+thrust and turning, then releases to feel the boat coast and backs into an astern target. The basin connects
 directly to the canal at x=-1260, y=442..558. An entry cue aligns the boat
 with that opening before the seven existing rectilinear canal gates. It enters the
 harbor through the opening at x=170, y=442..558. The harbor occupies
@@ -73,3 +73,32 @@ Successful mooring draws a taut edge-to-bollard line.
 Actual hull damage starts two brief pulses on the player tug. The shared timer
 pauses with gameplay and does not trigger for ordinary fender contact, NPCs or
 damage-free practice. No native painter requires a separate effect rule.
+
+
+## Reverse driving before the canal
+
+`REVERSE` follows `COAST` and precedes `CHANNEL`. On entry it latches a target
+normally 60 world units behind the tug's current bow. Hull-contour samples check
+the path against the connected water boundary and floating fixtures; nearby
+reverse-sector angles and slightly shorter targets handle constrained approaches.
+If there is no safe astern route, the card asks the player to make room in clear
+water and retries at a bounded half-second cadence. It never moves a boat or
+resets momentum to create the exercise.
+
+Both joystick positions and a tug drag with the joystick disabled use the same
+lesson gate. The enabled-pad card points to its amber reverse sectors and also
+mentions dragging the tug back; the disabled-pad card explicitly teaches a
+backward tug drag while keeping the bow ahead. Completion requires active reverse thrust, at least 40 units of
+credited backward displacement, at least 40 net units toward the latched target,
+and the actual tug inside its 22-unit ring. Waiting, backward momentum without
+thrust, and turning around to drive bow-first cannot pass. Progress is limited
+by net movement as well as credited astern travel. Soft animated rings/arrows
+are world cues; directions and percentage remain in the coach UI.
+
+Canal gates crossed before the player follows the coast instruction retain their
+credit through reverse practice. Once reverse completes, an already-finished
+canal can advance into pushing without a reset. The bounded full public-input
+replay covers this late-coast case and normal scene continuity.
+`ReverseTutorialTest` separately checks tug drag, left/right joystick, momentum
+and forward-only rejection. Native lesson indices shifted: CHANNEL is 3 and
+DONE is 15; native automation must follow the updated sequence.

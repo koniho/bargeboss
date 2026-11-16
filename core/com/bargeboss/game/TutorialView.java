@@ -22,7 +22,7 @@ public final class TutorialView {
         if(t.lesson==Tutorial.CHANNEL) {
             boolean entering=g.tug.x<TrainingChannel.X[0];
             VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
-            Lettering.draw(p,"CAPTAIN'S PRACTICE / 3 OF "+Tutorial.DONE,30,79,9,VisualStyle.GOLD);
+            Lettering.draw(p,"CAPTAIN'S PRACTICE / "+(Tutorial.CHANNEL+1)+" OF "+Tutorial.DONE,30,79,9,VisualStyle.GOLD);
             Lettering.draw(p,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",30,100,16,PAPER);
             Lettering.draw(p,entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
             Lettering.draw(p,"SLOW AT CORNERS. LIFT TO COAST.",30,145,9,MUTED);
@@ -36,7 +36,7 @@ public final class TutorialView {
         }
         // The tow route runs through the upper-left harbor. Keep its touch
         // targets visible by placing those two cards on the opposite side.
-        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || t.lesson==Tutorial.MOVE?g.layout.width-486:-18,-30);
+        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || (t.lesson==Tutorial.MOVE || t.lesson==Tutorial.REVERSE)?g.layout.width-486:-18,-30);
         VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
         coach.rect(44,105,416,3,VisualStyle.GOLD);
         Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
@@ -60,6 +60,11 @@ public final class TutorialView {
             first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
         }
         if(t.lesson==Tutorial.MOVE)second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% COMPLETE";
+        if(t.lesson==Tutorial.REVERSE && t.reverseArmed){
+            boolean joystick=g.settings.joystickSide()!=GameSettings.OFF;
+            first=joystick?"USE THE AMBER JOYSTICK REVERSE AREA.":"DRAG TUG BACKWARD. KEEP BOW AHEAD.";
+            second=(joystick?"OR DRAG TUG BACK / RING: ":"REACH THE RING / ")+(int)(t.reverseProgress()*100)+"% REVERSED";
+        }
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
@@ -90,6 +95,13 @@ public final class TutorialView {
             if(!t.orbitArmed)driveArrow(g,river,t.driveTargetX(),t.driveTargetY(),null);
         } else if(t.lesson==Tutorial.COAST) {
             SoftCue.caption(river,"LIFT TO COAST",g.tug.x-45,g.tug.y,10,PAPER);
+        } else if(t.lesson==Tutorial.REVERSE) {
+            if(t.reverseArmed){
+                SoftCue.ring(river,t.reverseTargetX,t.reverseTargetY,Tutorial.REVERSE_RADIUS+pulse,1,0x7795d7d1,2);
+                SoftCue.ring(river,t.reverseTargetX,t.reverseTargetY,Tutorial.REVERSE_RADIUS+4,t.reverseProgress(),0xaa6fffc2,2);
+                float dx=t.reverseTargetX-g.tug.x,dy=t.reverseTargetY-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+                SoftCue.arrow(river,g.tug.x+dx/len*28,g.tug.y+dy/len*28,t.reverseTargetX,t.reverseTargetY,SoftCue.animated(g,0x99ffe6a1));
+            }
         } else if(t.lesson==Tutorial.RELEASE) {
             Body b=g.tow.primary();if(b==null)return;RiverCamera c=g.layout.camera;
             ControlView.ring(g,river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
