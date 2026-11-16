@@ -105,24 +105,24 @@ public final class WaterSurface {
     }
     private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
-            float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
-            int alpha=(int)Math.min(255,330*strength[i]*(1-t)*(1-t*.35f));
+            float t=age[i]/(float)LIFE;
+            int alpha=(int)Math.min(255,330*strength[i]*Math.min(1,age[i]/8f)*(1-t)*(1-t*.35f));
             if(alpha<3)continue;
-            // Detached V crests expand sideways from the recorded travel direction.
-            // The apex drifts astern while each arm moves farther out; later turns cannot rotate it.
+            // Each short crest translates normal to its face; it never inflates into a larger V.
+            // A moving emitter lays down the V envelope from independent water-space wavelets.
             float forwardX=(float)StrictMath.cos(heading[i]),forwardY=(float)StrictMath.sin(heading[i]);
             float sideX=-forwardY,sideY=forwardX;
             for(int side=-1;side<=1;side+=2)for(int j=0;j<8;j++) {
                 float u=j/8f,v=(j+1)/8f;
-                float backA=age[i]*.18f+r*u*1.25f,backB=age[i]*.18f+r*v*1.25f;
-                float outA=side*r*u*.85f,outB=side*r*v*.85f;
+                float backA=6+36*u-age[i]*.24f,backB=6+36*v-age[i]*.24f;
+                float outA=side*(7+27*u+age[i]*.32f),outB=side*(7+27*v+age[i]*.32f);
                 float xx=x[i]-forwardX*backA+sideX*outA,yy=y[i]-forwardY*backA+sideY*outA;
                 float bx=x[i]-forwardX*backB+sideX*outB,by=y[i]-forwardY*backB+sideY*outB;
-                float crest=(.72f+.28f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055))*(1-u*.45f);
+                float crest=(.8f+.2f*(float)StrictMath.sin(i*1.73+j*.81))*(.55f+.45f*(float)StrictMath.sin((u+v)*.5f*StrictMath.PI));
                 float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=7+strength[i]*7;
                 if(len<.01f)continue;
-                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
-                        WaterFoam.phase(g.visualTicks,i)+j*.7f,5,alpha*crest/255f);
+                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx*1.12f,dy*1.12f,-dy/len*width,dx/len*width,
+                        WaterFoam.phase(0,i)+j*.7f,5,alpha*crest/255f);
             }
         }
     }

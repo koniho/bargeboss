@@ -812,3 +812,40 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   texture evictions. `rope-merged-*` raw files are the final combined evidence;
   earlier `rope-occlusion-*` files predate upstream cargo/control changes and are
   not a controlled performance comparison. Device/maximum-train limits remain.
+
+### Wake motion correction after visual feedback (2026-11-16)
+
+- The previous V-arm implementation inflated each entire V with age and moved its
+  apex astern. Segment lengths grew continuously, while per-segment alpha and
+  shader phase changed independently. This made the wake read as stretching,
+  pulsing graphics rather than crests propagating through water.
+- Each packet now emits two fixed-length wavelets. Every point on an arm moves
+  at the same normal velocity: 0.24 units/tick along the recorded travel direction
+  and 0.32 units/tick sideways. A moving emitter creates the V envelope from its
+  history; individual packets do not inflate or follow later turns. Eight-tick
+  fade-in removes abrupt births; registered crest texture no longer boils or
+  marches independently. Small segment overlap softens repeated patch seams.
+- Detached shoulder foam holds its material phase. Prop-wash material rolls
+  slowly with particle age (0.006 radians/tick) and decal rotation falls from
+  0.006 to 0.0015 radians/tick. Strong arcade coverage, lifetimes, emission counts,
+  pool bounds, water-space drift and all gameplay wake forces are preserved.
+  This is a visual wave model, not a new fluid simulation or buoy-force model.
+- Added temporal tests for fixed segment dimensions, identical displacement of
+  every point, stable material phase and continued propagation after source
+  turn/stop: 1,632 assertions over all headings. Updated the older bounds test to
+  verify the actual constant separation speed instead of requiring an expanding
+  graphic. Full shared suite and cargo derivative checks pass; JVM/J2ObjC parity
+  is `6f97e6d:2:1350`. Foam shoreline/alpha (197,334) and all-heading production
+  hull/cargo shoreline (1,439,937) pixel checks pass.
+- Reviewed the five-age propagation strip and sampled frames from a native iOS
+  motion recording through a canal turn. Local untracked review artifacts:
+  `out/wake-motion/propagation.png`, `native-motion.mp4`, `native-motion-frames.png`.
+  Video recording was separate from performance measurements. Release simulator
+  install and unsigned Android build succeeded. Android phone was not used;
+  AGSL/device motion, pixels and timing remain unvalidated.
+- Isolated iPhone 17 Pro / iOS 26.5 Release Metal canal-middle A/B, 60 warmup and
+  300 measured frames: 59.61/60.00 FPS; interval p95 17.258/17.267 ms; CPU draw
+  p95 5.956/5.553 ms; GPU p95 0.219/0.216 ms. Max intervals 55.060/23.588 ms
+  remain unresolved; this is not locked 60 FPS or a speedup claim. Final metadata
+  confirms 574 foam patches, 304 smoke patches and zero texture evictions. Raw
+  [wake motion captures](docs/performance/wake-motion-2026-11-16/) retain both runs.

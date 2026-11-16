@@ -451,7 +451,11 @@ land sections ride raised quay tops while water sections retain shore cutouts.
 See [rope material and attachment contract](rope-material.md) for bounds, tests
 and the remaining limits of sprite-based depth.
 
-Detached wake crests now form paired V arms that expand sideways and astern from
-the recorded travel direction. Their origins/headings remain fixed after emission;
-turning or stopping the source cannot rotate or stop old waves. The existing
-packet pool, aging and gameplay forces are unchanged.
+Detached wake crests use paired short wavelets that translate normal to their
+faces at constant water-space speed. Their length and material registration stay
+fixed; emission from the moving vessel creates the overall V envelope. Individual
+packets must not inflate into whole growing Vs or slide backward as one graphic.
+Origins/headings remain fixed after emission; turning or stopping the source
+cannot rotate or stop old waves. Packet pools, aging and gameplay forces remain
+unchanged. Detached shoulder foam keeps its texture registered; prop wash rolls
+slowly using particle age rather than fast global-clock churn.

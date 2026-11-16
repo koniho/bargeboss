@@ -11,7 +11,7 @@ public final class VesselFoam {
     public void step() {
         for(int i=0;i<CAPACITY;i++)if(age[i]<life[i]) {
             age[i]++;x[i]+=vx[i];y[i]+=vy[i];vx[i]*=.982f;vy[i]*=.982f;
-            if(kind[i]>=2)angle[i]+=(i%2==0?1:-1)*.006f;
+            if(kind[i]>=2)angle[i]+=(i%2==0?1:-1)*.0015f;
         }
     }
     public void emit(Game g,Body b) {
@@ -74,9 +74,9 @@ public final class VesselFoam {
                 int texture=kind[i];
                 if(texture==2 && t>.35f) {
                     float mix=Math.min(1,(t-.35f)/.3f);
-                    patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix),WaterFoam.phase(g.visualTicks,i));
-                    patch(p,3,x[i],y[i],angle[i],l,w,alpha*mix,WaterFoam.phase(g.visualTicks,i));
-                } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha,WaterFoam.phase(g.visualTicks,i));
+                    patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix),WaterFoam.phase(0,i)+age[i]*(kind[i]>=2?.006f:0));
+                    patch(p,3,x[i],y[i],angle[i],l,w,alpha*mix,WaterFoam.phase(0,i)+age[i]*(kind[i]>=2?.006f:0));
+                } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha,WaterFoam.phase(0,i)+age[i]*(kind[i]>=2?.006f:0));
             }
         } finally {if(clip.length>0)canvas.popClip();}
     }
