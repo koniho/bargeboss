@@ -1,5 +1,9 @@
 # Isometric barge and coal integration
 
+Historical hull/coal integration record. The hull remains active; cargo now uses
+the [whole-hold cargo contract](cargo-authoring-contract.md) and CargoArt metadata
+introduced in the 2026-11-16 refresh.
+
 Built-in image generation used the existing industrial concept for atmosphere,
 the approved tug design for material treatment, and deterministic geometry guides
 for 32 poses. Sources remain unchanged; registration is shared Java metadata.

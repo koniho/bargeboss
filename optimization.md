@@ -658,3 +658,93 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   timing/antialiasing remain unvalidated; simulator averages do not prove locked
   60 FPS with headroom. No TestFlight upload is claimed by this round.
 - Rope material/curve improvements discussed but not implemented in this round.
+
+### Gesture-locked drive direction and forward guide (shared Java, 2026-11-16)
+
+- Forward/reverse now latches at the first deliberate pointer input: joystick
+  beyond its existing dead zone, direct tug drag beyond the steering threshold.
+  Later heading/drag changes cannot flip thrust direction until lift/cancel.
+  Neutral keeps the selected direction while cutting thrust; steering and throttle
+  remain live. All existing cancellation/lifecycle paths clear the latch.
+- Added cyan forward segments complementary to the amber reverse sector, using
+  the same world-space threshold and fixed-step fade. Existing shared screen HUD
+  shows the held direction under the pad. No new bitmap/cache family; at most
+  72 small reused-buffer polygon fills plus the existing two boundary strokes
+  while visible. Guides disappear during held drive after the existing fade.
+- Validation: 510 latch/input/lifecycle assertions; 138,510 sector/fade assertions;
+  existing 107 joystick and 170 reverse tutorial checks; full bounded continuous
+  tutorial replay passed 268,843 assertions with no ReplayInput changes. Reviewed
+  actual shared HUD at four headings and pressed/released fade states, exported
+  `out/joystick-drive-states.png`. Native installation and final suite handled by
+  the integrating parent; no FPS or native-iOS validation claim for this change.
+
+### Whole-hold cargo refresh and reusable authoring contract (shared Java)
+
+- Replaced legacy steel pipe bundles and miniature containers, plus coal, with
+  generated 32-pose whole-hold layers referenced to the current barge geometry.
+  Steel is now six coils; containers use the hold width; coal has a broader guide.
+  Source size 1774×887 per sheet, one uniform scale and reviewed translation-only
+  registration. Source PNGs remain unchanged after generation.
+- CargoView draws one color layer and one directional response instead of three
+  individual units with temporary arrays/depth sorting. It uses two reused
+  foreground coaming exclusion quads so color and shade stay behind the near rail.
+  These clips add native clip work; no FPS claim without timing measurement.
+- The whole load fades over the same 180 simulation ticks, preserving crew behavior,
+  docking alignment and retained empty hull. Indexed unit disappearance is replaced
+  by the whole-load fade. No hull/collision dimensions were altered.
+- Source manifests retain the same atlas IDs and 32 poses, so upcoming-level prefetch
+  and platform frame caches continue to discover all active cargo/shading frames.
+  Independent cargo contact/cast masks are delivered outside runtime manifests;
+  existing hull water shadows remain active, avoiding duplicate water darkness.
+- Future cargo requirements linked from AGENTS.md and enforced by CargoAssetCheck
+  in check.sh: metadata, 32 cells, registration, effects inventory and alpha bounds.
+  Source residue <=2/255 is explicit; derived shadow edges must be exactly zero.
+- Follow-up coal review: raised source-mesh upper rings/peak within the same hold,
+  regenerated coal v3 and its response/shadow assets. New registered scale 0.8464,
+  mean silhouette IoU 0.889/minimum 0.829. This corrects the underfilled appearance
+  without per-frame stretching. Steel/container sources remain unchanged.
+- Pre-merge checks passed: full shared suite, 184,132 source/metadata checks,
+  31,205 cargo clipping/unload assertions,780 regenerated surface-response frames
+  and192 independent cargo shadow masks. Production shoreline regression passed
+  1,439,937 pixel assertions across all 32 headings. Reviewed final coal v3 at gameplay
+  scale; copies of all candidates and final comparison go to Downloads.
+- Integrated upstream 254a9ac (Metal/AGSL water/foam rendering), preserving its
+  implementation and findings. Revalidating combined code before installation;
+  source art and shared cargo/control state remain identical across platforms.
+- Final control review found that latching only the direction flag left the old
+  target-vector velocity able to slide the tug astern/sideways. Manual drive now
+  targets velocity along its actual bow/stern; steering, acceleration limits and
+  coasting remain active. Pickup assistance keeps its existing target controller.
+  Added physical direction checks, not merely label assertions (654 passed).
+- Full continuous tutorial still completes (260,740 assertions); reverse lesson
+  and joystick checks pass. The Montrose public-input replay reduces cruising drag
+  from 65 to 52 units so its yacht follows the wider real turn without stretching
+  the towline; no fixture mutations, goal weakening or runtime speed changes.
+- Final full CoreTest passed on combined code: signature `3cc4715:2:1350`, bounded
+  player delivers 2 with score 1350/hull 100. One old straight-travel test started
+  perpendicular to its requested direction and relied on lateral sliding; aligned
+  that fixture's bow while keeping its 35-unit/60-tick requirement. Actual turn and
+  keel-direction behavior have separate tests. No completion bounds were weakened.
+- Final combined Android build passed the shared suite, 184,132 cargo asset
+  checks, 192 shadow-mask freshness checks and 780 surface-lighting frame checks.
+  The post-merge all-heading shoreline regression passed 1,439,937 pixel assertions.
+  Installed the rebuilt APK through Shizuku (`Success`) and cold-launched
+  `com.bargeboss.game/.MainActivity` (`Status: ok`). Review exports are in Downloads.
+  Native iOS compilation/pixel checks and comparative device FPS measurements were
+  not run for this change; shared logic and desktop pixels do not establish those.
+- A second upstream update, 1970041, arrived before push. Preserved its arcade
+  water, smoke, reflection and collision work and its separate iOS evidence.
+  Combined visual replay signature is now `4f0be613:2:1350`; deliveries/score
+  remain unchanged. Rebuilding and rechecking the merged Android artifact.
+- Merge validation caught a stale RenderBudgetTest presence check: new cached
+  smoke patches no longer increment its circle count. The test now counts explicit
+  smoke submissions alongside circles, retaining the >100 effects requirement and
+  unchanged draw-call/circle budgets. All 60 dense-view budget assertions pass;
+  maximum 4,573 counted submissions across its nine scenarios. This is a submission
+  count, not a device FPS measurement. Production shoreline pixels still pass all
+  1,439,937 assertions after the second merge.
+- Final artifact including 1970041 passed the complete shared suite and all cargo
+  derivative checks (`out/cargo-controls-merged-build.log`). Reinstalled successfully
+  through Shizuku and cold-launched with `Status: ok`. The current Android APK
+  includes both agents' changes; native iOS validation of cargo/controls remains
+  outstanding. Refreshed gameplay-size/all-heading/unloading previews in Downloads.

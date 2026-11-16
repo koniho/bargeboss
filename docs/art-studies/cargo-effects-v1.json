@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "frames": 32,
+  "geometry": "tools/BargePoseGuide.java",
+  "featureInventoryVerified": true,
+  "cargo": [
+    {
+      "atlas": 2,
+      "source": "cargo-steel-isometric-v1-32.png",
+      "coordinateSpace": "body-local-xyz",
+      "cargoOrigin": [
+        0,
+        0,
+        3.05
+      ],
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "shadows": {
+        "file": "docs/art-studies/cargo-shadows-steel-v1.png",
+        "source": "cargo-steel-isometric-v1-32.png",
+        "contactSigma": 1.0,
+        "castSigma": 3.2,
+        "cell": 128,
+        "inner": 96,
+        "pad": 16,
+        "receivingPlane": "hold-floor",
+        "runtime": "hull-only water shadow; cargo masks delivered separately"
+      }
+    },
+    {
+      "atlas": 3,
+      "source": "cargo-container-isometric-v2-32.png",
+      "coordinateSpace": "body-local-xyz",
+      "cargoOrigin": [
+        0,
+        0,
+        3.05
+      ],
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "shadows": {
+        "file": "docs/art-studies/cargo-shadows-container-v1.png",
+        "source": "cargo-container-isometric-v2-32.png",
+        "contactSigma": 1.0,
+        "castSigma": 3.2,
+        "cell": 128,
+        "inner": 96,
+        "pad": 16,
+        "receivingPlane": "hold-floor",
+        "runtime": "hull-only water shadow; cargo masks delivered separately"
+      }
+    },
+    {
+      "atlas": 4,
+      "source": "cargo-coal-isometric-v3-32.png",
+      "coordinateSpace": "body-local-xyz",
+      "cargoOrigin": [
+        0,
+        0,
+        3.05
+      ],
+      "lights": [],
+      "smokestacks": [],
+      "tires": [],
+      "shadows": {
+        "file": "docs/art-studies/cargo-shadows-coal-v1.png",
+        "source": "cargo-coal-isometric-v3-32.png",
+        "contactSigma": 1.0,
+        "castSigma": 3.2,
+        "cell": 128,
+        "inner": 96,
+        "pad": 16,
+        "receivingPlane": "hold-floor",
+        "runtime": "hull-only water shadow; cargo masks delivered separately"
+      }
+    }
+  ]
+}

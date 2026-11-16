@@ -13,6 +13,9 @@ public final class ControlsTest {
     public static void run() {
         Game g=game(); ReplayInput.tap(g,RiverPainter.screenX(360,580),RiverPainter.screenY(360,580));
         check(!g.navigating,"water taps no longer set a route");
+        // This is a straight-drive distance test. Face the requested course;
+        // locked-thrust turning is exercised separately by DriveDirectionTest.
+        g.tug.angle=-(float)Math.PI/2;
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         float originY=g.downY,screenOrigin=g.layout.camera.screenX(g.downX,g.downY); steps(g,60);
         check(g.navigating && g.tug.y<originY-35,"held drag drives tug");

@@ -19,6 +19,11 @@ the same `Painter`. Do not add a second game implementation for any platform.
   A cap stroke is not a land surface: production hull/cargo pixels must not show
   through foreground ground. Maintain clip support on all three native painters
   and coordinate wrappers; run the all-heading shoreline pixel regression.
+- Follow [the cargo authoring contract](docs/art-studies/cargo-authoring-contract.md)
+  for every cargo addition or revision: shared hold geometry/perspective, 32 real
+  poses, registered whole-load layers, foreground-coaming occlusion, explicit
+  effect metadata and fresh shadow/surface-light derivatives. Run its asset
+  checks and review actual hull composites; unique pixels do not prove correct angles.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in
   shared Java. Native hosts decode the same PNGs and execute `Painter.sprite` / `Painter.spriteBlend`;
   they must not infer gameplay phases or select different artwork.

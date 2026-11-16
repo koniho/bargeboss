@@ -34,16 +34,18 @@ public final class RenderBudgetTest {
             check(p.terrainLayers>0 && p.terrainLayers<=48,"static terrain submits a bounded set of visible chunks");
             if(scene==0)check(p.factories>=minimumEntryFactories[viewport],"performance gain retains the dense factory district");
             if(scene==2)check(p.factories>=minimumCloseFactories[viewport],"close view retains surrounding industrial structures");
-            check(p.terrainLayers>0 && p.circles>100,"terrain and organic effects remain rendered");
+            check(p.terrainLayers>0 && p.circles+p.smokePuffs>100,"terrain and organic effects remain rendered: circles="+p.circles+" smoke="+p.smokePuffs);
             check(g.ticks==ticks && g.visualTicks==visualTicks && g.tug.x==x && g.tug.y==y,"render optimization never advances or changes simulation");
         }
         System.out.println(checks+" dense-scene rendering budget assertions passed; maximum submissions "+maximumCalls);
     }
     public static void main(String[] args){run();}
     private static final class Counts implements Painter {
-        final float width,height;int calls,circles,offscreenCircles,factories,groundSprites,terrainLayers;
+        final float width,height;int calls,circles,smokePuffs,offscreenCircles,factories,groundSprites,terrainLayers;
         Counts(float w,float h){width=w;height=h;}
         public void layer(StaticLayer layer,float x,float y,float scale,float alpha){calls++;if((layer.key()&0xe0000000)==0x20000000)terrainLayers++;}
+        // Native smoke is now one cached/shader patch, not several submitted circles.
+        public void smokePuff(float x,float y,float radius,float phase,int color){calls++;smokePuffs++;}
         public void rect(float x,float y,float w,float h,int color){calls++;}
         public void line(float x,float y,float xx,float yy,float w,int color){calls++;}
         public void poly(float[] xy,int color){calls++;}

@@ -117,3 +117,10 @@ fi
 
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseAssetReview
+
+# Cargo's source/registration contract and derived effect freshness.
+javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/preview -d build/preview tools/CargoAssetCheck.java tools/CargoStyleReview.java tools/GenerateCargoShadows.java
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoAssetCheck
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateCargoShadows --check
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoStyleReview --all
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoStyleReview --unload

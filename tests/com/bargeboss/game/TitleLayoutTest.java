@@ -40,7 +40,7 @@ public final class TitleLayoutTest {
             for(int tick=0;tick<=720;tick+=37) {
                 g.visualTicks=tick;Capture p=new Capture();TitleView.voyage(g,p);
                 float menuLeft=g.layout.width-352;
-                check(p.vessels>=5,"title retains both watercraft and all three container loads");
+                check(p.vessels>=3,"title retains both watercraft and the complete three-container load layer");
                 check(p.left>=24 && p.right<=menuLeft-16,"complete convoy stays left of menu panel");
                 check(p.top>=238,"mast and cargo stay below the compact logo");
                 check(p.bottom<=g.layout.height-76,"convoy clears the rank bar throughout heave");

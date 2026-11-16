@@ -21,6 +21,7 @@ public final class BargePoseGuide {
     private final ArrayList<Anchor> anchors=new ArrayList<Anchor>();
     private final int frame;
     private final boolean bulk;
+    private int cargoKind=2;
     private final double angle,cx,cy,scale;
     private static final class Anchor {
         String id,kind,side,color,role; double x,y,z,r,nx,ny,nz;
@@ -70,7 +71,7 @@ public final class BargePoseGuide {
             for(Face f:hull.faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
             for(int y=frame/8*CELL;y<(frame/8+1)*CELL;y++)
                 for(int x=frame%8*CELL;x<(frame%8+1)*CELL;x++) image.setRGB(x,y,0);
-            bulkGeometry();
+            if(cargoKind==0)coilGeometry();else if(cargoKind==1)containerGeometry();else bulkGeometry();
         } else geometry();
         for(Face f:faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
     }
@@ -127,14 +128,36 @@ public final class BargePoseGuide {
         anchors.add(new Anchor("tow.stern","tow",-35.5,0,7.3,1.5,0,0,1,"stern","","tow-line"));
         anchors.add(new Anchor("cargo.origin","cargo-origin",0,0,3.05,1,0,0,1,"","","empty-hold-floor"));
     }
+    private void containerGeometry(){
+        for(int bay=-1;bay<=1;bay++){
+            double x=bay*20;
+            box(x,0,18.5,21,3.1,13,0x874326,0xc18b4b);
+            for(int side:new int[]{-1,1})for(int i=-3;i<=3;i++)box(x+i*2.4,side*10.55,.35,.3,3.4,12.3,0x6c3825,0xb17c3f);
+        }
+        anchors.add(new Anchor("cargo.origin","cargo-origin",0,0,3.05,1,0,0,1,"","","hold-floor-registration"));
+    }
+    private void coilGeometry(){
+        for(int bay=-1;bay<=1;bay++)for(int row:new int[]{-1,1}){
+            double x=bay*20,y=row*5.2,z=11,outer=7.5,inner=2.7,half=4.5;
+            box(x,y,16,9.7,3.05,.7,0x584231,0x79614a);
+            for(int i=0;i<32;i++){
+                double a=i*Math.PI/16,b=(i+1)*Math.PI/16;
+                double[][] out={{x+outer*Math.cos(a),y-half,z+outer*Math.sin(a)},{x+outer*Math.cos(b),y-half,z+outer*Math.sin(b)},{x+outer*Math.cos(b),y+half,z+outer*Math.sin(b)},{x+outer*Math.cos(a),y+half,z+outer*Math.sin(a)}};
+                face(out,0x899392);
+                for(int side:new int[]{-1,1})face(new double[][]{{x+outer*Math.cos(a),y+side*half,z+outer*Math.sin(a)},{x+outer*Math.cos(b),y+side*half,z+outer*Math.sin(b)},{x+inner*Math.cos(b),y+side*half,z+inner*Math.sin(b)},{x+inner*Math.cos(a),y+side*half,z+inner*Math.sin(a)}},side<0?0xb3bab5:0x727e80);
+                face(new double[][]{{x+inner*Math.cos(a),y-half,z+inner*Math.sin(a)},{x+inner*Math.cos(b),y-half,z+inner*Math.sin(b)},{x+inner*Math.cos(b),y+half,z+inner*Math.sin(b)},{x+inner*Math.cos(a),y+half,z+inner*Math.sin(a)}},0x343e42);
+            }
+        }
+        anchors.add(new Anchor("cargo.origin","cargo-origin",0,0,3.05,1,0,0,1,"","","hold-floor-registration"));
+    }
     private void bulkGeometry() {
         // One fixed asymmetric coal mesh, in the barge hold's local coordinates.
         int count=24;double[][][] rings=new double[3][count][3];
         for(int ring=0;ring<3;ring++) for(int i=0;i<count;i++) {
             double a=i*Math.PI*2/count,rough=1+.055*Math.sin(i*2.7)+.035*Math.cos(i*4.3);
             double radius=ring==0?1:ring==1?.77:.39;
-            double z=ring==0?3:ring==1?7.5+1.1*Math.sin(i*1.9):11.1+.6*Math.cos(i*2.3);
-            rings[ring][i]=new double[]{24*Math.cos(a)*radius*rough-ring*1.15,
+            double z=ring==0?3:ring==1?(cargoKind==3?12:7.5)+1.1*Math.sin(i*1.9):(cargoKind==3?17:11.1)+.6*Math.cos(i*2.3);
+            rings[ring][i]=new double[]{(cargoKind==3?29:24)*Math.cos(a)*radius*rough-ring*1.15,
                     11*Math.sin(a)*radius*rough+ring*.5,z};
         }
         int[] shades={0x252b30,0x31383e,0x3d454a,0x232a2e,0x485056,0x30373d};
@@ -143,7 +166,7 @@ public final class BargePoseGuide {
             face(new double[][]{rings[ring][i],rings[ring][j],rings[ring+1][i]},shades[(i+ring*2)%shades.length]);
             face(new double[][]{rings[ring][j],rings[ring+1][j],rings[ring+1][i]},shades[(i*3+ring+1)%shades.length]);
         }
-        double[] peak={-4,1.5,13};
+        double[] peak={-4,1.5,cargoKind==3?20:13};
         for(int i=0;i<count;i++) face(new double[][]{rings[2][i],rings[2][(i+1)%count],peak},shades[(i+2)%shades.length]);
         anchors.add(new Anchor("cargo.origin","cargo-origin",0,0,3.05,1,0,0,1,"","","hold-floor-registration"));
     }
@@ -180,14 +203,15 @@ public final class BargePoseGuide {
         }
     }
     public static void main(String[] args) throws Exception {
-        boolean bulk=args.length==1 && args[0].equals("--bulk");
+        int kind=args.length>0 && args[0].equals("--steel")?0:args.length>0 && args[0].equals("--containers")?1:args.length>0 && args[0].equals("--coal-v2")?3:2;
+        boolean bulk=kind!=2 || args.length==1 && args[0].equals("--bulk");
         if(args.length>0 && !bulk) throw new IllegalArgumentException("No args for empty barge; --bulk for separate coal pile");
         BufferedImage guide=new BufferedImage(CELL*8,CELL*4,BufferedImage.TYPE_INT_ARGB);
         double[] depth=new double[guide.getWidth()*guide.getHeight()];Arrays.fill(depth,Double.NEGATIVE_INFINITY);
         StringBuilder anchors=new StringBuilder("frame,id,kind,x,y,z,nx,ny,nz,radius,u,v,radius_uv,visibility,side,color,role\n");
         StringBuilder registration=new StringBuilder("frame,pivot_x,pivot_y,uniform_scale,raw_iou,registered_iou,shift_x,shift_y\n");
         for(int frame=0;frame<32;frame++) {
-            BargePoseGuide pose=new BargePoseGuide(frame,bulk);pose.draw(guide,depth);pose.writeAnchors(anchors,guide,depth);
+            BargePoseGuide pose=new BargePoseGuide(frame,bulk);pose.cargoKind=kind;pose.draw(guide,depth);pose.writeAnchors(anchors,guide,depth);
             registration.append(frame).append(",0.5,0.72,1,1,1,0,0\n");
         }
         // The empty well must remain visible; a solid deck must not cover its origin.
@@ -200,7 +224,7 @@ public final class BargePoseGuide {
                     || (guide.getRGB(left,top+i)>>>24)!=0 || (guide.getRGB(left+CELL-1,top+i)>>>24)!=0)
                 throw new IllegalStateException("Guide crosses source-cell gutter: "+frame);
         }
-        String prefix="docs/art-studies/"+(bulk?"bulk":"barge")+"-isometric-v1-";
+        String prefix="docs/art-studies/"+(kind==0?"cargo-steel":kind==1?"cargo-container":kind==3?"cargo-coal":bulk?"bulk":"barge")+(kind==3?"-isometric-v2-":"-isometric-v1-");
         ImageIO.write(guide,"png",new File(prefix+"pose-guide.png"));
         Files.write(new File(prefix+"guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
         Files.write(new File(prefix+"guide-registration.csv").toPath(),registration.toString().getBytes(StandardCharsets.UTF_8));

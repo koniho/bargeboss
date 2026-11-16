@@ -50,35 +50,7 @@ public final class VesselView {
             // Coaming fittings sit behind cargo; the painted loads occlude them.
             VesselLighting.barge(g,p,b,bob);
             VesselNavigationLights.draw(g,p,b,false,bob,false);
-            int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
-            int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
-            // Coal is registered to this hull and masked behind its coaming.
-            // Fade quantity without moving the mask through the painted rim.
-            if(b.berth==2 && b.unloadingTicks<Game.UNLOAD_TICKS) {
-                float fill=1-b.unloadingTicks/(float)Game.UNLOAD_TICKS;
-                SpriteAtlas.draw(p,atlas,b.angle,hullX,hullY,size,size,fill);
-                SurfaceLighting.directional(g,p,atlas,b.angle,hullX,hullY,size,fill,b);
-            }
-            // Unloading removes the same indexed loads at every heading. Only
-            // painter order changes: farther deck positions must draw first.
-            if(b.berth!=2) {
-                float[] cargoX=new float[remaining],cargoY=new float[remaining],depth=new float[remaining];
-                int[] order=new int[remaining];
-                for(int i=0;i<remaining;i++) {
-                    float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
-                    cargoX[i]=hullX+c*xx-s*yy;cargoY[i]=hullY+s*xx+c*yy;
-                    depth[i]=river?((RiverPainter)p).camera.screenY(cargoX[i],cargoY[i]):cargoY[i];
-                    int j=i-1;
-                    while(j>=0 && depth[order[j]]>depth[i]) {order[j+1]=order[j];j--;}
-                    order[j+1]=i;
-                }
-                float cargoSize=b.berth==0?58:26;
-                for(int n=0;n<remaining;n++) {
-                    int i=order[n];
-                    SpriteAtlas.draw(p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,cargoSize,1);
-                    SurfaceLighting.directional(g,p,atlas,b.angle,cargoX[i],cargoY[i],cargoSize,1,b);
-                }
-            }
+            CargoView.draw(g,p,b,hullX,hullY,size);
             VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
             VesselNavigationLights.draw(g,p,b,false,bob,true);
             if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {

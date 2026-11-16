@@ -1,5 +1,7 @@
 # Cargo style and proportion review — 2026-11-15
 
+Resolved in the 2026-11-16 refresh: see [current cargo contract](cargo-authoring-contract.md), [updated comparison](cargo-style-after-v3.png), and [generation record](../art-prompts/cargo-hold-v1.md). Findings below describe the previous assets.
+
 The newest accessible user-captured screenshot is
 `Pictures/Screenshots/Screenshot_20261115-194921.png` (coal tutorial). Later saved
 Montrose captures show a yacht rather than cargo barges. Filesystem and Android

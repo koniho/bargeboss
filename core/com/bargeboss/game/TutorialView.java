@@ -59,11 +59,12 @@ public final class TutorialView {
         if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
             first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
         }
+        if(t.lesson==Tutorial.MOVE && g.settings.joystickSide()!=GameSettings.OFF)first="CYAN FORWARD / AMBER REVERSE. DRAG TUG.";
         if(t.lesson==Tutorial.MOVE)second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% COMPLETE";
         if(t.lesson==Tutorial.REVERSE && t.reverseArmed){
             boolean joystick=g.settings.joystickSide()!=GameSettings.OFF;
             first=joystick?"USE THE AMBER JOYSTICK REVERSE AREA.":"DRAG TUG BACKWARD. KEEP BOW AHEAD.";
-            second=(joystick?"OR DRAG TUG BACK / RING: ":"REACH THE RING / ")+(int)(t.reverseProgress()*100)+"% REVERSED";
+            second="RELEASE TO CHANGE DRIVE / "+(int)(t.reverseProgress()*100)+"% REVERSED";
         }
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);

@@ -13,6 +13,8 @@ public final class JoystickReverseTest {
                 float wx=(x-y/RiverCamera.DEPTH)/(2*RiverCamera.Q),wy=(x+y/RiverCamera.DEPTH)/(2*RiverCamera.Q);
                 float dot=(wx*(float)StrictMath.cos(heading)+wy*(float)StrictMath.sin(heading))/Physics.length(wx,wy);
                 if(Math.abs(dot+.5f)<.00001f)continue;
+                float forward=(angle-Joystick.forwardStart(heading))%(float)(2*Math.PI);if(forward<0)forward+=(float)(2*Math.PI);
+                check((forward<Joystick.forwardSweep(heading))==(dot>=-.5f),"Forward segments complement the projected reverse cone");
                 check(shown(heading,angle)==(dot<-.5f),"Marked arc equals the actual reverse cone under isometric projection");
                 check(Joystick.reverseScreen(heading,x,y)==(dot<-.5f),"Screen predicate agrees with independent world dot-product");
             }

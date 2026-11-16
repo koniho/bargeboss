@@ -209,3 +209,23 @@ Contact and cast shadows remain independent alpha-derived masks at the unsheared
 The park generator returned1774×887, not an even cell grid, and its first result was opaque white despite the requested transparent output. Retain that failed source for provenance; request a targeted alpha correction through imagegen and inspect the corrected result on water, light and dark backgrounds. A transparent viewer's colored edge artifacts alone are not proof of a visible halo. Preserve the tool's antialiased source alpha rather than silently thresholding it.
 
 The runtime sheet uses exact444px cells at1776×888. Park crops are copied bit-for-bit into those cells;443px source edges receive1px transparent padding, and pivots compensate by443/444 on the affected axis. The waterfront627px material cells are uniformly downsampled offline to444px. Keep this distinction explicit: source-preserving repacking and uniform resampling have different pixel guarantees. Regenerate corresponding shadow masks from the actual production atlas, verify transparent mask gutters, and keep fixtures/outlet inventories explicitly empty for natural unlit assets. Detailed prompts, bounds, pivots, source mappings, candidate composites and shadow proofs live in `docs/art-studies/montrose/park-v2/` and `waterfront-v2/`.
+
+## Cargo hold refresh — 2026-11-16
+
+- A new hull does not automatically migrate legacy cargo. Repeated pipe/container
+  sprites with independent sizes/pivots produced oversized steel, undersized boxes
+  and foreground rail overdraw. Define one shared hold first, then author loads
+  at its floor height and origin. See [cargo contract](cargo-authoring-contract.md).
+- Requesting "no hull" still produced container/coal rim fragments when the style
+  concept included loaded barges. A targeted second edit with only the candidate
+  and isolated guide removed them. Keep rejected inputs for provenance.
+- Whole-load32-pose layers reduce repeated submissions and sorting, but trade away
+  indexed per-unit removal: these loads use the existing180-tick quantity fade.
+  Future independently lifted units need explicit per-unit geometry/occlusion;
+  do not reintroduce loose sizes and offsets.
+- Model-derived foreground coaming clipping protects the painted rim in every
+  orientation; clip lighting together with cargo. Hull, cargo and clip share heave.
+- Source boundary alpha can be1–2/255 without visible contamination on gameplay
+  composites. Record measured tolerance; derived shadow gutters stay exactly0.
+  Distinct32-cell hashes cannot certify correct3D poses. Low steel silhouette fit
+  at a few poses remains an honest generated-art limitation.

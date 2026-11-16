@@ -46,6 +46,13 @@ public final class Game {
     public int control=IDLE;
     public boolean reversing, manualSteering;
     private boolean tapCandidate;
+    // First deliberate thrust input owns forward/reverse until this pointer ends.
+    private int driveDirection;
+    public int driveDirection(){return driveDirection;}
+    void selectDriveDirection(float dx,float dy){
+        if(driveDirection==0)driveDirection=Joystick.reverseWorld(tug.angle,dx,dy)?-1:1;
+    }
+
     // A committed cargo push owns this touch until lift/cancel. Moving vessels
     // must not reclassify the same steering finger as a towline throw.
     private boolean cargoPushGesture;
@@ -389,7 +396,7 @@ public final class Game {
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
-        joystick.cancel();
+        joystick.cancel();driveDirection=0;
         pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
@@ -477,7 +484,7 @@ public final class Game {
         if(river) {
             if(!worldTouch(x,y)) return;
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
-        pointer=true; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
+        pointer=true; driveDirection=0; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
         if(!river) return;
         // Pick the nearest eligible hull before classifying the gesture. A
         // connected neighbor's padded hit area must not steal the spare's center
@@ -524,6 +531,7 @@ public final class Game {
             boolean wasSteering=manualSteering;
             if(distance>42) manualSteering=true;
             else if(distance<26) manualSteering=false;
+            if(held==-2 && manualSteering)selectDriveDirection(x-downX,y-downY);
             if(manualSteering!=wasSteering) haptic(HAPTIC_TICK);
         }
     }
@@ -743,7 +751,7 @@ public final class Game {
                 float dy=(joystick.x+joystick.y/RiverCamera.DEPTH)/(2*RiverCamera.Q);
                 float len=Math.max(.001f,Physics.length(dx,dy));
                 navigating=true;targetX=tug.x+dx/len*200;targetY=tug.y+dy/len*200;
-                reversing=Joystick.reverseWorld(tug.angle,dx,dy);
+                selectDriveDirection(dx,dy);reversing=driveDirection<0;
                 control=reversing?REVERSING:MOVING;
                 navigate(targetX,targetY,(reversing?60:88)*throttle,reversing);
             } else {
@@ -756,7 +764,7 @@ public final class Game {
             if(manualSteering) {
                 navigating=true; reversing=false; control=MOVING;
                 targetX=tug.x+dx/len*200; targetY=tug.y+dy/len*200;
-                reversing=Joystick.reverseWorld(tug.angle,dx,dy);
+                selectDriveDirection(dx,dy);reversing=driveDirection<0;
                 control=reversing?REVERSING:MOVING;
                 navigate(targetX,targetY,(reversing?60:88)*Physics.clamp((len-26)/60,0,1),reversing);
             } else {
@@ -844,8 +852,9 @@ public final class Game {
         }
         return false;
     }
-    private void navigate(float x,float y,float topSpeed) { navigate(x,y,topSpeed,false); }
-    private void navigate(float x,float y,float topSpeed,boolean astern) {
+    private void navigate(float x,float y,float topSpeed) { navigate(x,y,topSpeed,false,false); }
+    private void navigate(float x,float y,float topSpeed,boolean astern) { navigate(x,y,topSpeed,astern,true); }
+    private void navigate(float x,float y,float topSpeed,boolean astern,boolean hullThrust) {
         float dx=x-tug.x, dy=y-tug.y, distance=Physics.length(dx,dy);
         if(distance<1) { tug.vx*=.93f; tug.vy*=.93f; return; }
         float desired=(float)StrictMath.atan2(dy,dx)+(astern?(float)Math.PI:0), error=Physics.angle(desired-tug.angle);
@@ -853,7 +862,13 @@ public final class Game {
         float load=tow.loadMass(tug);
         float speed=Math.min(topSpeed*tow.speedFactor(tug),(float)StrictMath.sqrt(distance*100));
         speed*=Math.max(.1f,1-Math.abs(error)*.45f);
-        float dvx=dx/distance*speed-tug.vx, dvy=dy/distance*speed-tug.vy;
+        // Manual gestures steer toward the pointer but drive along the actual keel.
+        // Otherwise dragging behind a turning tug could translate astern despite
+        // a latched FORWARD label. Pickup assistance keeps its existing target vector.
+        float sign=astern?-1:1;
+        float thrustX=hullThrust?sign*(float)StrictMath.cos(tug.angle):dx/distance;
+        float thrustY=hullThrust?sign*(float)StrictMath.sin(tug.angle):dy/distance;
+        float dvx=thrustX*speed-tug.vx, dvy=thrustY*speed-tug.vy;
         float force=Physics.length(dvx,dvy), maxChange=82*Physics.DT/(1+.05f*load);
         engineDemand=Physics.clamp(.15f+.4f*speed/95+.45f*Math.min(1,force/maxChange),0,1);
         if(force>maxChange) { dvx*=maxChange/force; dvy*=maxChange/force; }

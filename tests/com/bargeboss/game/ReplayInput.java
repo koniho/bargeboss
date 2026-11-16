@@ -109,7 +109,9 @@ public final class ReplayInput {
         else if(mx<1000 && my>520){x=1015;y=550;}
         float dx=MontroseHarbor.mapX(x)-g.tug.x,dy=MontroseHarbor.mapY(y)-g.tug.y,len=Physics.length(dx,dy);
         if(!g.pointer)down(g,g.tug.x,g.tug.y);
-        float drag=y==345 && len<90?42:65;
+        // Keel-aligned steering turns a real tow instead of translating sideways.
+        // Moderate thrust gives the yacht time to follow without stretching its line.
+        float drag=y==345 && len<90?42:52;
         if(len<8)move(g,g.downX,g.downY);
         else move(g,g.downX+dx/len*drag,g.downY+dy/len*drag);
     }

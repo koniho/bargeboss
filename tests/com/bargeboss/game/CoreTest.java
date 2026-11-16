@@ -71,6 +71,7 @@ public final class CoreTest {
         MooringAccessTest.run();
         ControlsTest.run();
         JoystickTest.run();
+        DriveDirectionTest.run();
         JoystickReverseTest.run();
         ReverseTutorialTest.run();
         BuoyOrbitTest.run();
@@ -136,8 +137,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Reviewed bow/foam shader fallbacks change drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("5337bb4c:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Cargo/control updates and upstream effects jointly change the visual trace.
+        check(Parity.signature().equals("4f0be613:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
