@@ -32,6 +32,11 @@ public final class Challenges {
     public static String summary(int id) { return level(id).summary; }
     public static String cardGoal(int id) { return level(id).cardGoal; }
     public static String cardHint(int id) { return level(id).cardHint; }
+    /** Delivery order also supplies the asset manifest, including loads not yet spawned. */
+    public static int feedBerth(int id,int index) {
+        int kind=kind(id);
+        return kind==SHARED_SLIP || kind==DEEP_CHANNEL?new int[]{2,0,1}[index]:index==0?2:1;
+    }
     public static int quota(int id) { return level(id).quota; }
     public static int pageCount() { return (COUNT+PAGE_SIZE-1)/PAGE_SIZE; }
     public static int pageFor(int id) { return valid(id)?id/PAGE_SIZE:0; }

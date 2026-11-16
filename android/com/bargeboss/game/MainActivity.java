@@ -67,6 +67,7 @@ public final class MainActivity extends Activity {
         private boolean running;
         private android.content.SharedPreferences progress;
         private int savedVersion,attemptedVersion;
+        private LevelAssets.Plan preparedPlan;
         GameView() {
             super(MainActivity.this);
             setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up.");
@@ -75,6 +76,11 @@ public final class MainActivity extends Activity {
                 game.restoreProgress(progress.getString("snapshot",null));
             } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not read captain progress",e); }
             savedVersion=attemptedVersion=game.progressVersion();
+            if(developer==null)prepareLevelAssets();
+        }
+        private void prepareLevelAssets() {
+            LevelAssets.Plan plan=LevelAssets.upcoming(game);
+            if(plan!=preparedPlan){preparedPlan=plan;painter.prepareRotations(plan.rotationAtlases());}
         }
         void saveProgress(boolean flush) {
             if(developer!=null)return;
@@ -109,6 +115,7 @@ public final class MainActivity extends Activity {
             requestRedraw();
         }
         protected void onDraw(Canvas canvas) {
+            prepareLevelAssets();
             if(developer!=null)developer.beforeDraw();
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,viewport.logicalWidth(),viewport.logicalHeight()); painter.bind(canvas); game.render(painter); canvas.restore();

@@ -1,0 +1,8 @@
+compound_paths=false
+frame_textures=true
+water_grouping=false
+async_layers=true
+rotation_prefetch=true
+frame_cache_mib=160
+method_trace=false
+system_trace=false

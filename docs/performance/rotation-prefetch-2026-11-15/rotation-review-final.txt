@@ -1,0 +1,1 @@
+frames=1024 bytes=90179088 prepare_ms=334.505579 pixels=9437184 changed=0 pressure_evictions=27 rotation_rebuilds=0 cancellation=passed

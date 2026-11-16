@@ -10,19 +10,30 @@ development phone's measurements, not guarantees for every device/backend.
 - Keep directional sheets as authoring assets; draw retained frame-sized textures
   at runtime. One small sprite referencing a whole sheet can force a much larger
   native texture working set. Desktop/iOS already crop frames; Android uses a
-  24 MiB cropped-frame LRU. Preserve all authored cell pixels, transparent margins,
+  160 MiB cropped-frame cache. At startup, prefetch and retain complete
+  watercraft rotation families needed by the upcoming level (including cargo,
+  glow, shadow and every lighting variant); remaining space is LRU-managed for other artwork. Preserve all authored cell pixels, transparent margins,
   32 headings, pivots, size corrections and light/smoke anchors. Reuse full-image
   frames. The title sky fade strips deliberately keep their shared source because
   cropping changed filtered edge sampling.
 - Bound every added cache and measure both retained CPU storage and native texture
   pressure. Existing Android terrain/UI raster storage is capped at 48 MiB;
-  additional frame storage is capped at 24 MiB. Eviction must not recycle images
+  additional frame storage is capped at 160 MiB (complete rotation sets currently
+  consume 53 MiB for the tutorial, 86 MiB for the entire catalog). This is CPU bitmap storage, not an Android GPU-residency limit. Eviction must not recycle images
   still referenced by recorded hardware drawing commands. Exercise eviction and
   reload, not just a stationary warm cache.
+- Declare upcoming assets in shared `LevelAssets.Plan` manifests, including future
+  feeder deliveries and later tutorial phases. Expand each listed watercraft into
+  every heading/effect variant with `SpriteAtlas.rotationAtlases(sources)`. Native
+  hosts only prepare the supplied list; they must not infer requirements from
+  visible objects or choose different sprites. Replace obsolete preparation on a
+  level change and unpin old-only frames. Keep shared frames reusable.
 - Prepare expensive static content before it becomes visible. Account for likely
   camera movement and zoom/density changes. Split preparation into bounded work,
-  or prebuild during loading; a worker needs its own painter/resources and must
-  publish immutable results safely. Do not move shared game mutation to a worker.
+  or prebuild during loading. Raster workers need private drawing state; bitmap-only
+  preparation can share immutable source images/crops with safe publication and
+  short cache locks. Never share a live Canvas/Paint or mutate a published bitmap.
+  Cancel preparation when its owning painter closes. Do not move shared game mutation to a worker.
 - A count limit is not a time budget. The current one-layer-build-per-frame limit
   still permits a single 19 ms raster build. A direct-drawing fallback can add work
   during the same frame. Avoid promising that a cache removes stutter merely

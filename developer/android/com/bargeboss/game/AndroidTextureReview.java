@@ -43,11 +43,12 @@ final class AndroidTextureReview {
             report.write("cases="+cases+" pixels="+pixels+" changed="+different+" max_channel_error="+maxError+"\n");
         }
         full.profileResetTextures();cells.profileResetTextures();
+        cells.profileRotationCache(24,false);
         CanvasPainter.Profile stress=cells.enableProfile();long maximum=0;int evictions=0;
         for(int atlas:new int[]{0,1,2,3,4,21,22,23,31,36,37,38,39,40})for(int f=0;f<SpriteAtlas.count(atlas);f++) {
             cells.beginFrame();cells.sprite(atlas,f,256,200,170,150,0,1);
             maximum=Math.max(maximum,cells.profileFrameBytes());evictions+=stress.frameEvictions;
-            if(cells.profileFrameBytes()>24L*1024*1024)throw new AssertionError("Frame texture cache exceeded budget");
+            if(cells.profileFrameBytes()>cells.profileFrameBudget())throw new AssertionError("Frame texture cache exceeded budget");
         }
         if(evictions==0)throw new AssertionError("Frame texture stress did not exercise eviction");
         // The first tug heading has been evicted; reloading must still draw its source pixels.

@@ -20,6 +20,11 @@ water_grouping=${BARGEBOSS_PROFILE_WATER_GROUPING:-false}
 case "$water_grouping" in true|false) ;; *) exit 2;; esac
 async_layers=${BARGEBOSS_PROFILE_ASYNC_LAYERS:-true}
 case "$async_layers" in true|false) ;; *) exit 2;; esac
+rotation_prefetch=${BARGEBOSS_PROFILE_ROTATION_PREFETCH:-true}
+case "$rotation_prefetch" in true|false) ;; *) exit 2;; esac
+frame_cache_mib=${BARGEBOSS_PROFILE_FRAME_CACHE_MIB:-160}
+case "$frame_cache_mib" in ''|*[!0-9]*) exit 2;; esac
+if [ "$frame_cache_mib" -lt 1 ] || [ "$frame_cache_mib" -gt 160 ]; then exit 2; fi
 export RISH_APPLICATION_ID=com.termux
 # Respect an awake scope already owned by the surrounding development round.
 if [ ! -f out/phone-screen-timeout-before.txt ]; then
@@ -35,12 +40,12 @@ output=out/profiles/$(date +%Y%m%d-%H%M%S)-$scene-$mode
 mkdir -p "$output"
 printf 'compound_paths=%s\nframe_textures=%s\n' "$compound_paths" "$frame_textures" > "$output/strategies.txt"
 printf 'water_grouping=%s\n' "$water_grouping" >> "$output/strategies.txt"
-printf 'async_layers=%s\n' "$async_layers" >> "$output/strategies.txt"
+printf 'async_layers=%s\nrotation_prefetch=%s\nframe_cache_mib=%s\n' "$async_layers" "$rotation_prefetch" "$frame_cache_mib" >> "$output/strategies.txt"
 printf 'method_trace=%s\nsystem_trace=%s\n' "$trace" "$system_trace" >> "$output/strategies.txt"
 rish -c "rm -f '$remote/$scene-$mode.csv'"
 rish -c 'input keyevent KEYCODE_WAKEUP'
 rish -c 'dumpsys gfxinfo com.bargeboss.game reset' > "$output/reset.txt" 2>&1
-rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping" > "$output/launch.txt" 2>&1
+rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping --ez bb_rotation_prefetch $rotation_prefetch --ei bb_frame_cache_mib $frame_cache_mib" > "$output/launch.txt" 2>&1
 started=$(date +%s)
 ready=
 while [ "$(($(date +%s)-started))" -lt 180 ]; do

@@ -1,0 +1,8 @@
+Stopping: com.bargeboss.game
+Starting: Intent { cmp=com.bargeboss.game/.MainActivity (has extras) }
+Status: ok
+LaunchState: COLD
+Activity: com.bargeboss.game/.MainActivity
+TotalTime: 2311
+WaitTime: 2312
+Complete

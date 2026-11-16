@@ -1,0 +1,1 @@
+tutorial_frames=704 tutorial_bytes=55582616 two_banks_frames=864 shared_slip_frames=1024 unused_cargo=not_loaded rapid_switch=passed previous_level_unpinned=passed current_level_rebuilds=0

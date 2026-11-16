@@ -1,0 +1,4 @@
+--------- beginning of main
+11-15 19:46:45.247 30825 30825 I BargeBossProfile: READY scene=barge-arrival mode=replay width=1320.3539 height=600.0 warmup=120 samples=360 compound_paths=false frame_textures=true async_layers=true water_grouping=false frame_cache_mib=160 rotation_prefetch=true
+11-15 19:46:47.957 30825 30825 I BargeBossProfile: SAMPLING barge-arrival replay
+11-15 19:46:53.868 30825 31027 I BargeBossProfile: SAVED complete /storage/emulated/0/Android/data/com.bargeboss.game/files/profiles/barge-arrival-replay.csv frames=480

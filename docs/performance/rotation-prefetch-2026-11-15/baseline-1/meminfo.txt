@@ -1,0 +1,65 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 456532317 Realtime: 740330404
+
+** MEMINFO in pid 25286 [com.bargeboss.game] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap   264068   264056        0       19   265860   289716   271382    13809
+  Dalvik Heap     2254     2236        0       66     3776   262144     3921   258223
+ Dalvik Other     5860     1932        0        0    10208                           
+        Stack      744      744        0        0      748                           
+    Other dev       12        0       12        0      388                           
+     .so mmap     1830      156      212       20    28172                           
+    .jar mmap     1398        0        0        0    45876                           
+    .apk mmap       21        0        0        0      580                           
+    .dex mmap      563      556        0        0     1296                           
+    .oat mmap       21        0        0        0     1900                           
+    .art mmap     7868     7608      108       17    20988                           
+   Other mmap     2042        4        0        0     4944                           
+   EGL mtrack    51460    51460        0        0    51460                           
+    GL mtrack   169500   169500        0        0   169500                           
+        Memfd       17        0        0        0      896                           
+      Unknown      830      732       92        6     1556                           
+        TOTAL   508616   498984      424      128   608148   551860   275303   272032
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:     9952                          24764
+         Native Heap:   264056                         265860
+                Code:     1068                          85824
+               Stack:      744                            748
+            Graphics:   220960                         220960
+       Private Other:     2628
+              System:     9208
+             Unknown:                                    9992
+ 
+           TOTAL PSS:   508616            TOTAL RSS:   608148       TOTAL SWAP PSS:      128
+ 
+ Objects
+               Views:        6         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       35        AssetManagers:        0
+       Local Binders:       16        Proxy Binders:       57
+       Parcel memory:        6         Parcel count:       24
+    Death Recipients:        0             WebViews:        0
+ 
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+   Bitmap (malloced):      688                         245957
+    Other (malloced):      382                             34
+ Other (nonmalloced):       81                             60
+ 
+ Mapped Bitmaps
+                         Count                       Size(KB)
+                        ------                         ------
+              Mapped:        0                              0
+              Unique:        0                              0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 

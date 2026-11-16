@@ -13,11 +13,15 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class CanvasPainter implements Painter {
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -29,12 +33,24 @@ public final class CanvasPainter implements Painter {
     private final RectF affineUnit=new RectF(0,0,1,1);
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
-    private final Map<Integer,Atlas> atlases=new HashMap<Integer,Atlas>();
-    private final Map<String,Bitmap> sourceImages=new HashMap<String,Bitmap>();
+    private final ConcurrentMap<Integer,Atlas> atlases=new ConcurrentHashMap<Integer,Atlas>();
+    private final ConcurrentMap<Integer,Object> atlasLocks=new ConcurrentHashMap<Integer,Object>();
+    private final ConcurrentMap<String,Bitmap> sourceImages=new ConcurrentHashMap<String,Bitmap>();
     // Only cropped cells allocate extra CPU storage. Full-image cells reuse the source.
     // Bound this independently of terrain/UI rasters; never recycle a bitmap that a
     // hardware display list may still reference.
-    private static final long FRAME_TEXTURE_BUDGET=24L*1024*1024;
+    private static final long FRAME_TEXTURE_BUDGET=160L*1024*1024;
+    private long frameBudget=FRAME_TEXTURE_BUDGET;
+    private final Object frameLock=new Object();
+    private volatile boolean closed,rotationsReady;
+    private boolean rotationPrefetch=true,rotationStarted,rotationWorking;
+    private volatile int rotationGeneration;
+    private int[] rotationPlan;
+    private Set<Integer> pinnedAtlases=new HashSet<Integer>();
+    private Thread rotationWorker;
+    private volatile int rotationFrames;
+    private volatile long rotationNs;
+    private volatile String rotationFailure;
     private final LinkedHashMap<Long,Bitmap> frameImages=new LinkedHashMap<Long,Bitmap>(64,.75f,true);
     private long frameBytes;
     private final LinkedHashMap<Long,Bitmap> layers=new LinkedHashMap<Long,Bitmap>(16,.75f,true);
@@ -48,7 +64,84 @@ public final class CanvasPainter implements Painter {
     public void profileAsyncLayers(boolean enabled){asyncLayers=enabled;}
     public long profilePendingBytes(){return terrain==null?0:terrain.reservedBytes();}
     public long profileWorkerSourceBytes(){return terrain==null?0:terrain.sourceBytes();}
-    public void close(){if(terrain!=null){terrain.close();terrain=null;}}
+    public void close(){
+        synchronized(frameLock){closed=true;frameImages.clear();frameBytes=0;atlases.clear();sourceImages.clear();}
+        if(rotationWorker!=null)rotationWorker.interrupt();
+        if(terrain!=null){terrain.close();terrain=null;}
+    }
+    /** Tooling can prepare the complete catalog; gameplay supplies its upcoming-level manifest. */
+    public void prepareRotations(){prepareRotations(SpriteAtlas.rotationAtlases());}
+    public void prepareRotations(int[] atlasIds) {
+        int[] plan=atlasIds.clone();Arrays.sort(plan);
+        Set<Integer> pins=new HashSet<Integer>();
+        for(int id:plan) {
+            if(!SpriteAtlas.rotationAtlas(id) || !pins.add(id))throw new IllegalArgumentException("Invalid/duplicate rotation atlas: "+id);
+        }
+        synchronized(frameLock) {
+            if(closed || !rotationPrefetch || !frameTextures || Arrays.equals(plan,rotationPlan))return;
+            // Replace speculation with the newest level. Shared cached cells remain reusable;
+            // old-only cells become ordinary LRU candidates instead of staying pinned forever.
+            rotationPlan=plan;pinnedAtlases=pins;rotationGeneration++;rotationStarted=true;
+            rotationsReady=false;rotationFrames=0;rotationNs=0;rotationFailure=null;
+            if(rotationWorking)return;
+            rotationWorking=true;
+            rotationWorker=new Thread(this::prepareRotationPlans,"bargeboss-rotations");
+            rotationWorker.start();
+        }
+    }
+    private boolean currentPlan(int generation){return !closed && (generation<0 || generation==rotationGeneration);}
+    private void prepareRotationPlans() {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        while(true) {
+            int generation;int[] plan;
+            synchronized(frameLock) {
+                if(closed){rotationWorking=false;return;}
+                generation=rotationGeneration;plan=rotationPlan;
+            }
+            long start=System.nanoTime();String failure=null;
+            try {
+                for(int id:plan) {
+                    if(!currentPlan(generation))break;
+                    Atlas a=atlas(id,generation);
+                    for(int f=0;f<a.frames.length;f++) {
+                        if(!currentPlan(generation))break;
+                        frameImage(a,f,generation);
+                        synchronized(frameLock){if(currentPlan(generation))rotationFrames++;}
+                    }
+                }
+            } catch(RuntimeException error) {
+                if(currentPlan(generation)) {
+                    failure=error.toString();
+                    android.util.Log.e("BargeBoss","Rotation preparation failed; demand loading remains available",error);
+                }
+            }
+            synchronized(frameLock) {
+                if(closed){rotationWorking=false;return;}
+                if(generation!=rotationGeneration)continue;
+                rotationNs=System.nanoTime()-start;rotationFailure=failure;
+                rotationsReady=failure==null;rotationWorking=false;return;
+            }
+        }
+    }
+    // Diagnostic switches are set before startup. No mutable profile counters on the worker.
+    void profileRotationCache(int mib,boolean prefetch) {
+        synchronized(frameLock) {
+            if(rotationStarted || frameBytes!=0)throw new IllegalStateException("Configure frame cache before use");
+            if(mib<1 || mib>160)throw new IllegalArgumentException("Frame budget must be 1..160 MiB");
+            frameBudget=mib*1048576L;rotationPrefetch=prefetch;
+        }
+    }
+    long profileFrameBudget(){return frameBudget;}
+    boolean profileRotationWorking(){synchronized(frameLock){return rotationWorking;}}
+    boolean profileHasFrame(int id,int frame){synchronized(frameLock){return frameImages.containsKey(((long)id<<32)|(frame&0xffffffffL));}}
+    boolean profileHasAtlas(int id){return atlases.containsKey(id);}
+    boolean profileRotationsReady(){return rotationsReady;}
+    int profileRotationFrames(){return rotationFrames;}
+    long profileRotationNs(){return rotationNs;}
+    String profileRotationFailure(){return rotationFailure;}
+    void profileAwaitRotations(long millis)throws InterruptedException {if(rotationWorker!=null)rotationWorker.join(millis);}
+    Bitmap profileFrameImage(int id,int frame){return frameImage(atlas(id),frame);}
+
     public boolean preparesLayers(){return asyncLayers && !paintingLayer;}
     public void prepareLayer(StaticLayer layer,float scale) {
         if(!preparesLayers() || !layer.backgroundSafe() || !(scale>0) || !Float.isFinite(scale))return;
@@ -86,8 +179,11 @@ public final class CanvasPainter implements Painter {
     /** Diagnostic host strategies; only the debuggable session calls this. */
     public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}
     public long profileSourceBytes(){long bytes=0;for(Bitmap b:sourceImages.values())bytes+=b.getAllocationByteCount();return bytes;}
-    public long profileFrameBytes(){return frameBytes;}
-    void profileResetTextures(){atlases.clear();sourceImages.clear();frameImages.clear();frameBytes=0;}
+    public long profileFrameBytes(){synchronized(frameLock){return frameBytes;}}
+    void profileResetTextures(){synchronized(frameLock){
+        if(rotationStarted)throw new IllegalStateException("Cannot reset a prefetching painter");
+        atlases.clear();sourceImages.clear();frameImages.clear();frameBytes=0;
+    }}
     public Profile enableProfile(){if(profile==null)profile=new Profile();return profile;}
     public long profileCacheBytes(){return layerBytes;}
 
@@ -181,10 +277,11 @@ public final class CanvasPainter implements Painter {
         // texture so filtered sampling at the strip edges remains unchanged.
         boolean cropped(boolean enabled){return enabled && id!=SpriteAtlas.TITLE_BACKDROP;}
         Rect source(int frame,boolean cropped){return cropped(cropped)?cellFrames[frame]:frames[frame];}
-        Atlas(int atlas,AssetManager assets,Map<String,Bitmap> sources) throws IOException {
+        Atlas(int atlas,AssetManager assets,ConcurrentMap<String,Bitmap> sources,Object publicationLock,CanvasPainter owner,int generation) throws IOException {
             int count=SpriteAtlas.count(atlas);
             id=atlas;images=new Bitmap[count];frames=new Rect[count];cellFrames=new Rect[count];
             for(int f=0;f<count;f++) {
+                if(!owner.currentPlan(generation))throw new java.util.concurrent.CancellationException("Preparation superseded or painter closed");
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
                 String key=SpriteGrade.cacheKey(atlas,path);
                 Bitmap image=sources.get(key);
@@ -202,7 +299,9 @@ public final class CanvasPainter implements Painter {
                             image.setPixels(row,0,w,0,y,w,1);
                         }
                     }
-                    sources.put(key,image);
+                    synchronized(publicationLock) {
+                        if(owner.currentPlan(generation)){Bitmap published=sources.putIfAbsent(key,image);if(published!=null)image=published;}
+                    }
                 }
                 images[f]=image;
                 frames[f]=new Rect(Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,f)),
@@ -211,40 +310,63 @@ public final class CanvasPainter implements Painter {
             }
         }
     }
-    private Atlas atlas(int id) {
-        Atlas cached=atlases.get(id); if(cached!=null) return cached;
-        try {
-            long decodeStart=profile==null?0:System.nanoTime();
-            cached=new Atlas(id,assets,sourceImages); atlases.put(id,cached);
-            if(profile!=null)profile.decodeNs+=System.nanoTime()-decodeStart;
-            return cached;
-        } catch(IOException e) { throw new IllegalStateException("Missing sprite atlas for asset "+id,e); }
+    private Atlas atlas(int id) {return atlas(id,-1);}
+    private Atlas atlas(int id,int generation) {
+        boolean background=generation>=0;
+        Atlas cached=atlases.get(id);if(cached!=null)return cached;
+        Object candidate=new Object(),lock=atlasLocks.putIfAbsent(id,candidate);
+        if(lock==null)lock=candidate;
+        // Only callers of the same atlas wait; decoding never holds the frame LRU lock.
+        long start=background || profile==null?0:System.nanoTime();
+        synchronized(lock) {
+            cached=atlases.get(id);
+            if(cached!=null){if(!background && profile!=null)profile.decodeNs+=System.nanoTime()-start;return cached;}
+            try {
+                cached=new Atlas(id,assets,sourceImages,frameLock,this,generation);
+                synchronized(frameLock){if(currentPlan(generation))atlases.put(id,cached);}
+                if(!background && profile!=null)profile.decodeNs+=System.nanoTime()-start;
+                return cached;
+            } catch(IOException e) {throw new IllegalStateException("Missing sprite atlas for asset "+id,e);}
+        }
     }
-    private Bitmap frameImage(Atlas atlas,int frame) {
+    private Bitmap frameImage(Atlas atlas,int frame){return frameImage(atlas,frame,-1);}
+    private Bitmap frameImage(Atlas atlas,int frame,int generation) {
+        boolean background=generation>=0;
         Bitmap original=atlas.images[frame],image=original;
         Rect r=atlas.frames[frame];
         if(atlas.cropped(frameTextures) && (r.left!=0 || r.top!=0 || r.right!=original.getWidth() || r.bottom!=original.getHeight())) {
             long key=((long)atlas.id<<32)|(frame&0xffffffffL);
-            image=frameImages.get(key);
+            synchronized(frameLock){image=frameImages.get(key);}
             if(image==null) {
-                long start=profile==null?0:System.nanoTime();
-                // Pixel-identical cell copy. Preserve the complete authored crop,
-                // including transparent margins, so pivots and effect anchors do not move.
+                long start=background || profile==null?0:System.nanoTime();
+                // Copy the complete authored crop, including transparent margins.
+                // Crop outside the lock; adopt a concurrently published result below.
                 image=Bitmap.createBitmap(original,r.left,r.top,r.width(),r.height());
                 image.setDensity(Bitmap.DENSITY_NONE);
                 long bytes=image.getAllocationByteCount();
-                Iterator<Map.Entry<Long,Bitmap>> entries=frameImages.entrySet().iterator();
-                while(frameBytes+bytes>FRAME_TEXTURE_BUDGET && entries.hasNext()) {
-                    frameBytes-=entries.next().getValue().getAllocationByteCount();entries.remove();
-                    if(profile!=null)profile.frameEvictions++;
+                synchronized(frameLock) {
+                    Bitmap existing=frameImages.get(key);
+                    if(existing!=null)image=existing;
+                    else if(currentPlan(generation)) {
+                        Iterator<Map.Entry<Long,Bitmap>> entries=frameImages.entrySet().iterator();
+                        while(frameBytes+bytes>frameBudget && entries.hasNext()) {
+                            Map.Entry<Long,Bitmap> entry=entries.next();
+                            // Complete rotation sets survive unrelated scenery pressure.
+                            if(pinnedAtlases.contains((int)(entry.getKey()>>>32)))continue;
+                            frameBytes-=entry.getValue().getAllocationByteCount();entries.remove();
+                            if(!background && profile!=null)profile.frameEvictions++;
+                        }
+                        if(frameBytes+bytes<=frameBudget){frameImages.put(key,image);frameBytes+=bytes;}
+                        else if(background)throw new IllegalStateException("Rotation set exceeds frame cache budget");
+                    }
                 }
-                if(bytes<=FRAME_TEXTURE_BUDGET){frameImages.put(key,image);frameBytes+=bytes;}
-                if(profile!=null){profile.frameBuildNs+=System.nanoTime()-start;profile.frameBuilds++;}
+                if(!background && profile!=null){profile.frameBuildNs+=System.nanoTime()-start;profile.frameBuilds++;}
             }
         }
-        if(profile!=null)profile.texture(image);
+        if(!background && profile!=null)profile.texture(image);
         return image;
     }
+
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         if(profile!=null)profile.sprites++;

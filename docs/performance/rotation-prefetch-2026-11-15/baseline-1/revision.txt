@@ -1,0 +1,9 @@
+e13dfaacdc95912faa1dbea77930fae0c8ab0871
+ android/com/bargeboss/game/CanvasPainter.java      | 143 ++++++++++++++++-----
+ android/com/bargeboss/game/MainActivity.java       |   1 +
+ core/com/bargeboss/game/SpriteAtlas.java           |  13 ++
+ .../com/bargeboss/game/AndroidProfileSession.java  |  15 ++-
+ .../com/bargeboss/game/AndroidTextureReview.java   |   3 +-
+ optimization.md                                    |   6 +
+ tools/profile-android.sh                           |   9 +-
+ 7 files changed, 152 insertions(+), 38 deletions(-)

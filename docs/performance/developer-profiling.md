@@ -210,3 +210,49 @@ in ignored output. A boundary-crossing slice may be absent, so use complete
 interior draws. Inclusive slice durations overlap. Keep traces out of A/B timing
 comparisons because detailed native path tracing adds substantial overhead.
 See [render-queue findings](render-queue.md) for the measured result and limits.
+
+### Complete Android rotation cache
+
+Normal startup supplies `LevelAssets.upcoming(game)` to one background worker.
+`CanvasPainter.prepareRotations(plan.rotationAtlases())` retains every heading/effect
+variant of the listed watercraft within the 160 MiB cropped-cell cache;
+other crops use the remaining LRU space. Source sheets and terrain/UI layers are
+separate memory categories. This does not explicitly preupload or pin Android GPU
+textures. New directional assets must join the shared preparation catalog with
+all effect variants, and each level's full-set byte budget must be rechecked.
+The no-argument `prepareRotations()` is the explicit full-catalog tooling path.
+
+`LevelAssets.challenge(id)` derives cargo requirements from the same delivery-order
+catalog as feeder spawning; `LevelAssets.tutorial()` includes all later lesson
+loads. `LevelAssets.upcoming(root)` follows challenge selection and practice entry.
+The host requests preparation only when that immutable plan changes. Rapid changes
+replace pending work; generation checks reject stale publication/readiness. Old-only
+frames become ordinary LRU entries and shared ones stay cached. Source-sheet storage
+is still separately retained by the existing atlas cache; changing the plan does not
+promise immediate release of previously decoded source sheets. This round scopes
+watercraft rotations; scenery continues its existing demand/terrain preparation.
+
+Compare the previous strategy using the same instrumented APK and fixture:
+
+```sh
+BARGEBOSS_PROFILE_FRAME_CACHE_MIB=24 BARGEBOSS_PROFILE_ROTATION_PREFETCH=false ./tools/profile-android.sh barge-arrival replay
+./tools/profile-android.sh barge-arrival replay
+```
+
+The switches map to integer `bb_frame_cache_mib` (1–160) and boolean
+`bb_rotation_prefetch`. They are configured before startup. Production defaults
+are 160 and true. CSV columns `rotation_frames`, `rotation_ready` and
+`rotation_prepare_ms` describe the current plan (reset on a plan change); `frame_build_ms` still
+measures foreground cropping only. `decode_ms` includes waiting for a concurrently
+loading atlas. Readiness does not imply GPU residency.
+
+For the separate native review, launch a profiling session with
+`--ez bb_rotation_review true --ez bb_rotation_prefetch false`. It checks every
+prepared rotation against demand-loaded pixels, foreground/preparation races,
+exact cache accounting, retention under unrelated eviction pressure, and
+cancellation without late publication. It also checks tutorial/challenge manifests,
+unused cargo remaining undecoded, rapid selection changes and old-level unpinning.
+Results go to `profiles/rotation-review.txt` and `profiles/rotation-levels.txt`.
+Run this separately from timed comparisons; review uses its own painters and a
+96 MiB budget to force scenery eviction. The host prefetch switch is disabled in
+this command solely to avoid a redundant preload during the review.

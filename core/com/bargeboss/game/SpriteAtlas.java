@@ -47,6 +47,33 @@ public final class SpriteAtlas {
     };
     private static final float STEP=(float)(Math.PI/16);
     private SpriteAtlas() {}
+    /** Complete heading families for native preparation, including every effect variant.
+     * Cache hints only: frame selection and animation remain in shared drawing code. */
+    public static int[] rotationAtlases() {
+        return new int[]{TUG,BARGE,STEEL,CONTAINER,BULK,BARGE_GOLD,BARGE_MINT,TUG_GOLD,
+            ShadowArt.forSource(TUG),ShadowArt.forSource(BARGE),
+            SurfaceLightArt.forSource(TUG),SurfaceLightArt.forSource(BARGE),SurfaceLightArt.forSource(STEEL),
+            SurfaceLightArt.forSource(CONTAINER),SurfaceLightArt.forSource(BULK)};
+    }
+    /** Expand only the requested hull/cargo sources into complete heading/effect sets. */
+    public static int[] rotationAtlases(int... sources) {
+        boolean[] selected=new boolean[BULK+1];
+        for(int source:sources){
+            if(source<TUG || source>BULK)throw new IllegalArgumentException("Not a directional watercraft source: "+source);
+            selected[source]=true;
+        }
+        int[] all=rotationAtlases(),result=new int[all.length];int count=0;
+        for(int atlas:all) {
+            int source=ShadowArt.atlas(atlas)?ShadowArt.source(atlas):SurfaceLightArt.atlas(atlas)?SurfaceLightArt.source(atlas):VesselHighlight.atlas(atlas)?VesselHighlight.source(atlas):atlas;
+            if(selected[source])result[count++]=atlas;
+        }
+        int[] trimmed=new int[count];System.arraycopy(result,0,trimmed,0,count);return trimmed;
+    }
+    public static boolean rotationAtlas(int atlas) {
+        if(ShadowArt.atlas(atlas))return rotationAtlas(ShadowArt.source(atlas));
+        if(SurfaceLightArt.atlas(atlas))return rotationAtlas(SurfaceLightArt.source(atlas));
+        return (atlas>=TUG && atlas<=BULK) || VesselHighlight.atlas(atlas);
+    }
     private static boolean singleSheet(int atlas) { return atlas==TUG || atlas==BARGE || atlas==BULK || VesselHighlight.atlas(atlas); }
     public static String file(int atlas) {
         if(SurfaceLightArt.atlas(atlas))return SurfaceLightArt.file(atlas);

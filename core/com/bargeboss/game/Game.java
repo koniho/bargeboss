@@ -814,7 +814,7 @@ public final class Game {
                 || Math.abs(b.discY(i)-dockY(b.berth))+b.radius>53) return false;
         return true;
     }
-    private int feedBerth(int index) { return orderStage()?new int[]{2,0,1}[index]:index==0?2:1; }
+    private int feedBerth(int index) { return Challenges.feedBerth(challengeId,index); }
     private boolean spawn() {
         if(spawnIndex>=quota())return false;
         for(Feeder feeder:feeders) if(feeder.phase==Feeder.IDLE) {

@@ -1,0 +1,14 @@
+e13dfaacdc95912faa1dbea77930fae0c8ab0871
+ android/com/bargeboss/game/CanvasPainter.java      | 180 +++++++++++++++++----
+ android/com/bargeboss/game/MainActivity.java       |   7 +
+ core/com/bargeboss/game/Challenges.java            |   5 +
+ core/com/bargeboss/game/Game.java                  |   2 +-
+ core/com/bargeboss/game/SpriteAtlas.java           |  27 ++++
+ .../com/bargeboss/game/AndroidProfileSession.java  |  15 +-
+ .../com/bargeboss/game/AndroidTextureReview.java   |   3 +-
+ docs/performance/developer-profiling.md            |  46 ++++++
+ docs/performance/development-rules.md              |  19 ++-
+ optimization.md                                    |  26 +++
+ tests/com/bargeboss/game/CoreTest.java             |   1 +
+ tools/profile-android.sh                           |   9 +-
+ 12 files changed, 297 insertions(+), 43 deletions(-)

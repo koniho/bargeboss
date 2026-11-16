@@ -98,6 +98,7 @@ public final class CoreTest {
         SpriteGradeTest.run();
         VesselLightingTest.run();
         SurfaceLightingTest.run();
+        LevelAssetsTest.run();
         VesselNavigationLightsTest.run();
         VesselHighlightTest.run();
         RotationTest.run();
