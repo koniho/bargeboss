@@ -1,5 +1,6 @@
 // Shared Metal/AGSL local materials. Geometry, color and animation come from Java.
 float effectCoverage(float2 uv,float kind,float detail,float amount) {
+    float segments=kind>4.5?8.0:16.0; if(kind>4.5)kind=2.0;
     float2 q=uv-float2(0.5); float r=length(q);
     if(kind<0.5) {
         float falloff=max(0.0,1.0-r*2.0);
@@ -24,7 +25,7 @@ float effectCoverage(float2 uv,float kind,float detail,float amount) {
     float band=1.0-smoothstep(detail*0.5,detail*0.5+edge,abs(r-(0.49-detail*0.5)));
     float angle=(q.y<0.0?-1.0:1.0)*acos(clamp(q.x/max(r,0.00001),-1.0,1.0))+1.570796327;
     if(angle<0.0)angle+=6.283185307;
-    float cell=fract(angle/6.283185307*16.0);
+    float cell=fract(angle/6.283185307*segments);
     float dash=segmented<.5?1.0:smoothstep(.02,.10,cell)*(1.0-smoothstep(.67,.77,cell));
     return band*dash*(amount>=0.9999?1.0:1.0-smoothstep(amount*6.283185307-edge,amount*6.283185307+edge,angle));
 }

@@ -30,6 +30,14 @@ public final class VesselHighlightTest {
         b.lineAttached=true;check(VesselHighlight.style(g,b)<0,"successful catch removes readiness glow immediately");
         b.lineAttached=false;b.deliveryRecorded=true;check(VesselHighlight.style(g,b)<0,"delivered hull cannot keep glowing");
         check(VesselHighlight.style(g,g.tug)<0,"idle tug does not receive a barge objective pulse");
+        final int[] submissions={0};Painter sink=new Painter(){
+            public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){submissions[0]++;}
+            public void spriteBlend(int a,int f,int b,float x,float y,float w,float h,float r,float m,float alpha){submissions[0]++;}
+            public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}
+            public void line(float x,float y,float xx,float yy,float w,int c){}public void poly(float[] q,int c){}
+        };
+        VesselHighlight.draw(g,sink,g.tug,true,0,0,100);VesselHighlight.draw(g,sink,b,false,0,0,100);
+        check(submissions[0]==0,"idle and delivered hulls submit no guidance glow");
         g.navigating=true;check(VesselHighlight.style(g,g.tug)==SpriteAtlas.TUG_GOLD,"actively driven tug receives its own silhouette pulse");
         System.out.println(checks+" sprite glow registration, pulse and gameplay-state assertions passed");
     }

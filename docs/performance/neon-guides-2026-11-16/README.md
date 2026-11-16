@@ -9,3 +9,9 @@ switched away from Barge Boss during the replay. The resulting CSV has zero samp
 frames and is rejected. No timing comparison or final Android pixel claim is made.
 The previous lighting build's CSV must not be attributed to this guide revision.
 Awaiting an uninterrupted device window for the final Montrose capture.
+
+Follow-up: the descendant highlight-audit build completed an uninterrupted Android
+Montrose run and native visual inspection. See
+[the highlight-audit summary](../highlight-audit-2026-11-16/summary.json) and
+`optimization.md`. This does not retroactively validate the interrupted build's
+performance or constitute a controlled comparison.

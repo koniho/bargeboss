@@ -1479,3 +1479,33 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Added `docs/art-direction/gameplay-highlights.md`, linked from `AGENTS.md` and
   the drawing-order contract. It cites verified Valve readability guidance and
   separates those principles from the user's Barge Boss arcade style decisions.
+
+## 2026-11-16: highlight-guideline audit follow-through
+
+- Regenerated all 160 hull-glow cells with saturated yellow/green throughout the
+  core and halo. Removed cream/pale edge interpolation; geometry, alpha, frame
+  sizes, pivots and texture budgets are unchanged. No runtime blur or allocation.
+- Removed the fallback guidance glow from idle, delivered and unrelated boats.
+  Physical lighting remains independent. Active control/mission/tutorial targets
+  still receive their existing registered pulse. Tow rings now appear for active
+  interactions and the release lesson, instead of permanently marking all cargo.
+- Replaced Calumet berth infill, crawling short dash fragments and repeated corner
+  accents with four stable shader border patches. Secondary berths are quieter.
+  This reduces border submissions; it is not a measured frame-rate improvement.
+- Compact rings use eight segments rather than 16, and cap core/halo widths relative
+  to radius so tiny joystick/interaction rings do not become filled pinwheels.
+  Both shader and reference fallbacks share these choices; still three patches.
+- Added regression checks for zero idle/delivered highlight submissions and compact
+  ring open centers. Java/J2ObjC parity `cf33248e:2:1350` and 1,439,937 all-heading
+  shoreline pixel checks pass. Shared scene previews and Metal Montrose pixels
+  reviewed; native Android validation follows below. Updated the guideline and
+  asset-generation documentation to reflect the actual behavior.
+- Final validation: full `check.sh`, regenerated 160-frame asset checks, Android
+  build/install/launch, and Metal build pass. Native Android and Metal Montrose
+  screenshots were inspected. No physical-iPhone test. Android's uninterrupted
+  300-frame replay (60 warmup, ticks 2596–2895) measured draw median/p95
+  13.312/16.680 ms and frame intervals 20.394/33.623 ms, effective 42.20 FPS.
+  Cropped-frame storage remains 108.771 MiB; no source/frame builds during samples.
+  This is a sanity capture, not a controlled before/after comparison or 60 FPS
+  claim. Summary: `docs/performance/highlight-audit-2026-11-16/summary.json`;
+  raw CSV and desktop/native previews remain in ignored `out/`.

@@ -24,8 +24,8 @@ public final class VesselHighlight {
     public static void draw(Game g,Painter p,Body b,boolean tug,float x,float y,float size) {
         if(!b.active)return;
         int atlas=b.yacht?(g.mission.settledTicks>0?SpriteAtlas.YACHT_MINT:SpriteAtlas.YACHT_GOLD):style(g,b);
-        float alpha=atlas>=0?opacity(g.visualTicks):.12f+.035f*SceneryEffects.intensity(g.visualTicks,b.id*.73f);
-        if(atlas<0)atlas=tug?SpriteAtlas.TUG_GOLD:SpriteAtlas.BARGE_GOLD;
+        if(atlas<0)return; // Ambient vessel lighting is separate from actionable guidance.
+        float alpha=opacity(g.visualTicks);
         // Identical heading blend, waterline pivot and heave to the hull itself.
         // Draw with this vessel, before nearer scenery, never as a HUD overlay.
         SpriteAtlas.draw(p,atlas,b.angle,x,y,size,size,alpha);

@@ -33,14 +33,14 @@ public final class SoftCue {
         if(radius<=0 || fraction<=0)return;
         float zoom=p instanceof RiverPainter?((RiverPainter)p).camera.scale:1;
         color=neon(color);
-        float core=Physics.clamp(width*3.2f,5.6f,9f)/Math.max(1,zoom);
-        ringBand(p,x,y,radius,fraction,core+11/zoom,alpha(color,.12f));
-        ringBand(p,x,y,radius,fraction,core+5/zoom,alpha(color,.42f));
+        float core=Math.min(radius*.35f,Physics.clamp(width*3.2f,5.6f,9f)/Math.max(1,zoom));
+        ringBand(p,x,y,radius,fraction,Math.min(radius*.6f,core+11/zoom),alpha(color,.12f));
+        ringBand(p,x,y,radius,fraction,Math.min(radius*.5f,core+5/zoom),alpha(color,.42f));
         ringBand(p,x,y,radius,fraction,core,highlight(color));
     }
     private static void ringBand(Painter p,float x,float y,float radius,float fraction,float width,int color) {
         float diameter=(radius*2+width)/.98f;
-        p.material(x,y,diameter,0,0,diameter,EffectMaterial.RING,-width/diameter,Physics.clamp(fraction,0,1),color);
+        p.material(x,y,diameter,0,0,diameter,radius<24?EffectMaterial.SMALL_RING:EffectMaterial.RING,-width/diameter,Physics.clamp(fraction,0,1),color);
     }
     public static void arrow(Painter p,float x,float y,float xx,float yy,int color) {
         if(WorldArrows.capture(p,x,y,xx,yy,color))return;

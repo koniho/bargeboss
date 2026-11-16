@@ -518,8 +518,8 @@ registered pixels inside the existing water/depth clips. The earlier procedural
 spray modes are no longer used by collision effects.
 
 `SoftCue` supplies broad colored glow bands with a bright central highlight.
-Rings keep their three-material submission budget; line/arrow segments keep three
-stroke submissions. Pulse comes only from shared `visualTicks`. Rings and slip
+Rings keep their three-material submission budget; lines and arrows use one
+material patch on shader hosts (reference hosts approximate the feather). Pulse comes only from shared `visualTicks`. Rings and slip
 corners project through `RiverPainter`; destination and gate arrows now construct
 their heads in that plane too, including screen-edge direction cues. Labels remain
 in the HUD. Glow widths stay bounded across zoom, while interiors stay open.

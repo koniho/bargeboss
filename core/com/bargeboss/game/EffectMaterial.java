@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Bounded local materials. No scene reads, time source, gameplay or native decisions. */
 public final class EffectMaterial {
-    public static final int GLOW=0,DOT=1,RING=2,ARROW=3,DASH_LINE=4;
+    public static final int GLOW=0,DOT=1,RING=2,ARROW=3,DASH_LINE=4,SMALL_RING=5;
     private EffectMaterial(){}
     public static void fallback(Painter p,float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
         if((color>>>24)==0 || amount<=0)return;
@@ -13,11 +13,11 @@ public final class EffectMaterial {
         if(kind==DASH_LINE){int count=Math.max(1,Math.round(amount));float width=Physics.length(bx,by)*detail;
             for(int i=0;i<count;i++){float from=(i+(count==1?0:.12f))/count-.5f,to=(i+(count==1?1:.82f))/count-.5f;
                 for(int k=2;k>=0;k--)p.line(x+ax*from,y+ay*from,x+ax*to,y+ay*to,width+k*3,SoftCue.alpha(color,k==2?.12f:k==1?.42f:1));}return;}
-        if(kind==RING) {
+        if(kind==RING || kind==SMALL_RING) {
             boolean dashed=detail<0;detail=Math.abs(detail);
             int n=96;float ringRadius=.49f-detail*.5f;
             for(int i=0;i<n*amount;i++) {
-                if(dashed&&i%6>=4)continue;
+                if(dashed&&i%(kind==SMALL_RING?12:6)>=(kind==SMALL_RING?8:4))continue;
                 double a=-StrictMath.PI/2+i*StrictMath.PI*2/n,b=-StrictMath.PI/2+Math.min(i+1,n*amount)*StrictMath.PI*2/n;
                 float u=(float)StrictMath.cos(a)*ringRadius,v=(float)StrictMath.sin(a)*ringRadius;
                 float uu=(float)StrictMath.cos(b)*ringRadius,vv=(float)StrictMath.sin(b)*ringRadius;

@@ -59,6 +59,14 @@ public final class SceneCueTest {
             int neon=SoftCue.neon(color),r=(neon>>16)&255,gc=(neon>>8)&255,b=neon&255;
             check(Math.max(r,Math.max(gc,b))-Math.min(r,Math.min(gc,b))>200,"guidance stays saturated rather than whitening");
         }
+        for(float radius:new float[]{6,12,18}){
+            final int[] patches={0};Painter compact=new Strokes(){
+                public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){
+                    patches[0]++;check(kind==EffectMaterial.SMALL_RING,"small indicators use eight clear segments");
+                    check(Math.abs(detail)<.24f,"small-ring glow leaves an open center");
+                }};
+            SoftCue.ring(compact,0,0,radius,1,VisualStyle.GOLD,5);check(patches[0]==3,"compact ring stays within three patches");
+        }
         Game g=new Game();g.visualTicks=0;int a=SoftCue.animated(g,VisualStyle.GOLD);g.visualTicks=35;
         check(a!=SoftCue.animated(g,VisualStyle.GOLD),"guidance gently animates with the shared visual clock");
         System.out.println(checks+" shoreline depth and soft guidance assertions passed");

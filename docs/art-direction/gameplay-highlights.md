@@ -65,13 +65,17 @@ must not silently reassign the meaning of a destination.
 
 Use broken outlines for ranges, hold-progress rings, destination squares and slip
 rectangles. Leave clear gaps; start near a two-thirds-on, one-third-off pattern.
-The current ring implementation uses 16 segments. Long straight borders use
+The current ring implementation uses 16 segments for large targets and eight
+for compact indicators, with proportional width caps that preserve the center. Long straight borders use
 roughly 32 screen-unit cells; short corner strokes need not contain extra gaps.
 Arrows stay broad and filled, with one obvious head. Do not make a thick white
 wireframe arrow or an arrow that resembles a length of dock.
 
 ## Motion, hierarchy and depth
 
+- Reserve hull guidance glow for actionable targets and active controls; ambient
+  illumination belongs to vessel lighting. Idle or already-delivered boats must
+  not keep a guidance rim. Avoid a permanent ring around every towed cargo.
 - Keep one dominant current objective. Reduce redundant tutorial prompts while the
   player is steering, dragging cargo or aiming a rope.
 - Use a gentle shared-clock pulse. Preserve visible color through the trough;
