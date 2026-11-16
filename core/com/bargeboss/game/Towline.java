@@ -34,6 +34,7 @@ public final class Towline {
     public float cargoY() { return cargo.y+cargoEnd*(float)StrictMath.sin(cargo.angle); }
     public static boolean clear(Game g,float x,float y,float xx,float yy) {
         if(g.hasBridge() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))return false;
+        if(g.montroseStage())return MontroseHarbor.clear(x,y,xx,yy);
         if(g.tutorial!=null) {
             int steps=Math.max(1,(int)(Physics.length(xx-x,yy-y)/4));
             for(int i=0;i<=steps;i++) if(!TrainingChannel.contains(x+(xx-x)*i/steps,y+(yy-y)*i/steps)) return false;

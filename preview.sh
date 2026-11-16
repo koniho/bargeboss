@@ -4,6 +4,8 @@ cd "$(dirname "$0")"
 rm -rf build/preview
 mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
+echo tools/MontroseReview.java >> build/preview/sources.txt
+echo tools/MontroseAssetReview.java >> build/preview/sources.txt
 echo tools/GenerateSurfaceLighting.java >> build/preview/sources.txt
 echo tools/SurfaceLightingReview.java >> build/preview/sources.txt
 echo tools/GenerateShadowMasks.java >> build/preview/sources.txt
@@ -112,3 +114,6 @@ if [ "${1:-}" = '--rotation' ] || [ "${1:-}" = '--animations' ]; then
             -loop 0 out/concept-rotation.gif
     fi
 fi
+
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseAssetReview

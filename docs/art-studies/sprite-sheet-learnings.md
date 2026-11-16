@@ -183,3 +183,29 @@ centers differ by half a tile for odd/even footprint dimensions. Footprint and
 height are separate metadata: a narrow tall stack and a wide low production
 hall should retain their distinct silhouettes and setbacks. Use one uniform
 source-to-world scale, never a bitmap shear to conceal projection errors.
+
+## Montrose materials, parkland and anchored tree motion (2026-11-16)
+
+The first marina set was visually disconnected despite using the requested camera words: yellow-green grass detail, small foliage lobes and bright diagonal tile rims dominated the harbor overview. Review the **actual shared renderer** with the game's dusk grade, not only the isolated transparent sheet. The replacement park source retains neutral daylight exposure, broad cool-green lawn variation, readable tree masses and gray limestone. Shared scenery grading supplies dusk once. Baking darkness into the source as well would reduce material separation and make future lighting harder to tune. The final overview `out/montrose-overview-v2.png` shows grounded, consistently graded trees and a quieter shore; a residual repeated lawn diamond pattern remains visible at wide views.
+
+### Flat materials require measured projected corners
+
+The waterfront generator returned approximately32.7-degree ground edges despite a35.264-degree orthographic elevation /30-degree screen-axis prompt; lawns measured about29.4degrees. Placement pivots alone cannot correct this. For **flat** timber/concrete/lawn material planes, record actual three-corner source coordinates and solve an affine basis to the exact shared-camera world quad. Clip to that quad and retain an opaque receiving surface underneath. The vertical quay walls are separate shared rigid geometry with their own height. Never use this planar-material method to shear an upright factory, rotate a painted isometric structure, or invent a new camera angle. Small tree bending below is an animation deformation, not a perspective repair.
+
+### Quieter lawns still need repetition control
+
+Replace individual bright tufts and flowers with broad subdued variation. Even a smooth standalone diamond can reveal borders or alternating color blocks after repetition. Inspect a multi-tile join study before integration. In this round the shared renderer samples inside the lawn diamond to omit the generated perimeter rim, maps that sample to exact land corners, and blends it over a solid cool-green ground surface. Use one primary lawn variant rather than strict checkerboarding. Roads, paths, tree groups and shoreline geometry break up large fields. Do not hide seams by changing water collision boundaries, widening land into navigation routes, or preparing new per-frame texture patches. Static material mapping belongs in the existing bounded cached terrain layers.
+
+### Roots, height and wind are separate from camera projection
+
+Tree ground pivots come from visible trunk roots, not canopy bounds or the bottom-center of the sheet. Grouped trees need an explicitly estimated common footprint pivot; individual trunks at different projected ground depths will not all share one source Y coordinate. Preserve those authored ground-depth differences. Record upright silhouette height separately from footprint size, and vary group heights/placement to avoid a flat row of identical canopies.
+
+`MarinaArt.drawAnimated` uses the shared deterministic visual clock and a stable placement seed to shear the vertical image basis gently around the registered ground pivot. The tall/low groups have bounded2.7%/1.9% cell-width shear. Horizontal basis, root anchor and shared camera remain fixed; it does not rotate the entire isometric billboard. This gives readable canopy/trunk motion without a new animation atlas, image allocation or frame-rate-dependent state. A raised land camera and the shadow's explicit receiving-plane rise must represent the same elevation. In Montrose both subtract18 screen-vertical world units before scaling.
+
+Contact and cast shadows remain independent alpha-derived masks at the unsheared root pivot; flat lawns, concrete and timber tops are explicitly noncasting. Keep all receiving-plane masks below all overlapping upright sprites: interleaving each tree's shadow and color artwork can cause a later tree shadow to darken an already painted neighbor's crown. Sort upright props by the shared ground-depth expression after the receiving-plane pass. Root-grounding review alone does not prove correct building/boat occlusion or shadow receiving-surface clipping.
+
+### Output dimensions and transparency are measured contracts
+
+The park generator returned1774×887, not an even cell grid, and its first result was opaque white despite the requested transparent output. Retain that failed source for provenance; request a targeted alpha correction through imagegen and inspect the corrected result on water, light and dark backgrounds. A transparent viewer's colored edge artifacts alone are not proof of a visible halo. Preserve the tool's antialiased source alpha rather than silently thresholding it.
+
+The runtime sheet uses exact444px cells at1776×888. Park crops are copied bit-for-bit into those cells;443px source edges receive1px transparent padding, and pivots compensate by443/444 on the affected axis. The waterfront627px material cells are uniformly downsampled offline to444px. Keep this distinction explicit: source-preserving repacking and uniform resampling have different pixel guarantees. Regenerate corresponding shadow masks from the actual production atlas, verify transparent mask gutters, and keep fixtures/outlet inventories explicitly empty for natural unlit assets. Detailed prompts, bounds, pivots, source mappings, candidate composites and shadow proofs live in `docs/art-studies/montrose/park-v2/` and `waterfront-v2/`.

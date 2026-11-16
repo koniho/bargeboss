@@ -24,6 +24,7 @@ public final class BuildingFades {
         Fade f=map.get(key);if(f==null){f=new Fade(bucket,key);map.put(key,f);active.add(f);}f.target=target;
     }
     public void step(Game g) {
+        if(g.montroseStage())return; // Set-back marina vegetation never overlaps water; no building queries.
         for(Fade f:active)f.target=1;
         SceneryOcclusion scene=SceneryOcclusion.snapshot(g);
         if(g.tutorial!=null) {

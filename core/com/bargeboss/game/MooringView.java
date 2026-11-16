@@ -7,7 +7,7 @@ public final class MooringView {
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
         for(int berth=0;berth<3;berth++) {
-            if(!g.berthEnabled(berth)) continue;
+            if(g.montroseStage() || !g.berthEnabled(berth)) continue;
             float x=g.bollardX(berth),y=g.bollardY(berth);
             boolean ready=false,tied=false;
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {

@@ -19,9 +19,9 @@ public final class GenerateVesselGlow {
     }
     public static void main(String[] args)throws Exception {
         boolean check=args.length>0 && args[0].equals("--check");
-        BufferedImage[] sheets={new BufferedImage(N*8,N*4,BufferedImage.TYPE_INT_ARGB),new BufferedImage(N*8,N*4,BufferedImage.TYPE_INT_ARGB),new BufferedImage(N*8,N*4,BufferedImage.TYPE_INT_ARGB)};
-        for(int vessel=0;vessel<2;vessel++) {
-        int atlas=vessel==0?SpriteAtlas.BARGE:SpriteAtlas.TUG;
+        BufferedImage[] sheets=new BufferedImage[5];for(int i=0;i<5;i++)sheets[i]=new BufferedImage(N*8,N*4,BufferedImage.TYPE_INT_ARGB);
+        for(int vessel=0;vessel<3;vessel++) {
+        int atlas=vessel==2?SpriteAtlas.YACHT:vessel==0?SpriteAtlas.BARGE:SpriteAtlas.TUG;
         BufferedImage source=ImageIO.read(new File("assets/sprites/"+SpriteAtlas.file(atlas)));
         for(int f=0;f<32;f++) {
             BufferedImage cell=new BufferedImage(N,N,BufferedImage.TYPE_INT_ARGB);Graphics2D g=cell.createGraphics();
@@ -41,20 +41,20 @@ public final class GenerateVesselGlow {
                 // The outer halo is saturated; its bright inner edge approaches cream.
                 int gold=(255<<16)|((180+Math.round(62*edge))<<8)|(42+Math.round(130*edge));
                 int mint=((75+Math.round(130*edge))<<16)|(255<<8)|(168+Math.round(65*edge));
-                sheets[vessel==0?0:2].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|gold);
-                if(vessel==0)sheets[1].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|mint);
+                sheets[vessel==2?3:vessel==0?0:2].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|gold);
+                if(vessel!=1)sheets[vessel==2?4:1].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|mint);
                 if((x==0 || y==0 || x==N-1 || y==N-1) && alpha!=0)throw new AssertionError("Glow spills into adjacent frame "+f);
             }
         }
         }
-        for(int i=0;i<3;i++) {
-            File file=new File("assets/sprites/"+(i==2?"tug":"barge")+"-glow-"+(i==1?"mint":"gold")+"-32.png");
+        for(int i=0;i<5;i++) {
+            File file=new File("assets/sprites/"+(i>=3?"yacht":i==2?"tug":"barge")+"-glow-"+(i==1 || i==4?"mint":"gold")+"-32.png");
             if(check) {
                 BufferedImage old=ImageIO.read(file);
                 if(old.getWidth()!=sheets[i].getWidth() || old.getHeight()!=sheets[i].getHeight())throw new AssertionError("Glow atlas size");
                 for(int y=0;y<old.getHeight();y++)for(int x=0;x<old.getWidth();x++)if(old.getRGB(x,y)!=sheets[i].getRGB(x,y))throw new AssertionError("Regenerate glow atlas: "+file);
             } else ImageIO.write(sheets[i],"png",file);
         }
-        System.out.println("96 registered watercraft glow frames validated; padded edges clear");
+        System.out.println("160 registered watercraft glow frames validated; padded edges clear");
     }
 }

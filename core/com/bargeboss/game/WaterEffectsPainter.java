@@ -16,10 +16,12 @@ public final class WaterEffectsPainter implements Painter {
     private final RiverCamera camera;
     private final float screenWidth,screenHeight;
     private final float[][] water;
+    private final boolean marina;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.tutorial!=null?CHANNEL:g.sharedBerthStage()?SHARED:g.depthStage()?DEEP:RIVER;
+        this.target=target;marina=g.montroseStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.montroseStage()?null:g.tutorial!=null?CHANNEL:g.sharedBerthStage()?SHARED:g.depthStage()?DEEP:RIVER;
     }
     public static boolean contains(Game g,float x,float y) {
+        if(g.montroseStage())return MontroseHarbor.contains(x,y);
         if(g.tutorial!=null) return TrainingChannel.contains(x,y);
         if(x<Physics.LEFT || x>Physics.RIGHT) return false;
         if(g.orderStage()) for(float[] r:PhysicalBerths.solids(g.challengeId))
@@ -32,7 +34,7 @@ public final class WaterEffectsPainter implements Painter {
         return false;
     }
     /** Disjoint strips avoid double alpha where the training reaches overlap. */
-    private static float[][] partition(float[][] source,float[][] holes) {
+    static float[][] partition(float[][] source,float[][] holes) {
         int count=source.length+(holes==null?0:holes.length);
         float[] xs=new float[count*2],ys=new float[count*2];int n=0;
         for(int group=0;group<2;group++) {
@@ -85,6 +87,7 @@ public final class WaterEffectsPainter implements Painter {
         }
         if(camera!=null && (camera.screenX(maxX,maxY)<-1 || camera.screenX(minX,minY)>screenWidth+1
                 || camera.screenY(minX,maxY)<-1 || camera.screenY(maxX,minY)>screenHeight+1))return;
+        if(marina){MontroseHarbor.paintWater(target,points,color);return;}
         for(float[] r:water) {
             if(maxX<=r[0] || minX>=r[2] || maxY<=r[1] || minY>=r[3]) continue;
             if(minX>=r[0] && maxX<=r[2] && minY>=r[1] && maxY<=r[3]) {target.poly(points,color);return;}

@@ -13,7 +13,8 @@ public final class Career {
     public int bestScore(int id) { return Challenges.valid(id)?scores[id]:0; }
     public boolean unlocked(int id) {
         if(!Challenges.valid(id)) return false;
-        for(int i=0;i<id;i++) if(stars[i]==0) return false;
+        if(Challenges.standalone(id))return true;
+        for(int i=0;i<id;i++) if(!Challenges.standalone(i) && stars[i]==0) return false;
         return true;
     }
     public int totalStars() { int total=0; for(int value:stars) total+=value; return total; }
@@ -58,11 +59,11 @@ public final class Career {
             String[] pair=parts[i+2].split(",",-1);
             if(pair.length!=2) return false;
             nextStars[i]=number(pair[0],3); nextScores[i]=number(pair[1],MAX_SCORE);
-            if(nextStars[i]<0 || nextScores[i]<0 || (!predecessorComplete && nextStars[i]>0)
+            if(nextStars[i]<0 || nextScores[i]<0 || (!Challenges.standalone(i) && !predecessorComplete && nextStars[i]>0)
                     || (nextStars[i]==0 && nextScores[i]!=0)) return false;
-            predecessorComplete=nextStars[i]>0;
+            if(!Challenges.standalone(i))predecessorComplete=nextStars[i]>0;
         }
-        for(int i=0;i<nextSelected;i++) if(nextStars[i]==0) return false;
+        for(int i=0;!Challenges.standalone(nextSelected) && i<nextSelected;i++) if(!Challenges.standalone(i) && nextStars[i]==0) return false;
         for(int i=0;i<Challenges.COUNT;i++) { stars[i]=nextStars[i]; scores[i]=nextScores[i]; }
         selected=nextSelected; version=0; return true;
     }

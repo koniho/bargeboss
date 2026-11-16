@@ -17,28 +17,34 @@ public final class NavigationLights {
         new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP-26,0,-1,48),
         new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48)
     };
+    // Fixed east/red and west/green towers at the two official map breakwater tips.
+    // Returning vector is perpendicular to their slightly diagonal entrance line.
+    private static final float MARINA_HALF=Physics.length(89.5f,16);
+    private static final Entrance[] MARINA={new Entrance("MONTROSE INLET",MontroseHarbor.mapX(458.5f),MontroseHarbor.mapY(1274),16/MARINA_HALF,-89.5f/MARINA_HALF,MARINA_HALF*MontroseHarbor.MAP_SCALE)};
     private static final Entrance[] LOCAL={new Entrance("HARBOR ENTRANCE",300,Physics.BOTTOM-45,0,-1,120)};
     private static final Entrance[] TRANSIT={LOCAL[0],new Entrance("UPSTREAM HARBOR",300,-280,0,-1,120)};
     private NavigationLights(){}
-    public static Entrance[] entrances(Game g){return g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
+    public static Entrance[] entrances(Game g){return g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
     /** One single flash every two seconds; long dark interval preserves the marine rhythm. */
-    public static float flash(int ticks,int phase){
-        int t=Math.floorMod(ticks+phase,120);
+    public static float flash(int ticks,int phase){return flash(ticks,phase,120);}
+    private static float flash(int ticks,int phase,int period){
+        int t=Math.floorMod(ticks+phase,period);
         if(t<7)return t/7f;
         if(t<25)return 1;
         if(t<37)return (37-t)/12f;
         return 0;
     }
-    public static int count(Game g){return entrances(g).length*2+(g.tutorial!=null?2:0);}
-    private static boolean practice(Game g,int i){return i>=entrances(g).length*2;}
-    public static boolean land(Game g,int i){return g.tutorial!=null && !practice(g,i);}
+    public static int count(Game g){return entrances(g).length*2+(g.montroseStage()?MontroseHarbor.MOORINGS.length:g.tutorial!=null?2:0);}
+    private static boolean mooring(Game g,int i){return g.montroseStage() && i>=2;}
+    private static boolean practice(Game g,int i){return g.tutorial!=null && i>=entrances(g).length*2;}
+    public static boolean land(Game g,int i){return g.montroseStage()?i<2:g.tutorial!=null && !practice(g,i);}
     private static int practiceIndex(Game g,int i){return i-entrances(g).length*2;}
-    public static float anchorX(Game g,int i){return practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
-    public static float anchorY(Game g,int i){return practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
+    public static float anchorX(Game g,int i){return mooring(g,i)?MontroseHarbor.MOORINGS[i-2][0]:practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
+    public static float anchorY(Game g,int i){return mooring(g,i)?MontroseHarbor.MOORINGS[i-2][1]:practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
     public static float x(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorX(g,i):b.x;}
     public static float y(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorY(g,i):b.y;}
     private static float roll(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?0:b.roll;}
-    public static int color(Game g,int i){return practice(g,i)?YELLOW:i%2==1?RED:GREEN;}
+    public static int color(Game g,int i){return mooring(g,i)?0xffdedcc3:practice(g,i)?YELLOW:i%2==1?RED:GREEN;}
     public static float depth(Game g,int i){return g.layout.camera.screenY(x(g,i),y(g,i));}
     public static boolean visible(Game g,int i){
         RiverCamera c=g.layout.camera;float px=c.screenX(x(g,i),y(g,i)),py=c.screenY(x(g,i),y(g,i)),pad=95*c.scale;
@@ -51,14 +57,14 @@ public final class NavigationLights {
     }
     private static float power(Game g,int i){
         // Yellow exercise buoys retain a steady base glow between brighter pulses.
-        return practice(g,i)?.5f+.5f*flash(g.visualTicks,practiceIndex(g,i)*33):flash(g.visualTicks,(i/2)*19);
+        return mooring(g,i)?0:practice(g,i)?.5f+.5f*flash(g.visualTicks,practiceIndex(g,i)*33):flash(g.visualTicks,(i/2)*19,g.montroseStage()?180:120);
     }
     /** Water effects stay below all hulls and are clipped against actual waterways. */
     public static void reflections(Game g,Painter canvas){
         Painter water=new WaterEffectsPainter(g,new RiverPainter(canvas,g.layout.camera));
-        for(int i=0;i<count(g);i++)if(visible(g,i) && !land(g,i)){
+        for(int i=0;i<count(g);i++)if(visible(g,i) && (!land(g,i) || g.montroseStage())){
             float wx=x(g,i),wy=y(g,i),power=power(g,i);
-            BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
+            if(!land(g,i))BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
             if(power<=0)continue;
             int rgb=color(g,i)&0xffffff;float radius=practice(g,i)?29:17;
             for(int shell=4;shell>=1;shell--)water.circle(wx,wy,radius*shell/4,((int)(power*(7+(4-shell)*3))<<24)|rgb);
@@ -80,9 +86,9 @@ public final class NavigationLights {
         for(int i=0;i<count(g);i++)if(land(g,i) && visible(g,i))
             LandMarkerArt.ground(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));
     }
-    private static int frame(Game g,int i){return practice(g,i)?BuoyArt.YELLOW:color(g,i)==RED?BuoyArt.RED:BuoyArt.GREEN;}
-    public static float size(Game g,int i){return practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
-    /** Tutorial entrances use fixed shore beacons; other fixtures float with the waves. */
+    private static int frame(Game g,int i){return mooring(g,i)?BuoyArt.YELLOW:practice(g,i)?BuoyArt.YELLOW:color(g,i)==RED?BuoyArt.RED:BuoyArt.GREEN;}
+    public static float size(Game g,int i){return mooring(g,i)?10:practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
+    /** Tutorial and Montrose entrances use fixed beacons; mooring/practice marks float. */
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;
         if(land(g,i)){LandMarkerArt.draw(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));return;}

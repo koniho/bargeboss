@@ -33,13 +33,14 @@ public final class SurfaceLighting {
         if(g.mode==Game.TITLE){ // Title has its own sunlit composition rather than gameplay quay lamps.
             add(weights,x,y,x-65,y-90,55,220,.65f);return weights;
         }
-        for(int side=0;side<2;side++)for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++){
+        for(int side=0;!g.montroseStage() && side<2;side++)for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++){
             float lx=HarborAtmosphere.lampBank(side),ly=HarborAtmosphere.lampY(lamp);
             if(g.tutorial!=null && TrainingChannel.contains(lx,ly))continue;
             add(weights,x,y,lx,ly,17+(g.tutorial!=null?GroundArt.LAND_RISE:0),155,
                     .9f*SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f));
         }
         if(g.tutorial!=null)FactorySources.sample(g,weights,x,y);
+        if(g.montroseStage())MarinaPedestals.sample(g,weights,x,y);
         vessel(g,weights,x,y,g.tug,receiver);
         for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)vessel(g,weights,x,y,f.boat,receiver);
         for(Body b:g.cargo)if(b!=null && b.active)vessel(g,weights,x,y,b,receiver);

@@ -102,3 +102,26 @@ Floating buoy/marker bodies also implement `Watercraft` and report collisions
 through the shared [directional splash-stamp pipeline](collision-splashes.md).
 Their actual relative contact velocity determines the spray direction and
 strength; a tether reaching its limit does not emit a collision splash.
+
+## Montrose breakwater beacons
+
+Montrose's entrance pair uses the same fixed tower assets as the tutorial, at
+its two traced breakwater tips. The west/port tower is green and east/starboard
+is red. Its flash repeats every 180 simulation ticks (three seconds), matching
+the published USCG light characteristics; ordinary shifts/tutorial retain their
+existing 120-tick cadence. The separate mooring-can field remains unlit and
+floating. See the [Montrose source audit](../gameplay/montrose-layout-audit.md).
+
+`NavigationLights.land` identifies both entrance towers, so `Buoys.reset/get`
+create no `Watercraft` body for them and no tether, wave roll, buoy contact or
+buoy splash applies. The physical breakwater remains the collision target.
+`LandMarkerArt.baseRise` selects `MontroseHarbor.DOCK_RISE` for these towers;
+tutorial beacons still use `GroundArt.LAND_RISE`. Lanterns, foundation pivots,
+contact/cast shadows and deck light all use that same receiving elevation.
+
+Two immutable local ground cutouts are prepared once from the actual breakwater
+quads. Per-frame work only projects these small masks: it does not triangulate
+or subtract the complete harbor. Ground shadows/light draw after cached decks;
+tower sprites/lanterns join the existing unraised-ground-depth merge. Animated
+reflections are separate water-only effects before hulls. Never bob the tower or
+use its raised lantern as the depth key. No fixed beacon fades like a building.

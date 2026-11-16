@@ -3,8 +3,8 @@ package com.bargeboss.game;
 /** Opt-in directional response layers. Identical source-cell pivots, crops and turn frames. */
 public final class SurfaceLightArt {
     public static final int FIRST=36,CELL=96,DIRECTIONS=4;
-    private static final int[] SOURCES={SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.CONTAINER,SpriteAtlas.BULK,SpriteAtlas.BUOY};
-    private static final String[] NAMES={"tug","barge","steel","container","coal","buoy"};
+    private static final int[] SOURCES={SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.CONTAINER,SpriteAtlas.BULK,SpriteAtlas.BUOY,SpriteAtlas.YACHT};
+    private static final String[] NAMES={"tug","barge","steel","container","coal","buoy","yacht"};
     private SurfaceLightArt(){}
     public static int[] sources(){return SOURCES.clone();}
     public static int forSource(int source){for(int i=0;i<SOURCES.length;i++)if(SOURCES[i]==source)return FIRST+i;return -1;}

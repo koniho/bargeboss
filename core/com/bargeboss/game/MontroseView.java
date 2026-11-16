@@ -1,0 +1,167 @@
+package com.bargeboss.game;
+
+import java.util.ArrayList;
+
+/** Survey-traced shoreline and dock skeletons; cached parkland excludes the exact water polygon. */
+public final class MontroseView {
+    private static final float[] TRAIL={670,1010,790,1050,975,1070,1160,1055,1350,980,1520,860,1645,705,1750,525,1790,340};
+    private static final float[] ROAD={-200,270,200,205,540,155,730,90,810,10,910,-140};
+    private static final float[][] PIECES=pieces(),PROPS=props();
+    private static final Ground[] GROUND=ground();
+    private static RiverCamera raised(RiverCamera c,float rise){return new RiverCamera(c.left,c.top-rise*c.scale,c.scale,c.worldTop,c.worldRight,c.zoom);}
+    private MontroseView(){}
+    private static float[][] pieces(){ArrayList<float[]> p=new ArrayList<float[]>();for(float[] l:MontroseHarbor.DOCK_LINES){
+        float dx=l[2]-l[0],dy=l[3]-l[1],len=Physics.length(dx,dy),nx=-dy/len*l[4]/2,ny=dx/len*l[4]/2;int count=(int)StrictMath.ceil(len/48);
+        for(int i=0;i<count;i++){float a=i/(float)count,b=(i+1f)/count;p.add(new float[]{l[0]+dx*a+nx,l[1]+dy*a+ny,l[0]+dx*b+nx,l[1]+dy*b+ny,l[0]+dx*b-nx,l[1]+dy*b-ny,l[0]+dx*a-nx,l[1]+dy*a-ny});}
+    }return p.toArray(new float[p.size()][]);}
+    private static float[][] props(){ArrayList<float[]> out=new ArrayList<float[]>();
+        // Dense woods occupy the western park; the peninsula keeps broad open lawns.
+        for(int row=-2;row<15;row++)for(int col=-2;col<20;col++){
+            float mx=col*100+37,my=row*100+47,x=MontroseHarbor.mapX(mx),y=MontroseHarbor.mapY(my);
+            if(MontroseHarbor.openWater(x,y))continue;int seed=Math.floorMod(row*37+col*19,13);
+            boolean safe=true;for(int k=0;k<8;k++){double a=k*Math.PI/4;if(MontroseHarbor.openWater(x+80*(float)StrictMath.cos(a),y+80*(float)StrictMath.sin(a)))safe=false;}
+            if(!safe || (mx>865 && mx<1320 && my<180) || seed>(mx<500?7:2))continue;out.add(new float[]{4+seed%2,x,y,125+seed*7});
+        }
+        // Small riprap groups follow the outside lake shore, not a rectilinear tile grid.
+        float[] c=MontroseHarbor.COAST;
+        for(int i=0;i<c.length-2;i+=2){float mx=MontroseHarbor.planX(c[i]),my=MontroseHarbor.planY(c[i+1]);if(my<1100 || (mx<480 && mx>270))continue;
+            float dx=c[i+2]-c[i],dy=c[i+3]-c[i+1],len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;
+            if(MontroseHarbor.openWater(c[i]+nx*5,c[i+1]+ny*5)){nx=-nx;ny=-ny;}
+            for(float d=12;d<len;d+=55)out.add(new float[]{6+(i/2)%2,c[i]+dx*d/len+nx*12,c[i+1]+dy*d/len+ny*12,44});
+        }
+        java.util.Collections.sort(out,new java.util.Comparator<float[]>(){public int compare(float[] a,float[] b){return Float.compare(a[2]-a[1],b[2]-b[1]);}});
+        return out.toArray(new float[out.size()][]);
+    }
+    private static final class Ground extends StaticLayer {
+        final int col,row;final RiverCamera camera;final float[] waterClip;
+        Ground(int col,int row){this.col=col;this.row=row;camera=new RiverCamera(20,35,1,row*256,col*256+320,1);
+            waterClip=MontroseHarbor.projected(MontroseHarbor.WATER_TRIANGLES,raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55,Float.NEGATIVE_INFINITY);}
+        public int key(){return 820000+(col+5)*32+row+8;}
+        public float width(){return 400;}
+        public float height(){return 310;}
+        public boolean backgroundSafe(){return true;}
+        public void paint(Painter p){
+            RiverCamera land=raised(camera,MontroseHarbor.LAND_RISE);Painter world=new RiverPainter(p,land);
+            walls(p,camera,col*256,row*256,(col+1)*256,(row+1)*256);
+            p.pushClipOutside(waterClip);
+            try{
+                for(int y=0;y<4;y++)for(int x=0;x<4;x++){
+                    float wx=col*256+x*64,wy=row*256+y*64;
+                    world.rect(wx,wy,64,64,0xff273b2b);
+                    float[] lawn={wx,wy,wx+64,wy,wx+64,wy+64,wx,wy+64};
+                    surface(p,land,lawn,2);
+                }
+                serviceGround(world,col*256,row*256,(col+1)*256,(row+1)*256);
+                // Continuous perimeter walkway offset onto land. Clip at chunk ownership.
+                float[] c=MontroseHarbor.COAST;
+                for(int i=2;i<c.length-4;i+=2){
+                    float ax=c[i],ay=c[i+1],bx=c[i+2],by=c[i+3],dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;
+                    if(MontroseHarbor.openWater((ax+bx)/2+nx*8,(ay+by)/2+ny*8)){nx=-nx;ny=-ny;}
+                    ax+=nx*15;ay+=ny*15;bx+=nx*15;by+=ny*15;
+                    float[] quad={ax-dy/len*9,ay+dx/len*9,bx-dy/len*9,by+dx/len*9,bx+dy/len*9,by-dx/len*9,ax+dy/len*9,ay-dx/len*9};
+                    quad=PolygonWater.rectangle(quad,col*256,row*256,(col+1)*256,(row+1)*256);if(quad.length>=6)world.poly(quad,0xff666c71);
+                    for(float d=0;d<len;d+=36){float xx=ax+dx*d/len,yy=ay+dy*d/len;if(xx<col*256+12 || xx>(col+1)*256-12 || yy<row*256+12 || yy>(row+1)*256-12)continue;world.line(xx-nx*8,yy-ny*8,xx+nx*8,yy+ny*8,.7f,0xff464e57);}
+                }
+            }finally{p.popClip();}
+            for(float[] q:PIECES){float x=(q[0]+q[4])/2,y=(q[1]+q[5])/2;
+                if(x<col*256 || x>=(col+1)*256 || y<row*256 || y>=(row+1)*256)continue;
+                dock(p,camera,q);
+            }
+        }
+    }
+    private static void groundPoly(Painter p,float[] q,int color,float l,float t,float r,float b){
+        q=PolygonWater.rectangle(q,l,t,r,b);if(q.length>=6)p.poly(q,color);
+    }
+    private static void strip(Painter p,float mx,float my,float xx,float yy,float width,int color,float l,float t,float r,float b){
+        float ax=MontroseHarbor.mapX(mx),ay=MontroseHarbor.mapY(my),bx=MontroseHarbor.mapX(xx),by=MontroseHarbor.mapY(yy),dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len*width/2,ny=dx/len*width/2;
+        groundPoly(p,new float[]{ax+nx,ay+ny,bx+nx,by+ny,bx-nx,by-ny,ax-nx,ay-ny},color,l,t,r,b);
+    }
+    private static void serviceGround(Painter p,float l,float t,float r,float b){
+        for(int i=0;i<TRAIL.length-2;i+=2)strip(p,TRAIL[i],TRAIL[i+1],TRAIL[i+2],TRAIL[i+3],20,0xff555e5d,l,t,r,b);
+        for(int i=0;i<ROAD.length-2;i+=2)strip(p,ROAD[i],ROAD[i+1],ROAD[i+2],ROAD[i+3],45,0xff343f45,l,t,r,b);
+        for(int i=0;i<24;i++){double a=i*Math.PI/12,bb=(i+1)*Math.PI/12;strip(p,680+43*(float)StrictMath.cos(a),1000+43*(float)StrictMath.sin(a),680+43*(float)StrictMath.cos(bb),1000+43*(float)StrictMath.sin(bb),18,0xff555e5d,l,t,r,b);}
+        strip(p,890,1045,900,977,20,0xff555e5d,l,t,r,b);
+        float x=MontroseHarbor.mapX(925),y=MontroseHarbor.mapY(40),xx=MontroseHarbor.mapX(1290),yy=MontroseHarbor.mapY(145);
+        groundPoly(p,new float[]{x,y,xx,y,xx,yy,x,yy},0xff414c53,l,t,r,b);
+        for(int i=0;i<10;i++)strip(p,1100+i*18,58,1100+i*18,86,1.2f,0xff777b73,l,t,r,b);
+    }
+    private static void serviceBuilding(Game g,Painter canvas,RiverCamera c,boolean shadow){
+        float wx=MontroseHarbor.mapX(1030),wy=MontroseHarbor.mapY(88),x=c.screenX(wx,wy),y=c.screenY(wx,wy),size=210*c.scale;
+        if(x+size<0 || x-size>g.layout.width || y+size<0 || y-size>g.layout.height)return;
+        if(shadow){ShadowView.scenery(g,canvas,SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,wx,wy,MontroseHarbor.LAND_RISE,210);return;}
+        canvas.sprite(SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,x,y,size,size,0,1);
+        StaticHarborArt.lights(canvas,x,y,size,1,g.visualTicks);
+    }
+    /** Side walls are rigid vertical geometry, with all corners using the shared projection. */
+    private static void walls(Painter p,RiverCamera c,float l,float t,float r,float b){
+        float[] coast=MontroseHarbor.COAST;
+        for(int i=2;i<coast.length-4;i+=2){
+            float ax=coast[i],ay=coast[i+1],bx=coast[i+2],by=coast[i+3],dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy);
+            float nx=-dy/len,ny=dx/len;if(!MontroseHarbor.openWater((ax+bx)/2+nx*8,(ay+by)/2+ny*8)){nx=-nx;ny=-ny;}
+            if(ny-nx<=0)continue;
+            float start=0,end=1;
+            for(int axis=0;axis<2;axis++){float v=axis==0?dx:dy,o=axis==0?ax:ay,min=axis==0?l:t,max=axis==0?r:b;
+                if(Math.abs(v)<.001f){if(o<min || o>=max){end=-1;break;}}else{float aa=(min-o)/v,bb=(max-o)/v;start=Math.max(start,Math.min(aa,bb));end=Math.min(end,Math.max(aa,bb));}}
+            if(end<=start)continue;
+            face(p,c,ax+dx*start,ay+dy*start,ax+dx*end,ay+dy*end,MontroseHarbor.LAND_RISE,0xff333f49);
+            for(float d=(float)StrictMath.ceil(start*len/24)*24;d<end*len;d+=24){float x=c.screenX(ax+dx*d/len,ay+dy*d/len),y=c.screenY(ax+dx*d/len,ay+dy*d/len);p.line(x,y-2*c.scale,x,y-(MontroseHarbor.LAND_RISE-2)*c.scale,.7f*c.scale,0xff202e38);}
+        }
+    }
+    private static void face(Painter p,RiverCamera c,float ax,float ay,float bx,float by,float rise,int color){
+        float x=c.screenX(ax,ay),y=c.screenY(ax,ay),xx=c.screenX(bx,by),yy=c.screenY(bx,by),h=rise*c.scale;
+        p.poly(new float[]{x,y,xx,yy,xx,yy-h,x,y-h},color);
+        p.line(x,y-h,xx,yy-h,1.2f*c.scale,0xff838b8c);
+        p.line(x,y,xx,yy,.9f*c.scale,0xff152c32);
+    }
+    private static void dock(Painter p,RiverCamera c,float[] q){
+        for(int i=0;i<8;i+=2){int j=(i+2)%8;face(p,c,q[i],q[i+1],q[j],q[j+1],MontroseHarbor.DOCK_RISE,0xff302f32);}
+        float width=Physics.length(q[6]-q[0],q[7]-q[1]);
+        surface(p,raised(c,MontroseHarbor.DOCK_RISE),q,width>16?1:0);
+    }
+    /** Affine-map flat source material to exact rigid ground corners. Never rotate an upright sprite. */
+    private static void surface(Painter p,RiverCamera c,float[] q,int frame){
+        float[] screen=new float[q.length];for(int i=0;i<q.length;i+=2){screen[i]=c.screenX(q[i],q[i+1]);screen[i+1]=c.screenY(q[i],q[i+1]);}
+        p.poly(screen,frame<2?0xff4e5051:0xff26392e);
+        ArrayList<float[]> outside=new ArrayList<float[]>();PolygonWater.subtract(new float[]{0,0,400,0,400,310,0,310},screen,outside);
+        ArrayList<Float> values=new ArrayList<Float>();for(float[] a:outside)for(int i=2;i<a.length-2;i+=2)for(float v:new float[]{a[0],a[1],a[i],a[i+1],a[i+2],a[i+3]})values.add(v);
+        float[] clip=new float[values.size()];for(int i=0;i<clip.length;i++)clip[i]=values.get(i);p.pushClipOutside(clip);
+        try{
+            float lx=frame==0?10/627f:frame==1?38/627f:40/444f;
+            float ly=frame<2?334/627f:285/444f;
+            float ux=frame==0?287/627f:frame==1?291/627f:182/444f,uy=frame<2?-185/627f:-102/444f;
+            float vx=frame==0?290/627f:frame==1?287/627f:182/444f,vy=frame<2?184/627f:103/444f;
+            // Sample inside the lawn diamond to omit painted tile rims.
+            if(frame>=2){lx+=(ux+vx)*.07f;ly+=(uy+vy)*.07f;ux*=.86f;uy*=.86f;vx*=.86f;vy*=.86f;}
+            float det=ux*vy-uy*vx;
+            float ax=screen[2]-screen[0],ay=screen[3]-screen[1],bx=screen[6]-screen[0],by=screen[7]-screen[1];
+            float ex=(ax*vy-bx*uy)/det,ey=(ay*vy-by*uy)/det,fx=(-ax*vx+bx*ux)/det,fy=(-ay*vx+by*ux)/det;
+            float px=MarinaArt.pivotX(frame)-lx,py=MarinaArt.pivotY(frame)-ly;
+            p.spriteAffine(SpriteAtlas.MARINA,frame,screen[0]+ex*px+fx*py,screen[1]+ey*px+fy*py,ex,ey,fx,fy,frame>=2?.62f:1);
+        }finally{p.popClip();}
+    }
+    private static Ground[] ground(){ArrayList<Ground> out=new ArrayList<Ground>();for(int row=-9;row<8;row++)for(int col=-7;col<14;col++)out.add(new Ground(col,row));return out.toArray(new Ground[out.size()]);}
+    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);
+        RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);new RiverPainter(canvas,land).poly(MontroseHarbor.LAND_POLYGON,0xff273b2b);
+        for(Ground layer:GROUND){float wx=layer.col*256,wy=layer.row*256,x=c.screenX(wx,wy)-layer.camera.screenX(wx,wy)*c.scale,y=c.screenY(wx,wy)-layer.camera.screenY(wx,wy)*c.scale;
+            if(x+layer.width()*c.scale<0 || x>g.layout.width || y+layer.height()*c.scale<0 || y>g.layout.height)continue;
+            if(canvas.preparesLayers())canvas.prepareLayer(layer,StaticLayer.rasterScale(c.scale));canvas.layer(layer,x,y,c.scale,1);
+        }
+        // Every ground receiver finishes before any upright park sprite; a later
+        // tree's cast mask must never darken an earlier tree's canopy.
+        serviceBuilding(g,canvas,land,true);
+        for(float[] a:PROPS){float sx=c.screenX(a[1],a[2]),sy=c.screenY(a[1],a[2])-MontroseHarbor.LAND_RISE*c.scale,pad=a[3]*c.scale;
+            if(sx+pad<0 || sx-pad>g.layout.width || sy+pad<0 || sy-pad>g.layout.height)continue;
+            ShadowView.scenery(g,canvas,SpriteAtlas.MARINA,(int)a[0],a[1],a[2],MontroseHarbor.LAND_RISE,a[3]);}
+        serviceBuilding(g,canvas,land,false);
+        for(float[] a:PROPS){float sx=c.screenX(a[1],a[2]),sy=c.screenY(a[1],a[2])-MontroseHarbor.LAND_RISE*c.scale,pad=a[3]*c.scale;
+            if(sx+pad<0 || sx-pad>g.layout.width || sy+pad<0 || sy-pad>g.layout.height)continue;
+            MarinaArt.drawAnimated(g,canvas,land,(int)a[0],a[1],a[2],a[3],(int)(a[1]*19+a[2]*37));}
+        NavigationLights.landShadows(g,canvas);
+        MarinaPedestals.drawPools(g,canvas);
+        Renderer.river(g,world);
+    }
+    public static void slip(Game g,Painter p){int color=SoftCue.animated(g,g.mission.settledTicks>0?0xdd4fffc0:0xddffe69c);float c=(float)StrictMath.cos(MontroseHarbor.SLIP_ANGLE),s=(float)StrictMath.sin(MontroseHarbor.SLIP_ANGLE);
+        for(int side=-1;side<=1;side+=2)for(int end=-1;end<=1;end+=2){float x=MontroseHarbor.SLIP_X+c*end*96-s*side*38,y=MontroseHarbor.SLIP_Y+s*end*96+c*side*38;
+            SoftCue.line(p,x,y,x-c*end*28,y-s*end*28,2,color);SoftCue.line(p,x,y,x+s*side*20,y-c*side*20,2,color);}
+    }
+}

@@ -6,7 +6,7 @@ public final class ShadowView {
     /** Smoothly combine nearby lamps; no nearest-lamp switch can snap a shadow. */
     static void light(Game g,float wx,float wy,float[] out) {
         float dx=.48f,dy=.72f,energy=0;
-        for(int side=0;side<2;side++)for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++) {
+        for(int side=0;!g.montroseStage() && side<2;side++)for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++) {
             float lx=HarborAtmosphere.lampBank(side),ly=HarborAtmosphere.lampY(lamp);
             if(g.tutorial!=null && TrainingChannel.contains(lx,ly))continue;
             float x=wx-lx,y=wy-ly,d2=x*x+y*y;
@@ -58,7 +58,7 @@ public final class ShadowView {
     public static void vessel(Game g,Painter p,Body b,boolean tug,float size) {
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
-        int src=tug?SpriteAtlas.TUG:SpriteAtlas.BARGE;
+        int src=b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE;
         float heading=b.angle/(float)(StrictMath.PI/16),whole=(float)StrictMath.floor(heading);
         int f=((int)whole+RiverCamera.DIRECTION_OFFSET)%32;if(f<0)f+=32;
         float blend=Physics.clamp((heading-whole-.4f)*5,0,1);blend=blend*blend*(3-2*blend);

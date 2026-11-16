@@ -1,0 +1,7 @@
+# Montrose 80-foot yacht, v1
+
+Built-in image generation; transparent edit of `docs/art-studies/montrose/yacht-80ft-v1-guide.png` produced by `tools/YachtPoseGuide.java`.
+
+Use case: sketch-to-render. Edit the provided rigid model pose guide into a high-resolution prerendered cartoon yacht atlas for Barge Boss. Exactly preserve all 32 different headings, 8 columns by 4 rows in row-major order, every silhouette, scale, position, fixed waterline-center pivot and camera from the guide. This is ONE 80 foot white motor yacht rotated in 11.25 degree steps: pointed bow, broad teak stern cockpit and swim platform, two decks and flybridge, navy glass window bands, slender rails, mast and six white fenders. Improve smooth white fiberglass materials, subtle ivory surfaces, dark navy glazing, warm teak, readable large proportions and gentle warm upper left lighting, crisp polished game art not pixel art. Do not add or remove structures per heading. Transparent background and generous gutters exactly as guide. No water, foam, wake, smoke, cast shadows, bloom, labels, grid or backdrop. Preserve 3072x1536 canvas and geometry registration if possible.
+
+Actual output: 1774×887. Source pixels retained. Shared metadata applies one uniform 0.9690734 scale and per-heading pivot translation from the registration CSV. Alpha-composited review is essential: the raw transparent viewer shows spurious-looking RGB in almost transparent pixels; ordinary compositing preserves the clean yacht silhouette. No thresholding or source alpha edits were applied.

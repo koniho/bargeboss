@@ -1,0 +1,38 @@
+{
+  "status": "candidate; root integrates after actual-render review",
+  "source": "parkland-atlas-v2-alpha.png",
+  "dimensions": [1774,887],
+  "columns": 4,
+  "rows": 2,
+  "sourceRectangleRule": "round(frameColumn * width/4), round(frameRow * height/2), round((frameColumn+1) * width/4), round((frameRow+1) * height/2)",
+  "cameraRequested": {"projection":"orthographic","elevationDegrees":35.264,"groundAxesDegrees":[-30,30]},
+  "measuredLawn": {"axisDegreesApprox":29.4,"verticesLocalPixels":[[40,285],[222,183],[404,285],[222,388]],"footprintWidthPixels":364,"footprintHeightPixels":205,"status":"pixel measured approximate; 0.6 degree requested-camera discrepancy"},
+  "lightDirection": "upper left warm key; cool right shade; no animated emitters",
+  "receivingPlane": "raised land or shoreline ground, never an automatic water collision mask",
+  "assets": [
+    {"frame":0,"id":"lawn-cool","pivot":[0.5,0.643],"footprint":"diamond; width .820, height .462 of source cell","height":"flat","lights":[],"smoke":[],"steam":[],"shadowCasting":false},
+    {"frame":1,"id":"lawn-moss","pivot":[0.5,0.643],"footprint":"same diamond as lawn-cool","height":"flat","lights":[],"smoke":[],"steam":[],"shadowCasting":false},
+    {"frame":2,"id":"park-trees-tall","pivot":[0.541,0.877],"footprint":"three visible trunk roots; center estimated from root positions","height":"mixed tall and medium crowns","lights":[],"smoke":[],"steam":[],"shadowCasting":true},
+    {"frame":3,"id":"park-trees-low","pivot":[0.517,0.865],"footprint":"two trunk roots plus shrub base; center estimated","height":"mixed medium and low crowns","lights":[],"smoke":[],"steam":[],"shadowCasting":true},
+    {"frame":4,"id":"limestone-pile","pivot":[0.484,0.702],"footprint":"irregular low pile; ground center estimated","height":"low","lights":[],"smoke":[],"steam":[],"shadowCasting":true},
+    {"frame":5,"id":"limestone-bank-up-right","pivot":[0.5,0.655],"footprint":"irregular elongated +/-30 degree ground run; center estimated","height":"low","lights":[],"smoke":[],"steam":[],"shadowCasting":true},
+    {"frame":6,"id":"limestone-corner","pivot":[0.53,0.658],"footprint":"curved irregular entrance cluster; center estimated","height":"low","lights":[],"smoke":[],"steam":[],"shadowCasting":true},
+    {"frame":7,"id":"limestone-bank-down-right","pivot":[0.49,0.66],"footprint":"separately authored opposite diagonal run; center estimated","height":"low","lights":[],"smoke":[],"steam":[],"shadowCasting":true}
+  ],
+  "shadow": {
+    "file":"parkland-shadow-v2.png",
+    "dimensions":[1024,256],
+    "columns":8,"rows":2,"cellPixels":128,
+    "nearContactFrame":"same source index, row 0",
+    "castFrame":"same source index, row 1",
+    "nonCastingCells":[0,1,8,9],
+    "sourceResamplePixels":96,"paddingPixels":16,
+    "alphaTransfer":"max(0,(sourceAlpha-64)/191)",
+    "gaussianSigma":[1.0,3.2],
+    "pivotTransform":"(16+96*sourcePivot)/128",
+    "drawSizeTransform":"sourceDrawSize*128/96",
+    "geometry":"alpha silhouette; not reconstructed 3-D height or occluded light model",
+    "receivingPlane":"land surface/rock footprint; shared renderer must clip receiving surfaces",
+    "validation":"all mask cell edges alpha zero; root performs runtime affine/depth review"
+  }
+}

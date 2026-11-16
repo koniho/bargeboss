@@ -7,6 +7,7 @@ public final class FeederTest {
     private static int cargo(Game g) { int total=0; for(Body b:g.cargo) if(b!=null && b.active) total++; return total; }
     public static void run() {
         for(int id=0;id<Challenges.COUNT;id++) {
+            if(id==Challenges.MONTROSE)continue;
             Game g=new Game(); g.restoreProgress("BB1|0|3,1|3,1|3,1"); g.selectChallenge(id); g.reset();
             check(g.feeders.length==2 && cargo(g)==0,"challenge begins with its configured edge feeders and no teleported cargo");
             float previous=g.feeders[0].load.y;

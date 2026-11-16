@@ -1,16 +1,30 @@
 package com.bargeboss.game;
 
-/** Fixed channel beacons bolted to a raised quay. No wave motion or water masking. */
+/** Fixed beacons bolted to their stage deck. No wave motion or floating collision body. */
 public final class LandMarkerArt {
     public static final int COUNT=2,SOURCE_SIZE=1254;
     public static final float SIZE=36,FOOTPRINT_HALF=9;
     // Center of the foundation's bottom footprint, not its front corner.
     public static final float PIVOT_X=627f/SOURCE_SIZE,PIVOT_Y=1103f/SOURCE_SIZE;
     public static final float LAMP_X=626f/SOURCE_SIZE,LAMP_Y=315f/SOURCE_SIZE;
+    private static final float[][] MARINA_CUTOUT=marinaCutouts();
     private LandMarkerArt(){}
+    public static float baseRise(Game g){return g.montroseStage()?MontroseHarbor.DOCK_RISE:GroundArt.LAND_RISE;}
+    /** Two tiny immutable receiver masks; never subtract the full harbor during an active draw. */
+    private static float[][] marinaCutouts(){float[][] result=new float[2][];
+        for(int i=0;i<2;i++){
+            int dock=MontroseHarbor.DOCK_LINES.length-2+i;float[] line=MontroseHarbor.DOCK_LINES[dock];float x=line[2],y=line[3],pad=SIZE*2;
+            java.util.ArrayList<float[]> outside=new java.util.ArrayList<float[]>();
+            PolygonWater.subtract(new float[]{x-pad,y-pad,x+pad,y-pad,x+pad,y+pad,x-pad,y+pad},MontroseHarbor.DOCKS[dock],outside);
+            java.util.ArrayList<float[]> triangles=new java.util.ArrayList<float[]>();int length=0;
+            for(float[] polygon:outside)for(float[] triangle:PolygonWater.triangles(polygon)){triangles.add(triangle);length+=triangle.length;}
+            result[i]=new float[length];int at=0;for(float[] triangle:triangles){System.arraycopy(triangle,0,result[i],at,triangle.length);at+=triangle.length;}
+        }
+        return result;
+    }
     public static String file(int frame){return frame==0?"land-marker-red-v1.png":"land-marker-green-v1.png";}
     public static float screenX(Game g,float x,float y){return g.layout.camera.screenX(x,y);}
-    public static float screenY(Game g,float x,float y){return g.layout.camera.screenY(x,y)-GroundArt.LAND_RISE*g.layout.camera.scale;}
+    public static float screenY(Game g,float x,float y){return g.layout.camera.screenY(x,y)-baseRise(g)*g.layout.camera.scale;}
     public static void draw(Game g,Painter p,float wx,float wy,int frame,int color,float power){
         float x=screenX(g,wx,wy),y=screenY(g,wx,wy),size=SIZE*g.layout.camera.scale;
         p.sprite(SpriteAtlas.LAND_MARKER,frame,x,y,size,size,0,1);
@@ -22,14 +36,21 @@ public final class LandMarkerArt {
     public static void ground(Game g,Painter p,float wx,float wy,int frame,int color,float power){
         p.pushClipOutside(waterCutout(g,wx,wy));
         try{
-            Painter world=new RiverPainter(GroundArt.raisedCanvas(g,p),g.layout.camera);
+            Painter world=new RiverPainter(ScreenView.offset(p,0,-baseRise(g)*g.layout.camera.scale),g.layout.camera);
             for(int i=4;i>=1;i--)world.circle(wx,wy,6+i*4,SoftCue.alpha(color,power*(5-i)*.012f));
-            ShadowView.scenery(g,p,SpriteAtlas.LAND_MARKER,frame,wx,wy,GroundArt.LAND_RISE,SIZE);
+            ShadowView.scenery(g,p,SpriteAtlas.LAND_MARKER,frame,wx,wy,baseRise(g),SIZE);
         }finally{p.popClip();}
     }
     /** Water rectangles projected at deck height exclude any off-quay shadow spill. */
     static float[] waterCutout(Game g,float wx,float wy){
-        RiverCamera c=g.layout.camera;float rise=GroundArt.LAND_RISE*c.scale;
+        RiverCamera c=g.layout.camera;float rise=baseRise(g)*c.scale;
+        if(g.montroseStage()){
+            float[] first=MontroseHarbor.DOCK_LINES[MontroseHarbor.DOCK_LINES.length-2];
+            int index=Physics.length(wx-first[2],wy-first[3])<1?0:1;
+            float[] source=MARINA_CUTOUT[index],out=new float[source.length];
+            for(int i=0;i<source.length;i+=2){out[i]=c.screenX(source[i],source[i+1]);out[i+1]=c.screenY(source[i],source[i+1])-rise;}
+            return out;
+        }
         float[] result=new float[TrainingChannel.WATER_RECTANGLES.length*12];int n=0;
         for(float[] r:TrainingChannel.WATER_RECTANGLES){
             float l=Math.max(r[0],wx-SIZE*2),t=Math.max(r[1],wy-SIZE*2);

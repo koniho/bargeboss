@@ -5,6 +5,7 @@ public final class HarborView {
     private static final int DARK=VisualStyle.OUTLINE, GOLD=VisualStyle.GOLD;
     private HarborView() {}
     public static void draw(Game g,Painter p) {
+        if(g.montroseStage()){MontroseView.slip(g,p);return;}
         berths(g,p);
     }
     static void berths(Game g,Painter p) {
@@ -71,6 +72,7 @@ public final class HarborView {
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
+        if(g.montroseStage()){Body yacht=g.cargo[0];boolean attached=g.mission.wasTowed;destination(g,canvas,attached?MontroseHarbor.SLIP_X:yacht.x,attached?MontroseHarbor.SLIP_Y:yacht.y,attached?"YACHT SLIP":"ATTACH TOWLINE");return;}
         if(g.lockStage()) {
             if(g.ropeDragging || g.ropePhase!=0)return;
             if(g.lock.phase==Lock.READY)destination(g,canvas,300,Lock.ENTRY_Y+85,"LOCK ENTRY");

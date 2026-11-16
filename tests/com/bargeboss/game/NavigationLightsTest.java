@@ -5,7 +5,7 @@ public final class NavigationLightsTest {
     private static int checks;
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     public static void run(){
-        for(int stage=-1;stage<3;stage++){
+        for(int stage:new int[]{-1,0,1,2,Challenges.MONTROSE}){
             Game g=new Game();if(stage<0){g.startTutorial();g=g.activeGame();}else {g.challengeId=stage;g.reset();}
             NavigationLights.Entrance[] entrances=NavigationLights.entrances(g);
             check(entrances.length==(stage<0?4:stage==2?2:1),"only distinct region mouths carry a navigation pair");
@@ -18,14 +18,26 @@ public final class NavigationLightsTest {
                     if(stage<0) {
                         float half=LandMarkerArt.FOOTPRINT_HALF;
                         check(!TrainingGroundView.intersectsWater(mx-half,my-half,half*2,half*2),"complete concrete foundation sits back on dry land");
-                    } else check(WaterEffectsPainter.contains(g,mx,my),"shift floating marks sit on navigable water beside their entrance");
+                    } else if(stage==Challenges.MONTROSE){int dock=MontroseHarbor.DOCK_LINES.length-(red?1:2);float[] line=MontroseHarbor.DOCK_LINES[dock];
+                        check(Math.abs(mx-line[2])<.001f && Math.abs(my-line[3])<.001f,"Montrose fixed beacon is registered to breakwater endpoint");}
+                    else check(WaterEffectsPainter.contains(g,mx,my),"shift floating marks sit on navigable water beside their entrance");
                 }
             }
             for(int i=0;i<NavigationLights.count(g);i++){
                 float x=NavigationLights.x(g,i),y=NavigationLights.y(g,i);int color=NavigationLights.color(g,i);
-                check(NavigationLights.land(g,i)==(stage<0 && i<entrances.length*2),"only tutorial entrance markers use fixed land variants");
+                check(NavigationLights.land(g,i)==((stage<0 || stage==Challenges.MONTROSE) && i<entrances.length*2),"tutorial and Montrose entrance markers use fixed land variants");
                 g.tug.angle+=1.7f;g.configureCanvas(1333,600);
                 check(NavigationLights.x(g,i)==x && NavigationLights.y(g,i)==y && NavigationLights.color(g,i)==color,"heading or screen aspect never flips lateral markers");
+            }
+            if(stage==Challenges.MONTROSE){
+                check(g.buoys.get(g,0)==null && g.buoys.get(g,1)==null,"Breakwater fixtures have no buoy body or duplicate collision");
+                check(g.buoys.get(g,2)!=null,"Marina mooring cans retain floating physics");
+                check(LandMarkerArt.baseRise(g)==MontroseHarbor.DOCK_RISE,"Entrance foundations use marina deck plane");
+                for(int i=0;i<2;i++){
+                    float x=NavigationLights.x(g,i),y=NavigationLights.y(g,i);
+                    for(int tick=0;tick<10;tick++)g.buoys.step(g);
+                    check(NavigationLights.x(g,i)==x && NavigationLights.y(g,i)==y,"Fixed towers cannot drift with waves or collision simulation");
+                }
             }
             g.layout=Layout.focused(1333,600,entrances[0].x,entrances[0].y,1.5f,650,350);
             int[] order=NavigationLights.ordered(g);
@@ -38,6 +50,21 @@ public final class NavigationLightsTest {
             g.visualTicks=15;Capture bright=new Capture();for(int i:order)NavigationLights.draw(g,bright,i);
             g.visualTicks=70;Capture dark=new Capture();for(int i:order)NavigationLights.draw(g,dark,i);
             check(bright.hash!=dark.hash && dark.calls>0,"flash visibly changes while the unlit colored buoy remains present");
+            if(stage==Challenges.MONTROSE){
+                g.visualTicks=135;Capture middle=new Capture();for(int i:order)NavigationLights.draw(g,middle,i);
+                g.visualTicks=195;Capture repeated=new Capture();for(int i:order)NavigationLights.draw(g,repeated,i);
+                check(bright.calls==repeated.calls && bright.hash!=middle.hash,"Montrose repeats lit energy after three seconds, not two");
+                check(bright.calls>middle.calls,"Montrose beacon is dark at the generic two-second flash time");
+                for(int i=0;i<2;i++){
+                    float x=NavigationLights.x(g,i),y=NavigationLights.y(g,i);float[] cut=LandMarkerArt.waterCutout(g,x,y);
+                    check(cut.length>0 && cut.length%6==0,"Breakwater receiver cutout is triangle-partitioned");
+                    for(int k=0;k<cut.length;k+=6){
+                        float sx=(cut[k]+cut[k+2]+cut[k+4])/3,sy=(cut[k+1]+cut[k+3]+cut[k+5])/3;
+                        float wx=g.layout.camera.worldX(sx,sy+LandMarkerArt.baseRise(g)*g.layout.camera.scale),wy=g.layout.camera.worldY(sx,sy+LandMarkerArt.baseRise(g)*g.layout.camera.scale);
+                        check(!PolygonWater.contains(MontroseHarbor.DOCKS[MontroseHarbor.DOCKS.length-2+i],wx,wy),"Excluded receiver triangles never cover breakwater deck");
+                    }
+                }
+            }
             g.layout=Layout.focused(960,600,10000,10000,1,480,300);
             check(NavigationLights.ordered(g).length==0,"offscreen marks are culled before lighting work");
         }

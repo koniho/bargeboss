@@ -16,7 +16,7 @@ public final class VesselView {
         boolean river=p instanceof RiverPainter;
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
+        float size=2*(b.half+b.radius)/(b.yacht?YachtArt.HULL_FRACTION:tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
         float[] surface=river?ShoreOcclusion.vessel(g,((RiverPainter)p).camera,b,true):ShoreOcclusion.EMPTY;
         Painter canvas=river?((RiverPainter)p).canvas():p;
         if(surface.length>0)canvas.pushClipOutside(surface);
@@ -34,13 +34,17 @@ public final class VesselView {
             p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
                     2*b.radius+1,0xffffedc0);
         }
-        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
-        SurfaceLighting.directional(g,p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
+        SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
+        SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
         if(tug) {
             VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);
             VesselNavigationLights.draw(g,p,b,true,bob,true);
             exhaust(p,b,tick,b.engineLoad,bob);
+        } else if(b.yacht) {
+            YachtArt.mast(g,p,b,bob);
+            VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
+            VesselNavigationLights.draw(g,p,b,false,bob,true);
         } else {
             // Coaming fittings sit behind cargo; the painted loads occlude them.
             VesselLighting.barge(g,p,b,bob);

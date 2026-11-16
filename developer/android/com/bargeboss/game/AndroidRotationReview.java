@@ -14,7 +14,7 @@ final class AndroidRotationReview {
         try {
             require(prepared.profileFrameBudget()==160L*1048576,"Production budget");
             // Same complete preload with less spare room makes unrelated eviction testable.
-            prepared.profileRotationCache(96,true);reference.profileRotationCache(24,false);
+            prepared.profileRotationCache(128,true);reference.profileRotationCache(24,false);
             prepared.bind(new Canvas(a));reference.bind(new Canvas(b));
             CanvasPainter.Profile stats=prepared.enableProfile();
             prepared.prepareRotations();prepared.prepareRotations(); // idempotent
@@ -39,7 +39,7 @@ final class AndroidRotationReview {
                     pixels+=pa.length;
                 }
             }
-            require(total==1024 && prepared.profileRotationFrames()==total,"Incomplete/duplicate preparation");
+            require(total==1312 && prepared.profileRotationFrames()==total,"Incomplete/duplicate preparation");
             require(sum==prepared.profileFrameBytes(),"Race double-counted frame storage");
             long rotationBytes=sum;int evictions=0;
             for(int id:new int[]{8,9,10,12,13,15,16,17,18,20,26,27,28,29,30,31}) {

@@ -4,10 +4,10 @@ package com.bargeboss.game;
 public final class VesselHighlight {
     public static final int CELL=192,INNER=144,PAD=24;
     private VesselHighlight() {}
-    public static boolean atlas(int atlas) {return atlas==SpriteAtlas.BARGE_GOLD || atlas==SpriteAtlas.BARGE_MINT || atlas==SpriteAtlas.TUG_GOLD;}
+    public static boolean atlas(int atlas) {return atlas==SpriteAtlas.YACHT_GOLD || atlas==SpriteAtlas.YACHT_MINT || atlas==SpriteAtlas.BARGE_GOLD || atlas==SpriteAtlas.BARGE_MINT || atlas==SpriteAtlas.TUG_GOLD;}
     public static float pivot(float original) {return (PAD+INNER*original)/CELL;}
-    public static int source(int atlas) {return atlas==SpriteAtlas.TUG_GOLD?SpriteAtlas.TUG:SpriteAtlas.BARGE;}
-    public static float scale(int atlas) {return (source(atlas)==SpriteAtlas.TUG?TugArt.SCALE:BargeArt.HULL_SCALE)*CELL/INNER;}
+    public static int source(int atlas) {return atlas==SpriteAtlas.YACHT_GOLD || atlas==SpriteAtlas.YACHT_MINT?SpriteAtlas.YACHT:atlas==SpriteAtlas.TUG_GOLD?SpriteAtlas.TUG:SpriteAtlas.BARGE;}
+    public static float scale(int atlas) {return (source(atlas)==SpriteAtlas.YACHT?YachtArt.SCALE:source(atlas)==SpriteAtlas.TUG?TugArt.SCALE:BargeArt.HULL_SCALE)*CELL/INNER;}
     static int style(Game g,Body b) {
         if(b==g.tug && b.active && (g.navigating || g.pushing || g.tutorial!=null && g.tutorial.lesson<=Tutorial.CHANNEL))return SpriteAtlas.TUG_GOLD;
         if(b.id<=0 || b.berth<0 || !b.active || b.lineAttached || b.deliveryRecorded)return -1;
@@ -23,7 +23,7 @@ public final class VesselHighlight {
     }
     public static void draw(Game g,Painter p,Body b,boolean tug,float x,float y,float size) {
         if(!b.active)return;
-        int atlas=style(g,b);
+        int atlas=b.yacht?(g.mission.settledTicks>0?SpriteAtlas.YACHT_MINT:SpriteAtlas.YACHT_GOLD):style(g,b);
         float alpha=atlas>=0?opacity(g.visualTicks):.12f+.035f*SceneryEffects.intensity(g.visualTicks,b.id*.73f);
         if(atlas<0)atlas=tug?SpriteAtlas.TUG_GOLD:SpriteAtlas.BARGE_GOLD;
         // Identical heading blend, waterline pivot and heave to the hull itself.

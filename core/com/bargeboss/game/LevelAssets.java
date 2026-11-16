@@ -14,6 +14,7 @@ public final class LevelAssets {
     private static final Plan[] CHALLENGES=new Plan[Challenges.COUNT];
     static {
         for(int id=0;id<CHALLENGES.length;id++) {
+            if(id==Challenges.MONTROSE){CHALLENGES[id]=new Plan(SpriteAtlas.TUG,SpriteAtlas.YACHT);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {
                 int berth=Challenges.feedBerth(id,load);

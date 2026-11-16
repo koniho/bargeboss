@@ -24,6 +24,7 @@ public final class ReplayInput {
     }
     public static void work(Game g) {
         if(g.mode!=Game.PLAY || g.ropePhase!=0) return;
+        if(g.montroseStage()){marinaTow(g);return;}
         if(g.lockStage()){lockPassage(g);return;}
         if(g.sharedBerthStage() && clearSharedSlip(g))return;
         // A covered or drifting hull can make a press miss; lift before retrying.
@@ -92,6 +93,25 @@ public final class ReplayInput {
             down(g,next.x,next.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
         }
         drive(g,300,g.lock.phase>=Lock.EXIT?-280:90);
+    }
+    /** Public gestures through the inlet, clear turning fairway and physical yacht slip. */
+    private static void marinaTow(Game g) {
+        Body b=g.cargo[0];
+        if(!g.tow.connected(b,g.tug)){
+            if(g.pointer)up(g,g.pointerX,g.pointerY);
+            down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
+        }
+        float mx=MontroseHarbor.planX(g.tug.x),my=MontroseHarbor.planY(g.tug.y),x=1003,y=345;
+        if(my>1190){x=440;y=1160;}
+        else if(mx<500 && my>980){x=330;y=950;}
+        else if(mx<440 && my>700){x=330;y=650;}
+        else if(mx<820){x=860;y=570;}
+        else if(mx<1000 && my>520){x=1015;y=550;}
+        float dx=MontroseHarbor.mapX(x)-g.tug.x,dy=MontroseHarbor.mapY(y)-g.tug.y,len=Physics.length(dx,dy);
+        if(!g.pointer)down(g,g.tug.x,g.tug.y);
+        float drag=y==345 && len<90?42:65;
+        if(len<8)move(g,g.downX,g.downY);
+        else move(g,g.downX+dx/len*drag,g.downY+dy/len*drag);
     }
     private static void drive(Game g,float x,float y) {
         if(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(g.tug.y,y)) y=Bridge.Y+(g.tug.y>Bridge.Y?90:-90);

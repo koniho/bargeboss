@@ -73,6 +73,11 @@ public final class WaveView {
     }
 
     private static void shorelines(Game g,Painter p,float minY,float maxY) {
+        if(g.montroseStage()){
+            float[] coast=MontroseHarbor.COAST;
+            for(int i=0;i<coast.length-2;i+=2)edge(g,p,coast[i],coast[i+1],coast[i+2],coast[i+3]);
+            return;
+        }
         if(g.tutorial!=null) {
             float[] bank=TrainingChannel.WATER_BOUNDARY;
             for(int i=0;i<bank.length;i+=2) {

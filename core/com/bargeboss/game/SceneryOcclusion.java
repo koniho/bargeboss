@@ -148,9 +148,9 @@ public final class SceneryOcclusion implements Painter {
         recordingClip=ShoreOcclusion.vessel(g,g.layout.camera,b,false);
         Painter p=new RiverPainter(this,g.layout.camera);boolean tug=b.berth<0;
         float bob=WaterSurface.lift(g,b),x=b.x+RiverCamera.riseX(bob),y=b.y+RiverCamera.riseY(bob);
-        float size=2*(b.half+b.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
-        SpriteAtlas.draw(p,tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,x,y,size,size,1);
-        if(tug)return;
+        float size=2*(b.half+b.radius)/(b.yacht?YachtArt.HULL_FRACTION:tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
+        SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,x,y,size,size,1);
+        if(tug || b.yacht)return;
         if(b.berth==2){if(b.unloadingTicks<Game.UNLOAD_TICKS)SpriteAtlas.draw(p,SpriteAtlas.BULK,b.angle,x,y,size,size,1-b.unloadingTicks/(float)Game.UNLOAD_TICKS);return;}
         int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle),cargoSize=b.berth==0?58:26;
@@ -196,7 +196,7 @@ public final class SceneryOcclusion implements Painter {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){p.spriteBlend(a,f,ff,x,y,w,h,r,mix,alpha);}
     }
     private void remember(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
-        if(atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK && alpha>=.15f && w>0 && h>0)
+        if((atlas==SpriteAtlas.YACHT || atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK) && alpha>=.15f && w>0 && h>0)
             {Sprite vessel=new Sprite(atlas,frame,x,y,w,h,r);vessel.groundDepth=recordingDepth;vessel.hidden=recordingClip;vessels.add(vessel);}
     }
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){remember(a,f,x,y,w,h,r,alpha);target.sprite(a,f,x,y,w,h,r,alpha);}

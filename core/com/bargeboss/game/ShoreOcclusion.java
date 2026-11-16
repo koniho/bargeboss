@@ -14,7 +14,8 @@ public final class ShoreOcclusion {
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth) {
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
         ArrayList<float[]> dry=new ArrayList<float[]>();
-        if(g.tutorial!=null)subtract(dry,left,top,right,bottom,TrainingChannel.WATER_RECTANGLES,0);
+        if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth);
+        else if(g.tutorial!=null)subtract(dry,left,top,right,bottom,TrainingChannel.WATER_RECTANGLES,0);
         else {
             if(left<Physics.LEFT)dry.add(new float[]{left,top,Math.min(right,Physics.LEFT),bottom});
             if(right>Physics.RIGHT)dry.add(new float[]{Math.max(left,Physics.RIGHT),top,right,bottom});

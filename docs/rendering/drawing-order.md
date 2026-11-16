@@ -385,3 +385,45 @@ Do not extend this scope over hulls, ropes, buildings or airborne collision
 splashes: those use different depth/height rules. A common clip is appropriate
 only for elements that share the same surface plane and shore coverage. Keep the
 foam shoreline raster checks when changing the bounds or mask generation.
+
+### Montrose marina
+
+`MontroseHarbor.WATER_POLYGON` minus the oriented `DOCKS` quads is the shared
+water footprint. Triangulated `LAND_POLYGON` and dock geometry supply foreground
+shore/dock cutouts for hulls, foam and ropes; a dock's color
+sprite never defines collision. Cached grass/wood chunks draw before hulls, with
+those cutouts preserving foreground solid coverage. Tree/rock placements are
+inland and cannot overlap the navigable water, so the stage does not run building
+fade queries. Dynamic water, navigation lights, wakes, ropes and watercraft never
+enter static chunk caches. Yacht heading/blend/pivot selection is shared across
+color, glow, shadow, surface shading and opaque waterline masks.
+
+Montrose's two entrance skeleton-tower sprites are fixed at the breakwater
+endpoints. Their pivots, lamps, deck spill and shadow receiver share
+`MontroseHarbor.DOCK_RISE`; their merge depth remains unraised world depth.
+`NavigationLights.landShadows` belongs after cached decks and before the object
+merge. Its two local precomputed cutouts exclude everything outside each narrow
+pier from deck shadows/light, while reflections separately use the water-only
+pass. These fixed fixtures have no `Buoys`/`Watercraft` bodies or wave motion;
+solid breakwater collision supplies the physical obstruction. Tutorial fixed
+beacons retain their raised-quay receiver and existing clipping behavior.
+
+Montrose raised-wall masks clip the physical ground edge against the vessel's
+unraised depth **before** extruding its vertical face. Clipping an already
+projected face at `depth-rise` incorrectly retains the lower pixels of a rear
+wall. Only camera-facing wall normals may add vertical cutouts. Top receivers
+retain their own land/dock rise, with both sides excluded for water-plane
+passes. World bounds clip each edge before extrusion, so a local hull mask
+cannot pull in the entire length of a distant wall.
+
+Intersecting finger docks, gangways, land tops and raised wall faces must be
+combined into a disjoint union before calling `pushClipOutside`. Montrose
+subtracts bounded original triangle blockers from each incoming piece, rejects
+nonoverlapping bounds and prunes zero-area fragments. Do not use accumulated cut
+fragments as new blockers: that introduces unnecessary numerical subdivisions.
+`PolygonWater.area` uses origin-relative double accumulation to keep thin-piece
+orientation stable; clipping buffers allow additional roundoff crossings.
+`MontroseGeometryTest` checks raised front/rear coverage, exact-edge hull
+separation, camera/heading invariance, positive-area triangle overlap and
+sampled even-odd/native coverage at dock junctions. Native raster review remains
+necessary for antialiasing and actual device behavior.

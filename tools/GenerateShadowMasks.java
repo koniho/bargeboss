@@ -32,7 +32,9 @@ public final class GenerateShadowMasks {
                 p.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                 p.drawImage(image,ShadowArt.PAD,ShadowArt.PAD,ShadowArt.PAD+ShadowArt.INNER,ShadowArt.PAD+ShadowArt.INNER,l,t,r,b,null);p.dispose();
                 float[] mask=new float[N*N];
-                for(int y=0;y<N;y++)for(int x=0;x<N;x++)mask[y*N+x]=Math.max(0,((cell.getRGB(x,y)>>>24)-64)/191f);
+                // Flat marina material planes (timber/concrete/lawn) receive but never cast.
+                if(source!=SpriteAtlas.MARINA || frame>=4)
+                    for(int y=0;y<N;y++)for(int x=0;x<N;x++)mask[y*N+x]=Math.max(0,((cell.getRGB(x,y)>>>24)-64)/191f);
                 for(int soft=0;soft<2;soft++) {
                     float[] alpha=blur(mask,soft==0?1.0:3.2);int output=frame+soft*count;frames++;
                     for(int y=0;y<N;y++)for(int x=0;x<N;x++) {

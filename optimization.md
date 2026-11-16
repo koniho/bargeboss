@@ -323,3 +323,93 @@ measurements above were completed; the subsequent sync is recorded below.
 - Production Java2D checks passed: **192** navigation fixture registrations, **287** source-light pixel checks and **1,439,937** hull/cargo shoreline assertions across all 32 headings. Reviewed the heading sheets and fractional-turn frames: both colored lamps show in forward poses, with the tug masthead above; neighboring poses retain the soft overlap. Native iOS raster/parity validation was not run on this Android host.
 - Added `VesselNavigationReview --turns` to export 128 actual-renderer frames, four samples per heading. PNG review sheets and the turning GIF are copied to Downloads as `BargeBoss-navigation-tugs-v2.png`, `BargeBoss-navigation-barges-v2.png`, and `BargeBoss-navigation-turns-v2.gif`. Source assets/crops/pivots and layer cache budgets are unchanged. No new GPU textures or per-frame preparation are introduced, though overlapping poses intentionally draw additional existing lamps/reflections; frame-time impact was not profiled in this visual round.
 - Normal Android APK built, installed and launched successfully; native app error log was clear after launch. Previous 300000 ms display timeout restored. Origin had no incoming changes before publication.
+
+## 2026-11-16 — Montrose marina / 80-foot yacht
+
+- Added an optional, always-selectable Montrose-inspired mission in shared Java. A single rectangle-union geometry source supplies water masks, physical shore/dock collisions and foreground shoreline cutouts. Wooden dock spines connect to shore; vegetation sits inland and never participates in building fades. Removed ordinary industrial lamp reflections/sampling and unused shed-overlap work from this stage.
+- New atlas families: 32-heading yacht, eight marina tiles, yacht gold/mint hull blooms, two shadow variants per yacht/scenery frame, and four yacht surface-shading directions. Actual generated color sheets are 1774×887. Hull registration uses one uniform scale plus translated pivots, preserving source alpha. Independent masks are generated ahead of gameplay. Waterline/foam uses the yacht's own opaque silhouette, not the barge mask.
+- The upcoming-level manifest prepares only tug+yacht, **544** heading/effect frames. Existing industrial mission manifests stay 704/864/1024 as before; expanded full-catalog review is 1312 frames. Android cache budgets remain 160 MiB frames / 48 MiB terrain. Static grass/dock content uses immutable 400×280 local chunks, visibility culling and the existing asynchronous layer-preparation contract. Trees/rocks are culled independently. These changes avoid new per-frame image generation; native performance has not yet been measured for this stage, so no 60 FPS claim.
+- Existing watercraft momentum already includes mass, velocity, angular velocity/inertia, anisotropic drag and tow/collision impulses. Yacht uses a 110×30 world-unit three-disc hull (80ft nominal length) and 6.5 mass versus tug 2. Native-pointer replay attached the towline, entered the basin, turned across the fairway and settled in the slip with hull 100 and a single 1200-point reward. No position snapping or scripted propulsion was needed. Full checks/art/native validation in progress.
+
+### Montrose layout audit — outside start and fixed fixture coordinates
+
+- Shared Java / JVM: corrected both starting hulls to lie fully lakeward of the actual traced entrance line, moved overview framing to include the outside yacht, and updated the public-pointer tow route through the mouth. USCG Light List identifies fixed red east / green west breakwater towers, so marker coordinates now match the traced pier tips rather than an arbitrary floating pair. Fixed-fixture rendering is integrated separately by the main agent.
+- Dock spine source data now also prepares `MontroseHarbor.PEDESTALS` once at class initialization: 127 world-space fixtures between slip finger stations across all 15 rows, plus five star hubs. This avoids regenerating fixture locations per draw and keeps placement tied to physical docks. Runtime cost of the new lighting is not yet profiled; integration must cull fixtures and use existing cached glow assets.
+- Validation: standalone Java8 compile and `MontroseTest.run()` passed 291 assertions, including full-hull outside start, registered entrance tips, supported fixture positions and public-input voyage. Tow finishes safely with hull100 / score1200; no teleports or forced velocities. Research, feature checklist and source/adaptation distinctions are in `docs/gameplay/montrose-layout-audit.md`. Native visual review/install belongs to the parent round; no platform performance improvement is claimed here.
+
+### Montrose waterfront art candidate — parallel art task
+
+- Added only new candidate/reference assets under `docs/art-studies/montrose/waterfront-v2` and their tracked prompt; no production atlas, shared renderer, cache budget or host code changed. A 1254×1254 four-cell sheet has two flat plane materials and two raised design references. Use the flat materials in bounded cached rigid geometry; do not submit whole candidate atlases as per-frame generated textures.
+- Read-only Java2D reviews verified raw/graded appearance on three backgrounds, alpha bounds and affine straight/corner material joins. Exact 30-degree screen axes require affine correction of the generated ~32.7-degree diamond. Material pattern seams remain and should be hidden by opaque underlying rigid surfaces, not per-frame raster repairs. Four independent candidate contact/cast masks passed transparent-gutter checks; flat material cells are non-casting.
+- Candidate-only evidence: no frame-rate or native parity claim. The source RGB/alpha remain unchanged; integration must retain shared depth/shore clipping and precompute any texture preparation. Root owns runtime mesh, lighting, production mask registration and device validation.
+
+### Montrose fixed entrance towers — shared fixture integration
+
+- Both harbor entrance markers now use existing fixed-beacon sprites at the actual traced breakwater endpoints, with an independent 180-tick flash (published red/green three-second characteristics). Tutorial/ordinary-shift 120-tick behavior is unchanged. `NavigationLights.land` prevents buoy body creation; the breakwaters remain the collision targets, while mooring cans retain floating physics.
+- `LandMarkerArt.baseRise` uses shared `MontroseHarbor.DOCK_RISE` for foundations, lamps and shadow receivers. Two bounded local masks are prepared once from the last two dock quads; draws only project those triangles. No new source textures, masks, full-map geometry subtraction or per-frame raster generation. Fixed-tower water reflections remain separately water-clipped and never acquire floating shadow/heave effects. Parent integration adds the `landShadows` call after cached decks.
+- Validation: Java8 compile passed, **788** navigation assertions passed (including Montrose fixed bodies, anchor/elevation, three-second flash, local receiver mask, culling and repeat-render purity), plus **291** Montrose gameplay/replay assertions. Existing tutorial checks passed without changed behavior. Native pixels/performance and scene capture remain parent-round validation; no new performance claim.
+
+### Montrose park integration — shared Java tree animation and bounded source assets
+
+- Production marina sheet now uses exact444px cells (1776×888 RGBA; about6.02MiB decoded source), replacing the oddly divided1774×887 sheet. New waterfront material planes are uniformly reduced627→444 offline; six park frames retain bit-identical source pixels and receive at most1px transparent padding. No larger runtime source atlas or additional animation texture family was introduced. Pivots compensate for the padding; dusk grading remains shared.
+- Trees4/5 have explicit upright-height metadata and a bounded2.7%/1.9% affine shear from deterministic visual ticks and placement seed. Root pivot stays fixed; shadows stay anchored. Each visible tree submits one existing affine sprite operation without allocating images, mutating gameplay or preparing cache variants. Static materials stay in bounded terrain layers. No device frame-rate improvement is claimed; root performs final integration/culling/native review.
+- `GenerateShadowMasks` now marks flat marina timber/concrete/lawn frames0..3 noncasting. Regeneration passed272 mask/gutter checks across the catalog. Isolated Java8 core compile and `MarinaArtTest` passed16,506 assertions for stationary roots, deterministic/seed-varied bounded sway, height metadata and unchanged static-frame drawing. Native iOS/Android raster and frame-time checks remain part of the parent round.
+
+### Montrose integration: traced shore, dusk materials and elevated scenery
+
+- Replaced the initial rectangle-union marina with a simple traced water polygon,
+  triangulated land/water and oriented convex dock footprints. Collision, towline
+  clearance, foam/wave clipping and foreground cutouts now share that geometry.
+- Added 18-unit projected land rise and 4-unit dock rise; concrete seawall faces,
+  continuous promenade and material-mapped dock surfaces share the fixed camera.
+  Static geometry/material work remains in bounded 400×310 raster chunks rather
+  than rebuilding terrain textures during active frames. Visible chunk hints use
+  existing background preparation/cache budgets. No new cache-budget increase.
+- Neutral concrete/timber, quieter lawns, taller tree groups and limestone use
+  the shared cool dusk grade. Watercraft retain source saturation. Trees use
+  deterministic anchored affine shear, independently phased; shadows stay fixed.
+- 132 power pedestals add shared cached feathered light pools/halos, rigid fixture
+  depth ordering and spatially bounded hull-light samples. Lights do not become
+ 132 independent textures. Fixed entrance beacons have no buoy physics bodies.
+- Actual Java2D overview/inlet/slip renders inspected. The first close pedestal
+  preview showed contour bands; kernels increased offline-style raster coverage
+  samples while retaining one cached-layer draw per pool. Lawn interior sampling
+  removes painted tile rims. Full native frame timing still needs a dedicated
+  Montrose capture; these changes are not evidence of locked 60 FPS.
+
+### Montrose geometry audit — raised depth and native clip union
+
+- Shared geometry: confirmed the zero-distance wall-contact normal fix against clockwise/counterclockwise polygons, both inside/outside constraints, tug/yacht hulls and all four edges. Added physical-depth clipping before wall extrusion and rejected rear-facing walls. The former projected `depth-rise` cut left lower pixels of background walls in front of nearer craft. Edge world bounds now constrain face length before projection.
+- Native contract: an O-dock junction returned 51 triangles with 81 positive-area overlaps (about 508 square logical pixels in the probe). Android/JVM union clipping hid this issue; iOS even-odd holes could reopen them. Shore masks now return disjoint pieces. Original source triangles are the bounded blockers, with bounding-box rejection and tiny/zero-area pruning. An initial cut-fragment-as-blocker experiment was discarded because it caused unnecessary subdivision. No new source assets or per-frame raster textures.
+- Stabilized polygon signed area using origin-relative double accumulation; absolute float shoelace cancellation could reverse thin fragment orientation. Edge output arrays now tolerate extra numerical crossings instead of throwing. Output geometry remains shared float coordinates.
+- Construction-only JVM timings, not end-to-end native frames: dense O-dock local 160-world-unit radius median 0.314 → 0.631 ms, slip 0.072 → 0.280 ms, entrance 0.052 → 0.085 ms. Deliberately large 650-world-unit radius was 0.267 → 8.923 ms (new p95 18.665 ms; 1385 source triangles became 3584 disjoint triangles). This is a correctness cost, not an optimization claim: maintain tight per-vessel regions and profile broad foam masks before widening them. Fixed-step/render rules and native clip contract take precedence over fewer draw commands.
+- Added north-shore service float, short land-connected gangway and pier from the official map; final two breakwater indices remain unchanged. Five extra utility fixtures bring the complete authored count to 132. These additions do not change the validated towing route.
+- Validation: Java8 compile passed. **4742** Montrose geometry assertions, **19530** pedestal light-bin/depth/registration/culling/purity assertions, **788** navigation assertions and **301** playable Montrose assertions passed. CoreTest now calls MontroseGeometryTest, MarinaArtTest and MarinaPedestalsTest. Canonical replay signature was intentionally left for the parent's final integration review. Native/device validation remains in that round.
+
+### Montrose water clipping candidate — exact output preserved, runtime adoption rejected
+
+- Investigated the new marina `paintWater` path after geometry stabilized at **78 water triangles / 330 dock polygons**, including the north service floats. A separate experimental clipper uses immutable 128-unit spatial bins and thread-local candidate arrays, preserves original triangle/dock order, and directly passes polygons only when their complete bounds lie strictly inside one original triangle with no overlapping dock. Large/off-grid shapes retain the original clipping/subtraction sequence. This is a candidate, **not delegated by MontroseHarbor.paintWater**.
+- Exact-output review covered **7,692** deterministic convex stamps at coast vertices, dock corners, triangle boundaries, bin boundaries, ordinary water/land, and large/out-of-grid fallbacks. Both iterations matched **28,740 ordered output polygons / 283,344 float coordinates bit-for-bit**, plus **1,440,000 Java2D pixels**. This proves equivalence for those samples, not universal geometry proof or native Android/iOS raster parity. Review source is `tools/MontroseWaterClipReview.java`; raw images and measurements are under `out/montrose-water-clip-review/` and `out/montrose-water-clip-review-v2/`.
+- The index retained **660 cells / 5,196 shape references / 154 strictly interior triangle cells**, with **23,424 bytes integer payload** (array headers, source bounds and per-thread buffers are additional). Lazy initialization measured 4.91 ms first candidate and 3.88 ms focused follow-up on this Termux JVM. No giant texture or per-frame index build was introduced.
+- Timing uses the same **6,154** small-water-stamp CPU fixture batch, four warmup passes, six alternating baseline-first/indexed-first pairs, and no pixel/trace-capture work. The first candidate's median was **18.81 ms baseline / 27.83 ms indexed**. One focused follow-up replaced repeated single-bin candidate insertion with array copies and added a strict interior-bounds pass-through: median **19.48 ms baseline / 23.83 ms indexed**, ranges **11.37–36.53 / 7.93–33.13 ms**. These noisy JVM microbenchmarks include allocation/GC effects; they are not native frame intervals. They do **not** establish an effective improvement.
+- **Decision: keep the existing runtime clipper.** Do not add the experimental index to production or normal preview startup merely because it scans fewer candidates. Preserve the experiment for targeted future native profiling, especially allocation and clip arithmetic costs. No 60 FPS or presentation improvement claim. Root's graphical integration/install remains independent of this rejected optimization.
+- The rejected candidate lives only in `tools/MontroseWaterClip.java`, outside every automatic shared/native source discovery path. Manual reproduction (isolated output): `mkdir -p build/montrose-water-experiment`; `rg --files core > build/montrose-water-experiment/sources.txt`; `javac --release 8 -d build/montrose-water-experiment @build/montrose-water-experiment/sources.txt desktop/com/bargeboss/game/DesktopPainter.java tools/MontroseWaterClip.java tools/MontroseWaterClipReview.java`; `java -Xmx512m -Djava.awt.headless=true -cp build/montrose-water-experiment com.bargeboss.game.MontroseWaterClipReview out/montrose-water-clip-manual`. It is intentionally absent from normal preview/build checks.
+
+### Montrose final validation / Android install
+
+- Full `check.sh` passed through the Android build. New mission and camera/gesture
+  route complete from outside both breakwaters with hull 100, score 1200 and the
+  yacht retained. Canonical shared replay: `e8bd89e3:2:1350`.
+- Full `preview.sh` passed: atlas/mask freshness, native-style desktop blends,
+  terrain cache pixels, all-heading shoreline coverage, water batch equivalence,
+  foam/splash clipping, and navigation lights. Final actual-renderer overview,
+  inlet and slip images are in `out/montrose-*-v2.png` and copied to Downloads.
+- Android APK built with the existing debug key, installed successfully, and
+  launched. Native title and inlet screenshots inspected; new terrain, raised
+  trees, dusk lighting, markers, yacht and water effects render on the phone.
+  The complete mission was verified through shared native-coordinate input replay,
+  not claimed as a completed manual phone voyage. No iOS device run or new native
+  FPS claim this round. Wide receiver unions remain a measured follow-up cost.
+- Rebuilt after moving the unsuccessful water-clip index experiment out of core;
+  the final APK excludes the experimental class. Runtime retains the measured
+  baseline clipper. Do not treat the experiment as a shipped optimization.

@@ -22,7 +22,7 @@ public final class MooringAccessTest {
     }
     public static void run() {
         for(int stage=0;stage<Challenges.COUNT;stage++) for(int berth=0;berth<3;berth++) {
-            Game probe=new Game();probe.challengeId=stage;probe.reset();if(!probe.berthEnabled(berth)) continue;
+            Game probe=new Game();probe.challengeId=stage;probe.reset();if(probe.montroseStage() || !probe.berthEnabled(berth)) continue;
             if(probe.orderStage()){narrow(stage,berth);continue;}
             for(float width:new float[]{960,1333.3334f}) for(int heading=0;heading<8;heading++) for(float offset:new float[]{-40,40}) {
                 Game g=new Game();g.challengeId=stage;g.reset();

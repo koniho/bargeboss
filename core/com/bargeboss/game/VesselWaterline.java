@@ -6,8 +6,9 @@ public final class VesselWaterline {
     private static final float[][][] EDGE=edges();
     private VesselWaterline() {}
     private static float[][][] edges() {
-        float[][][] result=new float[2][32][(SEGMENTS+1)*2];
-        for(int atlas=0;atlas<2;atlas++)for(int frame=0;frame<32;frame++) {
+        float[][][] result=new float[3][32][(SEGMENTS+1)*2];
+        for(int slot=0;slot<3;slot++)for(int frame=0;frame<32;frame++) {
+            int atlas=slot==2?SpriteAtlas.YACHT:slot;
             long[] rows=OcclusionMasks.rows(atlas)[frame];int[] bottom=new int[64];int first=64,last=-1;
             for(int x=0;x<64;x++) {
                 bottom[x]=-1;
@@ -21,8 +22,8 @@ public final class VesselWaterline {
                 for(int x=Math.max(first,center-1);x<=Math.min(last,center+1);x++)if(bottom[x]>=0) {
                     float w=x==center?2:1;sum+=(bottom[x]+1)*w;weight+=w;
                 }
-                result[atlas][frame][2*i]=((column+.5f)/64-SpriteAtlas.pivotX(atlas,frame))*SpriteAtlas.widthScale(atlas,frame);
-                result[atlas][frame][2*i+1]=(sum/Math.max(1,weight)/64-SpriteAtlas.pivotY(atlas,frame))*SpriteAtlas.heightScale(atlas,frame);
+                result[slot][frame][2*i]=((column+.5f)/64-SpriteAtlas.pivotX(atlas,frame))*SpriteAtlas.widthScale(atlas,frame);
+                result[slot][frame][2*i+1]=(sum/Math.max(1,weight)/64-SpriteAtlas.pivotY(atlas,frame))*SpriteAtlas.heightScale(atlas,frame);
             }
         }
         return result;
@@ -39,7 +40,7 @@ public final class VesselWaterline {
             float heading=b.angle/(float)(StrictMath.PI/16),whole=(float)StrictMath.floor(heading);
             int a=(((int)whole+(river?RiverCamera.DIRECTION_OFFSET:0))%32+32)%32,bb=(a+1)%32;
             float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
-            float[] from=EDGE[tug?0:1][a],to=EDGE[tug?0:1][bb];
+            float[] from=EDGE[b.yacht?2:tug?0:1][a],to=EDGE[b.yacht?2:tug?0:1][bb];
             float speed=b.speed(),motion=Math.min(1,speed/65),bob=WaterSurface.lift(g,b);
             float travelX=river?RiverCamera.Q*(b.vx+b.vy):b.vx;
             // Patches travel toward the trailing end; their envelopes leave clear gaps between crests.

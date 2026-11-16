@@ -153,6 +153,14 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
   desktop play has the same visual cues without mouse vibration.
 
 Open **Challenges** from the title or results screen to build your captain career.
+**Montrose Harbor** (challenge page two, available immediately) is a parkland marina
+mission: drag from the 80-foot yacht to the tug and release to connect, tow through
+the inlet, then align and settle the yacht in its highlighted wooden slip. New
+wood dock, grass, woodland and limestone sprites replace the industrial scenery
+for this level. Its layout is inspired by Montrose, with enlarged gameplay
+clearances. The yacht retains momentum and slows the tug under load. See the
+[asset and mission notes](docs/art-studies/montrose/README.md).
+
 Each level ends immediately when its goal is complete. Cargo does not expire,
 and feeders dispatch only the barges required by that level.
 

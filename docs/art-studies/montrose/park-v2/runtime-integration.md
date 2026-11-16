@@ -1,0 +1,11 @@
+# Runtime marina park integration
+
+The production `assets/sprites/marina-tiles-v1.png` is now1776×888 with eight exact444px cells. `PackRuntime.java` reproduces it. Frames0/1 are the new waterfront timber/concrete top cells, uniformly downsampled from627px with Java2D bilinear filtering. These are flat material planes; the shared waterfront model supplies raised walls and correct projected geometry. No painted raised tile is rotated.
+
+Frames2..7 are source park frames0,1,2,3,4,7. Source pixels are copied bit-for-bit, with a transparent final row/column where the odd-sized source atlas yields443px crops. `MarinaArt` compensates each pivot for this padding. Slot6 is the low rock group, slot7 is the separately authored down-right riprap run. All materials retain their original color and the existing shared dusk grading. Source prompts remain in `docs/art-prompts/montrose-park-v2.md` and the waterfront-v2 prompt.
+
+Trees4/5 have explicit upright extent metadata and deterministic wind sway from shared `Game.visualTicks`. The affine vertical image basis shears by at most2.7%/1.9% of cell size respectively; horizontal basis, root pivot, scale and screen-space ground location stay fixed. This is slight canopy/trunk bending, not rotating an isometric camera bitmap. Different stable seeds produce varied phases; changing render frequency does not alter simulation. No animated raster preparation or bitmap cache variants are added. `drawAnimated` uses one existing affine sprite operation per tree, and falls back to normal drawing for all other frames. Shadows use the ordinary unsheared ground pivot.
+
+Flat frames0..3 are declared noncasting by `GenerateShadowMasks`. Existing registered contact/cast masks remain128px, with96px source and16px padding; tree/rock masks derive from their updated alpha. Lighting/smoke/steam inventories remain empty for these unlit natural assets. Root owns separate dock/shore fixtures.
+
+`MarinaArtTest` checks deterministic tick use, stationary root coordinates, bounded shear, flat-vs-upright heights, seed variation and unchanged non-tree drawing. Parent round owns final actual-render review, native depth/affine validation, Android install and measured performance. No native frame-rate claim is made for this change.

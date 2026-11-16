@@ -15,6 +15,11 @@ final class LevelAssetsTest {
             check(LevelAssets.upcoming(game)==plan,"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
             check(LevelAssets.upcoming(game)==plan,"Menu prepares upcoming selected level");
+            if(id==Challenges.MONTROSE){
+                check(plan.rotationFrames()==544,"Montrose prepares complete tug and yacht families");
+                check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");
+                check(!includes(plan,SpriteAtlas.BARGE) && !includes(plan,SpriteAtlas.BULK),"Marina excludes industrial cargo");continue;
+            }
             check(includes(plan,SpriteAtlas.TUG) && includes(plan,SpriteAtlas.BARGE),"Player, feeder and empty hulls prepared");
             check(includes(plan,SpriteAtlas.TUG_GOLD) && includes(plan,SpriteAtlas.BARGE_GOLD) && includes(plan,SpriteAtlas.BARGE_MINT),"Glow states prepared");
             check(includes(plan,ShadowArt.forSource(SpriteAtlas.TUG)) && includes(plan,ShadowArt.forSource(SpriteAtlas.BARGE)),"Both shadow styles prepared");

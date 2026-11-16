@@ -99,6 +99,10 @@ public final class CoreTest {
         VesselLightingTest.run();
         SurfaceLightingTest.run();
         LevelAssetsTest.run();
+        MontroseTest.run();
+        MontroseGeometryTest.run();
+        MarinaArtTest.run();
+        MarinaPedestalsTest.run();
         VesselNavigationLightsTest.run();
         VesselHighlightTest.run();
         RotationTest.run();
@@ -128,8 +132,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Navigation-sector overlap and eased light/exhaust anchors intentionally change the visual trace.
-        check(Parity.signature().equals("24ed6922:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Montrose yacht mission, traced harbor, raised shore, dusk fixtures and tree sway change the visual trace.
+        check(Parity.signature().equals("e8bd89e3:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
