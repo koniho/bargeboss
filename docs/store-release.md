@@ -53,18 +53,19 @@ Secrets (same names as the working DDDumpling environment):
 - `IOS_APPSTORE_ISSUER_ID`
 - `IOS_APPSTORE_KEY_BASE64`
 
-The registered Barge Boss bundle ID needs its own App Store provisioning profile.
-At inspection, the private signing repository contained only DDDumpling's profile.
-Its team distribution certificate may be reused, but the DDDumpling provisioning
-profile cannot sign Barge Boss. A trusted signing administrator must add the
-Barge Boss profile to match storage before running this read-only CI lane. Do not
-revoke or replace the existing certificate. CI creates and removes an ephemeral
-keychain, and requests only `com.bargeboss.game.ios` signing assets.
+Barge Boss now has its own active App Store provisioning profile,
+`match AppStore com.bargeboss.game.ios` (UUID
+`7f75fe9b-079c-4e43-ab81-2834c8c7566e`, expires 2027-09-13).
+It reuses distribution certificate `8F45S3FDPB`; no certificate was created,
+replaced or revoked. The profile is encrypted in the private match repository
+at commit `e4d4f19bc54736ba4001a7f606060aa76a3cc7e1` alongside the unchanged
+DDDumpling assets. The normal release lane remains read-only.
 
-The iOS project also needs a production AppIcon asset catalog before TestFlight
-validation can succeed. It currently has no iOS icon catalog. Simulator validation
-does not establish store readiness. Revalidate the latest native build after the
-concurrent Metal/shared-renderer changes are published.
+The iOS AppIcon catalog supplies opaque 1024px light, dark and grayscale tinted
+renditions of the existing Android tugboat mark. Regenerate them with
+`swift ios/scripts/generate-icon.swift`. The Release simulator build compiled
+the catalog and the installed Home Screen icon was visually checked. Native
+signing/export and App Store processing remain separate validation steps.
 
 Build numbers come from `github.run_number.github.run_attempt` and are checked in
 the exported IPA. Keep this workflow as their source, or coordinate a marketing
@@ -168,3 +169,12 @@ upload. Artifact `bargeboss-android-release-1-1` contains the signed bundle.
 skipped. This verifies the transferred Android signing credentials, not the
 service account's Barge Boss Play access. iOS signed export is still pending the
 Barge Boss profile and app icon. No store release or tester distribution occurred.
+
+### Barge Boss iOS signing assets and icon (2026-11-16 UTC)
+
+[Profile setup run 43806205716](https://github.com/koniho/bargeboss/actions/runs/43806205716)
+created the app-specific profile through Apple's API using the existing team
+certificate. Only match-encrypted profile data left the runner. The temporary
+setup workflow was removed after use. No store upload was requested by this setup.
+The simulator app was built, installed and launched without resetting saved data.
+No physical iOS or Android device was connected for installation checks.
