@@ -1,0 +1,24 @@
+| label | n | p50_ms | p95_ms | max_ms |
+|---|---|---|---|---|
+| BB draw | 152 | 12.348 | 19.026 | 26.042 |
+| DrawFrames | 152 | 18.405 | 22.824 | 42.879 |
+| QueueSubmit | 152 | 1.737 | 2.31 | 3.645 |
+| Texture upload | 82704 | 0.004 | 0.011 | 2.203 |
+| dequeueBuffer | 152 | 0.005 | 0.013 | 16.597 |
+| flush commands | 152 | 14.027 | 16.989 | 20.545 |
+| postAndWait | 153 | 3.803 | 9.242 | 29.605 |
+| waitForBufferRelease | 6 | 5.569 | 15.745 | 16.562 |
+
+| name | n | minimum | maximum | median | p95 |
+|---|---|---|---|---|---|
+| Reported gpu duration | 189 | 0.0 | 7061406.0 | 0.0 | 101937.59999999903 |
+| adpf.18859-10456-30373-HWUI-0-gpu_duration | 152 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+| jank_type | present_type | n |
+|---|---|---|
+| App Deadline Missed, App Resynced Jitter | Late Present | 64 |
+| App Resynced Jitter, Buffer Stuffing | On-time Present | 62 |
+| SurfaceFlinger Scheduling, App Resynced Jitter | Early Present | 18 |
+| App Deadline Missed | Late Present | 4 |
+| App Deadline Missed | Unspecified Present | 1 |
+

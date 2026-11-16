@@ -1,0 +1,5 @@
+CREATE VIEW rt AS SELECT s.*,tt.utid FROM slice s JOIN thread_track tt ON tt.id=s.track_id JOIN thread t USING(utid) JOIN process p USING(upid) WHERE p.name='com.bargeboss.game' AND t.name='RenderThread' AND s.dur>0;
+WITH per_slice AS (SELECT s.id,s.name,s.dur,sum(min(st.ts+st.dur,s.ts+s.dur)-max(st.ts,s.ts)) AS cpu_ns FROM rt s JOIN thread_state st ON st.utid=s.utid AND st.state='Running' AND st.dur>0 AND st.ts<s.ts+s.dur AND st.ts+st.dur>s.ts WHERE s.name='flush commands' OR s.name GLOB 'DrawFrames *' GROUP BY s.id)
+SELECT CASE WHEN name GLOB 'DrawFrames *' THEN 'DrawFrames' ELSE name END label,count(*) n,round(sum(cpu_ns)/1e6,2) cpu_total_ms,round(sum(dur)/1e6,2) wall_total_ms,round(percentile(cpu_ns,50)/1e6,3) cpu_p50_ms,round(percentile(cpu_ns,95)/1e6,3) cpu_p95_ms FROM per_slice GROUP BY label;
+SELECT name,count(*) n,round(sum(dur)/1e6,2) total_ms FROM rt WHERE name GLOB 'Texture upload*' GROUP BY name ORDER BY total_ms DESC LIMIT 12;
+SELECT name,count(*) n,round(sum(dur)/1e6,2) total_ms FROM rt WHERE name GLOB '*Path*' OR name GLOB '*Tess*' OR name GLOB '*Stencil*' OR name GLOB '*Mask*' GROUP BY name ORDER BY total_ms DESC LIMIT 20;

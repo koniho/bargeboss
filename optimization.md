@@ -1185,3 +1185,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   16.933/43.264 ms, throughput 46.21 FPS. CPU improvement repeats; presentation
   tails remain worse in these union runs and need native tracing. Final union APK
   installed and launched; timeout restored; original signing key retained.
+
+## Perfetto native bottleneck diagnosis (2026-11-16)
+
+- Three-second retained trace, 152 complete frames, Pixel 11 Pro / Skia Vulkan.
+  RenderThread median running CPU 18.000 ms, including 13.976 ms flushing commands.
+  This is sustained native CPU preparation/submission cost, not predominantly sleep.
+- Buffer dequeue median/p95 0.005/0.013 ms, but maximum 16.597 ms. Six explicit
+  buffer-release waits and FrameTimeline buffer-stuffing/resync flags identify
+  intermittent pacing pressure, not the dominant flush cost.
+- GPU render-stage slices unavailable; app GPU duration counter is zero. GPU-worker
+  waits cannot attribute overlapping water/foam/light shader cost. Do not claim
+  GPU overdraw as proven. Controlled effect-family comparison is the next step.
+- Full findings, config, CPU-overlap SQL and limitations:
+  docs/performance/perfetto-montrose-2026-11-16/README.md. Raw trace retained locally
+  under out/android-profile/perfetto-montrose-v1. Normal app restored, timeout reset.
