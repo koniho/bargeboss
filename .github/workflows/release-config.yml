@@ -1,0 +1,29 @@
+name: Check release configuration
+on:
+  push:
+    branches: [main]
+    paths: ['fastlane/**', 'Gemfile*', '.github/workflows/*release*.yml', 'tools/test-release.rb', 'build-bundle.sh', 'build-android.sh', 'tools/verify-release.py']
+  pull_request:
+    paths: ['fastlane/**', 'Gemfile*', '.github/workflows/*release*.yml', 'tools/test-release.rb', 'build-bundle.sh', 'build-android.sh', 'tools/verify-release.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Check lanes without store access
+        env:
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+          FASTLANE_OPT_OUT_USAGE: '1'
+          FASTLANE_SKIP_DOCS: '1'
+        run: |
+          bundle exec ruby tools/test-release.rb
+          bundle exec fastlane lanes
+          bash -n build-bundle.sh
+          sh -n build-android.sh

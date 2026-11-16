@@ -1,0 +1,1 @@
+Test the landscape tutorial, touch steering, lasso towing, cargo unloading, challenge selection, pause/resume and background/foreground recovery. Please report visual glitches, frame-rate drops and device model.

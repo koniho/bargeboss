@@ -1,0 +1,83 @@
+name: Build Android release
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_play:
+        description: Upload to Google Play internal testing
+        type: boolean
+        default: false
+      activate_release:
+        description: Activate internal release (otherwise upload a draft)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: android-release
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Check release credentials
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          UPLOAD: ${{ inputs.upload_to_play }}
+        run: |
+          for key in ANDROID_KEYSTORE_BASE64 ANDROID_KEY_ALIAS ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_PASSWORD; do
+            test -n "${!key}" || { echo "::error::Missing $key in android-release"; exit 1; }
+          done
+          if [ "$UPLOAD" = true ] && [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo '::error::Missing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON'; exit 1
+          fi
+          mkdir -p build
+          umask 077
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > build/release.keystore
+      - name: Build signed bundle
+        env:
+          BARGEBOSS_KEYSTORE: build/release.keystore
+          BARGEBOSS_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          BARGEBOSS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BARGEBOSS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          export PATH="$ANDROID_HOME/build-tools/36.0.0:$PATH"
+          ./build-bundle.sh
+          python3 tools/verify-release.py android
+      - uses: actions/upload-artifact@v6
+        with:
+          name: bargeboss-android-release-${{ github.run_number }}-${{ github.run_attempt }}
+          path: build/BargeBoss.aab
+          if-no-files-found: error
+          retention-days: 7
+      - uses: ruby/setup-ruby@v1
+        if: inputs.upload_to_play
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Upload to Play internal testing
+        if: inputs.upload_to_play
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_RELEASE_STATUS: ${{ inputs.activate_release && 'completed' || 'draft' }}
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+          FASTLANE_OPT_OUT_USAGE: '1'
+        run: bundle exec fastlane android internal
+      - name: Remove runner signing key
+        if: always()
+        run: rm -f build/release.keystore

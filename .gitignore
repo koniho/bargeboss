@@ -12,3 +12,16 @@ ios/*.xcodeproj/
 .idea/
 .vscode/
 local.properties
+
+# Release dependencies and private signing material
+.bundle/
+vendor/bundle/
+fastlane/report.xml
+fastlane/README.md
+*.aab
+*.ipa
+*.p8
+*.p12
+*.mobileprovision
+.env*
+.private/

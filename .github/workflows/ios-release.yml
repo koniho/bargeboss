@@ -1,0 +1,98 @@
+name: Build iOS release
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_testflight:
+        description: Upload to TestFlight without external tester distribution
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+jobs:
+  archive:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: ios-release
+    env:
+      FASTLANE_SKIP_UPDATE_CHECK: '1'
+      FASTLANE_OPT_OUT_USAGE: '1'
+      FASTLANE_SKIP_DOCS: '1'
+      IOS_TEAM_ID: ${{ vars.IOS_TEAM_ID }}
+      IOS_MATCH_GIT_URL: ${{ vars.IOS_MATCH_GIT_URL }}
+      IOS_BUILD_NUMBER: ${{ github.run_number }}.${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check signing configuration
+        env:
+          IOS_MATCH_GIT_PRIVATE_KEY: ${{ secrets.IOS_MATCH_GIT_PRIVATE_KEY }}
+          IOS_MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+          IOS_APPSTORE_KEY_ID: ${{ secrets.IOS_APPSTORE_KEY_ID }}
+          IOS_APPSTORE_ISSUER_ID: ${{ secrets.IOS_APPSTORE_ISSUER_ID }}
+          IOS_APPSTORE_KEY_BASE64: ${{ secrets.IOS_APPSTORE_KEY_BASE64 }}
+        run: |
+          for key in IOS_TEAM_ID IOS_MATCH_GIT_URL IOS_MATCH_GIT_PRIVATE_KEY IOS_MATCH_PASSWORD IOS_APPSTORE_KEY_ID IOS_APPSTORE_ISSUER_ID IOS_APPSTORE_KEY_BASE64; do
+            test -n "${!key}" || { echo "::error::Missing $key in ios-release; see docs/store-release.md"; exit 1; }
+          done
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Select Xcode and install build tools
+        run: |
+          test -d /Applications/Xcode_26.6.app/Contents/Developer
+          echo 'DEVELOPER_DIR=/Applications/Xcode_26.6.app/Contents/Developer' >> "$GITHUB_ENV"
+          brew install maven xcodegen
+      - name: Install Metal compiler
+        run: xcodebuild -downloadComponent MetalToolchain
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ios/vendor
+            ~/.m2/repository
+          key: release-j2objc-3.1-xcode26.6-${{ runner.arch }}-${{ hashFiles('ios/scripts/bootstrap.sh') }}
+      - name: Build native runtime
+        env:
+          JOBS: '3'
+        run: ./ios/scripts/bootstrap.sh
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Verify shared and native behavior
+        run: |
+          ./check.sh
+          ./ios/scripts/parity.sh
+          CONFIGURATION=Release ./ios/scripts/build.sh
+          ./ios/scripts/smoke.sh
+      - name: Build signed archive and IPA
+        env:
+          IOS_MATCH_GIT_PRIVATE_KEY: ${{ secrets.IOS_MATCH_GIT_PRIVATE_KEY }}
+          IOS_MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+          IOS_APPSTORE_KEY_ID: ${{ secrets.IOS_APPSTORE_KEY_ID }}
+          IOS_APPSTORE_ISSUER_ID: ${{ secrets.IOS_APPSTORE_ISSUER_ID }}
+          IOS_APPSTORE_KEY_BASE64: ${{ secrets.IOS_APPSTORE_KEY_BASE64 }}
+        run: |
+          bundle exec fastlane ios archive
+          python3 tools/verify-release.py ios
+      - uses: actions/upload-artifact@v6
+        with:
+          name: bargeboss-ios-release-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ios/build/BargeBoss.ipa
+            ios/build/BargeBoss.app.dSYM.zip
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload to TestFlight
+        if: inputs.upload_to_testflight
+        env:
+          IOS_APPSTORE_KEY_ID: ${{ secrets.IOS_APPSTORE_KEY_ID }}
+          IOS_APPSTORE_ISSUER_ID: ${{ secrets.IOS_APPSTORE_ISSUER_ID }}
+          IOS_APPSTORE_KEY_BASE64: ${{ secrets.IOS_APPSTORE_KEY_BASE64 }}
+        run: bundle exec fastlane ios upload_testflight
+      - name: Remove temporary signing keychain
+        if: always()
+        run: security delete-keychain bargeboss-ci.keychain-db 2>/dev/null || true
