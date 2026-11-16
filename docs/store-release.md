@@ -17,7 +17,8 @@ can use the current 0.1.0 version.
 
 Adapted from `koniho/dddumpling` at `f787ddc4af7ee8aa2c4dd9ab7c23848e23974008`:
 `ios-release.yml`, `fastlane/ios.rb`, the pinned fastlane dependencies and
-`build-bundle.sh`. The source game and its repository are unchanged. Game Center,
+`build-bundle.sh`. The source game is unchanged. A temporary credential-transfer workflow was later
+added to DDDumpling with explicit authorization and removed after completion. Game Center,
 Firebase, production publishing, DDDumpling store text and external tester
 notifications were not copied.
 
@@ -28,13 +29,14 @@ external testers or submit the app for review. The ordinary check workflow uses
 no release credentials. `release-config.yml` validates lane behavior without
 credentials or uploads.
 
-## Credential setup still required
+## Credential configuration
 
 GitHub's secrets API returns names and timestamps, not secret values. Existing
-DDDumpling secrets cannot be downloaded or copied through that API. Supply their
-original values directly to Barge Boss's environments using GitHub Settings or
-`gh secret set` via stdin. Never put secrets in commits, shell arguments, logs or
-chat. Do not export secrets through workflow artifacts.
+DDDumpling secrets cannot be downloaded through that API. All ten required
+release secrets are now populated in Barge Boss through the authorized transfer
+recorded below. For future updates, supply original values directly through
+GitHub Settings or `gh secret set` via stdin. Never put plaintext secrets in
+commits, shell arguments, logs, chat or workflow artifacts.
 
 ### Apple environment: ios-release
 
@@ -120,8 +122,8 @@ behavior. Those remain separate release tasks.
 - `build-bundle.sh --unsigned` passed the shared suite and bundletool validation.
   The package/version/permission and developer-class checks passed on that AAB.
 - Offline release-boundary tests, shell syntax checks and actionlint passed locally.
-- Signed export, store uploads and physical-device installation remain unverified
-  until the missing signing inputs and development phone are available.
+- At this initial checkpoint, signed export, store uploads and physical-device
+  installation were unverified. Later Android signing validation is recorded below.
 
 ### Local credential discovery and hosted checks
 
@@ -133,9 +135,36 @@ keystores are present and are not release substitutes). After explicit user appr
 `IOS_MATCH_PASSWORD`, `IOS_APPSTORE_KEY_ID`, and `IOS_APPSTORE_ISSUER_ID` directly
 into Barge Boss's encrypted `ios-release` environment secrets via stdin. Verified
 all four names are present without reading or printing their values.
-`IOS_APPSTORE_KEY_BASE64` remains missing, as does the Barge Boss provisioning
-profile in match storage. Android release credentials remain unconfigured.
+At that checkpoint the Apple private key and Android credentials were still
+missing locally. The later workflow transfer resolved those credential gaps;
+the Barge Boss provisioning profile remains a separate app-specific requirement.
 
 [Hosted release configuration check 43797755353](https://github.com/koniho/bargeboss/actions/runs/43797755353)
 passed, including pinned fastlane option compatibility and lane loading. This is
 configuration validation, not a signed build or upload.
+
+### Authorized GitHub-to-GitHub credential transfer (2026-11-16 UTC)
+
+[Transfer run 43805138520](https://github.com/koniho/dddumpling/actions/runs/43805138520)
+succeeded. Its manually dispatched, main-only workflow read exactly the five
+Apple and five Android secrets listed above. It encrypted each value with the
+corresponding Barge Boss environment's GitHub public key using libsodium sealed
+boxes. Only destination-encrypted ciphertext was downloaded and submitted to
+GitHub's environment-secret API; no plaintext credentials left the source runner,
+were logged, or were committed. No cross-repository access token was created.
+
+Verified all five secret names in each destination environment. The temporary
+workflow was disabled and removed (source commits `9ed7a5116d7e` and
+`390232cb3d31`), its encrypted transfer artifact was deleted, and the local
+ciphertext copy was removed. Existing DDDumpling secrets and release workflows
+were preserved. Secret presence alone does not prove Play account permissions
+or a valid Barge Boss Apple provisioning profile.
+
+[Android release run 43805246578](https://github.com/koniho/bargeboss/actions/runs/43805246578)
+then passed at source commit `4d55fc384cb1`: shared checks, signed AAB build,
+bundletool validation, artifact identity/production verification and artifact
+upload. Artifact `bargeboss-android-release-1-1` contains the signed bundle.
+`upload_to_play=false` and `activate_release=false`; the Play upload step was
+skipped. This verifies the transferred Android signing credentials, not the
+service account's Barge Boss Play access. iOS signed export is still pending the
+Barge Boss profile and app icon. No store release or tester distribution occurred.
