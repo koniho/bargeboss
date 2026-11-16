@@ -1242,8 +1242,9 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - 1,120 title assertions and full shared checks pass; native/JVM parity matches
   abaa466b:2:1350. Release iOS simulator build and native visual review pass.
   Signed Android build passes with the existing debug key. Review images are in
-  out/title-shore-v3. Android installation pending USB reconnection after matrix
-  profiling; the phone still has the isolated matrix candidate installed.
+  out/title-shore-v3. Android installed and launched after USB reconnection; native title capture
+  reviewed. Original signing identity and game data preserved, matrix experiment
+  removed from the installed build, and five-minute display timeout restored.
 - No title FPS improvement claimed. Factory frames can still be demand-prepared
   on cold title entry; current Android preparation API warms whole atlases, while
   iOS does not consume LevelAssets plans. Exact-frame preparation remains future
