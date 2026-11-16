@@ -748,3 +748,67 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   through Shizuku and cold-launched with `Status: ok`. The current Android APK
   includes both agents' changes; native iOS validation of cargo/controls remains
   outstanding. Refreshed gameplay-size/all-heading/unloading previews in Downloads.
+
+### Braided ropes, shared fittings, cabin occlusion and outward waves (2026-11-16)
+
+- Added `Painter.ropeSegment` and one shared Metal/AGSL `rope.inc` material:
+  weathered hemp, rounded shading, diagonal strands and fine fibers. Continuous
+  shared strand coordinates prevent texture resets at sorted span boundaries.
+  Reuses the existing native pipeline/program; no rope texture cache or render
+  target. Fallbacks use bounded strokes/short braid marks. All active painter
+  wrappers forward the primitive, including opacity and screen transforms.
+- Added body-local visual fittings/deck heights for powered hulls, cargo barges
+  and yachts. Fittings and rope ends use the same heading/heave. Mooring side/end
+  selection stays fixed while winching rotates/translates the vessel. Cast
+  preview/release origins agree, and release recoil preserves endpoint heights.
+  Tow spring/torque attachment arms and forces are unchanged. These visual rigs
+  are model estimates, not per-pixel surveyed source cleats.
+- Tow/recoil, attached mooring and flying tether/loop now share the world-depth
+  merge. Water-side spans retain shore clipping; quay sections ride the raised
+  top. Native review caught a remaining line-through-cabin error in the dense
+  two-barge scene. Added four bounded orthographic sight tests per span against
+  shared hull/cabin/cargo solids for all active player, cargo, yacht, feeder and
+  traffic bodies. Contiguous visible pieces coalesce into one native strip.
+  Final native capture has 24 rope submissions (51 before cabin clipping), with
+  crossing sections hidden. Model solids are conservative: fine railing gaps
+  and partial-unload silhouettes are not reconstructed in 3-D.
+- Detached wake crests now expand in paired V arms sideways/astern from each
+  packet's recorded travel direction. Origins/headings remain independent of
+  later turns or stops. Same 192-packet pool, lifetime, emission cadence, sixteen
+  crest segments per packet and gameplay wake forces; this changes wave visuals.
+- Before the final upstream cargo/control integration, the shared suite passed with 13,617 rope attachment/continuity/clip
+  assertions, 96 outward-wave assertions, and actual render-order checks over
+  all 32 headings of all cargo/yacht families, connected and recoiling, in both
+  normal/tutorial scenes. JVM/J2ObjC parity: 64ea8375:2:1350. Existing all-heading
+  hull/cargo shoreline pixel regression passed (1,439,937 assertions). Reviewed
+  heading sheets and native Metal towing/wake pixels, including cabin correction.
+- Pre-integration Release iPhone 17 Pro / iOS 26.5 simulator `barge-tow` replay, 60 warmup
+  and 300 measured draws, no competing builds: A/B 60.00/60.00 FPS; interval p95
+  17.277/17.283 ms, max 17.345/17.320 ms; CPU draw p95 5.568/5.289 ms, max
+  13.652/14.735 ms; GPU p95 0.242/0.249 ms. Last metadata: 24 rope, 1,398 foam,
+  112 smoke and 13 reflection patches, zero texture evictions. Raw captures in
+  [rope shaders](docs/performance/rope-shaders-2026-11-16/). This is not a physical
+  device guarantee or worst-case nine-link train benchmark; no speedup claimed
+  from the earlier, visually different captures.
+- Release iOS simulator and unsigned Android builds succeeded; both shader files
+  are packaged in the APK. Native AGSL runtime/device pixels remain unvalidated.
+  No Android phone access/install/awake changes. Simulator install/launch done.
+  [Rope rendering contract](docs/rendering/rope-material.md) documents scope/limits.
+
+- Final sync integrated `b0a9627` (new whole-hold cargo and gesture-locked driving).
+  Preserved both optimization entries and all upstream code. Updated barge visual
+  fittings to sit beyond `CargoArt.HOLD_LENGTH/2` and above its shared rim; cargo
+  occluders now use the common hold length/width rather than old bundle estimates.
+  No art assets or upstream control behavior were replaced.
+- Combined shared suite and Android unsigned build passed, including new cargo
+  asset/shadow/surface-light freshness checks. Final JVM/J2ObjC parity:
+  `4edb9bb7:2:1350`; 13,545 rope assertions, 96 outward-wave assertions and
+  1,439,937 repeated shoreline pixel assertions passed. Re-exported all-heading
+  rope/cargo sheets and reviewed native merged gameplay pixels.
+- Final merged iOS Release simulator A/B, same barge-tow replay/warmup/count:
+  60.00/60.00 FPS; interval p95 16.718/17.066 ms, maximum 17.098/17.155 ms;
+  CPU draw p95 5.064/5.305 ms, max 12.814/13.151 ms; GPU p95 0.211/0.247 ms.
+  Last metadata: 28 rope, 1,073 foam, 112 smoke and 15 reflection patches, zero
+  texture evictions. `rope-merged-*` raw files are the final combined evidence;
+  earlier `rope-occlusion-*` files predate upstream cargo/control changes and are
+  not a controlled performance comparison. Device/maximum-train limits remain.

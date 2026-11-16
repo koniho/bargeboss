@@ -1,6 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
 #include "../../assets/shaders/water-foam.inc"
+#include "../../assets/shaders/rope.inc"
 struct Vertex { float2 position; float2 uv; float4 color; uint kind; float phase; };
 struct Raster { float4 position [[position]]; float2 uv; float4 color; uint kind [[flat]]; float phase [[flat]]; };
 vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [[buffer(0)]], constant float4 &transform [[buffer(1)]]) {
@@ -9,6 +10,7 @@ vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [
 }
 fragment float4 bbFragment(Raster v [[stage_in]], texture2d<float> image [[texture(0)]]) {
     constexpr sampler sampling(coord::normalized,address::clamp_to_edge,filter::linear);
+    if(v.kind==10) return v.color*ropeShade(v.uv);
     if(v.kind>=2) return v.color*foamCoverage(v.uv,v.phase,float(v.kind-2));
     if(v.kind==1) {
         float distance=length(v.uv*2-1);

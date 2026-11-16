@@ -5,9 +5,10 @@ public final class LassoFeedbackTest {
     private static int checks;
     private static void check(boolean ok,String message) {checks++;if(!ok) throw new AssertionError(message);}
     private static final class Capture implements Painter {
-        float[] rope=new float[128];int lines;float tugAlpha=1,ropeWidth=3;
-        public void line(float x,float y,float xx,float yy,float w,int color) {
-            if(color==0xffd3a65f && Math.abs(w-ropeWidth)<.001f && lines<32) {rope[lines*4]=x;rope[lines*4+1]=y;rope[lines*4+2]=xx;rope[lines*4+3]=yy;lines++;}
+        float[] rope=new float[128];int lines;float tugAlpha=1,ropeWidth=2.8f;
+        public void line(float x,float y,float xx,float yy,float w,int color) {}
+        public void ropeSegment(float x,float y,float xx,float yy,float w,float from,float to,int color) {
+            if(color==RopeMaterial.COLOR && Math.abs(w-ropeWidth)<.001f && lines<32) {rope[lines*4]=x;rope[lines*4+1]=y;rope[lines*4+2]=xx;rope[lines*4+3]=yy;lines++;}
         }
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {if(a==SpriteAtlas.TUG) tugAlpha=alpha;}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha) {sprite(a,f,x,y,w,h,r,alpha);}
@@ -34,7 +35,7 @@ public final class LassoFeedbackTest {
         }
         Game g=fixture();Body b=g.cargo[0];
         ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,g.bollardX(2),g.bollardY(2));
-        LassoPath.edge(b,g.aimX(b,g.pointerX,g.pointerY),g.aimY(b,g.pointerX,g.pointerY),edge);
+        RopeAttachment.cast(b,g.aimX(b,g.pointerX,g.pointerY),g.aimY(b,g.pointerX,g.pointerY),false,edge);
         check(g.ropePhase==0,"armed arc never launches before release");
         ReplayInput.up(g,g.bollardX(2),g.bollardY(2));
         check(Math.abs(g.ropeStartX-edge[0])<.001f && Math.abs(g.ropeStartY-edge[1])<.001f,"release preserves the preview origin");
@@ -45,14 +46,14 @@ public final class LassoFeedbackTest {
             check(capture.lines==32,"paid-out rope draws its complete sampled arc");
             check(Math.abs(capture.rope[126]-point[0])<.002f && Math.abs(capture.rope[127]-point[1])<.002f,"flying loop follows the exact preview curve");
             check(Math.abs(capture.rope[0]-g.ropeOriginX())<.002f
-                    && Math.abs(capture.rope[1]-(g.ropeOriginY()-LassoPath.DECK_HEIGHT-WaterSurface.lift(g,b)))<.002f,
+                    && Math.abs(capture.rope[1]-(g.ropeOriginY()-RopeAttachment.height(b)-WaterSurface.lift(g,b)))<.002f,
                     "tether stays on the moving barge's deck edge");
             if(tick>=5 && tick<=15) check(Math.abs(capture.rope[61]-(capture.rope[1]+capture.rope[127])*.5f)>1,"paid-out rope bends over the arc rather than a straight chord");
-            RiverCamera camera=g.layout.camera;Capture iso=new Capture();iso.ropeWidth=3*camera.scale;
-            MooringView.draw(g,new RiverPainter(iso,camera));
+            RiverCamera camera=g.layout.camera;TowView.Segments flight=new TowView.Segments(g);
+            int tip=(Towline.CAPACITY+g.cargo.length)*25+32;
             LassoPath.sample(g.ropeStartX,g.ropeStartY,g.ropeEndX,g.ropeEndY,g.ropeStartHeight,fraction,true,point);
-            check(iso.lines==32 && Math.abs(iso.rope[126]-camera.screenX(point[0],point[1]))<.003f
-                    && Math.abs(iso.rope[127]-camera.screenY(point[0],point[1]))<.003f,"isometric projection preserves the same flight arc");
+            check(Math.abs(camera.screenX(flight.x[tip],flight.y[tip])-camera.screenX(point[0],point[1]))<.003f
+                    && Math.abs(camera.screenY(flight.x[tip],flight.y[tip])-flight.height[tip]*camera.scale-camera.screenY(point[0],point[1]))<.003f,"depth-sorted flight preserves the same isometric arc");
             check(g.ropeTicks==tick,"drawing either projection never advances the throw");
         }
         float localX=g.ropeLocalX,localY=g.ropeLocalY;
@@ -60,7 +61,7 @@ public final class LassoFeedbackTest {
         check(Math.abs(g.ropeOriginX()-(b.x+localX*(float)StrictMath.cos(b.angle)-localY*(float)StrictMath.sin(b.angle)))<.001f,
                 "turning the barge keeps the same local rope fitting");
         g.ropePhase=2;g.ropeTicks=Game.ROPE_RETURN_TICKS;Capture recoil=new Capture();MooringView.draw(g,recoil);
-        check(Math.abs(recoil.rope[126]-g.ropeOriginX())<.002f && Math.abs(recoil.rope[127]-(g.ropeOriginY()-LassoPath.DECK_HEIGHT-WaterSurface.lift(g,b)))<.002f,
+        check(Math.abs(recoil.rope[126]-g.ropeOriginX())<.002f && Math.abs(recoil.rope[127]-(g.ropeOriginY()-RopeAttachment.height(b)-WaterSurface.lift(g,b)))<.002f,
                 "a miss retracts all the way to the current edge fitting");
         damage();
         System.out.println(checks+" lasso arc, edge attachment and hull-damage flash assertions passed");

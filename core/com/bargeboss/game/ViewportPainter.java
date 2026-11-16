@@ -58,6 +58,7 @@ public final class ViewportPainter implements Painter {
         if(alpha>.005f && visible(x-w,y-h,x+w,y+h))target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;if((color>>>24)>0 && visible(x-w,y-h,x+w,y+h))target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){if(visible(Math.min(x,xx)-width,Math.min(y,yy)-width,Math.max(x,xx)+width,Math.max(y,yy)+width))target.ropeSegment(x,y,xx,yy,width,from,to,color);}
     public void smokePuff(float x,float y,float radius,float phase,int color){if(radius>0 && (color>>>24)>0 && visible(x-radius,y-radius,x+radius,y+radius))target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha) {
         if(alpha<=0)return;

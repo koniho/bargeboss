@@ -7,6 +7,7 @@
 #import "com/bargeboss/game/WaterFoam.h"
 #import "com/bargeboss/game/WaterReflection.h"
 #import "com/bargeboss/game/SmokePuff.h"
+#import "com/bargeboss/game/RopeMaterial.h"
 #import <math.h>
 
 static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
@@ -284,6 +285,9 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 // Supplied axes span a complete source cell and already include all caller scaling.
 - (void)waterReflectionWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)color {
     [BBWaterReflection fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:phase withInt:color];
+}
+- (void)ropeSegmentWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)xx withFloat:(jfloat)yy withFloat:(jfloat)width withFloat:(jfloat)from withFloat:(jfloat)to withInt:(jint)argb {
+    [BBRopeMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:xx withFloat:yy withFloat:width withFloat:from withFloat:to withInt:argb];
 }
 - (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
     [BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];

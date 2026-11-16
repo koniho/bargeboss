@@ -46,6 +46,7 @@ public final class RiverPainter implements Painter {
         painter.waterFoam(camera.screenX(x,y),camera.screenY(x,y),RiverCamera.Q*(ax+ay)*s,RiverCamera.Q*RiverCamera.DEPTH*(ay-ax)*s,RiverCamera.Q*(bx+by)*s,RiverCamera.Q*RiverCamera.DEPTH*(by-bx)*s,phase,kind,alpha);
     }
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){float s=camera.scale;painter.waterReflection(camera.screenX(x,y),camera.screenY(x,y),RiverCamera.Q*(ax+ay)*s,RiverCamera.Q*RiverCamera.DEPTH*(ay-ax)*s,RiverCamera.Q*(bx+by)*s,RiverCamera.Q*RiverCamera.DEPTH*(by-bx)*s,phase,color);}
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){painter.ropeSegment(camera.screenX(x,y),camera.screenY(x,y),camera.screenX(xx,yy),camera.screenY(xx,yy),width*camera.scale,from,to,color);}
     public void smokePuff(float x,float y,float radius,float phase,int color){painter.smokePuff(camera.screenX(x,y),camera.screenY(x,y),radius*camera.scale,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){
         float s=camera.scale;

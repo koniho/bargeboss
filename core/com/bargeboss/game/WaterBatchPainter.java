@@ -49,6 +49,7 @@ public final class WaterBatchPainter implements Painter {
         flush();target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){flush();target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){flush();target.ropeSegment(x,y,xx,yy,width,from,to,color);}
     public void smokePuff(float x,float y,float radius,float phase,int color){flush();target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){flush();target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}

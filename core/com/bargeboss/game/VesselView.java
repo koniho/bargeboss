@@ -37,6 +37,7 @@ public final class VesselView {
         }
         SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
         SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
+        RopeAttachment.fittings(g,p,b);
         if(tug) {
             VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
             VesselLighting.tug(g,p,b,bob);

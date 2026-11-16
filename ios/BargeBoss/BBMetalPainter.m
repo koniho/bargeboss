@@ -34,7 +34,7 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
 @property(nonatomic,strong) dispatch_queue_t preparationQueue;
 @property(nonatomic) NSUInteger directLayerFallbacks;
 @property(nonatomic) BOOL waterShaders;
-@property(nonatomic) NSUInteger waterFoamPatches,waterReflectionPatches,smokePatches;
+@property(nonatomic) NSUInteger waterFoamPatches,waterReflectionPatches,smokePatches,ropePatches;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,id<MTLTexture>> *textures;
 @property(nonatomic,strong) NSMutableArray<NSString *> *textureOrder;
 @property(nonatomic,strong) NSMutableArray<BBMetalBatch *> *batches;
@@ -171,7 +171,7 @@ static vector_float4 BBColor(jint argb) {
         self.peakFrameTextureBytes=MAX(self.peakFrameTextureBytes,self.frameTextureBytes);
     }
 }
-- (NSDictionary *)diagnostics {return @{@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
+- (NSDictionary *)diagnostics {return @{@"rope_patches":@(self.ropePatches),@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
 - (id<MTLTexture>)makeTexture:(UIImage *)image {
     if(!image) return self.white;
     size_t width=CGImageGetWidth(image.CGImage),height=CGImageGetHeight(image.CGImage);
@@ -225,6 +225,14 @@ static vector_float4 BBColor(jint argb) {
         {p+a,{1,0},color},{p+a+b,{1,1},color},{p+b,{0,1},color}};
     [self append:v count:6 texture:texture mode:0];
 }
+- (void)ropeSegmentWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)xx withFloat:(jfloat)yy withFloat:(jfloat)width withFloat:(jfloat)from withFloat:(jfloat)to withInt:(jint)argb {
+    float dx=xx-x,dy=yy-y,len=hypotf(dx,dy);if(len<.001f || width<=0)return;
+    vector_float2 n={-dy/len*width*.5f,dx/len*width*.5f},a={x,y},b={xx,yy};
+    vector_float4 color=BBColor(argb);self.ropePatches++;
+    BBVertex v[]={{a-n,{from,0},color,10,0},{b-n,{to,0},color,10,0},{a+n,{from,1},color,10,0},
+        {b-n,{to,0},color,10,0},{b+n,{to,1},color,10,0},{a+n,{from,1},color,10,0}};
+    [self append:v count:6 texture:self.white mode:0];
+}
 - (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
     if(!self.waterShaders) {[BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];return;}
     vector_float4 color=BBColor(argb);if(radius<=0 || color.w<=0)return;self.smokePatches++;
@@ -272,7 +280,7 @@ static vector_float4 BBColor(jint argb) {
         dispatch_async(dispatch_get_main_queue(), ^{[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:visible];});
     }});
 }
-- (void)beginFrame {self.waterFoamPatches=0;self.waterReflectionPatches=0;self.smokePatches=0;[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
+- (void)beginFrame {self.waterFoamPatches=0;self.waterReflectionPatches=0;self.smokePatches=0;self.ropePatches=0;[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
 - (void)layerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale withFloat:(jfloat)alpha {
     float w=[layer width]*scale,h=[layer height]*scale;
     if(alpha<=0 || !CGRectIntersectsRect(self.visibleBounds,CGRectMake(x,y,w,h)))return;

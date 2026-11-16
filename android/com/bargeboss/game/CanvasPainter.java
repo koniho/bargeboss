@@ -428,6 +428,10 @@ public final class CanvasPainter implements Painter {
             waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,6,(color>>>24)/255f,color);
         else Painter.super.waterReflection(x,y,ax,ay,bx,by,phase,color);
     }
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color) {
+        if(waterFoamShader!=null && canvas.isHardwareAccelerated())waterFoamShader.rope(canvas,x,y,xx,yy,width,from,to,color);
+        else Painter.super.ropeSegment(x,y,xx,yy,width,from,to,color);
+    }
     public void smokePuff(float x,float y,float radius,float phase,int color) {
         if(radius<=0 || (color>>>24)==0)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())

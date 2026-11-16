@@ -143,9 +143,10 @@ pass and are distinct from the physical rope.
 
 Shore lasso aiming/flight uses `LassoPath`, including the hull-edge origin and
 elevated throw arc. Do not replace it with the towline's low, sagging path.
-The existing shore-mooring rope/coil is a separate elevated deck-to-bollard
-presentation; future changes to its shoreline crossings must test the deck,
-bollard and intervening shore heights explicitly.
+Attached shore-mooring lines and airborne casts now join the same depth merge.
+Their shared ground/height paths distinguish water spans from lines resting on
+the raised quay; deck fittings and bollard coils retain their own local placement.
+See [rope materials](rope-material.md).
 
 ## Building fading
 
@@ -439,3 +440,18 @@ the visible world region. Title patches also exclude pixels above their water
 plane. Painter wrappers must forward the primitive and preserve clip/opacity/order.
 Fallbacks use authored textures or short crest geometry inside the same scopes.
 See [water shaders](../performance/water-shaders.md) for costs and validation limits.
+
+## Rope materials and attached lines
+
+Tow, recoil, attached mooring and airborne cast spans now share the world-depth
+merge. Native rope shaders only shade bounded strips with shared continuous strand
+coordinates. Vessel-specific visual fittings follow hull heading and heave;
+shore roots remain on the same selected local fitting through winching. Mooring
+land sections ride raised quay tops while water sections retain shore cutouts.
+See [rope material and attachment contract](rope-material.md) for bounds, tests
+and the remaining limits of sprite-based depth.
+
+Detached wake crests now form paired V arms that expand sideways and astern from
+the recorded travel direction. Their origins/headings remain fixed after emission;
+turning or stopping the source cannot rotate or stop old waves. The existing
+packet pool, aging and gameplay forces are unchanged.

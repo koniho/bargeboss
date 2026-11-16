@@ -22,6 +22,7 @@ public final class SceneryOcclusion implements Painter {
     public SceneryOcclusion(Painter target) {this.target=target;}
     public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){target.waterFoam(xx,yy,ax,ay,bx,by,phase,kind,alpha);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){target.ropeSegment(x,y,xx,yy,width,from,to,color);}
     public void smokePuff(float x,float y,float radius,float phase,int color){target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}

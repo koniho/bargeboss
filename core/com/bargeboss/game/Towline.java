@@ -27,7 +27,7 @@ public final class Towline {
 
     public float length,tension,cargoEnd;
     public int catchTicks,releaseTicks;
-    public float releaseX,releaseY,releaseToX,releaseToY;
+    public float releaseX,releaseY,releaseToX,releaseToY,releaseHeight,releaseToHeight;
     public float tugX(Body tug) { Body t=leader==null?tug:leader;return t.x+(leader==null?-(t.half+7):leaderEnd)*(float)StrictMath.cos(t.angle); }
     public float tugY(Body tug) { Body t=leader==null?tug:leader;return t.y+(leader==null?-(t.half+7):leaderEnd)*(float)StrictMath.sin(t.angle); }
     public float cargoX() { return cargo.x+cargoEnd*(float)StrictMath.cos(cargo.angle); }
@@ -62,7 +62,9 @@ public final class Towline {
     public void release(Game g) {for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null)l.releaseOne(g);}}
     private void releaseOne(Game g) {
         if(cargo==null) return;
-        releaseX=cargoX();releaseY=cargoY();releaseToX=tugX(g.tug);releaseToY=tugY(g.tug);
+        releaseX=RopeAttachment.x(cargo,cargoEnd);releaseY=RopeAttachment.y(cargo,cargoEnd);
+        releaseToX=RopeAttachment.x(leader,leaderEnd);releaseToY=RopeAttachment.y(leader,leaderEnd);
+        releaseHeight=RopeAttachment.height(cargo)+WaterSurface.lift(g,cargo);releaseToHeight=RopeAttachment.height(leader)+WaterSurface.lift(g,leader);
         releaseTicks=18;cargo=null;tension=0;catchTicks=0;
         g.haptic(Game.HAPTIC_TICK);
     }

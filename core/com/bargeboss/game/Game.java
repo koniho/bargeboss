@@ -556,12 +556,12 @@ public final class Game {
                 ropeTargeted=ropeToTug?ropeTowTarget!=null && canTowAtRelease(b,ropeTowTarget):overTiePoint(b,x,y) && ropeWithinReach(b);
                 ropeEndX=ropeToTug?(ropeTargeted?ropeTowTarget.x:x):aimX(b,x,y);
                 ropeEndY=ropeToTug?(ropeTargeted?ropeTowTarget.y:y):aimY(b,x,y);
-                LassoPath.edge(b,ropeEndX,ropeEndY,route);
+                RopeAttachment.cast(b,ropeEndX,ropeEndY,ropeToTug,route);
                 ropeStartX=route[0];ropeStartY=route[1];
                 float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
                 float dx=ropeStartX-b.x,dy=ropeStartY-b.y;
                 ropeLocalX=dx*c+dy*s;ropeLocalY=-dx*s+dy*c;
-                ropeStartHeight=LassoPath.DECK_HEIGHT+WaterSurface.lift(this,b);
+                ropeStartHeight=RopeAttachment.height(b)+WaterSurface.lift(this,b);
                 haptic(HAPTIC_TICK);
             }
             cancel(); return;

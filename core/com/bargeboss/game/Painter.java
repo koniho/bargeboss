@@ -35,6 +35,10 @@ public interface Painter {
     default void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
         WaterReflection.fallback(this,x,y,ax,ay,bx,by,phase,color);
     }
+    /** Screen-space rope span; strand coordinates stay continuous along the shared curve. */
+    default void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color) {
+        RopeMaterial.fallback(this,x,y,xx,yy,width,from,to,color);
+    }
     /** Screen-space rolling exhaust. Shared callers own source, transport, palette and opacity. */
     default void smokePuff(float x,float y,float radius,float phase,int color) {
         SmokePuff.fallback(this,x,y,radius,color);
