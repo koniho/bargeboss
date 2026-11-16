@@ -14,7 +14,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final CanvasPainter.Profile stats;
     private final String scene,mode;
     private final int warmup,samples;
-    private final boolean trace,compoundPaths,frameTextures,asyncLayers;
+    private final boolean trace,systemTrace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
     private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height\n";
@@ -33,6 +33,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         warmup=Math.max(0,Math.min(1800,intent.getIntExtra("bb_warmup",120)));
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
+        systemTrace=intent.getBooleanExtra("bb_system_trace",false);
         pixelReview=intent.getBooleanExtra("bb_texture_review",false);
         waterReview=intent.getBooleanExtra("bb_water_review",false);
         waterGrouping=intent.getBooleanExtra("bb_water_grouping",false);
@@ -82,10 +83,12 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         // A Choreographer callback need not produce a draw. Advance replay here
         // so every recorded row has exactly one tick regardless of render speed.
         if(mode.equals("replay")){long start=System.nanoTime();ProfileScenario.replayTick(root);advanceNs+=System.nanoTime()-start;}
+        if(systemTrace)android.os.Trace.beginSection("BB draw "+frame);
         drawStart=System.nanoTime();
     }
     public void afterDraw() {
         if(!configured || finished)return;
+        if(systemTrace)android.os.Trace.endSection();
         long end=System.nanoTime(),drawNs=end-drawStart,interval=previousDraw==0?0:drawStart-previousDraw;previousDraw=drawStart;
         Game g=root.activeGame();
         double[] r=rows[frame];

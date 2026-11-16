@@ -1,0 +1,253 @@
+{
+  "app_pid": 7341,
+  "buffer_entries_written": [
+    700067,
+    700067
+  ],
+  "buffer_overwritten": false,
+  "complete_draws": 88,
+  "first_frame": 543,
+  "last_frame": 630,
+  "window_ms": 1990.047,
+  "render_thread_states": {
+    "7379": {
+      "blocked": 132.343,
+      "running": 1855.54,
+      "runnable": 2.164
+    }
+  },
+  "render_thread_slices_inclusive": {
+    "DrawFrames": {
+      "count": 86,
+      "total_ms": 1947.295,
+      "p50_ms": 20.422,
+      "p95_ms": 30.634,
+      "max_ms": 37.506
+    },
+    "Drawing 172.00  0.00 2410.00 1080.00": {
+      "count": 87,
+      "total_ms": 1726.206,
+      "p50_ms": 19.656,
+      "p95_ms": 23.665,
+      "max_ms": 26.612
+    },
+    "flush commands": {
+      "count": 87,
+      "total_ms": 1274.127,
+      "p50_ms": 14.378,
+      "p95_ms": 17.945,
+      "max_ms": 19.665
+    },
+    "Vulkan finish frame": {
+      "count": 87,
+      "total_ms": 1274.012,
+      "p50_ms": 14.377,
+      "p95_ms": 17.943,
+      "max_ms": 19.663
+    },
+    "auto skgpu::ganesh::OpsTask::onPrepare(GrOpFlushState *)::(anonymous class)::operator()() const": {
+      "count": 195,
+      "total_ms": 535.63,
+      "p50_ms": 0.017,
+      "p95_ms": 6.824,
+      "max_ms": 7.777
+    },
+    "TriangulatingPathOp": {
+      "count": 161413,
+      "total_ms": 371.801,
+      "p50_ms": 0.002,
+      "p95_ms": 0.004,
+      "max_ms": 0.082
+    },
+    "auto skgpu::ganesh::OpsTask::onExecute(GrOpFlushState *)::(anonymous class)::operator()() const": {
+      "count": 195,
+      "total_ms": 314.887,
+      "p50_ms": 0.099,
+      "p95_ms": 3.886,
+      "max_ms": 4.167
+    },
+    "AAConvexPathOp": {
+      "count": 19694,
+      "total_ms": 261.849,
+      "p50_ms": 0.002,
+      "p95_ms": 0.085,
+      "max_ms": 2.09
+    },
+    "dequeueBuffer": {
+      "count": 87,
+      "total_ms": 125.29,
+      "p50_ms": 0.006,
+      "p95_ms": 8.874,
+      "max_ms": 12.384
+    },
+    "waitForBufferRelease": {
+      "count": 23,
+      "total_ms": 124.175,
+      "p50_ms": 4.605,
+      "p95_ms": 10.226,
+      "max_ms": 12.374
+    },
+    "syncFrameState": {
+      "count": 87,
+      "total_ms": 115.496,
+      "p50_ms": 0.754,
+      "p95_ms": 4.617,
+      "max_ms": 6.164
+    },
+    "prepareTree": {
+      "count": 87,
+      "total_ms": 101.549,
+      "p50_ms": 0.606,
+      "p95_ms": 4.362,
+      "max_ms": 5.893
+    },
+    "QueueSubmit": {
+      "count": 87,
+      "total_ms": 82.569,
+      "p50_ms": 0.904,
+      "p95_ms": 1.113,
+      "max_ms": 3.821
+    },
+    "TextureOp": {
+      "count": 23858,
+      "total_ms": 50.663,
+      "p50_ms": 0.001,
+      "p95_ms": 0.006,
+      "max_ms": 0.045
+    },
+    "queueBuffer": {
+      "count": 174,
+      "total_ms": 28.342,
+      "p50_ms": 0.158,
+      "p95_ms": 0.205,
+      "max_ms": 0.249
+    },
+    "CircleOp": {
+      "count": 19947,
+      "total_ms": 20.093,
+      "p50_ms": 0.001,
+      "p95_ms": 0.002,
+      "max_ms": 0.019
+    },
+    "FillRRectOp": {
+      "count": 20732,
+      "total_ms": 19.251,
+      "p50_ms": 0.001,
+      "p95_ms": 0.002,
+      "max_ms": 0.031
+    },
+    "FillRectOp": {
+      "count": 10594,
+      "total_ms": 15.084,
+      "p50_ms": 0.001,
+      "p95_ms": 0.003,
+      "max_ms": 0.046
+    }
+  },
+  "longest_draw_intervals": [
+    {
+      "preceding_frame": 595,
+      "following_interval_ms": 38.14,
+      "java_draw_ms": 12.293,
+      "ui_post_wait_ms": 24.806,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 11.391,
+          "running": 26.703,
+          "runnable": 0.046
+        }
+      }
+    },
+    {
+      "preceding_frame": 583,
+      "following_interval_ms": 34.328,
+      "java_draw_ms": 14.83,
+      "ui_post_wait_ms": 18.585,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 8.274,
+          "running": 25.961,
+          "runnable": 0.093
+        }
+      }
+    },
+    {
+      "preceding_frame": 599,
+      "following_interval_ms": 32.262,
+      "java_draw_ms": 10.617,
+      "ui_post_wait_ms": 20.703,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 8.047,
+          "running": 24.202,
+          "runnable": 0.013
+        }
+      }
+    },
+    {
+      "preceding_frame": 581,
+      "following_interval_ms": 31.152,
+      "java_draw_ms": 10.422,
+      "ui_post_wait_ms": 19.738,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 7.939,
+          "running": 23.199,
+          "runnable": 0.014
+        }
+      }
+    },
+    {
+      "preceding_frame": 593,
+      "following_interval_ms": 30.324,
+      "java_draw_ms": 10.539,
+      "ui_post_wait_ms": 18.897,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 5.003,
+          "running": 25.309,
+          "runnable": 0.012
+        }
+      }
+    },
+    {
+      "preceding_frame": 547,
+      "following_interval_ms": 30.057,
+      "java_draw_ms": 13.393,
+      "ui_post_wait_ms": 15.698,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 7.641,
+          "running": 22.403,
+          "runnable": 0.013
+        }
+      }
+    },
+    {
+      "preceding_frame": 556,
+      "following_interval_ms": 30.011,
+      "java_draw_ms": 11.298,
+      "ui_post_wait_ms": 17.708,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 5.669,
+          "running": 24.329,
+          "runnable": 0.013
+        }
+      }
+    },
+    {
+      "preceding_frame": 574,
+      "following_interval_ms": 29.813,
+      "java_draw_ms": 9.962,
+      "ui_post_wait_ms": 18.869,
+      "render_thread_states": {
+        "7379": {
+          "blocked": 5.357,
+          "running": 24.441,
+          "runnable": 0.015
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+033115316b9c0124be42725df1b62bad86423ae1
+ developer/android/com/bargeboss/game/AndroidProfileSession.java | 5 ++++-
+ tools/profile-android.sh                                        | 4 +++-
+ tools/summarize-gfx-profile.py                                  | 4 ++--
+ 3 files changed, 9 insertions(+), 4 deletions(-)

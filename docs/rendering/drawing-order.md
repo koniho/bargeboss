@@ -370,3 +370,18 @@ bounds and raster density as the synchronous path. Publish only complete images;
 late results use the existing direct fallback. Never replace a missing terrain
 raster with transparent pixels or flatten foreground vessels/ropes into a cache.
 See [terrain preparation](../performance/terrain-preparation.md).
+
+
+## Shared surface-foam clipping
+
+`VesselFoam.draw` computes the union of visible decal bounds, builds one
+`ShoreOcclusion.region` at negative-infinite depth, and applies that clip around
+the existing oldest-first surface-decal pass. This avoids rebuilding native clip
+state for every stamp. Foam stays on the water plane and retains its source
+pivots, animation, alpha order and solid raised-shore cutout. Empty/offscreen
+passes do not push a clip. The clip is restored in `finally`.
+
+Do not extend this scope over hulls, ropes, buildings or airborne collision
+splashes: those use different depth/height rules. A common clip is appropriate
+only for elements that share the same surface plane and shore coverage. Keep the
+foam shoreline raster checks when changing the bounds or mask generation.

@@ -1,0 +1,1409 @@
+[
+  {
+    "file": "out/profiles/20261115-181426-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.493,
+      "p95": 0.786
+    },
+    "draw_ms": {
+      "p50": 8.655,
+      "p95": 10.62
+    },
+    "interval_ms": {
+      "p50": 16.704,
+      "p95": 19.679
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.671
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 588.729,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 58.99,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.468,
+        "p95": 10.817,
+        "max": 12.762
+      },
+      "render_queue_ms": {
+        "p50": 6.232,
+        "p95": 10.426,
+        "max": 21.853
+      },
+      "render_sync_ms": {
+        "p50": 0.556,
+        "p95": 1.049,
+        "max": 3.313
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.893,
+        "p95": 19.823,
+        "max": 31.736
+      },
+      "intended_to_complete_ms": {
+        "p50": 44.318,
+        "p95": 64.413,
+        "max": 70.045
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.004,
+        "p95": 5.728,
+        "max": 11.401
+      },
+      "queue_buffer_ms": {
+        "p50": 0.115,
+        "p95": 0.138,
+        "max": 0.379
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 15.43,
+        "p95": 18.462,
+        "max": 20.335
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.107,
+        "p95": 9.97,
+        "max": 10.705
+      },
+      "present_latency_ms": {
+        "p50": 66.511,
+        "p95": 83.161,
+        "max": 99.82
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-182125-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.494,
+      "p95": 0.846
+    },
+    "draw_ms": {
+      "p50": 7.991,
+      "p95": 10.088
+    },
+    "interval_ms": {
+      "p50": 16.629,
+      "p95": 20.153
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2197.0,
+      "p95": 2357.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.729
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 605.632,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.81,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.722,
+        "p95": 12.037,
+        "max": 12.963
+      },
+      "render_queue_ms": {
+        "p50": 6.468,
+        "p95": 11.01,
+        "max": 16.421
+      },
+      "render_sync_ms": {
+        "p50": 0.473,
+        "p95": 0.869,
+        "max": 3.04
+      },
+      "issue_to_swap_ms": {
+        "p50": 14.992,
+        "p95": 22.432,
+        "max": 28.747
+      },
+      "intended_to_complete_ms": {
+        "p50": 43.975,
+        "p95": 52.239,
+        "max": 62.26
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.053,
+        "p95": 6.235,
+        "max": 11.821
+      },
+      "queue_buffer_ms": {
+        "p50": 0.124,
+        "p95": 0.164,
+        "max": 0.317
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.515,
+        "p95": 17.71,
+        "max": 20.25
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.182,
+        "p95": 10.777,
+        "max": 13.832
+      },
+      "present_latency_ms": {
+        "p50": 66.51,
+        "p95": 66.567,
+        "max": 83.28
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-182147-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.511,
+      "p95": 0.777
+    },
+    "draw_ms": {
+      "p50": 8.058,
+      "p95": 9.584
+    },
+    "interval_ms": {
+      "p50": 16.668,
+      "p95": 18.373
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2197.0,
+      "p95": 2357.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.732
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 593.278,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true"
+    },
+    "throughput_fps": 59.88,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.788,
+        "p95": 10.234,
+        "max": 11.62
+      },
+      "render_queue_ms": {
+        "p50": 6.691,
+        "p95": 10.476,
+        "max": 18.707
+      },
+      "render_sync_ms": {
+        "p50": 0.508,
+        "p95": 0.899,
+        "max": 3.085
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.483,
+        "p95": 20.018,
+        "max": 26.938
+      },
+      "intended_to_complete_ms": {
+        "p50": 42.184,
+        "p95": 49.126,
+        "max": 60.608
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.062,
+        "p95": 4.054,
+        "max": 10.616
+      },
+      "queue_buffer_ms": {
+        "p50": 0.122,
+        "p95": 0.148,
+        "max": 0.474
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.759,
+        "p95": 17.634,
+        "max": 19.54
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.148,
+        "p95": 10.049,
+        "max": 10.891
+      },
+      "present_latency_ms": {
+        "p50": 66.508,
+        "p95": 66.533,
+        "max": 83.17
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-182536-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.501,
+      "p95": 0.923
+    },
+    "draw_ms": {
+      "p50": 7.667,
+      "p95": 9.822
+    },
+    "interval_ms": {
+      "p50": 16.601,
+      "p95": 19.703
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 1859.0,
+      "p95": 1991.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.696
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 599.652,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 61.23,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.295,
+        "p95": 10.724,
+        "max": 13.332
+      },
+      "render_queue_ms": {
+        "p50": 7.073,
+        "p95": 10.846,
+        "max": 22.461
+      },
+      "render_sync_ms": {
+        "p50": 0.445,
+        "p95": 0.863,
+        "max": 3.111
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.529,
+        "p95": 21.191,
+        "max": 31.654
+      },
+      "intended_to_complete_ms": {
+        "p50": 42.666,
+        "p95": 49.0,
+        "max": 63.64
+      },
+      "dequeue_buffer_ms": {
+        "p50": 1.489,
+        "p95": 4.929,
+        "max": 13.396
+      },
+      "queue_buffer_ms": {
+        "p50": 0.121,
+        "p95": 0.151,
+        "max": 0.323
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.147,
+        "p95": 17.756,
+        "max": 19.513
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.161,
+        "p95": 10.793,
+        "max": 12.422
+      },
+      "present_latency_ms": {
+        "p50": 66.508,
+        "p95": 66.583,
+        "max": 83.212
+      }
+    },
+    "slow_sync_frames_including_warmup": 5
+  },
+  {
+    "file": "out/profiles/20261115-182555-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.507,
+      "p95": 0.783
+    },
+    "draw_ms": {
+      "p50": 7.599,
+      "p95": 8.871
+    },
+    "interval_ms": {
+      "p50": 16.668,
+      "p95": 18.541
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 1859.0,
+      "p95": 1991.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.72
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 585.566,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 59.85,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.218,
+        "p95": 9.423,
+        "max": 10.158
+      },
+      "render_queue_ms": {
+        "p50": 6.878,
+        "p95": 10.551,
+        "max": 14.061
+      },
+      "render_sync_ms": {
+        "p50": 0.476,
+        "p95": 0.89,
+        "max": 3.948
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.564,
+        "p95": 20.077,
+        "max": 22.245
+      },
+      "intended_to_complete_ms": {
+        "p50": 41.138,
+        "p95": 49.838,
+        "max": 59.384
+      },
+      "dequeue_buffer_ms": {
+        "p50": 1.435,
+        "p95": 4.369,
+        "max": 6.815
+      },
+      "queue_buffer_ms": {
+        "p50": 0.124,
+        "p95": 0.16,
+        "max": 0.302
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.202,
+        "p95": 16.891,
+        "max": 20.983
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 7.848,
+        "p95": 9.898,
+        "max": 10.817
+      },
+      "present_latency_ms": {
+        "p50": 66.506,
+        "p95": 66.541,
+        "max": 83.172
+      }
+    },
+    "slow_sync_frames_including_warmup": 38
+  },
+  {
+    "file": "out/profiles/20261115-182616-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.487,
+      "p95": 0.791
+    },
+    "draw_ms": {
+      "p50": 8.774,
+      "p95": 10.912
+    },
+    "interval_ms": {
+      "p50": 16.628,
+      "p95": 20.318
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.734
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 593.84,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 59.64,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.384,
+        "p95": 10.568,
+        "max": 10.744
+      },
+      "render_queue_ms": {
+        "p50": 6.126,
+        "p95": 10.211,
+        "max": 17.64
+      },
+      "render_sync_ms": {
+        "p50": 0.51,
+        "p95": 0.916,
+        "max": 3.634
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.454,
+        "p95": 19.786,
+        "max": 28.169
+      },
+      "intended_to_complete_ms": {
+        "p50": 43.982,
+        "p95": 49.713,
+        "max": 62.696
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.008,
+        "p95": 3.594,
+        "max": 9.809
+      },
+      "queue_buffer_ms": {
+        "p50": 0.124,
+        "p95": 0.168,
+        "max": 0.295
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 15.028,
+        "p95": 17.279,
+        "max": 18.469
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.163,
+        "p95": 10.06,
+        "max": 10.722
+      },
+      "present_latency_ms": {
+        "p50": 66.507,
+        "p95": 66.538,
+        "max": 83.19
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-183132-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.497,
+      "p95": 0.827
+    },
+    "draw_ms": {
+      "p50": 7.588,
+      "p95": 9.7
+    },
+    "interval_ms": {
+      "p50": 16.648,
+      "p95": 20.124
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 1859.0,
+      "p95": 1991.0
+    },
+    "clips": {
+      "p50": 15.0,
+      "p95": 26.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.753
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 594.716,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 59.86,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.224,
+        "p95": 10.065,
+        "max": 12.846
+      },
+      "render_queue_ms": {
+        "p50": 7.103,
+        "p95": 10.862,
+        "max": 22.473
+      },
+      "render_sync_ms": {
+        "p50": 0.468,
+        "p95": 0.858,
+        "max": 3.975
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.461,
+        "p95": 21.204,
+        "max": 30.362
+      },
+      "intended_to_complete_ms": {
+        "p50": 43.572,
+        "p95": 49.099,
+        "max": 63.684
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.788,
+        "p95": 4.241,
+        "max": 12.184
+      },
+      "queue_buffer_ms": {
+        "p50": 0.125,
+        "p95": 0.17,
+        "max": 0.259
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.487,
+        "p95": 17.335,
+        "max": 19.462
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.561,
+        "p95": 11.132,
+        "max": 12.734
+      },
+      "present_latency_ms": {
+        "p50": 66.508,
+        "p95": 66.537,
+        "max": 83.175
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  },
+  {
+    "file": "out/profiles/20261115-183153-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.505,
+      "p95": 0.761
+    },
+    "draw_ms": {
+      "p50": 7.558,
+      "p95": 9.081
+    },
+    "interval_ms": {
+      "p50": 16.611,
+      "p95": 18.412
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 1859.0,
+      "p95": 1991.0
+    },
+    "clips": {
+      "p50": 15.0,
+      "p95": 26.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.727
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 587.16,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 61.56,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 8.214,
+        "p95": 10.2,
+        "max": 11.162
+      },
+      "render_queue_ms": {
+        "p50": 7.056,
+        "p95": 9.669,
+        "max": 10.498
+      },
+      "render_sync_ms": {
+        "p50": 0.446,
+        "p95": 0.873,
+        "max": 3.965
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.736,
+        "p95": 18.826,
+        "max": 20.477
+      },
+      "intended_to_complete_ms": {
+        "p50": 41.474,
+        "p95": 45.13,
+        "max": 49.417
+      },
+      "dequeue_buffer_ms": {
+        "p50": 1.347,
+        "p95": 4.176,
+        "max": 6.091
+      },
+      "queue_buffer_ms": {
+        "p50": 0.122,
+        "p95": 0.152,
+        "max": 0.326
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 14.422,
+        "p95": 16.301,
+        "max": 17.887
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.405,
+        "p95": 10.178,
+        "max": 11.75
+      },
+      "present_latency_ms": {
+        "p50": 66.508,
+        "p95": 66.559,
+        "max": 66.773
+      }
+    },
+    "slow_sync_frames_including_warmup": 4
+  },
+  {
+    "file": "out/profiles/20261115-183211-barge-arrival-replay/frames.csv",
+    "samples": 360,
+    "lessons": [
+      3
+    ],
+    "advance_ms": {
+      "p50": 0.495,
+      "p95": 0.732
+    },
+    "draw_ms": {
+      "p50": 8.855,
+      "p95": 11.051
+    },
+    "interval_ms": {
+      "p50": 16.624,
+      "p95": 19.788
+    },
+    "layer_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "decode_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_mib": {
+      "p50": 28.076,
+      "p95": 30.326
+    },
+    "sprites": {
+      "p50": 53.0,
+      "p95": 62.0
+    },
+    "blends": {
+      "p50": 0.0,
+      "p95": 11.0
+    },
+    "affines": {
+      "p50": 122.0,
+      "p95": 160.0
+    },
+    "circles": {
+      "p50": 483.0,
+      "p95": 682.0
+    },
+    "polys": {
+      "p50": 2734.0,
+      "p95": 2961.0
+    },
+    "clips": {
+      "p50": 41.0,
+      "p95": 55.0
+    },
+    "texture_mib": {
+      "p50": 91.139,
+      "p95": 104.808
+    },
+    "source_mib": {
+      "p50": 170.731,
+      "p95": 170.731
+    },
+    "frame_mib": {
+      "p50": 17.191,
+      "p95": 23.813
+    },
+    "frame_build_ms": {
+      "p50": 0.0,
+      "p95": 0.721
+    },
+    "pending_mib": {
+      "p50": 6.75,
+      "p95": 9.0
+    },
+    "worker_source_mib": {
+      "p50": 5.999,
+      "p95": 5.999
+    },
+    "background_build_ms": {
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "cache_builds": 7,
+    "cache_fallbacks": 2,
+    "cache_evictions": 0,
+    "frame_builds": 201,
+    "frame_evictions": 29,
+    "background_builds": 3,
+    "async_misses": 0,
+    "cold_decode_ms": 587.655,
+    "strategies": {
+      "compound_paths": "false",
+      "frame_textures": "true",
+      "water_grouping": "false",
+      "async_layers": "true",
+      "method_trace": "false",
+      "system_trace": "false"
+    },
+    "throughput_fps": 59.83,
+    "max_zoom_delta": 0.0,
+    "max_zoom_relative_delta": 0.0,
+    "gfx": {
+      "matched_recent_frames": 120,
+      "app_measured_frames": 360,
+      "ui_record_ms": {
+        "p50": 9.459,
+        "p95": 10.745,
+        "max": 12.139
+      },
+      "render_queue_ms": {
+        "p50": 6.227,
+        "p95": 8.563,
+        "max": 17.011
+      },
+      "render_sync_ms": {
+        "p50": 0.522,
+        "p95": 0.872,
+        "max": 3.254
+      },
+      "issue_to_swap_ms": {
+        "p50": 15.664,
+        "p95": 17.941,
+        "max": 27.508
+      },
+      "intended_to_complete_ms": {
+        "p50": 44.7,
+        "p95": 48.55,
+        "max": 62.382
+      },
+      "dequeue_buffer_ms": {
+        "p50": 0.004,
+        "p95": 2.519,
+        "max": 9.651
+      },
+      "queue_buffer_ms": {
+        "p50": 0.129,
+        "p95": 0.151,
+        "max": 0.467
+      },
+      "issue_excluding_dequeue_ms": {
+        "p50": 15.441,
+        "p95": 17.134,
+        "max": 18.052
+      },
+      "submit_to_gpu_complete_ms": {
+        "p50": 8.135,
+        "p95": 9.74,
+        "max": 10.601
+      },
+      "present_latency_ms": {
+        "p50": 66.506,
+        "p95": 66.606,
+        "max": 83.17
+      }
+    },
+    "slow_sync_frames_including_warmup": 57
+  }
+]

@@ -47,25 +47,40 @@ public final class VesselFoam {
     public void draw(Game g,Painter p) {
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
-        for(int n=0;n<CAPACITY;n++) {
-            int i=(cursor+n)%CAPACITY;if(age[i]>=life[i])continue;
+        // All decals in this pass lie on the same water plane. A single solid-shore
+        // mask keeps native clipping state stable between adjacent foam textures.
+        float left=Float.MAX_VALUE,top=left,right=-left,bottom=-left;
+        for(int i=0;i<CAPACITY;i++) {
+            if(age[i]>=life[i])continue;
             float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t);
             if(alpha<.008f)continue;
-            float l=length[i]*(1+t*.8f),w=width[i]*(1+t*1.5f);
-            float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=(l+w)*c.scale;
+            float extent=length[i]*(1+t*.8f)+width[i]*(1+t*1.5f);
+            float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=extent*c.scale;
             if(sx+bound<0 || sy+bound<0 || sx-bound>g.layout.width || sy-bound>g.layout.height)continue;
-            float[] clip=ShoreOcclusion.region(g,c,x[i]-l-w,y[i]-l-w,x[i]+l+w,y[i]+l+w,Float.NEGATIVE_INFINITY);
-            if(clip.length>0)canvas.pushClipOutside(clip);
-            try {
+            left=Math.min(left,x[i]-extent);right=Math.max(right,x[i]+extent);
+            top=Math.min(top,y[i]-extent);bottom=Math.max(bottom,y[i]+extent);
+        }
+        if(left==Float.MAX_VALUE)return;
+        float[] clip=ShoreOcclusion.region(g,c,left,top,right,bottom,Float.NEGATIVE_INFINITY);
+        if(clip.length>0)canvas.pushClipOutside(clip);
+        try {
+            for(int n=0;n<CAPACITY;n++) {
+                int i=(cursor+n)%CAPACITY;if(age[i]>=life[i])continue;
+                float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t);
+                if(alpha<.008f)continue;
+                float l=length[i]*(1+t*.8f),w=width[i]*(1+t*1.5f);
+                float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=(l+w)*c.scale;
+                if(sx+bound<0 || sy+bound<0 || sx-bound>g.layout.width || sy-bound>g.layout.height)continue;
                 int texture=kind[i];
                 if(texture==2 && t>.35f) {
                     float mix=Math.min(1,(t-.35f)/.3f);
                     patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix));
                     patch(p,3,x[i],y[i],angle[i],l,w,alpha*mix);
                 } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha);
-            } finally {if(clip.length>0)canvas.popClip();}
-        }
+            }
+        } finally {if(clip.length>0)canvas.popClip();}
     }
+
     static void patch(Painter p,int frame,float x,float y,float angle,float length,float width,float alpha) {
         if(alpha<=.005f)return;
         float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);

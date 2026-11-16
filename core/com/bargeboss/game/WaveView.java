@@ -3,8 +3,11 @@ package com.bargeboss.game;
 /** Layered, drifting surface facets and broken wave crests; no tiled water strips. */
 public final class WaveView {
     private WaveView() {}
-    private static final float[] BEND=new float[6],EDGE=new float[6];
-    static {for(int i=0;i<=5;i++){float t=i/5f;BEND[i]=(float)StrictMath.sin(t*StrictMath.PI);EDGE[i]=(float)StrictMath.sin((t-.1f)*StrictMath.PI);}}
+    // Ambient crests are small and translucent; three segments retain their motion
+    // while avoiding hundreds of native path preparations per frame. Wakes are separate.
+    private static final int CREST_SEGMENTS=3;
+    private static final float[] BEND=new float[CREST_SEGMENTS+1],EDGE=new float[CREST_SEGMENTS+1];
+    static {for(int i=0;i<=CREST_SEGMENTS;i++){float t=i/(float)CREST_SEGMENTS;BEND[i]=(float)StrictMath.sin(t*StrictMath.PI);EDGE[i]=(float)StrictMath.sin((t-.1f)*StrictMath.PI);}}
     private static float noise(int seed) {
         int hash=seed*0x45d9f3b;hash=(hash^(hash>>>16))*0x45d9f3b;hash^=hash>>>16;
         return (hash&65535)/65535f;
@@ -34,6 +37,9 @@ public final class WaveView {
         int firstY=(int)StrictMath.floor((minY-50)/30),lastRow=(int)StrictMath.ceil((maxY+50)/30);
         for(int row=firstY;row<=lastRow;row++) for(int col=firstX;col<=lastColumn;col++) {
             int seed=col*1973+row*9277+19037;
+            // Stable spatial thinning keeps ambient water lively without competing
+            // with the vessel wakes. Never base this on time or camera position.
+            if(noise(seed+41)<.45f)continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
             float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
             if(!WaterEffectsPainter.contains(g,x,y)) continue;
@@ -45,8 +51,8 @@ public final class WaveView {
             // Broad dark trough and a discontinuous highlight, each with a
             // slightly different phase. No evenly spaced full-width bands.
             float lastX=0,lastY=0;
-            for(int part=0;part<=5;part++) {
-                float t=part/5f,along=(t-.5f)*span;
+            for(int part=0;part<=CREST_SEGMENTS;part++) {
+                float t=part/(float)CREST_SEGMENTS,along=(t-.5f)*span;
                 float bend=BEND[part]*(rise+.3f*(float)StrictMath.sin(t*9+phase));
                 float xx=x+(along-bend)*RiverCamera.Q,yy=y+(along+bend)*RiverCamera.Q;
                 if(part>0) {
@@ -120,6 +126,9 @@ public final class WaveView {
         float drift=(origin-tick*.17f*scale)%cellX;
         for(int row=-1;row<rows;row++) for(int col=-1;col<columns;col++) {
             int seed=col*1973+row*9277+19037;
+            // Stable spatial thinning keeps ambient water lively without competing
+            // with the vessel wakes. Never base this on time or camera position.
+            if(noise(seed+41)<.45f)continue;
             float phase=tick*(.024f+noise(seed+11)*.014f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase);
             float x=left+(col+noise(seed+2)*.95f)*cellX+drift;

@@ -1,0 +1,4 @@
+compound_paths=false
+frame_textures=true
+water_grouping=false
+async_layers=true

@@ -1,0 +1,8 @@
+033115316b9c0124be42725df1b62bad86423ae1
+ core/com/bargeboss/game/VesselFoam.java            | 33 ++++++++++++++++------
+ core/com/bargeboss/game/WaveView.java              | 17 ++++++++---
+ .../com/bargeboss/game/AndroidProfileSession.java  |  5 +++-
+ tests/com/bargeboss/game/CoreTest.java             |  2 +-
+ tools/profile-android.sh                           |  5 +++-
+ tools/summarize-gfx-profile.py                     |  4 +--
+ 6 files changed, 48 insertions(+), 18 deletions(-)

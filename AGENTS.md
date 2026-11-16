@@ -28,6 +28,9 @@ the same `Painter`. Do not add a second game implementation for any platform.
   bitmap. Parent light/smoke anchors to their rigid parts, with stable IDs and
   local XYZ/normals, so effects follow the same transformation. Match the concept
   and shared camera, and review closed, moving and open/working states.
+- Coordinate optimization work through [optimization.md](optimization.md). Read other
+  agents’ entries before shared edits and append platform, evidence, changes and
+  validation after each meaningful step; do not overwrite their findings.
 - Follow [performance development rules](docs/performance/development-rules.md)
   when adding levels, assets, effects, caches or renderer primitives. Keep runtime
   textures frame-sized, caches bounded, and expensive raster preparation out of

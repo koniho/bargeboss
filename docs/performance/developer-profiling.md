@@ -184,3 +184,29 @@ the selected fixture. Keep this session out of timing comparisons. The desktop
 `WaterBatchReview` also compares direct source order against compound batches.
 The host preference only changes optional submission grouping; water geometry,
 shore clipping, alpha and world animation remain shared.
+
+## Render-thread queue and short system traces
+
+The native summary now includes `render_queue_ms = SyncStart - SyncQueued`,
+`dequeue_buffer_ms`, `queue_buffer_ms`, `issue_excluding_dequeue_ms`,
+`submit_to_gpu_complete_ms` and `present_latency_ms`, plus stage maxima. Queue
+wait is outside the Java `draw_ms` timer. `issue_excluding_dequeue_ms` subtracts
+only the recorded buffer-acquisition duration, not every driver/scheduler wait.
+Submission-to-GPU-complete includes queueing and is not GPU execution time alone.
+
+For a separate diagnostic capture, use an instrumented APK and
+`BARGEBOSS_PROFILE_SYSTEM_TRACE=true` to emit `BB draw N` sections. Run a longer
+replay, wait for the **new** app PID's SAMPLING log, then record a short interval:
+
+```sh
+RISH_APPLICATION_ID=com.termux rish -c 'atrace -b 32768 -t 2 -a com.bargeboss.game -o /storage/emulated/0/Download/BargeBoss-profiles/short-trace.txt gfx view sched dalvik'
+cp /storage/emulated/0/Download/BargeBoss-profiles/short-trace.txt out/short-trace.txt
+python3 tools/summarize-android-trace.py out/short-trace.txt > out/short-trace-summary.json
+```
+
+Verify `buffer_overwritten` is false and `first_frame` is past warmup. This tool
+reports only the game's slices and scheduler states; raw systemwide traces stay
+in ignored output. A boundary-crossing slice may be absent, so use complete
+interior draws. Inclusive slice durations overlap. Keep traces out of A/B timing
+comparisons because detailed native path tracing adds substantial overhead.
+See [render-queue findings](render-queue.md) for the measured result and limits.
