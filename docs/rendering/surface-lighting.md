@@ -84,3 +84,25 @@ The shading comparisons are `out/surface-shading-materials-v2.png` and
 `out/surface-shading-harbor-v2.png`.
 `preview.sh` verifies reproducible masks and runs those pixel checks, alongside
 existing shore, buoy-waterline, cargo-depth and rendering-budget regressions.
+
+## Geometric normals for moored boats
+
+Montrose NPC boats now use actual normals exported from the offline rigid models.
+Their dark base sprites remain separate. Shared Java aggregates incoming light
+into an energy and weighted world-space direction for each RGB channel. Android
+API 33+ and Metal sample the registered normal cell and apply clamped Lambert
+response in the existing three color passes. Boats never emit light. Direction is
+independent of screen size, projection and wall-clock time; adjacent heading cells
+carry their own rotated normals. Normal receivers stay in the boat's depth scope.
+
+This is a bounded approximation: one direction per color at the boat center, with
+an effective source elevation of 12 world units. Opposing same-color sources can
+cancel direction; there are no per-pixel positions, specular highlights or shadow
+maps. Android below API 33 and the Core Graphics reference painter retain the
+existing flat RGB response. Desktop computes the normal response as a slow review
+reference, not a mobile performance implementation.
+
+The normal atlas adds 12 MiB decoded source data and up to 12 MiB cropped frames.
+Android's input shader LRU retains at most 64 normal frames (4 MiB) within that
+set; no lit textures are generated during native drawing. Metal's vertex format
+also carries a light direction. Validate frame intervals, not just draw counts.

@@ -1342,3 +1342,47 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Final APK restored after A/B testing, game data and original key retained.
   Temporary timeout restored; user's stay-awake-while-plugged-in setting is not
   modified by the development script.
+
+## 2026-11-16: moored geometric normal maps and distinct impact spray
+
+- Baked true world-space face normals from all six rigid NPC models at 32 headings.
+  Native Android API 33+ and Metal now use Lambert response from nearby colored
+  lights; boats remain dark base silhouettes with no lamp emission. Shared Java
+  owns light selection, direction, energy, headings and blending. The existing
+  three RGB passes remain bounded; no per-frame lit image generation on mobile.
+- Added a 192-cell, 128px normal atlas: +12 MiB source data and +12 MiB prepared
+  frames (Android measured source 102.524→114.524 MiB, frames 96.521→108.521 MiB).
+  The input BitmapShader LRU is limited to 64 frames; native frame caches keep
+  their existing limit. Metal vertices carry an additional direction vector.
+- A native visual check caught missing forwarding in `SceneryOcclusion`; the
+  first attempted after capture was still flat RGB and is excluded from results.
+  `NormalBoatReview` now tests the complete scene wrapper path, 192 exact alpha
+  registrations and 34,554 interior unit normals. Local-coordinate baking removes
+  antialias rounding differences between atlas rows.
+- Pixel 11 Pro, Montrose docks, same replay ticks 2596–2895, 300 samples after 60
+  warmup: baseline median/p95 draw 12.265/15.378 ms, frame interval 19.136/34.483 ms,
+  effective 43.24 FPS. First corrected normal-map run: draw 12.809/16.100 ms,
+  interval 19.948/42.735 ms, 41.83 FPS. Issue-to-swap median 19.894→20.789 ms;
+  this includes driver/wait time, not isolated CPU/GPU attribution. 60 FPS with
+  headroom remains unresolved. See `docs/performance/moored-normals-2026-11-16`.
+- Directional lighting uses one weighted direction per color at each boat center,
+  with effective 12-unit source elevation. It is diffuse shading, without
+  per-pixel positions, cast shadows or specular response. Opposite lights can
+  cancel direction. Pre-API-33 Android and Core Graphics retain flat RGB fallback;
+  Java2D is a slow reference raster for visual review. iOS validation is simulator
+  Metal only; it is not physical-iPhone performance evidence.
+- Collision spray no longer reuses propwash whirls: new shared shader modes produce
+  tapered spray fingers and expanding broken foam crowns, with detached ballistic
+  droplets. Heavy-hit sparks remain. Existing fixed pools, timing, physical
+  impulses and shore/depth scopes remain unchanged. Added droplets cost up to
+  three circle draws per visible packet; this run does not establish the peak
+  cost of all 24 simultaneous contact slots.
+- Validation: full `check.sh`, JVM/J2ObjC parity `504d4681:2:1350`, 1,439,937
+  all-heading shore pixel checks and 197,334 foam/splash pixel checks pass.
+  Android and iOS Metal compile; Android hardware and simulator normal-map views
+  were inspected. Four real-contact desktop splash sequences were reviewed.
+- Corrected normal-map repeat: draw median/p95 12.754/15.990 ms, frame interval
+  19.597/35.642 ms, 42.69 FPS. Both corrected runs add about 0.5 ms median draw
+  versus the baseline; frame interval tails vary substantially. No frame-texture
+  builds/evictions occurred during the measured window. This is a small observed
+  feature cost, not evidence of performance headroom or a pure GPU measurement.

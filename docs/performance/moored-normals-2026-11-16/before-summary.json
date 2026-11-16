@@ -1,0 +1,91 @@
+{
+  "file": "out/android-profile/normal-before/frames.csv",
+  "samples": 300,
+  "lessons": [
+    -1
+  ],
+  "advance_ms": {
+    "p50": 2.214,
+    "p95": 2.604
+  },
+  "draw_ms": {
+    "p50": 12.265,
+    "p95": 15.378
+  },
+  "interval_ms": {
+    "p50": 19.136,
+    "p95": 34.483
+  },
+  "layer_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "decode_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_mib": {
+    "p50": 1.055,
+    "p95": 3.734
+  },
+  "sprites": {
+    "p50": 236.0,
+    "p95": 260.0
+  },
+  "blends": {
+    "p50": 0.0,
+    "p95": 6.0
+  },
+  "affines": {
+    "p50": 2.0,
+    "p95": 3.0
+  },
+  "circles": {
+    "p50": 41.0,
+    "p95": 46.0
+  },
+  "polys": {
+    "p50": 681.0,
+    "p95": 714.0
+  },
+  "clips": {
+    "p50": 33.0,
+    "p95": 37.0
+  },
+  "texture_mib": {
+    "p50": 10.335,
+    "p95": 12.264
+  },
+  "source_mib": {
+    "p50": 102.524,
+    "p95": 102.524
+  },
+  "frame_mib": {
+    "p50": 96.521,
+    "p95": 96.521
+  },
+  "frame_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "pending_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "worker_source_mib": {
+    "p50": 0.0,
+    "p95": 6.016
+  },
+  "background_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_builds": 0,
+  "cache_fallbacks": 4,
+  "cache_evictions": 0,
+  "frame_builds": 0,
+  "frame_evictions": 0,
+  "background_builds": 1,
+  "async_misses": 4,
+  "cold_decode_ms": 96.058
+}

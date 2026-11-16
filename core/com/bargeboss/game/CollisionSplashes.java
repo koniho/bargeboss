@@ -46,7 +46,7 @@ public final class CollisionSplashes {
             }
         }
     }
-    /** Low spreading foam stays on the water underneath all hulls. No circular impact rings. */
+    /** Low spreading foam stays on the water underneath all hulls. Broken outward foam crown. */
     public void water(Game g,Painter p){
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;Painter canvas=river.canvas();RiverCamera c=river.camera;
@@ -57,7 +57,7 @@ public final class CollisionSplashes {
             float xx=originX[i]+dx*(2+t*7),yy=originY[i]+dy*(2+t*7);
             if(!visible(g,xx,yy,0,length+width))continue;
             canvas.pushClipOutside(ShoreOcclusion.region(g,c,xx-length-width,yy-length-width,xx+length+width,yy+length+width,Float.NEGATIVE_INFINITY));
-            try{VesselFoam.patch(p,i%2,xx,yy,direction[i],length,width,alpha);}
+            try{p.waterFoam(xx,yy,dx*length,dy*length,-dy*width,dx*width,t*2,9,alpha);}
             finally{canvas.popClip();}
         }
     }
@@ -73,7 +73,7 @@ public final class CollisionSplashes {
         }
         int[] result=new int[n];System.arraycopy(order,0,result,0,n);return result;
     }
-    /** An irregular foam stamp stretched along projected travel, lifted ballistically above water. */
+    /** A tapered spray finger stretched along projected travel, lifted ballistically above water. */
     public void draw(Game g,Painter canvas,int j){
         int i=j/STAMPS;float t=age[i]/(float)LIFE;
         float alpha=(.55f+.45f*power[i])*Math.min(1,(age[i]+1)/3f)*(1-t);
@@ -82,13 +82,19 @@ public final class CollisionSplashes {
         RiverCamera c=g.layout.camera;float dx=RiverCamera.Q*(vx[j]+vy[j]),dy=RiverCamera.Q*RiverCamera.DEPTH*(vy[j]-vx[j])-vz[j];
         float len=Math.max(.001f,Physics.length(dx,dy));dx/=len;dy/=len;
         float variation=.7f+(j%STAMPS)*.07f;
-        float length=(10+power[i]*22)*(1+t*.9f)*c.scale*variation,width=(7+power[i]*14)*(1+t)*c.scale*variation;
+        float length=(12+power[i]*24)*(1-t*.55f)*c.scale*variation,width=(5+power[i]*9)*(1-t*.6f)*c.scale*variation;
         float sx=c.screenX(x[j],y[j]),sy=c.screenY(x[j],y[j])-z[j]*c.scale;
         float extent=64+z[j]*2;
         canvas.pushClipOutside(ShoreOcclusion.region(g,c,x[j]-extent,y[j]-extent,x[j]+extent,y[j]+extent,depth(g,j)));
         try{
             canvas.waterFoam(sx,sy,dx*length,dy*length,-dy*width,dx*width,
-                    WaterFoam.phase(age[i],j),2+j%2,alpha);
+                    j*.73f+t*.8f,8,alpha);
+            // Small separated droplets trail each liquid finger, following its ballistic velocity.
+            for(int drop=0;drop<3;drop++){
+                float behind=(.35f+drop*.21f)*length,side=((j+drop)%3-1)*width*.32f;
+                float radius=(.65f+power[i]*1.2f)*(1-drop*.17f)*c.scale;
+                canvas.circle(sx-dx*behind-dy*side,sy-dy*behind+dx*side,radius,(Math.round(alpha*210)<<24)|0xe5fcf7);
+            }
             // One brief burst per contact, kept in the same depth/shore scope as the spray.
             if(j%STAMPS==0 && age[i]<10) {
                 float fade=1-age[i]/10f,r=(7+power[i]*14+age[i]*1.4f)*c.scale;

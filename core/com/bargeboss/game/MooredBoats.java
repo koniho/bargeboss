@@ -56,8 +56,10 @@ public final class MooredBoats {
         float[] light=MooredBoatLight.sample(g,wx,wy);
         // Convert desired RGB contributions to source-over opacities without a blue last-pass bias.
         light[0]/=Math.max(.01f,1-light[1]-light[2]);light[1]/=Math.max(.01f,1-light[2]);
-        for(int channel=0;channel<3;channel++)if(light[channel]>.015f){int offset=(channel+1)*BASE_FRAMES;
-            dissolve(p,offset+base+a,offset+base+next,x,y,size,mix,light[channel]);}
+        for(int channel=0;channel<3;channel++)if(light[channel]>.015f){
+            float second=light[channel]*mix,first=light[channel]*(1-mix)/(1-second);int k=3+channel*3,color=0xff000000|(255<<(16-channel*8));
+            p.normalSprite(base+a,x,y,size,size,light[k],light[k+1],light[k+2],color,first);
+            if(second>.001f)p.normalSprite(base+next,x,y,size,size,light[k],light[k+1],light[k+2],color,second);}
     }
     /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
      * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */

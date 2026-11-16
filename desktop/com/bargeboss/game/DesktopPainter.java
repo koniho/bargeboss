@@ -168,6 +168,13 @@ public final class DesktopPainter implements Painter {
         }
         ATLASES.put(id,frames); return frames;
     }
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){
+        BufferedImage source=atlas(SpriteAtlas.MOORED_NORMALS)[frame],lit=new BufferedImage(source.getWidth(),source.getHeight(),BufferedImage.TYPE_INT_ARGB);
+        for(int yy=0;yy<source.getHeight();yy++)for(int xx=0;xx<source.getWidth();xx++){int c=source.getRGB(xx,yy);float a=(c>>>24)/255f;if(a==0)continue;
+            float u=((c>>16)&255)/127.5f-1,v=((c>>8)&255)/127.5f-1,z=(c&255)/127.5f-1,n=(float)Math.sqrt(u*u+v*v+z*z);
+            int coverage=Math.round(255*a*alpha*Math.max(0,(u*nx+v*ny+z*nz)/n));lit.setRGB(xx,yy,(coverage<<24)|(color&0xffffff));}
+        AffineTransform transform=new AffineTransform();transform.translate(x-w*.5f,y-h*.7f);transform.scale(w/source.getWidth(),h/source.getHeight());g.drawImage(lit,transform,null);
+    }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         width*=SpriteAtlas.widthScale(id,frame); height*=SpriteAtlas.heightScale(id,frame);

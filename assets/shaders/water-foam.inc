@@ -14,6 +14,21 @@ float foamCoverage(float2 uv, float phase, float kind) {
     float2 p = uv * 2.0 - 1.0;
     float2 flow=float2(cos(phase),sin(phase));
     float edge = (1.0-smoothstep(0.78,1.0,abs(p.x))) * (1.0-smoothstep(0.78,1.0,abs(p.y)));
+    if(kind >= 9.0) {
+        // A broken outward impact crown, with a quiet center. No rotating coordinates.
+        float radius=length(p),grain=foamNoise(p*13.0);
+        float rim=1.0-smoothstep(.06,.22,abs(radius-(.56+.07*sin(phase+p.x*9.0))));
+        return edge*rim*smoothstep(.22,.68,grain)*(.6+.4*grain);
+    }
+    if(kind >= 8.0) {
+        // Tapered liquid fingers detach into small beads along the ballistic packet.
+        float spread=.06+.27*(1.0-uv.x);
+        float fingers=abs(sin(p.y*24.0+p.x*2.0+phase));
+        float sheet=(1.0-smoothstep(spread,spread+.08,abs(p.y)))*smoothstep(.35,.82,fingers);
+        float bead=1.0-smoothstep(.055,.11,length(float2((p.x-.52)*.6,p.y)));
+        float grain=.55+.45*foamNoise(p*float2(12,20)+float2(phase*.15,0));
+        return edge*max(sheet*(1.0-smoothstep(.15,.75,p.x)),bead)*grain;
+    }
     if (kind >= 7.0) {
         float billow=foamNoise(p*2.4+flow*0.5);
         float detail=foamNoise(p*6.0-flow*0.8);

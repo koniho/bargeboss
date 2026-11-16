@@ -498,3 +498,10 @@ lower docks do not incorrectly block an above-deck light. RGB hull reception is
 incoming light only, not a light-emitting NPC fixture. The lightweight adjacent
 heading dissolve preserves opaque-overlap color but may retain a narrow outgoing
 silhouette fringe until the next heading; no painted isometric bitmap is rotated.
+
+Collision spray uses water-foam modes 8 (tapered airborne liquid fingers) and 9
+(broken water-plane impact crowns). These are separate from propwash modes 2/3.
+Detached droplets share each packet's ballistic transform and depth clip. The
+existing bounded contact pool, impact-strength response and heavy-hit sparks are
+unchanged. Fallback painters use tapered geometry and broken rim segments within
+the same clips; native shaders add fine gaps and spray texture.

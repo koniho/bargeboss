@@ -28,7 +28,7 @@ public interface Painter {
         poly(q,((int)(255*alpha)<<24)|0x020913);
     }
     /** Local water-foam patch centered at x,y with full affine basis vectors.
-     * Modes 0/1: shoulder foam, 2/3: prop wash, 4: bow crest, 5: spreading crest.
+     * Modes 0/1: shoulder foam, 2/3: prop wash, 4: bow crest, 5: spreading crest; 8: ballistic spray, 9: impact crown.
      * Phase is supplied by shared simulation ticks. Hosts never advance it.
      * The default retains the authored foam textures on non-shader backends. */
     default void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
@@ -61,6 +61,12 @@ public interface Painter {
     /** Screen-space rolling exhaust. Shared callers own source, transport, palette and opacity. */
     default void smokePuff(float x,float y,float radius,float phase,int color) {
         SmokePuff.fallback(this,x,y,radius,color);
+    }
+    /** World-space unit normal map receiving a shared, color-weighted light direction.
+     * Normal RGB is linear data; no host light selection or simulation. */
+    default void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha) {
+        int channel=(color&255)>0?2:((color>>8)&255)>0?1:0;
+        sprite(SpriteAtlas.MOORED_BOATS,(channel+1)*MooredBoats.BASE_FRAMES+frame,x,y,w,h,0,alpha);
     }
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);

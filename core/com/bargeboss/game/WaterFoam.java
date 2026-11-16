@@ -22,6 +22,11 @@ public final class WaterFoam {
     /** Bounded textured/geometry fallback; preserves placement, speed response and clipping. */
     public static void fallback(Painter p,float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         float width=Physics.length(bx,by);
+        if(kind>=8){
+            if(kind==9){for(int k=0;k<14;k++){float a=k*(float)Math.PI/7,b=a+.13f;float u=(float)StrictMath.cos(a)*.3f,v=(float)StrictMath.sin(a)*.3f,uu=(float)StrictMath.cos(b)*.3f,vv=(float)StrictMath.sin(b)*.3f;p.line(x+ax*u+bx*v,y+ay*u+by*v,x+ax*uu+bx*vv,y+ay*uu+by*vv,width*.055f,(Math.round(alpha*200)<<24)|0xe5fcf7);}}
+            else for(int k=-1;k<=1;k++){float side=k*.10f;p.poly(new float[]{x-ax*.4f+bx*(side-.035f),y-ay*.4f+by*(side-.035f),x+ax*.3f+bx*side*.25f,y+ay*.3f+by*side*.25f,x-ax*.4f+bx*(side+.035f),y-ay*.4f+by*(side+.035f)},(Math.round(alpha*220)<<24)|0xe5fcf7);}
+            return;
+        }
         int segments=kind==5?1:8; // Crests already arrive as short arc segments.
         for(int i=0;i<segments;i++) {
             float u=i/(float)segments,v=(i+1)/(float)segments,mid=(u+v)*.5f;

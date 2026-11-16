@@ -5,14 +5,16 @@ using namespace metal;
 #include "../../assets/shaders/effects.inc"
 #include "../../assets/shaders/surface.inc"
 #include "../../assets/shaders/shoreline.inc"
-struct Vertex { float2 position; float2 uv; float4 color; uint kind; float phase; float detail; };
-struct Raster { float4 position [[position]]; float2 uv; float4 color; uint kind [[flat]]; float phase [[flat]]; float detail [[flat]]; };
+struct Vertex { float2 position; float2 uv; float4 color; uint kind; float phase; float detail; float4 light; };
+struct Raster { float4 position [[position]]; float2 uv; float4 color; uint kind [[flat]]; float phase [[flat]]; float detail [[flat]]; float4 light [[flat]]; };
 vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [[buffer(0)]], constant float4 &transform [[buffer(1)]]) {
     Vertex v=vertices[index];
-    return {float4(v.position*transform.xy+transform.zw,0,1),v.uv,v.color,v.kind,v.phase,v.detail};
+    return {float4(v.position*transform.xy+transform.zw,0,1),v.uv,v.color,v.kind,v.phase,v.detail,v.light};
 }
 fragment float4 bbFragment(Raster v [[stage_in]], texture2d<float> image [[texture(0)]]) {
     constexpr sampler sampling(coord::normalized,address::clamp_to_edge,filter::linear);
+    if(v.kind>=32) return v.color*foamCoverage(v.uv,v.phase,float(v.kind-24));
+    if(v.kind==30) { float4 t=image.sample(sampling,v.uv); float3 n=normalize(t.rgb/max(t.a,.001f)*2-1); return v.color*t.a*max(dot(n,v.light.xyz),0.f); }
     if(v.kind>=20) return v.color*shorelineCoverage(v.uv,v.phase,v.detail,float(v.kind-20));
     if(v.kind>=14) return float4(min(v.color.rgb*surfaceShade(v.uv,float(v.kind-14),v.phase),float3(v.color.a)),v.color.a);
     if(v.kind>=11) return v.color*effectCoverage(v.uv,float(v.kind-11),v.detail,v.phase);

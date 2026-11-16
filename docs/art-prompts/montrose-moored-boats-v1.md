@@ -17,3 +17,8 @@ Regenerate with shared core sources and BakeMooredBoats compiled, then run
 `com.bargeboss.game.BakeMooredBoats`. Review actual harbor overview and docking
 closeup using MontroseReview, not just the atlas. Boat footprints and hidden tether anchors come from shared berth data, with the
 mission bay excluded. Lighting layers receive nearby sources but emit no light.
+
+The baker also exports geometric normal cells; see
+[normal-map generation](montrose-moored-normals-v1.md). All layers are rasterized
+in local cell coordinates before atlas placement to keep antialiased silhouettes
+identical across rows. The existing RGB layers remain the older-host fallback.

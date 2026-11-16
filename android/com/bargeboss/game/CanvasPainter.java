@@ -34,6 +34,7 @@ public final class CanvasPainter implements Painter {
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
     private WaterFoamShader waterFoamShader;
+    private NormalSpriteShader normalSpriteShader;
     private final ConcurrentMap<Integer,Atlas> atlases=new ConcurrentHashMap<Integer,Atlas>();
     private final ConcurrentMap<Integer,Object> atlasLocks=new ConcurrentHashMap<Integer,Object>();
     private final ConcurrentMap<String,Bitmap> sourceImages=new ConcurrentHashMap<String,Bitmap>();
@@ -271,7 +272,7 @@ public final class CanvasPainter implements Painter {
         if(preloadVessels){
             atlas(0);atlas(1);
             if(android.os.Build.VERSION.SDK_INT>=33) {
-                try {waterFoamShader=new WaterFoamShader(assets);}
+                try {waterFoamShader=new WaterFoamShader(assets);normalSpriteShader=new NormalSpriteShader();}
                 catch(IllegalArgumentException ex) {android.util.Log.w("BargeBoss","Water shader unavailable; using textured fallback",ex);}
             }
         }
@@ -375,6 +376,11 @@ public final class CanvasPainter implements Painter {
         return image;
     }
 
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){
+        if(alpha<=.001f)return;
+        if(normalSpriteShader==null || !canvas.isHardwareAccelerated() || !frameTextures){Painter.super.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha);return;}
+        normalSpriteShader.draw(canvas,frameImage(atlas(SpriteAtlas.MOORED_NORMALS),frame),x-w*.5f,y-h*.7f,w,h,nx,ny,nz,color,alpha);
+    }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         if(profile!=null)profile.sprites++;
@@ -458,7 +464,7 @@ public final class CanvasPainter implements Painter {
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         if(alpha<=.005f)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
-            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind,alpha,0xffe5fcf7);
+            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind>=8?kind+22:kind,alpha,0xffe5fcf7);
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }

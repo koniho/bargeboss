@@ -52,7 +52,7 @@ final class WaterFoamShader {
                 source+="\n"+new String(bytes.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
             }
             shader=new RuntimeShader(source+"\nuniform float phase; uniform float kind; uniform float opacity; uniform float detail; uniform float ropeFrom; uniform float ropeTo; layout(color) uniform float4 tint;\n"
-                +"half4 main(float2 uv) { if(kind>17.5) { float a=shorelineCoverage(uv,phase,detail,kind-18.0)*opacity; return half4(tint.rgb*a,a); } if(kind>11.5) { float3 rgb=min(tint.rgb*surfaceShade(uv,kind-12.0,phase),float3(1.0)); return half4(rgb*opacity,opacity); } if(kind>8.5) { float a=effectCoverage(uv,kind-9.0,detail,phase)*opacity; return half4(tint.rgb*a,a); } if(kind>7.5) { float4 r=ropeShade(float2(mix(ropeFrom,ropeTo,uv.x),uv.y)); return half4(tint.rgb*r.rgb*opacity,r.a*opacity); } float a=foamCoverage(uv,phase,kind)*opacity; return half4(tint.rgb*a,a); }");
+                +"half4 main(float2 uv) { if(kind>29.5) { float a=foamCoverage(uv,phase,kind-22.0)*opacity; return half4(tint.rgb*a,a); } if(kind>17.5) { float a=shorelineCoverage(uv,phase,detail,kind-18.0)*opacity; return half4(tint.rgb*a,a); } if(kind>11.5) { float3 rgb=min(tint.rgb*surfaceShade(uv,kind-12.0,phase),float3(1.0)); return half4(rgb*opacity,opacity); } if(kind>8.5) { float a=effectCoverage(uv,kind-9.0,detail,phase)*opacity; return half4(tint.rgb*a,a); } if(kind>7.5) { float4 r=ropeShade(float2(mix(ropeFrom,ropeTo,uv.x),uv.y)); return half4(tint.rgb*r.rgb*opacity,r.a*opacity); } float a=foamCoverage(uv,phase,kind)*opacity; return half4(tint.rgb*a,a); }");
             paint.setShader(shader);
         } catch(IOException e) {throw new IllegalStateException("Missing shared water shader",e);}
     }
