@@ -188,6 +188,7 @@ public final class CanvasPainter implements Painter {
     public Profile enableProfile(){if(profile==null)profile=new Profile();return profile;}
     public long profileCacheBytes(){return layerBytes;}
 
+    public boolean supportsUnionClips(){return true;}
     public void pushClipOutside(float[] triangles) {
         if(profile!=null)profile.clips++;
         canvas.save();path.reset();path.setFillType(Path.FillType.WINDING);

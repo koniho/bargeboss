@@ -9,6 +9,7 @@ public final class ViewportPainter implements Painter {
     public void pushClipOutside(float[] triangles){target.pushClipOutside(triangles);}
     public void popClip(){target.popClip();}
     public void beginFrame(){target.beginFrame();}
+    public boolean supportsUnionClips(){return target.supportsUnionClips();}
     public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
     public boolean preparesLayers(){return target.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}

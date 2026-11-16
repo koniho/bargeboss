@@ -61,7 +61,7 @@ public final class VesselFoam {
             top=Math.min(top,y[i]-extent);bottom=Math.max(bottom,y[i]+extent);
         }
         if(left==Float.MAX_VALUE)return;
-        float[] clip=ShoreOcclusion.region(g,c,left,top,right,bottom,Float.NEGATIVE_INFINITY);
+        float[] clip=ShoreOcclusion.region(g,c,left,top,right,bottom,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
         if(clip.length>0)canvas.pushClipOutside(clip);
         try {
             for(int n=0;n<CAPACITY;n++) {

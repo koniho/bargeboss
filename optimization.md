@@ -1153,3 +1153,35 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Repeat evidence: render-before-repeat and render-after-repeat under out/android-profile.
 - Final optimized APK installed with the retained original debug key; normal app
   launched and phone timeout restored. Key remains mode 600 and ignored by Git.
+
+## Direct shoreline union clips (2026-11-16)
+
+- The recurring clipping cost was not shoreline detail alone: Montrose repeatedly
+  subtracted overlapping receiver triangles into a disjoint union for the legacy
+  even-odd clip contract. Android already supports nonzero-winding solid unions.
+- Added a forwarded Painter capability. Android/desktop now use consistently wound
+  overlapping receiver triangles directly for foam decals and detached wakes.
+  Same outline, elevations, world bounds and clip scope; no reduced dock detail.
+  Core Graphics and Metal retain the existing disjoint path until their alternate
+  union implementations are separately validated. Hull/rope clips remain unchanged.
+- Cache keys include representation, retaining the existing 32-entry/256 KiB cap.
+  197,866 winding/coverage/depth comparisons against the legacy mask passed, as did
+  full shared checks, 1,439,937 all-heading shoreline pixels and 197,334 foam pixels.
+  Android and iOS builds pass; native/JVM signature remains fed85fc4:2:1350.
+- Pixel 11 Pro, montrose-docks replay, 60 warmup + 300 measured ticks: before
+  draw median/p95 12.846/16.169 ms; union 10.121/12.917 ms. Throughput 43.56 ->
+  50.74 FPS. Interval median 19.550 -> 16.585 ms, but p95 34.141 -> 40.816 ms.
+  This improves typical work but does not establish stable 60 FPS.
+- New native issue-to-swap median 16.456 ms, p95 43.946 ms; dequeue p95 22.383 ms.
+  Native render queue/presentation tails remain unresolved. Do not attribute all
+  this time to GPU computation. Raw evidence: out/android-profile/clip-before,
+  clip-after. The pair has matching ticks and camera scales; earlier round's
+  screenshots have a different camera scale and are not pixel-comparison inputs.
+- Matched Android screenshot comparison with the repeated original: 69 changed
+  pixels, maximum channel delta 2/255, none above 8/255. Changes are small edge
+  sampling differences, not pixel identity. Native scene reviewed without leaks.
+  Repeated original draw median/p95 12.597/15.899 ms, intervals 19.183/34.559 ms.
+- Repeated union run: draw median/p95 10.715/12.971 ms, intervals
+  16.933/43.264 ms, throughput 46.21 FPS. CPU improvement repeats; presentation
+  tails remain worse in these union runs and need native tracing. Final union APK
+  installed and launched; timeout restored; original signing key retained.

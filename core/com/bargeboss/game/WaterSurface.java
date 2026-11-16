@@ -103,7 +103,7 @@ public final class WaterSurface {
                 float wx=c.worldX(sx,sy),wy=c.worldY(sx,sy);
                 l=Math.min(l,wx);right=Math.max(right,wx);top=Math.min(top,wy);bottom=Math.max(bottom,wy);
             }
-            clip=ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY);
+            clip=ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
         } else p=new WaterEffectsPainter(g,p);
         if(clip.length>0)canvas.pushClipOutside(clip);
         try {drawCrests(g,p);} finally {if(clip.length>0)canvas.popClip();}

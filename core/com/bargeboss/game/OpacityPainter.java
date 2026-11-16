@@ -11,6 +11,7 @@ public final class OpacityPainter implements Painter {
     public void circle(float x,float y,float r,int c) { p.circle(x,y,r,color(c)); }
     public void poly(float[] xy,int c) { p.poly(xy,color(c)); }
     public void line(float x,float y,float xx,float yy,float w,int c) { p.line(x,y,xx,yy,w,color(c)); }
+    public boolean supportsUnionClips(){return p.supportsUnionClips();}
     public boolean prefersPolygonBatches(){return p.prefersPolygonBatches();}
     public boolean preparesLayers(){return p.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){p.prepareLayer(layer,scale);}

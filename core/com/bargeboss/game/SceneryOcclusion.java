@@ -29,6 +29,7 @@ public final class SceneryOcclusion implements Painter {
     public void smokePuff(float x,float y,float radius,float phase,int color){target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
+    public boolean supportsUnionClips(){return target.supportsUnionClips();}
     public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
     public boolean preparesLayers(){return target.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}

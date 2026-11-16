@@ -4,9 +4,13 @@ package com.bargeboss.game;
 public interface Painter {
     /** Native cache bookkeeping only; never advances simulation. */
     default void beginFrame() {}
-    /** Save the current clip and exclude disjoint screen-space triangles (six floats each).
+    /** Save the current clip and exclude screen-space triangles (six floats each).
+     * Triangles must be disjoint unless supportsUnionClips() is true; union triangles
+     * must have consistent winding.
      * Native hosts execute this primitive; diagnostic painters record the boundary. */
     default void pushClipOutside(float[] triangles) {}
+    /** True when consistently wound overlapping triangles exclude their solid union. */
+    default boolean supportsUnionClips(){return false;}
     /** Restore the matching saved clip. Scopes must be balanced, including on errors. */
     default void popClip() {}
     /** Optional native cache preparation. Hints never draw pixels or advance gameplay. */

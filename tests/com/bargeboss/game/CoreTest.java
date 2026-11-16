@@ -99,6 +99,7 @@ public final class CoreTest {
         SurfaceMaterialTest.run();
         SceneLightingTest.run();
         WaterEnergyBoundsTest.run();
+        UnionClipTest.run();
         ShorelineMaterialTest.run();
         ShorelineViewTest.run();
         RopeMaterialTest.run();

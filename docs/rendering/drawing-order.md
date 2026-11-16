@@ -456,3 +456,18 @@ packet's recorded position and travel direction. Origins/headings remain fixed
 after emission; turning or stopping the source cannot rotate or stop old waves.
 The V-arm and translating-wavelet experiments have been reverted. Original foam
 animation, packet pools, aging, shoreline clipping and gameplay forces remain.
+
+### Native union clips for surface water
+
+`Painter.supportsUnionClips()` permits a clip made of overlapping, consistently
+wound triangles. Android Canvas and desktop Java2D use nonzero winding and support
+this directly. The foam-decal and detached-wake passes request that representation,
+so Montrose does not repeatedly subtract overlapping receiver triangles for them.
+The shoreline outline, world bounds, projection and receiver heights are unchanged.
+
+Other painters default to false and receive the existing disjoint representation.
+In particular, Core Graphics' even-odd inverse path and Metal's finite stencil
+counter retain that fallback until their union strategy is separately validated.
+Painter wrappers forward the capability; projected-mask cache keys include the
+strategy, within the existing 32-entry / 256 KiB payload bound. Do not send raw
+union triangles to a painter that has not opted in.

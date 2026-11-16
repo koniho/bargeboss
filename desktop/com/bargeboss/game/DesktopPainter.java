@@ -45,6 +45,7 @@ public final class DesktopPainter implements Painter {
     private final Graphics2D g;
     private final boolean paintingLayer;
     private final java.util.ArrayList<java.awt.Shape> clipStack=new java.util.ArrayList<java.awt.Shape>();
+    public boolean supportsUnionClips(){return true;}
     public void pushClipOutside(float[] triangles) {
         java.awt.Shape previous=g.getClip();clipStack.add(previous);
         java.awt.geom.Area visible=new java.awt.geom.Area(previous==null?new Rectangle2D.Float(-1000000,-1000000,2000000,2000000):previous);

@@ -219,27 +219,30 @@ public final class MontroseHarbor {
     }
     /** At most 32 exact masks / 256KiB float payload per render thread. Geometry is immutable. */
     private static final class ShoreCache {
-        RiverCamera camera;final float[][] keys=new float[32][5],masks=new float[32][];int next,retained;
-        float[] get(RiverCamera c,float l,float t,float r,float b,float depth){
+        RiverCamera camera;final float[][] keys=new float[32][6],masks=new float[32][];int next,retained;
+        float[] get(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
             if(camera!=c){java.util.Arrays.fill(masks,null);camera=c;next=retained=0;return null;}
-            for(int i=0;i<masks.length;i++){float[] key=keys[i];if(masks[i]!=null && key[0]==l && key[1]==t && key[2]==r && key[3]==b && key[4]==depth)return masks[i];}
+            for(int i=0;i<masks.length;i++){float[] key=keys[i];if(masks[i]!=null && key[0]==l && key[1]==t && key[2]==r && key[3]==b && key[4]==depth && key[5]==(union?1:0))return masks[i];}
             return null;
         }
-        void put(float l,float t,float r,float b,float depth,float[] mask){
+        void put(float l,float t,float r,float b,float depth,boolean union,float[] mask){
             if(mask.length>65536)return;
             if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}
             while(retained+mask.length>65536){if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}next=(next+1)%masks.length;}
-            float[] key=keys[next];key[0]=l;key[1]=t;key[2]=r;key[3]=b;key[4]=depth;masks[next]=mask;retained+=mask.length;next=(next+1)%masks.length;
+            float[] key=keys[next];key[0]=l;key[1]=t;key[2]=r;key[3]=b;key[4]=depth;key[5]=union?1:0;masks[next]=mask;retained+=mask.length;next=(next+1)%masks.length;
         }
     }
     private static final ThreadLocal<ShoreCache> SHORE_CACHE=new ThreadLocal<ShoreCache>(){
         protected ShoreCache initialValue(){return new ShoreCache();}
     };
     static float[] shore(RiverCamera c,float l,float t,float r,float b,float depth){
-        ShoreCache cache=SHORE_CACHE.get();float[] mask=cache.get(c,l,t,r,b,depth);
-        if(mask!=null)return mask;mask=buildShore(c,l,t,r,b,depth);cache.put(l,t,r,b,depth,mask);return mask;
+        return shore(c,l,t,r,b,depth,false);
     }
-    private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth){
+    static float[] shore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
+        ShoreCache cache=SHORE_CACHE.get();float[] mask=cache.get(c,l,t,r,b,depth,union);
+        if(mask!=null)return mask;mask=buildShore(c,l,t,r,b,depth,union);cache.put(l,t,r,b,depth,union,mask);return mask;
+    }
+    private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
         float[] land=projected(MontroseShoreArt.LAND_TOPS,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE),steps=MontroseShoreArt.stepMask(c,l,t,r,b,depth),access=MontroseShoreArt.accessMask(c,l,t,r,b,depth);
         java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length+steps.length+access.length;
         for(float[] face:SHORE_FACES){
@@ -271,7 +274,12 @@ public final class MontroseHarbor {
         }
         float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);System.arraycopy(steps,0,result,land.length+dock.length,steps.length);System.arraycopy(access,0,result,land.length+dock.length+steps.length,access.length);int at=land.length+dock.length+steps.length+access.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
-        return disjoint(result);
+        if(!union)return disjoint(result);
+        // Nonzero winding includes overlapping receivers without re-triangulating their union.
+        for(int i=0;i<result.length;i+=6)if(PolygonWater.cross(result[i],result[i+1],result[i+2],result[i+3],result[i+4],result[i+5])<0){
+            float x=result[i+2],y=result[i+3];result[i+2]=result[i+4];result[i+3]=result[i+5];result[i+4]=x;result[i+5]=y;
+        }
+        return result;
     }
     /** Painter's even-odd native cutout requires nonoverlapping holes. Dock junctions and
      * raised receivers overlap, so retain their union as disjoint convex pieces before fanning. */

@@ -75,6 +75,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     }
     return self;
 }
+- (jboolean)supportsUnionClips {return NO;}
 - (void)pushClipOutsideWithFloatArray:(IOSFloatArray *)triangles {
     CGContextRef c=self.context;CGContextSaveGState(c);CGContextBeginPath(c);
     CGContextAddRect(c,CGContextGetClipBoundingBox(c));

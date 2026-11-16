@@ -12,9 +12,12 @@ public final class ShoreOcclusion {
     }
     /** depth is the unraised ground depth of the sprite/span, never its heading or speed. */
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth) {
+        return region(g,c,left,top,right,bottom,depth,false);
+    }
+    public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
         ArrayList<float[]> dry=new ArrayList<float[]>();
-        if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth);
+        if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
         else subtract(dry,left,top,right,bottom,CalumetMap.water(),0);
         if(dry.isEmpty())return EMPTY;
         float rise=GroundArt.LAND_RISE*c.scale;
