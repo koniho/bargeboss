@@ -849,3 +849,19 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   remain unresolved; this is not locked 60 FPS or a speedup claim. Final metadata
   confirms 574 foam patches, 304 smoke patches and zero texture evictions. Raw
   [wake motion captures](docs/performance/wake-motion-2026-11-16/) retain both runs.
+
+### Restore original arc wakes (2026-11-16)
+
+- At user request, restored `WaterSurface.drawCrests` and `VesselFoam` animation
+  from 1970041, before the V-arm and translating-wavelet experiments. Rear-facing
+  arcs expand from their recorded origins again, with the original breakup,
+  phase, opacity, foam roll and decal rotation. Rope shaders/fittings/occlusion,
+  cargo, controls and the other effects remain intact.
+- Removed the experiment-specific wavelet test and restored the existing arc
+  expansion assertion. Full shared suite, cargo asset/derivative checks, Release
+  iOS simulator and unsigned Android builds pass. JVM/J2ObjC parity is
+  `64dba43:2:1350`. Foam/shoreline (197,334) and all-heading production hull/cargo
+  shoreline (1,439,937) pixel checks pass.
+- Reviewed the five-age arc strip and native Metal canal capture, then installed
+  and launched the restored version on the simulator. The short native capture
+  was for pixel review, not a new performance claim. Android phone was not used.

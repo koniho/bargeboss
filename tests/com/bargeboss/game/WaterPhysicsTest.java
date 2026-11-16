@@ -41,7 +41,7 @@ public final class WaterPhysicsTest {
         WaterSurface trail=new WaterSurface();trail.x[0]=300;trail.y[0]=500;trail.strength[0]=1;trail.heading[0]=0;trail.age[0]=20;
         g.water=trail;WaveBounds early=new WaveBounds();trail.draw(g,early);
         trail.age[0]=100;WaveBounds later=new WaveBounds();trail.draw(g,later);
-        check(Math.abs((later.maxY-later.minY)-(early.maxY-early.minY)-51.2f)<.05f,"paired crests separate at their constant outward speed without inflating");
+        check(later.maxY-later.minY>(early.maxY-early.minY)*2,"emitted wake spreads outward through the water");
         float anchorX=trail.x[0],anchorY=trail.y[0];g.tug.x=410;g.tug.y=760;g.tug.vx=g.tug.vy=0;
         for(int i=0;i<30;i++) { g.visualTicks++;trail.step(g); }
         check(trail.x[0]==anchorX && trail.y[0]==anchorY && trail.age[0]==130,"old wake stays in the river and continues after its boat moves away or stops");

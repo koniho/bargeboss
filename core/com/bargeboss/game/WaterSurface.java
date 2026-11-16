@@ -33,7 +33,7 @@ public final class WaterSurface {
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE && source[i]!=null){
             float dx=wx-x[i],dy=wy-y[i],distance=Physics.length(dx,dy),offset=distance-(9+age[i]*.55f);
             if(Math.abs(offset)>=26 || distance<.001f)continue;
-            // Keep the bounded rear-facing gameplay response fan; visual V arms spread within the wake.
+            // Match the rear-facing fan used by draw(), not a full circular blast.
             float angle=Physics.angle((float)StrictMath.atan2(dy,dx)-heading[i]-(float)StrictMath.PI);
             if(Math.abs(angle)>(float)StrictMath.PI*.4f)continue;
             boolean clear=true;int samples=Math.max(1,(int)(distance/8));
@@ -105,24 +105,23 @@ public final class WaterSurface {
     }
     private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
-            float t=age[i]/(float)LIFE;
-            int alpha=(int)Math.min(255,330*strength[i]*Math.min(1,age[i]/8f)*(1-t)*(1-t*.35f));
+            float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
+            int alpha=(int)Math.min(255,330*strength[i]*(1-t)*(1-t*.35f));
             if(alpha<3)continue;
-            // Each short crest translates normal to its face; it never inflates into a larger V.
-            // A moving emitter lays down the V envelope from independent water-space wavelets.
-            float forwardX=(float)StrictMath.cos(heading[i]),forwardY=(float)StrictMath.sin(heading[i]);
-            float sideX=-forwardY,sideY=forwardX;
-            for(int side=-1;side<=1;side+=2)for(int j=0;j<8;j++) {
-                float u=j/8f,v=(j+1)/8f;
-                float backA=6+36*u-age[i]*.24f,backB=6+36*v-age[i]*.24f;
-                float outA=side*(7+27*u+age[i]*.32f),outB=side*(7+27*v+age[i]*.32f);
-                float xx=x[i]-forwardX*backA+sideX*outA,yy=y[i]-forwardY*backA+sideY*outA;
-                float bx=x[i]-forwardX*backB+sideX*outB,by=y[i]-forwardY*backB+sideY*outB;
-                float crest=(.8f+.2f*(float)StrictMath.sin(i*1.73+j*.81))*(.55f+.45f*(float)StrictMath.sin((u+v)*.5f*StrictMath.PI));
-                float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=7+strength[i]*7;
+            float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
+            for(int j=0;j<16;j++) {
+                float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
+                float ra=r*(1+.018f*(float)StrictMath.sin(a*7+i*1.1)),rb=r*(1+.018f*(float)StrictMath.sin(b*7+i*1.1));
+                float xx=x[i]+ra*(float)StrictMath.cos(a),yy=y[i]+ra*(float)StrictMath.sin(a);
+                float bx=x[i]+rb*(float)StrictMath.cos(b),by=y[i]+rb*(float)StrictMath.sin(b);
+                // Full stroke clipping prevents crests cutting across quay corners.
+                // A slight local swell keeps expanding packets from reading as compass arcs.
+                float crest=.55f+.45f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055);
+                if(crest<.17f && age[i]>45) continue;
+                float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=10+strength[i]*8;
                 if(len<.01f)continue;
-                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx*1.12f,dy*1.12f,-dy/len*width,dx/len*width,
-                        WaterFoam.phase(0,i)+j*.7f,5,alpha*crest/255f);
+                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
+                        WaterFoam.phase(g.visualTicks,i)+j*.7f,5,alpha*crest/255f);
             }
         }
     }
