@@ -77,3 +77,15 @@ with zero-slope joins. Lens, cached halo and water reflection share the same pul
 energy and heading visibility. It does not mutate render state or allocate a new
 texture/cache family. The 225-degree forward sector retains the documented soft
 camera overlap. Review `BargeLightReview` for pulse phases and either-end operation.
+
+## Barge stern visibility at screen broadside
+
+For readability from the elevated camera, barges keep their white stern lens fully
+visible when facing exactly screen-left or screen-right (world headings 225 and
+45 degrees). The stern fixture fades smoothly from zero at 67.5 degrees off the
+bow to full at 90 degrees, then stays lit around the rear half. This is a deliberate
+barge-only camera allowance; powered craft and yachts retain their prior sectors.
+Pushing still suppresses the stern lamp before evaluating heading, and towing
+still selects the stern relative to the actual leading attachment end. Reflected
+light uses the same visibility as the lens. No anchor or cargo/shore depth rule
+changes. Use `BargeLightReview --broadside` to review exact and adjacent poses.

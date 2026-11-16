@@ -38,7 +38,8 @@ public final class VesselNavigationLights {
         if(fixture==SPECIAL && (powered || b.yacht || pushed==0))return 0;
         if(fixture==STERN && pushed!=0)return 0;
         float heading=b.angle+(end<0?(float)StrictMath.PI:0);
-        return visibility(heading,fixture)*(fixture==SPECIAL?specialPulse(ticks):1);
+        float visible=!powered && !b.yacht && fixture==STERN?bargeSternVisibility(heading):visibility(heading,fixture);
+        return visible*(fixture==SPECIAL?specialPulse(ticks):1);
     }
     public static float energy(Game g,Body b,boolean powered,int fixture){
         int pushed=powered?0:pushedEnd(g,b);
@@ -60,6 +61,13 @@ public final class VesselNavigationLights {
         else if(fixture==STARBOARD)value=Math.min(SIDE_ARC-bearing,bearing);
         else if(fixture==STERN)value=Math.abs(bearing)-SIDE_ARC;
         else value=SIDE_ARC-Math.abs(bearing);
+        return sectorVisibility(value);
+    }
+    /** Elevated-view barge stern lens stays fully readable at either screen broadside. */
+    public static float bargeSternVisibility(float heading){
+        return sectorVisibility(Math.abs(Physics.angle(VIEW_BEARING-heading))-(float)(StrictMath.PI/2));
+    }
+    private static float sectorVisibility(float value){
         float visible=Physics.clamp(1+value/CAMERA_OVERLAP,0,1);
         return visible*visible*(3-2*visible);
     }

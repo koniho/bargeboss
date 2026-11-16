@@ -555,3 +555,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Android debug build completed, installed successfully, and launched on the
   development phone. This round checked rendered artwork and logic, not native
   frame timing; keep existing performance baselines for comparison.
+
+### Barge broadside stern readability (shared Java)
+
+- The previous stern sector reached zero exactly at screen-left/right headings.
+  Added a barge-only visibility allowance: full at broadside and toward the rear,
+  with the existing smooth 22.5-degree transition on the forward side. Powered
+  craft/yachts retain their sectors; pushing still disables the stern navigation
+  fixture and either-end towing still selects its actual rear.
+- Lens/glow and water reflection share the same visibility. No new assets, caches,
+  allocations or fixture count; an existing light can now draw at more headings.
+  Native frame timing was not measured for this small visibility adjustment.
+- Verified 18,789 navigation-light assertions, including exact left/right views,
+  smooth neighboring angles, unchanged yacht/powered sectors, either-end towing
+  and push suppression. Reviewed the actual shared-renderer broadside sheet and
+  copied `BargeBoss-barge-stern-broadside-v1.png` to Downloads. Canonical replay
+  keeps two deliveries/1350 points; reviewed visual signature `6acc130:2:1350`.
+  Native iOS rendering is not validated on this Termux host.
+- Complete shared suite and Android debug build passed. Installed successfully
+  and launched on the development phone; the gameplay and art use shared Java.
