@@ -30,6 +30,7 @@ public final class VesselShoreLight {
     private static void lamp(Game g,Painter p,float lx,float ly,float z,float radius,int color,float strength,float angle,int fixture){RiverCamera c=g.layout.camera;
         float sx=c.screenX(lx,ly),sy=c.screenY(lx,ly),pad=(radius+32)*c.scale;
         if(sx+pad<0||sx-pad>g.layout.width||sy+pad<0||sy-pad>g.layout.height)return;
+        if(g.montroseStage())DockTopLight.draw(g,p,lx,ly,z,radius,color,strength,angle,fixture);
         float[] q=new float[8];
         for(ShorelineView.Segment s:ShorelineView.segments(g.montroseStage())){
             float mx=(s.ax+s.bx)*.5f,my=(s.ay+s.by)*.5f,dx=lx-mx,dy=ly-my;
@@ -42,7 +43,8 @@ public final class VesselShoreLight {
                 int alpha=(int)(power*255);if(alpha<2 || !clear(g,lx,ly,rx+s.nx,ry+s.ny))continue;
                 if(s.wallVisible){quad(c,q,x,y,xx,yy,0,s.height);p.poly(q,(alpha<<24)|(color&0xffffff));}
                 // Narrow landward lip: validate both inner corners, so thin docks/corners stay dry-only.
-                float inset=s.height<=4?1.2f:5;
+                if(z<=s.height || g.montroseStage() && s.height<=4)continue;
+                float inset=Math.min(20,5+(z-s.height));
                 float ix=x-s.nx*inset,iy=y-s.ny*inset,jx=xx-s.nx*inset,jy=yy-s.ny*inset;
                 boolean wet=g.montroseStage()?(MontroseHarbor.contains(ix,iy)||MontroseHarbor.contains(jx,jy)):(CalumetMap.contains(ix,iy)||CalumetMap.contains(jx,jy));
                 if(!wet){q[0]=c.screenX(x,y);q[1]=c.screenY(x,y)-s.height*c.scale;q[2]=c.screenX(xx,yy);q[3]=c.screenY(xx,yy)-s.height*c.scale;q[4]=c.screenX(jx,jy);q[5]=c.screenY(jx,jy)-s.height*c.scale;q[6]=c.screenX(ix,iy);q[7]=c.screenY(ix,iy)-s.height*c.scale;p.poly(q,((alpha/2)<<24)|(color&0xffffff));}

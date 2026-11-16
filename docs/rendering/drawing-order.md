@@ -474,12 +474,13 @@ union triangles to a painter that has not opted in.
 
 ### Moored Montrose boats and vessel shore spill
 
-`MooredBoats` adds fixed hulls in surveyed finger/star slips, excluding the mission
+`MooredBoats` adds tethered hulls in surveyed finger/star slips, excluding the mission
 bay. The shared depth merge includes their unraised waterline centers. Six rigid
-models are baked offline at 38 exact berth orientations; native painters only draw
-registered cells. Runtime movement is bounded vertical heave, never free drift or
-bitmap yaw. Two dock lines terminate on fixed deck anchors. NPC lights, wakes and
-smoke are absent. Hull footprints block active craft; buoy-contact tests reject
+models are baked offline at 32 uniform headings with RGB receiving layers; native
+painters only draw registered cells. `MooredFleet` owns fixed-step spring/damping,
+wake/contact response, 2.5-unit tether reach, limited physical yaw and vertical
+heave. Visible lines are omitted. NPC lights, wakes and smoke are absent; nearby
+lights illuminate their surfaces. Moving hull footprints block active craft; buoy-contact tests reject
 approaches already occupied by a hull. Clear water and mission approach geometry
 remain unchanged.
 
@@ -488,3 +489,12 @@ vessels. Active craft supply warm work lamps and red/green/white sector lights;
 receiver bearing, not camera visibility, controls illumination. Short distance
 falloff and shore/dock line-of-sight checks restrict spill. This is stylized local
 illumination, not a shadow map or a whole-scene physical lighting simulation.
+
+Low Montrose dock tops also receive boat light over their full footprints when the
+lamp is above the deck. `DockTopLight` precomputes disjoint eight-unit receiver
+cells during level preparation; overlap subtraction uses original local blockers,
+never accumulated fragments. Raised land can block low rays while intervening
+lower docks do not incorrectly block an above-deck light. RGB hull reception is
+incoming light only, not a light-emitting NPC fixture. The lightweight adjacent
+heading dissolve preserves opaque-overlap color but may retain a narrow outgoing
+silhouette fringe until the next heading; no painted isometric bitmap is rotated.

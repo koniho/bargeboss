@@ -1,16 +1,16 @@
 package com.bargeboss.game;
 
-/** Fixed double-line berths. Bobbing is vertical only, so lines cannot release a hull. */
+/** Unlit marina receivers. All motion comes from the per-game tether simulation. */
 public final class MooredBoats {
     public static final float CELL_WORLD=96;
-    public static final int ORIENTATIONS=38,FRAMES=228,COLUMNS=19,ROWS=12;
+    public static final int ORIENTATIONS=32,BASE_FRAMES=192,FRAMES=768,COLUMNS=16,ROWS=48;
     public static final class Berth {
         public final float x,y,angle,length,width,ax,ay,bx,by;
         public final int frame,kind;
         final float[] hull;
         Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by){
             this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
-            length=length(kind);width=width(kind);frame=kind*ORIENTATIONS+orientation;
+            length=length(kind);width=width(kind);frame=kind*ORIENTATIONS+(Math.round(angle*ORIENTATIONS/(2*(float)Math.PI))+ORIENTATIONS)%ORIENTATIONS;
             float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);hull=new float[8];
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*length*.48f,v=(i==0||i==3?-1:1)*width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}
         }
@@ -44,23 +44,30 @@ public final class MooredBoats {
         out.sort((a,b)->Float.compare(a.y-a.x,b.y-b.x));return out.toArray(new Berth[out.size()]);
     }
     public static int count(Game g){return g.montroseStage()?BERTHS.length:0;}
-    public static float depth(Game g,int i){Berth b=BERTHS[i];return g.layout.camera.screenY(b.x,b.y);}
+    public static float depth(Game g,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=BERTHS[i];return g.layout.camera.screenY(f==null?b.x:f.x,f==null?b.y:f.y);}
     public static float bob(int ticks,int i){return .35f*(float)StrictMath.sin(ticks*.026+i*1.73);}
-    public static void draw(Game g,Painter p,int i){Berth b=BERTHS[i];RiverCamera c=g.layout.camera;float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y),size=CELL_WORLD*c.scale;
+    public static void draw(Game g,Painter p,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=f==null?BERTHS[i]:f.berth;
+        float wx=f==null?b.x:f.x,wy=f==null?b.y:f.y,angle=b.angle+(f==null?0:f.yaw),heave=f==null?0:f.heave;
+        RiverCamera c=g.layout.camera;float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-heave*c.scale,size=CELL_WORLD*c.scale;
         if(x+size*.5f<0||x-size*.5f>g.layout.width||y+size*.3f<0||y-size*.7f>g.layout.height)return;
-        float heave=bob(g.visualTicks,i),co=(float)StrictMath.cos(b.angle),si=(float)StrictMath.sin(b.angle);
-        // Two short spans terminate at the near finger; all geometry remains within its berth.
-        for(int end=0;end<2;end++){float u=(end==0?-1:1)*b.length*.38f,v=(b.frame%ORIENTATIONS>=30 || b.frame%ORIENTATIONS%2==0?-1:1)*b.width*.38f;
-            float hx=b.x+co*u-si*v,hy=b.y+si*u+co*v;
-            float tx=end==0?b.ax:b.bx,ty=end==0?b.ay:b.by;
-            p.line(c.screenX(tx,ty),c.screenY(tx,ty)-4*c.scale,c.screenX(hx,hy),c.screenY(hx,hy)-(3+heave)*c.scale,.7f*c.scale,0xff867a60);
-        }
-        p.sprite(SpriteAtlas.MOORED_BOATS,b.frame,x,y-heave*c.scale,size,size,0,1);
+        float heading=angle*ORIENTATIONS/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
+        int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
+        dissolve(p,base+a,base+next,x,y,size,mix,1);
+        float[] light=MooredBoatLight.sample(g,wx,wy);
+        // Convert desired RGB contributions to source-over opacities without a blue last-pass bias.
+        light[0]/=Math.max(.01f,1-light[1]-light[2]);light[1]/=Math.max(.01f,1-light[2]);
+        for(int channel=0;channel<3;channel++)if(light[channel]>.015f){int offset=(channel+1)*BASE_FRAMES;
+            dissolve(p,offset+base+a,offset+base+next,x,y,size,mix,light[channel]);}
+    }
+    /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
+     * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */
+    private static void dissolve(Painter p,int a,int b,float x,float y,float size,float mix,float alpha){
+        if(mix<.001f){p.sprite(SpriteAtlas.MOORED_BOATS,a,x,y,size,size,0,alpha);return;}
+        if(mix>.999f){p.sprite(SpriteAtlas.MOORED_BOATS,b,x,y,size,size,0,alpha);return;}
+        float second=alpha*mix,first=alpha*(1-mix)/(1-second);
+        p.sprite(SpriteAtlas.MOORED_BOATS,a,x,y,size,size,0,first);
+        p.sprite(SpriteAtlas.MOORED_BOATS,b,x,y,size,size,0,second);
     }
     static boolean occupied(float x,float y){for(Berth b:BERTHS)if(Math.abs(x-b.x)<b.length && Math.abs(y-b.y)<b.length && PolygonWater.contains(b.hull,x,y))return true;return false;}
-    public static float collide(Body body,CollisionSplashes splashes){float hit=0;
-        for(Berth b:BERTHS)if(Math.abs(body.x-b.x)<(body.half+body.radius)+b.length && Math.abs(body.y-b.y)<(body.half+body.radius)+b.length)
-            hit=Math.max(hit,PolygonWater.collide(body,b.hull,false,splashes));return hit;
-    }
     private MooredBoats(){}
 }

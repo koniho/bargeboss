@@ -9,7 +9,7 @@ public final class ShorelineView {
     private static final class MarinaSegments {static final Segment[] DATA=marina();}
     private ShorelineView(){}
     /** Prepare fixed level geometry during reset, outside active drawing. */
-    public static void prepare(boolean marina){segments(marina);}
+    public static void prepare(boolean marina){segments(marina);if(marina)DockTopLight.prepare();}
     static final class Segment {
         final float ax,ay,bx,by,nx,ny,u0,u1,rise,height;
         final boolean wallVisible;

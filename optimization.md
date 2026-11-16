@@ -1295,3 +1295,50 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   pivots and avoiding active-draw raster work. Raw runs: out/android-profile/moored-*.
 - Final APK restored after comparison, existing signing key/game data preserved;
   phone timeout restored after device work. iOS timings were not benchmarked.
+
+## Floating moored boats and full dock-top receivers (2026-11-16)
+
+- Montrose is the user's primary stress-test scene: dense shoreline/dock geometry,
+  NPC hulls, water and overlapping lights. Keep a Calumet regression fixture too.
+- Replaced fixed NPC hull positions with per-game 60 Hz damped tethers: 2.5 world
+  units of travel, +/-0.065 radians of yaw, filtered water heave, nearby wake and
+  contact response. Moving collision footprints and depth order follow simulation;
+  drawing remains read-only. Visible mooring lines removed. NPC lights stay off.
+- Re-baked six editable rigid models at 32 uniform true headings, with RGB surface
+  receiving layers. Nearby dock and active-watercraft lights brighten/tint NPC
+  hulls while they remain subdued. Full low dock tops now receive colored boat
+  light when source height exceeds deck height; elevated land blocks low rays.
+- Disjoint eight-unit dock-top cells prepare during level reset. An initial union
+  of accumulated cut fragments exhausted preview heap; replaced with subtraction
+  against original local source polygons and tiny-fragment pruning. Never subtract
+  accumulated fragments when extending this preparation path.
+- Rejected the first runtime implementation: four offscreen sprite blend groups
+  per visible boat and repeated shore/wake work reduced the matched Pixel replay
+  to 23.65 FPS; median simulation 5.133 ms, issue-to-swap 46.419 ms.
+- Final drawing uses ordinary sprites with an opaque-overlap heading dissolve,
+  avoiding those additive offscreen groups. It can retain a narrow outgoing
+  silhouette fringe between adjacent poses; native images reviewed. Static berth
+  clearance envelopes bypass repeated checks only where a conservative five-unit
+  neighborhood is clear. Nearby wake force rejects distant crest bounds exactly;
+  961 force comparisons match the original arithmetic bit-for-bit. Distant boats
+  use ambient orbital forcing/heave, with full wake sampling near active craft.
+- Full shared checks, 494,834 tether/placement/color/determinism assertions,
+  1,439,937 all-heading shoreline pixels and 197,334 foam pixels pass. Native/JVM
+  parity a5754c75:2:1350. Android and Release Metal simulator builds pass; reviewed
+  native captures in out/android-profile/floating-fast. This is not an iOS FPS test.
+- Repeated optimized Pixel runs: simulation median 2.185/2.197 ms, shared draw
+  12.304/12.310 ms, native issue-to-swap 19.984/21.346 ms; throughput 43.41/43.43 FPS.
+  Interval p95 34.134/34.244 ms. The 60 FPS/headroom target remains unmet.
+- Prepared sprite storage is 96.521 MiB versus 62.771 MiB before this round.
+  First-run decode ~103 ms versus ~49 ms baseline. Cold preparation remains a real
+  loading risk; atlas transparent-margin trimming and a native tinted sprite path
+  are followups. No warm-frame result should hide this startup cost. Raw captures
+  retain the rejected version as floating-after, final as floating-fast[-repeat].
+- Baseline before/reverse throughput 46.36/46.93 FPS, simulation medians
+  1.633/1.396 ms, shared draw 13.187/10.864 ms, issue-to-swap 20.363/17.869 ms.
+  Same 60 warmup + 300 measured frames, ticks 2536-2895 and matching camera zoom.
+  Final feature cost is about 3-3.5 FPS in these captures; timing stages remain
+  variable, so no isolated GPU/CPU attribution is claimed for the residual cost.
+- Final APK restored after A/B testing, game data and original key retained.
+  Temporary timeout restored; user's stay-awake-while-plugged-in setting is not
+  modified by the development script.

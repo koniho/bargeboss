@@ -36,7 +36,9 @@ public final class WaterSurface {
         out[0]=.65f*(float)StrictMath.sin(g.visualTicks*.048+wx*.017+wy*.009);
         out[1]=.5f*(float)StrictMath.sin(g.visualTicks*.031-wx*.013+wy*.021);
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE && source[i]!=null){
-            float dx=wx-x[i],dy=wy-y[i],distance=Physics.length(dx,dy),offset=distance-(9+age[i]*.55f);
+            float dx=wx-x[i],dy=wy-y[i],reach=36+age[i]*.55f;
+            if(Math.abs(dx)>reach || Math.abs(dy)>reach)continue;
+            float distance=Physics.length(dx,dy),offset=distance-(9+age[i]*.55f);
             if(Math.abs(offset)>=26 || distance<.001f)continue;
             // Match the rear-facing fan used by draw(), not a full circular blast.
             float angle=Physics.angle((float)StrictMath.atan2(dy,dx)-heading[i]-(float)StrictMath.PI);

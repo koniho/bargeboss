@@ -142,7 +142,7 @@ public final class Buoys {
         // Resolve against the active world's shoreline. Marina mooring balls live far
         // outside the old river corridor; Physics.banks would teleport their hulls.
         if(touched && !fixed){
-            if(g.montroseStage())MontroseHarbor.collide(body,g.splashes);
+            if(g.montroseStage())MontroseHarbor.collide(g,body,g.splashes);
             else CalumetMap.collide(body,g.splashes);
         }
     }

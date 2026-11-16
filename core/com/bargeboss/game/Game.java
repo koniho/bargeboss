@@ -26,6 +26,7 @@ public final class Game {
     public Body tug;
     public WaterSurface water=new WaterSurface();
     public Buoys buoys=new Buoys();
+    public MooredFleet mooredFleet=new MooredFleet();
     public CollisionSplashes splashes=new CollisionSplashes();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
@@ -329,7 +330,7 @@ public final class Game {
         nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
         mode=PLAY; tell(goalStatus());
-        buoys=new Buoys();buoys.reset(this);splashes=new CollisionSplashes();
+        buoys=new Buoys();buoys.reset(this);mooredFleet=new MooredFleet();mooredFleet.reset(this);splashes=new CollisionSplashes();
         ShorelineView.prepare(montroseStage());
     }
     void addCargo(int berth, float x, float y) {
@@ -780,10 +781,10 @@ public final class Game {
         tow.step(this);
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
         if(lockStage())lock.integrate(tug);else Physics.integrate(tug);
-        if(!montroseStage()){float hit=CalumetMap.collide(tug,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(tug,splashes));
+        if(!montroseStage()){float hit=CalumetMap.collide(tug,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,tug,splashes));
         if(hasBridge()) damage(bridge.collide(tug,splashes));
         if(lockStage()) damage(lock.collide(tug,splashes));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(b,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,b,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active) continue;
@@ -809,7 +810,7 @@ public final class Game {
         for(Body b:cargo) if(b!=null && b.active && (b.lineAttached || b.awaitingPickup)) {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
-        buoys.step(this);
+        buoys.step(this);mooredFleet.step(this);
         if(lockStage()){
             // Cargo/float contact correction happens after integration: it cannot push hulls through doors.
             damage(lock.collide(tug,splashes));
@@ -817,8 +818,8 @@ public final class Game {
             if(trafficActive())lock.collide(trafficBoat,splashes);
         }
         if(montroseStage()){
-            damage(MontroseHarbor.collide(tug,splashes));
-            for(Body b:cargo)if(b!=null && b.active)damage(MontroseHarbor.collide(b,splashes));
+            damage(MontroseHarbor.collide(this,tug,splashes));
+            for(Body b:cargo)if(b!=null && b.active)damage(MontroseHarbor.collide(this,b,splashes));
         }
         // Fender damping follows motion time; mooring confirmation uses real time.
         for(Body b:cargo) if(b!=null && b.active) {
