@@ -1,0 +1,22 @@
+{
+  "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+  "arguments": [
+    "--ios-profile",
+    "--ios-metal",
+    "--ios-replay",
+    "--ios-scene=canal-middle",
+    "--ios-frames=300",
+    "--ios-warmup=60"
+  ],
+  "frames": 300,
+  "mean_ms": 16.667139333333342,
+  "median_ms": 16.6804,
+  "p95_ms": 17.2465,
+  "max_ms": 24.6731,
+  "fps": 59.99829844825598,
+  "draw_median_ms": 4.0711,
+  "draw_p95_ms": 4.6298,
+  "draw_max_ms": 23.9231,
+  "gpu_median_ms": 0.1469,
+  "gpu_p95_ms": 0.2375
+}

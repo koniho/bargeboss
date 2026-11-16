@@ -21,12 +21,13 @@ final class WaterFoamShader {
             ByteArrayOutputStream bytes=new ByteArrayOutputStream();byte[] buffer=new byte[2048];int n;
             while((n=in.read(buffer))!=-1)bytes.write(buffer,0,n);
             String source=new String(bytes.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
-            shader=new RuntimeShader(source+"\nuniform float phase; uniform float kind; uniform float opacity;\n"
-                +"half4 main(float2 uv) { float a=foamCoverage(uv,phase,kind)*opacity; return half4(0.76*a,0.94*a,0.90*a,a); }");
+            shader=new RuntimeShader(source+"\nuniform float phase; uniform float kind; uniform float opacity; layout(color) uniform float4 tint;\n"
+                +"half4 main(float2 uv) { float a=foamCoverage(uv,phase,kind)*opacity; return half4(tint.rgb*a,a); }");
             paint.setShader(shader);
         } catch(IOException e) {throw new IllegalStateException("Missing shared water shader",e);}
     }
-    void draw(Canvas canvas,float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+    void draw(Canvas canvas,float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha,int color) {
+        shader.setColorUniform("tint",color|0xff000000);
         shader.setFloatUniform("phase",phase);shader.setFloatUniform("kind",(float)kind);shader.setFloatUniform("opacity",alpha);
         values[0]=ax;values[1]=bx;values[2]=x-(ax+bx)*.5f;
         values[3]=ay;values[4]=by;values[5]=y-(ay+by)*.5f;

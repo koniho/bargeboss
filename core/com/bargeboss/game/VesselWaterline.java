@@ -53,8 +53,8 @@ public final class VesselWaterline {
                 float ty=offset(from,to,i+1,true,0,mix)-offset(from,to,i,true,0,mix);
                 float leading=.35f+.65f*(travelX>=0?u:1-u);
                 float envelope=(float)StrictMath.sin(age*StrictMath.PI);
-                float alpha=(.035f+motion*.64f*leading)*envelope*envelope;
-                float length=(11+motion*8)*scale,width=(9+motion*9)*scale;
+                float alpha=(.035f+motion*.94f*leading)*envelope*envelope;
+                float length=(14+motion*16)*scale,width=(10+motion*20)*scale;
                 VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-bob+.5f)*scale,
                         (float)StrictMath.atan2(ty,tx),length,width,alpha,WaterFoam.phase(g.visualTicks,b.id+patch));
             }

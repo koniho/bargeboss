@@ -107,18 +107,13 @@ public final class VesselNavigationLights {
     /** Colored ripples stay on the water plane and never paint across a quay. */
     public static void reflections(Game g,Painter p,Body b,boolean powered){
         if(!(p instanceof RiverPainter))return;
-        RiverCamera c=((RiverPainter)p).camera;Painter water=new WaterEffectsPainter(g,p);
+        RiverCamera c=((RiverPainter)p).camera;
         int pushed=powered?0:pushedEnd(g,b),end=powered?1:forwardEnd(g,b,pushed);
         for(int fixture=0;fixture<count(b,powered);fixture++){
             float visible=energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
             float x=c.screenX(worldX(b,fixture,end),worldY(b,fixture,end)),y=c.screenY(worldX(b,fixture,end),worldY(b,fixture,end));
-            for(int i=0;i<5;i++){
-                float phase=g.visualTicks*.04f+fixture*1.7f+i*.9f;
-                float drift=(float)StrictMath.sin(phase)*1.5f*c.scale;
-                float width=(3+i*.7f+(float)StrictMath.sin(phase*.8f))*c.scale;
-                float yy=y+(9+i*3)*c.scale;
-                water.line(c.worldX(x+drift-width,yy),c.worldY(x+drift-width,yy),c.worldX(x+drift+width,yy),c.worldY(x+drift+width,yy),1.1f,alpha(color(fixture),visible,70-i*10));
-            }
+            WaterReflection.draw(g,p,c.worldX(x,y+6*c.scale),c.worldY(x,y+6*c.scale),
+                    10,25,alpha(color(fixture),visible,150),b.id*7+fixture);
         }
     }
 }

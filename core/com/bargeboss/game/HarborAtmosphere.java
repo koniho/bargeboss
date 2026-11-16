@@ -14,7 +14,7 @@ public final class HarborAtmosphere {
     static int firstLamp(Game g) { return g.lockStage()?-7:0; }
     /** Warm, broken reflections follow the same bank lamps, with dark water between glints. */
     public static void reflections(Game g,Painter world) {
-        world=new WaterEffectsPainter(g,world);
+        Painter water=new WaterEffectsPainter(g,world);
         for(int side=0;side<2;side++) for(int lamp=firstLamp(g);lamp<=5;lamp++) {
             float bank=side==0?Physics.RIGHT:Physics.LEFT,along=lampY(lamp),sign=side==0?-1:1;
             if(g.tutorial!=null && TrainingChannel.contains(lampBank(side),along)) continue;
@@ -23,19 +23,9 @@ public final class HarborAtmosphere {
             // Clip every lobe to actual water so it cannot illuminate piers or land.
             float breath=SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f);
             for(int ring=8;ring>=1;ring--)
-                world.circle(bank+sign*17,along,ring*5.5f,((int)((2+(8-ring)*.5f)*breath)<<24)|0xe5a35e);
-            for(int i=0;i<21;i++) {
-                float phase=g.visualTicks*.045f+lamp*1.31f+i*1.87f;
-                float shimmer=(.55f+.45f*(float)StrictMath.sin(phase))*SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f);
-                float distance=3+i*3.1f,x=bank+sign*distance;
-                float y=along-sign*distance+(float)StrictMath.sin(phase*.61f)*2.1f;
-                float span=(3.6f+i*.42f)*(0.5f+shimmer),half=span*.5f;
-                int alpha=(int)((side==0?215:145)*shimmer*(1-i/24f));
-                world.line(x-half,y-half,x,y-.45f,2.4f,(alpha/3<<24)|0xff7e30);
-                world.line(x,y-.45f,x+half,y+half,1.8f,(alpha<<24)|(i<5?0xffcf83:0xe6a35e));
-                if(i%4==0) world.line(x-half*1.7f,y-half*1.7f+1.5f,x+half*1.4f,y+half*1.4f+1.5f,
-                        1.0f,(alpha/3<<24)|0xf8c77a);
-            }
+                water.circle(bank+sign*17,along,ring*5.5f,((int)((2+(8-ring)*.5f)*breath)<<24)|0xe5a35e);
+            WaterReflection.draw(g,world,bank+sign*16,along,42,85,
+                    ((int)(breath*180)<<24)|0xffba68,lamp*2+side);
         }
     }
     /** A thin warm aerial layer over the far industrial bank, behind all play objects. */

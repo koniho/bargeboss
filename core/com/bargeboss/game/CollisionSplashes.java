@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Fixed-size, detached sprite-stamp bursts shared by every watercraft contact. */
+/** Fixed-size, detached spray, impact flashes and heavy-hit sparks shared by every watercraft contact. */
 public final class CollisionSplashes {
     public static final int CAPACITY=24,STAMPS=6,LIFE=72,COOLDOWN=14;
     private final Watercraft[] first=new Watercraft[CAPACITY],second=new Watercraft[CAPACITY];
@@ -51,8 +51,8 @@ public final class CollisionSplashes {
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;Painter canvas=river.canvas();RiverCamera c=river.camera;
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE){
-            float t=age[i]/(float)LIFE,alpha=(.3f+.4f*power[i])*Math.min(1,(age[i]+1)/4f)*(1-t)*(1-t);
-            float length=12+power[i]*18+t*30,width=6+power[i]*9+t*15;
+            float t=age[i]/(float)LIFE,alpha=(.45f+.5f*power[i])*Math.min(1,(age[i]+1)/4f)*(1-t)*(1-t);
+            float length=16+power[i]*26+t*38,width=10+power[i]*16+t*20;
             float dx=(float)StrictMath.cos(direction[i]),dy=(float)StrictMath.sin(direction[i]);
             float xx=originX[i]+dx*(2+t*7),yy=originY[i]+dy*(2+t*7);
             if(!visible(g,xx,yy,0,length+width))continue;
@@ -76,20 +76,38 @@ public final class CollisionSplashes {
     /** An irregular foam stamp stretched along projected travel, lifted ballistically above water. */
     public void draw(Game g,Painter canvas,int j){
         int i=j/STAMPS;float t=age[i]/(float)LIFE;
-        float alpha=(.4f+.48f*power[i])*Math.min(1,(age[i]+1)/3f)*(1-t);
+        float alpha=(.55f+.45f*power[i])*Math.min(1,(age[i]+1)/3f)*(1-t);
         float lifeFade=Physics.clamp(z[j]/1.5f,0,1);if(vz[j]<0)alpha*=lifeFade;
         if(z[j]<0 || alpha<.01f)return;
         RiverCamera c=g.layout.camera;float dx=RiverCamera.Q*(vx[j]+vy[j]),dy=RiverCamera.Q*RiverCamera.DEPTH*(vy[j]-vx[j])-vz[j];
         float len=Math.max(.001f,Physics.length(dx,dy));dx/=len;dy/=len;
         float variation=.7f+(j%STAMPS)*.07f;
-        float length=(8+power[i]*14)*(1+t*.9f)*c.scale*variation,width=(6+power[i]*10)*(1+t)*c.scale*variation;
+        float length=(10+power[i]*22)*(1+t*.9f)*c.scale*variation,width=(7+power[i]*14)*(1+t)*c.scale*variation;
         float sx=c.screenX(x[j],y[j]),sy=c.screenY(x[j],y[j])-z[j]*c.scale;
         float extent=64+z[j]*2;
         canvas.pushClipOutside(ShoreOcclusion.region(g,c,x[j]-extent,y[j]-extent,x[j]+extent,y[j]+extent,depth(g,j)));
         try{
-            float dissolve=Physics.clamp((age[i]-18)/16f,0,1);
-            if(dissolve<1)canvas.spriteAffine(SpriteAtlas.FOAM,2,sx,sy,dx*length,dy*length,-dy*width,dx*width,alpha*(1-dissolve));
-            if(dissolve>0)canvas.spriteAffine(SpriteAtlas.FOAM,3,sx,sy,dx*length,dy*length,-dy*width,dx*width,alpha*dissolve);
+            canvas.waterFoam(sx,sy,dx*length,dy*length,-dy*width,dx*width,
+                    WaterFoam.phase(age[i],j),2+j%2,alpha);
+            // One brief burst per contact, kept in the same depth/shore scope as the spray.
+            if(j%STAMPS==0 && age[i]<10) {
+                float fade=1-age[i]/10f,r=(7+power[i]*14+age[i]*1.4f)*c.scale;
+                canvas.circle(sx,sy,r,(Math.round(95*fade)<<24)|0xe5fcf7);
+                for(int ray=0;ray<7;ray++) {
+                    float angle=ray*(float)(StrictMath.PI*2/7)+direction[i];
+                    float rx=(float)StrictMath.cos(angle),ry=(float)StrictMath.sin(angle);
+                    canvas.line(sx+rx*r*.35f,sy+ry*r*.35f,sx+rx*r,sy+ry*r,
+                            (1.2f+power[i])*c.scale,(Math.round(230*fade)<<24)|0xf1fff1);
+                }
+            }
+            // Six detached hot streaks only for substantial incoming impacts (>=45.5 units/s).
+            if(power[i]>=.65f && age[i]<24) {
+                float fade=1-age[i]/24f,tail=(5+power[i]*11)*c.scale;
+                float lift=(4+age[i]*.5f)*c.scale;
+                int a=Math.round(255*fade);
+                canvas.line(sx-dx*tail,sy-lift-dy*tail,sx,sy-lift,3*c.scale,(a<<24)|0xff742b);
+                canvas.line(sx-dx*tail*.65f,sy-lift-dy*tail*.65f,sx,sy-lift,1.2f*c.scale,(a<<24)|0xffef9b);
+            }
         }
         finally{canvas.popClip();}
     }

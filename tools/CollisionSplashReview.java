@@ -33,7 +33,7 @@ public final class CollisionSplashReview {
                 canvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
                 Renderer.draw(g,new DesktopPainter(canvas));
                 canvas.setColor(new Color(0x0a2028));canvas.fillRect(24,540,700,40);
-                canvas.setColor(new Color(0xe0f3ed));canvas.drawString(names[kind]+" / DIRECTIONAL TEXTURE STAMPS / tick "+tick,40,565);canvas.dispose();
+                canvas.setColor(new Color(0xe0f3ed));canvas.drawString(names[kind]+" / SPRAY / IMPACT / SPARKS / tick "+tick,40,565);canvas.dispose();
                 montage.drawImage(scene,(kind%2)*640,(kind/2)*400,640,400,null);
                 if(tick==12)panels.drawImage(scene,kind%2*960,kind/2*600,null);
             }

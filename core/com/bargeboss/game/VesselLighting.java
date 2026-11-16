@@ -35,16 +35,9 @@ public final class VesselLighting {
         float size=2*(b.half+b.radius)/TugArt.HULL_FRACTION;
         float sx=river?camera.screenX(b.x,b.y):b.x,sy=river?camera.screenY(b.x,b.y):b.y,scale=river?camera.scale:1;
         sx+=TugLightArt.offset(0,b.angle,river,false)*size*scale;
-        Painter water=river?new WaterEffectsPainter(g,p):p;
-        for(int i=0;i<9;i++) {
-            float phase=g.visualTicks*.045f+b.id*.31f+i*1.7f;
-            float drift=(float)StrictMath.sin(phase)*2;
-            float length=(3+(float)StrictMath.sin(phase*.7f)*1.4f)*(1-i*.045f)*scale;
-            float x=sx+drift*scale,y=sy+(b.radius*.65f+3+i*2.5f)*scale;
-            int color=warm(.65f+.25f*(float)StrictMath.sin(phase),48-i*3,0xffba5c);
-            if(river) water.line(camera.worldX(x-length,y),camera.worldY(x-length,y),camera.worldX(x+length,y),camera.worldY(x+length,y),.65f,color);
-            else water.line(x-length,y,x+length,y,.65f,color);
-        }
+        float xx=sx,yy=sy+b.radius*.65f*scale;
+        if(river)WaterReflection.draw(g,p,camera.worldX(xx,yy),camera.worldY(xx,yy),12,36,0x99ffba5c,b.id);
+        else p.waterReflection(xx,yy+15,18,0,0,30,WaterFoam.phase(g.visualTicks,b.id),0x99ffba5c);
     }
     /** Two newly authored low coaming service lamps: bow/stern centerline, +Z normal.
      * These fittings are explicitly additional geometry, not painted-source anchors. */

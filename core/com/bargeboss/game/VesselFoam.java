@@ -26,7 +26,7 @@ public final class VesselFoam {
                 float xx=b.x+c*end+b.radius*dx*.62f-shoulder*dy*side*.8f;
                 float yy=b.y+s*end+b.radius*dy*.62f+shoulder*dx*side*.8f;
                 add(xx,yy,b.vx*.0015f-dy*side*.09f,b.vy*.0015f+dx*side*.09f,
-                        (float)StrictMath.atan2(dy,dx),22+motion*15,10+motion*8,.16f+motion*.38f,90,side<0?0:1);
+                        (float)StrictMath.atan2(dy,dx),32+motion*24,18+motion*18,.32f+motion*.65f,90,side<0?0:1);
             }
         }
         float load=Physics.clamp((b.engineLoad-.12f)/.88f,0,1);
@@ -37,7 +37,7 @@ public final class VesselFoam {
             float yy=b.y-s*(b.half+b.radius*.7f)+c*side*b.radius*.35f;
             float swirl=side*(.1f+load*.1f)+(float)StrictMath.sin(g.visualTicks*.17+b.id)*.12f;
             add(xx,yy,c*direction*(.13f+load*.35f)-s*swirl,s*direction*(.13f+load*.35f)+c*swirl,
-                    b.angle,22+load*16,18+load*18,.12f+load*.45f,150,2);propEmitted++;
+                    b.angle,30+load*25,24+load*26,.28f+load*.68f,150,2);propEmitted++;
         }
     }
     private void add(float xx,float yy,float dx,float dy,float a,float l,float w,float power,int duration,int texture) {
@@ -52,7 +52,7 @@ public final class VesselFoam {
         float left=Float.MAX_VALUE,top=left,right=-left,bottom=-left;
         for(int i=0;i<CAPACITY;i++) {
             if(age[i]>=life[i])continue;
-            float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t);
+            float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t*.4f);
             if(alpha<.008f)continue;
             float extent=length[i]*(1+t*.8f)+width[i]*(1+t*1.5f);
             float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=extent*c.scale;
@@ -66,7 +66,7 @@ public final class VesselFoam {
         try {
             for(int n=0;n<CAPACITY;n++) {
                 int i=(cursor+n)%CAPACITY;if(age[i]>=life[i])continue;
-                float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t);
+                float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t*.4f);
                 if(alpha<.008f)continue;
                 float l=length[i]*(1+t*.8f),w=width[i]*(1+t*1.5f);
                 float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=(l+w)*c.scale;

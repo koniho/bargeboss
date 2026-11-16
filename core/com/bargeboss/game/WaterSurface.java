@@ -106,7 +106,7 @@ public final class WaterSurface {
     private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
             float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
-            int alpha=(int)(200*strength[i]*(1-t)*(1-t));
+            int alpha=(int)Math.min(255,330*strength[i]*(1-t)*(1-t*.35f));
             if(alpha<3)continue;
             float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
             for(int j=0;j<16;j++) {
@@ -118,7 +118,7 @@ public final class WaterSurface {
                 // A slight local swell keeps expanding packets from reading as compass arcs.
                 float crest=.55f+.45f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055);
                 if(crest<.17f && age[i]>45) continue;
-                float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=5+strength[i]*3;
+                float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=10+strength[i]*8;
                 if(len<.01f)continue;
                 p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
                         WaterFoam.phase(g.visualTicks,i)+j*.7f,5,alpha*crest/255f);

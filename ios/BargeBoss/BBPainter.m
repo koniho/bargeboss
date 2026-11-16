@@ -5,6 +5,8 @@
 #import "com/bargeboss/game/SpriteGrade.h"
 #import "com/bargeboss/game/StaticLayer.h"
 #import "com/bargeboss/game/WaterFoam.h"
+#import "com/bargeboss/game/WaterReflection.h"
+#import "com/bargeboss/game/SmokePuff.h"
 #import <math.h>
 
 static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
@@ -280,6 +282,12 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     CGContextRestoreGState(ctx);
 }
 // Supplied axes span a complete source cell and already include all caller scaling.
+- (void)waterReflectionWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)color {
+    [BBWaterReflection fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:phase withInt:color];
+}
+- (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
+    [BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];
+}
 - (void)waterFoamWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)kind withFloat:(jfloat)alpha {
     if(kind<4) [self spriteAffineWithInt:BBSpriteAtlas_FOAM withInt:kind withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:alpha];
     else [BBWaterFoam fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:phase withInt:kind withFloat:alpha];

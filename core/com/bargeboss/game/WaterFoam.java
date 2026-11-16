@@ -9,14 +9,14 @@ public final class WaterFoam {
     /** Strong leading pressure crest, derived from actual forward speed, not throttle. */
     public static void bow(Game g,Painter p,Body b) {
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        float forward=b.vx*c+b.vy*s,motion=Physics.clamp((forward-3)/55,0,1);
+        float forward=b.vx*c+b.vy*s,motion=Physics.clamp((forward-3)/40,0,1);
         if(motion<=0)return;
-        float nose=b.half+b.radius*.86f,spread=b.radius*(1.3f+motion*.35f),trail=12+motion*18;
+        float nose=b.half+b.radius*.86f,spread=b.radius*(1.5f+motion*.65f),trail=18+motion*26;
         for(int side=-1;side<=1;side+=2) {
             float ax=-c*trail-s*side*spread,ay=-s*trail+c*side*spread;
-            float length=Physics.length(ax,ay),width=5+motion*7;
+            float length=Physics.length(ax,ay),width=12+motion*18;
             float x=b.x+c*nose+ax*.48f,y=b.y+s*nose+ay*.48f;
-            p.waterFoam(x,y,ax,ay,-ay/length*width,ax/length*width,phase(g.visualTicks,b.id)+side,4,.22f+motion*.62f);
+            p.waterFoam(x,y,ax,ay,-ay/length*width,ax/length*width,phase(g.visualTicks,b.id)+side,4,.38f+motion*.60f);
         }
     }
     /** Bounded textured/geometry fallback; preserves placement, speed response and clipping. */
@@ -29,7 +29,7 @@ public final class WaterFoam {
             float fade=(float)StrictMath.sin(mid*StrictMath.PI);
             int opacity=(int)(255*alpha*fade*(.55f+.25f*(float)StrictMath.sin(mid*23+phase)));
             p.line(x+ax*(u-.5f)+bx*a,y+ay*(u-.5f)+by*a,x+ax*(v-.5f)+bx*b,y+ay*(v-.5f)+by*b,
-                    width*.16f,(Math.min(255,opacity)<<24)|0xc1eee4);
+                    width*.23f,(Math.min(255,opacity)<<24)|0xe5fcf7);
         }
     }
     private static float crest(float u,float phase,int kind) {

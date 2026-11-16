@@ -20,6 +20,9 @@ public final class SceneryOcclusion implements Painter {
     }
     public void popClip(){recordingClip=clipStack.remove(clipStack.size()-1);target.popClip();}
     public SceneryOcclusion(Painter target) {this.target=target;}
+    public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){target.waterFoam(xx,yy,ax,ay,bx,by,phase,kind,alpha);}
+    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
+    public void smokePuff(float x,float y,float radius,float phase,int color){target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
     public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
@@ -188,6 +191,7 @@ public final class SceneryOcclusion implements Painter {
         private int color(int color,Shape shape){if((color>>>24)<160)return color;return (((int)((color>>>24)*scene.opacity(shape)))<<24)|(color&0xffffff);}
         public void pushClipOutside(float[] triangles){p.pushClipOutside(triangles);}
         public void popClip(){p.popClip();}
+        public void smokePuff(float x,float y,float radius,float phase,int color){p.smokePuff(x,y,radius,phase,color);}
         public void rect(float x,float y,float w,float h,int c){p.rect(x,y,w,h,color(c,new Polygon(new float[]{x,y,x+w,y,x+w,y+h,x,y+h})));}
         public void poly(float[] xy,int c){p.poly(xy,color(c,new Polygon(xy)));}
         public void line(float x,float y,float xx,float yy,float w,int c){p.line(x,y,xx,yy,w,color(c,new Stroke(x,y,xx,yy,w)));}

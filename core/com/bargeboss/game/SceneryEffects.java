@@ -86,14 +86,10 @@ public final class SceneryEffects {
             float px=x-(age*35*wind+sway)*scale;
             float py=y-age*91*scale;
             float r=radius*(1+age*4.4f)*(1+.1f*(float)StrictMath.sin(age*12+phase+i));
-            float alpha=opacity*fade*(compact?66:54);
-            // Unequal lobes roll into one plume; older puffs soften and disperse.
-            p.circle(px,py,r,tint(0x7b8589,alpha));
-            // Keep the complete emission cadence even at wide zoom; dropping whole
-            // puffs makes a dotted chain. Reduce secondary lobes instead.
-            if(!compact || (i&1)==1)p.circle(px-r*.55f,py+r*.11f,r*.74f,tint(0x68767b,alpha*(compact?.9f:.7f)));
-            if(!compact)p.circle(px+r*.44f,py-r*.25f,r*.68f,tint(0xb6aaa0,alpha*.48f));
+            float alpha=opacity*fade*(compact?145:175);
+            // Dirty olive-brown soot, with rolling detail inside the same bounded puff.
+            p.smokePuff(px,py,r*1.2f,WaterFoam.phase(ticks,i+(int)(phase*29)),tint(SmokePuff.INDUSTRIAL,alpha));
         }
-        p.circle(x,y,radius*.8f,tint(0x7e8587,opacity*38));
+        p.circle(x,y,radius*.8f,tint(SmokePuff.SOOT,opacity*100));
     }
 }

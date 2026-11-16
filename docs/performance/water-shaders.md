@@ -38,30 +38,43 @@ Android API documentation: https://developer.android.com/reference/android/graph
 - `--ios-water-textures` selects the fallback for controlled comparisons. The
   profile script accepts `--water-textures`; metadata records `water_shaders`.
 
-## Validation on 2026-11-16
+## Routing correction and validation on 2026-11-16
 
-The iPhone 17 Pro / iOS 26.5 simulator ran a Release Metal `canal-middle` replay,
-60 warmup draws and 300 measured draws, twice with no concurrent build or preview
-work. Source baseline was `a662f6d` plus the local Metal and water changes. Raw
-CSV, metadata and summaries are in [water-shaders-2026-11-16](water-shaders-2026-11-16/).
+The first captures labeled “shader A/B” actually used the fallback: the outer
+`SceneryOcclusion` wrapper did not forward `waterFoam`. Those old files remain
+historical evidence but cannot establish shader cost. The wrapper and screen
+transform now forward native effects. Tests exercise the actual Renderer root;
+Metal counters confirm 532 foam patches and three reflection patches in the
+canal replay. Counters reset at beginFrame, before the previous completed frame
+is reported on the following callback.
+
+Release iPhone 17 Pro / iOS 26.5 simulator, `canal-middle` replay, 60 warmup and
+300 measured draws per run, no concurrent builds:
 
 | Run | FPS | interval p95 | CPU draw p95 | GPU p95 | maximum interval |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| shader A | 59.80 | 16.708 ms | 5.432 ms | 0.201 ms | 32.510 ms |
-| shader B | 59.99 | 16.702 ms | 5.235 ms | 0.195 ms | 26.241 ms |
+| routed shader A | 60.01 | 17.255 ms | 5.457 ms | 0.219 ms | 30.239 ms |
+| texture fallback | 60.00 | 17.249 ms | 5.152 ms | 0.206 ms | 29.313 ms |
+| routed shader B | 60.00 | 17.092 ms | 5.397 ms | 0.200 ms | 23.495 ms |
 
-These are simulator results, not physical iPhone/Android performance guarantees.
-There are still isolated long frames; this does not prove locked 60 FPS or attribute
-those gaps to any specific cause. An initial texture comparison used a more
-expensive crest fallback; it is not retained as evidence for the final fallback.
-Shader A/B use the final shader path; the subsequent fallback-only simplification
-does not execute in these runs.
+These runs include stronger arcade foam, prop turbulence and light reflections,
+before the smoke/collision extension. They establish actual shader execution;
+they do not establish a speedup. Raw CSV, metadata and summaries are in
+[effect-shaders-2026-11-16](effect-shaders-2026-11-16/).
 
-Shared direction/phase/wrapper checks passed (1,752 assertions). The all-heading
-shoreline test now uses moving hulls to include bow wakes (1,439,937 assertions).
-Detached foam transparency/shoreline checks passed (197,334 assertions). Full
-preview exports and native Metal gameplay/title screenshots were reviewed.
-JVM/J2ObjC drawing parity and the final shared/Android build results are recorded
-in `optimization.md`. The user requested that the connected Android phone not be
-used; no Android shader runtime or physical-device pixel/timing validation was
-performed in this round. The APK was built locally without replacing a signing key.
+The kernel also supports rippling tinted light reflections and dark rolling smoke.
+Shared Java supplies light anchors, exhaust transport, ages and palettes. Smoke
+uses the existing 384-puff pool and two small fixed cached fallback materials.
+Collision spray uses the same foam primitive with shared ballistic paths; a short
+impact flash and six heavy-hit spark streaks remain depth sorted and shore clipped.
+No fullscreen pass, additional particle pool or physics change is involved.
+`--ios-water-textures` disables all these procedural material modes for comparison.
+
+Simulator timing does not prove physical-device headroom or locked 60 FPS; isolated
+long frames remain. Android was built locally, but the user requested no phone use.
+AGSL runtime, native Android pixels and physical-device timings remain unvalidated.
+
+Final smoke/collision builds repeated the same replay twice: 59.80/60.00 FPS,
+CPU draw p95 4.965/4.630 ms, GPU p95 0.243/0.238 ms, maximum interval
+33.267/24.673 ms. Final metadata records 295 smoke patches. This fixture is not
+a worst-case collision stress test. See optimization.md for checks and limits.

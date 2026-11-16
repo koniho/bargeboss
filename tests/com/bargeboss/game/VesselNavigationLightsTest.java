@@ -66,8 +66,9 @@ public final class VesselNavigationLightsTest {
             check(lights.red>0 && lights.green>0,"forward pose draws red and green together through cargo layering");
             check(!powered || lights.white>0,"powered forward pose also draws its white masthead");
         }
-        Body shore=new Body(1,2,Physics.LEFT+2,500,(float)Math.PI/2);Capture water=new Capture();
+        Body shore=new Body(1,2,Physics.LEFT+20,500,(float)Math.PI/2);Capture water=new Capture();
         VesselNavigationLights.reflections(g,new RiverPainter(water,c),shore,false);
+        check(water.lines>0 && water.clips.isEmpty(),"reflection has visible water samples and restores its clip");
         for(int i=0;i<water.lines;i++)for(int end=0;end<2;end++){
             float x=c.worldX(water.endpoints[i][end*2],water.endpoints[i][end*2+1]),y=c.worldY(water.endpoints[i][end*2],water.endpoints[i][end*2+1]);
             check(x>=Physics.LEFT-.002f && x<=Physics.RIGHT+.002f,"colored water reflection is clipped at the physical bank");
@@ -130,6 +131,19 @@ public final class VesselNavigationLightsTest {
     }
     private static final class Capture implements Painter {
         int calls,red,green,white,lines;long hash=17;float[][] endpoints=new float[128][4];
+        final java.util.ArrayList<float[]> clips=new java.util.ArrayList<float[]>();
+        public void pushClipOutside(float[] triangles){clips.add(triangles);}
+        public void popClip(){clips.remove(clips.size()-1);}
+        public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
+            add(x,y,color);
+            // Reflection now submits a clipped patch, not pre-cut line endpoints.
+            // Probe its visible interior against the same exclusion triangles as native painters.
+            for(int row=1;row<10;row++)for(int col=1;col<10;col++) {
+                float xx=x+ax*(col/10f-.5f)+bx*(row/10f-.5f),yy=y+ay*(col/10f-.5f)+by*(row/10f-.5f);
+                boolean dry=false;for(float[] clip:clips)if(ShoreOcclusion.contains(clip,xx,yy)){dry=true;break;}
+                if(!dry && lines<endpoints.length)endpoints[lines++]=new float[]{xx,yy,xx,yy};
+            }
+        }
         private void add(float x,float y,int color){calls++;if((color&0xffffff)==(VesselNavigationLights.RED&0xffffff) && (color>>>24)>0)red++;if((color&0xffffff)==(VesselNavigationLights.WHITE&0xffffff) && (color>>>24)>0)white++;if((color&0xffffff)==(VesselNavigationLights.GREEN&0xffffff) && (color>>>24)>0)green++;hash=31*hash+Float.floatToIntBits(x);hash=31*hash+Float.floatToIntBits(y);hash=31*hash+color;}
         public void layer(StaticLayer l,float x,float y,float scale,float alpha){add(x,y,l.key());}
         public void circle(float x,float y,float r,int color){add(x,y,color);}

@@ -609,13 +609,10 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   compiles once before active drawing and reuses paint/matrix/uniform storage.
   Older/software backends retain textured foam and bounded geometry. Short crest
   fallback segments stay one line each to avoid multiplying path preparation.
-- Release iPhone 17 Pro / iOS 26.5 simulator, deterministic `canal-middle` replay,
-  60 warmup + 300 draws, no concurrent builds: shader A/B 59.80/59.99 FPS;
-  interval p95 16.708/16.702 ms; CPU draw p95 5.432/5.235 ms; GPU p95
-  0.201/0.195 ms. Maximum intervals 32.510/26.241 ms remain unresolved. These
-  are simulator observations, not a claim of locked device 60 FPS. Initial
-  texture comparison predated the fallback simplification and is not treated
-  as a final fallback benchmark. Raw evidence and design:
+- Correction: the original captures labeled shader A/B used the fallback because
+  the outer SceneryOcclusion wrapper omitted forwarding. They do not measure
+  shader cost. The follow-up below fixes routing and replaces those claims with
+  verified native counters and new captures. Historical raw captures remain in
   [water shaders](docs/performance/water-shaders.md).
 - Full shared suite passed, including 1,752 water direction/phase/wrapper checks;
   JVM/J2ObjC parity is `11f16091:2:1350` (two deliveries / 1350 points).
@@ -627,3 +624,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   requested no use of the connected Android phone, so installation, awake-mode
   changes, AGSL runtime validation and Android profiling are deferred. Do not
   infer identical Android pixels or device timing from the Metal or Java2D checks.
+
+### Arcade water, dark exhaust and collision feedback (2026-11-16)
+
+- Fixed native material routing through SceneryOcclusion and ScreenView. Real
+  Renderer-root tests now catch silent fallback; native counters confirm 532
+  foam, three reflection and 295 smoke patches in the final canal capture.
+- Increased bow/contact/trailing wake coverage and opacity without changing wake
+  forces, emission counts or pool sizes. Prop wash uses rotating noise; tinted
+  light reflections ripple in bounded shore-clipped patches.
+- Vessel and industrial exhaust now use charcoal/dirty olive-brown rolling clouds.
+  All source anchors, drift, lifetime and the 384-puff pool remain shared Java.
+  Metal/AGSL share the material kernel; fallback has two fixed 40x40 source layers.
+  Existing factory steam remains distinct from exhaust.
+- Collision spray is larger/brighter and uses the procedural foam material. A
+  ten-tick flash marks contact; substantial hits (closing speed >=45.5 world
+  units/s) add six orange/yellow streaks cooling within 24 ticks. Existing
+  24-by-six pool, cooldown, trajectories, depth merge and shore clips remain.
+  No new gameplay impulses, damage changes or random/wall-clock rendering.
+- Corrected shader A/fallback/B comparison: 60.01/60.00/60.00 FPS; CPU draw p95
+  5.457/5.152/5.397 ms. This proves routing, not a shader speedup. Final smoke and
+  collision builds ran two isolated 300-frame/60-warmup canal replays: 59.80/60.00
+  FPS, interval p95 17.286/17.247 ms, CPU draw p95 4.965/4.630 ms, GPU p95
+  0.243/0.238 ms. Maximum intervals 33.267/24.673 ms remain unresolved. Raw data:
+  [effect captures](docs/performance/effect-shaders-2026-11-16/).
+- Full shared suite and Android unsigned APK build passed. JVM/J2ObjC trace parity
+  is 5337bb4c:2:1350. All-heading shoreline (1,439,937) and foam shoreline/alpha
+  (197,334) pixel assertions passed. Reviewed four real collision cases in shared
+  renderer exports and native Metal canal smoke/water pixels. The canal benchmark
+  is not a worst-case simultaneous-collision stress test.
+- Release iOS simulator build installed successfully. No Android phone access,
+  installation or awake-mode changes. Android AGSL runtime and physical iPhone
+  timing/antialiasing remain unvalidated; simulator averages do not prove locked
+  60 FPS with headroom. No TestFlight upload is claimed by this round.
+- Rope material/curve improvements discussed but not implemented in this round.

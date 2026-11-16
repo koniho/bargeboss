@@ -1,0 +1,13 @@
+{
+  "texture_budget" : 167772160,
+  "water_shaders" : false,
+  "water_reflection_patches" : 0,
+  "uploads" : 171,
+  "evictions" : 0,
+  "peak_frame_texture_bytes" : 110290640,
+  "vertex_capacity_bytes" : 6291456,
+  "texture_bytes" : 152806596,
+  "direct_layer_fallbacks" : 79,
+  "water_foam_patches" : 0,
+  "pending_preparations" : 0
+}

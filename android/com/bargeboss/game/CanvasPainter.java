@@ -422,10 +422,22 @@ public final class CanvasPainter implements Painter {
         canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
+    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
+        if((color>>>24)==0)return;
+        if(waterFoamShader!=null && canvas.isHardwareAccelerated())
+            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,6,(color>>>24)/255f,color);
+        else Painter.super.waterReflection(x,y,ax,ay,bx,by,phase,color);
+    }
+    public void smokePuff(float x,float y,float radius,float phase,int color) {
+        if(radius<=0 || (color>>>24)==0)return;
+        if(waterFoamShader!=null && canvas.isHardwareAccelerated())
+            waterFoamShader.draw(canvas,x,y,radius*2,0,0,radius*2,phase,7,(color>>>24)/255f,color);
+        else Painter.super.smokePuff(x,y,radius,phase,color);
+    }
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         if(alpha<=.005f)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
-            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind,alpha);
+            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind,alpha,0xffe5fcf7);
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }

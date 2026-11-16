@@ -61,24 +61,16 @@ public final class NavigationLights {
     }
     /** Water effects stay below all hulls and are clipped against actual waterways. */
     public static void reflections(Game g,Painter canvas){
-        Painter water=new WaterEffectsPainter(g,new RiverPainter(canvas,g.layout.camera));
+        Painter world=new RiverPainter(canvas,g.layout.camera);
+        Painter water=new WaterEffectsPainter(g,world);
         for(int i=0;i<count(g);i++)if(visible(g,i) && (!land(g,i) || g.montroseStage())){
             float wx=x(g,i),wy=y(g,i),power=power(g,i);
             if(!land(g,i))BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
             if(power<=0)continue;
             int rgb=color(g,i)&0xffffff;float radius=practice(g,i)?29:17;
             for(int shell=4;shell>=1;shell--)water.circle(wx,wy,radius*shell/4,((int)(power*(7+(4-shell)*3))<<24)|rgb);
-            for(int strip=0;strip<7;strip++){
-                float shift=2*(float)StrictMath.sin(g.visualTicks*.055+strip*1.8+i);
-                float along=8+strip*5,wide=(practice(g,i)?14:8)*(1-strip/9f);
-                int alpha=(int)(power*(64-strip*8));
-                // Equal world X/Y offsets make horizontal isometric ripples;
-                // opposite offsets carry their reflected light down the screen.
-                water.line(wx-along-wide+shift,wy+along-wide+shift,wx-along+wide+shift,wy+along+wide+shift,
-                        3,((alpha/5)<<24)|rgb);
-                water.line(wx-along-wide+shift,wy+along-wide+shift,wx-along+wide+shift,wy+along+wide+shift,
-                        1, (alpha<<24)|rgb);
-            }
+            WaterReflection.draw(g,world,wx,wy,practice(g,i)?30:20,55,
+                    ((int)(power*170)<<24)|rgb,i);
         }
     }
     /** Raised-deck shadows and light spill, after cached ground and before depth-sorted objects. */

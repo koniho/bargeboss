@@ -53,7 +53,7 @@ public final class TitleWaterView {
                 float age=((tick+i*13)%180)/180f;
                 float x=b.x+sin(age*19+i)*(2+age*10),y=stern-3-age*88;
                 int alpha=(int)(150*(1-age)*(1-age));
-                p.waterFoam(x,y,0,9+age*12,5+age*13,0,WaterFoam.phase(tick,i),2,alpha/255f*.55f);
+                p.waterFoam(x,y,0,14+age*18,9+age*18,0,WaterFoam.phase(tick,i),2,alpha/255f*.9f);
             }
         }
         // The outer wake arms form the familiar widening V behind each hull.
@@ -61,7 +61,7 @@ public final class TitleWaterView {
             float a=(i-1)/18f,t=i/18f;
             float x=b.x+side*(b.radius*.6f+a*32),y=stern-a*82;
             float dx=side*(t-a)*32,dy=-(t-a)*82,len=Physics.length(dx,dy);
-            p.waterFoam(x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*6,dx/len*6,WaterFoam.phase(tick,i),5,95*(1-t)/255f);
+            p.waterFoam(x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*11,dx/len*11,WaterFoam.phase(tick,i),5,170*(1-t)/255f);
         }
         // Each packet recedes astern while its curved crest expands sideways.
         // New packets form continuously; troughs add a stronger crest to the train.
@@ -71,7 +71,7 @@ public final class TitleWaterView {
             float t=age/(float)life;
             float impact=.55f+.45f*Math.max(0,sin((tick-age)*.048+Math.PI/2));
             float spread=b.radius*.6f+age*.15f,back=stern-age*.38f;
-            int alpha=(int)((tug?85:55)*(1-t)*(1-t)*impact);
+            int alpha=(int)((tug?155:110)*(1-t)*(1-t)*impact);
             arc(p,b.x,back,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,1.1f,(alpha<<24)|0xa4eee7);
             arc(p,b.x,back-2,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,.55f,((alpha/2)<<24)|0xf1fff4);
         }

@@ -57,6 +57,8 @@ public final class ViewportPainter implements Painter {
         float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
         if(alpha>.005f && visible(x-w,y-h,x+w,y+h))target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
+    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;if((color>>>24)>0 && visible(x-w,y-h,x+w,y+h))target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
+    public void smokePuff(float x,float y,float radius,float phase,int color){if(radius>0 && (color>>>24)>0 && visible(x-radius,y-radius,x+radius,y+radius))target.smokePuff(x,y,radius,phase,color);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha) {
         if(alpha<=0)return;
         float px=SpriteAtlas.pivotX(a,f),py=SpriteAtlas.pivotY(a,f),l=Float.MAX_VALUE,t=l,r=-l,b=-l;

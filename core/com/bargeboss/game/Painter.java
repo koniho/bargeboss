@@ -31,6 +31,14 @@ public interface Painter {
         if(kind<4) spriteAffine(SpriteAtlas.FOAM,kind,x,y,ax,ay,bx,by,alpha);
         else WaterFoam.fallback(this,x,y,ax,ay,bx,by,phase,kind,alpha);
     }
+    /** Colored reflection on a centered water-plane patch; shared light state supplies ARGB. */
+    default void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
+        WaterReflection.fallback(this,x,y,ax,ay,bx,by,phase,color);
+    }
+    /** Screen-space rolling exhaust. Shared callers own source, transport, palette and opacity. */
+    default void smokePuff(float x,float y,float radius,float phase,int color) {
+        SmokePuff.fallback(this,x,y,radius,color);
+    }
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);
     /** Additively blend registered atlas cells in a transparent layer, then composite once. */

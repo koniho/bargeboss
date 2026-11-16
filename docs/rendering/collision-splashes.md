@@ -45,14 +45,15 @@ advance or emit effects.
 
 ## Artwork and composition
 
-Reuse `assets/sprites/vessel-foam-v1.png`, its existing registration and affine
-stamp primitives on every platform. No extra atlas, generated image, solid
-ring, geometric droplet or cross-shaped impact graphic is required.
+Use the shared procedural foam material on Metal/AGSL and the existing
+`assets/sprites/vessel-foam-v1.png` fallback elsewhere. No extra atlas is needed.
+The arcade treatment adds a short radial flash and heavy-hit hot streaks.
 
 - Surface foam uses streak frames 0/1, expands along the impact direction and
   fades over 72 ticks. Draw it with water before all vessels and scenery, clipped
   against all dry ground.
-- Airborne spray uses denser frame 2 and dissolves into sparse frame 3. Stretch
+- Airborne spray uses rolling foam modes 2/3 (the corresponding texture frames
+  on fallback painters). Stretch
   each irregular stamp along its projected velocity and lift it by its ballistic
   height. Vary sizes deterministically within the burst.
 - Merge airborne stamps into the existing far-to-near vessel, navigation-mark,
@@ -62,18 +63,19 @@ ring, geometric droplet or cross-shaped impact graphic is required.
   building fading or becomes a late HUD overlay.
 
 The fixed pool contains at most 24 bursts, six airborne stamps per burst and one
-surface stamp per burst. Offscreen stamps are culled. The brief texture dissolve
-uses at most two sprite submissions per airborne stamp; textures use existing
-native caches and no per-frame pixel processing. Physics impulse calculations
-are unchanged when reporting effects.
+surface stamp per burst. Offscreen stamps are culled. A ten-tick impact flash
+uses one disk and seven short rays per burst. At closing speeds of at least 45.5
+world units/second, each airborne stamp also carries a two-stroke orange/yellow
+spark that cools within 24 ticks. These use the same depth and shore scope as
+the spray, never a late overlay. No new particle pool or texture cache is added.
+Physics impulses and trajectories are unchanged.
 
 ## Validation and review
 
 `CollisionSplashTest` checks all 32 headings, solver-order independence, reverse
 motion, glancing contact, angular point velocity, weak/separating contacts,
 duplicate suppression, all floating marker variants, feeder and fixed-geometry
-contacts, retirement, pause/reset, 30/144 Hz agreement, depth and stamp-only
-rendering. `FoamPixelTest` also checks collision surface stamps against raised
+contacts, retirement, pause/reset, 30/144 Hz agreement, depth, balanced clips, heavy-hit spark threshold and cooling. `FoamPixelTest` also checks collision surface stamps against raised
 tutorial land on each bank.
 
 `CollisionSplashReview` captures four actual collision cases through the shared

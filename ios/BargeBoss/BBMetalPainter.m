@@ -5,6 +5,8 @@
 #import "com/bargeboss/game/SpriteAtlas.h"
 #import "com/bargeboss/game/StaticLayer.h"
 #import "com/bargeboss/game/WaterFoam.h"
+#import "com/bargeboss/game/WaterReflection.h"
+#import "com/bargeboss/game/SmokePuff.h"
 #import <simd/simd.h>
 
 typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; float phase; } BBVertex;
@@ -32,6 +34,7 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
 @property(nonatomic,strong) dispatch_queue_t preparationQueue;
 @property(nonatomic) NSUInteger directLayerFallbacks;
 @property(nonatomic) BOOL waterShaders;
+@property(nonatomic) NSUInteger waterFoamPatches,waterReflectionPatches,smokePatches;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,id<MTLTexture>> *textures;
 @property(nonatomic,strong) NSMutableArray<NSString *> *textureOrder;
 @property(nonatomic,strong) NSMutableArray<BBMetalBatch *> *batches;
@@ -168,7 +171,7 @@ static vector_float4 BBColor(jint argb) {
         self.peakFrameTextureBytes=MAX(self.peakFrameTextureBytes,self.frameTextureBytes);
     }
 }
-- (NSDictionary *)diagnostics {return @{@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
+- (NSDictionary *)diagnostics {return @{@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
 - (id<MTLTexture>)makeTexture:(UIImage *)image {
     if(!image) return self.white;
     size_t width=CGImageGetWidth(image.CGImage),height=CGImageGetHeight(image.CGImage);
@@ -222,6 +225,14 @@ static vector_float4 BBColor(jint argb) {
         {p+a,{1,0},color},{p+a+b,{1,1},color},{p+b,{0,1},color}};
     [self append:v count:6 texture:texture mode:0];
 }
+- (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
+    if(!self.waterShaders) {[BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];return;}
+    vector_float4 color=BBColor(argb);if(radius<=0 || color.w<=0)return;self.smokePatches++;
+    vector_float2 a={radius*2,0},b={0,radius*2},p={x-radius,y-radius};
+    BBVertex v[]={{p,{0,0},color,9,phase},{p+a,{1,0},color,9,phase},{p+b,{0,1},color,9,phase},
+        {p+a,{1,0},color,9,phase},{p+a+b,{1,1},color,9,phase},{p+b,{0,1},color,9,phase}};
+    [self append:v count:6 texture:self.white mode:0];
+}
 - (void)waterFoamWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)kind withFloat:(jfloat)alpha {
     if(alpha<=.005f)return;
     if(!self.waterShaders) {
@@ -230,9 +241,20 @@ static vector_float4 BBColor(jint argb) {
         return;
     }
     vector_float2 a={ax,ay},b={bx,by},p=(vector_float2){x,y}-(a+b)*.5f;
-    vector_float4 color={.76f*alpha,.94f*alpha,.90f*alpha,alpha};uint32_t mode=2+kind;
+    self.waterFoamPatches++;
+    vector_float4 color={.90f*alpha,.99f*alpha,.97f*alpha,alpha};uint32_t mode=2+kind;
     BBVertex v[]={{p,{0,0},color,mode,phase},{p+a,{1,0},color,mode,phase},{p+b,{0,1},color,mode,phase},
         {p+a,{1,0},color,mode,phase},{p+a+b,{1,1},color,mode,phase},{p+b,{0,1},color,mode,phase}};
+    [self append:v count:6 texture:self.white mode:0];
+}
+- (void)waterReflectionWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)argb {
+    if(!self.waterShaders) {
+        [BBWaterReflection fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:phase withInt:argb];return;
+    }
+    vector_float4 color=BBColor(argb);if(color.w<=0)return;self.waterReflectionPatches++;
+    vector_float2 a={ax,ay},b={bx,by},p=(vector_float2){x,y}-(a+b)*.5f;
+    BBVertex v[]={{p,{0,0},color,8,phase},{p+a,{1,0},color,8,phase},{p+b,{0,1},color,8,phase},
+        {p+a,{1,0},color,8,phase},{p+a+b,{1,1},color,8,phase},{p+b,{0,1},color,8,phase}};
     [self append:v count:6 texture:self.white mode:0];
 }
 - (jboolean)prefersPolygonBatches {return YES;}
@@ -250,7 +272,7 @@ static vector_float4 BBColor(jint argb) {
         dispatch_async(dispatch_get_main_queue(), ^{[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:visible];});
     }});
 }
-- (void)beginFrame {[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
+- (void)beginFrame {self.waterFoamPatches=0;self.waterReflectionPatches=0;self.smokePatches=0;[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
 - (void)layerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale withFloat:(jfloat)alpha {
     float w=[layer width]*scale,h=[layer height]*scale;
     if(alpha<=0 || !CGRectIntersectsRect(self.visibleBounds,CGRectMake(x,y,w,h)))return;

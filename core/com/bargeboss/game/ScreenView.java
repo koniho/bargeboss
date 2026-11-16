@@ -322,7 +322,10 @@ public final class ScreenView {
             if(shear==0)p.layer(layer,x+xx*scale,y+yy*scale,size*scale,alpha);
             else layer.draw(this,xx,yy,size,alpha);
         }
-        public void spriteAffine(int a,int f,float xx,float yy,float ax,float ay,float bx,float by,float alpha){p.spriteAffine(a,f,tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,alpha);}
+        public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){p.waterFoam(tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,kind,alpha);}
+    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){p.waterReflection(tx(x,y),ty(y),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,color);}
+    public void smokePuff(float x,float y,float radius,float phase,int color){p.smokePuff(tx(x,y),ty(y),radius*scale,phase,color);}
+    public void spriteAffine(int a,int f,float xx,float yy,float ax,float ay,float bx,float by,float alpha){p.spriteAffine(a,f,tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,alpha);}
         public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
             p.sprite(atlas,frame,x+cx*scale,y+cy*scale,width*scale,height*scale,rotation,alpha);
         }

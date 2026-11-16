@@ -9,20 +9,6 @@ public final class VesselSmoke {
     private int cursor;
     public int emitted;
     private final Body titleTug=new Body(0,-1,300,230,0);
-    private static final StaticLayer PUFF=new StaticLayer() {
-        public int key(){return 0x43000000;}
-        public float width(){return 40;}public float height(){return 40;}
-        public void paint(Painter p) {
-            // Soft charcoal lobes rasterized once, with no white steam highlight.
-            for(int i=0;i<8;i++) {
-                float r=17-i*1.35f;
-                p.circle(20,21,r,0x16313b45);
-                p.circle(15,20,r*.68f,0x1827303a);
-                p.circle(24,16,r*.65f,0x1827303a);
-            }
-            p.circle(20,21,6,0x30202a34);
-        }
-    };
     public VesselSmoke(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     public void step(Game g) {
         drift();emit(g,g.tug);
@@ -71,7 +57,7 @@ public final class VesselSmoke {
             float scale=radius*c.scale/17;
             float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i])-rise[i]*c.scale;
             if(alpha<.008f || sx+20*scale<0 || sx-20*scale>width || sy+20*scale<0 || sy-20*scale>height)continue;
-            p.layer(PUFF,sx-20*scale,sy-20*scale,scale,alpha);
+            p.smokePuff(sx,sy,20*scale,WaterFoam.phase(age[i],i),(Math.round(alpha*225)<<24)|SmokePuff.SOOT);
         }
     }
 }

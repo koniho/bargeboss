@@ -5,12 +5,17 @@ public final class WaterFoamTest {
     private static int checks;
     private static void check(boolean value,String message){checks++;if(!value)throw new AssertionError(message);}
     private static final class Trace implements Painter {
-        int count;float energy,x,y;
+        int count,reflections,lastColor,smoke;float energy,x,y;
         public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
             check(Float.isFinite(x+y+ax+ay+bx+by+phase+alpha),"finite foam inputs");
             check(kind>=0 && kind<=5 && alpha>0 && alpha<=1,"bounded foam inputs");
             count++;energy+=alpha;this.x=x;this.y=y;
         }
+        public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
+            check(Float.isFinite(x+y+ax+ay+bx+by+phase),"finite reflection inputs");
+            reflections++;lastColor=color;
+        }
+        public void smokePuff(float x,float y,float radius,float phase,int color){smoke++;lastColor=color;}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
         public void rect(float x,float y,float w,float h,int c){}
@@ -33,10 +38,20 @@ public final class WaterFoamTest {
         }
         for(int tick=0;tick<500;tick++)check(WaterFoam.phase(tick,7)==WaterFoam.phase(tick+240,7),"seamless phase period");
         Trace t=new Trace();RiverCamera c=new RiverCamera(17,29,2);
-        Painter p=new RiverPainter(new OpacityPainter(new ViewportPainter(t,10000,10000),.5f),c);
+        Painter p=new RiverPainter(new SceneryOcclusion(new OpacityPainter(new ViewportPainter(t,10000,10000),.5f)),c);
         p.waterFoam(300,400,20,0,0,10,1,2,.8f);
         check(t.count==1 && Math.abs(t.energy-.4f)<.001f,"shader primitive and opacity survive wrappers");
         check(t.x==c.screenX(300,400) && t.y==c.screenY(300,400),"shared camera owns projection");
+        Trace root=new Trace();g.render(root);
+        check(root.count>0,"real Renderer root forwards water patches instead of silently falling back");
+        Trace scaled=new Trace();ScreenView.scaled(new SceneryOcclusion(scaled),10,20,2).waterFoam(3,4,5,0,0,2,0,2,.5f);
+        check(scaled.count==1 && scaled.x==16 && scaled.y==28,"screen transform forwards shader patch");
+        p.waterReflection(300,400,20,0,0,10,1,0xc0ff4422);
+        check(t.reflections==1 && t.lastColor==0x60ff4422,"reflection tint/opacity survive actual wrapper chain");
+        WaterReflection.draw(g,new RiverPainter(new SceneryOcclusion(t),c),300,400,10,20,0x8000ff00,4);
+        check(t.reflections==2 && t.lastColor==0x8000ff00,"shared water reflection reaches native painter");
+        p.smokePuff(300,400,20,1,0xc01c201b);
+        check(t.smoke==1 && t.lastColor==0x601c201b,"dark smoke tint/opacity survive wrapper chain");
         System.out.println(checks+" water shader direction, phase, bounds and wrapper assertions passed");
     }
 }
