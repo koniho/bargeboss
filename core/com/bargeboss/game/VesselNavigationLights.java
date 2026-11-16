@@ -54,6 +54,10 @@ public final class VesselNavigationLights {
     private static float worldX(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.x+end*(localX(b,fixture)*c-localY(b,fixture)*s);}
     public static float worldY(Body b,int fixture){return worldY(b,fixture,1);}
     private static float worldY(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.y+end*(localX(b,fixture)*s+localY(b,fixture)*c);}
+    static int emittingEnd(Game g,Body b){return b.berth<0?1:forwardEnd(g,b,pushedEnd(g,b));}
+    static float sourceX(Game g,Body b,int fixture){return worldX(b,fixture,emittingEnd(g,b));}
+    static float sourceY(Game g,Body b,int fixture){return worldY(b,fixture,emittingEnd(g,b));}
+    static float sourceHeading(Game g,Body b){return b.angle+(emittingEnd(g,b)<0?(float)StrictMath.PI:0);}
     /** Independent, overlapping lamp visibility; never choose a single winning fixture. */
     public static float visibility(float heading,int fixture){
         float bearing=Physics.angle(VIEW_BEARING-heading),value;

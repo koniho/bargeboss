@@ -20,6 +20,7 @@ public final class MontroseHarbor {
     private static final float[][] ROWS_MAP={{823,225,866,503},{951,204,995,485},{1135,174,1180,456},{1230,154,1270,424},{1331,144,1368,356},{1425,131,1453,283},
         {972,969,640,760},{1116,950,748,689},{1258,903,870,625},{1395,836,1018,586},{1525,741,1220,543},
         {1609,617,1404,470},{1673,524,1472,400},{1710,418,1547,303},{1718,287,1566,193}};
+    static float[][] berthRows(){return ROWS_MAP;}
     private static final float[][] STARS_MAP={{475,380},{605,350},{490,505},{615,480},{725,450}};
     // Small service floats and land-connected access piers, traced from the north shore.
     private static final float[][] SERVICE_MAP={{415,300,625,270},{525,263,528,284},{764,225,772,267}};
@@ -160,7 +161,7 @@ public final class MontroseHarbor {
         impact=Math.max(impact,PolygonWater.collide(b,WATER_POLYGON,true,splashes));
         float e=b.half+b.radius;float[] region={b.x-e,b.y-e,b.x+e,b.y+e};
         for(int i=0;i<DOCKS.length;i++)if(PolygonWater.overlaps(region,DOCK_BOUNDS[i]))impact=Math.max(impact,PolygonWater.collide(b,DOCKS[i],false,splashes));
-    }return impact;}
+    }return Math.max(impact,MooredBoats.collide(b,splashes));}
     public static boolean fits(Body b){float c=(float)StrictMath.cos(SLIP_ANGLE),s=(float)StrictMath.sin(SLIP_ANGLE);
         for(int i=0;i<3;i++){float dx=b.discX(i)-SLIP_X,dy=b.discY(i)-SLIP_Y;if(Math.abs(dx*c+dy*s)+b.radius>100 || Math.abs(-dx*s+dy*c)+b.radius>40)return false;}
         return Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.23f;

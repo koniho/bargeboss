@@ -471,3 +471,20 @@ counter retain that fallback until their union strategy is separately validated.
 Painter wrappers forward the capability; projected-mask cache keys include the
 strategy, within the existing 32-entry / 256 KiB payload bound. Do not send raw
 union triangles to a painter that has not opted in.
+
+### Moored Montrose boats and vessel shore spill
+
+`MooredBoats` adds fixed hulls in surveyed finger/star slips, excluding the mission
+bay. The shared depth merge includes their unraised waterline centers. Six rigid
+models are baked offline at 38 exact berth orientations; native painters only draw
+registered cells. Runtime movement is bounded vertical heave, never free drift or
+bitmap yaw. Two dock lines terminate on fixed deck anchors. NPC lights, wakes and
+smoke are absent. Hull footprints block active craft; buoy-contact tests reject
+approaches already occupied by a hull. Clear water and mission approach geometry
+remain unchanged.
+
+`VesselShoreLight` draws colored shore wall/lip receivers after ground, before
+vessels. Active craft supply warm work lamps and red/green/white sector lights;
+receiver bearing, not camera visibility, controls illumination. Short distance
+falloff and shore/dock line-of-sight checks restrict spill. This is stylized local
+illumination, not a shadow map or a whole-scene physical lighting simulation.

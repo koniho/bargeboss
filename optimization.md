@@ -1260,3 +1260,38 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   See docs/art-studies/vessel-64-review.md for evidence and limitations. A detailed
   controlled source model matching production art is still needed for reliable
   additional views and matching cargo/shadow/glow/light derivatives.
+
+## Tethered Montrose silhouettes and colored shore spill (2026-11-16)
+
+- Added 273 fixed, collision-blocking NPC boats across finger and floating star
+  slips. Six muted, unlit rigid models include three furled-sail variants. Offline
+  geometry baking supplies 38 exact berth orientations per design; 228 128px cells
+  add 14.25 MiB decoded frame storage. Ship the PNG plus editable Java generator.
+  NPCs emit no lights, wakes or smoke. Two dock lines and +/-0.35 world-unit vertical
+  bob keep them visibly tied; no free horizontal movement or heading simulation.
+- Active watercraft cast warm work-light and red/green/white navigation spill on
+  nearby shore walls and narrow deck lips. Receiver bearing preserves lamp sectors;
+  local water-path checks prevent spill through intervening docks/shore. Shared
+  composition, finite-radius receivers, no new native shader/cache primitives.
+- Full checks pass including 6,068 placement/tether/color assertions and the buoy
+  contact regression on genuinely clear approaches (occupied slips excluded).
+  All-heading shoreline pixels: 1,439,937 assertions; foam pixels: 197,334.
+  Native/JVM parity d55a8935:2:1350; signed Android and Release iOS simulator builds
+  pass. Reviewed actual desktop, Android and Metal simulator views. Native images
+  retained in out/android-profile/moored-after and phone Downloads.
+- Pixel 11 Pro, matched Montrose docking replay: 60 warmup + 300 measured frames,
+  A/B/B/A order. All runs retain ticks 2536-2895 and identical camera zoom sequences.
+  Shared draw median ms: before 10.496/10.424, after 10.709/10.761 (+0.21-0.34).
+  Simulation median ms: before 1.364/1.320, after 1.461/1.384 (+0.06-0.10).
+  Native issue-to-swap median ms: before 17.153/16.791, after 17.684/17.662.
+  Throughput FPS: before 48.41/50.61, after 46.88/48.82. Interval p95 ms:
+  before 44.211/38.775, after 37.089/37.171. Tail differences are noisy;
+  do not claim this fixes pacing or achieves 60 FPS. Timings cover boats and
+  shoreline spill together, not isolated costs for each feature.
+- Prepared frame storage rises 48.521 -> 62.771 MiB. First-run decode rises
+  10.164 -> 38.493 ms; cold preparation remains a visible-loading risk despite
+  declaring the complete atlas in the upcoming-level manifest. Future work:
+  reduce transparent source margins or improve pre-visible preparation, preserving
+  pivots and avoiding active-draw raster work. Raw runs: out/android-profile/moored-*.
+- Final APK restored after comparison, existing signing key/game data preserved;
+  phone timeout restored after device work. iOS timings were not benchmarked.

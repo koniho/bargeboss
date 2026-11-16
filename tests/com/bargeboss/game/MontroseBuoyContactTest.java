@@ -8,7 +8,9 @@ public final class MontroseBuoyContactTest {
     private static boolean clearHull(Body b){
         for(int disc=0;disc<3;disc++)for(int sample=0;sample<16;sample++){
             double angle=sample*StrictMath.PI/8;
-            if(!MontroseHarbor.contains(b.discX(disc)+(b.radius+.1f)*(float)StrictMath.cos(angle),b.discY(disc)+(b.radius+.1f)*(float)StrictMath.sin(angle)))return false;
+            float x=b.discX(disc)+(b.radius+.1f)*(float)StrictMath.cos(angle),y=b.discY(disc)+(b.radius+.1f)*(float)StrictMath.sin(angle);
+            // Occupied slips are no longer open-water approaches to a mooring ball.
+            if(!MontroseHarbor.contains(x,y) || MooredBoats.occupied(x,y))return false;
         }
         return true;
     }

@@ -19,6 +19,7 @@ public final class TrainingChannelView {
         // order so they cover hulls without cutting through nearer buildings.
         StaticTerrain.draw(g,canvas,false);
         ShorelineView.walls(g,canvas);
+        VesselShoreLight.draw(g,canvas);
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
         int gate=g.tutorial==null?0:g.tutorial.channelGate;

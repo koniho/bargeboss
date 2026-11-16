@@ -176,6 +176,7 @@ public final class MontroseView {
             if(canvas.preparesLayers())canvas.prepareLayer(layer,c.scale);canvas.layer(layer,x,y,c.scale,1);
         }
         MontroseShoreArt.terraces(g,canvas);MontroseEntranceShore.substrate(g,canvas);MontroseEntranceShore.rocks(g,canvas);MontroseShoreArt.promenade(g,canvas);MontroseShoreArt.access(g,canvas);MontroseEntranceShore.steps(g,canvas);MontroseShoreArt.gates(g,canvas);
+        VesselShoreLight.draw(g,canvas);
         // Every ground receiver finishes before any upright park sprite; a later
         // tree's cast mask must never darken an earlier tree's canopy.
         serviceBuilding(g,canvas,land,true);

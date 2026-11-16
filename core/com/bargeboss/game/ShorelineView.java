@@ -11,11 +11,11 @@ public final class ShorelineView {
     /** Prepare fixed level geometry during reset, outside active drawing. */
     public static void prepare(boolean marina){segments(marina);}
     static final class Segment {
-        final float ax,ay,bx,by,nx,ny,u0,u1,rise;
+        final float ax,ay,bx,by,nx,ny,u0,u1,rise,height;
         final boolean wallVisible;
         final float[] foam,foamUV,wallUV,projectedFoam=new float[8],projectedWall=new float[8];
         Segment(float x,float y,float xx,float yy,float normalX,float normalY,float u,float end,float height){
-            ax=x;ay=y;bx=xx;by=yy;nx=normalX;ny=normalY;u0=u;u1=end;rise=Math.min(WET_HEIGHT,height);
+            ax=x;ay=y;bx=xx;by=yy;nx=normalX;ny=normalY;u0=u;u1=end;rise=Math.min(WET_HEIGHT,height);this.height=height;
             wallVisible=-nx+ny>.001f;
             foam=new float[]{ax,ay,bx,by,bx+nx*FOAM_WIDTH,by+ny*FOAM_WIDTH,ax+nx*FOAM_WIDTH,ay+ny*FOAM_WIDTH};
             foamUV=new float[]{u0,0,u1,0,u1,FOAM_WIDTH,u0,FOAM_WIDTH};
