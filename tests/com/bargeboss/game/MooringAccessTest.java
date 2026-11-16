@@ -37,10 +37,10 @@ public final class MooringAccessTest {
                 check(!g.inDock(b),"shore-contact fixture must reproduce the rejected full-hull fit");
                 check(g.canTie(b),"shore contact must allow lasso readiness, stage="+stage+", berth="+berth+", heading="+heading);
                 ReplayInput.down(g,b.x,b.y);check(g.ropeDragging && g.heldCargo()==b,"visible shore barge arms through native pointer coordinates");
-                ReplayInput.move(g,Game.TIE_X[berth],g.dockY(berth));
+                ReplayInput.move(g,g.bollardX(berth),g.bollardY(berth));
                 for(int i=0;i<12;i++) g.step();
                 check(g.ropePhase==0 && !b.lineAttached,"shore throw still waits for finger release");
-                ReplayInput.up(g,Game.TIE_X[berth],g.dockY(berth));
+                ReplayInput.up(g,g.bollardX(berth),g.bollardY(berth));
                 for(int i=0;i<Game.ROPE_FLIGHT_TICKS;i++) g.step();
                 check(b.lineAttached && b.lineSnapTicks>0,"shore throw catches and snaps taut");
                 while(b.mooringTicks<Mooring.ALIGN_TICKS) {

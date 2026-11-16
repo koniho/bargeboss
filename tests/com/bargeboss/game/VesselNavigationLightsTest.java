@@ -71,7 +71,7 @@ public final class VesselNavigationLightsTest {
         check(water.lines>0 && water.clips.isEmpty(),"reflection has visible water samples and restores its clip");
         for(int i=0;i<water.lines;i++)for(int end=0;end<2;end++){
             float x=c.worldX(water.endpoints[i][end*2],water.endpoints[i][end*2+1]),y=c.worldY(water.endpoints[i][end*2],water.endpoints[i][end*2+1]);
-            check(x>=Physics.LEFT-.002f && x<=Physics.RIGHT+.002f,"colored water reflection is clipped at the physical bank");
+            check(CalumetMap.contains(x,y),"colored water reflection is clipped at the physical bank");
         }
         System.out.println(checks+" navigation light sectors, orientation, bob, coverage, clipping and purity assertions passed");
     }

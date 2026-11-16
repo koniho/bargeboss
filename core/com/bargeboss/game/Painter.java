@@ -44,6 +44,16 @@ public interface Painter {
     default void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
         EffectMaterial.fallback(this,x,y,ax,ay,bx,by,kind,detail,amount,color);
     }
+    /** Convex planar face; xy and uv are paired arrays in matching vertex order.
+     * UVs are stable model units, never screen pixels. Wetness is shared state in [0,1]. */
+    default void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
+        poly(xy,color);
+    }
+    /** Convex shoreline quad; UV is world-distance along shore and across water/up wall.
+     * Kinds: 0 foam, 1 wet wall. Phase is simulation seconds; energy is shared wake strength. */
+    default void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color) {
+        ShorelineMaterial.fallback(this,xy,uv,phase,energy,kind,color);
+    }
     /** Screen-space rolling exhaust. Shared callers own source, transport, palette and opacity. */
     default void smokePuff(float x,float y,float radius,float phase,int color) {
         SmokePuff.fallback(this,x,y,radius,color);

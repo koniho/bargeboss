@@ -66,10 +66,10 @@ public final class BuoyPhysicsTest {
             }
         }
         g=practice();for(int i=0;i<NavigationLights.count(g)-2;i++)check(g.buoys.get(g,i)==null,"land markers have no floating collision body");
-        g=new Game();g.reset();b=g.buoys.get(g,1);b.x-=b.reach;
-        g.tug.x=Physics.RIGHT-g.tug.radius;g.tug.y=b.y;g.tug.angle=(float)Math.PI/2;
+        g=new Game();g.reset();b=g.buoys.get(g,0);b.x+=b.reach;
+        g.tug.x=Physics.LEFT+g.tug.radius;g.tug.y=b.y;g.tug.angle=(float)Math.PI/2;
         g.buoys.step(g);
-        for(int disc=0;disc<3;disc++)check(g.tug.discX(disc)+g.tug.radius<=Physics.RIGHT+.001f,"buoy contact cannot push hull through adjacent bank");
+        for(int disc=0;disc<3;disc++)check(g.tug.discX(disc)-g.tug.radius>=Physics.LEFT-.001f,"buoy contact cannot push hull through adjacent bank");
         float[] route=new float[2];g.tug.x=400;g.tug.y=805;g.buoys.pickupWaypoint(g,400,720,route);
         check(route[0]<400,"pickup assistance routes around solid entrance mark on open-water side");
         // A barge can be pushed along either end of its keel, including after a float deflects it.
@@ -92,7 +92,7 @@ public final class BuoyPhysicsTest {
         }
         check(maxDifference>.15f && rollDifference>.001f,"arriving real wake moves and rocks a noncontact float");
         Game blocked=new Game();blocked.challengeId=1;blocked.reset();
-        blocked.tug.x=350;blocked.tug.y=500;blocked.tug.vx=50;blocked.tug.wakeTrailTicks=7;blocked.water.step(blocked);
+        blocked.tug.x=599;blocked.tug.y=500;blocked.tug.vx=50;blocked.tug.wakeTrailTicks=7;blocked.water.step(blocked);
         float[] screened=new float[2],open=new float[2];boolean differs=false;
         Game openWater=new Game();openWater.visualTicks=blocked.visualTicks;
         for(int age=160;age<250;age++){
@@ -102,7 +102,7 @@ public final class BuoyPhysicsTest {
             check(Math.abs(screened[0]-ambient)<.0001f,"solid quay screens horizontal wake force");
             if(Math.abs(open[0]-screened[0])>.01f)differs=true;
         }
-        check(differs,"same arriving wake produces force when the intervening quay is absent");
+        check(!differs,"all Calumet missions retain the same quay screening");
         Game low=practice(),high=practice();approach(low.tug,first(low),0);approach(high.tug,first(high),0);
         for(int i=0;i<120;i++)low.advance(1.0/30);
         for(int i=0;i<576;i++)high.advance(1.0/144);

@@ -16,9 +16,14 @@ public final class StaticTerrain {
         float ox=c.screenX(0,0),oy=c.screenY(0,0),unit=CHUNK*c.scale;
         int firstX=(int)StrictMath.floor(-ox/unit),lastX=(int)StrictMath.floor((g.layout.width-ox)/unit);
         int firstY=(int)StrictMath.floor(-oy/unit),lastY=(int)StrictMath.floor((g.layout.height-oy)/unit);
+        // Materials stay live on native shaders; cached markings/caps remain above them.
         for(int row=firstY;row<=lastY;row++)for(int col=firstX;col<=lastX;col++) {
             Tile tile=tile(col,row,foreground);
-            if(!tile.commands.isEmpty())p.layer(tile,ox+(col*CHUNK+tile.left)*c.scale,oy+(row*CHUNK+tile.top)*c.scale,c.scale,1);
+            tile.surfaces(ScreenView.scaled(p,ox+col*CHUNK*c.scale,oy+row*CHUNK*c.scale,c.scale));
+        }
+        for(int row=firstY;row<=lastY;row++)for(int col=firstX;col<=lastX;col++) {
+            Tile tile=tile(col,row,foreground);
+            if(tile.hasRaster)p.layer(tile,ox+(col*CHUNK+tile.left)*c.scale,oy+(row*CHUNK+tile.top)*c.scale,c.scale,1);
         }
         if(p.preparesLayers())prepareNearby(g,p,foreground,ox,oy,unit,firstX,lastX,firstY,lastY);
     }
@@ -36,7 +41,7 @@ public final class StaticTerrain {
                 scores[i]=score;cols[i]=col;rows[i]=row;break;
             }
         }
-        for(int i=0;i<4;i++)if(scores[i]!=Float.MAX_VALUE){Tile t=tile(cols[i],rows[i],foreground);if(!t.commands.isEmpty())p.prepareLayer(t,g.layout.camera.scale);}
+        for(int i=0;i<4;i++)if(scores[i]!=Float.MAX_VALUE){Tile t=tile(cols[i],rows[i],foreground);if(t.hasRaster)p.prepareLayer(t,g.layout.camera.scale);}
     }
     static synchronized Tile tile(int col,int row,boolean foreground) {
         if(col< -2048 || col>=2048 || row< -2048 || row>=2048)throw new IllegalArgumentException("Terrain chunk outside key range");
@@ -55,24 +60,27 @@ public final class StaticTerrain {
         tile=new Tile(key,record);TILES.put(key,tile);return tile;
     }
     static final class Tile extends StaticLayer {
-        final int key;final ArrayList<Command> commands;final float left,top,w,h;
+        final int key;final ArrayList<Command> commands;final float left,top,w,h;final boolean hasRaster;
         Tile(int key,Recorder r){this.key=key;commands=r.commands;
+            boolean raster=false;for(Command command:commands)if(command.type!=5){raster=true;break;}hasRaster=raster;
             left=Math.max(0,(float)StrictMath.floor(r.left));top=Math.max(0,(float)StrictMath.floor(r.top));
             w=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.right))-left);
             h=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.bottom))-top);
         }
         public boolean backgroundSafe(){return true;}
         public int key(){return key;}public float width(){return w;}public float height(){return h;}
-        public void paint(Painter p){p=ScreenView.offset(p,-left,-top);for(Command command:commands)command.paint(p);}
+        void surfaces(Painter p){for(Command command:commands)if(command.type==5)command.paint(p);}
+        public void paint(Painter p){p=ScreenView.offset(p,-left,-top);for(Command command:commands)if(command.type!=5)command.paint(p);}
     }
     private static final class Command {
-        final int type,a,b,color;final float[] v;
+        final int type,a,b,color;final float[] v;float[] uv;float wetness;
         Command(int type,int a,int b,int color,float[] v){this.type=type;this.a=a;this.b=b;this.color=color;this.v=v;}
         void paint(Painter p){switch(type){
             case 0:p.rect(v[0],v[1],v[2],v[3],color);break;
             case 1:p.line(v[0],v[1],v[2],v[3],v[4],color);break;
             case 2:p.poly(v,color);break;
             case 3:p.circle(v[0],v[1],v[2],color);break;
+            case 5:p.surfacePolygon(v,uv,a,color,wetness);break;
             default:p.sprite(a,b,v[0],v[1],v[2],v[3],v[4],v[5]);
         }}
     }
@@ -80,6 +88,22 @@ public final class StaticTerrain {
         final ArrayList<Command> commands=new ArrayList<Command>();
         float left=CHUNK,top=CHUNK,right=0,bottom=0;
         private void bounds(float l,float t,float r,float b){left=Math.min(left,l-1);top=Math.min(top,t-1);right=Math.max(right,r+1);bottom=Math.max(bottom,b+1);}
+        public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
+            float[][] points=new float[xy.length/2][4];
+            for(int i=0;i<points.length;i++)points[i]=new float[]{xy[i*2],xy[i*2+1],uv[i*2],uv[i*2+1]};
+            for(int edge=0;edge<4;edge++){
+                ArrayList<float[]> next=new ArrayList<float[]>();if(points.length==0)return;
+                int axis=edge/2;float bound=edge%2==0?0:CHUNK;
+                float[] previous=points[points.length-1];boolean pin=edge%2==0?previous[axis]>=bound:previous[axis]<=bound;
+                for(float[] point:points){boolean inside=edge%2==0?point[axis]>=bound:point[axis]<=bound;
+                    if(inside!=pin){float t=(bound-previous[axis])/(point[axis]-previous[axis]);float[] cut=new float[4];for(int j=0;j<4;j++)cut[j]=previous[j]+t*(point[j]-previous[j]);next.add(cut);}
+                    if(inside)next.add(point);previous=point;pin=inside;}
+                points=next.toArray(new float[next.size()][]);
+            }
+            if(points.length<3)return;float[] out=new float[points.length*2],texture=out.clone();
+            for(int i=0;i<points.length;i++){out[i*2]=points[i][0];out[i*2+1]=points[i][1];texture[i*2]=points[i][2];texture[i*2+1]=points[i][3];}
+            Command command=new Command(5,material,0,color,out);command.uv=texture;command.wetness=wetness;commands.add(command);
+        }
         public void rect(float x,float y,float w,float h,int c){commands.add(new Command(0,0,0,c,new float[]{x,y,w,h}));bounds(x,y,x+w,y+h);}
         public void line(float x,float y,float xx,float yy,float w,int c){commands.add(new Command(1,0,0,c,new float[]{x,y,xx,yy,w}));bounds(Math.min(x,xx)-w/2,Math.min(y,yy)-w/2,Math.max(x,xx)+w/2,Math.max(y,yy)+w/2);}
         public void poly(float[] xy,int c){commands.add(new Command(2,0,0,c,xy.clone()));for(int i=0;i<xy.length;i+=2)bounds(xy[i],xy[i+1],xy[i],xy[i+1]);}

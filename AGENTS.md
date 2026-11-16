@@ -5,6 +5,12 @@ gameplay, input rules, timing, layout, menus, lettering and scene composition.
 Android Canvas, iOS Metal (with a Core Graphics reference path) via J2ObjC 3.1, and desktop Java2D implement
 the same `Painter`. Do not add a second game implementation for any platform.
 
+- Default art direction for both Calumet and Montrose is late dusk, close to night,
+  unless the user explicitly requests another ambience. Docks should appear almost
+  dark; keep shore/scenery subdued and cool, with warm lamps/windows and navigation
+  lights supplying localized contrast. Preserve readable vessels, goals and controls.
+- Push completed, checked development increments as work progresses; do not hold
+  unrelated completed changes until a large batch is finished.
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area
   bounds, bitmap decoding/caching and drawing primitives only. All hosts use `Viewport`, the shared pointer router and `Game.advance`.
   Native haptic adapters consume shared semantic events; they never alter gameplay.

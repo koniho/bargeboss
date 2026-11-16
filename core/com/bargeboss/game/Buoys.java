@@ -139,11 +139,11 @@ public final class Buoys {
             b.rollVelocity=Physics.clamp(b.rollVelocity-impulse*(nx+ny)*.045f,-1.8f,1.8f);
             if(body==g.tug && relative<-4 && b.contactTicks==0){g.haptic(Game.HAPTIC_CONTACT);b.contactTicks=45;}
         }
-        // Contact correction cannot displace a hull through the bank beside a moored mark.
+        // Resolve against the active world's shoreline. Marina mooring balls live far
+        // outside the old river corridor; Physics.banks would teleport their hulls.
         if(touched && !fixed){
-            if(g.tutorial!=null)TrainingChannel.collideWater(body,g.splashes);
-            else if(g.orderStage())PhysicalBerths.collide(g.challengeId,body,g.splashes);
-            else Physics.banks(body,g.channelTop(),Physics.BOTTOM,false,g.splashes);
+            if(g.montroseStage())MontroseHarbor.collide(body,g.splashes);
+            else CalumetMap.collide(body,g.splashes);
         }
     }
 }

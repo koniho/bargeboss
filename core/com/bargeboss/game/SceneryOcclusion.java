@@ -21,6 +21,8 @@ public final class SceneryOcclusion implements Painter {
     public void popClip(){recordingClip=clipStack.remove(clipStack.size()-1);target.popClip();}
     public SceneryOcclusion(Painter target) {this.target=target;}
     public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){target.waterFoam(xx,yy,ax,ay,bx,by,phase,kind,alpha);}
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){target.shoreline(xy,uv,phase,energy,kind,color);}
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){target.surfacePolygon(xy,uv,material,color,wetness);}
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){target.material(x,y,ax,ay,bx,by,kind,detail,amount,color);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){target.ropeSegment(x,y,xx,yy,width,from,to,color);}
@@ -110,11 +112,11 @@ public final class SceneryOcclusion implements Painter {
         WaterPlacement(float rise,float size,boolean overlaps){this.rise=rise;this.size=size;this.overlaps=overlaps;}
     }
     @SuppressWarnings("unchecked")
-    private static final HashMap<Long,WaterPlacement>[] WATER_BUILDINGS=new HashMap[5*21*32];
+    private static final HashMap<Long,WaterPlacement>[] WATER_BUILDINGS=new HashMap[5*SpriteAtlas.ATLAS_COUNT*32];
     /** Placement-only eligibility: an inland silhouette never enters the fading path. */
     static boolean buildingOverWater(Game g,int atlas,int frame,float wx,float wy,float rise,float size) {
         int kind=g.tutorial!=null?1:g.lockStage()?2:g.sharedBerthStage()?3:g.depthStage()?4:0;
-        int bucket=(kind*21+atlas)*32+frame;
+        int bucket=(kind*SpriteAtlas.ATLAS_COUNT+atlas)*32+frame;
         HashMap<Long,WaterPlacement> placements=WATER_BUILDINGS[bucket];
         if(placements==null)WATER_BUILDINGS[bucket]=placements=new HashMap<Long,WaterPlacement>();
         long key=((long)Float.floatToIntBits(wx)<<32)|(Float.floatToIntBits(wy)&0xffffffffL);
@@ -193,6 +195,8 @@ public final class SceneryOcclusion implements Painter {
         private int color(int color,Shape shape){if((color>>>24)<160)return color;return (((int)((color>>>24)*scene.opacity(shape)))<<24)|(color&0xffffff);}
         public void pushClipOutside(float[] triangles){p.pushClipOutside(triangles);}
         public void popClip(){p.popClip();}
+        public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){p.shoreline(xy,uv,phase,energy,kind,color(color,new Polygon(xy)));}
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){p.surfacePolygon(xy,uv,material,color(color,new Polygon(xy)),wetness);}
         public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){p.material(x,y,ax,ay,bx,by,kind,detail,amount,color);}
         public void smokePuff(float x,float y,float radius,float phase,int color){p.smokePuff(x,y,radius,phase,color);}
         public void rect(float x,float y,float w,float h,int c){p.rect(x,y,w,h,color(c,new Polygon(new float[]{x,y,x+w,y,x+w,y+h,x,y+h})));}

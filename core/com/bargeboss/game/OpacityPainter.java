@@ -18,6 +18,8 @@ public final class OpacityPainter implements Painter {
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         p.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha*this.alpha);
     }
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){p.shoreline(xy,uv,phase,energy,kind,color(color));}
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){p.surfacePolygon(xy,uv,material,color(color),wetness);}
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){p.material(x,y,ax,ay,bx,by,kind,detail,amount,color(color));}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){p.waterReflection(x,y,ax,ay,bx,by,phase,color(color));}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){p.ropeSegment(x,y,xx,yy,width,from,to,color(color));}

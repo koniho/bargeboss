@@ -11,7 +11,12 @@ final class LevelAssetsTest {
         check(!includes(tutorial,SpriteAtlas.STEEL) && !includes(tutorial,SpriteAtlas.CONTAINER),"Tutorial excludes unused cargo");
         check(!includes(tutorial,SurfaceLightArt.forSource(SpriteAtlas.STEEL)),"Unused cargo effects excluded too");
         for(int id=0;id<Challenges.COUNT;id++) {
-            LevelAssets.Plan plan=LevelAssets.challenge(id);Game game=new Game();game.challengeId=id;game.reset();
+            LevelAssets.Plan plan=LevelAssets.challenge(id);
+            int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
+            check(scenery.length==(id==Challenges.MONTROSE?1:4),"Level prepares its permanent scenery family");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length,"Complete preparation includes scenery and rotations");
+            for(int atlas:scenery)check(id==Challenges.MONTROSE?atlas==SpriteAtlas.MARINA:atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS,"Scenery stays level-specific");
+            Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==plan,"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
             check(LevelAssets.upcoming(game)==plan,"Menu prepares upcoming selected level");

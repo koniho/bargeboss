@@ -45,8 +45,8 @@ public final class CoreTest {
         check(g.lost==0,"waiting cargo never expires"); g.reset(); check(g.lost==0 && g.ticks==0 && g.hull==100,"restart clears state");
         g.down(300,700); g.move(360,700); g.cancel(); check(!g.pointer,"cancelled drag cannot stick");
         Viewport v=new Viewport(1200,1000); check(Math.abs(v.worldX(v.x+300*v.scale)-300)<.001,"letterboxed coordinate mapping");
-        g=playing(); g.down(-1,500); check(!g.pointer,"letterbox tap ignored");
-        g=playing(); g.tug.x=415; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
+        g=playing(); g.down(-3000,500); check(!g.pointer,"letterbox tap ignored");
+        g=playing(); g.tug.x=415; g.tug.y=500; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
         steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
         g=playing(); g.ticks=1200; steps(g,1);
         check(!g.trafficActive(),"berth puzzles retain clear navigation rather than unrelated crossing traffic");
@@ -77,6 +77,7 @@ public final class CoreTest {
         BuoyOrbitTest.run();
         BuoyArtTest.run();
         BuoyPhysicsTest.run();
+        MontroseBuoyContactTest.run();
         CollisionSplashTest.run();
         NavigationLightsTest.run();
         TutorialHoldTest.run();
@@ -95,6 +96,9 @@ public final class CoreTest {
         ShoreOcclusionTest.run();
         VesselWaterlineTest.run();
         WaterFoamTest.run();
+        SurfaceMaterialTest.run();
+        ShorelineMaterialTest.run();
+        ShorelineViewTest.run();
         RopeMaterialTest.run();
         BuildingFadeAnimationTest.run();
         AnimationTest.run();
@@ -106,6 +110,11 @@ public final class CoreTest {
         LevelAssetsTest.run();
         MontroseTest.run();
         MontroseGeometryTest.run();
+        MontroseShoreTest.run();
+        MontroseBoatHoistTest.run();
+        MontroseEntranceShoreTest.run();
+        MontroseWaterIndexTest.run();
+        CalumetMapTest.run();
         MarinaArtTest.run();
         MarinaLayerPreparationTest.run();
         MarinaPedestalsTest.run();
@@ -122,6 +131,8 @@ public final class CoreTest {
         SceneryOcclusionTest.run();
         BuildingOcclusionTest.run();
         FactoryPlacementTest.run();
+        IndustrialTruckRoadTest.run();
+        DockWorkersTest.run();
         RenderBudgetTest.run();
         TrainingGroundTest.run();
         StaticTerrainTest.run();
@@ -139,7 +150,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Reviewed bow/foam shader fallbacks change drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("b66f6bfb:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("496301b3:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

@@ -27,7 +27,7 @@ public final class Mooring {
         // Keep the complete rotating hull in the berth, even when caught near its edge.
         float ex=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(b.angle));
         float ey=b.radius+b.half*(float)StrictMath.abs(StrictMath.sin(b.angle));
-        float minX=Math.max(Physics.LEFT+ex,g.dockX(b.berth)-g.dockHalfWidth()+ex),maxX=Math.min(Physics.RIGHT-ex,g.dockX(b.berth)+g.dockHalfWidth()-ex);
+        float minX=Math.max(Physics.LEFT+ex,g.dockX(b.berth)-g.dockHalfWidth()+ex),maxX=Math.min((g.orderStage()?PhysicalBerths.RIGHT:Physics.RIGHT)-ex,g.dockX(b.berth)+g.dockHalfWidth()-ex);
         float minY=g.dockY(b.berth)-53+ey,maxY=g.dockY(b.berth)+53-ey;
         // A moving throw may catch just outside the berth. Reduce its initial
         // overshoot smoothly instead of teleporting the hull back inside.

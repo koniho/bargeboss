@@ -80,7 +80,7 @@ public final class MainActivity extends Activity {
         }
         private void prepareLevelAssets() {
             LevelAssets.Plan plan=LevelAssets.upcoming(game);
-            if(plan!=preparedPlan){preparedPlan=plan;painter.prepareRotations(plan.rotationAtlases());}
+            if(plan!=preparedPlan){preparedPlan=plan;painter.prepareRotations(plan.preparationAtlases());}
         }
         void saveProgress(boolean flush) {
             if(developer!=null)return;

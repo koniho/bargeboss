@@ -1,3 +1,4 @@
+#import "com/bargeboss/game/ShorelineMaterial.h"
 #import "BBPainter.h"
 #import "IOSPrimitiveArray.h"
 #import "IOSObjectArray.h"
@@ -289,6 +290,12 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 - (void)ropeSegmentWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)xx withFloat:(jfloat)yy withFloat:(jfloat)width withFloat:(jfloat)from withFloat:(jfloat)to withInt:(jint)argb {
     [BBRopeMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:xx withFloat:yy withFloat:width withFloat:from withFloat:to withInt:argb];
+}
+- (void)shorelineWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withFloat:(jfloat)phase withFloat:(jfloat)energy withInt:(jint)kind withInt:(jint)argb {
+    [BBShorelineMaterial fallbackWithBBPainter:self withFloatArray:xy withFloatArray:uv withFloat:phase withFloat:energy withInt:kind withInt:argb];
+}
+- (void)surfacePolygonWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withInt:(jint)material withInt:(jint)argb withFloat:(jfloat)wetness {
+    [self polyWithFloatArray:xy withInt:argb];
 }
 - (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
     [BBEffectMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withInt:kind withFloat:detail withFloat:amount withInt:argb];

@@ -11,13 +11,17 @@ public final class TrainingChannelView {
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
         WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
+        ShorelineView.water(g,canvas);
         NavigationLights.reflections(g,canvas);
+        LockView.water(g,g.lock,canvas);
+        FeederView.draw(g,p);
         // Ground is cached; solid lower-bank caps also join the world depth
         // order so they cover hulls without cutting through nearer buildings.
         StaticTerrain.draw(g,canvas,false);
+        ShorelineView.walls(g,canvas);
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
-        int gate=g.tutorial.channelGate;
+        int gate=g.tutorial==null?0:g.tutorial.channelGate;
         // One transient lesson cue; physical markers belong only at region mouths.
         if(g.trainingChannel() && gate<TrainingChannel.X.length) {
             float x=TrainingChannel.X[gate],y=TrainingChannel.Y[gate];
@@ -44,7 +48,7 @@ public final class TrainingChannelView {
     }
     private static void gateBurst(Game g,Painter world) {
         Tutorial t=g.tutorial;
-        if(t.gateClearTicks<=0 || t.clearedGate<1) return;
+        if(t==null || t.gateClearTicks<=0 || t.clearedGate<1) return;
         Painter water=new WaterEffectsPainter(g,world);
         float x=TrainingChannel.X[t.clearedGate],y=TrainingChannel.Y[t.clearedGate];
         float age=1-t.gateClearTicks/90f,fade=(1-age)*(1-age);
@@ -79,7 +83,7 @@ public final class TrainingChannelView {
                     int cell=(seed+attempt)%FactoryArt.COUNT;
                     int wide=(int)FactoryArt.footprintX(cell)/32,tall=(int)FactoryArt.footprintY(cell)/32;
                     if(col+wide>IndustrialRoadView.MAX_COL || row+tall>IndustrialRoadView.MAX_ROW) continue;
-                    if(!IndustrialRoadView.clearance(col*64,row*64,wide*64,tall*64,setback(cell))) continue;
+                    if(!CalumetArt.clearFactory(col*64,row*64,wide*64,tall*64) || !IndustrialRoadView.clearance(col*64,row*64,wide*64,tall*64,setback(cell))) continue;
                     boolean fits=true;
                     for(int y=row;y<row+tall;y++) for(int x=col;x<col+wide;x++)
                         if(used[y-IndustrialRoadView.MIN_ROW][x-IndustrialRoadView.MIN_COL] || IndustrialRoadView.isRoadCell(x,y)) fits=false;
@@ -113,24 +117,33 @@ public final class TrainingChannelView {
     static float factoryY(int slot) {return FACTORIES[slot][2]*64+FactoryArt.footprintY(factoryCell(slot));}
     private static void factoriesAndVessels(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
-        Body[] bodies=new Body[g.cargo.length+1];int count=0;
+        Body[] bodies=new Body[g.cargo.length+6];int count=0;
         bodies[count++]=g.tug;
         for(Body b:g.cargo) if(b!=null && b.active) bodies[count++]=b;
+        if(g.tutorial==null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){bodies[count++]=f.boat;if(f.load!=null)bodies[count++]=f.load;}
+        if(g.trafficActive())bodies[count++]=g.trafficBoat;
         for(int i=1;i<count;i++) {
             Body b=bodies[i];int j=i-1;
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
-        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0;int[] splashes=g.splashes.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int[] workers=DockWorkers.ordered(g);int[] splashes=g.splashes.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
-            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length) {
+            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<2 || prop<CalumetArt.count() || crew<workers.length) {
                 float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
                 float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
                 float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
                 float rd=span<rope.count?rope.depth(c,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
                 float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
+                float gd=gateIndex<2?LockView.gateDepth(g,gateIndex):Float.MAX_VALUE;
+                float pd=prop<CalumetArt.count()?CalumetArt.depth(g,prop):Float.MAX_VALUE;
+                float wd=crew<workers.length?DockWorkers.depth(g,workers[crew]):Float.MAX_VALUE;
+                float other=Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))));
+                if(gd<=other && gd<=pd && gd<=wd && gd<=next){LockView.drawGate(g,g.lock,canvas,gateIndex++);continue;}
+                if(pd<=other && pd<=wd && pd<=next){CalumetArt.draw(g,canvas,prop++);continue;}
+                if(wd<=other && wd<=next && crew<workers.length){DockWorkers.draw(g,canvas,workers[crew++]);continue;}
                 if(Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))>next)break;
                 if(ed<=ld && ed<=rd && ed<=sd && ed<=bd && ed<=vd && spray<splashes.length){g.splashes.draw(g,canvas,splashes[spray++]);continue;}
                 if(ld<=rd && ld<=sd && ld<=bd && ld<=vd && mark<lights.length){NavigationLights.draw(g,canvas,lights[mark++]);continue;}

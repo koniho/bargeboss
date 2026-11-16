@@ -56,8 +56,8 @@ public final class HarborView {
             float xx=x+side*width, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
             SoftCue.line(p,xx,yy,xx+sx*15,yy,1,color); SoftCue.line(p,xx,yy,xx,yy+sy*15,1,color);
         }
-        boolean right=g.berthRight(index);float bank=right?433:143;
-        Painter shore=g.tutorial!=null && p instanceof RiverPainter?
+        boolean right=g.berthRight(index);float bank=g.orderStage()?PhysicalBerths.LEFT-27:right?433:143;
+        Painter shore=!g.montroseStage() && p instanceof RiverPainter?
                 new RiverPainter(GroundArt.raisedCanvas(g,((RiverPainter)p).canvas()),g.layout.camera):p;
         shore.rect(bank,g.dockY(index)-52,24,3,DARK);
         for(int i=0;i<3;i++) shore.rect(bank+i*8,g.dockY(index)-52,4,3,GOLD);

@@ -323,6 +323,14 @@ public final class ScreenView {
             else layer.draw(this,xx,yy,size,alpha);
         }
         public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){p.waterFoam(tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,kind,alpha);}
+        public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){
+            float[] projected=new float[xy.length];for(int i=0;i<xy.length;i+=2){projected[i]=tx(xy[i],xy[i+1]);projected[i+1]=ty(xy[i+1]);}
+            p.shoreline(projected,uv,phase,energy,kind,color);
+        }
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
+            float[] projected=new float[xy.length];for(int i=0;i<xy.length;i+=2){projected[i]=tx(xy[i],xy[i+1]);projected[i+1]=ty(xy[i+1]);}
+            p.surfacePolygon(projected,uv,material,color,wetness);
+        }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){p.material(tx(x,y),ty(y),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,kind,detail,amount,color);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){p.waterReflection(tx(x,y),ty(y),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,color);}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){p.ropeSegment(tx(x,y),ty(y),tx(xx,yy),ty(yy),width*scale,from,to,color);}

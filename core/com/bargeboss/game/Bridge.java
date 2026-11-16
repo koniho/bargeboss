@@ -23,7 +23,7 @@ public final class Bridge {
         return false;
     }
     public void step(Game g) {
-        if(!g.hasBridge()) return;
+        if(!g.hasBridge() || g.tutorial==null) return;
         ticks++;
         switch(phase) {
             case CLOSED: if(near(g,190)) { phase=WAITING;ticks=0;g.tell("BRIDGE REQUESTED / WAIT FOR GREEN"); } break;

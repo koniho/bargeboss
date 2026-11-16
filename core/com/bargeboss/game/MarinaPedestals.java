@@ -63,6 +63,7 @@ public final class MarinaPedestals {
         for(Face face:f.faces){for(int i=0;i<8;i+=2){q[i]=x+face.projected[i]*s;q[i+1]=y+face.projected[i+1]*s;}
             int color=face.luminous?((int)(225+30*power)<<24)|(face.color&0xffffff):face.color;canvas.poly(q,color);
         }
+        MontroseShoreArt.starSign(g,canvas,f.x,f.y);
         float halo=1+.04f*(float)StrictMath.sin(g.visualTicks*.016+f.phase),scale=s*.65f*halo;
         canvas.layer(HALO,x-20*scale,y-ArticulatedModel.Z_SCALE*LAMP_Z*s-20*scale,scale,.86f*power);
     }

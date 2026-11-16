@@ -15,17 +15,19 @@ public final class TrainingChannel {
     public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
     private static float[][] waterRectangles() {
-        float[][] water=new float[RECTANGLES.length+4][];
+        float[][] water=new float[RECTANGLES.length+6][];
         System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
         water[RECTANGLES.length]=new float[]{Physics.LEFT,TOW_BASIN_TOP,Physics.RIGHT,Physics.BOTTOM};
         water[RECTANGLES.length+1]=new float[]{BASIN_LEFT,BASIN_TOP,MIN,BASIN_BOTTOM};
         water[RECTANGLES.length+2]=new float[]{NARROW_LEFT,NARROW_EXIT,NARROW_RIGHT,TOW_BASIN_TOP};
         water[RECTANGLES.length+3]=new float[]{Physics.LEFT,TOW_END,Physics.RIGHT,NARROW_EXIT};
+        water[RECTANGLES.length+4]=new float[]{Physics.RIGHT,570,628,Physics.BOTTOM};
+        water[RECTANGLES.length+5]=new float[]{570,148,628,570};
         return water;
     }
     private static float[] waterBoundary() {
         // Open both canal ends into permanent basins; neither mouth has a wall.
-        float[] result=new float[LOW.length+HIGH.length+32];int n=0;
+        float[] result=new float[LOW.length+HIGH.length+40];int n=0;
         result[n++]=BASIN_LEFT;result[n++]=BASIN_TOP;
         result[n++]=MIN;result[n++]=BASIN_TOP;
         for(float v:LOW) result[n++]=v;
@@ -39,7 +41,11 @@ public final class TrainingChannel {
         result[n++]=NARROW_RIGHT;result[n++]=NARROW_EXIT;
         result[n++]=NARROW_RIGHT;result[n++]=TOW_BASIN_TOP;
         result[n++]=Physics.RIGHT;result[n++]=TOW_BASIN_TOP;
-        result[n++]=Physics.RIGHT;result[n++]=Physics.BOTTOM;
+        result[n++]=Physics.RIGHT;result[n++]=570;
+        result[n++]=570;result[n++]=570;
+        result[n++]=570;result[n++]=148;
+        result[n++]=628;result[n++]=148;
+        result[n++]=628;result[n++]=Physics.BOTTOM;
         result[n++]=Physics.LEFT;result[n++]=Physics.BOTTOM;
         for(int i=HIGH.length-2;i>=0;i-=2) { result[n++]=HIGH[i];result[n++]=HIGH[i+1]; }
         result[n++]=MIN;result[n++]=BASIN_BOTTOM;

@@ -17,7 +17,7 @@ public final class StageCameraTest {
         for(int i=0;i<1800 && !g.canTie(b);i++) g.step();
         steps(g,180);
         check(g.canTie(b) && g.layout.camera.zoom>1.39f,"real assisted arrival settles at berth and smoothly zooms in");
-        for(float[] point:new float[][]{{g.tug.x,g.tug.y},{b.x,b.y},{Game.TIE_X[b.berth],g.dockY(b.berth)}}) {
+        for(float[] point:new float[][]{{g.tug.x,g.tug.y},{b.x,b.y},{g.bollardX(b.berth),g.bollardY(b.berth)}}) {
             float sx=g.layout.camera.screenX(point[0],point[1]),sy=g.layout.camera.screenY(point[0],point[1]);
             check(sx>32 && sx<g.layout.width-32 && sy>64 && sy<g.layout.height-48,
                     "docking zoom keeps both hull centers and the inland tie target clear of HUD edges");
@@ -26,9 +26,9 @@ public final class StageCameraTest {
                 && Math.abs(py-g.layout.camera.screenY(g.downX,g.downY))<.05f,"camera cannot move a resting finger or steer its barge");
         ReplayInput.up(g,g.pointerX,g.pointerY);steps(g,180);
         check(g.canTie(b),"released cargo remains ready through a three-second aiming pause");
-        ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,Game.TIE_X[b.berth],g.dockY(b.berth));RiverCamera frozen=g.layout.camera;
+        ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,g.bollardX(b.berth),g.bollardY(b.berth));RiverCamera frozen=g.layout.camera;
         steps(g,15);check(g.layout.camera==frozen,"lasso aim holds the projection still");
-        ReplayInput.up(g,Game.TIE_X[b.berth],g.dockY(b.berth));steps(g,18);
+        ReplayInput.up(g,g.bollardX(b.berth),g.bollardY(b.berth));steps(g,18);
         check(b.lineAttached && g.layout.camera==frozen,"throw uses the same projected bollard until hit");
         for(int i=0;i<Mooring.TIGHTEN_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS+60 && g.delivered==0;i++) g.step();
         steps(g,135);
@@ -45,7 +45,8 @@ public final class StageCameraTest {
         check(g.cameraOverviewTicks==grace,"pause freezes overview grace period");g.pause();steps(g,120);
         check(next.active && g.layout.camera.zoom<1.02f && g.cameraOverviewTicks>0,"nearby next load cannot prevent delivery zoom-out");
         g.reset();check(g.cameraOverviewTicks==0,"restart clears overview grace period");
-        g=stage(1);check(g.orderStage() && !g.hasBridge(),"ordered-berth challenge has no unrelated bridge timer");
+        g=stage(1);check(g.orderStage() && g.hasBridge() && g.bridge.passable(),"ordered berth shares the open Calumet bridge");
+        g.bridge.phase=Bridge.CLOSED;
         // The continuous tutorial still uses the bridge; preserve its all-heading collision regression.
         for(int side=-1;side<=1;side+=2)for(int angle=0;angle<8;angle++){
             Body hull=new Body(1,2,300,Bridge.Y+side*100,(float)(angle*Math.PI/4));hull.vy=-side*100;

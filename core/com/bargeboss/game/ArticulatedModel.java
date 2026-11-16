@@ -28,8 +28,16 @@ public final class ArticulatedModel {
         Node(String id,int p,float x,float y,float z,float yaw,float rate) {this.id=id;parent=p;this.x=x;this.y=y;this.z=z;this.yaw=yaw;pitchRate=rate;}
     }
     private static final class Face {
-        final int node,color;final float[] xyz;
-        Face(int n,int c,float[] p) {node=n;color=c;xyz=p;}
+        final int node,color,material;final float[] xyz,uv;
+        Face(int n,int c,int m,float[] p) {
+            node=n;color=c;material=m;xyz=p;uv=new float[p.length/3*2];
+            // Basis is established once in part-local space and survives every pose/split.
+            float ux=p[3]-p[0],uy=p[4]-p[1],uz=p[5]-p[2];
+            float vx=p[p.length-3]-p[0],vy=p[p.length-2]-p[1],vz=p[p.length-1]-p[2];
+            float ul=(float)StrictMath.sqrt(ux*ux+uy*uy+uz*uz),vl=(float)StrictMath.sqrt(vx*vx+vy*vy+vz*vz);
+            ux/=ul;uy/=ul;uz/=ul;vx/=vl;vy/=vl;vz/=vl;
+            for(int i=0,j=0;i<p.length;i+=3,j+=2){uv[j]=p[i]*ux+p[i+1]*uy+p[i+2]*uz;uv[j+1]=p[i]*vx+p[i+1]*vy+p[i+2]*vz;}
+        }
     }
     /** A builder owns all geometry; completed models contain no gameplay state. */
     public static final class Builder {
@@ -42,11 +50,17 @@ public final class ArticulatedModel {
             nodes.add(new Node(id,parent,x,y,z,yaw,pitchRate));return nodes.size()-1;
         }
         public void box(int node,float x,float y,float z,float width,float depth,float height,int color) {
+            box(node,x,y,z,width,depth,height,color,-1);
+        }
+        public void box(int node,float x,float y,float z,float width,float depth,float height,int color,int material) {
             float a=width*.5f,b=depth*.5f,c=height*.5f;
-            prism(node,color,new float[][]{{x-a,y-b,z-c},{x+a,y-b,z-c},{x+a,y+b,z-c},{x-a,y+b,z-c},
+            prism(node,color,material,new float[][]{{x-a,y-b,z-c},{x+a,y-b,z-c},{x+a,y+b,z-c},{x-a,y+b,z-c},
                     {x-a,y-b,z+c},{x+a,y-b,z+c},{x+a,y+b,z+c},{x-a,y+b,z+c}});
         }
         public void beam(int node,float ax,float ay,float az,float bx,float by,float bz,float width,int color) {
+            beam(node,ax,ay,az,bx,by,bz,width,color,-1);
+        }
+        public void beam(int node,float ax,float ay,float az,float bx,float by,float bz,float width,int color,int material) {
             float dx=bx-ax,dy=by-ay,dz=bz-az,len=(float)StrictMath.sqrt(dx*dx+dy*dy+dz*dz);
             if(len<EPS)throw new IllegalArgumentException("Rigid beam needs length");
             dx/=len;dy/=len;dz/=len;
@@ -58,12 +72,12 @@ public final class ArticulatedModel {
                 float su=(i==0 || i==3)?-h:h,sv=i<2?-h:h;
                 p[end*4+i]=new float[]{(end==0?ax:bx)+su*ux+sv*vx,(end==0?ay:by)+su*uy+sv*vy,(end==0?az:bz)+su*uz+sv*vz};
             }
-            prism(node,color,p);
+            prism(node,color,material,p);
         }
-        private void prism(int node,int color,float[][] p) {
+        private void prism(int node,int color,int material,float[][] p) {
             // Outward winding for both boxes and beam frames.
             int[][] indices={{3,2,1,0},{4,5,6,7},{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7}};
-            for(int[] f:indices) {float[] v=new float[12];for(int j=0;j<4;j++)for(int k=0;k<3;k++)v[j*3+k]=p[f[j]][k];faces.add(new Face(node,color,v));}
+            for(int[] f:indices) {float[] v=new float[12];for(int j=0;j<4;j++)for(int k=0;k<3;k++)v[j*3+k]=p[f[j]][k];faces.add(new Face(node,color,material,v));}
         }
         public ArticulatedModel build() {return new ArticulatedModel(nodes.toArray(new Node[nodes.size()]),faces.toArray(new Face[faces.size()]));}
     }
@@ -94,7 +108,7 @@ public final class ArticulatedModel {
                         float[] b=projectedBounds[f.node];b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);
                     }
                 }
-                polygons[i]=new Poly(xyz,f.node,f.color);
+                polygons[i]=new Poly(xyz,f.uv,f.node,f.color,f.material);
             }
         }
         public float[] point(int node,float x,float y,float z) {float[] p=normal(node,x,y,z),m=matrix[node];p[0]+=m[3];p[1]+=m[7];p[2]+=m[11];return p;}
@@ -139,18 +153,20 @@ public final class ArticulatedModel {
         return stats;
     }
     private static final class Poly {
-        final float[] xyz;final int node,color;final float nx,ny,nz,d;
-        Poly(float[] p,int n,int c) {
-            xyz=p;node=n;color=c;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
+        final float[] xyz,uv;final int node,color,material;final float nx,ny,nz,d;
+        Poly(float[] p,float[] texture,int n,int c,int m) {
+            xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
             nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];
         }
-        Poly(float[] p,Poly original) {xyz=p;node=original.node;color=original.color;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;}
+        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;}
         void paint(Painter p,RiverCamera c,float alpha) {
             float[] xy=new float[xyz.length/3*2];for(int i=0,j=0;i<xyz.length;i+=3,j+=2){xy[j]=c.screenX(xyz[i],xyz[i+1]);xy[j+1]=c.screenY(xyz[i],xyz[i+1])-xyz[i+2]*Z_SCALE*c.scale;}
             float light=.62f+.38f*Math.max(0,-nx*.35f-ny*.25f+nz*.9f);
             int r=(int)((color>>16&255)*light),g=(int)((color>>8&255)*light),b=(int)((color&255)*light);
-            p.poly(xy,((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b);
+            int shaded=((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b;
+            if(material<0)p.poly(xy,shaded);
+            else p.surfacePolygon(xy,uv,material,shaded,material==SurfaceMaterial.CONCRETE?.12f:.04f);
         }
     }
     /** Plane splits resolve crossing truss/deck faces, including the lifted poses. */
@@ -168,12 +184,12 @@ public final class ArticulatedModel {
             if(back==null)back=new Branch(b);else back.insert(b,stats);
         }
         private static Poly clip(Poly p,float[] ds,boolean positive) {
-            float[] result=new float[p.xyz.length+6];int size=0;
+            float[] result=new float[p.xyz.length+6],texture=new float[(p.xyz.length/3+2)*2];int size=0,uvSize=0;
             for(int i=0;i<ds.length;i++) {int j=(i+1)%ds.length;float a=ds[i],b=ds[j];boolean in=positive?a>=-EPS:a<=EPS;
-                if(in){for(int k=0;k<3;k++)result[size++]=p.xyz[i*3+k];}
-                if((a>EPS&&b < -EPS)||(a < -EPS&&b>EPS)){float t=a/(a-b);for(int k=0;k<3;k++)result[size++]=p.xyz[i*3+k]+t*(p.xyz[j*3+k]-p.xyz[i*3+k]);}
+                if(in){for(int k=0;k<3;k++)result[size++]=p.xyz[i*3+k];for(int k=0;k<2;k++)texture[uvSize++]=p.uv[i*2+k];}
+                if((a>EPS&&b < -EPS)||(a < -EPS&&b>EPS)){float t=a/(a-b);for(int k=0;k<3;k++)result[size++]=p.xyz[i*3+k]+t*(p.xyz[j*3+k]-p.xyz[i*3+k]);for(int k=0;k<2;k++)texture[uvSize++]=p.uv[i*2+k]+t*(p.uv[j*2+k]-p.uv[i*2+k]);}
             }
-            float[] exact=new float[size];System.arraycopy(result,0,exact,0,size);return new Poly(exact,p);
+            float[] exact=new float[size];System.arraycopy(result,0,exact,0,size);float[] exactUV=new float[uvSize];System.arraycopy(texture,0,exactUV,0,uvSize);return new Poly(exact,exactUV,p);
         }
         void paint(Painter p,RiverCamera c,float[] alpha,Stats stats) {
             boolean positive=-plane.nx+plane.ny+plane.nz>0;Branch far=positive?back:front,near=positive?front:back;

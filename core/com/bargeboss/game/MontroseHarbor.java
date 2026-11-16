@@ -14,6 +14,7 @@ public final class MontroseHarbor {
     // The two bottom/right extensions are open lake, outside the reference crop.
     private static final float[] COAST_MAP={210,1600,225,1368,242,1210,257,1050,255,980,238,932,205,891,155,843,111,769,84,691,76,620,83,551,108,479,146,410,194,359,255,323,332,296,455,277,650,248,820,220,1000,188,1185,153,1350,130,1440,125,1515,137,1585,165,1645,203,1695,252,1725,308,1736,365,1726,424,1703,479,1664,543,1623,599,1563,663,1494,730,1423,794,1348,851,1264,907,1176,949,1090,970,1005,977,930,973,853,955,779,928,716,894,653,853,596,811,554,783,527,777,498,783,469,800,441,824,419,855,405,894,401,935,409,981,426,1023,452,1064,491,1100,546,1128,634,1151,763,1180,910,1208,1049,1230,1150,1234,1256,1210,1360,1166,1468,1101,1567,1023,1665,925,1747,824,1824,700,1935,530,2050,370,2200,220};
     public static final float[] COAST=world(COAST_MAP),WATER_POLYGON=water(),LAND_POLYGON=land();
+    private static final RayIndex WATER_RAYS=new RayIndex(WATER_POLYGON);
     public static final float[][] WATER_TRIANGLES=PolygonWater.triangles(WATER_POLYGON),LAND_TRIANGLES=PolygonWater.triangles(LAND_POLYGON);
     // Source-map spine endpoints drive docks and lights together; do not duplicate in rendering.
     private static final float[][] ROWS_MAP={{823,225,866,503},{951,204,995,485},{1135,174,1180,456},{1230,154,1270,424},{1331,144,1368,356},{1425,131,1453,283},
@@ -22,7 +23,13 @@ public final class MontroseHarbor {
     private static final float[][] STARS_MAP={{475,380},{605,350},{490,505},{615,480},{725,450}};
     // Small service floats and land-connected access piers, traced from the north shore.
     private static final float[][] SERVICE_MAP={{415,300,625,270},{525,263,528,284},{764,225,772,267}};
+    public static final int GREEN_INLET_ACCESS=ROWS_MAP.length+SERVICE_MAP.length-1;
+    public static final String STAR_LETTERS="PRSTU";
+    public static final float[][] STAR_CENTERS=starCenters();
+    private static float[][] starCenters(){float[][] out=new float[STARS_MAP.length][];for(int i=0;i<out.length;i++)out[i]=world(STARS_MAP[i]);return out;}
     public static final float[][] DOCK_LINES=dockLines(),DOCKS=docks();
+    /** Sloped access roots connect every long floating spine to the land walkway. */
+    public static final float[][] ACCESS_LINES=accessLines();
     /** Fixed dock fixtures: world X/Y and unit spine direction X/Y. Between finger pairs. */
     public static final float[][] PEDESTALS=pedestals();
     private static final float[][] WATER_BOUNDS=bounds(WATER_TRIANGLES),DOCK_BOUNDS=bounds(DOCKS),LAND_BOUNDS=bounds(LAND_TRIANGLES);
@@ -32,6 +39,53 @@ public final class MontroseHarbor {
     private static float[] land(){return append(COAST,new float[]{10000,220,10000,-10000,-10000,-10000,-10000,1600});}
     private static float[] append(float[] first,float[] map){float[] tail=world(map),p=new float[first.length+tail.length];System.arraycopy(first,0,p,0,first.length);System.arraycopy(tail,0,p,first.length,tail.length);return p;}
     private static final float[] PLAY_BOUNDS=world(new float[]{-200,-200,2200,-200,2200,1600,-200,1600});
+    private static final BoxIndex DOCK_INDEX=new BoxIndex(DOCK_BOUNDS),WATER_INDEX=new BoxIndex(WATER_BOUNDS);
+    /** Fixed survey geometry, indexed once. Candidate IDs retain original clipping order. */
+    private static final class BoxIndex {
+        static final float CELL=128;
+        final float left=PLAY_BOUNDS[0],top=PLAY_BOUNDS[1];
+        final int cols=(int)StrictMath.ceil((PLAY_BOUNDS[2]-left)/CELL),rows=(int)StrictMath.ceil((PLAY_BOUNDS[5]-top)/CELL);
+        final int[] all;final int[][] points,nearby;
+        BoxIndex(float[][] bounds){
+            all=new int[bounds.length];for(int i=0;i<all.length;i++)all[i]=i;
+            points=new int[cols*rows][];nearby=new int[cols*rows][];
+            int[] work=new int[bounds.length];
+            for(int y=0;y<rows;y++)for(int x=0;x<cols;x++)for(int margin=0;margin<=1;margin++){
+                float l=left+(x-margin)*CELL,t=top+(y-margin)*CELL,r=left+(x+1+margin)*CELL,b=top+(y+1+margin)*CELL;int n=0;
+                for(int i=0;i<bounds.length;i++){float[] q=bounds[i];if(q[0]<=r && q[2]>=l && q[1]<=b && q[3]>=t)work[n++]=i;}
+                (margin==0?points:nearby)[y*cols+x]=java.util.Arrays.copyOf(work,n);
+            }
+        }
+        private int cell(float x,float y){
+            if(!(x>=left && y>=top && x<left+cols*CELL && y<top+rows*CELL))return -1;
+            return (int)(((double)y-top)/CELL)*cols+(int)(((double)x-left)/CELL);
+        }
+        int[] point(float x,float y){int i=cell(x,y);return i<0?all:points[i];}
+        int[] area(float[] b){
+            if(!(b[2]-b[0]<=CELL && b[3]-b[1]<=CELL))return all;
+            int i=cell((b[0]+b[2])*.5f,(b[1]+b[3])*.5f);return i<0?all:nearby[i];
+        }
+    }
+    /** Ray casting needs only edges crossing this Y band; use the exact original arithmetic. */
+    private static final class RayIndex {
+        static final float CELL=128;
+        final float[] polygon;final float top,bottom;final int[][] edges;
+        RayIndex(float[] p){
+            polygon=p;float[] bounds=PolygonWater.bounds(p);top=bounds[1];bottom=bounds[3];
+            edges=new int[Math.max(1,(int)StrictMath.ceil((bottom-top)/CELL))][];int[] work=new int[p.length/2];
+            for(int row=0;row<edges.length;row++){float lo=top+row*CELL,hi=lo+CELL;int n=0;
+                for(int i=0,j=p.length-2;i<p.length;j=i,i+=2)if(Math.min(p[i+1],p[j+1])<=hi && Math.max(p[i+1],p[j+1])>=lo)work[n++]=i;
+                edges[row]=java.util.Arrays.copyOf(work,n);
+            }
+        }
+        boolean contains(float x,float y){
+            if(!(y>=top && y<bottom))return false;
+            float[] p=polygon;boolean in=false;int[] candidates=edges[(int)(((double)y-top)/CELL)];
+            for(int i:candidates){int j=i==0?p.length-2:i-2;float ax=p[i],ay=p[i+1],bx=p[j],by=p[j+1];
+                if((ay>y)!=(by>y) && x<(bx-ax)*(y-ay)/(by-ay)+ax)in=!in;
+            }return in;
+        }
+    }
     private static float[][] bounds(float[][] p){float[][] b=new float[p.length][];for(int i=0;i<p.length;i++)b[i]=PolygonWater.bounds(p[i]);return b;}
     private static void line(java.util.ArrayList<float[]> lines,float x,float y,float xx,float yy,float width){lines.add(new float[]{mapX(x),mapY(y),mapX(xx),mapY(yy),width*MAP_SCALE});}
     private static float[][] dockLines(){
@@ -39,7 +93,9 @@ public final class MontroseHarbor {
         // O through J, then A through I. Endpoints retain the map's differing row lengths/angles.
         float[][] rows=ROWS_MAP;
         for(int i=0;i<rows.length;i++){
-            float[] r=rows[i];line(lines,r[0],r[1],r[2],r[3],7);
+            float[] r=rows[i];
+            float length=Physics.length(r[2]-r[0],r[3]-r[1]);
+            line(lines,r[0]-(r[2]-r[0])/length*30,r[1]-(r[3]-r[1])/length*30,r[2],r[3],7);
             float dx=r[2]-r[0],dy=r[3]-r[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
             for(float at=30;at<len-8;at+=30)for(int side=-1;side<=1;side+=2){
                 float x=r[0]+dx*at,y=r[1]+dy*at;
@@ -54,10 +110,26 @@ public final class MontroseHarbor {
         for(float[] star:STARS_MAP){
             for(int arm=0;arm<8;arm++){double a=arm*Math.PI/4;line(lines,star[0],star[1],star[0]+(float)StrictMath.cos(a)*42,star[1]+(float)StrictMath.sin(a)*42,5);}
         }
-        for(float[] service:SERVICE_MAP)line(lines,service[0],service[1],service[2],service[3],7);
+        for(int i=0;i<SERVICE_MAP.length;i++){float[] service=SERVICE_MAP[i];float dx=service[2]-service[0],dy=service[3]-service[1],len=Physics.length(dx,dy),extra=i==0?0:20;
+            line(lines,service[0]-dx/len*extra,service[1]-dy/len*extra,service[2],service[3],7);}
         // Actual short breakwaters bracket the southwestern harbor mouth.
         line(lines,232,1247,369,1258,12);line(lines,585,1138,548,1290,12);
         return lines.toArray(new float[lines.size()][]);
+    }
+    private static float[][] accessLines(){java.util.ArrayList<float[]> out=new java.util.ArrayList<float[]>();
+        for(float[] r:ROWS_MAP){float dx=r[2]-r[0],dy=r[3]-r[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
+            out.add(new float[]{mapX(r[0]-dx*15),mapY(r[1]-dy*15),mapX(r[0]+dx*10),mapY(r[1]+dy*10),7*MAP_SCALE});}
+        for(int i=1;i<SERVICE_MAP.length;i++){float[] a=SERVICE_MAP[i];float dx=a[2]-a[0],dy=a[3]-a[1],len=Physics.length(dx,dy);dx/=len;dy/=len;out.add(new float[]{mapX(a[0]-dx*12),mapY(a[1]-dy*12),mapX(a[0]+dx*8),mapY(a[1]+dy*8),7*MAP_SCALE});}
+        for(float[] a:new float[][]{{232,1247,369,1258},{585,1138,548,1290}}){float dx=a[2]-a[0],dy=a[3]-a[1],len=Physics.length(dx,dy);dx/=len;dy/=len;out.add(new float[]{mapX(a[0]-dx*15),mapY(a[1]-dy*15),mapX(a[0]+dx*10),mapY(a[1]+dy*10),12*MAP_SCALE});}
+        // Survey roots are approximate; locate the actual bank along each spine so
+        // every gate lands on the same continuous shore promenade.
+        for(float[] a:out){float dx=a[2]-a[0],dy=a[3]-a[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
+            float x=a[0],y=a[1];int guard=0;
+            if(openWater(x,y)){while(openWater(x,y) && guard++<300){x-=dx;y-=dy;}}
+            else {while(!openWater(x,y) && guard++<300){x+=dx;y+=dy;}}
+            a[0]=x-dx*15;a[1]=y-dy*15;a[2]=x+dx*15;a[3]=y+dy*15;
+        }
+        return out.toArray(new float[out.size()][]);
     }
     private static float[][] pedestals(){
         java.util.ArrayList<float[]> fixtures=new java.util.ArrayList<float[]>();
@@ -80,8 +152,8 @@ public final class MontroseHarbor {
     }return p.toArray(new float[p.size()][]);}
     public boolean wasTowed,entered;
     public int settledTicks;
-    public static boolean openWater(float x,float y){return PolygonWater.contains(WATER_POLYGON,x,y);}
-    public static boolean contains(float x,float y){if(!openWater(x,y))return false;for(int i=0;i<DOCKS.length;i++){float[] b=DOCK_BOUNDS[i];if(x>=b[0] && x<=b[2] && y>=b[1] && y<=b[3] && PolygonWater.contains(DOCKS[i],x,y))return false;}return true;}
+    public static boolean openWater(float x,float y){return WATER_RAYS.contains(x,y);}
+    public static boolean contains(float x,float y){if(!openWater(x,y))return false;for(int i:DOCK_INDEX.point(x,y)){float[] b=DOCK_BOUNDS[i];if(x>=b[0] && x<=b[2] && y>=b[1] && y<=b[3] && PolygonWater.contains(DOCKS[i],x,y))return false;}return true;}
     public static boolean clear(float x,float y,float xx,float yy){int steps=Math.max(1,(int)(Physics.length(xx-x,yy-y)/3));for(int i=0;i<=steps;i++)if(!contains(x+(xx-x)*i/steps,y+(yy-y)*i/steps))return false;return true;}
     public static float collide(Body b,CollisionSplashes splashes){float impact=0;for(int pass=0;pass<3;pass++){
         impact=Math.max(impact,PolygonWater.collide(b,PLAY_BOUNDS,true,splashes));
@@ -94,11 +166,11 @@ public final class MontroseHarbor {
         return Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.23f;
     }
     /** Clips water effects to exact shoreline triangles and oriented dock footprints. */
-    static void paintWater(Painter p,float[] points,int color){float[] box=PolygonWater.bounds(points);
-        for(int i=0;i<WATER_TRIANGLES.length;i++)if(PolygonWater.overlaps(box,WATER_BOUNDS[i])){
+    static void paintWater(Painter p,float[] points,int color){float[] box=PolygonWater.bounds(points);int[] docks=DOCK_INDEX.area(box);
+        for(int i:WATER_INDEX.area(box))if(PolygonWater.overlaps(box,WATER_BOUNDS[i])){
             float[] q=PolygonWater.clip(points,WATER_TRIANGLES[i]);if(q.length<6)continue;
             java.util.ArrayList<float[]> pieces=new java.util.ArrayList<float[]>();pieces.add(q);
-            for(int h=0;h<DOCKS.length;h++)if(PolygonWater.overlaps(box,DOCK_BOUNDS[h])){
+            for(int h:docks)if(PolygonWater.overlaps(box,DOCK_BOUNDS[h])){
                 java.util.ArrayList<float[]> next=new java.util.ArrayList<float[]>();for(float[] piece:pieces)PolygonWater.subtract(piece,DOCKS[h],next);pieces=next;
             }
             for(float[] piece:pieces)p.poly(piece,color);
@@ -115,7 +187,7 @@ public final class MontroseHarbor {
     static float[] projected(float[][] shapes,RiverCamera c,float l,float t,float r,float b,float depth){return projected(shapes,c,l,t,r,b,depth,0);}
     static float[] projected(float[][] shapes,RiverCamera c,float l,float t,float r,float b,float depth,float rise){
         Floats result=new Floats();
-        float[][] boxes=shapes==LAND_TRIANGLES?LAND_BOUNDS:shapes==DOCKS?DOCK_BOUNDS:shapes==WATER_TRIANGLES?WATER_BOUNDS:null;
+        float[][] boxes=shapes==LAND_TRIANGLES?LAND_BOUNDS:shapes==DOCKS?DOCK_BOUNDS:shapes==WATER_TRIANGLES?WATER_BOUNDS:shapes==MontroseShoreArt.LAND_TOPS?MontroseShoreArt.LAND_TOP_BOUNDS:shapes==MontroseShoreArt.topFootprints()?MontroseShoreArt.STEP_BOUNDS:null;
         for(int shapeIndex=0;shapeIndex<shapes.length;shapeIndex++){
             float[] shape=shapes[shapeIndex],box=boxes==null?PolygonWater.bounds(shape):boxes[shapeIndex];
             if(l>=box[2] || r<=box[0] || t>=box[3] || b<=box[1])continue;
@@ -168,11 +240,14 @@ public final class MontroseHarbor {
         if(mask!=null)return mask;mask=buildShore(c,l,t,r,b,depth);cache.put(l,t,r,b,depth,mask);return mask;
     }
     private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth){
-        float[] land=projected(LAND_TRIANGLES,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE);
-        java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length;
+        float[] land=projected(MontroseShoreArt.LAND_TOPS,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE),steps=MontroseShoreArt.stepMask(c,l,t,r,b,depth),access=MontroseShoreArt.accessMask(c,l,t,r,b,depth);
+        java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length+steps.length+access.length;
         for(float[] face:SHORE_FACES){
                 if(face[7]>r || face[9]<l || face[8]>b || face[10]<t)continue;
                 float ax=face[0],ay=face[1],bx=face[2],by=face[3],rise=face[4],dx=face[5],dy=face[6];
+                if(rise==LAND_RISE){float len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;if(openWater((ax+bx)*.5f+nx*2,(ay+by)*.5f+ny*2)){nx=-nx;ny=-ny;}
+                    if(MontroseShoreArt.terraced((ax+bx)*.5f+nx*2,(ay+by)*.5f+ny*2))continue;}
+
                 float start=0,end=1;
                 for(int axis=0;axis<2;axis++){
                     float delta=axis==0?dx:dy,origin=axis==0?ax:ay,min=axis==0?l:t,max=axis==0?r:b;
@@ -194,7 +269,7 @@ public final class MontroseHarbor {
                 float[] q={x,y,xx,yy,xx,yy-h,x,y-h};
                 faces.add(q);count+=12;
         }
-        float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);int at=land.length+dock.length;
+        float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);System.arraycopy(steps,0,result,land.length+dock.length,steps.length);System.arraycopy(access,0,result,land.length+dock.length+steps.length,access.length);int at=land.length+dock.length+steps.length+access.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
         return disjoint(result);
     }

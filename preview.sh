@@ -5,6 +5,12 @@ rm -rf build/preview
 mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
 echo tools/MontroseReview.java >> build/preview/sources.txt
+echo tools/MontroseShoreReview.java >> build/preview/sources.txt
+echo tools/MontroseBoatHoistReview.java >> build/preview/sources.txt
+echo tools/MontroseEntranceShoreReview.java >> build/preview/sources.txt
+echo tools/CalumetReview.java >> build/preview/sources.txt
+echo tools/DockWorkersReview.java >> build/preview/sources.txt
+echo tools/ShorelineResponseReview.java >> build/preview/sources.txt
 echo tools/MontroseAssetReview.java >> build/preview/sources.txt
 echo tools/GenerateSurfaceLighting.java >> build/preview/sources.txt
 echo tools/SurfaceLightingReview.java >> build/preview/sources.txt
@@ -116,6 +122,12 @@ if [ "${1:-}" = '--rotation' ] || [ "${1:-}" = '--animations' ]; then
 fi
 
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseShoreReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseBoatHoistReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseEntranceShoreReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CalumetReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.DockWorkersReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.ShorelineResponseReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseAssetReview
 
 # Cargo's source/registration contract and derived effect freshness.

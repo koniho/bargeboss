@@ -46,15 +46,15 @@ public final class ControlsTest {
         g=ready(); b=g.cargo[0]; steps(g,180);
         check(g.delivered==0 && b.dockTime==0,"entering berth alone never scores");
         ReplayInput.down(g,b.x,b.y); check(g.ropeDragging,"ready cargo arms the lasso");
-        ReplayInput.move(g,Game.TIE_X[1],g.dockY(1)); steps(g,30);
+        ReplayInput.move(g,g.bollardX(1),g.bollardY(1)); steps(g,30);
         check(g.ropePhase==0 && !b.lineAttached,"dragging only aims: no rope launches before release");
-        ReplayInput.up(g,Game.TIE_X[1],g.dockY(1));
+        ReplayInput.up(g,g.bollardX(1),g.bollardY(1));
         check(g.ropePhase==1 && !b.lineAttached,"finger release launches a missed throw too");
         steps(g,Game.ROPE_FLIGHT_TICKS);
         check(g.ropePhase==2 && !b.lineAttached && g.delivered==0,"miss enters visible retraction after reaching endpoint");
         steps(g,Game.ROPE_RETURN_TICKS);
         check(g.ropePhase==0 && g.ropeBody==null,"miss reels all the way back and rearms");
-        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,Game.TIE_X[2],g.dockY(2)); g.pointerCancel(0);
+        ReplayInput.down(g,b.x,b.y); ReplayInput.move(g,g.bollardX(2),g.bollardY(2)); g.pointerCancel(0);
         check(!b.lineAttached && !g.ropeDragging && g.ropePhase==0,"cancelled aim never shoots");
         ReplayInput.lasso(g,b);
         check(g.ropePhase==1 && !b.lineAttached && !g.ropeDragging,"correct throw still waits for flight impact");
@@ -78,7 +78,7 @@ public final class ControlsTest {
         int score=g.score; steps(g,30); check(g.score==score,"unloading cannot score twice");
         g=ready(); b=g.cargo[0]; b.vx=50; ReplayInput.down(g,b.x,b.y);
         check(g.ropeDragging,"moving cargo can start a tie");
-        ReplayInput.move(g,Game.TIE_X[2],g.dockY(2));ReplayInput.up(g,Game.TIE_X[2],g.dockY(2));
+        ReplayInput.move(g,g.bollardX(2),g.bollardY(2));ReplayInput.up(g,g.bollardX(2),g.bollardY(2));
         steps(g,Game.ROPE_FLIGHT_TICKS-1);
         check(!g.inDock(b),"moving hull may drift outside the berth while the rope is flying");g.step();
         check(b.lineAttached && b.speed()==0 && b.tieBurstTicks>0,"moving catch arrests momentum and shows success burst");

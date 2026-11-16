@@ -26,7 +26,7 @@ public final class MarinaPedestalsTest {
         int ticks=g.ticks,visual=g.visualTicks;float x=g.tug.x,y=g.tug.y;Capture a=new Capture(),b=new Capture();
         MarinaPedestals.drawPools(g,a);for(int i=0;i<count;i++)MarinaPedestals.draw(g,a,i);
         MarinaPedestals.drawPools(g,b);for(int i=0;i<count;i++)MarinaPedestals.draw(g,b,i);
-        check(a.layers==count*2 && a.polygons==count*7,"Overview submits one pool, one halo and seven faces per pedestal");
+        check(a.layers==count*2 && a.polygons>count*7 && a.polygons<count*7+200,"Overview retains pool/halo budget and adds bounded floating-hub signs");
         check(a.hash==b.hash && a.layers==b.layers && a.polygons==b.polygons,"Repeated fixture drawing is deterministic");
         check(g.ticks==ticks && g.visualTicks==visual && g.tug.x==x && g.tug.y==y,"Lighting draws do not advance gameplay");
         g.layout=Layout.focused(960,600,10000,10000,2,480,300);Capture offscreen=new Capture();MarinaPedestals.drawPools(g,offscreen);for(int i=0;i<count;i++)MarinaPedestals.draw(g,offscreen,i);

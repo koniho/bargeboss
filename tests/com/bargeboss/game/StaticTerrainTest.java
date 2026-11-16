@@ -15,12 +15,14 @@ public final class StaticTerrainTest {
         Capture foreground=new Capture();StaticTerrain.draw(g,foreground,true);
         check(!before.calls.isEmpty() && !foreground.calls.isEmpty(),"working harbor has cached ground and separate foreground cap layers");
         int backgroundSprites=0;
+        check(before.surfaces>0,"background material faces bypass raster layers");
         for(Call call:before.calls.values()) {
             check(call.layer.width()>0 && call.layer.width()<=StaticTerrain.CHUNK
                     && call.layer.height()>0 && call.layer.height()<=StaticTerrain.CHUNK,"trimmed raster bounds stay within their terrain chunk");
             Trace trace=new Trace();call.layer.paint(trace);backgroundSprites+=trace.sprites;
+            check(trace.commands>0 && trace.surfaces==0,"cached terrain contains actual markings, never blank material-only rasters");
         }
-        check(backgroundSprites>0,"background chunks retain the industrial ground textures");
+        check(backgroundSprites==0,"industrial floor materials replace flattened ground texture sprites");
         for(Call call:foreground.calls.values()) {
             check(!before.calls.containsKey(call.layer.key()),"foreground caps never alias a background raster key");
             Trace trace=new Trace();call.layer.paint(trace);
@@ -40,6 +42,7 @@ public final class StaticTerrainTest {
         int ticks=g.ticks,visual=g.visualTicks,gate=g.tutorial.channelGate;float x=g.tug.x,y=g.tug.y;
         Layout layout=g.layout;String progress=g.saveProgress();float[] boundary=TrainingChannel.WATER_BOUNDARY.clone();
         Capture repeat=new Capture();StaticTerrain.draw(g,repeat,false);StaticTerrain.draw(g,new Capture(),true);
+        check(repeat.surfaceHash==after.surfaceHash && repeat.surfaces==after.surfaces,"live material geometry, UVs and wetness repeat at a fixed camera");
         check(repeat.calls.size()==after.calls.size(),"repeated terrain drawing submits the same visible chunks");
         for(Call call:repeat.calls.values()) {
             Call old=after.calls.get(call.layer.key());
@@ -54,6 +57,7 @@ public final class StaticTerrainTest {
         StaticTerrain.draw(g,wrapped,false);
         check(hinted.hints.size()>0 && hinted.hints.size()<=4,"native preparation receives a bounded nearby set through wrappers");
         for(StaticLayer hint:hinted.hints.values()) {
+            Trace content=new Trace();hint.paint(content);check(content.commands>0 && content.surfaces==0,"preparation never builds blank material-only rasters");
             check(hint.backgroundSafe(),"terrain explicitly permits immutable background painting");
             check(!repeat.calls.containsKey(hint.key()),"prefetch hints stay outside the visible chunk set");
         }
@@ -61,6 +65,16 @@ public final class StaticTerrainTest {
         check(hinted.calls.keySet().equals(visibleOnly.calls.keySet()),"preparation never adds visible layer draws");
         for(Call call:hinted.calls.values()){Call old=visibleOnly.calls.get(call.layer.key());check(old.hash==call.hash && old.x==call.x && old.y==call.y,"preparation preserves visible commands and anchors");}
         check(g.ticks==ticks && g.visualTicks==visual && g.layout==layout && g.tug.x==x && g.tug.y==y,"preparation leaves live game and camera untouched");
+        // Far dry ground contains shader faces only, so neither visible nor nearby
+        // chunks should consume raster-cache entries or background preparation slots.
+        Game sparse=new Game();int col=20,row=20;
+        sparse.layout=Layout.renderTile(64,64,new RiverCamera(RiverCamera.Q*288-col*StaticTerrain.CHUNK-64,
+                -RiverCamera.Q*RiverCamera.DEPTH*312-row*StaticTerrain.CHUNK-64,1));
+        StaticTerrain.Tile surfaceOnly=StaticTerrain.tile(col,row,false);Trace faces=new Trace();surfaceOnly.surfaces(faces);
+        check(faces.surfaces>0 && !surfaceOnly.hasRaster,"fixture exercises a material-only terrain chunk");
+        Capture sparseCapture=new Capture(true);StaticTerrain.draw(sparse,sparseCapture,false);
+        check(sparseCapture.surfaces>0 && sparseCapture.calls.isEmpty(),"material-only ground draws directly without a blank raster layer");
+        check(sparseCapture.hints.isEmpty(),"material-only nearby chunks do not queue empty background raster builds");
         System.out.println(checks+" retained terrain key, foreground separation and render-purity assertions passed");
     }
     private static final class Call {
@@ -68,7 +82,12 @@ public final class StaticTerrainTest {
         Call(StaticLayer layer,float x,float y,float scale){this.layer=layer;this.x=x;this.y=y;this.scale=scale;Trace trace=new Trace();layer.paint(trace);hash=trace.hash;}
     }
     private static class Trace implements Painter {
-        int hash=1,commands,sprites;
+        int hash=1,commands,sprites,surfaces,surfaceHash=1;
+        public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
+            check(xy.length==uv.length && xy.length>=6,"retained material vertices match UVs");surfaces++;
+            for(int i=0;i<xy.length;i++){check(Float.isFinite(xy[i]) && Float.isFinite(uv[i]),"retained material geometry remains finite");surfaceHash=31*surfaceHash+Float.floatToIntBits(xy[i]);surfaceHash=31*surfaceHash+Float.floatToIntBits(uv[i]);}
+            surfaceHash=31*surfaceHash+material;surfaceHash=31*surfaceHash+color;surfaceHash=31*surfaceHash+Float.floatToIntBits(wetness);
+        }
         void mix(int v){hash=31*hash+v;}void value(float v){mix(Float.floatToIntBits(v));}
         public void rect(float x,float y,float w,float h,int c){commands++;mix(0);value(x);value(y);value(w);value(h);mix(c);}
         public void circle(float x,float y,float r,int c){commands++;mix(1);value(x);value(y);value(r);mix(c);}

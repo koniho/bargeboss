@@ -29,7 +29,6 @@ public final class WaveView {
             float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
-        shorelines(g,p,minY,maxY);
         int tick=g.visualTicks;
         // Cell identities stay in world space. Slow oscillation gives currents
         // motion without a periodic tile jump when the camera crosses a cell.
@@ -42,9 +41,9 @@ public final class WaveView {
             if(noise(seed+41)<.45f)continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
             float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
-            if(!WaterEffectsPainter.contains(g,x,y)) continue;
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
             if(sx<-45*c.scale || sx>g.layout.width+45*c.scale || sy<-25*c.scale || sy>g.layout.height+25*c.scale) continue;
+            if(!WaterEffectsPainter.contains(g,x,y)) continue;
             float phase=tick*(.016f+noise(seed+11)*.009f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             float span=10+noise(seed+7)*23,rise=.8f+noise(seed+13)*2.3f;
@@ -70,44 +69,6 @@ public final class WaveView {
             }
         }
         if(batch!=null)batch.flush();
-    }
-
-    private static void shorelines(Game g,Painter p,float minY,float maxY) {
-        if(g.montroseStage()){
-            float[] coast=MontroseHarbor.COAST;
-            for(int i=0;i<coast.length-2;i+=2)edge(g,p,coast[i],coast[i+1],coast[i+2],coast[i+3]);
-            return;
-        }
-        if(g.tutorial!=null) {
-            float[] bank=TrainingChannel.WATER_BOUNDARY;
-            for(int i=0;i<bank.length;i+=2) {
-                int next=(i+2)%bank.length;
-                edge(g,p,bank[i],bank[i+1],bank[next],bank[next+1]);
-            }
-        } else {
-            edge(g,p,Physics.LEFT,minY,Physics.LEFT,maxY);
-            edge(g,p,Physics.RIGHT,minY,Physics.RIGHT,maxY);
-            if(g.orderStage()) for(float[] r:PhysicalBerths.solids(g.challengeId)) {
-                edge(g,p,r[0],r[1],r[2],r[1]);edge(g,p,r[2],r[1],r[2],r[3]);
-                edge(g,p,r[2],r[3],r[0],r[3]);edge(g,p,r[0],r[3],r[0],r[1]);
-            }
-        }
-    }
-    /** Small bank laps brighten when an existing travelling wake reaches shore. */
-    private static void edge(Game g,Painter p,float x,float y,float xx,float yy) {
-        float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);if(length<1) return;
-        dx/=length;dy/=length;float nx=-dy,ny=dx;
-        if(!WaterEffectsPainter.contains(g,(x+xx)*.5f+nx*2,(y+yy)*.5f+ny*2)) {nx=-nx;ny=-ny;}
-        for(float along=8;along<length-4;along+=24) {
-            float wx=x+along*dx+nx*2.2f,wy=y+along*dy+ny*2.2f;
-            if(!WaterEffectsPainter.contains(g,wx,wy) || !HarborAtmosphere.visible(g,wx,wy,20)) continue;
-            float phase=g.visualTicks*.032f+wx*.09f+wy*.07f;
-            float pulse=.5f+.5f*(float)StrictMath.sin(phase);
-            float wake=g.water.energy(wx,wy,null),inset=1.4f+pulse*.8f;
-            int alpha=(int)((13+Math.min(1,wake)*54)*pulse);
-            p.line(wx-dx*5+nx*inset,wy-dy*5+ny*inset,wx+dx*(4+pulse*4)+nx*inset,
-                    wy+dy*(4+pulse*4)+ny*inset,.8f+Math.min(1,wake)*.8f,(alpha<<24)|0x91cdc3);
-        }
     }
 
     public static void draw(Painter p,int tick,float left,float top,float width,float height,float scale,float origin) {

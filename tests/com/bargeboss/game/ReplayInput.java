@@ -41,8 +41,8 @@ public final class ReplayInput {
             if(g.tug.x>340)drive(g,315,g.tug.y);else drive(g,325,665);
             return;
         }
-        // Lift the right feeder load north before turning across the occupied left lane.
-        if(target!=null && g.orderStage() && target.x>280 && target.y>645){
+        // Lift each feeder load north into the turning basin before crossing toward the eastern slip.
+        if(target!=null && g.orderStage() && target.y>645){
             if(g.holdingTug())up(g,g.pointerX,g.pointerY);
             if(!g.pointer)down(g,target.x,target.y);
             if(g.heldCargo()==target && g.pushing)move(g,g.downX,g.downY-90);
@@ -71,14 +71,15 @@ public final class ReplayInput {
         if(empty==null)return false;
         if(g.pointer && !g.holdingTug())up(g,g.pointerX,g.pointerY);
         if(g.tow.incoming(empty)==null){
-            if(Physics.length(g.tug.x-empty.x,g.tug.y-empty.y)>140 || g.tug.y<empty.y+65){drive(g,199,empty.y+100);return true;}
+            if(Physics.length(g.tug.x-empty.x,g.tug.y-empty.y)>140 || g.tug.y<empty.y+65){drive(g,PhysicalBerths.CENTER,empty.y+100);return true;}
             if(g.pointer)up(g,g.pointerX,g.pointerY);
             down(g,empty.x,empty.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return true;
         }
-        if(empty.x<300 && empty.y<615){drive(g,199,705);return true;}
-        if(empty.x<325){drive(g,395,625);return true;}
-        float parkY=g.delivered==1?330:480;
-        if(empty.y>parkY+155){drive(g,380,parkY);return true;}
+        if(empty.x>500 && empty.y<635){drive(g,PhysicalBerths.CENTER,780);return true;}
+        // Cross above the two waiting feeder loads at y=730, not through them.
+        if(empty.x>390){drive(g,300,620);return true;}
+        float parkY=g.delivered==1?240:430;
+        if(empty.y>parkY+155){drive(g,350,parkY);return true;}
         if(g.pointer)up(g,g.pointerX,g.pointerY);releaseTow(g);return true;
     }
     /** Actual feeder handoff and two lasso gestures, followed by a fully physical loaded passage. */

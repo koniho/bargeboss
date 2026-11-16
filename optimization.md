@@ -940,3 +940,143 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   inline RGB previews. Prompts document small alpha residue and unregistered
   pivots. No runtime code or selected artwork was changed in this asset round;
   app builds/device checks were not repeated for these unreferenced sources.
+
+### Shared shore geometry, permanent Calumet map and Montrose gates (2026-11-16)
+
+- Installed the industrial bollard, loading, truck and steelworks source frames with
+  explicit shared atlas crops/pivots and fixed dry-land placements. Calumet missions
+  now share one geography with the tutorial, including the eastern single-file
+  berth branch. Shared collision, water effects, ropes and shore masks use that map.
+  Updated real-input berth routes and gradual keel settling; all four bounded
+  Calumet careers complete at full hull with three stars. No replay bounds relaxed.
+- Added world/model-unit UV surface polygons for concrete, rust, steel, chipped
+  yellow paint, timber and corrugation. Shared Metal/AGSL surface math remains
+  anchored while rigid bridge/lock parts rotate. BSP splits interpolate UVs.
+  Java 2D/Core Graphics use opaque-color fallbacks, not equivalent texture detail.
+  Static terrain draws materials live and caches markings separately; material-only
+  chunks neither allocate nor prepare empty rasters. Native layer budgets unchanged.
+- Montrose now uses exposed dock-union edges, joined ramps, a continuous promenade,
+  five lakefront terraces and 24 access gates. Twenty gate signs follow the supplied
+  map (A–O, P/R/S/T/U, no Q); service/inlet gates remain unlettered. Glyph geometry
+  is prepared once and mounted above gates facing the fixed shared camera.
+- Fixed Montrose buoy-contact teleportation: the old post-contact path called
+  Physics.banks and clamped marina hulls into the legacy narrow river. Dispatch now
+  uses MontroseHarbor.collide, with CalumetMap for other levels. New test fails
+  against the old branch and passes 3,351 assertions across 415 actual buoy approaches.
+- Checks: new surface UV/BSP/wrapper suite 132,260 assertions; Montrose shore/gate
+  suite 713; existing Montrose depth suite 5,823; all-heading production shoreline
+  pixel suite 1,439,937; foam/splash pixel suite 197,334. JVM/J2ObjC gameplay/drawing
+  parity agrees at 2352ac51:2:1350 after the reviewed map/render changes.
+- Initial Release Metal simulator replay (300 frames/60 warmup),
+  out/ios-profile/geometry-harbor-v1: 59.99 FPS, median interval 16.669ms,
+  p95 interval 17.263ms, draw median 5.080ms/p95 7.463 ms, GPU median 0.110ms.
+  This is simulator evidence, not a physical-device guarantee or cold-start claim.
+  Montrose initial run geometry-montrose-v1 was 42.63 FPS, draw median 16.520ms,
+  p95 17.935 ms, GPU median 0.087ms: CPU cost remains, not GPU shader saturation.
+- New scenery is declared in LevelAssets and Android's bounded async frame plan.
+  iOS first-visit demand decoding/upload remains an unresolved cold-frame cost.
+  Android phone was not accessed; APK-only validation cannot establish native
+  AGSL appearance, frame intervals or touch latency on that device.
+- Montrose follow-up: precomputed immutable bounds for 756 land pieces, 60 terrace
+  footprints and 24 gangways; distant masks reject before clipping/allocation.
+  Dock UVs and full-scene terrace triangulation are also retained. A 630-query JVM
+  mask workload preserved all 721,740 output float coordinates bit-for-bit;
+  warmed sample improved from 102.9 to 57.0 ms. This is a CPU microbenchmark,
+  not an end-to-end frame rate. No geometry density or water effects were reduced.
+- Integration review found career shoreline foam still following the old straight
+  banks. All Calumet shoreline laps now follow the same permanent water boundary,
+  removing phantom foam at the canal connection and eastern basin mouth.
+- Final matching Montrose replay (`out/ios-profile/geometry-montrose-v2`, same
+  simulator/scene/300 frames/60 warmup) improved to 52.84 FPS, interval median
+  19.131 ms/p95 21.248 ms, draw median 14.477 ms/p95 15.319 ms, GPU median
+  0.077 ms. This is still below 60 FPS, with insufficient CPU headroom; do not
+  call the Montrose performance target achieved. Fixed-geometry preparation helped,
+  but native clipping/submission and shared scene work still need profiling.
+- Native CPU sampling after the v2 run identifies the remaining cost more precisely:
+  `WaveView.surface` occupied 581 of 1,070 sampled renderer stacks in a 5-second
+  sample. Hot descendants are MontroseHarbor.contains (dock scans), paintWater
+  (per-ripple polygon clipping) and buildShore/disjoint (wake receiver-mask unions).
+  These inclusive counts overlap and must not be added. Simulation also repeatedly
+  calls contains for buoy constraints. IOSObjectArray access/autorelease traffic
+  and temporary polygon arrays are visible in the stacks. Only 33 sampled stacks
+  passed through MontroseShoreArt. Evidence: out/ios-profile/geometry-montrose-cpu/
+  sample.txt. Sampling is diagnostic, separate from frame-timing runs.
+- Moved exact screen-bound rejection before water containment in ambient crests and
+  shoreline laps. This skips invisible queries without reducing visible effects.
+- Added the Montrose boat-hoist landmark at the supplied launch-area location,
+  west of Dock O. Static shared rigid pedestal/boom/lifting-eye geometry is merged
+  with vessels and ropes by depth. Named local anchors support future haul-out
+  work; no lifting gameplay or collision changes. Seventeen focused assertions
+  cover placement, articulation and purity; actual-renderer previews reviewed.
+- Added fixed 128-unit spatial candidate indexes for marina water/dock queries.
+  Point checks average 1.17 dock candidates instead of 335 (maximum 12); small
+  clipping queries average 6.25/max 50. Index payload 15,861 integers (~62 KiB) plus
+  fixed arrays; no per-query candidates allocated. Y-banded coastline edges use
+  identical ray-crossing arithmetic. Independent brute-force comparison passes
+  2,986,065 assertions over 27,241 points and 1,262 clipping patches, including exact
+  polygon order, colors and raw float bits, cell boundaries, ULP neighbors and
+  large/out-of-map fallbacks. Native v3 measurement follows separately.
+- Native v3 result (`out/ios-profile/geometry-montrose-v3`, same Release Metal
+  simulator, scene/replay/300 frames/60 warmup): 60.00 FPS, interval median 16.667 ms,
+  p95 17.253 ms, max 17.306 ms. Draw median 7.235 ms/p95 7.855 ms/max 8.786 ms;
+  GPU median 0.079 ms/p95 0.114 ms. Compared with v2, CPU draw time is roughly
+  halved (14.477→7.235 ms), establishing the full-harbor water queries as the
+  main observed bottleneck. This measured scene now has useful CPU headroom;
+  physical-device performance and cold first-visit uploads remain unverified.
+- Green-marker entrance shore: 75 precomputed, individually culled angular rock
+  blocks, dark wet toe, concrete pier and wider steps match the supplied reference.
+  The continuous promenade detours locally inland. Geometry stays inside existing
+  dry/pier footprints and below conservative receivers; 30 new checks plus 713
+  dock/gate checks pass. Fixed geometry/UVs/colors and reused projected buffers
+  avoid per-frame rock construction/clipping. No new texture or collision index.
+- Full preview run caught an obsolete splash fixture aimed at the old west bank,
+  now the open canal mouth. Moved the real-impact capture to the permanent east
+  quay. Preview suite then continued through the remaining captures/asset reviews.
+
+### 2026-11-16 — Calumet dock crew grounding / legacy forklift removal
+- Shared Java: removed the screen-space pixel forklift and old pixel workers from
+  DockView. Crew now use fixed tapered octagonal geometry, muted orange PPE and
+  the shared safety face material for hard hats. Only shoulders animate; boot
+  positions remain fixed on dry world support, projected onto LAND_RISE=18.
+- Anchor selection tests the permanent Calumet water rectangles including canal
+  mouths and eastern slip. Crane base support now uses the same dry-footprint
+  check. Crew join the world-depth merge so foreground shore and machinery can
+  occlude them. No gameplay/loading timing changes; legacy crane artwork remains.
+- Mesh/UVs and projected scratch buffers are fixed and reused, with visibility
+  culling before crew drawing; no textures or per-frame mesh construction added.
+- DockWorkersTest passes 15,743 checks across all career geometries, independent
+  dense dry-support samples, stable animation anchors and raised-plane/depth
+  rules. Eight production desktop previews saved under out/dock-workers-*;
+  inspected first-level and shared-slip close views. Native/device pixel and CPU
+  validation remain for the integrated round; no connected phone was used.
+
+### Industrial service roads and truck clearance
+
+- Parked truck anchors are selected once on fully paved dry horizontal lanes.
+  Their full 116×44 world-unit support footprint and 164×92 factory exclusion
+  apron prevent truck/building overlap. Roads use shared rough material faces,
+  repair patches, branching cracks, worn lane marks and concrete shoulders.
+- Existing moving yard-hauler runs are split once around expanded parked aprons;
+  complete moving footprints stay clear. No per-frame disappearance or abrupt
+  route edits. IndustrialTruckRoadTest passes 83,854 assertions and existing
+  activity checks119,843; factory-placement checks12,050 pass. Native materials
+  remain subject to final integrated screenshot/timing checks.
+
+### Animated shoreline response and floating star-dock correction
+
+- Shared shoreline shader uses world-unit UVs and simulation seconds for overlapping
+  waves, broken foam and a recent-crest wetness envelope. Wakes increase crest height
+  and foam strength. Geometry is prepared during level reset, culled before wake
+  queries, and drawn in separate water/wall passes beneath vessels and opaque tops.
+  No per-strip harbor clipping or runtime mesh construction. Removed old bank-lap
+  lines to avoid two competing waterline animations. Rocks retain their dark wet
+  material with animated foam at their edge; per-rock wet climbing is not implemented.
+- Metal and Android execute the same kernel; fallback stays bounded to eight clipped
+  strips. Primitive tests: 69,139 assertions. Shared view/anchor/phase/wake checks:
+  31,294 after the final marina correction. iOS Release build and JVM/J2ObjC parity
+  pass at 496301b3:2:1350. Integrated native effect timing still to be captured.
+- Corrected the marina star docks to independent eight-arm floats: removed all five
+  land spines/ramps/gates. P/R/S/T/U signs sit on their central hubs. Nineteen gates
+  remain at shore-connected main/service/inlet piers; promenade continuity retained.
+  Tests: 698 shore/letter checks, 30 entrance checks, 5,823 geometry checks,
+  21,114 pedestal/sign checks and a successful three-star public-input yacht voyage.

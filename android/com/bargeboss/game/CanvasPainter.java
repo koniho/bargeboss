@@ -76,7 +76,7 @@ public final class CanvasPainter implements Painter {
         int[] plan=atlasIds.clone();Arrays.sort(plan);
         Set<Integer> pins=new HashSet<Integer>();
         for(int id:plan) {
-            if(!SpriteAtlas.rotationAtlas(id) || !pins.add(id))throw new IllegalArgumentException("Invalid/duplicate rotation atlas: "+id);
+            if(id<0 || id>=SpriteAtlas.ATLAS_COUNT || !pins.add(id))throw new IllegalArgumentException("Invalid/duplicate preparation atlas: "+id);
         }
         synchronized(frameLock) {
             if(closed || !rotationPrefetch || !frameTextures || Arrays.equals(plan,rotationPlan))return;
@@ -421,6 +421,16 @@ public final class CanvasPainter implements Painter {
         spritePaint.setAlpha(weight); spritePaint.setXfermode(ADD);
         canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
+    }
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color) {
+        if((color>>>24)==0)return;
+        if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.shoreline(canvas,xy,uv,phase,energy,kind,color))
+            Painter.super.shoreline(xy,uv,phase,energy,kind,color);
+    }
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
+        if((color>>>24)==0)return;
+        if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,color,wetness))
+            Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
         if((color>>>24)==0 || amount<=0)return;

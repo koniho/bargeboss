@@ -45,7 +45,7 @@ public final class WaterEffectsTest {
         Capture channel=new Capture(g);p=new WaterEffectsPainter(g,channel);
         p.rect(TrainingChannel.BASIN_LEFT-20,200,Physics.RIGHT-TrainingChannel.BASIN_LEFT+40,650,0xffffffff);
         int expected=0;
-        for(int x=(int)TrainingChannel.BASIN_LEFT;x<Physics.RIGHT;x++) for(int y=200;y<850;y++) if(TrainingChannel.contains(x+.5f,y+.5f)) expected++;
+        for(int x=(int)TrainingChannel.BASIN_LEFT;x<Physics.RIGHT+20;x++) for(int y=200;y<850;y++) if(TrainingChannel.contains(x+.5f,y+.5f)) expected++;
         check(Math.abs(channel.area-expected)<.1,"overlapping training reaches have one fill per water pixel");
         for(int side=-1;side<=1;side+=2) {
             float[] bank=TrainingChannel.bank(side);

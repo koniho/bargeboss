@@ -48,8 +48,7 @@ public final class TrainingGroundView {
             if(!tileVisible(g,col,row,true)) continue;
             float x=col*64,y=row*64;
             if(!intersectsWater(x,y,64,64)) {
-                raised.rect(x,y,64,64,GroundArt.BASE);
-                GroundArt.tile(g,canvas,x+32,y+32);
+                concrete(raised,x,y,64,64);
             } else landPiece(raised,x,y,64,64,0);
         }
     }
@@ -90,9 +89,13 @@ public final class TrainingGroundView {
             landPiece(p,right,top,x+width-right,bottom-top,i+1);
             return;
         }
-        p.rect(x,y,width,height,GroundArt.BASE);
+        concrete(p,x,y,width,height);
         // A few slab joints keep the untextured shoreline apron readable at game scale.
         if(width>12 && height>12) p.line(x+2,y+height-2,x+width-2,y+height-2,.55f,0x405e6460);
+    }
+    private static void concrete(Painter p,float x,float y,float width,float height) {
+        float[] xy={x,y,x+width,y,x+width,y+height,x,y+height};
+        p.surfacePolygon(xy,xy,SurfaceMaterial.CONCRETE,0xff62605a,.12f);
     }
     public static void walls(Game g,Painter canvas) {
         float[] bank=TrainingChannel.WATER_BOUNDARY;
@@ -131,7 +134,7 @@ public final class TrainingGroundView {
             if(Math.max(sx,ex)<-20 || Math.min(sx,ex)>g.layout.width+20 || Math.max(sy,ey)<-20 || Math.min(sy,ey)-rise>g.layout.height+20) continue;
             Painter p=canvas;
             if(visible && !capOnly) {
-                p.poly(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},dx>0?0xff202d38:0xff2c3942);
+                p.surfacePolygon(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},new float[]{at,18,end,18,end,0,at,0},SurfaceMaterial.CORRUGATED,dx>0?0xff424349:0xff535151,.48f);
                 // Steel sheets have real folded faces: raised ribs and recessed channels,
                 // rather than a repeated flat stroke masquerading as a tall wall.
                 for(float d=at;d<end;d+=6) {
@@ -163,6 +166,7 @@ public final class TrainingGroundView {
     }
     private static void sheetFace(Game g,Painter canvas,float x,float y,float xx,float yy,int color) {
         RiverCamera c=g.layout.camera;float sx=c.screenX(x,y),sy=c.screenY(x,y),ex=c.screenX(xx,yy),ey=c.screenY(xx,yy),rise=GroundArt.LAND_RISE*c.scale;
-        canvas.poly(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},color);
+        float u=x+y,v=xx+yy;
+        canvas.surfacePolygon(new float[]{sx,sy-rise,ex,ey-rise,ex,ey,sx,sy},new float[]{u,18,v,18,v,0,u,0},SurfaceMaterial.RUST,color,.35f);
     }
 }

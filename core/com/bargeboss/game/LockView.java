@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class LockView {
     private static final ArticulatedModel[] MODELS=new ArticulatedModel[2];
     private static final float[] OPENINGS={Float.NaN,Float.NaN};
-    private static final int STEEL=0xff52646a,RUST=0xff97643e,CONCRETE=0xff53616a;
+    private static final int STEEL=0xff4c5757,RUST=0xffa75f3e,CONCRETE=0xff7b8076;
     private LockView(){}
     public static float gateY(int index){return LockDoors.hingeY(index);}
     public static float gateDepth(Game g,int index){return g.layout.camera.screenY((Physics.LEFT+Physics.RIGHT)*.5f,gateY(index));}
@@ -18,20 +18,20 @@ public final class LockView {
         int fixed=b.node("bank-machinery",-1,0,0,0,0,0);
         for(int side=0;side<2;side++){
             float x=side==0?Physics.LEFT-10:Physics.RIGHT+10;
-            b.box(fixed,x,y,17,20,34,34,CONCRETE);
-            b.box(fixed,x,y,35,24,38,4,STEEL);
-            b.box(fixed,x,y+12,43,10,10,12,RUST);
+            b.box(fixed,x,y,17,20,34,34,CONCRETE,SurfaceMaterial.CONCRETE);
+            b.box(fixed,x,y,35,24,38,4,STEEL,SurfaceMaterial.STEEL);
+            b.box(fixed,x,y+12,43,10,10,12,RUST,SurfaceMaterial.RUST);
             b.box(fixed,x,y+12,51,7,7,4,0xff202f38);
             // Thick exposed hinge shafts and driven crank housings remain on land.
-            b.box(fixed,side==0?Physics.LEFT-1:Physics.RIGHT+1,y,18,6,12,36,RUST);
+            b.box(fixed,side==0?Physics.LEFT-1:Physics.RIGHT+1,y,18,6,12,36,RUST,SurfaceMaterial.RUST);
         }
         for(int side=0;side<2;side++){
             float x=LockDoors.hingeX(side);
             int leaf=b.node(side==0?"left-leaf":"right-leaf",-1,x,y,0,LockDoors.angle(index,side,opening),0);
-            b.box(leaf,half*.5f,0,12,half,8,24,STEEL);
-            b.box(leaf,half*.5f,0,25,half+2,10,3,RUST);
+            b.box(leaf,half*.5f,0,12,half,8,24,STEEL,SurfaceMaterial.STEEL);
+            b.box(leaf,half*.5f,0,25,half+2,10,3,RUST,SurfaceMaterial.RUST);
             b.box(leaf,half*.5f,0,2,half+2,10,3,0xff253741);
-            for(float at=12;at<half;at+=24)b.box(leaf,at,-4.5f,13,4,3,24,RUST);
+            for(float at=12;at<half;at+=24)b.box(leaf,at,-4.5f,13,4,3,24,RUST,SurfaceMaterial.RUST);
             b.beam(leaf,5,-5,5,half-5,-5,22,3,0xff73868b);
             b.box(leaf,half-6,0,29,5,5,5,0xff24323b);
         }

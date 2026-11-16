@@ -57,6 +57,18 @@ public final class ViewportPainter implements Painter {
         float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
         if(alpha>.005f && visible(x-w,y-h,x+w,y+h))target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){
+        if((color>>>24)==0 || xy.length<6 || xy.length!=uv.length)return;
+        float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
+        for(int i=0;i<xy.length;i+=2){if(!Float.isFinite(xy[i]) || !Float.isFinite(xy[i+1]))return;l=Math.min(l,xy[i]);r=Math.max(r,xy[i]);t=Math.min(t,xy[i+1]);b=Math.max(b,xy[i+1]);}
+        if(visible(l,t,r,b))target.shoreline(xy,uv,phase,energy,kind,color);
+    }
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
+        if((color>>>24)==0 || xy.length<6 || xy.length!=uv.length)return;
+        float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
+        for(int i=0;i<xy.length;i+=2){if(!Float.isFinite(xy[i]) || !Float.isFinite(xy[i+1]))return;l=Math.min(l,xy[i]);r=Math.max(r,xy[i]);t=Math.min(t,xy[i+1]);b=Math.max(b,xy[i+1]);}
+        if(visible(l,t,r,b))target.surfacePolygon(xy,uv,material,color,wetness);
+    }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;if((color>>>24)>0 && visible(x-w,y-h,x+w,y+h))target.material(x,y,ax,ay,bx,by,kind,detail,amount,color);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;if((color>>>24)>0 && visible(x-w,y-h,x+w,y+h))target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){if(visible(Math.min(x,xx)-width,Math.min(y,yy)-width,Math.max(x,xx)+width,Math.max(y,yy)+width))target.ropeSegment(x,y,xx,yy,width,from,to,color);}

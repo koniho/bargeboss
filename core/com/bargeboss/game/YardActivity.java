@@ -12,8 +12,8 @@ public final class YardActivity {
             if(Math.floorMod(row,5)!=4)continue;
             int start=IndustrialRoadView.MIN_COL;
             while(start<IndustrialRoadView.MAX_COL) {
-                while(start<IndustrialRoadView.MAX_COL && !IndustrialRoadView.roadClear(start,row))start++;
-                int end=start;while(end<IndustrialRoadView.MAX_COL && IndustrialRoadView.roadClear(end,row))end++;
+                while(start<IndustrialRoadView.MAX_COL && !routeCell(start,row))start++;
+                int end=start;while(end<IndustrialRoadView.MAX_COL && routeCell(end,row))end++;
                 for(int block=start;block+3<=end;block+=6) {
                     int limit=Math.min(end,block+6);
                     runs.add(new float[]{block*64+44,limit*64-44,row*64+32});
@@ -22,6 +22,18 @@ public final class YardActivity {
             }
         }
         return runs.toArray(new float[runs.size()][]);
+    }
+    /** Remove occupied cells before assembling runs, so vehicles stop and reverse
+     * continuously on their remaining lane instead of disappearing near parked trucks. */
+    private static boolean routeCell(int col,int row){
+        if(!IndustrialRoadView.roadClear(col,row))return false;
+        float l=col*64,t=row*64,r=l+64,b=t+64;
+        for(int i=0;i<CalumetArt.count();i++){
+            float[] v=CalumetArt.item(i);if((int)v[0]!=SpriteAtlas.SHORE_TRUCKS)continue;
+            // Parked access apron plus the moving hauler's full half-extents.
+            if(l<v[2]+99 && r>v[2]-99 && t<v[3]+54 && b>v[3]-54)return false;
+        }
+        return true;
     }
     static int count(){return ROUTES.length;}
     static void position(int route,int ticks,float[] out) {

@@ -58,7 +58,7 @@ public final class CollisionSplashTest {
         s=new CollisionSplashes();a=hull(0,Physics.LEFT+10,500,0);a.vx=-40;
         Physics.banks(a,Physics.TOP,Physics.BOTTOM,false,s);
         check(s.emitted==1 && diff(s.direction[0],(float)Math.PI)<.001f,"bank impact preserves incoming direction after rebound");
-        s=new CollisionSplashes();a=hull(0,315,450,0);a.vx=-40;
+        s=new CollisionSplashes();a=hull(0,PhysicalBerths.LEFT+10,450,0);a.vx=-40;
         PhysicalBerths.collide(1,a,s);check(s.emitted==1,"solid quay contacts splash");
         s=new CollisionSplashes();a=hull(0,300,Bridge.Y+20,-(float)Math.PI/2);a.vy=-30;
         new Bridge().collide(a,s);check(s.emitted==1,"closed bridge contact splashes");

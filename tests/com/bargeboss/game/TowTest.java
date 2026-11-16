@@ -113,9 +113,9 @@ public final class TowTest {
         steps(g,Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS);
         check(g.delivered==1,"towed load can finish ordinary delivery");
 
-        g=fixture();g.challengeId=1;g.tug.x=240;g.tug.y=410;g.cargo[0].x=190;g.cargo[0].y=320;
+        g=fixture();g.challengeId=1;g.tug.x=410;g.tug.y=480;g.cargo[0].x=590;g.cargo[0].y=480;
         check(!g.canTow(g.cargo[0]),"cannot cast through finger pier");
-        g=fixture();g.tutorial=new Tutorial();g.tutorial.lesson=Tutorial.LINK;g.tug.y=140;g.cargo[0].y=260;
+        g=fixture();g.tutorial=new Tutorial();g.bridge.phase=Bridge.CLOSED;g.tutorial.lesson=Tutorial.LINK;g.tug.y=140;g.cargo[0].y=260;
         check(!g.canTow(g.cargo[0]),"cannot cast across closed bridge");
         g.bridge.phase=Bridge.OPEN;connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.bridge.ticks=720;g.bridge.step(g);
         check(g.bridge.phase==Bridge.OPEN,"bridge holds open for tow connection");

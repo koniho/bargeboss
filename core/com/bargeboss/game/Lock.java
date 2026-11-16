@@ -6,6 +6,7 @@ public final class Lock {
     public static final int REQUIRED=2,ENTRY_TICKS=45*60,EXIT_TICKS=35*60,CYCLE_TICKS=8*60,GATE_TICKS=5*60;
     public static final int READY=0,ENTRY=1,CLOSING=2,FILLING=3,OPENING=4,EXIT=5,COMPLETE=6,FAILED=7;
     public int phase,ticks;
+    public boolean passive;
     private final int[] targets=new int[REQUIRED];
     private String failure="";
     private float failedLevel,failedEntry,failedExit;
@@ -14,8 +15,8 @@ public final class Lock {
     public boolean failed(){return phase==FAILED;}
     public String failure(){return failure;}
     public float waterLevel(){return failed()?failedLevel:phase<FILLING?0:phase==FILLING?Physics.clamp(ticks/(float)CYCLE_TICKS,0,1):1;}
-    public float entryOpening(){return failed()?failedEntry:phase==ENTRY?gateProgress():phase==CLOSING?1-gateProgress():0;}
-    public float exitOpening(){return failed()?failedExit:phase==OPENING?gateProgress():phase==EXIT || phase==COMPLETE?1:0;}
+    public float entryOpening(){return passive?1:failed()?failedEntry:phase==ENTRY?gateProgress():phase==CLOSING?1-gateProgress():0;}
+    public float exitOpening(){return passive?1:failed()?failedExit:phase==OPENING?gateProgress():phase==EXIT || phase==COMPLETE?1:0;}
     private float gateProgress(){float t=Physics.clamp(ticks/(float)GATE_TICKS,0,1);return t*t*(3-2*t);}
     /** Shared water velocity field, in world units per motion-second. No random/render state.
      * Open-gate reaches oppose upstream travel; filling sluices stir the sealed chamber. */
@@ -41,8 +42,8 @@ public final class Lock {
     }
     /** Relative-water drag preserves hull orientation and tow mass response. */
     public void integrate(Body b){Physics.integrate(b,currentX(b.x,b.y),currentY(b.x,b.y));}
-    public boolean entryPassable(){return phase==ENTRY && ticks>=GATE_TICKS;}
-    public boolean exitPassable(){return phase==EXIT || phase==COMPLETE;}
+    public boolean entryPassable(){return passive || phase==ENTRY && ticks>=GATE_TICKS;}
+    public boolean exitPassable(){return passive || phase==EXIT || phase==COMPLETE;}
     public int secondsRemaining(){return phase==ENTRY?Math.max(0,(ENTRY_TICKS-ticks+59)/60):phase==EXIT?Math.max(0,(EXIT_TICKS-ticks+59)/60):0;}
     public int targetId(int index){return targets[index];}
     private Body target(Game g,int index){for(Body b:g.cargo)if(b!=null && b.active && b.id==targets[index])return b;return null;}

@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class IndustrialRoadView {
     static final int MIN_COL=-32,MAX_COL=24,MIN_ROW=-12,MAX_ROW=28;
     private static final byte[] ROADS=makeRoads();
+    private static final RoadTile[] TILES=makeTiles();
     private IndustrialRoadView() {}
     static boolean isRoadCell(int col,int row) {
         return Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4;
@@ -37,6 +38,34 @@ public final class IndustrialRoadView {
         }
         return roads;
     }
+    /** A complete parked footprint must stay on the connected paved surface. */
+    static boolean roadFootprint(float x,float y,float halfLength,float halfWidth){
+        int l=(int)StrictMath.floor((x-halfLength)/64),r=(int)StrictMath.floor((x+halfLength)/64);
+        int t=(int)StrictMath.floor((y-halfWidth)/64),b=(int)StrictMath.floor((y+halfWidth)/64);
+        for(int row=t;row<=b;row++)for(int col=l;col<=r;col++)if(!roadClear(col,row))return false;
+        return true;
+    }
+    private static final class RoadTile {
+        final float[] face,patch,crack;final int shade;
+        RoadTile(int col,int row){
+            float x=col*64,y=row*64;int seed=Math.floorMod(col*37+row*71,19);
+            face=new float[]{x,y,x+64,y,x+64,y+64,x,y+64};
+            float px=x+7+seed%9,py=y+8+seed%13;
+            patch=new float[]{px,py,px+22,py-2,px+26,py+13,px+3,py+16};
+            crack=new float[]{x+7,y+47-seed%7,x+24,y+43-seed%5,x+32,y+49,x+49,y+42+seed%9};
+            shade=seed%2==0?0xff343532:0xff393933;
+        }
+        void draw(Painter p){
+            p.surfacePolygon(face,face,SurfaceMaterial.CONCRETE,shade,.12f);
+            p.surfacePolygon(patch,patch,SurfaceMaterial.CONCRETE,0xff252a28,.24f);
+            for(int i=0;i<crack.length-2;i+=2)p.line(crack[i],crack[i+1],crack[i+2],crack[i+3],.65f,0xff171e20);
+        }
+    }
+    private static RoadTile[] makeTiles(){
+        RoadTile[] tiles=new RoadTile[ROADS.length];
+        for(int row=MIN_ROW;row<MAX_ROW;row++)for(int col=MIN_COL;col<MAX_COL;col++)if(roadClear(col,row))tiles[(row-MIN_ROW)*(MAX_COL-MIN_COL)+col-MIN_COL]=new RoadTile(col,row);
+        return tiles;
+    }
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
         Painter world=new RiverPainter(GroundArt.raisedCanvas(g,canvas),c);
@@ -52,7 +81,7 @@ public final class IndustrialRoadView {
             int road=roadMask(col,row);
             if(road==0 || !TrainingGroundView.tileVisible(g,col,row,false)) continue;
             float x=col*64,y=row*64;
-            world.rect(x,y,64,64,0xff101923);
+            TILES[(row-MIN_ROW)*(MAX_COL-MIN_COL)+col-MIN_COL].draw(world);
             // Flush concrete shoulders and faded lane paint stay below factories.
             boolean left=(road&2)!=0,right=(road&4)!=0;
             boolean up=(road&8)!=0,down=(road&16)!=0;

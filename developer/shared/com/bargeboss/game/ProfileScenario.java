@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview"};
+    public static final String[] NAMES={"basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
@@ -17,6 +17,7 @@ public final class ProfileScenario {
                 }
             }else for(int tick=0;tick<120;tick++)root.step();
             if(name.equals("montrose-overview"))root.layout=MontroseHarbor.overview(width,height);
+            if(name.equals("montrose-green-shore"))root.layout=Layout.focused(width,height,MontroseHarbor.mapX(275),MontroseHarbor.mapY(1250),2.4f,width*.5f,height*.53f);
             return;
         }
         root.startTutorial();Game g=root.activeGame();

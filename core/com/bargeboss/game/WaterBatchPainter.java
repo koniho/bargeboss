@@ -48,6 +48,8 @@ public final class WaterBatchPainter implements Painter {
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         flush();target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){flush();target.shoreline(xy,uv,phase,energy,kind,color);}
+    public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){flush();target.surfacePolygon(xy,uv,material,color,wetness);}
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){flush();target.material(x,y,ax,ay,bx,by,kind,detail,amount,color);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){flush();target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){flush();target.ropeSegment(x,y,xx,yy,width,from,to,color);}

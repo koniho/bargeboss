@@ -3,6 +3,8 @@ using namespace metal;
 #include "../../assets/shaders/water-foam.inc"
 #include "../../assets/shaders/rope.inc"
 #include "../../assets/shaders/effects.inc"
+#include "../../assets/shaders/surface.inc"
+#include "../../assets/shaders/shoreline.inc"
 struct Vertex { float2 position; float2 uv; float4 color; uint kind; float phase; float detail; };
 struct Raster { float4 position [[position]]; float2 uv; float4 color; uint kind [[flat]]; float phase [[flat]]; float detail [[flat]]; };
 vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [[buffer(0)]], constant float4 &transform [[buffer(1)]]) {
@@ -11,6 +13,8 @@ vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [
 }
 fragment float4 bbFragment(Raster v [[stage_in]], texture2d<float> image [[texture(0)]]) {
     constexpr sampler sampling(coord::normalized,address::clamp_to_edge,filter::linear);
+    if(v.kind>=20) return v.color*shorelineCoverage(v.uv,v.phase,v.detail,float(v.kind-20));
+    if(v.kind>=14) return float4(min(v.color.rgb*surfaceShade(v.uv,float(v.kind-14),v.phase),float3(v.color.a)),v.color.a);
     if(v.kind>=11) return v.color*effectCoverage(v.uv,float(v.kind-11),v.detail,v.phase);
     if(v.kind==10) return v.color*ropeShade(v.uv);
     if(v.kind>=2) return v.color*foamCoverage(v.uv,v.phase,float(v.kind-2));

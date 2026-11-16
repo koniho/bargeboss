@@ -23,7 +23,7 @@ public final class FactoryArt {
     public static float smokeY(int i,int k) { return FactoryArtData.SMOKE[i][k*3+1]; }
     public static void draw(Game g,Painter p,int i,float wx,float wy) {
         RiverCamera c=g.layout.camera;float size=size(i)*c.scale;
-        float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-(g.tutorial!=null?GroundArt.LAND_RISE*c.scale:0);
+        float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-(!g.montroseStage()?GroundArt.LAND_RISE*c.scale:0);
         float left=x-pivotX(i)*size,top=y-pivotY(i)*size;
         float[] bounds=FactoryArtData.BOUNDS[i];
         float minX=left+bounds[0]*size,minY=top+bounds[1]*size;
