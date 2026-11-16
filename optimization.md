@@ -865,3 +865,48 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Reviewed the five-age arc strip and native Metal canal capture, then installed
   and launched the restored version on the simulator. The short native capture
   was for pixel review, not a new performance claim. Android phone was not used.
+
+### Shared overlay/light materials and translucent whirls (2026-11-16)
+
+- Synced with origin/main before edits and merged again at user request; both
+  checks were already current. Existing painted assets remain textures. iOS
+  Metal already shader-renders all submitted textures and geometry; Android
+  hardware Canvas uses Skia GPU drawing. The new shared `effects.inc` adds
+  procedural halos, guidance dots and progress rings on Metal and API 33+ AGSL.
+  See [the rendering-path inventory](docs/rendering/shader-materials.md).
+- `Painter.material` carries a centered affine basis, kind, detail, amount and
+  ARGB through projection, screen transform, opacity, viewport, scenery and
+  batching wrappers. Shared fallback geometry preserves other hosts. Native
+  Metal material count verifies the real renderer path. The added scalar fits
+  the existing 48-byte aligned vertex; no new texture cache or scene-read pass.
+- Halos no longer build/cache per-color raster shells. Rings submit three local
+  shader patches instead of up to 120 feathered line submissions, with a stroke
+  gutter. This is a submission reduction, not a measured speedup claim. Static
+  terrain/lettering preparation and reference fallbacks still use raster work;
+  this is not a replacement of every asset with procedural artwork.
+- At user request, prop-wash whirl modes 2/3 now use 70% of previous opacity in
+  shared Java, including texture fallback. Bow, shoulder and original expanding
+  arc motion/opacity are preserved. No physics, emission density or life changes.
+- Full shared suite and cargo asset/shadow/surface derivative checks pass.
+  JVM/J2ObjC parity: `b66f6bfb:2:1350`. Foam transparency/shoreline (197,334)
+  and all-heading production hull/cargo shoreline (1,439,937) pixel checks pass.
+  Reviewed desktop guidance frames and native Metal canal pixels; native capture
+  includes 42 material patches. Release iOS simulator and unsigned Android builds
+  succeed. Android phone untouched; AGSL runtime compilation/pixels/timing and
+  physical-device pacing remain unvalidated.
+- Two isolated Release Metal canal-middle replays, 60 warmup / 300 frames:
+  59.01 / 60.01 FPS, interval p95 17.070 / 16.717 ms, maximum 100.004 / 19.188 ms;
+  CPU draw p95 5.798 / 5.866 ms, GPU p95 0.236 / 0.246 ms. Final counters agree:
+  49 material, 479 foam, 304 smoke, 4 reflection patches, zero evictions,
+  154,335,000 retained texture bytes. Existing direct-layer fallbacks remain (89
+  cumulative). Raw [captures](docs/performance/shader-materials-2026-11-16/)
+  are retained; no before/after speedup or locked-60 claim.
+- User reports foam animation stutter. Prop wash emits every 10 ticks (6 Hz),
+  shoulders every 8 (7.5 Hz), with six-tick fade-in and rotating fine noise.
+  These are plausible visual-pulsing causes, not established diagnosis. Shader
+  phase wraps every 240 ticks through periodic sine/cosine, so a wrap alone is
+  not evidence of discontinuity. The 100 ms presentation gap also needs native
+  tracing: preceding CPU draw was 3.932 ms and reported GPU 0.076 ms, insufficient
+  to assign the cause. Do not blame fluid physics or GPU saturation from this
+  capture. Next investigation should separately compare emission/noise motion
+  and presentation pacing; original arcs were not changed again.

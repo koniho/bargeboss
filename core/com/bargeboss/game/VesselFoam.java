@@ -85,6 +85,8 @@ public final class VesselFoam {
         patch(p,frame,x,y,angle,length,width,alpha,0);
     }
     static void patch(Painter p,int frame,float x,float y,float angle,float length,float width,float alpha,float phase) {
+        // Keep the rotating prop-wash whirls translucent beneath the brighter crests.
+        if(frame==2 || frame==3)alpha*=.70f;
         if(alpha<=.005f)return;
         float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);
         p.waterFoam(x,y,c*length,s*length,-s*width,c*width,phase,frame,alpha);

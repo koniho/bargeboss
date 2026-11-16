@@ -145,6 +145,7 @@ public final class VesselNavigationLightsTest {
             }
         }
         private void add(float x,float y,int color){calls++;if((color&0xffffff)==(VesselNavigationLights.RED&0xffffff) && (color>>>24)>0)red++;if((color&0xffffff)==(VesselNavigationLights.WHITE&0xffffff) && (color>>>24)>0)white++;if((color&0xffffff)==(VesselNavigationLights.GREEN&0xffffff) && (color>>>24)>0)green++;hash=31*hash+Float.floatToIntBits(x);hash=31*hash+Float.floatToIntBits(y);hash=31*hash+color;}
+        public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){add(x,y,color);}
         public void layer(StaticLayer l,float x,float y,float scale,float alpha){add(x,y,l.key());}
         public void circle(float x,float y,float r,int color){add(x,y,color);}
         public void rect(float x,float y,float w,float h,int color){add(x,y,color);}

@@ -422,6 +422,11 @@ public final class CanvasPainter implements Painter {
         canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
+    public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
+        if((color>>>24)==0 || amount<=0)return;
+        if(waterFoamShader!=null && canvas.isHardwareAccelerated())waterFoamShader.material(canvas,x,y,ax,ay,bx,by,kind,detail,amount,color);
+        else Painter.super.material(x,y,ax,ay,bx,by,kind,detail,amount,color);
+    }
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
         if((color>>>24)==0)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())

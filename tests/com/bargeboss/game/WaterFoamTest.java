@@ -5,7 +5,7 @@ public final class WaterFoamTest {
     private static int checks;
     private static void check(boolean value,String message){checks++;if(!value)throw new AssertionError(message);}
     private static final class Trace implements Painter {
-        int count,reflections,lastColor,smoke;float energy,x,y;
+        int count,reflections,lastColor,smoke,materials;float energy,x,y;
         public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
             check(Float.isFinite(x+y+ax+ay+bx+by+phase+alpha),"finite foam inputs");
             check(kind>=0 && kind<=5 && alpha>0 && alpha<=1,"bounded foam inputs");
@@ -15,6 +15,7 @@ public final class WaterFoamTest {
             check(Float.isFinite(x+y+ax+ay+bx+by+phase),"finite reflection inputs");
             reflections++;lastColor=color;
         }
+        public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){materials++;this.x=x;this.y=y;lastColor=color;}
         public void smokePuff(float x,float y,float radius,float phase,int color){smoke++;lastColor=color;}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
@@ -52,6 +53,11 @@ public final class WaterFoamTest {
         check(t.reflections==2 && t.lastColor==0x8000ff00,"shared water reflection reaches native painter");
         p.smokePuff(300,400,20,1,0xc01c201b);
         check(t.smoke==1 && t.lastColor==0x601c201b,"dark smoke tint/opacity survive wrapper chain");
+        p.material(300,400,20,0,0,10,EffectMaterial.GLOW,0,1,0xc0ffaa44);
+        check(t.materials==1 && t.lastColor==0x60ffaa44 && t.x==c.screenX(300,400),"material projection and opacity survive actual wrapper chain");
+        check(root.materials>0,"actual renderer forwards procedural light materials");
+        Trace ring=new Trace();SoftCue.ring(ring,30,40,20,.75f,0xffffffff,1);
+        check(ring.materials==3,"progress rings have a fixed submission budget");
         System.out.println(checks+" water shader direction, phase, bounds and wrapper assertions passed");
     }
 }

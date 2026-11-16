@@ -3,31 +3,7 @@ package com.bargeboss.game;
 /** Named scenery emitters share deterministic organic light and exhaust animation. */
 public final class SceneryEffects {
     private SceneryEffects() {}
-    private static final java.util.Map<Integer,StaticLayer> GLOW_KERNELS=new java.util.HashMap<Integer,StaticLayer>();
-    private static final float KERNEL_CENTER=22,KERNEL_RADIUS=4,PEAK_ENERGY=2.45f;
-    /** Immutable shells only. Source keys 0x40/0x41 do not collide with terrain 0x20/0x21.
-     * The small 3% boost compensates group-opacity versus per-shell compositing. */
-    private static StaticLayer kernel(int color,boolean compact) {
-        final int rgb=color&0xffffff,key=(compact?0x41000000:0x40000000)|rgb;
-        StaticLayer layer=GLOW_KERNELS.get(key);if(layer!=null)return layer;
-        final boolean small=compact;
-        layer=new StaticLayer() {
-            public int key(){return key;}
-            public float width(){return KERNEL_CENTER*2;}
-            public float height(){return KERNEL_CENTER*2;}
-            public void paint(Painter p) {
-                if(small) {
-                    p.circle(KERNEL_CENTER,KERNEL_CENTER,KERNEL_RADIUS*4.58f,tint(rgb,PEAK_ENERGY*5.7f*1.03f));
-                    p.circle(KERNEL_CENTER,KERNEL_CENTER,KERNEL_RADIUS*3.32f,tint(rgb,PEAK_ENERGY*8.6f*1.03f));
-                    p.circle(KERNEL_CENTER,KERNEL_CENTER,KERNEL_RADIUS*1.85f,tint(rgb,PEAK_ENERGY*26*1.03f));
-                } else for(int i=10;i>=1;i--) {
-                    float t=i/10f;
-                    p.circle(KERNEL_CENTER,KERNEL_CENTER,KERNEL_RADIUS*(.8f+4.2f*t),tint(rgb,PEAK_ENERGY*(1.4f+3.2f*(1-t))*1.03f));
-                }
-            }
-        };
-        GLOW_KERNELS.put(key,layer);return layer;
-    }
+    private static final float KERNEL_RADIUS=4,PEAK_ENERGY=2.45f;
     /** Inland landmarks sit behind foreground props and never change collision geometry. */
     public static void industrialStacks(Game g,Painter p) {
         if(g.trainingChannel()) return;
@@ -52,8 +28,7 @@ public final class SceneryEffects {
         float driftX=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
         float driftY=radius*.12f*(float)StrictMath.sin(ticks*.013+phase*1.7);
         float scale=radius*breath/KERNEL_RADIUS;
-        p.layer(kernel(color,false),x+driftX*.65f-KERNEL_CENTER*scale,y+driftY*.65f-KERNEL_CENTER*scale,
-                scale,Physics.clamp(opacity*energy/PEAK_ENERGY,0,1));
+        p.material(x+driftX*.65f,y+driftY*.65f,40*scale,0,0,40*scale,EffectMaterial.GLOW,0,1,tint(color,120*Physics.clamp(opacity*energy/PEAK_ENERGY,0,1)));
         for(int lobe=0;lobe<3;lobe++) {
             double angle=phase+lobe*2.1+ticks*.003;
             float dx=(float)StrictMath.cos(angle)*radius*.65f,dy=(float)StrictMath.sin(angle)*radius*.4f;
@@ -68,8 +43,7 @@ public final class SceneryEffects {
         float dx=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
         float dy=radius*.12f*(float)StrictMath.sin(ticks*.013+phase*1.7);
         float scale=radius*breath/KERNEL_RADIUS;
-        p.layer(kernel(color,true),x+dx*.6f-KERNEL_CENTER*scale,y+dy*.6f-KERNEL_CENTER*scale,
-                scale,Physics.clamp(opacity*energy/PEAK_ENERGY,0,1));
+        p.material(x+dx*.6f,y+dy*.6f,36.64f*scale,0,0,36.64f*scale,EffectMaterial.GLOW,0,1,tint(color,120*Physics.clamp(opacity*energy/PEAK_ENERGY,0,1)));
         p.circle(x,y,radius*.65f,tint(0xffe6ab,opacity*energy*19));
     }
     /** Smoke leaves a declared open top rim; it never creates a new outlet in a painted prop. */

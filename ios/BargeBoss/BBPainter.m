@@ -7,6 +7,7 @@
 #import "com/bargeboss/game/WaterFoam.h"
 #import "com/bargeboss/game/WaterReflection.h"
 #import "com/bargeboss/game/SmokePuff.h"
+#import "com/bargeboss/game/EffectMaterial.h"
 #import "com/bargeboss/game/RopeMaterial.h"
 #import <math.h>
 
@@ -288,6 +289,9 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 - (void)ropeSegmentWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)xx withFloat:(jfloat)yy withFloat:(jfloat)width withFloat:(jfloat)from withFloat:(jfloat)to withInt:(jint)argb {
     [BBRopeMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:xx withFloat:yy withFloat:width withFloat:from withFloat:to withInt:argb];
+}
+- (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
+    [BBEffectMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withInt:kind withFloat:detail withFloat:amount withInt:argb];
 }
 - (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
     [BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];

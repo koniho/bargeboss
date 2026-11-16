@@ -18,17 +18,19 @@ public final class SoftCue {
         if(!(p instanceof RiverPainter))Lettering.center(p,text,x,y,size,alpha(color,.78f));
     }
     public static void dot(Painter p,float x,float y,float radius,int color) {
-        p.circle(x,y,radius*1.8f,alpha(color,.045f));
-        p.circle(x,y,radius*1.3f,alpha(color,.09f));
-        p.circle(x,y,radius*.8f,alpha(color,.35f));
+        p.material(x,y,radius*3.6f,0,0,radius*3.6f,EffectMaterial.DOT,0,1,color);
     }
     public static void ring(Painter p,float x,float y,float radius,float fraction,int color,float width) {
-        int segments=40;
-        for(int i=0;i<segments*fraction;i++) {
-            double a=-Math.PI/2+i*Math.PI*2/segments,b=-Math.PI/2+Math.min(i+1,segments*fraction)*Math.PI*2/segments;
-            line(p,x+radius*(float)StrictMath.cos(a),y+radius*(float)StrictMath.sin(a),
-                    x+radius*(float)StrictMath.cos(b),y+radius*(float)StrictMath.sin(b),width,color);
-        }
+        if(radius<=0 || fraction<=0)return;
+        float zoom=p instanceof RiverPainter?((RiverPainter)p).camera.scale:1;
+        float core=Math.min(1.4f,width)/Math.max(1,zoom);
+        ringBand(p,x,y,radius,fraction,core+5/zoom,alpha(color,.055f));
+        ringBand(p,x,y,radius,fraction,core+2.5f/zoom,alpha(color,.11f));
+        ringBand(p,x,y,radius,fraction,core,alpha(color,.52f));
+    }
+    private static void ringBand(Painter p,float x,float y,float radius,float fraction,float width,int color) {
+        float diameter=(radius*2+width)/.98f;
+        p.material(x,y,diameter,0,0,diameter,EffectMaterial.RING,width/diameter,Physics.clamp(fraction,0,1),color);
     }
     public static void arrow(Painter p,float x,float y,float xx,float yy,int color) {
         float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);if(length<3)return;

@@ -39,6 +39,11 @@ public interface Painter {
     default void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color) {
         RopeMaterial.fallback(this,x,y,xx,yy,width,from,to,color);
     }
+    /** Centered affine procedural material. Shared code owns geometry and parameters.
+     * See EffectMaterial for modes; fallback keeps reference/older hosts functional. */
+    default void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
+        EffectMaterial.fallback(this,x,y,ax,ay,bx,by,kind,detail,amount,color);
+    }
     /** Screen-space rolling exhaust. Shared callers own source, transport, palette and opacity. */
     default void smokePuff(float x,float y,float radius,float phase,int color) {
         SmokePuff.fallback(this,x,y,radius,color);

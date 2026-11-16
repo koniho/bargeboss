@@ -25,10 +25,18 @@ final class WaterFoamShader {
                 bytes.reset();while((n=rope.read(buffer))!=-1)bytes.write(buffer,0,n);
                 source+="\n"+new String(bytes.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
             }
-            shader=new RuntimeShader(source+"\nuniform float phase; uniform float kind; uniform float opacity; uniform float ropeFrom; uniform float ropeTo; layout(color) uniform float4 tint;\n"
-                +"half4 main(float2 uv) { if(kind>7.5) { float4 r=ropeShade(float2(mix(ropeFrom,ropeTo,uv.x),uv.y)); return half4(tint.rgb*r.rgb*opacity,r.a*opacity); } float a=foamCoverage(uv,phase,kind)*opacity; return half4(tint.rgb*a,a); }");
+            try(InputStream effects=assets.open("shaders/effects.inc")) {
+                bytes.reset();while((n=effects.read(buffer))!=-1)bytes.write(buffer,0,n);
+                source+="\n"+new String(bytes.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
+            }
+            shader=new RuntimeShader(source+"\nuniform float phase; uniform float kind; uniform float opacity; uniform float detail; uniform float ropeFrom; uniform float ropeTo; layout(color) uniform float4 tint;\n"
+                +"half4 main(float2 uv) { if(kind>8.5) { float a=effectCoverage(uv,kind-9.0,detail,phase)*opacity; return half4(tint.rgb*a,a); } if(kind>7.5) { float4 r=ropeShade(float2(mix(ropeFrom,ropeTo,uv.x),uv.y)); return half4(tint.rgb*r.rgb*opacity,r.a*opacity); } float a=foamCoverage(uv,phase,kind)*opacity; return half4(tint.rgb*a,a); }");
             paint.setShader(shader);
         } catch(IOException e) {throw new IllegalStateException("Missing shared water shader",e);}
+    }
+    void material(Canvas canvas,float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
+        shader.setFloatUniform("detail",detail);
+        draw(canvas,x,y,ax,ay,bx,by,amount,kind+9,(color>>>24)/255f,color);
     }
     void rope(Canvas canvas,float x,float y,float xx,float yy,float width,float from,float to,int color) {
         float dx=xx-x,dy=yy-y,len=(float)Math.hypot(dx,dy);if(len<.001f || width<=0)return;

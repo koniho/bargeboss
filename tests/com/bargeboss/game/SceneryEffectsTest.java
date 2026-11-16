@@ -26,16 +26,12 @@ public final class SceneryEffectsTest {
         SceneryEffects.glow(full,50,70,3,0xffffbd50,1,90,.8f);
         SceneryEffects.compactGlow(compact,50,70,3,0xffffbd50,1,90,.8f);
         SceneryEffects.glow(changed,80,95,7,0xffffbd50,.28f,173,2.3f);
-        check(full.layers==1 && full.nativeCalls==5,"full glow submits one cached shell and four live accents");
-        check(compact.layers==1 && compact.nativeCalls==2,"distant glow submits one cached shell and its live fixture core");
-        check(full.layer==changed.layer && full.layer.key()==changed.layer.key(),"position, radius, phase and opacity reuse immutable kernel");
-        check(full.layer.key()!=compact.layer.key(),"full and compact kernels have distinct cache identities");
-        check((full.layer.key()&0xff000000)==0x40000000 && (compact.layer.key()&0xff000000)==0x41000000,"kernel keys are separate from terrain and building namespaces");
-        check(changed.layerAlpha<full.layerAlpha && changed.layerScale>full.layerScale,"live fade and size remain outside cached pixels");
+        check(full.materials==1 && full.nativeCalls==5,"full glow submits one shader patch and four live accents");
+        check(compact.materials==1 && compact.nativeCalls==2,"distant glow submits one shader patch and its live fixture core");
+        check(changed.materialAlpha<full.materialAlpha && changed.materialSize>full.materialSize,"fade and size are supplied to the shader");
+        check(full.layers==0 && compact.layers==0,"halos require no raster cache entries");
         check(near(full.lastX,50) && near(full.lastY,70),"bright core stays at its authored fixture while halo drifts");
         check(near(changed.lastX,80) && near(changed.lastY,95),"animated halo never drags the fixture lens");
-        check(full.layer.width()==44 && full.layer.height()==44 && compact.layer.width()==44,"small glow kernels retain a fixed bounded raster footprint");
-        for(StaticLayer layer:new StaticLayer[]{full.layer,compact.layer}) layer.paint(new KernelBounds(layer.width(),layer.height()));
         for(int frame=0;frame<2;frame++) for(float width:new float[]{960,1333.3334f}) {
             Game g=new Game();g.configureCanvas(width,600);g.reset();g.visualTicks=90;
             Capture p=new Capture();ChimneyArt.draw(g,p,frame,508,620);
@@ -47,19 +43,9 @@ public final class SceneryEffectsTest {
         }
         System.out.println(checks+" organic scenery glow, smoke, opacity and attachment assertions passed");
     }
-    private static final class KernelBounds implements Painter {
-        final float width,height;KernelBounds(float w,float h){width=w;height=h;}
-        public void circle(float x,float y,float radius,int color) {
-            check(Float.isFinite(x) && Float.isFinite(y) && Float.isFinite(radius),"kernel geometry is finite");
-            check(x-radius>=1 && y-radius>=1 && x+radius<=width-1 && y+radius<=height-1,"kernel shells retain antialias gutters inside clipped layer bounds");
-        }
-        public void rect(float x,float y,float w,float h,int color){throw new AssertionError("unexpected kernel primitive");}
-        public void line(float x,float y,float xx,float yy,float w,int color){throw new AssertionError("unexpected kernel primitive");}
-        public void poly(float[] xy,int color){throw new AssertionError("unexpected kernel primitive");}
-        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new AssertionError("unexpected kernel asset");}
-        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new AssertionError("unexpected kernel asset");}
-    }
     private static final class Capture implements Painter {
+        int materials;float materialAlpha,materialSize;
+        public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){materials++;nativeCalls++;calls++;materialAlpha=color>>>24;materialSize=ax;add(x);add(y);add(ax);add(by);add(amount);hash=hash*31+color;}
         int calls,atlas=-1,frame,layers,nativeCalls;long hash=17;float lastX,lastY,layerAlpha,layerScale;StaticLayer layer;boolean inLayer;
         public void layer(StaticLayer value,float x,float y,float scale,float alpha) {
             layers++;nativeCalls++;layer=value;layerAlpha=alpha;layerScale=scale;
