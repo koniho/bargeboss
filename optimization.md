@@ -1105,3 +1105,19 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   p95 7.0148 ms / max 35.1835 ms. Native pixels reviewed. The isolated long draw
   remains unattributed by this three-column capture; do not claim locked 60 FPS.
   Raw capture: out/ios-profile/dusk-calumet-v1.
+
+### Physical Android dusk validation
+
+- Installed the signed dusk build on the connected Pixel 11 Pro with `adb install -r`;
+  original signing certificate matched, app data preserved. Reviewed native Montrose
+  pixels and relaunched normal gameplay. Restored the original 300000 ms timeout.
+- montrose-docks replay, 60 warmup + 300 samples: draw median 16.144 ms / p95
+  19.627 ms; interval median 20.596 ms / p95 35.254 ms; simulation median
+  1.277 ms / p95 1.625 ms. This physical Android scene does NOT meet 60 FPS.
+- No measured synchronous layer/frame builds or evictions; four fallback/async
+  misses and one background layer build. These counters do not isolate the
+  remaining bottleneck. Raw evidence: out/android-profile/dusk-montrose-v1.
+- One-time signing setup completed: original phone debug key now resides in the
+  ignored local build/debug.keystore (mode 600), which build-android.sh uses by
+  default. Temporary Downloads key removed. Do not regenerate this key or delete
+  it during build cleanup; future Mac build/install rounds require no manual signing.
