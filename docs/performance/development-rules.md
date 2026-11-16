@@ -134,3 +134,17 @@ immediately expand and simplifies polygon-bound scans. Median drawing improved
 modestly, with unchanged pixels, but interval tails did not improve consistently.
 Do not equate less Java work with guaranteed presentation at 60 FPS. Keep native
 path processing, effect clipping and scheduler/presentation waits measurable.
+
+## Static-layer preparation and sparse scenery
+
+Pass the actual display scale to `Painter.prepareLayer`, matching the subsequent
+`layer` call. Do not pass `StaticLayer.rasterScale(scale)`; native hosts perform
+that quantization themselves. Double quantization can continuously prepare3×
+images while the visible draw asks for2×, starving the intended cache entries.
+
+Calculate visible layer byte cost including transparent pixels and pending worker
+reservations. Skip empty chunks and bound sparse content tightly before raising
+cache budgets. A small harbor dock in a large transparent tile still pays for
+the entire bitmap. Verify warm frames have no persistent fallbacks/evictions,
+then examine native issue-to-swap timing. Keep light kernels shared and allow both
+raster buckets when a subtle animation straddles a density threshold.

@@ -34,13 +34,17 @@ public final class MontroseView {
     }
     private static final class Ground extends StaticLayer {
         final int col,row;final RiverCamera camera;final float[] waterClip;
+        final float left,top,w,h;
         Ground(int col,int row){this.col=col;this.row=row;camera=new RiverCamera(20,35,1,row*256,col*256+320,1);
-            waterClip=MontroseHarbor.projected(MontroseHarbor.WATER_TRIANGLES,raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55,Float.NEGATIVE_INFINITY);}
+            waterClip=MontroseHarbor.projected(MontroseHarbor.WATER_TRIANGLES,raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55,Float.NEGATIVE_INFINITY);
+            float[] bounds=groundBounds(camera,col,row);left=bounds[0];top=bounds[1];w=bounds[2];h=bounds[3];}
         public int key(){return 820000+(col+5)*32+row+8;}
-        public float width(){return 400;}
-        public float height(){return 310;}
+        public float width(){return w;}
+        public float height(){return h;}
         public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
+            if(w<=0 || h<=0)return;
+            p=ScreenView.offset(p,-left,-top);
             RiverCamera land=raised(camera,MontroseHarbor.LAND_RISE);Painter world=new RiverPainter(p,land);
             walls(p,camera,col*256,row*256,(col+1)*256,(row+1)*256);
             p.pushClipOutside(waterClip);
@@ -68,6 +72,42 @@ public final class MontroseView {
                 dock(p,camera,q);
             }
         }
+    }
+    /** Construction-only bounds of visible rigid surfaces. Empty water never needs a raster.
+     * Original camera, material clips and painter order stay in their 400x310 coordinates. */
+    private static float[] groundBounds(RiverCamera c,int col,int row){
+        float l=col*256,t=row*256,r=l+256,b=t+256;
+        float[] bounds={Float.MAX_VALUE,Float.MAX_VALUE,-Float.MAX_VALUE,-Float.MAX_VALUE};
+        for(float[] tri:MontroseHarbor.LAND_TRIANGLES){
+            float[] q=PolygonWater.rectangle(tri,l,t,r,b);
+            if(q.length<6 || Math.abs(PolygonWater.area(q))<.0001f)continue;
+            for(int i=0;i<q.length;i+=2)groundPoint(bounds,c,q[i],q[i+1],MontroseHarbor.LAND_RISE);
+        }
+        // Include the same clipped front-facing seawall ranges as walls(), plus cap strokes.
+        float[] coast=MontroseHarbor.COAST;
+        for(int i=2;i<coast.length-4;i+=2){
+            float ax=coast[i],ay=coast[i+1],bx=coast[i+2],by=coast[i+3],dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy);
+            float nx=-dy/len,ny=dx/len;if(!MontroseHarbor.openWater((ax+bx)/2+nx*8,(ay+by)/2+ny*8)){nx=-nx;ny=-ny;}
+            if(ny-nx<=0)continue;float start=0,end=1;
+            for(int axis=0;axis<2;axis++){float v=axis==0?dx:dy,o=axis==0?ax:ay,min=axis==0?l:t,max=axis==0?r:b;
+                if(Math.abs(v)<.001f){if(o<min || o>=max){end=-1;break;}}else{float aa=(min-o)/v,bb=(max-o)/v;start=Math.max(start,Math.min(aa,bb));end=Math.min(end,Math.max(aa,bb));}}
+            if(end<=start)continue;
+            groundPoint(bounds,c,ax+dx*start,ay+dy*start,0);groundPoint(bounds,c,ax+dx*end,ay+dy*end,0);
+            groundPoint(bounds,c,ax+dx*start,ay+dy*start,MontroseHarbor.LAND_RISE);groundPoint(bounds,c,ax+dx*end,ay+dy*end,MontroseHarbor.LAND_RISE);
+        }
+        // A piece belongs to its center's tile but may extend past that tile: keep every corner.
+        for(float[] q:PIECES){float x=(q[0]+q[4])/2,y=(q[1]+q[5])/2;if(x<l || x>=r || y<t || y>=b)continue;
+            for(int i=0;i<q.length;i+=2){groundPoint(bounds,c,q[i],q[i+1],0);groundPoint(bounds,c,q[i],q[i+1],MontroseHarbor.DOCK_RISE);}}
+        if(bounds[0]==Float.MAX_VALUE)return new float[4];
+        // Four source pixels protect filtered material edges, AA and rounded cap strokes. Clamp to the
+        // original layer viewport so trimming cannot expose previously clipped geometry.
+        float left=Math.max(0,(float)StrictMath.floor(bounds[0]-4)),top=Math.max(0,(float)StrictMath.floor(bounds[1]-4));
+        float right=Math.min(400,(float)StrictMath.ceil(bounds[2]+4)),bottom=Math.min(310,(float)StrictMath.ceil(bounds[3]+4));
+        return new float[]{left,top,Math.max(0,right-left),Math.max(0,bottom-top)};
+    }
+    private static void groundPoint(float[] bounds,RiverCamera c,float x,float y,float rise){
+        float xx=c.screenX(x,y),yy=c.screenY(x,y)-rise*c.scale;
+        bounds[0]=Math.min(bounds[0],xx);bounds[1]=Math.min(bounds[1],yy);bounds[2]=Math.max(bounds[2],xx);bounds[3]=Math.max(bounds[3],yy);
     }
     private static void groundPoly(Painter p,float[] q,int color,float l,float t,float r,float b){
         q=PolygonWater.rectangle(q,l,t,r,b);if(q.length>=6)p.poly(q,color);
@@ -142,9 +182,10 @@ public final class MontroseView {
     private static Ground[] ground(){ArrayList<Ground> out=new ArrayList<Ground>();for(int row=-9;row<8;row++)for(int col=-7;col<14;col++)out.add(new Ground(col,row));return out.toArray(new Ground[out.size()]);}
     public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);
         RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);new RiverPainter(canvas,land).poly(MontroseHarbor.LAND_POLYGON,0xff273b2b);
-        for(Ground layer:GROUND){float wx=layer.col*256,wy=layer.row*256,x=c.screenX(wx,wy)-layer.camera.screenX(wx,wy)*c.scale,y=c.screenY(wx,wy)-layer.camera.screenY(wx,wy)*c.scale;
+        for(Ground layer:GROUND){if(layer.w<=0 || layer.h<=0)continue;
+            float wx=layer.col*256,wy=layer.row*256,x=c.screenX(wx,wy)+(layer.left-layer.camera.screenX(wx,wy))*c.scale,y=c.screenY(wx,wy)+(layer.top-layer.camera.screenY(wx,wy))*c.scale;
             if(x+layer.width()*c.scale<0 || x>g.layout.width || y+layer.height()*c.scale<0 || y>g.layout.height)continue;
-            if(canvas.preparesLayers())canvas.prepareLayer(layer,StaticLayer.rasterScale(c.scale));canvas.layer(layer,x,y,c.scale,1);
+            if(canvas.preparesLayers())canvas.prepareLayer(layer,c.scale);canvas.layer(layer,x,y,c.scale,1);
         }
         // Every ground receiver finishes before any upright park sprite; a later
         // tree's cast mask must never darken an earlier tree's canopy.

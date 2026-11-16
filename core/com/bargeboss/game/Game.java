@@ -198,6 +198,8 @@ public final class Game {
             float distance=Physics.length(load.x-dockX(load.berth),load.y-dockY(load.berth));
             zoom+=(DOCK_ZOOM-WORK_ZOOM)*workBlend*Physics.clamp((190-distance)/130,0,1);
         }
+        // Marina work targets twice the former scale; retain hull fitting below.
+        if(montroseStage() && zoom>1)zoom*=MontroseHarbor.ZOOM_MULTIPLIER;
         // Fit the working hulls and, when relevant, their actual elevated tie point.
         // Far-away held loads do not drag the camera away from the player.
         if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230 && !(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE))) {load=null;docking=false;}

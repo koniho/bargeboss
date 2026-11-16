@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Montrose-inspired marina. Game distances/slips are enlarged for an 80-foot tow.
  * One geometry source drives collision, water effects, solid-shore cutouts and scenery. */
 public final class MontroseHarbor {
-    public static final float LAND_RISE=18,DOCK_RISE=4;
+    public static final float LAND_RISE=18,DOCK_RISE=4,ZOOM_MULTIPLIER=2;
     public static final float MAP_SCALE=1.5f;
     public static float mapX(float x){return x*MAP_SCALE-600;}
     public static float mapY(float y){return y*MAP_SCALE-1300;}
@@ -104,19 +104,31 @@ public final class MontroseHarbor {
             for(float[] piece:pieces)p.poly(piece,color);
         }
     }
+    private static final class Floats {
+        float[] values=new float[96];int count;
+        void triangle(float ax,float ay,float bx,float by,float cx,float cy){
+            if(count+6>values.length)values=java.util.Arrays.copyOf(values,Math.max(count+6,values.length*2));
+            values[count++]=ax;values[count++]=ay;values[count++]=bx;values[count++]=by;values[count++]=cx;values[count++]=cy;
+        }
+        float[] finish(){return java.util.Arrays.copyOf(values,count);}
+    }
     static float[] projected(float[][] shapes,RiverCamera c,float l,float t,float r,float b,float depth){return projected(shapes,c,l,t,r,b,depth,0);}
     static float[] projected(float[][] shapes,RiverCamera c,float l,float t,float r,float b,float depth,float rise){
-        java.util.ArrayList<Float> result=new java.util.ArrayList<Float>();float[] region={l,t,r,b};
-        for(float[] shape:shapes){if(!PolygonWater.overlaps(region,PolygonWater.bounds(shape)))continue;float[] q=PolygonWater.rectangle(shape,l,t,r,b);
+        Floats result=new Floats();
+        float[][] boxes=shapes==LAND_TRIANGLES?LAND_BOUNDS:shapes==DOCKS?DOCK_BOUNDS:shapes==WATER_TRIANGLES?WATER_BOUNDS:null;
+        for(int shapeIndex=0;shapeIndex<shapes.length;shapeIndex++){
+            float[] shape=shapes[shapeIndex],box=boxes==null?PolygonWater.bounds(shape):boxes[shapeIndex];
+            if(l>=box[2] || r<=box[0] || t>=box[3] || b<=box[1])continue;
+            float[] q=PolygonWater.rectangle(shape,l,t,r,b);
             if(q.length<6)continue;for(int i=0;i<q.length;i+=2){float x=c.screenX(q[i],q[i+1]);q[i+1]=c.screenY(q[i],q[i+1])-rise*c.scale;q[i]=x;}
             if(depth!=Float.NEGATIVE_INFINITY)q=PolygonWater.edge(q,0,depth-rise*c.scale,1,depth-rise*c.scale,true);
-            for(int i=2;i<q.length-2;i+=2)for(float v:new float[]{q[0],q[1],q[i],q[i+1],q[i+2],q[i+3]})result.add(v);
+            for(int i=2;i<q.length-2;i+=2)result.triangle(q[0],q[1],q[i],q[i+1],q[i+2],q[i+3]);
         }
-        float[] out=new float[result.size()];for(int i=0;i<out.length;i++)out[i]=result.get(i);return out;
+        return result.finish();
     }
-    static float[] shore(RiverCamera c,float l,float t,float r,float b,float depth){
-        float[] land=projected(LAND_TRIANGLES,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE);
-        java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length;
+    /** Camera-facing edges never change with pan/zoom. Prepare geometry and bounds once. */
+    private static final float[][] SHORE_FACES=shoreFaces();
+    private static float[][] shoreFaces(){java.util.ArrayList<float[]> out=new java.util.ArrayList<float[]>();
         for(int group=0;group<2;group++){
             int n=group==0?COAST.length/2-1:DOCKS.length*4;
             for(int k=0;k<n;k++){
@@ -127,7 +139,40 @@ public final class MontroseHarbor {
                 float nx=dy/len,ny=-dx/len;
                 if(group==0){if(!openWater((ax+bx)/2+nx*8,(ay+by)/2+ny*8)){nx=-nx;ny=-ny;}}
                 else if(PolygonWater.area(DOCKS[k/4])<0){nx=-nx;ny=-ny;}
-                if(ny-nx<=0)continue; // Rear walls are hidden by their own deck and cannot cut hulls.
+                if(ny-nx<=0)continue;
+                out.add(new float[]{ax,ay,bx,by,rise,dx,dy,Math.min(ax,bx),Math.min(ay,by),Math.max(ax,bx),Math.max(ay,by)});
+            }
+        }
+        return out.toArray(new float[out.size()][]);
+    }
+    /** At most 32 exact masks / 256KiB float payload per render thread. Geometry is immutable. */
+    private static final class ShoreCache {
+        RiverCamera camera;final float[][] keys=new float[32][5],masks=new float[32][];int next,retained;
+        float[] get(RiverCamera c,float l,float t,float r,float b,float depth){
+            if(camera!=c){java.util.Arrays.fill(masks,null);camera=c;next=retained=0;return null;}
+            for(int i=0;i<masks.length;i++){float[] key=keys[i];if(masks[i]!=null && key[0]==l && key[1]==t && key[2]==r && key[3]==b && key[4]==depth)return masks[i];}
+            return null;
+        }
+        void put(float l,float t,float r,float b,float depth,float[] mask){
+            if(mask.length>65536)return;
+            if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}
+            while(retained+mask.length>65536){if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}next=(next+1)%masks.length;}
+            float[] key=keys[next];key[0]=l;key[1]=t;key[2]=r;key[3]=b;key[4]=depth;masks[next]=mask;retained+=mask.length;next=(next+1)%masks.length;
+        }
+    }
+    private static final ThreadLocal<ShoreCache> SHORE_CACHE=new ThreadLocal<ShoreCache>(){
+        protected ShoreCache initialValue(){return new ShoreCache();}
+    };
+    static float[] shore(RiverCamera c,float l,float t,float r,float b,float depth){
+        ShoreCache cache=SHORE_CACHE.get();float[] mask=cache.get(c,l,t,r,b,depth);
+        if(mask!=null)return mask;mask=buildShore(c,l,t,r,b,depth);cache.put(l,t,r,b,depth,mask);return mask;
+    }
+    private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth){
+        float[] land=projected(LAND_TRIANGLES,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE);
+        java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length;
+        for(float[] face:SHORE_FACES){
+                if(face[7]>r || face[9]<l || face[8]>b || face[10]<t)continue;
+                float ax=face[0],ay=face[1],bx=face[2],by=face[3],rise=face[4],dx=face[5],dy=face[6];
                 float start=0,end=1;
                 for(int axis=0;axis<2;axis++){
                     float delta=axis==0?dx:dy,origin=axis==0?ax:ay,min=axis==0?l:t,max=axis==0?r:b;
@@ -147,8 +192,7 @@ public final class MontroseHarbor {
                 float x=c.screenX(ax+dx*start,ay+dy*start),y=c.screenY(ax+dx*start,ay+dy*start);
                 float xx=c.screenX(ax+dx*end,ay+dy*end),yy=c.screenY(ax+dx*end,ay+dy*end),h=rise*c.scale;
                 float[] q={x,y,xx,yy,xx,yy-h,x,y-h};
-                if(q.length<6)continue;faces.add(q);count+=(q.length/2-2)*6;
-            }
+                faces.add(q);count+=12;
         }
         float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);int at=land.length+dock.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
@@ -187,7 +231,7 @@ public final class MontroseHarbor {
     public void setup(Game g){
         g.tug.x=mapX(453);g.tug.y=mapY(1340);g.tug.angle=-(float)Math.PI/2;
         g.cargo[0]=new Body(g.nextId++,2,mapX(453),mapY(1417),-(float)Math.PI/2,true);
-        g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+55,Game.TRANSIT_ZOOM,g.layout.width*.5f,g.layout.height*.52f);
+        g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+55,Game.TRANSIT_ZOOM*ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
     public String status(Game g){
         if(!wasTowed)return "DRAG FROM YACHT TO TUG / RELEASE TO LINK";

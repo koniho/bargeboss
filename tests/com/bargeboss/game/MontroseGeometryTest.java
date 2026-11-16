@@ -90,6 +90,21 @@ public final class MontroseGeometryTest {
             }
         }
     }
-    public static void run(){collision();receivers();nativeMasks();System.out.println(checks+" Montrose edge collision, raised shore and dock depth assertions passed");}
+    private static void exactCache(){
+        RiverCamera c=new RiverCamera(35,61,1.4f);float x=MontroseHarbor.mapX(1015),y=MontroseHarbor.mapY(422),depth=c.screenY(x,y);
+        float[] hull=clip(c,x,y,depth),surface=clip(c,x,y,Float.NEGATIVE_INFINITY);
+        check(hull==clip(c,x,y,depth) && surface==clip(c,x,y,Float.NEGATIVE_INFINITY),"Repeated hull and surface masks reuse exact immutable arrays");
+        float[] moved=clip(c,x+.25f,y,depth),differentDepth=clip(c,x,y,depth+.25f);
+        check(hull!=moved && hull!=differentDepth,"Region or physical depth change cannot reuse a stale mask");
+        RiverCamera shifted=new RiverCamera(36,61,1.4f);
+        check(hull!=clip(shifted,x,y,depth),"Camera changes invalidate projected masks");
+        float[] rebuilt=clip(c,x,y,depth);check(java.util.Arrays.equals(hull,rebuilt),"Camera invalidation preserves exact rebuilt coordinates");
+        // Empty lake requests still count toward the fixed entry cap, without a giant fixture.
+        float[][] masks=new float[33][];float lx=MontroseHarbor.mapX(600),ly=MontroseHarbor.mapY(1450);
+        for(int i=0;i<masks.length;i++)masks[i]=MontroseHarbor.shore(c,lx+i,ly,lx+i+1,ly+1,Float.NEGATIVE_INFINITY);
+        check(masks[32]==MontroseHarbor.shore(c,lx+32,ly,lx+33,ly+1,Float.NEGATIVE_INFINITY),"Newest exact request remains cached");
+        check(masks[0]!=MontroseHarbor.shore(c,lx,ly,lx+1,ly+1,Float.NEGATIVE_INFINITY),"Cache cannot retain more than 32 request entries");
+    }
+    public static void run(){collision();receivers();nativeMasks();exactCache();System.out.println(checks+" Montrose edge collision, raised shore and dock depth assertions passed");}
     public static void main(String[] args){run();}
 }

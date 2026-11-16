@@ -14,6 +14,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final CanvasPainter.Profile stats;
     private final String scene,mode;
     private final int warmup,samples;
+    private final float reviewZoom;
     private final boolean trace,systemTrace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
@@ -30,6 +31,8 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         if(!mode.equals("live") && !mode.equals("freeze") && !mode.equals("replay"))throw new IllegalArgumentException("bb_mode must be live, freeze or replay");
         boolean valid=false;for(String n:ProfileScenario.NAMES)if(n.equals(scene))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown bb_scene");
+        reviewZoom=intent.getFloatExtra("bb_camera_zoom",0);
+        if(reviewZoom!=0 && (!mode.equals("freeze") || !Float.isFinite(reviewZoom) || reviewZoom<.25f || reviewZoom>5))throw new IllegalArgumentException("Camera override requires frozen mode and zoom .25..5");
         warmup=Math.max(0,Math.min(1800,intent.getIntExtra("bb_warmup",120)));
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
@@ -65,7 +68,10 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
             }
             return;
         }
-        ProfileScenario.prepare(root,scene,width,height);configured=true;
+        ProfileScenario.prepare(root,scene,width,height);
+        if(reviewZoom>0){Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;
+            g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),reviewZoom,x,y);}
+        configured=true;
         root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.
         if(!mode.equals("replay"))root.cancelInputs();
@@ -94,7 +100,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         long end=System.nanoTime(),drawNs=end-drawStart,interval=previousDraw==0?0:drawStart-previousDraw;previousDraw=drawStart;
         Game g=root.activeGame();
         double[] r=rows[frame];
-        r[0]=g.tutorial.lesson;r[1]=g.visualTicks;r[2]=g.layout.camera.scale;
+        r[0]=g.tutorial==null?-1:g.tutorial.lesson;r[1]=g.visualTicks;r[2]=g.layout.camera.scale;
         r[3]=advanceNs/1e6;r[4]=drawNs/1e6;r[5]=interval/1e6;r[6]=stats.buildNs/1e6;r[7]=stats.decodeNs/1e6;
         r[8]=stats.hits;r[9]=stats.builds;r[10]=stats.fallbacks;r[11]=stats.evictions;r[12]=painter.profileCacheBytes()/1048576.0;
         r[13]=stats.sprites;r[14]=stats.blends;r[15]=stats.affines;r[16]=stats.circles;r[17]=stats.polys;r[18]=stats.lines;r[19]=stats.clips;

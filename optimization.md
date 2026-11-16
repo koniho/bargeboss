@@ -413,3 +413,90 @@ measurements above were completed; the subsequent sync is recorded below.
 - Rebuilt after moving the unsuccessful water-clip index experiment out of core;
   the final APK excludes the experimental class. Runtime retains the measured
   baseline clipper. Do not treat the experiment as a shipped optimization.
+
+### Montrose performance regression investigation — native baseline
+
+- User reported poor frame rate after the marina update and requested twice-closer
+  default zoom. Added opt-in `montrose-inlet`, `montrose-docks`, and
+  `montrose-overview` profile fixtures; non-tutorial profile rows use lesson -1.
+  Kept the old zoom for initial before/after comparison, then will apply the new
+  camera target. Physics and shared input remain the production implementation.
+- Android frozen inlet baseline (60 warmup +120 measured frames),
+  `out/profiles/20261115-215003-montrose-inlet-freeze`: UI draw median20.125ms,
+  p95 22.424ms; draw interval median44.982ms, p95 54.449ms. Every measured frame
+  has18 terrain fallbacks:2160 async misses total,367 background builds, but only
+ 6.424MiB retained layers.347 affine draws,2658 polygons and321 clips per frame.
+- Found wrong preparation hints: Montrose passes an already quantized raster
+  density to `prepareLayer`, whose host quantizes it again. A display scale
+  needing2x gets a3x speculative job. The per-draw request still wants2x, leaving
+  repeated expensive direct drawing and unnecessary worker jobs. Agent is fixing
+  scale hints; native follow-up will establish the effect before claiming gains.
+- Raised-shore masks also repeatedly scan static edges and allocate bounds;
+  separate agent is preparing exact geometry precomputation/reuse. Baseline APK
+  was completed before those changes; comparisons will name each included fix.
+
+### Montrose shoreline construction — exact geometry reuse after performance report
+
+- Shared JVM/runtime: each old shore request rebuilt normals for roughly 1,300 immutable edges and allocated bounds for every dock, including small buoy/rope masks. Camera-facing edge geometry/bounds are now prepared once; projection reuses existing land/dock/water bounds. A primitive float accumulator replaces boxed `Float` entries without changing triangle order or arithmetic.
+- Added a per-thread exact mask cache keyed by the immutable camera object plus world region and physical depth. It retains at most **32 entries / 65,536 floats (256 KiB float payload)**, evicts within that bound, and clears when camera identity changes. Region/depth changes cannot reuse stale results. This targets repeated surface/waterline or hull requests in the same frame; it does not quantize cameras, geometry or motion. Cached arrays are immutable/borrowed, matching the painter input contract. Masks larger than the payload limit are computed but not retained.
+- Evidence: **180 varied masks / 207,648 float coordinates** match the saved pre-change implementation bit-for-bit. Actual Java2D exclusion clips matched **23,100,000 pixels across 30 scenes** (five locations, three zooms, surface and foreground-depth passes), with **zero differences**. `MontroseGeometryTest` now passes **4,748 assertions**, adding exact reuse, region/depth/camera invalidation, rebuilt-coordinate equality and 32-entry eviction checks to existing collision/depth/native union coverage.
+- Construction-only matched JVM medians, baseline → candidate: entrance **0.127 → 0.018 ms**; slip **0.320 → 0.207 ms**; dense O-dock **0.640 → 0.492 ms**. Repeated exact requests measured roughly **0.0002–0.00035 ms**. A broad 650-world-unit radius remains expensive on a cache miss (**10.325 → 10.061 ms**; candidate p95 **24.892 ms**), while its repeated request measured about **0.006 ms**. These are isolated geometry measurements, not Android frame intervals; root is capturing the native baseline/candidate separately.
+- Kept a second experiment only under untracked `out/`: retaining whole convex dock/wall quads until union reduced the broad-case median in a separate run, but changed **17,192 of 23.1 million reviewed clip pixels**. It was **not adopted**. Runtime remains the bit-identical precomputed-edge/cache version. Do not infer visual equivalence from fewer polygons or a faster union. Review sources/results are `out/MontroseShoreOptimizationReview.java`, `out/MontroseShoreCachePixelReview.java` and the isolated rejected quad review.
+
+### First native candidate: correct scale hints + exact shore reuse
+
+Same old zoom,60warmup/120sample frozen fixtures; native files
+`20261115-215439-montrose-inlet-freeze` and `20261115-215450-montrose-docks-freeze`.
+
+| Fixture | UI draw median /p95 ms | Draw interval median /p95 ms | Warm fallbacks |
+| --- | --- | --- | --- |
+| Inlet baseline |20.125 /22.424|44.982 /54.449|2160|
+| Inlet candidate |10.915 /13.454|11.565 /14.283|0|
+| Docks baseline |29.274 /36.727|34.758 /48.909|9477|
+| Docks candidate |18.288 /20.452|35.895 /53.191|10387|
+
+Inlet native issue-to-swap median/p95 is8.017/8.670ms; warmed layer cache40.482MiB,
+no background builds/evictions. Dock issue-to-swap remains33.813/51.162ms with
+164cache evictions and52background builds. Better Java drawing does not establish
+better dock presentation; sparse oversized terrain remains a demonstrated problem.
+Next candidate reduces cache bitmap bounds/skips empty tiles, then includes the
+requested2× Montrose camera target with existing working-hull fit protection.
+
+### Montrose static-layer audit and bounded raster correction
+
+- Read-only inspection found a concrete prepare-key mismatch: MontroseView and MarinaPedestals supplied `StaticLayer.rasterScale(displayScale)` to `prepareLayer`, while CanvasPainter performs that quantization itself. A requested density2 became density3 in the worker. `TerrainRasterizer.beginFrame` clears prior visibility; mismatched speculative jobs can evict completed correct-density jobs before the subsequent actual layer draw takes them. The native inlet baseline `out/profiles/20261115-215003-montrose-inlet-freeze/frames.csv` had **18 async misses/fallbacks every sampled frame**, **367 background builds**, only **6.424 MiB retained layers**, and roughly **7.57–9.93 MiB pending**. These counters are consistent with the concrete key mismatch, rather than a need to increase the cache budget.
+- Corrected only preparation arguments: terrain/pool hints now carry actual display scale; halo hints carry their actual minimum/maximum breathing scales and request both only if host density differs. Layer drawing scales, source artwork, geometry and animation are unchanged. New `MarinaLayerPreparationTest` verifies every background-safe layer draw is covered by its host-quantized hint, including 1.6 and halo thresholds, unchanged prepared/nonprepared command traces, nonempty bounded chunks, local working-set budget and render purity. Final isolated run: **2,388 assertions passed**. Root registered the test and owns native timing comparisons; its first candidate also includes shore-mask caching, so total timing gains should not be attributed solely to this argument correction.
+- Measured all **357** original Ground keys: **357 unique**, so key collisions were not the problem. At a 1333×600 old inlet camera, **25** submitted 400×310 chunks demanded **47.30 MiB** at density2 before other layers; **9 were completely transparent**, and raster alpha coverage was **11.27%**. Old docking camera: **13** chunks demanded **55.34 MiB** at density3 against the shared **48 MiB** limit, with only **7.80%** alpha coverage. Review-only full-harbor camera submitted **336** chunks / **635.74 MiB**. A cache cannot retain these complete visible working sets. Construction-only JVM medians for expanding original chunk commands into a no-op painter were 3.94 ms inlet, 3.48 ms docks and 23.30 ms overview; these exclude native raster work and are not frame intervals.
+- Ground now precomputes conservative projected content bounds once from land triangles intersecting its world tile, the exact front-facing clipped seawall ranges, and every corner of its owned dock pieces at ground/deck heights. **132 empty chunks** are skipped. Original 400×310 camera/material clips and command order remain; a translation wrapper compensates cropped origin at paint time and the scene compensates the same origin at draw time. Four source pixels preserve filtered material fringes/AA/cap strokes; bounds clamp to the original viewport. No source image edits, new textures, per-frame geometry recording, cache-budget increase or platform-specific layout.
+- Compared all **357** old/new Ground rasters against baseline source from commit `4b6237cfddc05f9066cc06c4e55161f81455667c`, **44,268,000 pixels** total. Initial2px bounds lost159 edge pixels; expanded4px bounds passed with **zero baseline alpha pixels outside the new crop**. Integer-origin retranslation produces small AA differences: **23,604 changed pixels (0.0533%)**, **5,787 with RGBA difference sum>60 (0.0131%)**, mean channel error **0.00812/255**. **746 pixels** inside preserved bounds changed from alpha>8 to0 due to boundary resampling; no source geometry was removed. This is not a pixel-identical claim. Representative before/after tiles were visually inspected; raw legacy source, review program, tile PNGs and logs are under `out/montrose-layer-audit/`.
+- Tight working-set projection at the same old cameras: inlet **10 chunks / 8.61 MiB**, docks **9 / 15.06 MiB**. At the separately requested2x closer cameras: inlet **3 / 3.97 MiB**, docks **3 / 4.74 MiB**. Full-harbor debug overview still needs **214 chunks / 224.38 MiB** at current density2 and remains an unresolved wide-view limitation; do not claim this round fixes every overview or reaches60FPS. Root will measure final native frame intervals with closer-camera changes labeled separately.
+
+### Final Montrose native measurements and closer camera
+
+Preserved capture CSVs/native summaries in
+[montrose-cache-2026-11-15](docs/performance/montrose-cache-2026-11-15/README.md).
+The normal Montrose camera now targets2× the previous zoom, with existing hull-fit
+limits and smooth transitions. The overview review camera remains independently
+zoomed out. The public-input yacht voyage still completes undamaged; canonical
+shared trace is now`713089de:2:1350` (camera/layer bounds intentionally changed).
+
+- Matched old docking zoom2.15, frozen: after tight bounds, UI draw median/p95
+ 9.070/12.139ms; interval10.397/13.559ms. Baseline was29.274/36.727ms drawing and
+ 34.758/48.909ms intervals. Zero warmed fallbacks, evictions or background builds.
+- Final closer live inlet: simulation0.543/0.857ms, drawing4.959/6.496ms,
+  interval8.288/9.725ms (median/p95), zero warmed cache churn.
+- Final closer live docks: simulation1.422/1.936ms, drawing8.533/11.301ms,
+  interval16.465/18.294ms, zero warmed cache churn. Roughly60FPS median here;
+  occasional longer frames remain, so this is not a locked60FPS claim.
+- All-heading art/assets unchanged. Geometry-derived layer crop proof found no
+  alpha outside new bounds; small sampling differences are documented, not called
+  pixel-identical. Exact shore-mask cache passed23.1M pixel comparisons unchanged.
+- Normal APK must replace the opt-in profiler before handoff. Phone keep-awake scope
+  remains active through profiling/install and restores the previous timeout afterward.
+
+Final handoff: full shared suite passed with `713089de:2:1350`, including2388
+layer-preparation/working-set checks and4748 raised-shore/cache checks. Normal
+(non-profile) Android APK rebuilt, installed successfully and launched using the
+existing debug key; developer scenario sources are excluded from the final APK.
+Closer-view preview copied to Downloads. Shared Java keeps all platforms on the
+same camera, scenery bounds and drawing rules; native iOS remains unmeasured.

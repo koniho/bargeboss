@@ -1,0 +1,54 @@
+{
+  "matched_recent_frames": 120,
+  "app_measured_frames": 120,
+  "ui_record_ms": {
+    "p50": 20.218,
+    "p95": 22.508,
+    "max": 26.288
+  },
+  "render_queue_ms": {
+    "p50": 24.511,
+    "p95": 32.988,
+    "max": 48.784
+  },
+  "render_sync_ms": {
+    "p50": 0.632,
+    "p95": 0.883,
+    "max": 0.973
+  },
+  "issue_to_swap_ms": {
+    "p50": 44.081,
+    "p95": 53.976,
+    "max": 66.888
+  },
+  "intended_to_complete_ms": {
+    "p50": 145.921,
+    "p95": 161.002,
+    "max": 172.937
+  },
+  "dequeue_buffer_ms": {
+    "p50": 0.004,
+    "p95": 0.007,
+    "max": 0.009
+  },
+  "queue_buffer_ms": {
+    "p50": 0.152,
+    "p95": 0.223,
+    "max": 0.606
+  },
+  "issue_excluding_dequeue_ms": {
+    "p50": 44.077,
+    "p95": 53.972,
+    "max": 66.88
+  },
+  "submit_to_gpu_complete_ms": {
+    "p50": 18.638,
+    "p95": 19.348,
+    "max": 20.493
+  },
+  "present_latency_ms": {
+    "p50": 166.748,
+    "p95": 183.435,
+    "max": 200.045
+  }
+}

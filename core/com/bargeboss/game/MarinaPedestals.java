@@ -70,9 +70,11 @@ public final class MarinaPedestals {
     public static void drawPools(Game g,Painter canvas){
         if(!g.montroseStage())return;RiverCamera c=g.layout.camera;
         if(canvas.preparesLayers()){
-            canvas.prepareLayer(POOL,StaticLayer.rasterScale(c.scale));
-            float lo=StaticLayer.rasterScale(c.scale*.65f*.96f),hi=StaticLayer.rasterScale(c.scale*.65f*1.04f);
-            canvas.prepareLayer(HALO,lo);if(hi!=lo)canvas.prepareLayer(HALO,hi);
+            canvas.prepareLayer(POOL,c.scale);
+            // The host quantizes display scale. Quantizing here again would request
+            // density3 for every density2 draw and waste the worker's reservations.
+            float lo=c.scale*.65f*.96f,hi=c.scale*.65f*1.04f;
+            canvas.prepareLayer(HALO,lo);if(StaticLayer.rasterScale(hi)!=StaticLayer.rasterScale(lo))canvas.prepareLayer(HALO,hi);
         }
         for(Fixture f:FIXTURES){float x=c.screenX(f.x,f.y),y=c.screenY(f.x,f.y),s=c.scale;
             if(!visible(g,x,y,48*s))continue;

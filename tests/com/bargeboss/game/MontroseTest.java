@@ -29,6 +29,7 @@ public final class MontroseTest {
     public static void run(){
         Game g=game();Body b=g.cargo[0];check(g.feeders.length==0 && b.yacht,"Marina has a staged yacht, no barge feeder");
         check(b.mass>g.tug.mass && b.half*2+b.radius*2==110,"80ft yacht mapped to longer, heavier hull");
+        check(Math.abs(g.layout.camera.zoom-Game.TRANSIT_ZOOM*2)<.0001f,"Montrose starts at twice the former default zoom");
         NavigationLights.Entrance entrance=NavigationLights.entrances(g)[0];
         for(Body craft:new Body[]{g.tug,b})for(int i=0;i<3;i++){
             float along=(craft.discX(i)-entrance.x)*entrance.dx+(craft.discY(i)-entrance.y)*entrance.dy;

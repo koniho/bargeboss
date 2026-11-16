@@ -4,11 +4,13 @@ set -eu
 cd "$(dirname "$0")/.."
 scene=${1:-barge-push}
 mode=${2:-live}
-case "$scene" in basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
+case "$scene" in basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
 case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
 bargeboss_frames=${BARGEBOSS_PROFILE_FRAMES:-360}
 bargeboss_warmup=${BARGEBOSS_PROFILE_WARMUP:-120}
 case "$bargeboss_frames:$bargeboss_warmup" in *[!0-9:]*) echo 'Frame counts must be integers' >&2; exit 2;; esac
+review_zoom=${BARGEBOSS_PROFILE_ZOOM:-0}
+case "$review_zoom" in *[!0-9.]*|'') echo 'Invalid profile zoom' >&2; exit 2;; esac
 system_trace=${BARGEBOSS_PROFILE_SYSTEM_TRACE:-false}
 case "$system_trace" in true|false) ;; *) exit 2;; esac
 trace=${BARGEBOSS_PROFILE_TRACE:-false}
@@ -39,13 +41,14 @@ remote=/storage/emulated/0/Android/data/com.bargeboss.game/files/profiles
 output=out/profiles/$(date +%Y%m%d-%H%M%S)-$scene-$mode
 mkdir -p "$output"
 printf 'compound_paths=%s\nframe_textures=%s\n' "$compound_paths" "$frame_textures" > "$output/strategies.txt"
+printf 'camera_zoom_override=%s\n' "$review_zoom" >> "$output/strategies.txt"
 printf 'water_grouping=%s\n' "$water_grouping" >> "$output/strategies.txt"
 printf 'async_layers=%s\nrotation_prefetch=%s\nframe_cache_mib=%s\n' "$async_layers" "$rotation_prefetch" "$frame_cache_mib" >> "$output/strategies.txt"
 printf 'method_trace=%s\nsystem_trace=%s\n' "$trace" "$system_trace" >> "$output/strategies.txt"
 rish -c "rm -f '$remote/$scene-$mode.csv'"
 rish -c 'input keyevent KEYCODE_WAKEUP'
 rish -c 'dumpsys gfxinfo com.bargeboss.game reset' > "$output/reset.txt" 2>&1
-rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping --ez bb_rotation_prefetch $rotation_prefetch --ei bb_frame_cache_mib $frame_cache_mib" > "$output/launch.txt" 2>&1
+rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ef bb_camera_zoom $review_zoom --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping --ez bb_rotation_prefetch $rotation_prefetch --ei bb_frame_cache_mib $frame_cache_mib" > "$output/launch.txt" 2>&1
 started=$(date +%s)
 ready=
 while [ "$(($(date +%s)-started))" -lt 180 ]; do

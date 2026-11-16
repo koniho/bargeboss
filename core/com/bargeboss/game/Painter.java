@@ -11,6 +11,7 @@ public interface Painter {
     default void popClip() {}
     /** Optional native cache preparation. Hints never draw pixels or advance gameplay. */
     default boolean preparesLayers(){return false;}
+    /** Scale is the actual display scale, exactly as supplied to layer(); hosts choose raster density. */
     default void prepareLayer(StaticLayer layer,float scale) {}
     /** Immutable static content, clipped to layer bounds with group opacity. */
     default void layer(StaticLayer layer,float x,float y,float scale,float alpha) {layer.draw(this,x,y,scale,alpha);}

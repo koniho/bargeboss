@@ -1,0 +1,233 @@
+{
+  "inlet-baseline": {
+    "capture": "20261115-215003-montrose-inlet-freeze",
+    "frames": 120,
+    "advance_ms": {
+      "median": 0.002838,
+      "p95": 0.005416,
+      "max": 0.013307
+    },
+    "draw_ms": {
+      "median": 20.125469,
+      "p95": 22.424244,
+      "max": 26.137629
+    },
+    "interval_ms": {
+      "median": 44.982057,
+      "p95": 54.44888,
+      "max": 67.928124
+    },
+    "cache_mib": {
+      "median": 6.4242401123046875,
+      "p95": 6.4242401123046875,
+      "max": 6.4242401123046875
+    },
+    "texture_mib": {
+      "median": 26.86780548095703,
+      "p95": 26.86780548095703,
+      "max": 26.86780548095703
+    },
+    "cache_fallbacks": 2160,
+    "cache_evictions": 0,
+    "background_builds": 367,
+    "interval_above_20ms": 120
+  },
+  "docks-baseline": {
+    "capture": "20261115-215055-montrose-docks-freeze",
+    "frames": 120,
+    "advance_ms": {
+      "median": 0.001562,
+      "p95": 0.003584,
+      "max": 0.022396
+    },
+    "draw_ms": {
+      "median": 29.274088,
+      "p95": 36.727031,
+      "max": 60.633906
+    },
+    "interval_ms": {
+      "median": 34.757812,
+      "p95": 48.908722,
+      "max": 67.253697
+    },
+    "cache_mib": {
+      "median": 25.6572265625,
+      "p95": 26.06610107421875,
+      "max": 26.12286376953125
+    },
+    "texture_mib": {
+      "median": 34.3106689453125,
+      "p95": 38.39616394042969,
+      "max": 38.39616394042969
+    },
+    "cache_fallbacks": 9477,
+    "cache_evictions": 150,
+    "background_builds": 35,
+    "interval_above_20ms": 120
+  },
+  "inlet-scale-fix": {
+    "capture": "20261115-215439-montrose-inlet-freeze",
+    "frames": 120,
+    "advance_ms": {
+      "median": 0.001198,
+      "p95": 0.001693,
+      "max": 0.001771
+    },
+    "draw_ms": {
+      "median": 10.915104,
+      "p95": 13.453776,
+      "max": 18.567031
+    },
+    "interval_ms": {
+      "median": 11.565036,
+      "p95": 14.282578,
+      "max": 19.724558
+    },
+    "cache_mib": {
+      "median": 40.48185729980469,
+      "p95": 40.48185729980469,
+      "max": 40.48185729980469
+    },
+    "texture_mib": {
+      "median": 59.42139434814453,
+      "p95": 59.42139434814453,
+      "max": 59.42139434814453
+    },
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "background_builds": 0,
+    "interval_above_20ms": 0
+  },
+  "docks-scale-fix": {
+    "capture": "20261115-215450-montrose-docks-freeze",
+    "frames": 120,
+    "advance_ms": {
+      "median": 0.002578,
+      "p95": 0.00401,
+      "max": 0.014245
+    },
+    "draw_ms": {
+      "median": 18.287786,
+      "p95": 20.452343,
+      "max": 35.346406
+    },
+    "interval_ms": {
+      "median": 35.895338,
+      "p95": 53.191015,
+      "max": 64.209739
+    },
+    "cache_mib": {
+      "median": 25.602294921875,
+      "p95": 26.05438232421875,
+      "max": 26.09814453125
+    },
+    "texture_mib": {
+      "median": 34.3106689453125,
+      "p95": 38.39616394042969,
+      "max": 38.39616394042969
+    },
+    "cache_fallbacks": 10387,
+    "cache_evictions": 164,
+    "background_builds": 52,
+    "interval_above_20ms": 120
+  },
+  "docks-trim-oldzoom": {
+    "capture": "20261115-220304-montrose-docks-freeze",
+    "frames": 120,
+    "advance_ms": {
+      "median": 0.00125,
+      "p95": 0.005677,
+      "max": 0.00823
+    },
+    "draw_ms": {
+      "median": 9.07013,
+      "p95": 12.139271,
+      "max": 21.72716
+    },
+    "interval_ms": {
+      "median": 10.396588,
+      "p95": 13.559114,
+      "max": 23.809479
+    },
+    "cache_mib": {
+      "median": 11.043228149414062,
+      "p95": 11.043228149414062,
+      "max": 11.043228149414062
+    },
+    "texture_mib": {
+      "median": 18.10540771484375,
+      "p95": 18.10540771484375,
+      "max": 18.10540771484375
+    },
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "background_builds": 0,
+    "interval_above_20ms": 1
+  },
+  "inlet-final-live": {
+    "capture": "20261115-220317-montrose-inlet-live",
+    "frames": 180,
+    "advance_ms": {
+      "median": 0.542605,
+      "p95": 0.857265,
+      "max": 1.376485
+    },
+    "draw_ms": {
+      "median": 4.958932,
+      "p95": 6.496442,
+      "max": 13.468932
+    },
+    "interval_ms": {
+      "median": 8.287735,
+      "p95": 9.724505,
+      "max": 15.068957
+    },
+    "cache_mib": {
+      "median": 2.1167984008789062,
+      "p95": 2.1167984008789062,
+      "max": 2.1717300415039062
+    },
+    "texture_mib": {
+      "median": 19.04437255859375,
+      "p95": 19.17730712890625,
+      "max": 19.17730712890625
+    },
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "background_builds": 0,
+    "interval_above_20ms": 0
+  },
+  "docks-final-live": {
+    "capture": "20261115-220328-montrose-docks-live",
+    "frames": 180,
+    "advance_ms": {
+      "median": 1.422489,
+      "p95": 1.935703,
+      "max": 2.073073
+    },
+    "draw_ms": {
+      "median": 8.533307,
+      "p95": 11.300521,
+      "max": 20.89336
+    },
+    "interval_ms": {
+      "median": 16.464557,
+      "p95": 18.294298,
+      "max": 33.51914
+    },
+    "cache_mib": {
+      "median": 11.043228149414062,
+      "p95": 11.043228149414062,
+      "max": 11.043228149414062
+    },
+    "texture_mib": {
+      "median": 14.88238525390625,
+      "p95": 15.850299835205078,
+      "max": 15.850299835205078
+    },
+    "cache_fallbacks": 0,
+    "cache_evictions": 0,
+    "background_builds": 0,
+    "interval_above_20ms": 3
+  }
+}
