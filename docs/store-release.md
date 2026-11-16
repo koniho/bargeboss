@@ -115,7 +115,8 @@ behavior. Those remain separate release tasks.
 ## Setup validation (2026-11-15)
 
 - Created `ios-release` and `android-release` GitHub environments restricted to main;
-  populated the two non-secret Apple variables above. No secret values were copied.
+  populated the two non-secret Apple variables above. The later authorized secret
+  transfer is recorded below.
 - `build-bundle.sh --unsigned` passed the shared suite and bundletool validation.
   The package/version/permission and developer-class checks passed on that AAB.
 - Offline release-boundary tests, shell syntax checks and actionlint passed locally.
@@ -128,9 +129,12 @@ The source checkout's ignored `.private/ios-signing/` directory contains
 `deploy_key`, `match-password`, and setup scripts with the Apple API key identifiers.
 The API private-key file referenced by those scripts is absent. No Android release
 keystore or Play service-account JSON was found in the local checkout (debug
-keystores are present and are not release substitutes). Copying the recovered
-signing credentials into Barge Boss is pending explicit authorization following
-automatic approval review; no Barge Boss environment secrets have been populated.
+keystores are present and are not release substitutes). After explicit user approval, copied `IOS_MATCH_GIT_PRIVATE_KEY`,
+`IOS_MATCH_PASSWORD`, `IOS_APPSTORE_KEY_ID`, and `IOS_APPSTORE_ISSUER_ID` directly
+into Barge Boss's encrypted `ios-release` environment secrets via stdin. Verified
+all four names are present without reading or printing their values.
+`IOS_APPSTORE_KEY_BASE64` remains missing, as does the Barge Boss provisioning
+profile in match storage. Android release credentials remain unconfigured.
 
 [Hosted release configuration check 43797755353](https://github.com/koniho/bargeboss/actions/runs/43797755353)
 passed, including pinned fastlane option compatibility and lane loading. This is
