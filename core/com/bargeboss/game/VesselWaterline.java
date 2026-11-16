@@ -41,7 +41,11 @@ public final class VesselWaterline {
             int a=(((int)whole+(river?RiverCamera.DIRECTION_OFFSET:0))%32+32)%32,bb=(a+1)%32;
             float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
             float[] from=EDGE[b.yacht?2:tug?0:1][a],to=EDGE[b.yacht?2:tug?0:1][bb];
-            float speed=b.speed(),motion=Math.min(1,speed/65),bob=WaterSurface.lift(g,b);
+            float speed=b.speed(),motion=Math.min(1,speed/65);
+            // Water contact rides the surface, never the filtered hull heave. The
+            // broad hull averages waves; its visible meniscus has a quieter rise.
+            // Sample once per hull, not once per patch (height scans wake packets).
+            float surface=g.water.height(b.x,b.y,g.visualTicks,b)*.35f;
             float travelX=river?RiverCamera.Q*(b.vx+b.vy):b.vx;
             // Patches travel toward the trailing end; their envelopes leave clear gaps between crests.
             for(int patch=0;patch<7;patch++) {
@@ -53,9 +57,10 @@ public final class VesselWaterline {
                 float ty=offset(from,to,i+1,true,0,mix)-offset(from,to,i,true,0,mix);
                 float leading=.35f+.65f*(travelX>=0?u:1-u);
                 float envelope=(float)StrictMath.sin(age*StrictMath.PI);
-                float alpha=(.035f+motion*.94f*leading)*envelope*envelope;
-                float length=(14+motion*16)*scale,width=(10+motion*20)*scale;
-                VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-bob+.5f)*scale,
+                float crest=envelope*envelope;
+                float alpha=.22f*(.65f+.35f*crest)+motion*.72f*leading*crest;
+                float length=(22+motion*8)*scale,width=(8+motion*22)*scale;
+                VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-surface-.5f)*scale,
                         (float)StrictMath.atan2(ty,tx),length,width,alpha,WaterFoam.phase(g.visualTicks,b.id+patch));
             }
         } finally {if(clip.length>0)canvas.popClip();}

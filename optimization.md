@@ -1533,3 +1533,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   debug key. Physical installation was attempted but adb reports no connected
   device; Android native visual validation remains pending reconnection.
   Awake cleanup reports no temporary timeout to restore.
+
+## 2026-11-16: visible idle vessel water contact
+
+- Contact foam previously subtracted the same heave as the hull, locking the rim
+  to the painted boat. Its idle opacity peaked at only 3.5% before envelope fade.
+  Contact now follows a subdued water-surface sample independently of hull heave;
+  it moves along the lower hull as the boat rises and falls. Idle crests retain
+  14–22% opacity, with wider coverage and a narrower band than moving whitewater.
+- Shared Java change for tug, barges and mission yachts; seven existing patches,
+  no new textures/caches/native primitives. One extra wave-field sample per drawn
+  hull, not per patch. No speedup or measured frame-rate claim.
+- Updated the regression to require visible idle patches and water contact that
+  stays fixed when only hull heave changes. Shared animation review and all-heading
+  shore regression exercised; final build/parity results follow.
+- Validation: full Android build/shared checks pass; JVM/J2ObjC parity is
+  `6737a959:2:1350`. All 1,439,937 shoreline pixel assertions pass. Reviewed shared
+  idle/cruise/push/astern frames at separated animation phases. Metal Release
+  build and simulator launch pass. Android install was attempted but adb reports
+  no connected devices; real-device pixels and frame timing remain unverified.

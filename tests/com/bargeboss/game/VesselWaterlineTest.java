@@ -26,11 +26,11 @@ public final class VesselWaterlineTest {
         for(int kind=0;kind<2;kind++)for(int heading=0;heading<64;heading++) {
             Body b=new Body(kind,kind-1,300,400,heading*(float)StrictMath.PI/32);b.floatingInitialized=true;
             g.visualTicks=0;Trace idle=draw(g,b),again=draw(g,b);
-            check(idle.hash==again.hash && idle.sprites<=7,"repeatable bounded contact sprites");
-            g.visualTicks=17;check(draw(g,b).hash!=idle.hash,"idle contact shimmers faintly");
+            check(idle.hash==again.hash && idle.sprites==7 && idle.energy>.7f,"repeatable bounded contact sprites");
+            g.visualTicks=17;check(draw(g,b).hash!=idle.hash,"idle contact follows surface waves");
             g.visualTicks=0;b.vx=65;Trace moving=draw(g,b);
-            check(moving.energy>idle.energy*3,"breaking contact grows with speed without an opaque rim");
-            b.heave=1.5f;check(draw(g,b).hash!=moving.hash,"contact remains registered during heave");
+            check(moving.energy>idle.energy*1.8f,"breaking contact grows with speed without an opaque rim");
+            b.heave=1.5f;check(draw(g,b).hash==moving.hash,"water contact stays on the surface while the hull heaves independently");
             check(b.x==300 && b.y==400 && g.visualTicks==0,"rendering does not advance vessels");
         }
         Body tug=new Body(0,-1,300,400,0),barge=new Body(1,0,300,400,0);

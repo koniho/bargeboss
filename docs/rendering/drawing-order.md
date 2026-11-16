@@ -434,7 +434,9 @@ necessary for antialiasing and actual device behavior.
 `Painter.waterFoam` shades a small centered affine patch. Shared Java owns mode,
 phase, hull registration, speed response and lifetime; native Metal/AGSL execute
 one shared kernel. Bow pressure patches draw in the existing below-hull water
-scope. Contact foam stays on the registered lower silhouette after the hull.
+scope. Contact foam follows the registered lower silhouette after the hull, but its vertical
+anchor follows the subdued water surface independently of hull heave. Idle contact
+retains a visible broken crest; speed adds stronger displacement foam.
 Expanding wake crests share a water-plane shore/dock exclusion scope, bounded by
 the visible world region. Title patches also exclude pixels above their water
 plane. Painter wrappers must forward the primitive and preserve clip/opacity/order.
