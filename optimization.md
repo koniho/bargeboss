@@ -1100,3 +1100,8 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Android installation is pending use of the phone checkout's original debug key;
   the local DDDumpling key has a different public certificate. Keep installed app
   data intact. Navigation-marker source sprites retain their existing brightness.
+- Calumet harbor-close on the same simulator/configuration: 59.610 FPS, interval
+  median 16.664 ms / p95 17.243 ms / max 49.4568 ms; draw median 5.3438 ms /
+  p95 7.0148 ms / max 35.1835 ms. Native pixels reviewed. The isolated long draw
+  remains unattributed by this three-column capture; do not claim locked 60 FPS.
+  Raw capture: out/ios-profile/dusk-calumet-v1.
