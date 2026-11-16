@@ -22,7 +22,7 @@ public final class MarinaLayerPreparationTest {
             if(layer.backgroundSafe()){
                 if(prepare){Integer requested=densities.get(layer.key());int bit=StaticLayer.rasterScale(scale)==2?1:2;
                     check(requested!=null && (requested&bit)!=0,"Actual display density prepared before layer draw: "+layer.key()+" scale "+scale);preparedDraws++;}
-                if(layer.key()>=819000 && layer.key()<821000){
+                if(layer.key()>=830000 && layer.key()<832000){
                     terrainDraws++;float density=StaticLayer.rasterScale(scale);
                     terrainBytes+=(long)(layer.width()*layer.height()*density*density*4);
                     check(layer.width()>0 && layer.height()>0 && layer.width()<=400 && layer.height()<=310,"Only nonempty bounded terrain chunks submitted");

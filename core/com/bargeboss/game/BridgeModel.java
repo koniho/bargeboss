@@ -86,7 +86,7 @@ public final class BridgeModel {
     private static void fixture(ArticulatedModel.Builder b,ArrayList<Light> lights,String id,int node,int kind,
                                 float x,float y,float z,float nx,float ny,float nz,float radius) {
         b.box(node,x,y,z,4.6f,4.6f,3,STEEL,SurfaceMaterial.STEEL);
-        b.box(node,x,y,z+1.65f,3.2f,3.2f,.3f,kind==WARM?0xffefb968:0xffc65040);
+        b.box(node,x,y,z+1.65f,3.2f,3.2f,.3f,kind==WARM?0xffefb968:0xffc65040,SurfaceMaterial.EMISSIVE);
         lights.add(new Light(id,node,kind,x,y,z+1.9f,nx,ny,nz,radius));
     }
 }

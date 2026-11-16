@@ -165,7 +165,7 @@ public final class ArticulatedModel {
             float light=.62f+.38f*Math.max(0,-nx*.35f-ny*.25f+nz*.9f);
             int r=(int)((color>>16&255)*light),g=(int)((color>>8&255)*light),b=(int)((color&255)*light);
             int shaded=((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b;
-            if(material<0)p.poly(xy,shaded);
+            if(material<0)p.poly(xy,material==SurfaceMaterial.EMISSIVE?shaded:SceneLighting.sceneryColor(shaded));
             else p.surfacePolygon(xy,uv,material,shaded,material==SurfaceMaterial.CONCRETE?.12f:.04f);
         }
     }

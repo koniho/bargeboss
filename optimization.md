@@ -1080,3 +1080,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   remain at shore-connected main/service/inlet piers; promenade continuity retained.
   Tests: 698 shore/letter checks, 30 entrance checks, 5,823 geometry checks,
   21,114 pedestal/sign checks and a successful three-star public-input yacht voyage.
+
+## Default dusk scenery (2026-11-16)
+
+- Added shared SceneLighting grading at terminal material painters; coordinate
+  wrappers retain raw colors to avoid double grading. Wood docks are almost dark.
+  Solid machinery/workers use cool muted colors; emissive bridge lamps are exempt.
+- Extended cached sprite grading to industrial shore art; only building atlases
+  preserve warm window colors, so yellow truck paint does not become emissive.
+  Versioned terrain and sprite cache identities. No extra per-frame allocations.
+- Full shared checks and unsigned Android profile APK build passed. Native/JVM
+  parity matches `fed85fc4:2:1350`. Production shoreline pixels passed 1,439,937
+  assertions across 32 headings; foam/splash pixels passed 197,334 assertions.
+- iOS Release Metal simulator, montrose-docks replay, 60 warmup + 300 measured
+  frames: 59.994 FPS, interval median 16.6664 ms / p95 17.2389 ms; draw median
+  8.0424 ms / p95 8.8737 ms; GPU median 0.0686 ms. Native screenshot reviewed.
+  Raw capture: out/ios-profile/dusk-montrose-v1. This includes the new shoreline
+  effect and is not an isolated lighting benchmark or a physical-device result.
+- Android installation is pending use of the phone checkout's original debug key;
+  the local DDDumpling key has a different public certificate. Keep installed app
+  data intact. Navigation-marker source sprites retain their existing brightness.

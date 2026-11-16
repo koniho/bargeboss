@@ -1,4 +1,6 @@
 #import "BBMetalPainter.h"
+#import "com/bargeboss/game/SceneLighting.h"
+#import "com/bargeboss/game/SurfaceMaterial.h"
 #import "BBPainter.h"
 #import "IOSPrimitiveArray.h"
 #import "IOSObjectArray.h"
@@ -243,7 +245,8 @@ static vector_float4 BBColor(jint argb) {
     }
 }
 - (void)surfacePolygonWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withInt:(jint)material withInt:(jint)argb withFloat:(jfloat)wetness {
-    int n=xy->size_/2;vector_float4 color=BBColor(argb);
+    if(material==BBSurfaceMaterial_EMISSIVE){[self polyWithFloatArray:xy withInt:argb];return;}
+    int n=xy->size_/2;vector_float4 color=BBColor([BBSceneLighting surfaceColorWithInt:argb withInt:material]);
     if(n<3 || xy->size_!=uv->size_ || color.w<=0)return;self.surfacePatches++;
     uint32_t kind=14+material;
     // BSP fragments and shore faces are convex, with matching stable UV vertices.

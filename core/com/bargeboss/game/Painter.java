@@ -47,7 +47,7 @@ public interface Painter {
     /** Convex planar face; xy and uv are paired arrays in matching vertex order.
      * UVs are stable model units, never screen pixels. Wetness is shared state in [0,1]. */
     default void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
-        poly(xy,color);
+        poly(xy,SceneLighting.surfaceColor(color,material));
     }
     /** Convex shoreline quad; UV is world-distance along shore and across water/up wall.
      * Kinds: 0 foam, 1 wet wall. Phase is simulation seconds; energy is shared wake strength. */

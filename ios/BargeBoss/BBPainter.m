@@ -1,5 +1,6 @@
 #import "com/bargeboss/game/ShorelineMaterial.h"
 #import "BBPainter.h"
+#import "com/bargeboss/game/SceneLighting.h"
 #import "IOSPrimitiveArray.h"
 #import "IOSObjectArray.h"
 #import "com/bargeboss/game/SpriteAtlas.h"
@@ -295,7 +296,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     [BBShorelineMaterial fallbackWithBBPainter:self withFloatArray:xy withFloatArray:uv withFloat:phase withFloat:energy withInt:kind withInt:argb];
 }
 - (void)surfacePolygonWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withInt:(jint)material withInt:(jint)argb withFloat:(jfloat)wetness {
-    [self polyWithFloatArray:xy withInt:argb];
+    [self polyWithFloatArray:xy withInt:[BBSceneLighting surfaceColorWithInt:argb withInt:material]];
 }
 - (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
     [BBEffectMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withInt:kind withFloat:detail withFloat:amount withInt:argb];

@@ -428,8 +428,9 @@ public final class CanvasPainter implements Painter {
             Painter.super.shoreline(xy,uv,phase,energy,kind,color);
     }
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
+        if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
-        if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,color,wetness))
+        if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))
             Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {

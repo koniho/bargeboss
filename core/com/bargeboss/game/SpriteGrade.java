@@ -8,24 +8,28 @@ public final class SpriteGrade {
                 || atlas==SpriteAtlas.SCENERY || atlas==SpriteAtlas.PIERS || atlas==SpriteAtlas.BRIDGE
                 || atlas==SpriteAtlas.TITLE_HARBOR || atlas==SpriteAtlas.TITLE_LAND
                 || atlas==SpriteAtlas.STATIC_HARBOR || atlas==SpriteAtlas.TUTORIAL_SCENERY
-                || atlas==SpriteAtlas.CHIMNEYS || atlas==SpriteAtlas.FACTORY || atlas==SpriteAtlas.GROUND;
+                || atlas==SpriteAtlas.CHIMNEYS || atlas==SpriteAtlas.FACTORY || atlas==SpriteAtlas.GROUND
+                || atlas==SpriteAtlas.SHORE_BOLLARDS || atlas==SpriteAtlas.SHORE_LOADING || atlas==SpriteAtlas.SHORE_TRUCKS
+                || atlas==SpriteAtlas.SHORE_TILES || atlas==SpriteAtlas.STEELWORKS;
     }
     /** The same PNG can be used by differently graded atlas regions. */
-    public static String cacheKey(int atlas,String path) {return path+(applies(atlas)?"#cool-industrial-v1":"#source");}
-    public static int argb(int atlas,int pixel) {return applies(atlas)?grade(pixel):pixel;}
-    private static int grade(int pixel) {
+    public static String cacheKey(int atlas,String path) {return path+(applies(atlas)?"#"+SceneLighting.VERSION+(windows(atlas)?"-windows":atlas==SpriteAtlas.PIERS?"-dock":"-solid"):"#source");}
+    public static int argb(int atlas,int pixel) {return applies(atlas)?grade(atlas,pixel):pixel;}
+    private static boolean windows(int atlas){return atlas==SpriteAtlas.FACTORY || atlas==SpriteAtlas.STEELWORKS;}
+    private static int grade(int atlas,int pixel) {
         if((pixel>>>24)==0) return pixel;
         int r=(pixel>>>16)&255,g=(pixel>>>8)&255,b=pixel&255;
         // Retain bright warm windows, not the darker rusty brick around them.
-        int warm=Math.min(ramp(r-160,80),Math.min(ramp(g-b-20,65),ramp(r-b-45,95)));
-        int red=(r*122+127)/255,green=(g*138+127)/255,blue=(b*160+127)/255;
+        int warm=windows(atlas)?Math.min(ramp(r-160,80),Math.min(ramp(g-b-20,65),ramp(r-b-45,95))):0;
+        int base=atlas==SpriteAtlas.PIERS?SceneLighting.surfaceColor(pixel,SurfaceMaterial.WOOD):SceneLighting.sceneryColor(pixel);
+        int red=(base>>>16)&255,green=(base>>>8)&255,blue=base&255;
         red+=(warm*(r-red)+127)/255;green+=(warm*(g-green)+127)/255;blue+=(warm*(b-blue)+127)/255;
         return (pixel&0xff000000)|(red<<16)|(green<<8)|blue;
     }
     private static int ramp(int value,int span) {return value<=0?0:value>=span?255:(value*255+span/2)/span;}
     public static void applyArgb(int atlas,int[] pixels) {
         if(!applies(atlas)) return;
-        for(int i=0;i<pixels.length;i++) pixels[i]=grade(pixels[i]);
+        for(int i=0;i<pixels.length;i++) pixels[i]=grade(atlas,pixels[i]);
     }
     /** Core Graphics supplies explicit RGBA8 premultiplied bytes; conversion is shared too. */
     public static void applyPremultipliedRgba(int atlas,byte[] pixels) {
@@ -34,7 +38,7 @@ public final class SpriteGrade {
         for(int i=0;i<pixels.length;i+=4) {
             int a=pixels[i+3]&255;if(a==0) continue;
             int r=straight(pixels[i]&255,a),g=straight(pixels[i+1]&255,a),b=straight(pixels[i+2]&255,a);
-            int graded=grade((a<<24)|(r<<16)|(g<<8)|b);
+            int graded=grade(atlas,(a<<24)|(r<<16)|(g<<8)|b);
             pixels[i]=(byte)premultiplied((graded>>>16)&255,a);
             pixels[i+1]=(byte)premultiplied((graded>>>8)&255,a);
             pixels[i+2]=(byte)premultiplied(graded&255,a);

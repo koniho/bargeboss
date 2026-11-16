@@ -45,7 +45,7 @@ public final class MontroseView {
             float[] rocks=MontroseEntranceShore.terrainCut(raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55);
             waterClip=new float[water.length+steps.length+rocks.length];System.arraycopy(water,0,waterClip,0,water.length);System.arraycopy(steps,0,waterClip,water.length,steps.length);System.arraycopy(rocks,0,waterClip,water.length+steps.length,rocks.length);
             float[] bounds=groundBounds(camera,col,row);left=bounds[0];top=bounds[1];w=bounds[2];h=bounds[3];}
-        public int key(){return 820000+(col+5)*32+row+8;}
+        public int key(){return 830000+(col+5)*32+row+8;}
         public float width(){return w;}
         public float height(){return h;}
         public boolean backgroundSafe(){return true;}
@@ -58,7 +58,7 @@ public final class MontroseView {
             try{
                 for(int y=0;y<4;y++)for(int x=0;x<4;x++){
                     float wx=col*256+x*64,wy=row*256+y*64;
-                    world.rect(wx,wy,64,64,0xff273b2b);
+                    world.rect(wx,wy,64,64,SceneLighting.sceneryColor(0xff273b2b));
                     float[] lawn={wx,wy,wx+64,wy,wx+64,wy+64,wx,wy+64};
                     surface(p,land,lawn,2);
                 }
@@ -100,7 +100,7 @@ public final class MontroseView {
         bounds[0]=Math.min(bounds[0],xx);bounds[1]=Math.min(bounds[1],yy);bounds[2]=Math.max(bounds[2],xx);bounds[3]=Math.max(bounds[3],yy);
     }
     private static void groundPoly(Painter p,float[] q,int color,float l,float t,float r,float b){
-        q=PolygonWater.rectangle(q,l,t,r,b);if(q.length>=6)p.poly(q,color);
+        q=PolygonWater.rectangle(q,l,t,r,b);if(q.length>=6)p.poly(q,SceneLighting.sceneryColor(color));
     }
     private static void strip(Painter p,float mx,float my,float xx,float yy,float width,int color,float l,float t,float r,float b){
         float ax=MontroseHarbor.mapX(mx),ay=MontroseHarbor.mapY(my),bx=MontroseHarbor.mapX(xx),by=MontroseHarbor.mapY(yy),dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len*width/2,ny=dx/len*width/2;
@@ -141,7 +141,7 @@ public final class MontroseView {
     /** Affine-map flat source material to exact rigid ground corners. Never rotate an upright sprite. */
     private static void surface(Painter p,RiverCamera c,float[] q,int frame){
         float[] screen=new float[q.length];for(int i=0;i<q.length;i+=2){screen[i]=c.screenX(q[i],q[i+1]);screen[i+1]=c.screenY(q[i],q[i+1]);}
-        p.poly(screen,frame<2?0xff4e5051:0xff26392e);
+        p.poly(screen,SceneLighting.sceneryColor(frame<2?0xff4e5051:0xff26392e));
         ArrayList<float[]> outside=new ArrayList<float[]>();PolygonWater.subtract(new float[]{0,0,400,0,400,310,0,310},screen,outside);
         ArrayList<Float> values=new ArrayList<Float>();for(float[] a:outside)for(int i=2;i<a.length-2;i+=2)for(float v:new float[]{a[0],a[1],a[i],a[i+1],a[i+2],a[i+3]})values.add(v);
         float[] clip=new float[values.size()];for(int i=0;i<clip.length;i++)clip[i]=values.get(i);p.pushClipOutside(clip);
@@ -165,7 +165,7 @@ public final class MontroseView {
         MontroseShoreArt.docks(g,canvas);MontroseEntranceShore.pier(g,canvas);
         float[] terraceCut=MontroseShoreArt.terraceCut(land),rockCut=MontroseEntranceShore.wholeTerrainCut(land);
         float[] stepCut=new float[terraceCut.length+rockCut.length];System.arraycopy(terraceCut,0,stepCut,0,terraceCut.length);System.arraycopy(rockCut,0,stepCut,terraceCut.length,rockCut.length);
-        canvas.pushClipOutside(stepCut);try{new RiverPainter(canvas,land).poly(MontroseHarbor.LAND_POLYGON,0xff273b2b);}finally{canvas.popClip();}
+        canvas.pushClipOutside(stepCut);try{new RiverPainter(canvas,land).poly(MontroseHarbor.LAND_POLYGON,SceneLighting.sceneryColor(0xff273b2b));}finally{canvas.popClip();}
         float minX=Float.MAX_VALUE,minY=minX,maxX=-minX,maxY=-minX;
         for(int corner=0;corner<4;corner++){float x=c.worldX(corner%2*g.layout.width,corner/2*g.layout.height),y=c.worldY(corner%2*g.layout.width,corner/2*g.layout.height);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
         walls(canvas,c,minX-60,minY-60,maxX+60,maxY+60);
