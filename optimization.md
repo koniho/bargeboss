@@ -80,3 +80,176 @@ Append entries; do not replace another agent’s findings. Include platform/owne
 - Shared/developer checks and targeted foam/32-heading shoreline raster tests passed. Final shared drawing signature: `ad11a073:2:1350`. No iOS host code changed.
 - Publishing this checkpoint with the shared renderer changes, profiling tools, raw evidence and documentation. Shared WaveView/VesselFoam files are released for other agents to work on after syncing.
 - Next candidate remains colorized stamp waves; not implemented yet. Also compare production FrameGate pacing before interpreting replay throughput as user-visible FPS.
+
+## iOS Metal optimization (2026-11-15, Mac simulator)
+
+Publication scope: findings only. The Metal implementation, profiling script and
+raw iOS evidence described below remain local and are not included in this
+documentation commit. Reproduction requires those unpublished changes.
+
+Owner: iOS Codex session. Base: `0331153`. Rebase from main before each
+implementation step; preserve other agents' sections in this file.
+
+User target: **60 FPS with substantial headroom**. User authorized a Metal-backed
+iOS Painter and explicitly prioritized performance over current pixel accuracy.
+Shared Java remains the only gameplay, layout, timing and scene implementation.
+
+Measured on iPhone 17 Pro / iOS 26.5 simulator, full 3x backing resolution,
+Release build. Frozen title, 30 warmup draws / 120 measured draw intervals:
+
+- Original lazy PNG crops: 9.0 and 10.7 FPS, p95 intervals 166.8 / 133.4 ms.
+- Materialized sprite frames (32 MiB CPU LRU): 14.8 / 15.0 FPS.
+- Native BGRA frames and 8-bit UIKit layer: 20 FPS, 50.0 ms intervals.
+- Direct Core Graphics bitmap: also 20 FPS. Not a useful default.
+- These three optimized title paths matched all 3,162,132 captured native pixels
+  in the frozen scene. This does not establish parity across all game states.
+- Frozen tutorial: direct CG draw median 93.1 ms, p95 106.0 ms; UIKit draw
+  submission median 51.4 ms plus deferred rasterization, ~10 FPS end-to-end.
+
+Five-second sampling found PNG decoding during original display-list playback.
+After materializing frames, sampling shifted to Core Graphics image sampling,
+blending and repeated pixel-format conversion. This is host/simulator evidence,
+not physical iPhone performance or a GPU-residency measurement.
+
+Initial implementation step (superseded by the measured defaults below): native Metal Painter, retaining Core Graphics as
+reference/resource rasterizer. Ordered batches, premultiplied-alpha textures,
+80 MiB texture LRU, three in-flight vertex buffers, stencil-count shoreline
+exclusion. Initial approximations: polygonal circles/round caps, linear texture
+sampling and source-over sprite crossfades. No changes to shared simulation or
+sprite selection. Performance and playable-output validation were pending at that stage; see final results below.
+
+Raw runs live under ignored `out/ios-profile/`; script `ios/scripts/profile.py`.
+Build with `CONFIGURATION=Release ios/scripts/build.sh` and explicit local Java /
+J2ObjC paths if needed. Simulator installed build may be an intermediate capture.
+
+Validation so far: shared `check.sh` passed (2816 assertions reported in its final
+suite). No Android phone is connected to this Mac and no existing Barge Boss debug
+signing key is present, so the usual Android install cannot be completed here.
+
+### Metal prototype measurements
+
+Apple Metal Toolchain 17F109 installed on this Mac; shaders are compiled by Xcode.
+Full-resolution frozen title and tutorial now sustain 60 FPS. CPU draw median /
+p95: title 4.24 / 5.78 ms, tutorial 4.44 / 4.67 ms. The first title capture overlapped
+ending JVM previews and must be repeated for clean final evidence.
+
+**Moving gameplay is not solved by that result.** The 120-warmup / 360-frame
+`barge-arrival` shared replay fell to 8.8 FPS with the initial 80 MiB combined
+texture LRU. CPU median/p95 116.6/173.2 ms while GPU median/p95 stayed 3.64/5.51 ms.
+Sampling found repeated sprite PNG decoding and uploads. A working-set / eviction
+instrumentation pass and controlled bounded-cache comparison are in progress.
+Do not cite the frozen scene as evidence of 60 FPS during camera/heading changes.
+
+### Follow-up: actual cache working set and headroom
+
+The harbor replay references **110,601,912 bytes (~105.5 MiB) in one frame**.
+The 80 MiB cache could not hold even a single frame's working set. A 128 MiB
+cache improved the replay to 56.5 FPS but still had preparation spikes. Background
+terrain preparation / neighboring-heading prefetch improved it to 59.0 FPS.
+160 MiB bounded GPU storage eliminates measured eviction in this replay.
+
+Current defaults: Metal; 160 MiB texture LRU; 32 MiB decoded-frame CPU LRU per
+painter; 64 MiB shared decoded-source CPU LRU; 48 MiB static-raster CPU LRU per
+painter. Main and serial preparation workers have separate painters; only the
+immutable source-sheet cache is shared under a short lock, with decoding outside
+the lock. GPU resources retained by in-flight commands can outlive LRU eviction.
+Memory totals are **not** just the GPU LRU budget. Background queues are bounded
+and publish immutable textures on the main thread. Source sheets remain CPU-only;
+GPU sprite textures remain frame-sized. Circle quads use analytic shader coverage
+rather than CPU tessellation. The simple source-over crossfade is still approximate.
+
+After source-sheet caching, full-resolution 360-frame moving captures:
+
+| Scene | Throughput | CPU median / p95 | GPU median / p95 | Worst interval |
+| --- | --- | --- | --- | --- |
+| Barge arrival | 59.66 FPS | 5.75 / 7.55 ms | 0.12 / 0.32 ms | 49.42 ms |
+| Bridge transit | 59.84 FPS | 6.00 / 7.09 ms | 0.13 / 0.22 ms | 32.71 ms |
+
+GPU timestamp values are simulator measurements, not physical-iPhone claims.
+CPU/GPU are pipelined; do not add their stage times. Occasional cold preparation /
+scheduling spikes remain: this is **not a claim of locked 60 FPS on every frame**.
+A clean repeated capture and UI interaction validation remain before handoff.
+
+Small shared change in this session: `Lettering.TextLayer.backgroundSafe()` now
+returns true because paint reads only final text fields and immutable glyph rows.
+This lets capable hosts prepare newly appearing text off the draw thread. No
+shared gameplay or scene composition has changed.
+
+### Final clean repeats (immutable text preparation enabled)
+
+All builds and other checks were stopped before these runs. Each uses the same
+shared replay, 120 warmup draws, and 360 measured draws at full 3x resolution.
+
+| Capture | FPS | CPU median / p95 | GPU median / p95 | Max draw-start interval |
+| --- | --- | --- | --- | --- |
+| Harbor arrival 1 | 60.00 | 5.82 / 7.21 ms | 0.13 / 0.24 ms | 17.10 ms |
+| Canal | 60.00 | 4.92 / 5.78 ms | 0.12 / 0.22 ms | 23.11 ms |
+| Harbor arrival 2 | 60.00 | 5.69 / 7.69 ms | 0.16 / 0.26 ms | 20.49 ms |
+
+Typical CPU margin is about 9–11 ms against a 16.7 ms budget. Rare long frames
+remain, so this is measured 60 FPS throughput with p95 headroom, not a guarantee
+that every cold load or every device stays below budget. Post-replay simulator
+physical footprint was 288.5 MiB, peak 371.7 MiB (`sample`, separate from timing).
+The baseline and final CSVs/metadata are retained in
+`docs/performance/ios-metal-2026-11-15/`. Native screenshots stay untracked in
+`out/ios-profile/`. The source cache and circle shader changes preserve gameplay;
+visual approximations remain explicitly accepted for this performance round.
+
+Reproduction:
+
+```sh
+CONFIGURATION=Release BARGEBOSS_IOS_PROFILE=1 ./ios/scripts/build.sh
+# Install Release-iphonesimulator/BargeBoss.app on the booted simulator first.
+python3 ios/scripts/profile.py arrival --scene=barge-arrival --replay --warmup=120 --frames=360
+python3 ios/scripts/profile.py canal --scene=canal-middle --replay --warmup=120 --frames=360
+# Reference backend, isolated saved progress, same capture mechanism:
+python3 ios/scripts/profile.py reference --coregraphics --tutorial
+```
+
+The replay fixture classes are included only with `BARGEBOSS_IOS_PROFILE=1`.
+A normal build omits them. Profiling does not load or save captain progress.
+The GPU column reads the most recently completed command buffer, so it is a
+stage distribution rather than a precisely paired per-row CPU/GPU trace. The
+CPU column includes shared replay advance plus geometry/submission for Metal;
+Core Graphics UIKit draw time excludes deferred display-list playback. Neither
+CPU number measures final display scanout. Simulator vsync intervals are the
+end-to-end pacing evidence here. Physical iPhone validation is still required.
+
+### Validation and handoff
+
+- `check.sh` passed; final suite reports 2816 assertions, replay `f9fd76a9:2:1350`.
+- JVM / J2ObjC gameplay and drawing trace parity passed with the same signature.
+- `preview.sh` passed, including 1,439,937 production hull/cargo shoreline pixel
+  assertions across all 32 headings and 197,334 foam/splash transparency and
+  detached shoreline assertions. These are shared/desktop regressions, not proof
+  of exact Metal pixels.
+- Native Release UI test for challenge selection and captain-progress save/restore
+  passed on an isolated iPhone 17 Pro simulator.
+- Native Release lasso, unloading, pause/resume and background/foreground test
+  passed after fixing two stale test helpers: an exact `feeder drops 1` wait that
+  could miss the transient state, and a position parser that confused `cargo`
+  with `cargo id` / `cargo leader` fields. Game behavior was not changed to pass.
+- UI test builds use `ARCHS=arm64` for this Mac's existing J2ObjC runtime. An initial
+  x86_64 link attempt failed; the arm64 rerun passed. Metal compiler verified with
+  `xcrun --sdk iphonesimulator metal --version` (32023.883).
+- Primary simulator save data was preserved; profiling never reads/writes captain
+  progress, and reset-based UI tests used a separate temporary simulator.
+- Normal Release build succeeded and was installed/launched on the original
+  iPhone 17 Pro simulator, with replay fixture classes disabled. The temporary
+  test simulator was removed. No physical iOS device was available. Android build/install remains
+  unavailable here because the development phone and existing signing key are not
+  present. No replacement signing key was generated.
+
+Implementation and raw iOS evidence remain local to this checkout. Main was
+synchronized before each implementation step and was still `0331153` when the
+measurements above were completed; the subsequent sync is recorded below.
+
+
+## iOS agent — Android applicability after syncing 4451876
+
+- Preserved both agents’ logs and both profiling guide sections when syncing main. The iOS measurements above precede the new shared wave/foam changes; they are not measurements of 4451876. Native rebuild/revalidation after this sync remains pending.
+- Local shared `Lettering.TextLayer.backgroundSafe()` now returns true for immutable glyph layers. Android CanvasPainter already honors this flag for asynchronous preparation, so the change also enables Android background lettering preparation. Android timing benefit has not been measured.
+- Android already has cropped frame caching (24 MiB), retained decoded source bitmaps, background terrain preparation, visible-work priority and per-frame texture/build/eviction counters. Do not duplicate the Core Graphics lazy-PNG fix or copy the Metal 160 MiB combined texture budget blindly.
+- Possible follow-up: bounded adjacent-heading frame preparation if Android frameBuildNs or native upload traces show heading-change stalls. Android currently crops a missing frame synchronously. Prefetch must preserve shared frame selection and avoid evicting visible work; measure before adopting.
+- Latest Android trace identifies native path work as the stronger target. The other agent’s proposed shared colorized wave stamps could replace repeated polygon preparation with cached sprite draws on both platforms. Keep world placement, frame/color selection and shore clipping in shared Java; no per-wave bitmap generation during drawing. This is a proposal, not implemented or measured.
+- Metal-specific circle shaders do not directly transfer: Android already calls Canvas.drawCircle. A custom Android GPU painter would be a separate project, not a demonstrated requirement from these iOS results.
