@@ -72,6 +72,7 @@ public final class CollisionSplashTest {
         g.layout=Layout.focused(960,600,Physics.LEFT,500,2,480,350);
         int[] order=s.ordered(g);for(int i=1;i<order.length;i++)check(s.depth(g,order[i-1])<=s.depth(g,order[i]),"airborne stamps sort by water-plane footprint, not height");
         Capture capture=new Capture();s.water(g,new RiverPainter(capture,g.layout.camera));for(int j:order)s.draw(g,capture,j);
+        check(capture.circles==0,"splash clusters contain no geometric round particle draws");
         check(capture.stamps>0 && capture.sparks>0 && capture.clips==0,"heavy impacts shade spray and emit hot streaks inside balanced clips");
         CollisionSplashes light=new CollisionSplashes();light.contact(g.tug,null,300,500,20,0,0,0,20);
         Capture lightCapture=new Capture();for(int j:light.ordered(g))light.draw(g,lightCapture,j);
@@ -95,14 +96,14 @@ public final class CollisionSplashTest {
         System.out.println(checks+" collision splash direction, stamp, watercraft, wall, lifecycle and depth assertions passed");
     }
     private static final class Capture implements Painter{
-        int stamps,other,clips,sparks;
+        int stamps,other,clips,sparks,circles;
         public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){stamps++;}
         public void pushClipOutside(float[] p){clips++;}public void popClip(){clips--;}
-        public void rect(float x,float y,float w,float h,int c){other++;}public void circle(float x,float y,float r,int c){other++;}
+        public void rect(float x,float y,float w,float h,int c){other++;}public void circle(float x,float y,float r,int c){other++;circles++;}
         public void line(float x,float y,float xx,float yy,float w,int c){other++;if((c&0xffffff)==0xff742b)sparks++;}public void poly(float[] p,int c){other++;}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){other++;}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){other++;}
-        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){check(a==SpriteAtlas.FOAM,"splash reuses registered foam atlas");stamps++;}
+        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){check(a==SpriteAtlas.SPLASH && f>=0 && f<4,"splash uses a registered impact stamp");stamps++;}
     }
     public static void main(String[] args){run();}
 }

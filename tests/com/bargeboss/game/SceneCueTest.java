@@ -41,8 +41,8 @@ public final class SceneCueTest {
             Strokes strokes=new Strokes();Painter p=new RiverPainter(strokes,new RiverCamera(0,0,zoom));
             ControlView.ring(p,300,500,40,1,VisualStyle.GOLD,5);
             ControlView.arrow(p,300,500,360,560,VisualStyle.GOLD);
-            check(strokes.maxAlpha<=135,"even bright cues remain translucent");
-            check(strokes.maxWidth<=6.5f,"zoom cannot inflate guidance into thick opaque strokes");
+            check(strokes.maxAlpha>=220 && strokes.minAlpha<60,"guidance has a strong center and translucent outer feather");
+            check(strokes.maxWidth<=15.6f && strokes.maxWidth>8,"broad guidance stays bounded across zoom");
             check(strokes.polys==0 && strokes.circles==0,"arrows are open and rings leave their interiors clear");
         }
         Game g=new Game();g.visualTicks=0;int a=SoftCue.animated(g,VisualStyle.GOLD);g.visualTicks=35;
@@ -50,8 +50,8 @@ public final class SceneCueTest {
         System.out.println(checks+" shoreline depth and soft guidance assertions passed");
     }
     private static class Strokes implements Painter {
-        int maxAlpha,polys,circles;float maxWidth;
-        public void line(float x,float y,float xx,float yy,float width,int color){maxAlpha=Math.max(maxAlpha,color>>>24);maxWidth=Math.max(maxWidth,width);}
+        int maxAlpha,polys,circles,minAlpha=255;float maxWidth;
+        public void line(float x,float y,float xx,float yy,float width,int color){minAlpha=Math.min(minAlpha,color>>>24);maxAlpha=Math.max(maxAlpha,color>>>24);maxWidth=Math.max(maxWidth,width);}
         public void sprite(int a,int f,float x,float y,float w,float h,float angle,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float angle,float blend,float alpha){}
         public void rect(float x,float y,float w,float h,int color){}

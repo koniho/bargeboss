@@ -505,3 +505,21 @@ Detached droplets share each packet's ballistic transform and depth clip. The
 existing bounded contact pool, impact-strength response and heavy-hit sparks are
 unchanged. Fallback painters use tapered geometry and broken rim segments within
 the same clips; native shaders add fine gaps and spray texture.
+
+### Stamped collision spray and broad guide strokes
+
+Collision splashes now use `SpriteAtlas.SPLASH`, four padded irregular water-sheet
+stamps. Three visible airborne clusters retain fixed-step ballistic positions,
+stable cell selection and a fixed launch-relative orientation with small variants.
+One lower-opacity, expanding stamp supplies surface residue. The packet pool and
+contact response stay unchanged; geometric droplets and the radial splash flash
+are removed. Heavy-hit sparks remain separate. Native painters all draw the same
+registered pixels inside the existing water/depth clips. The earlier procedural
+spray modes are no longer used by collision effects.
+
+`SoftCue` supplies broad colored glow bands with a bright central highlight.
+Rings keep their three-material submission budget; line/arrow segments keep three
+stroke submissions. Pulse comes only from shared `visualTicks`. Rings and slip
+corners project through `RiverPainter`; destination and gate arrows now construct
+their heads in that plane too, including screen-edge direction cues. Labels remain
+in the HUD. Glow widths stay bounded across zoom, while interiors stay open.

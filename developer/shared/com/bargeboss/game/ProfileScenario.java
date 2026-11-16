@@ -2,12 +2,20 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
         root.configureCanvas(width,height);
+        if(name.equals("splash-impact")){
+            root.selectChallenge(0);root.reset();for(Feeder f:root.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;
+            root.tug.x=270;root.tug.y=500;root.tug.angle=0;root.tug.vx=65;root.addCargo(0,330,500);root.cargo[0].angle=0;
+            for(int tick=0;tick<16;tick++)root.step();
+            root.layout=Layout.focused(width,height,300,500,3.2f,width*.5f,height*.58f);
+            if(root.splashes.emitted==0)throw new AssertionError("Impact fixture missed contact");return;
+        }
         if(name.startsWith("montrose-")){
             root.selectChallenge(Challenges.MONTROSE);root.reset();
             if(name.equals("montrose-docks")){

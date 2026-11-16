@@ -1386,3 +1386,38 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   versus the baseline; frame interval tails vary substantially. No frame-texture
   builds/evictions occurred during the measured window. This is a small observed
   feature cost, not evidence of performance headroom or a pure GPU measurement.
+
+## 2026-11-16: stamped splash revision and broader guidance
+
+- Replaced procedural collision spray fingers/crowns, round droplets and radial
+  flashes with four irregular transparent splash textures. Three airborne stamps
+  and one expanding surface stamp per contact reuse the existing affine sprite
+  path. Stable frame/orientation per packet avoids time-based atlas popping and
+  velocity-direction flips at the top of the ballistic arc. Heavy-hit sparks stay.
+- Runtime atlas is 256×256 RGBA with four 128px padded cells: 256 KiB decoded,
+  at most another 256 KiB for cropped frames. Every level's shared preparation
+  manifest includes it. The full generated authoring PNG lives under docs, so it
+  is not bundled or decoded by the game. No new shader or per-frame image work.
+- The prior six spray patches plus 18 round droplets and early radial flash are
+  replaced by three airborne sprite submissions. Pool/physics stay bounded and
+  unchanged. This reduces splash submission counts; it is not a measured FPS gain.
+- Guide lines, arrows, elliptical rings and slip corners have broader soft color
+  bands and bright central ridges, with a shared simulation-clock pulse. Existing
+  three-pass stroke/ring budgets are preserved. Wider coverage increases overdraw;
+  no claim of a free GPU change. Destination/gate arrowheads are constructed in the
+  game plane rather than upright screen coordinates. Stroke glow remains bounded
+  at close zoom. The unchanged quiet-cue tests were updated for the requested
+  strong centers while retaining translucent feather and zoom bounds.
+- Added a deterministic `splash-impact` developer fixture using an actual vessel
+  collision for repeatable native review. Four contact-motion desktop sequences,
+  the stamped shoreline pixel regression, and the broader Montrose guide view were
+  reviewed. Native/build validation is recorded below when complete.
+- Final validation: full `check.sh`, 197,334 foam/shore pixel assertions, 27 debug
+  fixture checks, and JVM/J2ObjC parity `8af05b2c:2:1350` pass. Android and Metal
+  simulator builds succeed. Actual Metal and Android collision fixtures plus
+  Android Montrose guidance were inspected; no physical-iPhone validation.
+- One 300-frame Montrose replay sanity capture (60 warmup, same ticks 2596–2895):
+  draw median/p95 13.205/15.764 ms, intervals 19.604/33.237 ms, effective 43.58 FPS.
+  Cropped-frame storage 108.771 MiB, exactly 0.25 MiB above the preceding build.
+  This single capture is not a controlled speedup claim and does not prove peak
+  collision cost or 60 FPS headroom. Evidence: `docs/performance/stamped-splash-cues-2026-11-16`.

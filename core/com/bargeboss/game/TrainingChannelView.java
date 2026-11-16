@@ -42,7 +42,7 @@ public final class TrainingChannelView {
             float sy=c.screenY(gx,gy);
             if(sy<82) {
                 float sx=Physics.clamp(c.screenX(gx,gy),80,g.layout.width-80);
-                ControlView.arrow(g,canvas,sx,122,sx,88,VisualStyle.GOLD);
+                ControlView.arrow(g,new RiverPainter(canvas,c),c.worldX(sx,122),c.worldY(sx,122),c.worldX(sx,88),c.worldY(sx,88),VisualStyle.GOLD);
                 Lettering.center(canvas,"NEXT GATE",sx,131,10,VisualStyle.CREAM);
             }
         }

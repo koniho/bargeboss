@@ -46,7 +46,7 @@ public final class CollisionSplashes {
             }
         }
     }
-    /** Low spreading foam stays on the water underneath all hulls. Broken outward foam crown. */
+    /** Low spreading foam stays on the water underneath all hulls. Irregular expanding splash residue. */
     public void water(Game g,Painter p){
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;Painter canvas=river.canvas();RiverCamera c=river.camera;
@@ -57,7 +57,7 @@ public final class CollisionSplashes {
             float xx=originX[i]+dx*(2+t*7),yy=originY[i]+dy*(2+t*7);
             if(!visible(g,xx,yy,0,length+width))continue;
             canvas.pushClipOutside(ShoreOcclusion.region(g,c,xx-length-width,yy-length-width,xx+length+width,yy+length+width,Float.NEGATIVE_INFINITY));
-            try{p.waterFoam(xx,yy,dx*length,dy*length,-dy*width,dx*width,t*2,9,alpha);}
+            try{p.spriteAffine(SpriteAtlas.SPLASH,i%4,xx,yy,dx*length,dy*length,-dy*width,dx*width,alpha*.55f);}
             finally{canvas.popClip();}
         }
     }
@@ -73,40 +73,24 @@ public final class CollisionSplashes {
         }
         int[] result=new int[n];System.arraycopy(order,0,result,0,n);return result;
     }
-    /** A tapered spray finger stretched along projected travel, lifted ballistically above water. */
+    /** A textured spray cluster oriented along projected travel, lifted ballistically above water. */
     public void draw(Game g,Painter canvas,int j){
+        if(j%2!=0)return; // Three distinct textured clusters, rather than a cloud of individual particles.
         int i=j/STAMPS;float t=age[i]/(float)LIFE;
         float alpha=(.55f+.45f*power[i])*Math.min(1,(age[i]+1)/3f)*(1-t);
         float lifeFade=Physics.clamp(z[j]/1.5f,0,1);if(vz[j]<0)alpha*=lifeFade;
         if(z[j]<0 || alpha<.01f)return;
-        RiverCamera c=g.layout.camera;float dx=RiverCamera.Q*(vx[j]+vy[j]),dy=RiverCamera.Q*RiverCamera.DEPTH*(vy[j]-vx[j])-vz[j];
-        float len=Math.max(.001f,Physics.length(dx,dy));dx/=len;dy/=len;
+        RiverCamera c=g.layout.camera;float dx=RiverCamera.Q*((float)StrictMath.cos(direction[i])+(float)StrictMath.sin(direction[i])),dy=RiverCamera.Q*RiverCamera.DEPTH*((float)StrictMath.sin(direction[i])-(float)StrictMath.cos(direction[i]))-1.3f;
+        float len=Math.max(.001f,Physics.length(dx,dy));dx/=len;dy/=len;float tilt=(j%STAMPS-2)*.12f,co=(float)StrictMath.cos(tilt),si=(float)StrictMath.sin(tilt),old=dx;dx=dx*co-dy*si;dy=old*si+dy*co;
         float variation=.7f+(j%STAMPS)*.07f;
-        float length=(12+power[i]*24)*(1-t*.55f)*c.scale*variation,width=(5+power[i]*9)*(1-t*.6f)*c.scale*variation;
+        float length=(18+power[i]*32)*(1+t*.25f)*c.scale*variation,width=(12+power[i]*22)*(1+t*.45f)*c.scale*variation;
         float sx=c.screenX(x[j],y[j]),sy=c.screenY(x[j],y[j])-z[j]*c.scale;
         float extent=64+z[j]*2;
         canvas.pushClipOutside(ShoreOcclusion.region(g,c,x[j]-extent,y[j]-extent,x[j]+extent,y[j]+extent,depth(g,j)));
         try{
-            canvas.waterFoam(sx,sy,dx*length,dy*length,-dy*width,dx*width,
-                    j*.73f+t*.8f,8,alpha);
-            // Small separated droplets trail each liquid finger, following its ballistic velocity.
-            for(int drop=0;drop<3;drop++){
-                float behind=(.35f+drop*.21f)*length,side=((j+drop)%3-1)*width*.32f;
-                float radius=(.65f+power[i]*1.2f)*(1-drop*.17f)*c.scale;
-                canvas.circle(sx-dx*behind-dy*side,sy-dy*behind+dx*side,radius,(Math.round(alpha*210)<<24)|0xe5fcf7);
-            }
-            // One brief burst per contact, kept in the same depth/shore scope as the spray.
-            if(j%STAMPS==0 && age[i]<10) {
-                float fade=1-age[i]/10f,r=(7+power[i]*14+age[i]*1.4f)*c.scale;
-                canvas.circle(sx,sy,r,(Math.round(95*fade)<<24)|0xe5fcf7);
-                for(int ray=0;ray<7;ray++) {
-                    float angle=ray*(float)(StrictMath.PI*2/7)+direction[i];
-                    float rx=(float)StrictMath.cos(angle),ry=(float)StrictMath.sin(angle);
-                    canvas.line(sx+rx*r*.35f,sy+ry*r*.35f,sx+rx*r,sy+ry*r,
-                            (1.2f+power[i])*c.scale,(Math.round(230*fade)<<24)|0xf1fff1);
-                }
-            }
-            // Six detached hot streaks only for substantial incoming impacts (>=45.5 units/s).
+            // Stable frame/orientation for the packet's lifetime: no atlas flicker or apex flip.
+            canvas.spriteAffine(SpriteAtlas.SPLASH,(i+j/2)%4,sx,sy,dx*length,dy*length,-dy*width,dx*width,alpha*.85f);
+            // Detached hot streaks only for substantial incoming impacts (>=45.5 units/s).
             if(power[i]>=.65f && age[i]<24) {
                 float fade=1-age[i]/24f,tail=(5+power[i]*11)*c.scale;
                 float lift=(4+age[i]*.5f)*c.scale;

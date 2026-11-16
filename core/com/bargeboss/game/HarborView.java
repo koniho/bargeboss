@@ -98,12 +98,14 @@ public final class HarborView {
                     (g.layout.height/2-80)/Math.max(1,Math.abs(dy)));
             float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
             float ux=dx/distance,uy=dy/distance;
-            ControlView.arrow(g,canvas,ex-ux*32,ey-uy*32,ex,ey,GOLD);
+            ControlView.arrow(g,new RiverPainter(canvas,c),c.worldX(ex-ux*40,ey-uy*40),c.worldY(ex-ux*40,ey-uy*40),c.worldX(ex,ey),c.worldY(ex,ey),GOLD);
             Lettering.center(canvas,label,Physics.clamp(ex,85,g.layout.width-85),
                     Physics.clamp(ey+22,85,g.layout.height-62),12,GOLD);return;
         }
-        Painter p=ScreenView.scaled(canvas,x,y,c.scale);
-        float bob=3*(float)StrictMath.sin(g.visualTicks*.10);
-        ControlView.arrow(g,p,0,-54+bob,0,-22+bob,GOLD);
+        // Place the entire arrow, including its head, in the water plane.
+        float dx=wx-g.tug.x,dy=wy-g.tug.y,length=Physics.length(dx,dy);
+        if(length<1){dx=0;dy=-1;length=1;}dx/=length;dy/=length;
+        float pulse=3*(float)StrictMath.sin(g.visualTicks*.055);
+        ControlView.arrow(g,new RiverPainter(canvas,c),wx-dx*(68+pulse),wy-dy*(68+pulse),wx-dx*(24+pulse),wy-dy*(24+pulse),GOLD);
     }
 }

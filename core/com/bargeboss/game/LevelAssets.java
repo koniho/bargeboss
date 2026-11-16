@@ -8,7 +8,7 @@ public final class LevelAssets {
         private final boolean marina;
         private Plan(int... sources){rotations=SpriteAtlas.rotationAtlases(sources);boolean yacht=false;for(int source:sources)if(source==SpriteAtlas.YACHT)yacht=true;marina=yacht;}
         public int[] sceneryAtlases(){return marina?new int[]{SpriteAtlas.MARINA,SpriteAtlas.MOORED_BOATS,SpriteAtlas.MOORED_NORMALS}:new int[]{SpriteAtlas.SHORE_BOLLARDS,SpriteAtlas.SHORE_LOADING,SpriteAtlas.SHORE_TRUCKS,SpriteAtlas.STEELWORKS};}
-        public int[] preparationAtlases(){int[] scenery=sceneryAtlases(),all=new int[rotations.length+scenery.length];System.arraycopy(rotations,0,all,0,rotations.length);System.arraycopy(scenery,0,all,rotations.length,scenery.length);return all;}
+        public int[] preparationAtlases(){int[] scenery=sceneryAtlases(),all=new int[rotations.length+scenery.length+1];System.arraycopy(rotations,0,all,0,rotations.length);System.arraycopy(scenery,0,all,rotations.length,scenery.length);all[all.length-1]=SpriteAtlas.SPLASH;return all;}
         public int[] rotationAtlases(){return rotations.clone();}
         public int rotationFrames(){int count=0;for(int atlas:rotations)count+=SpriteAtlas.count(atlas);return count;}
     }
