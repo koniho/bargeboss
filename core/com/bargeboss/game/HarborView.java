@@ -41,11 +41,21 @@ public final class HarborView {
             selected|=g.workingCargo()==b;
         }
         int color=empty?GOLD:occupied?0xff8ce7c2:ready || focused(g)==index?GOLD:(Game.COLORS[index]&0xffffff)|0x88000000;
-        // Four stable shader borders; no animated dash fragments or tinted infill.
-        if(!selected && !ready && focused(g)!=index)color=SoftCue.alpha(color,.38f);
+        p.rect(x,y,width,106,(selected?0x27000000:0x14000000)|(color&0xffffff));
         color=SoftCue.animated(g,color);
-        SoftCue.line(p,x,y,x+width,y,2,color);SoftCue.line(p,x,y+106,x+width,y+106,2,color);
-        SoftCue.line(p,x,y,x,y+106,2,color);SoftCue.line(p,x+width,y,x+width,y+106,2,color);
+        int run=(g.visualTicks/6)%16;
+        for(int k=0;k<width;k+=16) {
+            float xx=x+(k+run)%width;
+            SoftCue.line(p,xx,y,Math.min(xx+8,x+width),y,1,color); SoftCue.line(p,xx,y+104,Math.min(xx+8,x+width),y+104,1,color);
+        }
+        for(int k=0;k<106;k+=16) {
+            float yy=y+(k+run)%106;
+            SoftCue.line(p,x,yy,x,Math.min(yy+8,y+106),1,color); SoftCue.line(p,x+width,yy,x+width,Math.min(yy+8,y+106),1,color);
+        }
+        for(int side=0;side<2;side++) for(int end=0;end<2;end++) {
+            float xx=x+side*width, yy=y+end*106, sx=side==0?1:-1,sy=end==0?1:-1;
+            SoftCue.line(p,xx,yy,xx+sx*15,yy,1,color); SoftCue.line(p,xx,yy,xx,yy+sy*15,1,color);
+        }
         boolean right=g.berthRight(index);float bank=g.orderStage()?PhysicalBerths.LEFT-27:right?433:143;
         Painter shore=!g.montroseStage() && p instanceof RiverPainter?
                 new RiverPainter(GroundArt.raisedCanvas(g,((RiverPainter)p).canvas()),g.layout.camera):p;

@@ -192,11 +192,7 @@ public final class MontroseView {
         Renderer.river(g,world);
     }
     public static void slip(Game g,Painter p){int color=SoftCue.animated(g,g.mission.settledTicks>0?0xdd4fffc0:0xddffe69c);float c=(float)StrictMath.cos(MontroseHarbor.SLIP_ANGLE),s=(float)StrictMath.sin(MontroseHarbor.SLIP_ANGLE);
-        // Complete segmented rectangle: a clear arcade target, not isolated dock-like corners.
-        for(int side=-1;side<=1;side+=2){float x=MontroseHarbor.SLIP_X-c*96-s*side*38,y=MontroseHarbor.SLIP_Y-s*96+c*side*38;
-            SoftCue.line(p,x,y,x+c*192,y+s*192,2,color);}
-        for(int end=-1;end<=1;end+=2){float x=MontroseHarbor.SLIP_X+c*end*96+s*38,y=MontroseHarbor.SLIP_Y+s*end*96-c*38;
-            SoftCue.line(p,x,y,x-s*76,y+c*76,2,color);}
-
+        for(int side=-1;side<=1;side+=2)for(int end=-1;end<=1;end+=2){float x=MontroseHarbor.SLIP_X+c*end*96-s*side*38,y=MontroseHarbor.SLIP_Y+s*end*96+c*side*38;
+            SoftCue.line(p,x,y,x-c*end*28,y-s*end*28,2,color);SoftCue.line(p,x,y,x+s*side*20,y-c*side*20,2,color);}
     }
 }

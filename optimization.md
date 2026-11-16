@@ -1509,3 +1509,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   This is a sanity capture, not a controlled before/after comparison or 60 FPS
   claim. Summary: `docs/performance/highlight-audit-2026-11-16/summary.json`;
   raw CSV and desktop/native previews remain in ignored `out/`.
+
+## 2026-11-16: user-requested highlight rollback
+
+- The user rejected the thick neon/segmented redesign and requested going all the
+  way back. Restored the pre-redesign `e48588a` quiet visual treatment: thin
+  translucent feathered strokes, open arrowheads, continuous rings, original
+  Calumet/Montrose berth outlines, original hull glow textures/pulse/eligibility,
+  and original tow interaction rings. Removed the new filled-arrow/dashed/compact
+  ring materials. This is a rollback, not another style iteration.
+- Preserved independent moored-boat point lighting, the arrow depth-order queue,
+  stamped collision splashes, and all unrelated gameplay/physics changes.
+  World arrows now use the restored open strokes in the retained depth pass.
+- Superseded the rejected neon instructions in AGENTS.md and the highlight guide.
+  Historical measurements and art-direction discussion remain in Git history.
+  Shared quiet-style previews reviewed; all 1,439,937 shoreline pixel assertions
+  pass. Final build/parity/device results follow below.
+- Final validation: Android build and its full shared checks pass; JVM/J2ObjC
+  state/draw parity is `edc8320d:2:1350`. iOS Metal Release builds, installs and
+  runs in the simulator; reviewed `out/rollback-metal.png` alongside shared
+  previews. No performance improvement is claimed for this visual rollback.
+- Android APK is ready at `build/bargeboss-debug.apk`, signed with the existing
+  debug key. Physical installation was attempted but adb reports no connected
+  device; Android native visual validation remains pending reconnection.
+  Awake cleanup reports no temporary timeout to restore.

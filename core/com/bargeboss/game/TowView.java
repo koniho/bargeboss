@@ -23,8 +23,7 @@ public final class TowView {
                 ControlView.ring(g,p,x,y,8+30*t,1,glow,3);
                 ControlView.ring(g,p,xx,yy,8+30*t,1,glow,3);
             }
-            if(held==line.cargo || g.towAiming || g.ropeDragging || g.tutorial!=null && g.tutorial.lesson==Tutorial.RELEASE)
-                ControlView.ring(g,p,line.cargo.x,line.cargo.y,44,1,0x9983c8d5,2);
+            ControlView.ring(g,p,line.cargo.x,line.cargo.y,44,1,0x9983c8d5,2);
             if((g.tow.count()==1 || held==line.cargo) && (g.tutorial==null || g.tutorial.lesson!=Tutorial.RELEASE)) SoftCue.caption(p,"TAP TO LET GO",line.cargo.x-47,line.cargo.y,8,ControlView.BLUE);
             if(line.leader==g.tug)SoftCue.caption(p,line.tension>12?"PULLING":"LINE SLACK",(x+xx)/2+15,(y+yy)/2,8,color);
         }

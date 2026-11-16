@@ -506,7 +506,7 @@ existing bounded contact pool, impact-strength response and heavy-hit sparks are
 unchanged. Fallback painters use tapered geometry and broken rim segments within
 the same clips; native shaders add fine gaps and spray texture.
 
-### Stamped collision spray and broad guide strokes
+### Stamped collision spray
 
 Collision splashes now use `SpriteAtlas.SPLASH`, four padded irregular water-sheet
 stamps. Three visible airborne clusters retain fixed-step ballistic positions,
@@ -517,22 +517,9 @@ are removed. Heavy-hit sparks remain separate. Native painters all draw the same
 registered pixels inside the existing water/depth clips. The earlier procedural
 spray modes are no longer used by collision effects.
 
-`SoftCue` supplies broad colored glow bands with a bright central highlight.
-Rings keep their three-material submission budget; lines and arrows use one
-material patch on shader hosts (reference hosts approximate the feather). Pulse comes only from shared `visualTicks`. Rings and slip
-corners project through `RiverPainter`; destination and gate arrows now construct
-their heads in that plane too, including screen-edge direction cues. Labels remain
-in the HUD. Glow widths stay bounded across zoom, while interiors stay open.
+## Direction arrows after the visual rollback
 
-## Arcade direction arrows
-
-Gameplay arrows are filled, glowing planes projected through `RiverCamera`, not
-screen-stroked HUD arrows. `WorldArrows` collects the existing shared cue rules
-before scene drawing, sorts by each arrow's ground-plane midpoint, and merges
-with the Montrose and Calumet depth passes. This includes steering, destination,
-training and mooring arrows. The later overlay pass suppresses duplicates;
-labels remain screen aligned. Collection is bounded and cleared in `finally`.
-Long arrows spanning several hull depths currently use one midpoint; split them
-if a scene requires different parts to straddle a hull, as with towline spans.
-Follow [gameplay highlight guidelines](../art-direction/gameplay-highlights.md)
-for saturated cores, segmentation and visual hierarchy.
+WorldArrows retains its bounded queue and midpoint depth ordering with vessels.
+Arrow appearance is restored to thin, open feathered strokes. The filled neon
+planes and segmented guidance materials were rejected and removed. See the
+[current highlight policy](../art-direction/gameplay-highlights.md).

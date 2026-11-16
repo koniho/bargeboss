@@ -36,10 +36,11 @@ public final class GenerateVesselGlow {
                 if(dx*dx+dy*dy<=5 && x+dx>=0 && x+dx<N && y+dy>=0 && y+dy<N)dilate[y*N+x]=Math.max(dilate[y*N+x],mask[(y+dy)*N+x+dx]);
             float[] rim=blur(dilate,.65),near=blur(mask,2.5),far=blur(mask,6);
             for(int y=0;y<N;y++)for(int x=0;x<N;x++) {
-                int i=y*N+x;
+                int i=y*N+x;float edge=(1-mask[i])*rim[i];
                 int alpha=Math.min(245,Math.round(255*(.12f*mask[i]+(1-mask[i])*(.88f*rim[i]+.9f*near[i]+.85f*far[i]))));
-                // Preserve a saturated hue from the feather through the core.
-                int gold=0xffee00,mint=0x22ff72;
+                // The outer halo is saturated; its bright inner edge approaches cream.
+                int gold=(255<<16)|((180+Math.round(62*edge))<<8)|(42+Math.round(130*edge));
+                int mint=((75+Math.round(130*edge))<<16)|(255<<8)|(168+Math.round(65*edge));
                 sheets[vessel==2?3:vessel==0?0:2].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|gold);
                 if(vessel!=1)sheets[vessel==2?4:1].setRGB(f%8*N+x,f/8*N+y,(alpha<<24)|mint);
                 if((x==0 || y==0 || x==N-1 || y==N-1) && alpha!=0)throw new AssertionError("Glow spills into adjacent frame "+f);
