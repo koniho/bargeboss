@@ -1,0 +1,79 @@
+name: Create Barge Boss provisioning profile
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    if: github.ref == 'refs/heads/main' && github.actor == 'koniho'
+    runs-on: macos-26
+    environment: ios-release
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Create app-specific profile and encrypt for match
+        env:
+          IOS_APPSTORE_KEY_BASE64: ${{ secrets.IOS_APPSTORE_KEY_BASE64 }}
+          IOS_APPSTORE_KEY_ID: ${{ secrets.IOS_APPSTORE_KEY_ID }}
+          IOS_APPSTORE_ISSUER_ID: ${{ secrets.IOS_APPSTORE_ISSUER_ID }}
+          IOS_MATCH_PASSWORD: ${{ secrets.IOS_MATCH_PASSWORD }}
+        run: |
+          bundle exec ruby <<'RUBY'
+          require 'jwt'
+          require 'openssl'
+          require 'base64'
+          require 'net/http'
+          require 'json'
+          require 'time'
+          require 'match/encryption/encryption'
+          key = OpenSSL::PKey.read(Base64.decode64(ENV.fetch('IOS_APPSTORE_KEY_BASE64')))
+          now = Time.now.to_i
+          token = JWT.encode({iss: ENV.fetch('IOS_APPSTORE_ISSUER_ID'), iat: now, exp: now + 600, aud: 'appstoreconnect-v1'}, key, 'ES256', {kid: ENV.fetch('IOS_APPSTORE_KEY_ID'), typ: 'JWT'})
+          api = lambda do |method, path, body = nil|
+            uri = URI('https://api.appstoreconnect.apple.com/v1/' + path)
+            req = method == :post ? Net::HTTP::Post.new(uri) : Net::HTTP::Get.new(uri)
+            req['Authorization'] = "Bearer #{token}"
+            req['Content-Type'] = 'application/json'
+            req.body = JSON.generate(body) if body
+            response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+            unless response.is_a?(Net::HTTPSuccess)
+              errors = JSON.parse(response.body).fetch('errors', []).map { |e| e.slice('status', 'code', 'title', 'detail') }
+              abort JSON.generate(errors)
+            end
+            JSON.parse(response.body).fetch('data')
+          end
+          cert = api.call(:get, 'certificates/8F45S3FDPB')
+          abort 'Unexpected certificate type' unless %w[DISTRIBUTION IOS_DISTRIBUTION].include?(cert.dig('attributes', 'certificateType'))
+          abort 'Expired certificate' unless Time.parse(cert.dig('attributes', 'expirationDate')) > Time.now
+          bundle = api.call(:get, 'bundleIds?filter%5Bidentifier%5D=com.bargeboss.game.ios').first
+          abort 'Missing Barge Boss bundle ID' unless bundle && bundle.dig('attributes', 'identifier') == 'com.bargeboss.game.ios'
+          name = 'match AppStore com.bargeboss.game.ios'
+          profiles = api.call(:get, 'profiles?filter%5Bname%5D=' + URI.encode_www_form_component(name) + '&limit=200')
+          profile = profiles.find { |p| p.dig('attributes','profileState') == 'ACTIVE' && p.dig('attributes','profileType') == 'IOS_APP_STORE' }
+          if profile
+            b = api.call(:get, "profiles/#{profile.fetch('id')}/bundleId")
+            c = api.call(:get, "profiles/#{profile.fetch('id')}/certificates")
+            abort 'Existing profile has different signing identity' unless b.fetch('id') == bundle.fetch('id') && c.any? { |v| v.fetch('id') == cert.fetch('id') }
+          else
+            profile = api.call(:post, 'profiles', {data: {type: 'profiles', attributes: {name: name, profileType: 'IOS_APP_STORE'}, relationships: {bundleId: {data: {type: 'bundleIds', id: bundle.fetch('id')}}, certificates: {data: [{type: 'certificates', id: cert.fetch('id')}]}}}})
+          end
+          content = Base64.decode64(profile.fetch('attributes').fetch('profileContent'))
+          abort 'Empty profile' if content.empty?
+          password = ENV.fetch('IOS_MATCH_PASSWORD')
+          codec = Match::Encryption::MatchDataEncryption.new
+          encrypted = codec.encrypt(data: content, password: password)
+          abort 'Encryption verification failed' unless codec.decrypt(base64encoded_encrypted: encrypted, password: password) == content
+          Dir.mkdir('encrypted-profile')
+          File.write('encrypted-profile/AppStore_com.bargeboss.game.ios.mobileprovision', encrypted)
+          puts JSON.generate(profile.fetch('attributes').slice('name', 'uuid', 'expirationDate', 'profileState', 'profileType'))
+          RUBY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: encrypted-bargeboss-profile
+          path: encrypted-profile/*.mobileprovision
+          retention-days: 1
+          if-no-files-found: error
