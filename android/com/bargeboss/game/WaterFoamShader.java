@@ -14,6 +14,18 @@ import java.io.IOException;
 @android.annotation.TargetApi(33)
 final class WaterFoamShader {
     private final RuntimeShader shader;
+    // RuntimeShader copies uniforms through JNI. Preserve values across draws so
+    // consecutive patches only update uniforms whose exact float value changed.
+    private float lastPhase=Float.NaN,lastKind=Float.NaN,lastOpacity=Float.NaN,lastDetail=Float.NaN;
+    private int lastTint;private boolean hasTint;
+    private void detail(float value){if(value!=lastDetail){shader.setFloatUniform("detail",value);lastDetail=value;}}
+    private void uniforms(float phase,float kind,float opacity,int color){
+        int tint=color|0xff000000;
+        if(!hasTint || tint!=lastTint){shader.setColorUniform("tint",tint);lastTint=tint;hasTint=true;}
+        if(phase!=lastPhase){shader.setFloatUniform("phase",phase);lastPhase=phase;}
+        if(kind!=lastKind){shader.setFloatUniform("kind",kind);lastKind=kind;}
+        if(opacity!=lastOpacity){shader.setFloatUniform("opacity",opacity);lastOpacity=opacity;}
+    }
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Matrix matrix=new Matrix();
     private final float[] values=new float[9],surfaceSource=new float[6],surfaceTarget=new float[6];
@@ -45,7 +57,7 @@ final class WaterFoamShader {
         } catch(IOException e) {throw new IllegalStateException("Missing shared water shader",e);}
     }
     boolean shoreline(Canvas canvas,float[] xy,float[] uv,float phase,float energy,int kind,int color) {
-        shader.setFloatUniform("detail",energy);
+        detail(energy);
         return polygon(canvas,xy,uv,18+kind,color,phase);
     }
     boolean surface(Canvas canvas,float[] xy,float[] uv,int material,int color,float wetness) {
@@ -62,15 +74,14 @@ final class WaterFoamShader {
         if(third<0)return false;
         for(int i=0;i<6;i++){int k=i<4?i:third+i-4;surfaceSource[i]=uv[k];surfaceTarget[i]=xy[k];}
         matrix.reset();if(!matrix.setPolyToPoly(surfaceSource,0,surfaceTarget,0,3))return false;
-        shader.setColorUniform("tint",color|0xff000000);shader.setFloatUniform("kind",(float)mode);
-        shader.setFloatUniform("phase",wetness);shader.setFloatUniform("opacity",(color>>>24)/255f);
+        uniforms(wetness,mode,(color>>>24)/255f,color);
         surfacePath.rewind();surfacePath.moveTo(xy[0],xy[1]);for(int i=2;i<xy.length;i+=2)surfacePath.lineTo(xy[i],xy[i+1]);surfacePath.close();
         shader.setLocalMatrix(matrix);
         try {canvas.drawPath(surfacePath,paint);} finally {shader.setLocalMatrix(null);}
         return true;
     }
     void material(Canvas canvas,float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
-        shader.setFloatUniform("detail",detail);
+        detail(detail);
         draw(canvas,x,y,ax,ay,bx,by,amount,kind+9,(color>>>24)/255f,color);
     }
     void rope(Canvas canvas,float x,float y,float xx,float yy,float width,float from,float to,int color) {
@@ -79,8 +90,7 @@ final class WaterFoamShader {
         draw(canvas,(x+xx)*.5f,(y+yy)*.5f,dx,dy,-dy/len*width,dx/len*width,0,8,(color>>>24)/255f,color);
     }
     void draw(Canvas canvas,float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha,int color) {
-        shader.setColorUniform("tint",color|0xff000000);
-        shader.setFloatUniform("phase",phase);shader.setFloatUniform("kind",(float)kind);shader.setFloatUniform("opacity",alpha);
+        uniforms(phase,kind,alpha,color);
         values[0]=ax;values[1]=bx;values[2]=x-(ax+bx)*.5f;
         values[3]=ay;values[4]=by;values[5]=y-(ay+by)*.5f;
         values[6]=0;values[7]=0;values[8]=1;matrix.setValues(values);

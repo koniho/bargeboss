@@ -13,7 +13,12 @@ public final class WaterSurface {
     public float energy(float wx,float wy,Body ignore) {
         float total=0;
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE && source[i]!=ignore) {
-            float distance=Physics.length(wx-x[i],wy-y[i]),radius=age[i]*.55f;
+            float dx=wx-x[i],dy=wy-y[i],radius=age[i]*.55f;
+            // Outside the crest's bounding square the contribution is exactly zero.
+            // A one-unit guard keeps this rejection clear of float rounding at the band edge.
+            float reach=radius+33;
+            if(Math.abs(dx)>reach || Math.abs(dy)>reach)continue;
+            float distance=Physics.length(dx,dy);
             float band=Math.max(0,1-Math.abs(distance-radius)/32);
             total+=strength[i]*band*(1-age[i]/(float)LIFE);
         }

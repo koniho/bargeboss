@@ -1121,3 +1121,35 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   ignored local build/debug.keystore (mode 600), which build-android.sh uses by
   default. Temporary Downloads key removed. Do not regenerate this key or delete
   it during build cleanup; future Mac build/install rounds require no manual signing.
+
+## Android render submission and wake bounds (2026-11-16)
+
+- Sampled ART trace (1 ms sampling, 180 measured frames) identified main-thread
+  hotspots: shore-mask construction 23.19% inclusive, shoreline wake-energy
+  sampling 13.37% inclusive, RuntimeShader uniform updates about 9.84% exclusive.
+  Inclusive percentages overlap; profiler timings are not untraced performance.
+  No trace overflow or unmatched transitions. Raw: out/android-profile/dusk-hotspots-v1.
+- Reject wake packets outside a conservative crest bounding square before distance
+  evaluation. Preserve the old sum/order for contributing packets. 28,452 exact
+  comparisons against the original formula pass, including crest boundaries and
+  ignored emitters. All shared checks pass; native/JVM signature remains fed85fc4:2:1350.
+- Android shader adapter retains last uniform values and sends only changed values
+  through JNI. Geometry, shader kernels, opacity, effects, and drawing order remain
+  unchanged. The final Montrose native screenshot is byte-identical to the original.
+- Matched Pixel 11 Pro montrose-docks replay, 60 warmup + 300 samples: original
+  draw median/p95 15.932/19.652 ms; optimized 13.717/16.815 ms. Frame interval
+  median/p95 20.290/32.766 ms versus 19.581/33.913 ms. Thus CPU drawing improved
+  about 14%, but this does not establish smooth 60 FPS or improved tail latency.
+- Native recent-frame samples: issue-to-swap median 22.441 -> 20.519 ms, but p95
+  32.583 -> 33.977 ms; sync median 0.542 -> 0.503 ms. Issue-to-swap includes
+  driver and buffer waits, not just GPU work. Shore union/clipping and native
+  submission/presentation remain follow-up bottlenecks.
+- Raw untraced evidence: out/android-profile/render-before and render-after.
+- Alternating repeat confirmed the CPU improvement despite run-to-run variation:
+  original draw median/p95 17.396/20.670 ms versus optimized 14.185/17.463 ms;
+  intervals 21.890/36.196 ms versus 20.638/33.202 ms. All four runs contain the
+  same 300 measured ticks (2596–2895). Original throughput was 42.27 then 40.53
+  FPS; the first optimized run was 43.74 FPS. These results remain below target.
+  Repeat evidence: render-before-repeat and render-after-repeat under out/android-profile.
+- Final optimized APK installed with the retained original debug key; normal app
+  launched and phone timeout restored. Key remains mode 600 and ignored by Git.
