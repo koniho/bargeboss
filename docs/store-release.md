@@ -121,3 +121,17 @@ behavior. Those remain separate release tasks.
 - Offline release-boundary tests, shell syntax checks and actionlint passed locally.
 - Signed export, store uploads and physical-device installation remain unverified
   until the missing signing inputs and development phone are available.
+
+### Local credential discovery and hosted checks
+
+The source checkout's ignored `.private/ios-signing/` directory contains
+`deploy_key`, `match-password`, and setup scripts with the Apple API key identifiers.
+The API private-key file referenced by those scripts is absent. No Android release
+keystore or Play service-account JSON was found in the local checkout (debug
+keystores are present and are not release substitutes). Copying the recovered
+signing credentials into Barge Boss is pending explicit authorization following
+automatic approval review; no Barge Boss environment secrets have been populated.
+
+[Hosted release configuration check 43797755353](https://github.com/koniho/bargeboss/actions/runs/43797755353)
+passed, including pinned fastlane option compatibility and lane loading. This is
+configuration validation, not a signed build or upload.
