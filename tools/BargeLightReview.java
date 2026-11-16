@@ -6,22 +6,22 @@ import java.io.File;
 import javax.imageio.ImageIO;
 /** Actual renderer: eased push pulse and either-end towing/pushing anchor review. */
 public final class BargeLightReview {
-    private static void broadside()throws Exception {
+    private static void broadside(boolean tug)throws Exception {
         BufferedImage image=new BufferedImage(1080,520,BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics=image.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         Painter p=new DesktopPainter(graphics);p.rect(0,0,1080,520,0xff061d27);
         for(int row=0;row<2;row++)for(int col=0;col<3;col++){
             Game g=new Game();g.reset();g.visualTicks=18;
             float heading=(float)(Math.PI/4+row*Math.PI+(col-1)*Math.PI/16);
-            Body b=new Body(1,2,300,500,heading);
+            Body b=new Body(tug?0:1,tug?-1:2,300,500,heading);
             RiverCamera origin=new RiverCamera(0,0,3.3f),camera=new RiverCamera(col*360+180-origin.screenX(300,500),row*260+150-origin.screenY(300,500),3.3f);
-            VesselView.draw(g,new RiverPainter(p,camera),b,false,false);
+            VesselView.draw(g,new RiverPainter(p,camera),b,tug,false);
             Lettering.center(p,(row==0?"RIGHT":"LEFT")+" / "+(col==1?"EXACT":"ADJACENT POSE"),col*360+180,row*260+28,11,VisualStyle.CREAM);
         }
-        graphics.dispose();ImageIO.write(image,"png",new File("out/barge-stern-broadside.png"));
+        graphics.dispose();ImageIO.write(image,"png",new File("out/"+(tug?"tug":"barge")+"-stern-broadside.png"));
     }
     public static void main(String[] args)throws Exception {
-        if(args.length>0 && args[0].equals("--broadside")){broadside();return;}
+        if(args.length>0){broadside(args[0].equals("--tug-broadside"));return;}
         BufferedImage image=new BufferedImage(1200,840,BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics=image.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         Painter p=new DesktopPainter(graphics);p.rect(0,0,1200,840,0xff061d27);

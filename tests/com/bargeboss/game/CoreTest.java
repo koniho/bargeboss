@@ -135,8 +135,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Barge stern visibility at screen broadside intentionally changes the visual trace.
-        check(Parity.signature().equals("6acc130:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Tug stern visibility at screen broadside and restored barge sectors change the visual trace.
+        check(Parity.signature().equals("ee68a0f6:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

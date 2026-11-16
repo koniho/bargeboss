@@ -574,3 +574,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Native iOS rendering is not validated on this Termux host.
 - Complete shared suite and Android debug build passed. Installed successfully
   and launched on the development phone; the gameplay and art use shared Java.
+
+### Corrected request: tug broadside stern light; cargo style review
+
+- User clarified the broadside light request concerns the tug. Moved the camera
+  visibility allowance to powered tug/workboat rigs and restored the prior barge
+  sector. Yacht behavior and pushed-barge stern suppression remain unchanged.
+- Shared light checks passed (18,789 assertions), including restored barge
+  sectors, tug screen-left/right visibility, smooth turns and tow orientation.
+  Reviewed actual renderer tug poses and neighbors. Full shared Android build
+  passed; reviewed replay signature `ee68a0f6:2:1350` retains deliveries/score.
+  Native iOS pixels remain untested here. No new caches or textures.
+- Cargo review reproduced steel, container and coal variants with one shared hull,
+  camera and lighting. Steel/container use older artwork and unmasked repeated
+  load placement; coal uses the registered isometric layer. Findings and next
+  asset requirements recorded in `docs/art-studies/cargo-style-review.md`.
+  This round does not replace cargo art or change driving direction behavior.
+- Android installed and launched successfully. Copied tug-light and cargo-style
+  review sheets to Downloads. Driving direction latching was recommended in
+  response to the design question; it is not implemented in this change.

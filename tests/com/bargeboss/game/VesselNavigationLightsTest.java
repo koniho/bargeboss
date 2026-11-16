@@ -79,17 +79,18 @@ public final class VesselNavigationLightsTest {
         for(int side=0;side<2;side++){
             float heading=(float)(StrictMath.PI/4+side*StrictMath.PI);
             Body b=new Body(1,2,300,500,heading);
-            check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN)>.999f,"barge stern visible directly screen left/right");
+            check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN)<.001f,"barge previous sector restored");
+            g.tug.angle=heading;
+            check(VesselNavigationLights.energy(g,g.tug,true,VesselNavigationLights.STERN)>.999f,"tug stern visible directly screen left/right");
             Body yacht=new Body(2,0,300,500,heading,true);
             check(VesselNavigationLights.energy(g,yacht,false,VesselNavigationLights.STERN)<.001f,"yacht sector unchanged");
-            check(VesselNavigationLights.energy(g,g.tug,true,VesselNavigationLights.STERN)==VesselNavigationLights.visibility(g.tug.angle,VesselNavigationLights.STERN),"powered sector unchanged");
             for(int sample=-500;sample<=500;sample++){
                 float angle=heading+sample*.001f;
-                check(Math.abs(VesselNavigationLights.bargeSternVisibility(angle)-VesselNavigationLights.bargeSternVisibility(angle+.001f))<.004f,"stern fades continuously across broadside and forward quarter");
+                check(Math.abs(VesselNavigationLights.tugSternVisibility(angle)-VesselNavigationLights.tugSternVisibility(angle+.001f))<.004f,"stern fades continuously across broadside and forward quarter");
             }
         }
-        check(VesselNavigationLights.bargeSternVisibility((float)(Math.PI*.75))==0,"barge stern still hidden bow-on");
-        check(VesselNavigationLights.bargeSternVisibility((float)(Math.PI*1.75))==1,"barge stern fully visible from astern");
+        check(VesselNavigationLights.tugSternVisibility((float)(Math.PI*.75))==0,"tug stern still hidden bow-on");
+        check(VesselNavigationLights.tugSternVisibility((float)(Math.PI*1.75))==1,"tug stern fully visible from astern");
     }
     private static void bargeModes(){
         int pulses=0;float previous=0;
@@ -118,7 +119,7 @@ public final class VesselNavigationLightsTest {
             g.tug.x=b.x+end*70*(float)StrictMath.cos(b.angle);g.tug.y=b.y+end*70*(float)StrictMath.sin(b.angle);
             check(g.tow.attach(g,b,g.tug),"real tow link attaches");
             check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.SPECIAL)==0,"astern tow has no pushed-barge flasher");
-            check(near(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN),VesselNavigationLights.bargeSternVisibility(g.tug.angle)),"tow stern sector follows attached leading end");
+            check(near(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN),VesselNavigationLights.visibility(g.tug.angle,VesselNavigationLights.STERN)),"tow stern sector follows attached leading end");
             b.lineAttached=true;g.tow.release(g);
             check(VesselNavigationLights.pushedEnd(g,b)==0,"moored barge cannot show push rig");
         }

@@ -38,7 +38,7 @@ public final class VesselNavigationLights {
         if(fixture==SPECIAL && (powered || b.yacht || pushed==0))return 0;
         if(fixture==STERN && pushed!=0)return 0;
         float heading=b.angle+(end<0?(float)StrictMath.PI:0);
-        float visible=!powered && !b.yacht && fixture==STERN?bargeSternVisibility(heading):visibility(heading,fixture);
+        float visible=powered && fixture==STERN?tugSternVisibility(heading):visibility(heading,fixture);
         return visible*(fixture==SPECIAL?specialPulse(ticks):1);
     }
     public static float energy(Game g,Body b,boolean powered,int fixture){
@@ -63,8 +63,8 @@ public final class VesselNavigationLights {
         else value=SIDE_ARC-Math.abs(bearing);
         return sectorVisibility(value);
     }
-    /** Elevated-view barge stern lens stays fully readable at either screen broadside. */
-    public static float bargeSternVisibility(float heading){
+    /** Elevated-view tug stern lens stays fully readable at either screen broadside. */
+    public static float tugSternVisibility(float heading){
         return sectorVisibility(Math.abs(Physics.angle(VIEW_BEARING-heading))-(float)(StrictMath.PI/2));
     }
     private static float sectorVisibility(float value){
