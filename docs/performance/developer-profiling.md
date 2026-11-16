@@ -256,3 +256,19 @@ Results go to `profiles/rotation-review.txt` and `profiles/rotation-levels.txt`.
 Run this separately from timed comparisons; review uses its own painters and a
 96 MiB budget to force scenery eviction. The host prefetch switch is disabled in
 this command solely to avoid a redundant preload during the review.
+
+## iOS Metal / Core Graphics comparison
+
+Use `CONFIGURATION=Release BARGEBOSS_IOS_PROFILE=1 ./ios/scripts/build.sh`, install
+`ios/build/DerivedData/Build/Products/Release-iphonesimulator/BargeBoss.app`, then
+run `python3 ios/scripts/profile.py <unique-name> --scene=barge-arrival --replay
+--warmup=120 --frames=360`. `SIMULATOR_ID` chooses the device when multiple are
+booted. Metal is the default; `--coregraphics` retains the reference backend.
+Omit `--replay` for frozen scenes; omit `--scene` for the title. `--tutorial`
+selects the opening tutorial without the optional replay fixture classes.
+
+Results and native screenshots go under `out/ios-profile/<unique-name>/`.
+See the iOS section in [optimization.md](../../optimization.md) for measured
+headroom, memory budgets, accepted visual differences, and timing limitations.
+The native host ignores saved progress during capture. Build normally without
+`BARGEBOSS_IOS_PROFILE=1` to omit the shared test input/fixture classes.

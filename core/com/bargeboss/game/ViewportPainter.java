@@ -53,6 +53,10 @@ public final class ViewportPainter implements Painter {
             minX=Math.min(minX,sx);maxX=Math.max(maxX,sx);minY=Math.min(minY,sy);maxY=Math.max(maxY,sy);}
         return visible(minX,minY,maxX,maxY);
     }
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+        float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
+        if(alpha>.005f && visible(x-w,y-h,x+w,y+h))target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
+    }
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha) {
         if(alpha<=0)return;
         float px=SpriteAtlas.pivotX(a,f),py=SpriteAtlas.pivotY(a,f),l=Float.MAX_VALUE,t=l,r=-l,b=-l;

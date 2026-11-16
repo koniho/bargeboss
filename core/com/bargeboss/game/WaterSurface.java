@@ -89,10 +89,25 @@ public final class WaterSurface {
     }
     public void draw(Game g,Painter p) {
         foam.draw(g,p);
-        p=new WaterEffectsPainter(g,p);
+        RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
+        Painter canvas=river==null?p:river.canvas();float[] clip=ShoreOcclusion.EMPTY;
+        if(river!=null) {
+            RiverCamera c=river.camera;float l=Float.MAX_VALUE,top=l,right=-l,bottom=-l;
+            for(int corner=0;corner<4;corner++) {
+                float sx=(corner%2)*g.layout.width,sy=(corner/2)*g.layout.height;
+                float wx=c.worldX(sx,sy),wy=c.worldY(sx,sy);
+                l=Math.min(l,wx);right=Math.max(right,wx);top=Math.min(top,wy);bottom=Math.max(bottom,wy);
+            }
+            clip=ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY);
+        } else p=new WaterEffectsPainter(g,p);
+        if(clip.length>0)canvas.pushClipOutside(clip);
+        try {drawCrests(g,p);} finally {if(clip.length>0)canvas.popClip();}
+    }
+    private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
             float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
             int alpha=(int)(200*strength[i]*(1-t)*(1-t));
+            if(alpha<3)continue;
             float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
             for(int j=0;j<16;j++) {
                 float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
@@ -103,7 +118,10 @@ public final class WaterSurface {
                 // A slight local swell keeps expanding packets from reading as compass arcs.
                 float crest=.55f+.45f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055);
                 if(crest<.17f && age[i]>45) continue;
-                p.line(xx,yy,bx,by,1.2f+strength[i]*.8f,((int)(alpha*crest)<<24)|0xb9f6eb);
+                float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=5+strength[i]*3;
+                if(len<.01f)continue;
+                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
+                        WaterFoam.phase(g.visualTicks,i)+j*.7f,5,alpha*crest/255f);
             }
         }
     }

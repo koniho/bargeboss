@@ -4,10 +4,42 @@
 #import "com/bargeboss/game/SpriteAtlas.h"
 #import "com/bargeboss/game/SpriteGrade.h"
 #import "com/bargeboss/game/StaticLayer.h"
+#import "com/bargeboss/game/WaterFoam.h"
 #import <math.h>
 
 static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     (void)data;(void)bytes;(void)CFBridgingRelease(owner);
+}
+
+// Only CPU source storage is shared. GPU uploads still use frame-sized images.
+// Decode outside the lock; no drawing thread waits for background preparation.
+static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
+    static NSMutableDictionary<NSString *,UIImage *> *images;
+    static NSMutableArray<NSString *> *order;
+    static NSLock *lock;static NSUInteger retainedBytes;static dispatch_once_t once;
+    dispatch_once(&once, ^{images=[NSMutableDictionary dictionary];order=[NSMutableArray array];lock=[NSLock new];});
+    [lock lock];UIImage *cached=images[key];
+    if(cached){[order removeObject:key];[order addObject:key];}
+    [lock unlock];if(cached)return cached;
+    size_t width=CGImageGetWidth(source.CGImage),height=CGImageGetHeight(source.CGImage),bytes=width*height*4;
+    const NSUInteger budget=64*1024*1024;
+    if(bytes>budget)return source;
+    CGColorSpaceRef space=CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    CGContextRef bitmap=CGBitmapContextCreate(NULL,width,height,8,width*4,space,kCGBitmapByteOrder32Little|(CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
+    CGColorSpaceRelease(space);if(!bitmap)return source;
+    CGContextSetBlendMode(bitmap,kCGBlendModeCopy);CGContextDrawImage(bitmap,CGRectMake(0,0,width,height),source.CGImage);
+    CGImageRef decoded=CGBitmapContextCreateImage(bitmap);CGContextRelease(bitmap);if(!decoded)return source;
+    UIImage *image=[UIImage imageWithCGImage:decoded scale:1 orientation:UIImageOrientationUp];CGImageRelease(decoded);
+    [lock lock];cached=images[key];
+    if(!cached) {
+        while(retainedBytes+bytes>budget && order.count) {
+            NSString *oldKey=order.firstObject;CGImageRef old=images[oldKey].CGImage;
+            retainedBytes-=CGImageGetBytesPerRow(old)*CGImageGetHeight(old);
+            [images removeObjectForKey:oldKey];[order removeObjectAtIndex:0];
+        }
+        images[key]=image;[order addObject:key];retainedBytes+=bytes;cached=image;
+    }
+    [lock unlock];return cached;
 }
 
 @interface BBNativePainter ()
@@ -18,6 +50,10 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
 @property(nonatomic,assign) NSUInteger staticLayerBytes;
 @property(nonatomic,assign) jint staticLayerBuilds;
 @property(nonatomic,assign) BOOL paintingStaticLayer;
+@property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *decodedFrames;
+@property(nonatomic,strong) NSMutableArray<NSString *> *decodedFrameOrder;
+@property(nonatomic) NSUInteger decodedFrameBytes;
+@property(nonatomic) BOOL lazySprites;
 - (NSArray<UIImage *> *)atlas:(jint)atlas;
 - (UIImage *)gradedImage:(UIImage *)image atlas:(jint)atlas;
 @end
@@ -27,6 +63,8 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     if((self=[super init])) {
         self.spriteAtlases=[NSMutableDictionary dictionary]; self.spriteSources=[NSMutableDictionary dictionary];
         self.staticLayers=[NSMutableDictionary dictionary];self.staticLayerOrder=[NSMutableArray array];
+        self.decodedFrames=[NSMutableDictionary dictionary];self.decodedFrameOrder=[NSMutableArray array];
+        self.lazySprites=[NSProcessInfo.processInfo.arguments containsObject:@"--ios-lazy-sprites"];
         [self atlas:0]; [self atlas:1];
     }
     return self;
@@ -55,6 +93,24 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     CGRect bounds=CGRectMake(x,y,width,height);CGContextRef target=self.context;
     if(!CGRectIntersectsRect(bounds,CGContextGetClipBoundingBox(target))) return;
     if(self.paintingStaticLayer) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+    NSString *cacheKey=[NSString stringWithFormat:@"%d:%g",[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
+    if(!self.staticLayers[cacheKey] && self.staticLayerBuilds>=[BBStaticLayer maxBuildsPerFrame]) {
+        [self directLayer:layer x:x y:y scale:scale alpha:alpha];return;
+    }
+    UIImage *image=[self imageForLayer:layer scale:scale];
+    if(!image) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+    float density=[BBStaticLayer rasterScaleWithFloat:scale];
+    CGContextSaveGState(target);CGContextClipToRect(target,bounds);
+    // Preserve the exact logical scale even when raster dimensions round up.
+    // The clip trims the subpixel padding instead of squeezing the painted art.
+    float drawWidth=CGImageGetWidth(image.CGImage)*scale/density,drawHeight=CGImageGetHeight(image.CGImage)*scale/density;
+    CGContextTranslateCTM(target,x,y+drawHeight);CGContextScaleCTM(target,1,-1);
+    CGContextSetInterpolationQuality(target,kCGInterpolationLow);CGContextSetAlpha(target,fmaxf(0,fminf(1,alpha)));
+    CGContextDrawImage(target,CGRectMake(0,0,drawWidth,drawHeight),image.CGImage);
+    CGContextRestoreGState(target);
+}
+- (UIImage *)imageForLayer:(BBStaticLayer *)layer scale:(float)scale {
+    CGContextRef target=self.context;
     float density=[BBStaticLayer rasterScaleWithFloat:scale];
     double pw=ceil([layer width]*density),ph=ceil([layer height]*density);
     NSString *key=[NSString stringWithFormat:@"%d:%g",[layer key],density];
@@ -62,9 +118,8 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     if(image) {
         [self.staticLayerOrder removeObject:key];[self.staticLayerOrder addObject:key];
     } else {
-        if(pw<=0 || ph<=0 || pw*ph*4>[BBStaticLayer cacheBudgetBytes]
-                || self.staticLayerBuilds>=[BBStaticLayer maxBuildsPerFrame]) {
-            [self directLayer:layer x:x y:y scale:scale alpha:alpha];return;
+        if(pw<=0 || ph<=0 || pw*ph*4>[BBStaticLayer cacheBudgetBytes]) {
+            return nil;
         }
         size_t pixelsW=(size_t)pw,pixelsH=(size_t)ph,bytes=pixelsW*pixelsH*4;
         self.staticLayerBuilds++;
@@ -75,9 +130,9 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
         }
         CGColorSpaceRef space=CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
         CGContextRef offscreen=CGBitmapContextCreate(NULL,pixelsW,pixelsH,8,pixelsW*4,space,
-                kCGBitmapByteOrder32Big|kCGImageAlphaPremultipliedLast);
+                kCGBitmapByteOrder32Little|kCGImageAlphaPremultipliedFirst);
         CGColorSpaceRelease(space);
-        if(!offscreen) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+        if(!offscreen) {return nil;}
         CGContextClearRect(offscreen,CGRectMake(0,0,pixelsW,pixelsH));
         CGContextTranslateCTM(offscreen,0,pixelsH);CGContextScaleCTM(offscreen,density,-density);
         CGContextClipToRect(offscreen,CGRectMake(0,0,[layer width],[layer height]));
@@ -90,18 +145,11 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
         } @finally {
             self.context=target;self.paintingStaticLayer=NO;CGContextRelease(offscreen);
         }
-        if(!image) {[self directLayer:layer x:x y:y scale:scale alpha:alpha];return;}
+        if(!image) {return nil;}
         self.staticLayers[key]=image;[self.staticLayerOrder addObject:key];
         self.staticLayerBytes+=CGImageGetBytesPerRow(image.CGImage)*CGImageGetHeight(image.CGImage);
     }
-    CGContextSaveGState(target);CGContextClipToRect(target,bounds);
-    // Preserve the exact logical scale even when raster dimensions round up.
-    // The clip trims the subpixel padding instead of squeezing the painted art.
-    float drawWidth=CGImageGetWidth(image.CGImage)*scale/density,drawHeight=CGImageGetHeight(image.CGImage)*scale/density;
-    CGContextTranslateCTM(target,x,y+drawHeight);CGContextScaleCTM(target,1,-1);
-    CGContextSetInterpolationQuality(target,kCGInterpolationLow);CGContextSetAlpha(target,fmaxf(0,fminf(1,alpha)));
-    CGContextDrawImage(target,CGRectMake(0,0,drawWidth,drawHeight),image.CGImage);
-    CGContextRestoreGState(target);
+    return image;
 }
 - (void)directLayer:(BBStaticLayer *)layer x:(float)x y:(float)y scale:(float)scale alpha:(float)alpha {
     CGContextRef ctx=self.context;BOOL previous=self.paintingStaticLayer;self.paintingStaticLayer=YES;
@@ -166,12 +214,59 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     }
     cached=[frames copy]; self.spriteAtlases[@(atlas)]=cached; return cached;
 }
+// A cropped CGImage still retains its PNG provider. Materialize only the used
+// cell so repeated Core Graphics display-list playback never decodes that PNG.
+// Eviction releases our reference; queued drawing commands retain their images.
+- (UIImage *)frame:(jint)frame atlas:(jint)atlas {
+    UIImage *source=[self atlas:atlas][frame];
+    if(self.lazySprites) return source;
+    NSString *key=[NSString stringWithFormat:@"%d:%d",atlas,frame];
+    UIImage *image=self.decodedFrames[key];
+    if(image) {
+        [self.decodedFrameOrder removeObject:key];[self.decodedFrameOrder addObject:key];return image;
+    }
+    if(![BBSpriteGrade appliesWithInt:atlas]) {
+        NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:frame];
+        NSString *sourceKey=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file];
+        UIImage *sheet=BBDecodedSource(self.spriteSources[sourceKey],sourceKey);
+        float sw=CGImageGetWidth(sheet.CGImage),sh=CGImageGetHeight(sheet.CGImage);
+        float x=roundf(sw*[BBSpriteAtlas sourceLeftWithInt:atlas withInt:frame]),y=roundf(sh*[BBSpriteAtlas sourceTopWithInt:atlas withInt:frame]);
+        float right=roundf(sw*[BBSpriteAtlas sourceRightWithInt:atlas withInt:frame]),bottom=roundf(sh*[BBSpriteAtlas sourceBottomWithInt:atlas withInt:frame]);
+        CGImageRef crop=CGImageCreateWithImageInRect(sheet.CGImage,CGRectMake(x,y,right-x,bottom-y));
+        if(crop){source=[UIImage imageWithCGImage:crop scale:1 orientation:UIImageOrientationUp];CGImageRelease(crop);}
+    }
+    CGImageRef original=source.CGImage;
+    size_t width=CGImageGetWidth(original),height=CGImageGetHeight(original);
+    const NSUInteger budget=32*1024*1024;
+    if(!width || !height || width>budget/4/height) return source;
+    size_t bytes=width*height*4;
+    while(self.decodedFrameBytes+bytes>budget && self.decodedFrameOrder.count) {
+        NSString *oldKey=self.decodedFrameOrder.firstObject;
+        CGImageRef old=self.decodedFrames[oldKey].CGImage;
+        self.decodedFrameBytes-=CGImageGetBytesPerRow(old)*CGImageGetHeight(old);
+        [self.decodedFrames removeObjectForKey:oldKey];[self.decodedFrameOrder removeObjectAtIndex:0];
+    }
+    CGColorSpaceRef space=CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    CGContextRef bitmap=CGBitmapContextCreate(NULL,width,height,8,width*4,space,
+            kCGBitmapByteOrder32Little|kCGImageAlphaPremultipliedFirst);
+    CGColorSpaceRelease(space);
+    if(!bitmap) return source;
+    CGContextSetBlendMode(bitmap,kCGBlendModeCopy);
+    CGContextSetInterpolationQuality(bitmap,kCGInterpolationNone);
+    CGContextDrawImage(bitmap,CGRectMake(0,0,width,height),original);
+    CGImageRef decoded=CGBitmapContextCreateImage(bitmap);CGContextRelease(bitmap);
+    if(!decoded) return source;
+    image=[UIImage imageWithCGImage:decoded scale:1 orientation:UIImageOrientationUp];
+    self.decodedFrameBytes+=CGImageGetBytesPerRow(decoded)*CGImageGetHeight(decoded);
+    CGImageRelease(decoded);
+    self.decodedFrames[key]=image;[self.decodedFrameOrder addObject:key];return image;
+}
 - (void)spriteWithInt:(jint)atlas withInt:(jint)frame withFloat:(jfloat)cx withFloat:(jfloat)cy
            withFloat:(jfloat)width withFloat:(jfloat)height withFloat:(jfloat)rotation withFloat:(jfloat)alpha {
     if(frame<0 || frame>=[BBSpriteAtlas countWithInt:atlas]) [NSException raise:@"InvalidSpriteFrame" format:@"Invalid sprite frame: %d",frame];
     width*=[BBSpriteAtlas widthScaleWithInt:atlas withInt:frame];
     height*=[BBSpriteAtlas heightScaleWithInt:atlas withInt:frame];
-    UIImage *image=[self atlas:atlas][frame];
+    UIImage *image=[self frame:frame atlas:atlas];
     CGContextRef ctx=self.context;
     CGContextSaveGState(ctx);
     CGContextTranslateCTM(ctx,cx,cy); CGContextRotateCTM(ctx,rotation);
@@ -185,11 +280,15 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     CGContextRestoreGState(ctx);
 }
 // Supplied axes span a complete source cell and already include all caller scaling.
+- (void)waterFoamWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)phase withInt:(jint)kind withFloat:(jfloat)alpha {
+    if(kind<4) [self spriteAffineWithInt:BBSpriteAtlas_FOAM withInt:kind withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:alpha];
+    else [BBWaterFoam fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withFloat:phase withInt:kind withFloat:alpha];
+}
 - (void)spriteAffineWithInt:(jint)atlas withInt:(jint)frame withFloat:(jfloat)x withFloat:(jfloat)y
                  withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)alpha {
     if(frame<0 || frame>=[BBSpriteAtlas countWithInt:atlas]) [NSException raise:@"InvalidSpriteFrame" format:@"Invalid affine sprite frame: %d",frame];
     if(!(alpha>0) || ax*by-ay*bx==0) return;
-    UIImage *image=[self atlas:atlas][frame];float px=[BBSpriteAtlas pivotXWithInt:atlas withInt:frame],py=[BBSpriteAtlas pivotYWithInt:atlas withInt:frame];
+    UIImage *image=[self frame:frame atlas:atlas];float px=[BBSpriteAtlas pivotXWithInt:atlas withInt:frame],py=[BBSpriteAtlas pivotYWithInt:atlas withInt:frame];
     CGContextRef ctx=self.context;CGContextSaveGState(ctx);
     CGContextConcatCTM(ctx,CGAffineTransformMake(ax,ay,bx,by,x-ax*px-bx*py,y-ay*px-by*py));
     CGContextTranslateCTM(ctx,0,1);CGContextScaleCTM(ctx,1,-1);
@@ -215,7 +314,7 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
         [self spriteWithInt:atlas withInt:weight==255?frameB:frameA withFloat:cx withFloat:cy
                   withFloat:width withFloat:height withFloat:rotation withFloat:alpha]; return;
     }
-    NSArray<UIImage *> *frames=[self atlas:atlas];
+    UIImage *imageA=[self frame:frameA atlas:atlas],*imageB=[self frame:frameB atlas:atlas];
     float aw=width*[BBSpriteAtlas widthScaleWithInt:atlas withInt:frameA];
     float ah=height*[BBSpriteAtlas heightScaleWithInt:atlas withInt:frameA];
     float bw=width*[BBSpriteAtlas widthScaleWithInt:atlas withInt:frameB];
@@ -231,9 +330,9 @@ static void BBReleaseGradePixels(void *owner,const void *data,size_t bytes) {
     // Group alpha applies once when the layer is composited; inside, sum premultiplied cells.
     CGContextSetAlpha(ctx,fmaxf(0,fminf(1,alpha)));
     CGContextSetBlendMode(ctx,kCGBlendModeNormal); CGContextBeginTransparencyLayerWithRect(ctx,bounds,NULL);
-    [self cell:frames[frameA] x:ax y:ay width:aw height:ah alpha:(255-weight)/255.0f];
+    [self cell:imageA x:ax y:ay width:aw height:ah alpha:(255-weight)/255.0f];
     CGContextSetBlendMode(ctx,kCGBlendModePlusLighter);
-    [self cell:frames[frameB] x:bx y:by width:bw height:bh alpha:weight/255.0f];
+    [self cell:imageB x:bx y:by width:bw height:bh alpha:weight/255.0f];
     CGContextEndTransparencyLayer(ctx); CGContextRestoreGState(ctx);
 }
 - (void)color:(jint)argb {

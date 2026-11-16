@@ -593,3 +593,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Android installed and launched successfully. Copied tug-light and cargo-style
   review sheets to Downloads. Driving direction latching was recommended in
   response to the design question; it is not implemented in this change.
+
+### Cross-platform waterline, bow and trailing wake shaders (2026-11-16)
+
+- Added one shared `assets/shaders/water-foam.inc` kernel for iOS Metal and Android
+  13+ AGSL. Local patches use warped, broken foam filaments and soft swell/crest
+  coverage. Hull contact, bow pressure, shoulder trails, prop wash, expanding
+  wake packets and title wakes use it. Shared Java still owns geometry, velocity,
+  timing, heave registration and all shore/dock clipping. No new barge forces.
+- Forward speed produces two bounded bow crests; idle, astern and sideways motion
+  do not produce a false forward pressure wave. Detached foam keeps its existing
+  lifetime and independent world-space history. Existing 160/192 pools are intact.
+- No new texture caches/fullscreen passes/scene-color reads. Metal batches shader
+  patches with existing geometry; phase fits its aligned vertex stride. Android
+  compiles once before active drawing and reuses paint/matrix/uniform storage.
+  Older/software backends retain textured foam and bounded geometry. Short crest
+  fallback segments stay one line each to avoid multiplying path preparation.
+- Release iPhone 17 Pro / iOS 26.5 simulator, deterministic `canal-middle` replay,
+  60 warmup + 300 draws, no concurrent builds: shader A/B 59.80/59.99 FPS;
+  interval p95 16.708/16.702 ms; CPU draw p95 5.432/5.235 ms; GPU p95
+  0.201/0.195 ms. Maximum intervals 32.510/26.241 ms remain unresolved. These
+  are simulator observations, not a claim of locked device 60 FPS. Initial
+  texture comparison predated the fallback simplification and is not treated
+  as a final fallback benchmark. Raw evidence and design:
+  [water shaders](docs/performance/water-shaders.md).
+- Full shared suite passed, including 1,752 water direction/phase/wrapper checks;
+  JVM/J2ObjC parity is `11f16091:2:1350` (two deliveries / 1350 points).
+  Reviewed actual renderer previews and Metal gameplay/title screenshots.
+  Moving-hull/bow shoreline checks pass at all 32 headings (1,439,937 assertions),
+  plus 197,334 detached foam transparency/shoreline assertions. Visual trace
+  baseline updated after review; no gameplay changes were introduced.
+- Release iOS simulator and unsigned Android APK builds passed. User explicitly
+  requested no use of the connected Android phone, so installation, awake-mode
+  changes, AGSL runtime validation and Android profiling are deferred. Do not
+  infer identical Android pixels or device timing from the Metal or Java2D checks.

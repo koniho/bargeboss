@@ -23,6 +23,14 @@ public interface Painter {
         for(int i=0;i<4;i++){float u=corners[i]%2-px,v=corners[i]/2-py;q[i*2]=x+ax*u+bx*v;q[i*2+1]=y+ay*u+by*v;}
         poly(q,((int)(255*alpha)<<24)|0x020913);
     }
+    /** Local water-foam patch centered at x,y with full affine basis vectors.
+     * Modes 0/1: shoulder foam, 2/3: prop wash, 4: bow crest, 5: spreading crest.
+     * Phase is supplied by shared simulation ticks. Hosts never advance it.
+     * The default retains the authored foam textures on non-shader backends. */
+    default void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+        if(kind<4) spriteAffine(SpriteAtlas.FOAM,kind,x,y,ax,ay,bx,by,alpha);
+        else WaterFoam.fallback(this,x,y,ax,ay,bx,by,phase,kind,alpha);
+    }
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);
     /** Additively blend registered atlas cells in a transparent layer, then composite once. */

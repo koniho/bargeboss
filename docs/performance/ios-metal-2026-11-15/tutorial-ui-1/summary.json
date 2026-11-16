@@ -1,0 +1,15 @@
+{
+  "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+  "arguments": [
+    "--ios-profile",
+    "--ios-tutorial"
+  ],
+  "frames": 120,
+  "mean_ms": 98.472165,
+  "median_ms": 100.0,
+  "p95_ms": 116.6973,
+  "max_ms": 133.3904,
+  "fps": 10.155153997071151,
+  "draw_median_ms": 51.3697,
+  "draw_p95_ms": 55.191
+}

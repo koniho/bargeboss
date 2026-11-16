@@ -1,0 +1,13 @@
+{
+  "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+  "arguments": [
+    "--ios-profile",
+    "--ios-lazy-sprites"
+  ],
+  "frames": 120,
+  "mean_ms": 110.83320083333335,
+  "median_ms": 133.2733,
+  "p95_ms": 166.776,
+  "max_ms": 250.0733,
+  "fps": 9.022567177354745
+}

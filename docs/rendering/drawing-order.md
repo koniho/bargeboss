@@ -427,3 +427,15 @@ orientation stable; clipping buffers allow additional roundoff crossings.
 separation, camera/heading invariance, positive-area triangle overlap and
 sampled even-odd/native coverage at dock junctions. Native raster review remains
 necessary for antialiasing and actual device behavior.
+
+## Procedural water-foam patches
+
+`Painter.waterFoam` shades a small centered affine patch. Shared Java owns mode,
+phase, hull registration, speed response and lifetime; native Metal/AGSL execute
+one shared kernel. Bow pressure patches draw in the existing below-hull water
+scope. Contact foam stays on the registered lower silhouette after the hull.
+Expanding wake crests share a water-plane shore/dock exclusion scope, bounded by
+the visible world region. Title patches also exclude pixels above their water
+plane. Painter wrappers must forward the primitive and preserve clip/opacity/order.
+Fallbacks use authored textures or short crest geometry inside the same scopes.
+See [water shaders](../performance/water-shaders.md) for costs and validation limits.

@@ -92,7 +92,15 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
     [self tapTitle:stage x:770 y:446];
-    [self waitFor:@"feeder drops 1;" on:stage];
+    // Accessibility snapshots can arrive after more than one feeder drop.
+    // Wait for an available load, not a transient exact counter value.
+    NSPredicate *loaded=[NSPredicate predicateWithBlock:^BOOL(id object,NSDictionary *bindings) {
+        NSString *status=(NSString *)[(XCUIElement *)object value];
+        return [self integerInStatus:status tag:@"feeder drops"]>=1
+                && [self integerInStatus:status tag:@"cargo id"]>=0;
+    }];
+    XCTNSPredicateExpectation *arrival=[[XCTNSPredicateExpectation alloc] initWithPredicate:loaded object:stage];
+    XCTAssertEqual([XCTWaiter waitForExpectations:@[arrival] timeout:18],XCTWaiterResultCompleted);
     [[self river:stage x:260 y:730] pressForDuration:15];
     [self waitFor:@"ready to tie 2" on:stage];
     return stage;
@@ -127,11 +135,14 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     return [self worldPositionInStatus:(NSString *)stage.value tag:tag];
 }
 - (CGPoint)worldPositionInStatus:(NSString *)status tag:(NSString *)tag {
-    NSArray<NSString *> *parts=[status componentsSeparatedByString:[NSString stringWithFormat:@"; %@ ",tag]];
-    XCTAssertEqual(parts.count,2);
-    NSArray<NSString *> *pair=[[parts.lastObject componentsSeparatedByString:@";"].firstObject componentsSeparatedByString:@","];
-    XCTAssertEqual(pair.count,2);
-    return CGPointMake(pair[0].doubleValue,pair[1].doubleValue);
+    NSString *prefix=[tag stringByAppendingString:@" "];
+    for(NSString *field in [status componentsSeparatedByString:@"; "]) {
+        if(![field hasPrefix:prefix]) continue;
+        NSArray<NSString *> *pair=[[field substringFromIndex:prefix.length] componentsSeparatedByString:@","];
+        // "cargo id" and "cargo leader" share the prefix but are not positions.
+        if(pair.count==2) return CGPointMake(pair[0].doubleValue,pair[1].doubleValue);
+    }
+    XCTFail(@"Missing coordinate '%@' in status: %@",tag,status);return CGPointZero;
 }
 - (void)holdCargo:(XCUIElement *)stage duration:(double)duration {
     CGPoint b=[self worldPosition:stage tag:@"cargo"];

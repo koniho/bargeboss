@@ -14,6 +14,7 @@ public final class ShoreOcclusionPixelTest {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
             float y=bank==0?TrainingChannel.BASIN_BOTTOM-16:bank==3?TrainingChannel.BASIN_TOP+16:600;
             Body b=new Body(kind==0?0:1,kind-1,x,y,heading*(float)Math.PI/16);b.floatingInitialized=true;b.heave=(heading%3-1)*1.5f;
+            b.vx=45*(float)StrictMath.cos(b.angle);b.vy=45*(float)StrictMath.sin(b.angle);
             float scale=heading%2==0?1.8f:2.7f;RiverCamera base=new RiverCamera(0,0,scale);
             RiverCamera c=new RiverCamera(192-base.screenX(x,y),240-base.screenY(x,y),scale);
             g.layout=Layout.renderTile(384,384,c);

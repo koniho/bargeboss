@@ -1,0 +1,8 @@
+{
+  "texture_budget" : 134217728,
+  "uploads" : 347,
+  "peak_frame_texture_bytes" : 110601912,
+  "texture_bytes" : 133357752,
+  "evictions" : 9,
+  "vertex_capacity_bytes" : 8388608
+}

@@ -74,16 +74,19 @@ public final class VesselFoam {
                 int texture=kind[i];
                 if(texture==2 && t>.35f) {
                     float mix=Math.min(1,(t-.35f)/.3f);
-                    patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix));
-                    patch(p,3,x[i],y[i],angle[i],l,w,alpha*mix);
-                } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha);
+                    patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix),WaterFoam.phase(g.visualTicks,i));
+                    patch(p,3,x[i],y[i],angle[i],l,w,alpha*mix,WaterFoam.phase(g.visualTicks,i));
+                } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha,WaterFoam.phase(g.visualTicks,i));
             }
         } finally {if(clip.length>0)canvas.popClip();}
     }
 
     static void patch(Painter p,int frame,float x,float y,float angle,float length,float width,float alpha) {
+        patch(p,frame,x,y,angle,length,width,alpha,0);
+    }
+    static void patch(Painter p,int frame,float x,float y,float angle,float length,float width,float alpha,float phase) {
         if(alpha<=.005f)return;
         float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);
-        p.spriteAffine(SpriteAtlas.FOAM,frame,x,y,c*length,s*length,-s*width,c*width,alpha);
+        p.waterFoam(x,y,c*length,s*length,-s*width,c*width,phase,frame,alpha);
     }
 }

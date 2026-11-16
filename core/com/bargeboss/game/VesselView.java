@@ -24,6 +24,7 @@ public final class VesselView {
             if(tug)VesselLighting.reflection(g,p,b);
             VesselNavigationLights.reflections(g,p,b,tug);
             ShadowView.vessel(g,p,b,tug,size);
+            WaterFoam.bow(g,p,b);
         } finally {if(surface.length>0)canvas.popClip();}
         boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
         if(flash) {

@@ -9,6 +9,14 @@ public final class TitleWaterView {
     private static final class WaterPlane implements Painter {
         final Painter p;final float top;
         WaterPlane(Painter p,float top){this.p=p;this.top=top;}
+        public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+            float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
+            if(y+h<=top)return;
+            boolean clipped=y-h<top;
+            if(clipped)p.pushClipOutside(new float[]{x-w-1,y-h-1,x+w+1,y-h-1,x-w-1,top,
+                    x+w+1,y-h-1,x+w+1,top,x-w-1,top});
+            try {p.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);} finally {if(clipped)p.popClip();}
+        }
         public void line(float x,float y,float xx,float yy,float w,int color) {
             float edge=top+w*.5f;
             if(y<edge && yy<edge)return;
@@ -40,20 +48,20 @@ public final class TitleWaterView {
     public static void water(Painter p,Body b,int tick,boolean tug) {
         float stern=b.y-b.half-b.radius;
         if(tug) {
-            p.poly(new float[]{b.x-5,stern,b.x+5,stern,b.x+15,stern-90,b.x-15,stern-90},0x3766bfc4);
+
             for(int i=0;i<28;i++) {
                 float age=((tick+i*13)%180)/180f;
                 float x=b.x+sin(age*19+i)*(2+age*10),y=stern-3-age*88;
                 int alpha=(int)(150*(1-age)*(1-age));
-                p.circle(x,y,1+age*2,(alpha<<24)|0xd9fff2);
+                p.waterFoam(x,y,0,9+age*12,5+age*13,0,WaterFoam.phase(tick,i),2,alpha/255f*.55f);
             }
         }
         // The outer wake arms form the familiar widening V behind each hull.
         for(int side=-1;side<=1;side+=2) for(int i=1;i<=18;i++) {
             float a=(i-1)/18f,t=i/18f;
-            p.line(b.x+side*(b.radius*.6f+a*32),stern-a*82,
-                    b.x+side*(b.radius*.6f+t*32),stern-t*82,
-                    1.2f,((int)(95*(1-t))<<24)|0xa4eee7);
+            float x=b.x+side*(b.radius*.6f+a*32),y=stern-a*82;
+            float dx=side*(t-a)*32,dy=-(t-a)*82,len=Physics.length(dx,dy);
+            p.waterFoam(x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*6,dx/len*6,WaterFoam.phase(tick,i),5,95*(1-t)/255f);
         }
         // Each packet recedes astern while its curved crest expands sideways.
         // New packets form continuously; troughs add a stronger crest to the train.
@@ -72,7 +80,7 @@ public final class TitleWaterView {
             float t=((tick+i*13)%117)/117f;
             float x=b.x+side*(b.radius+1+sin(t*9+tick*.03)*1.3f);
             float y=b.y+b.half+7-t*(b.half*2+17);
-            p.line(x,y,x+side*.6f,y-4,.8f,0x99cffbed);
+            p.waterFoam(x,y,side*.6f,-6,4,0,WaterFoam.phase(tick,i),i%2,.45f);
         }
         float lift=.6f+.4f*Math.max(0,sin(tick*.048+Math.PI/2));
         for(int ring=0;ring<3;ring++) {
@@ -112,7 +120,10 @@ public final class TitleWaterView {
     private static void arc(Painter p,float x,float y,float rx,float ry,float start,float end,float width,int color) {
         for(int i=1;i<=18;i++) {
             float a=start+(end-start)*(i-1)/18,b=start+(end-start)*i/18;
-            p.line(x+(float)StrictMath.cos(a)*rx,y+sin(a)*ry,x+(float)StrictMath.cos(b)*rx,y+sin(b)*ry,width,color);
+            float xx=x+(float)StrictMath.cos(a)*rx,yy=y+sin(a)*ry;
+            float dx=x+(float)StrictMath.cos(b)*rx-xx,dy=y+sin(b)*ry-yy,len=Physics.length(dx,dy);
+            p.waterFoam(xx+dx*.5f,yy+dy*.5f,dx,dy,-dy/len*width*5,dx/len*width*5,
+                    y*.07f+i*.7f,5,(color>>>24)/255f);
         }
     }
 }

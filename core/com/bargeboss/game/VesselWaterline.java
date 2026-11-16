@@ -56,7 +56,7 @@ public final class VesselWaterline {
                 float alpha=(.035f+motion*.64f*leading)*envelope*envelope;
                 float length=(11+motion*8)*scale,width=(9+motion*9)*scale;
                 VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-bob+.5f)*scale,
-                        (float)StrictMath.atan2(ty,tx),length,width,alpha);
+                        (float)StrictMath.atan2(ty,tx),length,width,alpha,WaterFoam.phase(g.visualTicks,b.id+patch));
             }
         } finally {if(clip.length>0)canvas.popClip();}
     }

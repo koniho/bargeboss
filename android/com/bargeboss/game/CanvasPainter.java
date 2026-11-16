@@ -33,6 +33,7 @@ public final class CanvasPainter implements Painter {
     private final RectF affineUnit=new RectF(0,0,1,1);
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
+    private WaterFoamShader waterFoamShader;
     private final ConcurrentMap<Integer,Atlas> atlases=new ConcurrentHashMap<Integer,Atlas>();
     private final ConcurrentMap<Integer,Object> atlasLocks=new ConcurrentHashMap<Integer,Object>();
     private final ConcurrentMap<String,Bitmap> sourceImages=new ConcurrentHashMap<String,Bitmap>();
@@ -266,7 +267,13 @@ public final class CanvasPainter implements Painter {
     public CanvasPainter(AssetManager assets) {this(assets,true);}
     CanvasPainter(AssetManager assets,boolean preloadVessels) {
         this.assets=assets;spritePaint.setFilterBitmap(false);
-        if(preloadVessels){atlas(0);atlas(1);}
+        if(preloadVessels){
+            atlas(0);atlas(1);
+            if(android.os.Build.VERSION.SDK_INT>=33) {
+                try {waterFoamShader=new WaterFoamShader(assets);}
+                catch(IllegalArgumentException ex) {android.util.Log.w("BargeBoss","Water shader unavailable; using textured fallback",ex);}
+            }
+        }
     }
     private static final class Atlas {
         final Bitmap[] images;
@@ -414,6 +421,12 @@ public final class CanvasPainter implements Painter {
         spritePaint.setAlpha(weight); spritePaint.setXfermode(ADD);
         canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
+    }
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+        if(alpha<=.005f)return;
+        if(waterFoamShader!=null && canvas.isHardwareAccelerated())
+            waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind,alpha);
+        else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }
     public void rect(float x,float y,float w,float h,int c) { paint.setColor(c); canvas.drawRect(x,y,x+w,y+h,paint); }

@@ -2,7 +2,7 @@
 
 Use DDDumpling's shared pure-Java architecture. `core/` is the only home for
 gameplay, input rules, timing, layout, menus, lettering and scene composition.
-Android Canvas, iOS Core Graphics via J2ObjC 3.1, and desktop Java2D implement
+Android Canvas, iOS Metal (with a Core Graphics reference path) via J2ObjC 3.1, and desktop Java2D implement
 the same `Painter`. Do not add a second game implementation for any platform.
 
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area

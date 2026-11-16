@@ -1,0 +1,220 @@
+{
+  "lazy-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-lazy-sprites"
+    ],
+    "frames": 120,
+    "mean_ms": 110.83320083333335,
+    "median_ms": 133.2733,
+    "p95_ms": 166.776,
+    "max_ms": 250.0733,
+    "fps": 9.022567177354745
+  },
+  "lazy-2": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-lazy-sprites"
+    ],
+    "frames": 120,
+    "mean_ms": 93.61115,
+    "median_ms": 66.785,
+    "p95_ms": 133.4196,
+    "max_ms": 150.0538,
+    "fps": 10.682488143773472
+  },
+  "decoded-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile"
+    ],
+    "frames": 120,
+    "mean_ms": 67.77794999999998,
+    "median_ms": 66.6672,
+    "p95_ms": 66.7875,
+    "max_ms": 150.0785,
+    "fps": 14.754060870828939
+  },
+  "bgra-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile"
+    ],
+    "frames": 120,
+    "mean_ms": 50.000051666666664,
+    "median_ms": 50.0006,
+    "p95_ms": 50.0481,
+    "max_ms": 50.1109,
+    "fps": 19.99997933335469
+  },
+  "tutorial-ui-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-tutorial"
+    ],
+    "frames": 120,
+    "mean_ms": 98.472165,
+    "median_ms": 100.0,
+    "p95_ms": 116.6973,
+    "max_ms": 133.3904,
+    "fps": 10.155153997071151,
+    "draw_median_ms": 51.3697,
+    "draw_p95_ms": 55.191
+  },
+  "metal-arrival-replay-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-metal",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360"
+    ],
+    "frames": 360,
+    "mean_ms": 113.70403999999999,
+    "median_ms": 133.2632,
+    "p95_ms": 183.3882,
+    "max_ms": 466.5264,
+    "fps": 8.794762261745493,
+    "draw_median_ms": 116.631,
+    "draw_p95_ms": 173.2147,
+    "draw_max_ms": 457.4762,
+    "gpu_median_ms": 3.635,
+    "gpu_p95_ms": 5.5133
+  },
+  "metal-arrival-cache128": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-metal",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360",
+      "--ios-texture-mib=128"
+    ],
+    "frames": 360,
+    "mean_ms": 17.686604999999993,
+    "median_ms": 16.6726,
+    "p95_ms": 29.6045,
+    "max_ms": 50.0395,
+    "fps": 56.539963435605664,
+    "draw_median_ms": 6.3991,
+    "draw_p95_ms": 28.701,
+    "draw_max_ms": 35.9826,
+    "gpu_median_ms": 0.1464,
+    "gpu_p95_ms": 0.463
+  },
+  "metal-arrival-async128": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-metal",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360"
+    ],
+    "frames": 360,
+    "mean_ms": 16.944392222222216,
+    "median_ms": 16.666,
+    "p95_ms": 17.2468,
+    "max_ms": 50.0499,
+    "fps": 59.016575329773175,
+    "draw_median_ms": 6.4869,
+    "draw_p95_ms": 13.607,
+    "draw_max_ms": 35.9158,
+    "gpu_median_ms": 0.1396,
+    "gpu_p95_ms": 0.3441
+  },
+  "metal-arrival-async160": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-metal",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360",
+      "--ios-texture-mib=160"
+    ],
+    "frames": 360,
+    "mean_ms": 16.666694166666666,
+    "median_ms": 16.6659,
+    "p95_ms": 17.281,
+    "max_ms": 22.1152,
+    "fps": 59.99990100016336,
+    "draw_median_ms": 6.3246,
+    "draw_p95_ms": 10.0601,
+    "draw_max_ms": 21.0842,
+    "gpu_median_ms": 0.1628,
+    "gpu_p95_ms": 0.487
+  },
+  "metal-verified-arrival-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360"
+    ],
+    "frames": 360,
+    "mean_ms": 16.666425833333335,
+    "median_ms": 16.666,
+    "p95_ms": 16.7114,
+    "max_ms": 17.0975,
+    "fps": 60.00086701252833,
+    "draw_median_ms": 5.8213,
+    "draw_p95_ms": 7.2066,
+    "draw_max_ms": 14.8868,
+    "gpu_median_ms": 0.1307,
+    "gpu_p95_ms": 0.2424
+  },
+  "metal-verified-canal-1": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-replay",
+      "--ios-scene=canal-middle",
+      "--ios-warmup=120",
+      "--ios-frames=360"
+    ],
+    "frames": 360,
+    "mean_ms": 16.66793611111111,
+    "median_ms": 16.6659,
+    "p95_ms": 16.7375,
+    "max_ms": 23.1109,
+    "fps": 59.99543034805515,
+    "draw_median_ms": 4.9228,
+    "draw_p95_ms": 5.7815,
+    "draw_max_ms": 21.7078,
+    "gpu_median_ms": 0.1216,
+    "gpu_p95_ms": 0.2228
+  },
+  "metal-verified-arrival-2": {
+    "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+    "arguments": [
+      "--ios-profile",
+      "--ios-replay",
+      "--ios-scene=barge-arrival",
+      "--ios-warmup=120",
+      "--ios-frames=360"
+    ],
+    "frames": 360,
+    "mean_ms": 16.66644249999999,
+    "median_ms": 16.6659,
+    "p95_ms": 16.7993,
+    "max_ms": 20.4924,
+    "fps": 60.00080701085433,
+    "draw_median_ms": 5.689,
+    "draw_p95_ms": 7.6864,
+    "draw_max_ms": 19.033,
+    "gpu_median_ms": 0.1595,
+    "gpu_p95_ms": 0.2621
+  }
+}

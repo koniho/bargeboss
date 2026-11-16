@@ -5,7 +5,10 @@ source "$(dirname "$0")/env.sh"
 rm -rf "$IOS_ROOT/build/generated"
 mkdir -p "$IOS_ROOT/build/generated"
 find "$REPO_ROOT/core" -name '*.java' | sort > "$IOS_ROOT/build/sources.txt"
-"$J2OBJC_HOME/j2objc" --prefixes "$IOS_ROOT/prefixes.properties" -sourcepath "$REPO_ROOT/core" -d "$IOS_ROOT/build/generated" @"$IOS_ROOT/build/sources.txt"
+if [ "${BARGEBOSS_IOS_PROFILE:-0}" = 1 ]; then
+    printf '%s\n' "$REPO_ROOT/developer/shared/com/bargeboss/game/ProfileScenario.java" "$REPO_ROOT/tests/com/bargeboss/game/ReplayInput.java" >> "$IOS_ROOT/build/sources.txt"
+fi
+"$J2OBJC_HOME/j2objc" --prefixes "$IOS_ROOT/prefixes.properties" -sourcepath "$REPO_ROOT/core:$REPO_ROOT/tests:$REPO_ROOT/developer/shared" -d "$IOS_ROOT/build/generated" @"$IOS_ROOT/build/sources.txt"
 # Ship the translator runtime's attribution with the app.
 python3 - "$J2OBJC_HOME" "$IOS_ROOT/build/ThirdPartyNotices.txt" <<'PY'
 import pathlib, sys

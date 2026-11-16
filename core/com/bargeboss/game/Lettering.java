@@ -35,6 +35,8 @@ public final class Lettering {
     private static final class TextLayer extends StaticLayer {
         final Key text;final int id;
         TextLayer(Key text,int id){this.text=text;this.id=id;}
+        // paint reads immutable glyph rows and final text fields only.
+        public boolean backgroundSafe(){return true;}
         public int key(){return id;}
         public float width(){return Lettering.width(text.text,text.unit*7)+2;}
         public float height(){return text.unit*7+2;}

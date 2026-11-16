@@ -15,6 +15,9 @@ public final class OpacityPainter implements Painter {
     public boolean preparesLayers(){return p.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){p.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float opacity){p.layer(layer,x,y,scale,opacity*alpha);}
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+        p.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha*this.alpha);
+    }
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float opacity){p.spriteAffine(a,f,x,y,ax,ay,bx,by,opacity*alpha);}
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float opacity) { p.sprite(a,f,x,y,w,h,r,opacity*alpha); }
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float opacity) { p.spriteBlend(a,f,ff,x,y,w,h,r,blend,opacity*alpha); }

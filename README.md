@@ -231,7 +231,7 @@ or separate JavaScript/Swift gameplay implementation.
 | Platform | Host | Gameplay and drawing source |
 | --- | --- | --- |
 | Android 7+ | Native Canvas / Choreographer | `core/`, compiled by javac/D8 |
-| iOS 15+ | UIKit / Core Graphics / CADisplayLink | the same `core/`, translated by J2ObjC 3.1 |
+| iOS 15+ | UIKit / Metal / CADisplayLink; Core Graphics reference painter | the same `core/`, translated by J2ObjC 3.1 |
 | Windows, macOS, Linux | Swing / Java2D, Java 8+ runtime | the same `core/`, on the JVM |
 
 Every host fills its safe display bounds with the same **responsive landscape layout**,
@@ -302,11 +302,12 @@ The app ID is `com.bargeboss.game` and does not replace DDDumpling.
 ### iOS
 
 Requires a Mac with full Xcode, an iOS simulator runtime, JDK 21, Maven and
-XcodeGen. The bootstrap script is adapted from DDDumpling and pins the same
+XcodeGen and Xcode's Metal Toolchain. The bootstrap script is adapted from DDDumpling and pins the same
 checksum-verified J2ObjC 3.1 source archive.
 
 ```sh
 brew install openjdk@21 maven xcodegen
+xcodebuild -downloadComponent MetalToolchain
 ./ios/scripts/bootstrap.sh
 ./ios/scripts/parity.sh
 ./ios/scripts/build.sh
@@ -318,9 +319,14 @@ xcrun simctl launch booted com.bargeboss.game.ios
 To reuse DDDumpling's existing toolchain on the same Mac, export
 `J2OBJC_HOME=/path/to/dddumpling/ios/vendor/j2objc-3.1/dist` instead of bootstrapping.
 `ios/project.yml` is authoritative; XcodeGen creates the untracked project.
+Use `CONFIGURATION=Release ./ios/scripts/build.sh` for performance testing.
+Waterline, bow and trailing foam share a Metal/Android 13+ shader kernel, with
+textured/geometry fallbacks on other backends; see [water effects](docs/performance/water-shaders.md).
+Metal is the default painter; launch with `--ios-coregraphics` for the reference
+backend. See [optimization notes](optimization.md) for profiling and known differences.
 For a signed device build, set `DEVELOPMENT_TEAM` and run
 `./ios/scripts/build.sh iphoneos`. Without a team, it produces an unsigned device
-build for compilation validation only. Store provisioning/distribution is not configured.
+build for compilation validation only. Store signing and delivery are documented in [store release setup](docs/store-release.md).
 
 ## Verification
 

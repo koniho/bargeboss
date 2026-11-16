@@ -1,0 +1,10 @@
+{
+  "texture_budget" : 167772160,
+  "uploads" : 381,
+  "evictions" : 0,
+  "peak_frame_texture_bytes" : 110601912,
+  "vertex_capacity_bytes" : 8388608,
+  "texture_bytes" : 160284848,
+  "direct_layer_fallbacks" : 9,
+  "pending_preparations" : 0
+}

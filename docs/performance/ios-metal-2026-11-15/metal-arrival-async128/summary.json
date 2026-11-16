@@ -1,0 +1,22 @@
+{
+  "device": "57F475C1-B8F8-45F5-8990-5D9BC5687A50",
+  "arguments": [
+    "--ios-profile",
+    "--ios-metal",
+    "--ios-replay",
+    "--ios-scene=barge-arrival",
+    "--ios-warmup=120",
+    "--ios-frames=360"
+  ],
+  "frames": 360,
+  "mean_ms": 16.944392222222216,
+  "median_ms": 16.666,
+  "p95_ms": 17.2468,
+  "max_ms": 50.0499,
+  "fps": 59.016575329773175,
+  "draw_median_ms": 6.4869,
+  "draw_p95_ms": 13.607,
+  "draw_max_ms": 35.9158,
+  "gpu_median_ms": 0.1396,
+  "gpu_p95_ms": 0.3441
+}
