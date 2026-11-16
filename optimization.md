@@ -1249,3 +1249,14 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   on cold title entry; current Android preparation API warms whole atlases, while
   iOS does not consume LevelAssets plans. Exact-frame preparation remains future
   work rather than introducing a separate native loading change in this round.
+
+## 64-heading vessel artwork investigation (2026-11-16)
+
+- Extended tug/barge/cargo pose guides to 64 exact geometry rotations, including
+  half-step authoring sheets and named anchor metadata. Every even guide frame
+  matches the previous 32-frame guide pixel-for-pixel; guide gutter/hold checks pass.
+- Generated painted intermediate sheets failed angle fidelity; a four-pose proof
+  changed the tug architecture. Rejected all for runtime. Runtime remains 32 frames.
+  See docs/art-studies/vessel-64-review.md for evidence and limitations. A detailed
+  controlled source model matching production art is still needed for reliable
+  additional views and matching cargo/shadow/glow/light derivatives.

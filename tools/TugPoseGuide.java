@@ -12,6 +12,8 @@ import javax.imageio.ImageIO;
 /** Deterministic 3D blockout used only as image-generation pose guidance. */
 public final class TugPoseGuide {
     private static final int CELL=384;
+    private static int headingCount=32,poseCount=32,columns=8;
+    private static double headingOffset=0;
     private static final double DEPTH=1/StrictMath.sqrt(3),HEIGHT=StrictMath.sqrt(2.0/3);
     private static final class Face {
         double[] x,y,z; int color;
@@ -31,8 +33,8 @@ public final class TugPoseGuide {
     }
     private TugPoseGuide(int frame,boolean concept) {
         this.frame=frame;this.concept=concept;
-        angle=frame*StrictMath.PI/16; cx=(frame%8+.5)*CELL;
-        cy=(frame/8+.72)*CELL; scale=CELL*.78/100;
+        angle=(frame+headingOffset)*StrictMath.PI*2/headingCount; cx=(frame%columns+.5)*CELL;
+        cy=(frame/columns+.72)*CELL; scale=CELL*.78/100;
     }
     private void face(double[][] vertices,int rgb) {
         Face face=new Face(vertices.length,rgb);
@@ -151,7 +153,7 @@ public final class TugPoseGuide {
             if(a.kind.equals("tire")) visible=normalY>.05;
             csv.append(String.format(Locale.ROOT,"%d,%s,%s,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.7f,%.7f,%.7f,%s,%s,%s,%s%n",
                 frame,a.id,a.kind,a.x,a.y,a.z,a.nx,a.ny,a.nz,a.r,
-                (sx-frame%8*CELL)/CELL,(sy-frame/8*CELL)/CELL,a.r*scale/CELL,
+                (sx-frame%columns*CELL)/CELL,(sy-frame/columns*CELL)/CELL,a.r*scale/CELL,
                 visible?"visible":"occluded",a.side,a.color,a.role));
         }
     }
@@ -172,27 +174,41 @@ public final class TugPoseGuide {
         }
     }
     public static void main(String[] args) throws Exception {
+        headingCount=32;headingOffset=0;poseCount=32;columns=8;
+        boolean proof=false;
+        ArrayList<String> options=new ArrayList<String>();
+        String suffix="";
+        for(String arg:args) {
+            if(arg.equals("--64")){headingCount=64;suffix="64-";}
+            else if(arg.equals("--intermediate")){headingOffset=.5;suffix="intermediate-";}
+            else if(arg.equals("--proof"))proof=true;
+            else options.add(arg);
+        }
+        if(headingCount==64 && headingOffset!=0)throw new IllegalArgumentException("Choose --64 or --intermediate");
+        poseCount=proof?4:headingCount;columns=proof?4:8;
+        if(proof)suffix+="proof-";
+        args=options.toArray(new String[options.size()]);
         boolean concept=args.length==1 && args[0].equals("--concept");
         if(args.length>0 && !concept)throw new IllegalArgumentException("Use no args for v4 or --concept for v5");
-        BufferedImage guide=new BufferedImage(CELL*8,CELL*4,BufferedImage.TYPE_INT_ARGB);
+        BufferedImage guide=new BufferedImage(CELL*columns,CELL*((poseCount+columns-1)/columns),BufferedImage.TYPE_INT_ARGB);
         double[] depth=new double[guide.getWidth()*guide.getHeight()];Arrays.fill(depth,Double.NEGATIVE_INFINITY);
         StringBuilder anchors=new StringBuilder("frame,id,kind,x,y,z,nx,ny,nz,radius,u,v,radius_uv,visibility,side,color,role\n");
-        for(int frame=0;frame<32;frame++) {
+        for(int frame=0;frame<poseCount;frame++) {
             TugPoseGuide pose=new TugPoseGuide(frame,concept);pose.draw(guide,depth);
             if(concept)pose.writeAnchors(anchors,guide,depth);
         }
         // Regression: these known unobstructed winch tops must survive the deck.
-        if(!concept)for(int frame:new int[]{0,4,12,16,20,24,28}) {
+        if(!concept && !proof && headingCount==32 && headingOffset==0)for(int frame:new int[]{0,4,12,16,20,24,28}) {
             double angle=frame*Math.PI/16,scale=CELL*.78/100;
-            int x=(int)Math.floor((frame%8+.5)*CELL-33*Math.cos(angle)*scale);
-            int y=(int)Math.floor((frame/8+.72)*CELL+(-33*Math.sin(angle)*DEPTH-13*HEIGHT)*scale);
+            int x=(int)Math.floor((frame%columns+.5)*CELL-33*Math.cos(angle)*scale);
+            int y=(int)Math.floor((frame/columns+.72)*CELL+(-33*Math.sin(angle)*DEPTH-13*HEIGHT)*scale);
             if((guide.getRGB(x,y)&0xffffff)!=0xe7b93e)
                 throw new IllegalStateException("Winch top incorrectly occluded in frame "+frame);
         }
         String version=concept?"v5":"v4";
-        File out=new File("docs/art-studies/tug-isometric-"+version+"-pose-guide.png");
+        File out=new File("docs/art-studies/tug-isometric-"+version+"-"+suffix+"pose-guide.png");
         ImageIO.write(guide,"png",out);
-        if(concept)Files.write(new File("docs/art-studies/tug-isometric-v5-guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
-        System.out.println(out+" — 32 poses, 3072x1536, fixed 35.264-degree camera, 11.25-degree steps");
+        if(concept)Files.write(new File("docs/art-studies/tug-isometric-v5-"+suffix+"guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
+        System.out.println(out+" — "+poseCount+" poses, "+guide.getWidth()+"x"+guide.getHeight()+", fixed 35.264-degree camera, "+(360.0/headingCount)+"-degree steps, offset "+(headingOffset*360/headingCount));
     }
 }

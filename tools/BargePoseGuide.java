@@ -12,6 +12,8 @@ import javax.imageio.ImageIO;
 /** Fixed-datum empty cargo barge blockout; generates guides and metadata only. */
 public final class BargePoseGuide {
     private static final int CELL=384;
+    private static int headingCount=32,poseCount=32,columns=8;
+    private static double headingOffset=0;
     private static final double DEPTH=1/StrictMath.sqrt(3),HEIGHT=StrictMath.sqrt(2.0/3);
     private static final class Face {
         double[] x,y,z; int color;
@@ -32,8 +34,8 @@ public final class BargePoseGuide {
     }
     private BargePoseGuide(int frame,boolean bulk) {
         this.frame=frame;this.bulk=bulk;
-        angle=frame*StrictMath.PI/16; cx=(frame%8+.5)*CELL;
-        cy=(frame/8+.72)*CELL; scale=CELL*.78/77.5;
+        angle=(frame+headingOffset)*StrictMath.PI*2/headingCount; cx=(frame%columns+.5)*CELL;
+        cy=(frame/columns+.72)*CELL; scale=CELL*.78/77.5;
     }
     private void face(double[][] vertices,int rgb) {
         Face face=new Face(vertices.length,rgb);
@@ -69,8 +71,8 @@ public final class BargePoseGuide {
             // Clear its color attachment while preserving the rendered hull depth.
             BargePoseGuide hull=new BargePoseGuide(frame,false);hull.geometry();
             for(Face f:hull.faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
-            for(int y=frame/8*CELL;y<(frame/8+1)*CELL;y++)
-                for(int x=frame%8*CELL;x<(frame%8+1)*CELL;x++) image.setRGB(x,y,0);
+            for(int y=frame/columns*CELL;y<(frame/columns+1)*CELL;y++)
+                for(int x=frame%columns*CELL;x<(frame%columns+1)*CELL;x++) image.setRGB(x,y,0);
             if(cargoKind==0)coilGeometry();else if(cargoKind==1)containerGeometry();else bulkGeometry();
         } else geometry();
         for(Face f:faces) for(int i=1;i<f.x.length-1;i++) triangle(image,depth,f,0,i,i+1);
@@ -182,7 +184,7 @@ public final class BargePoseGuide {
             if(a.kind.equals("contact")) visible=normalY>.05 && visible;
             csv.append(String.format(Locale.ROOT,"%d,%s,%s,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%.7f,%.7f,%.7f,%s,%s,%s,%s%n",
                 frame,a.id,a.kind,a.x,a.y,a.z,a.nx,a.ny,a.nz,a.r,
-                (sx-frame%8*CELL)/CELL,(sy-frame/8*CELL)/CELL,a.r*scale/CELL,
+                (sx-frame%columns*CELL)/CELL,(sy-frame/columns*CELL)/CELL,a.r*scale/CELL,
                 visible?"visible":"occluded",a.side,a.color,a.role));
         }
     }
@@ -203,32 +205,47 @@ public final class BargePoseGuide {
         }
     }
     public static void main(String[] args) throws Exception {
+        headingCount=32;headingOffset=0;poseCount=32;columns=8;
+        boolean proof=false;
+        ArrayList<String> options=new ArrayList<String>();
+        String suffix="";
+        for(String arg:args) {
+            if(arg.equals("--64")){headingCount=64;suffix="64-";}
+            else if(arg.equals("--intermediate")){headingOffset=.5;suffix="intermediate-";}
+            else if(arg.equals("--proof"))proof=true;
+            else options.add(arg);
+        }
+        if(headingCount==64 && headingOffset!=0)throw new IllegalArgumentException("Choose --64 or --intermediate");
+        poseCount=proof?4:headingCount;columns=proof?4:8;
+        if(proof)suffix+="proof-";
+        args=options.toArray(new String[options.size()]);
         int kind=args.length>0 && args[0].equals("--steel")?0:args.length>0 && args[0].equals("--containers")?1:args.length>0 && args[0].equals("--coal-v2")?3:2;
         boolean bulk=kind!=2 || args.length==1 && args[0].equals("--bulk");
         if(args.length>0 && !bulk) throw new IllegalArgumentException("No args for empty barge; --bulk for separate coal pile");
-        BufferedImage guide=new BufferedImage(CELL*8,CELL*4,BufferedImage.TYPE_INT_ARGB);
+        BufferedImage guide=new BufferedImage(CELL*columns,CELL*((poseCount+columns-1)/columns),BufferedImage.TYPE_INT_ARGB);
         double[] depth=new double[guide.getWidth()*guide.getHeight()];Arrays.fill(depth,Double.NEGATIVE_INFINITY);
         StringBuilder anchors=new StringBuilder("frame,id,kind,x,y,z,nx,ny,nz,radius,u,v,radius_uv,visibility,side,color,role\n");
         StringBuilder registration=new StringBuilder("frame,pivot_x,pivot_y,uniform_scale,raw_iou,registered_iou,shift_x,shift_y\n");
-        for(int frame=0;frame<32;frame++) {
+        for(int frame=0;frame<poseCount;frame++) {
             BargePoseGuide pose=new BargePoseGuide(frame,bulk);pose.cargoKind=kind;pose.draw(guide,depth);pose.writeAnchors(anchors,guide,depth);
             registration.append(frame).append(",0.5,0.72,1,1,1,0,0\n");
         }
         // The empty well must remain visible; a solid deck must not cover its origin.
-        for(int frame=0;frame<32;frame++) {
-            int px=(int)((frame%8+.5)*CELL),py=(int)((frame/8+.72)*CELL-3.05*HEIGHT*CELL*.78/77.5);
+        for(int frame=0;frame<poseCount;frame++) {
+            int px=(int)((frame%columns+.5)*CELL),py=(int)((frame/columns+.72)*CELL-3.05*HEIGHT*CELL*.78/77.5);
             int rgb=guide.getRGB(px,py)&0xffffff;
             if(!bulk && rgb!=0x302f2c && rgb!=0x4b4740) throw new IllegalStateException("Hold floor occluded at frame "+frame);
-            int left=frame%8*CELL,top=frame/8*CELL;
+            int left=frame%columns*CELL,top=frame/columns*CELL;
             for(int i=0;i<CELL;i++) if((guide.getRGB(left+i,top)>>>24)!=0 || (guide.getRGB(left+i,top+CELL-1)>>>24)!=0
                     || (guide.getRGB(left,top+i)>>>24)!=0 || (guide.getRGB(left+CELL-1,top+i)>>>24)!=0)
                 throw new IllegalStateException("Guide crosses source-cell gutter: "+frame);
         }
         String prefix="docs/art-studies/"+(kind==0?"cargo-steel":kind==1?"cargo-container":kind==3?"cargo-coal":bulk?"bulk":"barge")+(kind==3?"-isometric-v2-":"-isometric-v1-");
+        prefix+=suffix;
         ImageIO.write(guide,"png",new File(prefix+"pose-guide.png"));
         Files.write(new File(prefix+"guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
         Files.write(new File(prefix+"guide-registration.csv").toPath(),registration.toString().getBytes(StandardCharsets.UTF_8));
-        System.out.println(prefix+"pose-guide.png — 32 poses, 3072x1536, fixed 35.264-degree camera, 11.25-degree steps");
-        System.out.println("32 source-gutter checks passed; "+(bulk?"1 cargo origin per pose":"open holds checked; 28 named anchors per pose")+"; no lights or smoke outlets.");
+        System.out.println(prefix+"pose-guide.png — "+poseCount+" poses, "+guide.getWidth()+"x"+guide.getHeight()+", fixed 35.264-degree camera, "+(360.0/headingCount)+"-degree steps, offset "+(headingOffset*360/headingCount));
+        System.out.println(poseCount+" source-gutter checks passed; "+(bulk?"1 cargo origin per pose":"open holds checked; 28 named anchors per pose")+"; no lights or smoke outlets.");
     }
 }
