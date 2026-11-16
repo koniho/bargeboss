@@ -1219,3 +1219,17 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   the Pixel 11 Pro and iOS simulator; native captures retained in out/title-train-v2.
   Android app data/signing identity preserved. This round does not claim a measured
   title FPS improvement. Phone display timeout restored after validation.
+
+## Android shader local-matrix reuse experiment (2026-11-16)
+
+- Tested retaining polygon shader local matrices until the next rectangular draw,
+  avoiding immediate resets. Candidate compiled in isolation from title changes.
+  Four alternating 300-frame Montrose replay runs on Pixel 11 Pro; same 60-frame
+  warmup and original signing identity. First A/B native captures exactly match.
+- Median shared draw ms: baseline 10.509 / 10.066; candidate 10.273 / 10.653.
+  Median issue-to-swap ms: baseline 17.724 / 17.800; candidate 17.721 / 17.461.
+  Interval p95 ms: baseline 43.440 / 45.001; candidate 45.824 / 42.426.
+  Tail and application draw changes reverse between pairs; no repeatable useful win.
+- Reverted experiment. These are wall timings, not isolated RenderThread CPU or
+  GPU measurements. Existing Perfetto CPU bottleneck remains unresolved.
+  Raw local evidence: out/android-profile/matrix-{before,after}{,-repeat}.
