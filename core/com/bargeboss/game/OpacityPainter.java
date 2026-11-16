@@ -26,7 +26,7 @@ public final class OpacityPainter implements Painter {
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){p.ropeSegment(x,y,xx,yy,width,from,to,color(color));}
     public void smokePuff(float x,float y,float radius,float phase,int color){p.smokePuff(x,y,radius,phase,color(color));}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float opacity){p.spriteAffine(a,f,x,y,ax,ay,bx,by,opacity*alpha);}
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){p.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha*this.alpha);}
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){p.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha*this.alpha);}
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float opacity) { p.sprite(a,f,x,y,w,h,r,opacity*alpha); }
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float opacity) { p.spriteBlend(a,f,ff,x,y,w,h,r,blend,opacity*alpha); }
 }

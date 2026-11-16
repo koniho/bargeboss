@@ -53,13 +53,12 @@ public final class MooredBoats {
         float heading=angle*ORIENTATIONS/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
         dissolve(p,base+a,base+next,x,y,size,mix,1);
-        float[] light=MooredBoatLight.sample(g,wx,wy);
-        // Convert desired RGB contributions to source-over opacities without a blue last-pass bias.
-        light[0]/=Math.max(.01f,1-light[1]-light[2]);light[1]/=Math.max(.01f,1-light[2]);
-        for(int channel=0;channel<3;channel++)if(light[channel]>.015f){
-            float second=light[channel]*mix,first=light[channel]*(1-mix)/(1-second);int k=3+channel*3,color=0xff000000|(255<<(16-channel*8));
-            p.normalSprite(base+a,x,y,size,size,light[k],light[k+1],light[k+2],color,first);
-            if(second>.001f)p.normalSprite(base+next,x,y,size,size,light[k],light[k+1],light[k+2],color,second);}
+        MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
+        for(int n=0;n<lights.count;n++){
+            float energy=lights.energy[n],second=energy*mix,first=energy*(1-mix)/(1-second);
+            p.normalSprite(base+a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],first);
+            if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
+        }
     }
     /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
      * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */

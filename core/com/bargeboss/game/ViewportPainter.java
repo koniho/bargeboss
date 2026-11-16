@@ -80,7 +80,7 @@ public final class ViewportPainter implements Painter {
         for(int i=0;i<4;i++){float u=i%2-px,v=i/2-py,xx=x+ax*u+bx*v,yy=y+ay*u+by*v;l=Math.min(l,xx);r=Math.max(r,xx);t=Math.min(t,yy);b=Math.max(b,yy);}
         if(visible(l,t,r,b))target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);
     }
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){if(alpha>0 && spriteVisible(SpriteAtlas.MOORED_NORMALS,frame,x,y,w,h,0))target.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha);}
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){if(alpha>0 && spriteVisible(SpriteAtlas.MOORED_NORMALS,frame,x,y,w,h,0))target.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);}
     public void sprite(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
         if(alpha>0 && spriteVisible(atlas,frame,x,y,w,h,r))target.sprite(atlas,frame,x,y,w,h,r,alpha);
     }

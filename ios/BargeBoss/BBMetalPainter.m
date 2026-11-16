@@ -332,10 +332,10 @@ static vector_float4 BBColor(jint argb) {
     if(!texture) texture=[self upload:[self.resources imageForLayer:layer scale:scale] key:key];
     [self quad:(vector_float2){x,y} a:(vector_float2){w,0} b:(vector_float2){0,h} texture:texture alpha:alpha];
 }
-- (void)normalSpriteWithInt:(jint)frame withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)w withFloat:(jfloat)h withFloat:(jfloat)nx withFloat:(jfloat)ny withFloat:(jfloat)nz withInt:(jint)argb withFloat:(jfloat)alpha {
+- (void)normalSpriteWithInt:(jint)frame withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)w withFloat:(jfloat)h withFloat:(jfloat)nx withFloat:(jfloat)ny withFloat:(jfloat)nz withFloat:(jfloat)radius withInt:(jint)argb withFloat:(jfloat)alpha {
     if(alpha<=.001f)return;
     vector_float2 p={x-w*.5f,y-h*.7f},a={w,0},b={0,h};
-    vector_float4 color={((argb>>16)&255)/255.f*alpha,((argb>>8)&255)/255.f*alpha,(argb&255)/255.f*alpha,alpha},light={nx,ny,nz,0};
+    vector_float4 color={((argb>>16)&255)/255.f*alpha,((argb>>8)&255)/255.f*alpha,(argb&255)/255.f*alpha,alpha},light={nx,ny,nz,radius};
     BBVertex v[]={{p,{0,0},color,30,0,0,light},{p+a,{1,0},color,30,0,0,light},{p+b,{0,1},color,30,0,0,light},
         {p+a,{1,0},color,30,0,0,light},{p+a+b,{1,1},color,30,0,0,light},{p+b,{0,1},color,30,0,0,light}};
     [self append:v count:6 texture:[self texture:BBSpriteAtlas_MOORED_NORMALS frame:frame] mode:0];

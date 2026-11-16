@@ -27,7 +27,7 @@ public final class SceneryOcclusion implements Painter {
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){target.waterReflection(x,y,ax,ay,bx,by,phase,color);}
     public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color){target.ropeSegment(x,y,xx,yy,width,from,to,color);}
     public void smokePuff(float x,float y,float radius,float phase,int color){target.smokePuff(x,y,radius,phase,color);}
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){target.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha);}
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){target.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);}
     public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){target.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}
     public void beginFrame(){target.beginFrame();}
     public boolean supportsUnionClips(){return target.supportsUnionClips();}

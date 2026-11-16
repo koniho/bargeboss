@@ -37,8 +37,26 @@ public final class BakeMooredBoats {
         for(int side=-1;side<=1;side+=2)for(int i=0;i<3;i++)box(-l*.26f+i*l*.23f,side*w*.45f-.65f,1.5f,1.8f,1.3f,2.8f,0xff4b555a,0xff2b373e);
         for(int end=-1;end<=1;end+=2)box(end*l*.38f-.9f,-.6f,3.7f,1.8f,1.2f,.5f,0xff68706e,0xff39464c);
     }
+    /** Affine height on each rigid face, packed beside an octahedral world normal. */
+    static final class SurfacePaint implements Paint {
+        final float nx,ny,nz,d;final int rg;
+        SurfacePaint(float x,float y,float z,float px,float py,float pz){nx=x;ny=y;nz=z;d=x*px+y*py+z*pz;float l=Math.abs(x)+Math.abs(y)+Math.abs(z);x/=l;y/=l;
+            if(z<0){float old=x;x=(1-Math.abs(y))*(x>=0?1:-1);y=(1-Math.abs(old))*(y>=0?1:-1);}rg=0xff000000|(Math.round((x+1)*127.5f)<<16)|(Math.round((y+1)*127.5f)<<8);}
+        public int getTransparency(){return Transparency.OPAQUE;}
+        public PaintContext createContext(java.awt.image.ColorModel cm,Rectangle bounds,Rectangle2D ub,AffineTransform tx,RenderingHints hints){
+            final AffineTransform inverse;try{inverse=tx.createInverse();}catch(Exception e){throw new IllegalArgumentException(e);}
+            return new PaintContext(){public void dispose(){}public java.awt.image.ColorModel getColorModel(){return java.awt.image.ColorModel.getRGBdefault();}
+                public java.awt.image.Raster getRaster(int x,int y,int w,int h){java.awt.image.WritableRaster raster=getColorModel().createCompatibleWritableRaster(w,h);int[] pixels=new int[w*h];double[] xy=new double[2];
+                    for(int j=0;j<h;j++)for(int i=0;i<w;i++){xy[0]=x+i+.5;xy[1]=y+j+.5;inverse.transform(xy,0,xy,0,1);
+                        double sx=(xy[0]/CELL-.5)*96,sy=(xy[1]/CELL-.7)*96;
+                        double a=(nx+ny)*sx/(2*RiverCamera.Q)+(ny-nx)*sy/(2*RiverCamera.Q*RiverCamera.DEPTH);
+                        double den=nz+(ny-nx)*ArticulatedModel.Z_SCALE/(2*RiverCamera.Q*RiverCamera.DEPTH);
+                        double z=Math.abs(den)<.00001?0:(d-a)/den;pixels[j*w+i]=rg|Math.max(0,Math.min(255,(int)Math.round(z*255/64)));}
+                    raster.setDataElements(0,0,w,h,pixels);return raster;}};
+        }
+    }
     public static void main(String[] args)throws Exception{BufferedImage sheet=new BufferedImage(CELL*MooredBoats.COLUMNS,CELL*60,BufferedImage.TYPE_INT_ARGB);Graphics2D g=sheet.createGraphics();g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         for(int layer=0;layer<5;layer++)for(int kind=0;kind<6;kind++)for(int view=0;view<MooredBoats.ORIENTATIONS;view++){angle=view*(float)(Math.PI*2/MooredBoats.ORIENTATIONS);faces=new ArrayList<Face>();model(kind);faces.sort((a,b)->Float.compare(a.depth,b.depth));int frame=layer*MooredBoats.BASE_FRAMES+kind*MooredBoats.ORIENTATIONS+view,ox=frame%MooredBoats.COLUMNS*CELL,oy=frame/MooredBoats.COLUMNS*CELL;g.translate(ox,oy);
-            for(Face f:faces){Path2D path=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)path.moveTo(sx,sy);else path.lineTo(sx,sy);}path.closePath();int rgb=f.color;int value=Math.min(255,(((rgb>>16)&255)+((rgb>>8)&255)+(rgb&255)));if(layer==4){float[] q=f.xyz;float ux=q[3]-q[0],uy=q[4]-q[1],uz=q[5]-q[2],vx=q[6]-q[0],vy=q[7]-q[1],vz=q[8]-q[2];float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);g.setColor(new Color((int)(127.5f*(1+nx/n)),(int)(127.5f*(1+ny/n)),(int)(127.5f*(1+nz/n))));}else g.setColor(layer==0?new Color(((rgb>>16)&255)/2,((rgb>>8)&255)/2,(rgb&255)/2,255):new Color(layer==1?value:0,layer==2?value:0,layer==3?value:0,255));g.fill(path);}g.translate(-ox,-oy);
+            for(Face f:faces){Path2D path=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)path.moveTo(sx,sy);else path.lineTo(sx,sy);}path.closePath();int rgb=f.color;int value=Math.min(255,(((rgb>>16)&255)+((rgb>>8)&255)+(rgb&255)));if(layer==4){float[] q=f.xyz;float ux=q[3]-q[0],uy=q[4]-q[1],uz=q[5]-q[2],vx=q[6]-q[0],vy=q[7]-q[1],vz=q[8]-q[2];float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);g.setPaint(new SurfacePaint(nx/n,ny/n,nz/n,q[0],q[1],q[2]));}else g.setColor(layer==0?new Color(((rgb>>16)&255)/2,((rgb>>8)&255)/2,(rgb&255)/2,255):new Color(layer==1?value:0,layer==2?value:0,layer==3?value:0,255));g.fill(path);}g.translate(-ox,-oy);
         }g.dispose();ImageIO.write(sheet.getSubimage(0,0,CELL*16,CELL*48),"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(sheet.getSubimage(0,CELL*48,CELL*16,CELL*12),"png",new File("assets/sprites/montrose-moored-normals-v1.png"));System.out.println("Baked 192 model headings with dark base and RGB receiving layers");}
 }

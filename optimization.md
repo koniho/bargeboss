@@ -1421,3 +1421,29 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Cropped-frame storage 108.771 MiB, exactly 0.25 MiB above the preceding build.
   This single capture is not a controlled speedup claim and does not prove peak
   collision cost or 60 FPS headroom. Evidence: `docs/performance/stamped-splash-cues-2026-11-16`.
+
+## 2026-11-16: independent moored-boat point lights
+
+- Removed RGB-weighted averaged directions from the production receiver path.
+  Up to four strongest nearby lamps retain independent position, physical height,
+  radius, energy and color. Surface direction and distance are evaluated per pixel,
+  so low pedestals illuminate nearby faces and decks rather than acting overhead.
+- Packed octahedral normal RG plus physical height B into the existing 128px cells.
+  Surface XYZ is reconstructed through the inverse shared projection. No extra
+  texture, bitmap cache or render target; cropped storage remains 108.771 MiB.
+  Android AGSL and Metal use the same `boat-surface-light.inc`. Desktop is a slow
+  CPU reference; pre-API33/software/Core Graphics retain an approximate RGB fallback.
+- Bounded four-light selection uses reusable thread-local scratch and an early
+  spatial reject. It replaces three aggregate color passes with up to four actual
+  light passes per heading, so it is a correctness change, not a claimed speedup.
+- Full checks pass, including 192 exact alpha registrations, 117,310 surface-height
+  samples, opposing-source retention, back-facing rejection, distance falloff and
+  wrapper forwarding. JVM/J2ObjC parity is `1cb53695:2:1350`. Android device and Metal
+  simulator builds/pixels inspected. No physical iPhone validation.
+- A 300-frame Montrose sanity capture: draw median/p95 14.863/17.265 ms;
+  interval median/p95 20.866/33.781 ms, no source/frame builds during samples.
+  The earlier capture had substantially slower simulation as well as rendering,
+  so these runs are not a controlled performance comparison. Summaries under
+  `docs/performance/point-lights-2026-11-16`; raw CSVs retained in ignored `out/`.
+  Still not locked 60 FPS. Four-source cutoff, center-tested navigation sectors,
+  no cabin self-shadow maps, and filtered normal seams remain approximations.

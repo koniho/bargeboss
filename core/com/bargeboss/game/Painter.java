@@ -62,11 +62,13 @@ public interface Painter {
     default void smokePuff(float x,float y,float radius,float phase,int color) {
         SmokePuff.fallback(this,x,y,radius,color);
     }
-    /** World-space unit normal map receiving a shared, color-weighted light direction.
-     * Normal RGB is linear data; no host light selection or simulation. */
-    default void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha) {
-        int channel=(color&255)>0?2:((color>>8)&255)>0?1:0;
-        sprite(SpriteAtlas.MOORED_BOATS,(channel+1)*MooredBoats.BASE_FRAMES+frame,x,y,w,h,0,alpha);
+    /** Packed geometric normal/height cell receiving ONE point light. nx/ny/nz are
+     * the lamp position relative to the boat origin, radius is in world units.
+     * Shared callers select lights; native hosts evaluate local surface response. */
+    default void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha) {
+        float power=alpha*VesselShoreLight.falloff(nx*nx+ny*ny+nz*nz,radius);
+        for(int ch=0;ch<3;ch++){float strength=((color>>(16-ch*8))&255)/255f*power;
+            if(strength>.001f)sprite(SpriteAtlas.MOORED_BOATS,(ch+1)*MooredBoats.BASE_FRAMES+frame,x,y,w,h,0,strength);}
     }
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);

@@ -272,7 +272,7 @@ public final class CanvasPainter implements Painter {
         if(preloadVessels){
             atlas(0);atlas(1);
             if(android.os.Build.VERSION.SDK_INT>=33) {
-                try {waterFoamShader=new WaterFoamShader(assets);normalSpriteShader=new NormalSpriteShader();}
+                try {waterFoamShader=new WaterFoamShader(assets);normalSpriteShader=new NormalSpriteShader(assets);}
                 catch(IllegalArgumentException ex) {android.util.Log.w("BargeBoss","Water shader unavailable; using textured fallback",ex);}
             }
         }
@@ -376,10 +376,10 @@ public final class CanvasPainter implements Painter {
         return image;
     }
 
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){
         if(alpha<=.001f)return;
-        if(normalSpriteShader==null || !canvas.isHardwareAccelerated() || !frameTextures){Painter.super.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha);return;}
-        normalSpriteShader.draw(canvas,frameImage(atlas(SpriteAtlas.MOORED_NORMALS),frame),x-w*.5f,y-h*.7f,w,h,nx,ny,nz,color,alpha);
+        if(normalSpriteShader==null || !canvas.isHardwareAccelerated() || !frameTextures){Painter.super.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);return;}
+        normalSpriteShader.draw(canvas,frameImage(atlas(SpriteAtlas.MOORED_NORMALS),frame),x-w*.5f,y-h*.7f,w,h,nx,ny,nz,radius,color,alpha);
     }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);

@@ -43,7 +43,7 @@ public final class WaterBatchPainter implements Painter {
     public void rect(float x,float y,float w,float h,int c){flush();target.rect(x,y,w,h,c);}
     public void circle(float x,float y,float r,int c){flush();target.circle(x,y,r,c);}
     public void line(float x,float y,float xx,float yy,float w,int c){flush();target.line(x,y,xx,yy,w,c);}
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,int color,float alpha){flush();target.normalSprite(frame,x,y,w,h,nx,ny,nz,color,alpha);}
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){flush();target.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);}
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){flush();target.sprite(a,f,x,y,w,h,r,alpha);}
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){flush();target.spriteBlend(a,f,ff,x,y,w,h,r,mix,alpha);}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {

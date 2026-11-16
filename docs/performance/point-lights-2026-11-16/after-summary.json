@@ -1,0 +1,91 @@
+{
+  "file": "out/point-lights-after.csv",
+  "samples": 300,
+  "lessons": [
+    -1
+  ],
+  "advance_ms": {
+    "p50": 2.264,
+    "p95": 2.604
+  },
+  "draw_ms": {
+    "p50": 14.863,
+    "p95": 17.265
+  },
+  "interval_ms": {
+    "p50": 20.866,
+    "p95": 33.781
+  },
+  "layer_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "decode_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_mib": {
+    "p50": 1.055,
+    "p95": 3.734
+  },
+  "sprites": {
+    "p50": 66.0,
+    "p95": 74.0
+  },
+  "blends": {
+    "p50": 0.0,
+    "p95": 6.0
+  },
+  "affines": {
+    "p50": 2.0,
+    "p95": 3.0
+  },
+  "circles": {
+    "p50": 41.0,
+    "p95": 46.0
+  },
+  "polys": {
+    "p50": 681.0,
+    "p95": 714.0
+  },
+  "clips": {
+    "p50": 33.0,
+    "p95": 37.0
+  },
+  "texture_mib": {
+    "p50": 6.304,
+    "p95": 8.764
+  },
+  "source_mib": {
+    "p50": 114.774,
+    "p95": 114.774
+  },
+  "frame_mib": {
+    "p50": 108.771,
+    "p95": 108.771
+  },
+  "frame_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "pending_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "worker_source_mib": {
+    "p50": 0.0,
+    "p95": 6.016
+  },
+  "background_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_builds": 0,
+  "cache_fallbacks": 3,
+  "cache_evictions": 0,
+  "frame_builds": 0,
+  "frame_evictions": 0,
+  "background_builds": 1,
+  "async_misses": 3,
+  "cold_decode_ms": 113.488
+}
