@@ -40,7 +40,7 @@ public final class TitleLayoutTest {
             for(int tick=0;tick<=720;tick+=37) {
                 g.visualTicks=tick;Capture p=new Capture();TitleView.voyage(g,p);
                 float menuLeft=g.layout.width-352;
-                check(p.vessels>=3,"title retains both watercraft and the complete three-container load layer");
+                check(p.vessels>=4,"title retains the leading tug, three loaded barges and cargo layers");
                 check(p.left>=24 && p.right<=menuLeft-16,"complete convoy stays left of menu panel");
                 check(p.top>=238,"mast and cargo stay below the compact logo");
                 check(p.bottom<=g.layout.height-76,"convoy clears the rank bar throughout heave");
@@ -57,6 +57,25 @@ public final class TitleLayoutTest {
                 check(button==Layout.LEARN?menu.activeGame()!=menu:button==Layout.START?menu.mode==Game.PLAY:menu.mode==Game.CHALLENGES,"title buttons retain their responsive hit targets");
             }
         }
+        for(int tick=0;tick<720;tick+=17){
+            Game g=new Game();RiverCamera camera=TitleView.camera(g);
+            Body tug=new Body(0,-1,0,0,0);TitleView.tugPose(tug,tick);
+            float prior=camera.screenX(tug.x,tug.y),waterY=camera.screenY(tug.x,tug.y);
+            check(Math.abs(tug.vx-tug.vy)<.0001f && tug.vx>0,"title travels horizontally right in camera space");
+            for(int i=0;i<TitleView.BARGES;i++){
+                Body barge=new Body(i+1,i,0,0,0);TitleView.bargePose(barge,i,tick);
+                float x=camera.screenX(barge.x,barge.y);
+                check(x<prior-90,"barge train trails the tug with clear towing gaps");
+                check(Math.abs(camera.screenY(barge.x,barge.y)-waterY)<.001f,"all hulls share horizontal shoreline direction");prior=x;
+            }
+        }
+        float previous=310;
+        for(int y=310;y<=600;y++){
+            float projected=TitleWaterView.projectedY(y,310,600);
+            check(projected>=previous && projected<=y,"water perspective remains monotonic and converges toward horizon");previous=projected;
+        }
+        check(TitleWaterView.projectedY(600,310,600)==600,"foreground effect anchors stay registered");
+        check(TitleWaterView.projectedY(312,310,600)-310<.03f,"near-horizon effect height squashes towards zero");
         WaterCheck check=new WaterCheck();Painter water=TitleWaterView.below(check,310);
         water.line(0,290,20,340,4,-1);water.line(0,340,20,290,4,-1);
         water.poly(new float[]{0,300,30,300,30,330,0,330},-1);water.circle(20,310,8,-1);water.rect(0,300,40,20,-1);

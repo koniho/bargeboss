@@ -1200,3 +1200,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full findings, config, CPU-overlap SQL and limitations:
   docs/performance/perfetto-montrose-2026-11-16/README.md. Raw trace retained locally
   under out/android-profile/perfetto-montrose-v1. Normal app restored, timeout reset.
+
+## Horizontal title convoy and horizon perspective (2026-11-16)
+
+- Title tug now leads three loaded barges horizontally along the shoreline, with
+  shared stern/bow fittings and rope material. Wakes use hull-relative coordinates
+  and trail opposite travel. No title push-knee pressure graphics remain.
+- Title-only water projection compresses wave, foam and sun-reflection geometry
+  toward the horizon; upright hull artwork and airborne smoke remain undistorted.
+- Custom title wake pass uses 292 bounded patches at active ages, down from roughly
+  1,000 in the previous two full wake histories. This is a submission-count change,
+  not a measured frame-rate claim. Other shared VesselView effects remain.
+- 1,040 title layout/direction/horizon checks pass. Reviewed actual-renderer phone,
+  desktop and tablet layouts and native iOS output. Native/JVM drawing/gameplay
+  parity matches 6ba0579a:2:1350; the signature includes the changed title sequence.
+  Review images: out/title-train-v2; phone Downloads: BargeBoss-title-train-v2.png.
+- Final shared checks and signed Android build pass. Installed and reviewed on
+  the Pixel 11 Pro and iOS simulator; native captures retained in out/title-train-v2.
+  Android app data/signing identity preserved. This round does not claim a measured
+  title FPS improvement. Phone display timeout restored after validation.

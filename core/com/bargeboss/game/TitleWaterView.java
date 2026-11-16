@@ -1,11 +1,35 @@
 package com.bargeboss.game;
 
-/** Scrolling wake history and loaded push contact, sampled without advancing gameplay. */
+/** Body-aligned tow wakes and title-only horizon perspective, without advancing gameplay. */
 public final class TitleWaterView {
     private TitleWaterView() {}
     private static float sin(double a) { return (float)StrictMath.sin(a); }
     /** Clip title wake geometry to its water plane before shore sprites cover it. */
     public static Painter below(Painter target,float top) {return new WaterPlane(target,top);}
+    /** Water-plane effects flatten continuously at the horizon; upright artwork is untouched. */
+    public static Painter perspective(Painter target,float top,float foreground){
+        return new Perspective(below(target,top),top,foreground);
+    }
+    static float projectedY(float y,float top,float foreground){
+        float h=Math.max(1,foreground-top),t=(y-top)/h;
+        if(t<=0)return top;if(t>=1)return y;
+        return top+h*t*t*(2-t);
+    }
+    private static final class Perspective implements Painter {
+        final Painter p;final float top,foreground;
+        Perspective(Painter p,float top,float foreground){this.p=p;this.top=top;this.foreground=foreground;}
+        float y(float y){return projectedY(y,top,foreground);}
+        float thin(float y){return Physics.clamp((y-top)/Math.max(1,foreground-top),.06f,1);}
+        public void waterFoam(float x,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){
+            p.waterFoam(x,y(yy),ax,y(yy+ay*.5f)-y(yy-ay*.5f),bx,y(yy+by*.5f)-y(yy-by*.5f),phase,kind,alpha);
+        }
+        public void line(float x,float yy,float xx,float y2,float w,int color){p.line(x,y(yy),xx,y(y2),w*thin((yy+y2)*.5f),color);}
+        public void poly(float[] xy,int color){float[] q=xy.clone();for(int i=1;i<q.length;i+=2)q[i]=y(q[i]);p.poly(q,color);}
+        public void rect(float x,float yy,float w,float h,int color){p.rect(x,y(yy),w,y(yy+h)-y(yy),color);}
+        public void circle(float x,float yy,float r,int color){float[] q=new float[24];for(int i=0;i<12;i++){double a=i*Math.PI/6;q[i*2]=x+r*(float)StrictMath.cos(a);q[i*2+1]=y(yy+r*sin(a));}p.poly(q,color);}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new IllegalStateException("Title perspective is water-only");}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new IllegalStateException("Title perspective is water-only");}
+    }
     private static final class WaterPlane implements Painter {
         final Painter p;final float top;
         WaterPlane(Painter p,float top){this.p=p;this.top=top;}
@@ -45,85 +69,38 @@ public final class TitleWaterView {
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new IllegalStateException("Title water uses geometry only");}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new IllegalStateException("Title water uses geometry only");}
     }
+    /** Local side/forward coordinates rotate with the hull before shared projection. */
+    private static void patch(Painter p,Body b,float side,float forward,float sx,float sy,float wx,float wy,float phase,int kind,float alpha){
+        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
+        p.waterFoam(b.x+side*s+forward*c,b.y-side*c+forward*s,sx*s+sy*c,-sx*c+sy*s,wx*s+wy*c,-wx*c+wy*s,phase,kind,alpha);
+    }
     public static void water(Painter p,Body b,int tick,boolean tug) {
-        float stern=b.y-b.half-b.radius;
-        if(tug) {
-
-            for(int i=0;i<28;i++) {
-                float age=((tick+i*13)%180)/180f;
-                float x=b.x+sin(age*19+i)*(2+age*10),y=stern-3-age*88;
-                int alpha=(int)(150*(1-age)*(1-age));
-                p.waterFoam(x,y,0,14+age*18,9+age*18,0,WaterFoam.phase(tick,i),2,alpha/255f*.9f);
+        float stern=-b.half-b.radius;
+        // Only the powered tug and trailing barge need a long wake history. Other
+        // barges keep their displacement foam, avoiding four overlapping full trails.
+        if(tug)for(int i=0;i<20;i++){
+            float age=((tick+i*13)%180)/180f;
+            patch(p,b,sin(age*19+i)*(2+age*8),stern-3-age*72,0,14+age*18,9+age*14,0,
+                WaterFoam.phase(tick,i),2,.55f*(1-age)*(1-age));
+        }
+        if(tug || b.id==TitleView.BARGES)for(int packet=7;packet>=0;packet--){
+            int age=tick%20+packet*20;float t=age/160f;
+            float spread=b.radius*.6f+age*.15f,back=stern-age*.38f;
+            float alpha=(tug?.5f:.38f)*(1-t)*(1-t);
+            // Curved rear-facing arcs spread outwards while their origin trails left.
+            for(int part=0;part<12;part++){
+                float a=(float)Math.PI+part*(float)Math.PI/12,z=a+(float)Math.PI/12;
+                float x=(float)StrictMath.cos(a)*spread,y=back+sin(a)*spread*.55f;
+                float dx=(float)StrictMath.cos(z)*spread-x,dy=back+sin(z)*spread*.55f-y,len=Physics.length(dx,dy);
+                patch(p,b,x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*4,dx/len*4,WaterFoam.phase(tick,packet*12+part),5,alpha);
             }
         }
-        // The outer wake arms form the familiar widening V behind each hull.
-        for(int side=-1;side<=1;side+=2) for(int i=1;i<=18;i++) {
-            float a=(i-1)/18f,t=i/18f;
-            float x=b.x+side*(b.radius*.6f+a*32),y=stern-a*82;
-            float dx=side*(t-a)*32,dy=-(t-a)*82,len=Physics.length(dx,dy);
-            p.waterFoam(x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*11,dx/len*11,WaterFoam.phase(tick,i),5,170*(1-t)/255f);
-        }
-        // Each packet recedes astern while its curved crest expands sideways.
-        // New packets form continuously; troughs add a stronger crest to the train.
-        int spacing=18,life=180;
-        for(int packet=life/spacing;packet>=0;packet--) {
-            int age=tick%spacing+packet*spacing;if(age>=life) continue;
-            float t=age/(float)life;
-            float impact=.55f+.45f*Math.max(0,sin((tick-age)*.048+Math.PI/2));
-            float spread=b.radius*.6f+age*.15f,back=stern-age*.38f;
-            int alpha=(int)((tug?155:110)*(1-t)*(1-t)*impact);
-            arc(p,b.x,back,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,1.1f,(alpha<<24)|0xa4eee7);
-            arc(p,b.x,back-2,spread,spread*.55f,(float)Math.PI,(float)Math.PI*2,.55f,((alpha/2)<<24)|0xf1fff4);
-        }
-        // Water follows both sides of the displacement hull from bow to stern.
-        for(int side=-1;side<=1;side+=2) for(int i=0;i<9;i++) {
+        for(int side=-1;side<=1;side+=2)for(int i=0;i<9;i++){
             float t=((tick+i*13)%117)/117f;
-            float x=b.x+side*(b.radius+1+sin(t*9+tick*.03)*1.3f);
-            float y=b.y+b.half+7-t*(b.half*2+17);
-            p.waterFoam(x,y,side*.6f,-6,4,0,WaterFoam.phase(tick,i),i%2,.45f);
+            patch(p,b,side*(b.radius+1+sin(t*9+tick*.03)*1.3f),b.half+7-t*(b.half*2+17),
+                side*.6f,-6,4,0,WaterFoam.phase(tick,i),i%2,.45f);
         }
-        float lift=.6f+.4f*Math.max(0,sin(tick*.048+Math.PI/2));
-        for(int ring=0;ring<3;ring++) {
-            float radius=b.radius+2+ring*3;
-            arc(p,b.x,b.y+b.half,radius,radius*.58f,0,(float)Math.PI,
-                    ring==0?1.7f:.7f,((int)((170-ring*45)*lift)<<24)|0xe1fff2);
-        }
-    }
-    public static void contact(Painter p,Body barge,int tick) {
-        float contact=barge.y-barge.half-barge.radius;
-        float pressure=.5f+.5f*sin(tick*.065);
-        // Two rubber push knees visibly compress between the bow and the load.
-        for(int side=-1;side<=1;side+=2) {
-            float x=barge.x+side*7;
-            p.line(x-3,contact,x+3,contact,4-pressure,VisualStyle.OUTLINE);
-            p.line(x-2.4f,contact-.5f,x+2.4f,contact-.5f,1.1f,0xff76838c);
-            p.line(x-2.4f,contact+.7f,x+2.4f,contact+.7f,.7f,VisualStyle.GOLD);
-        }
-    }
-    public static void push(Painter p,Body barge,int tick) {
-        float contact=barge.y-barge.half-barge.radius;
-        // A short traveling pressure cue under the coupling points toward the load.
-        for(int i=0;i<3;i++) {
-            float phase=((tick+i*12)%54)/54f;
-            float x=barge.x-barge.radius-3,y=contact-8+phase*15;
-            int color=((int)(190*(1-phase))<<24)|0xffdd85;
-            p.line(x-1.8f,y-2,x,y,1,color);p.line(x+1.8f,y-2,x,y,1,color);
-        }
-        // Small bow splashes rise and fall rather than blinking on/off.
-        for(int side=-1;side<=1;side+=2) for(int i=0;i<6;i++) {
-            float t=((tick+i*11)%66)/66f;
-            float x=barge.x+side*(barge.radius*.7f+t*7);
-            float y=barge.y+barge.half+barge.radius*.45f-t*8;
-            p.circle(x+sin(t*Math.PI)*3,y,1.1f-t*.6f,((int)(170*(1-t))<<24)|0xeefff5);
-        }
-    }
-    private static void arc(Painter p,float x,float y,float rx,float ry,float start,float end,float width,int color) {
-        for(int i=1;i<=18;i++) {
-            float a=start+(end-start)*(i-1)/18,b=start+(end-start)*i/18;
-            float xx=x+(float)StrictMath.cos(a)*rx,yy=y+sin(a)*ry;
-            float dx=x+(float)StrictMath.cos(b)*rx-xx,dy=y+sin(b)*ry-yy,len=Physics.length(dx,dy);
-            p.waterFoam(xx+dx*.5f,yy+dy*.5f,dx,dy,-dy/len*width*5,dx/len*width*5,
-                    y*.07f+i*.7f,5,(color>>>24)/255f);
-        }
+        for(int side=-1;side<=1;side+=2)patch(p,b,side*b.radius*.45f,b.half+b.radius*.6f,
+            side*11,-8,5,4,WaterFoam.phase(tick,side),4,.55f);
     }
 }
