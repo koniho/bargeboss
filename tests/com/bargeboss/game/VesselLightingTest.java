@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Light placement follows actual frame blending, camera yaw and wave bob. */
+/** Lights ease between registered poses; occlusion still follows actual hull blending. */
 public final class VesselLightingTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
@@ -14,6 +14,9 @@ public final class VesselLightingTest {
                 float wa=TugLightArt.visible(light,sprite.a)?1-sprite.blend:0,wb=TugLightArt.visible(light,sprite.b)?sprite.blend:0,total=wa+wb;
                 check(near(total,TugLightArt.opacity(light,angle,river)),"fixture visibility uses actual source frame weights");
                 if(total<=0)continue;
+                float positionBlend=SpriteAtlas.attachmentBlend(angle);
+                wa=TugLightArt.visible(light,sprite.a)?1-positionBlend:0;
+                wb=TugLightArt.visible(light,sprite.b)?positionBlend:0;total=wa+wb;
                 for(boolean vertical:new boolean[]{false,true}) {
                     float a=vertical?TugLightArt.v(light,sprite.a)-TugArt.pivotY(sprite.a):TugLightArt.u(light,sprite.a)-TugArt.pivotX(sprite.a);
                     float b=vertical?TugLightArt.v(light,sprite.b)-TugArt.pivotY(sprite.b):TugLightArt.u(light,sprite.b)-TugArt.pivotX(sprite.b);

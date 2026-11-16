@@ -128,7 +128,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        check(Parity.signature().equals("ad11a073:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Navigation-sector overlap and eased light/exhaust anchors intentionally change the visual trace.
+        check(Parity.signature().equals("24ed6922:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

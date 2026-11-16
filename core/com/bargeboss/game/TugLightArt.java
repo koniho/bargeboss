@@ -35,7 +35,7 @@ public final class TugLightArt {
         return (visible(light,a)?1-t:0)+(visible(light,b)?t:0);
     }
     public static float offset(int light,float angle,boolean river,boolean vertical) {
-        int a=frame(angle,river),b=(a+1)%32;float t=blend(angle);
+        int a=frame(angle,river),b=(a+1)%32;float t=SpriteAtlas.attachmentBlend(angle);
         float wa=visible(light,a)?1-t:0,wb=visible(light,b)?t:0,total=wa+wb;
         if(total==0)return 0;
         float pa=vertical?V[light][a]-TugArt.pivotY(a):U[light][a]-TugArt.pivotX(a);

@@ -113,10 +113,17 @@ public final class SpriteAtlas {
     public static float sourceBottom(int atlas,int frame) { if(SurfaceLightArt.atlas(atlas))return (frame/8+1)/(float)SurfaceLightArt.rows(atlas); if(atlas==FOAM)return (frame/2+1)/2f; if(ShadowArt.atlas(atlas))return (frame/ShadowArt.columns(atlas)+1)/(float)ShadowArt.rows(atlas); if(atlas==CHIMNEYS) return 1; if(atlas==TUTORIAL_SCENERY) return (frame/2+1)/2f; if(atlas==STATIC_HARBOR) return 1; if(singleSheet(atlas)) return (frame/8+1)/4f; if(atlas==WATER) return 1; if(arcade(atlas)) return (arcadeCell(atlas,frame)/4+1)/3f; if(atlas>=TITLE_BACKDROP) return atlas==TITLE_VESSELS && frame==0?540/1024f:1; return atlas>=WATER?region(atlas,frame)[3]/908f:(sourceFrame(atlas,frame)/4+1)/4f; }
     public static float artWidth(int atlas,int frame) { if(atlas==LAND_MARKER)return LandMarkerArt.SIZE; if(atlas==BUOY)return BuoyArt.MARKER_SIZE; if(atlas==GROUND) return GroundArt.SIZE; if(atlas==FACTORY) return FactoryArt.size(frame); if(atlas==CHIMNEYS) return ChimneyArt.WORLD_SIZE; if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.size(frame); if(atlas==STATIC_HARBOR) return 144; if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[2]-r[0])*688f/1732; }
     public static float artHeight(int atlas,int frame) { if(atlas==LAND_MARKER)return LandMarkerArt.SIZE; if(atlas==BUOY)return BuoyArt.MARKER_SIZE; if(atlas==GROUND) return GroundArt.SIZE; if(atlas==FACTORY) return FactoryArt.size(frame); if(atlas==CHIMNEYS) return ChimneyArt.WORLD_SIZE; if(atlas==TUTORIAL_SCENERY) return TutorialSceneryArt.size(frame); if(atlas==STATIC_HARBOR) return 144; if(atlas==WATER) return 300; if(arcade(atlas)) return 100; int[] r=region(atlas,frame); return (r[3]-r[1])*688f/1732; }
+    /** Position-only easing between adjacent authored effect anchors. Full-sector
+     * smoothstep keeps attachments moving outside the hull's brief image crossfade.
+     * Pure heading evaluation: paused/repeated draws never integrate hidden state. */
+    public static float attachmentBlend(float angle) {
+        float heading=angle/STEP,t=heading-(float)StrictMath.floor(heading);
+        return t*t*(3-2*t);
+    }
     public static float stackOffset(float angle,boolean river,boolean vertical) {
         float heading=angle/STEP;int whole=(int)StrictMath.floor(heading);
         int a=((whole+(river?RiverCamera.DIRECTION_OFFSET:0))%32+32)%32,b=(a+1)%32;
-        float blend=Physics.clamp((heading-whole-.4f)*5,0,1);blend=blend*blend*(3-2*blend);
+        float blend=attachmentBlend(angle);
         float first=vertical?(TugArt.stackY(a)-pivotY(TUG,a))*heightScale(TUG,a):(TugArt.stackX(a)-pivotX(TUG,a))*widthScale(TUG,a);
         float next=vertical?(TugArt.stackY(b)-pivotY(TUG,b))*heightScale(TUG,b):(TugArt.stackX(b)-pivotX(TUG,b))*widthScale(TUG,b);
         return first+(next-first)*blend;

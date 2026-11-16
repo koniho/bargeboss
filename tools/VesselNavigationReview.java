@@ -37,5 +37,22 @@ public final class VesselNavigationReview {
         }
         graphics.dispose();ImageIO.write(out,"png",new File("out/vessel-navigation-"+(tug?"tugs":"barges")+".png"));
     }
-    public static void main(String[] args)throws Exception {registration(true);registration(false);sheet(true);sheet(false);System.out.println("Vessel navigation sheets exported to out/");}
+    private static void turns()throws Exception {
+        File directory=new File("out/animation-frames/vessel-navigation-turns");directory.mkdirs();
+        Game game=new Game();
+        for(int frame=0;frame<128;frame++) {
+            BufferedImage out=new BufferedImage(720,360,BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics=out.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+            Painter painter=new DesktopPainter(graphics);painter.rect(0,0,720,360,0xff061d27);game.visualTicks=frame*3;
+            for(int craft=0;craft<2;craft++) {
+                float heading=frame*(float)(StrictMath.PI/64),scale=3.5f;
+                RiverCamera origin=new RiverCamera(0,0,scale);
+                RiverCamera camera=new RiverCamera(180+craft*360-origin.screenX(300,500),235-origin.screenY(300,500),scale);
+                Body body=new Body(craft==0?0:3,craft==0?-1:2,300,500,heading);body.floatingInitialized=true;body.engineLoad=.35f;
+                VesselView.draw(game,new RiverPainter(painter,camera),body,craft==0,false);
+            }
+            graphics.dispose();ImageIO.write(out,"png",new File(directory,String.format("%04d.png",frame)));
+        }
+    }
+    public static void main(String[] args)throws Exception {registration(true);registration(false);sheet(true);sheet(false);if(args.length>0 && args[0].equals("--turns"))turns();System.out.println("Vessel navigation sheets exported to out/");}
 }

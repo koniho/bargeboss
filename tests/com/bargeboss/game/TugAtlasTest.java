@@ -17,15 +17,28 @@ public final class TugAtlasTest {
             check(near(SpriteAtlas.widthScale(0,frame),SpriteAtlas.heightScale(0,frame))
                     && near(SpriteAtlas.widthScale(0,frame),SpriteAtlas.widthScale(0,0)),"one uniform scale for all directions");
         }
-        // Compare the smoke transform to the frame weights actually sent to a host.
+        // Smoke eases between the same registered source cells across the whole sector.
         for(boolean river:new boolean[]{false,true}) for(int i=-64;i<=128;i++) {
             float angle=i*(float)Math.PI/64;
             Capture capture=new Capture();Painter painter=river?new RiverPainter(capture):capture;
             SpriteAtlas.draw(painter,0,angle,300,500,90,90,1);
-            float x=offset(capture.a,false)*(1-capture.blend)+offset(capture.b,false)*capture.blend;
-            float y=offset(capture.a,true)*(1-capture.blend)+offset(capture.b,true)*capture.blend;
+            float blend=SpriteAtlas.attachmentBlend(angle);
+            float x=offset(capture.a,false)*(1-blend)+offset(capture.b,false)*blend;
+            float y=offset(capture.a,true)*(1-blend)+offset(capture.b,true)*blend;
             check(near(x,SpriteAtlas.stackOffset(angle,river,false)) && near(y,SpriteAtlas.stackOffset(angle,river,true)),
                     "smoke follows the rendered cell and registration through camera yaw and wrap");
+        }
+        float step=(float)(Math.PI/16);
+        check(near(SpriteAtlas.attachmentBlend(step*.25f),.15625f) && near(SpriteAtlas.attachmentBlend(step*.75f),.84375f),
+                "attachments move during both held-sprite portions, not just the short image blend");
+        for(boolean river:new boolean[]{false,true})for(int frame=-32;frame<=64;frame++) {
+            float angle=frame*step;
+            for(boolean vertical:new boolean[]{false,true}) {
+                check(Math.abs(SpriteAtlas.stackOffset(angle-.00001f,river,vertical)-SpriteAtlas.stackOffset(angle+.00001f,river,vertical))<.00002f,
+                    "smoke position is continuous across every pose seam and angle wrap");
+                check(Math.abs(TugLightArt.offset(0,angle-.00001f,river,vertical)-TugLightArt.offset(0,angle+.00001f,river,vertical))<.00002f,
+                    "mast navigation/work lamp position is continuous across every pose seam");
+            }
         }
         System.out.println(checks+" production tug atlas and smoke attachment assertions passed");
     }
