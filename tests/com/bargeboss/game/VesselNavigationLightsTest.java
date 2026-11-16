@@ -6,6 +6,7 @@ public final class VesselNavigationLightsTest {
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     private static boolean near(float a,float b){return Math.abs(a-b)<.002f;}
     public static void run(){
+        bargeModes();
         float view=(float)(StrictMath.PI*.75);
         check(VesselNavigationLights.visibility(view-(float)Math.PI/2,1)==1 && VesselNavigationLights.visibility(view-(float)Math.PI/2,0)==0,"starboard view shows green, not port red");
         check(VesselNavigationLights.visibility(view+(float)Math.PI/2,0)==1 && VesselNavigationLights.visibility(view+(float)Math.PI/2,1)==0,"port view shows red, not starboard green");
@@ -71,6 +72,42 @@ public final class VesselNavigationLightsTest {
             check(x>=Physics.LEFT-.002f && x<=Physics.RIGHT+.002f,"colored water reflection is clipped at the physical bank");
         }
         System.out.println(checks+" navigation light sectors, orientation, bob, coverage, clipping and purity assertions passed");
+    }
+    private static void bargeModes(){
+        int pulses=0;float previous=0;
+        for(int tick=0;tick<3600;tick++){
+            float power=VesselNavigationLights.specialPulse(tick);
+            if(previous==0 && power>0)pulses++;
+            check(power>=0 && power<=1,"flasher bounded");
+            check(Math.abs(power-previous)<.101f,"pulse eases without hard switching");
+            check(near(power,VesselNavigationLights.specialPulse(tick+60)),"one-second pulse repeats exactly");
+            previous=power;
+        }
+        check(pulses==60,"60 eased flashes per minute");
+        check(VesselNavigationLights.specialPulse(0)==0 && VesselNavigationLights.specialPulse(15)==1 && VesselNavigationLights.specialPulse(45)==0,"rise, peak, fall and dark interval");
+        for(int end:new int[]{-1,1})for(int frame=0;frame<32;frame++){
+            Game g=new Game();g.reset();g.visualTicks=18;
+            Body b=new Body(1,2,300,500,frame*(float)Math.PI/16);g.cargo[0]=b;
+            g.tug.angle=b.angle+(end<0?(float)Math.PI:0);
+            g.tug.x=b.x-65*(float)StrictMath.cos(g.tug.angle);g.tug.y=b.y-65*(float)StrictMath.sin(g.tug.angle);
+            g.pushing=true;
+            check(VesselNavigationLights.pushedEnd(g,b)==end,"contact identifies leading end at every heading");
+            check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN)==0,"pushing suppresses stern lamp");
+            check(near(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.SPECIAL),VesselNavigationLights.visibility(g.tug.angle,VesselNavigationLights.SPECIAL)),"yellow pulse uses actual leading end sector");
+            g.tug.x-=150*(float)StrictMath.cos(g.tug.angle);g.tug.y-=150*(float)StrictMath.sin(g.tug.angle);
+            check(VesselNavigationLights.pushedEnd(g,b)==0,"distant pickup intent is not pushing");
+            check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.SPECIAL)==0,"no flasher before contact");
+            g.tug.x=b.x+end*70*(float)StrictMath.cos(b.angle);g.tug.y=b.y+end*70*(float)StrictMath.sin(b.angle);
+            check(g.tow.attach(g,b,g.tug),"real tow link attaches");
+            check(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.SPECIAL)==0,"astern tow has no pushed-barge flasher");
+            check(near(VesselNavigationLights.energy(g,b,false,VesselNavigationLights.STERN),VesselNavigationLights.visibility(g.tug.angle,VesselNavigationLights.STERN)),"tow stern sector follows attached leading end");
+            b.lineAttached=true;g.tow.release(g);
+            check(VesselNavigationLights.pushedEnd(g,b)==0,"moored barge cannot show push rig");
+        }
+        Game g=new Game();g.reset();Feeder feeder=g.feeders[0];
+        check(VesselNavigationLights.pushedEnd(g,feeder.load)==1,"NPC inbound load gets push rig even when waiting");
+        Body yacht=new Body(9,0,300,500,0,true);
+        check(VesselNavigationLights.energy(g,yacht,false,VesselNavigationLights.SPECIAL)==0,"yacht remains on yacht running rig");
     }
     private static final class Capture implements Painter {
         int calls,red,green,white,lines;long hash=17;float[][] endpoints=new float[128][4];

@@ -530,3 +530,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   replay signature `f4bd57b2:2:1350`. Debug APK installed successfully and launched
   on the development phone. Review images were copied to Downloads. Native iOS
   XCTest execution remains unverified in this Termux environment.
+
+### Eased pushed-barge navigation pulse (shared Java)
+
+- Added a 60/minute yellow special pulse with smoothstep rise/fall and a dark
+  interval. Lens, existing cached glow and clipped water reflection share energy.
+  No wall-clock animation, new texture family or per-frame pulse allocations.
+- Contact-driven player pushing and inbound NPC feeder loads suppress the stern
+  navigation light and show the forward flasher. Astern towing retains its white
+  sternlight. Leading-end attachment/contact accounts for either barge orientation;
+  yachts keep their rig. Ordinary work lamps remain separate.
+- Render budget stays bounded: the flasher replaces the disabled stern fixture;
+  one five-fixture iteration includes two skipped slots. Push detection uses the
+  existing three-disc hull contact routine and bounded feeder/tow lists. No native
+  FPS improvement is claimed for this visual addition.
+- Validation: 16,779 navigation-light assertions passed (pulse continuity and 60
+  peaks/minute, push/tow mode, all headings, reversed leading ends, yachts, feeder
+  loads, clipping and render purity). All 352 production sprite-anchor positions
+  passed opaque-pixel registration. Reviewed actual renderer pulse-phase sheet;
+  copied to Downloads as `BargeBoss-barge-light-pulse-v1.png`.
+- Full shared checks passed with unchanged replay deliveries/score and reviewed
+  visual signature `94c2697:2:1350`. Native iOS raster/XCTest checks are unavailable
+  on this Termux host; shared behavior is used by all three renderers.
+- Android debug build completed, installed successfully, and launched on the
+  development phone. This round checked rendered artwork and logic, not native
+  frame timing; keep existing performance baselines for comparison.

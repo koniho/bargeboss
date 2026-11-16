@@ -1,24 +1,58 @@
 package com.bargeboss.game;
 
-/** Steady marine running lights shared by player, NPC, title and cargo vessels.
+/** Marine running lights shared by player, NPC, title and cargo vessels.
  * New deck fixtures use body-local XYZ; the mast uses the reviewed source anchor.
  * This is a readable game rig, not a complete vessel-class/length rules model. */
 public final class VesselNavigationLights {
-    public static final int PORT=0,STARBOARD=1,STERN=2,MAST=3;
-    public static final int RED=0xffff4545,GREEN=0xff39f49a,WHITE=0xffe8f4ff;
+    public static final int PORT=0,STARBOARD=1,STERN=2,MAST=3,SPECIAL=4;
+    public static final int RED=0xffff4545,GREEN=0xff39f49a,WHITE=0xffe8f4ff,YELLOW=0xffffcd4b;
     private static final float VIEW_BEARING=(float)(StrictMath.PI*.75),SIDE_ARC=(float)(StrictMath.PI*.625);
     // Elevated-camera readability: two authored heading steps of soft spill past
     // each nominal sector, rather than a single lamp switching at the boundary.
     private static final float CAMERA_OVERLAP=(float)(StrictMath.PI/8);
     private VesselNavigationLights(){}
     public static int count(boolean powered){return powered?4:3;}
-    public static String id(int fixture){return fixture==PORT?"nav-port":fixture==STARBOARD?"nav-starboard":fixture==STERN?"nav-stern":"nav-masthead";}
-    public static int color(int fixture){return fixture==PORT?RED:fixture==STARBOARD?GREEN:WHITE;}
+    private static int count(Body b,boolean powered){return !powered && !b.yacht?5:count(powered);}
+    /** One eased pulse per second (60/min), with a dark interval; fixed-step clock only. */
+    public static float specialPulse(int ticks){
+        int t=Math.floorMod(ticks,60);
+        float x=t<15?t/15f:t<24?1:t<45?(45-t)/21f:0;
+        return x*x*(3-2*x);
+    }
+    /** Leading end of a pushed barge, or zero. Contact is required, not just pickup intent. */
+    public static int pushedEnd(Game g,Body b){
+        if(b.yacht || b.lineAttached || g.tow.incoming(b)!=null)return 0;
+        for(Feeder f:g.feeders)if(f.phase==Feeder.INBOUND && f.load==b)return 1;
+        if(g.tug==null || !(g.pushing || g.navigating && !g.reversing) || !Physics.touching(g.tug,b,3))return 0;
+        float dx=b.x-g.tug.x,dy=b.y-g.tug.y;
+        if(dx*(float)StrictMath.cos(g.tug.angle)+dy*(float)StrictMath.sin(g.tug.angle)<=0)return 0;
+        return dx*(float)StrictMath.cos(b.angle)+dy*(float)StrictMath.sin(b.angle)>=0?1:-1;
+    }
+    private static int forwardEnd(Game g,Body b,int pushed){
+        if(b.yacht)return 1;
+        Towline line=g.tow.incoming(b);
+        return line!=null?(line.cargoEnd>=0?1:-1):pushed==0?1:pushed;
+    }
+    private static float energy(Body b,boolean powered,int fixture,int pushed,int end,int ticks){
+        if(!powered && fixture==MAST)return 0;
+        if(fixture==SPECIAL && (powered || b.yacht || pushed==0))return 0;
+        if(fixture==STERN && pushed!=0)return 0;
+        float heading=b.angle+(end<0?(float)StrictMath.PI:0);
+        return visibility(heading,fixture)*(fixture==SPECIAL?specialPulse(ticks):1);
+    }
+    public static float energy(Game g,Body b,boolean powered,int fixture){
+        int pushed=powered?0:pushedEnd(g,b);
+        return energy(b,powered,fixture,pushed,powered?1:forwardEnd(g,b,pushed),g.visualTicks);
+    }
+    public static String id(int fixture){return fixture==PORT?"nav-port":fixture==STARBOARD?"nav-starboard":fixture==STERN?"nav-stern":fixture==SPECIAL?"nav-special-flasher":"nav-masthead";}
+    public static int color(int fixture){return fixture==PORT?RED:fixture==STARBOARD?GREEN:fixture==SPECIAL?YELLOW:WHITE;}
     public static float localX(Body b,int fixture){if(b.yacht)return fixture==STERN?-52.8f:26.4f;return fixture==STERN?-(b.half+b.radius*.65f):fixture==MAST?0:b.half+b.radius*.12f;}
     public static float localY(Body b,int fixture){if(b.yacht)return fixture==PORT?-9.9f:fixture==STARBOARD?9.9f:0;return fixture==PORT?-b.radius*.65f:fixture==STARBOARD?b.radius*.65f:0;}
     public static float height(int fixture){return fixture==MAST?28:6;}
-    public static float worldX(Body b,int fixture){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.x+localX(b,fixture)*c-localY(b,fixture)*s;}
-    public static float worldY(Body b,int fixture){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.y+localX(b,fixture)*s+localY(b,fixture)*c;}
+    public static float worldX(Body b,int fixture){return worldX(b,fixture,1);}
+    private static float worldX(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.x+end*(localX(b,fixture)*c-localY(b,fixture)*s);}
+    public static float worldY(Body b,int fixture){return worldY(b,fixture,1);}
+    private static float worldY(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.y+end*(localX(b,fixture)*s+localY(b,fixture)*c);}
     /** Independent, overlapping lamp visibility; never choose a single winning fixture. */
     public static float visibility(float heading,int fixture){
         float bearing=Physics.angle(VIEW_BEARING-heading),value;
@@ -49,12 +83,14 @@ public final class VesselNavigationLights {
     public static void draw(Game g,Painter p,Body b,boolean powered,float bob,boolean nearCargo){
         boolean river=p instanceof RiverPainter;RiverCamera c=river?((RiverPainter)p).camera:null;
         Painter canvas=river?((RiverPainter)p).canvas():p;float scale=river?c.scale:1;
-        for(int fixture=0;fixture<count(powered);fixture++){
-            float visible=visibility(b.angle,fixture);if(visible<=0)continue;
-            float wx=worldX(b,fixture),wy=worldY(b,fixture);
+        int pushed=powered?0:pushedEnd(g,b),end=powered?1:forwardEnd(g,b,pushed);
+        for(int fixture=0;fixture<count(b,powered);fixture++){
+            float visible=energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
+            float wx=worldX(b,fixture,end),wy=worldY(b,fixture,end);
             boolean near=river?c.screenY(wx,wy)>=c.screenY(b.x,b.y):wy>=b.y;
             if(!powered && !b.yacht && near!=nearCargo)continue;
-            float x=river?screenX(b,fixture,powered,c):wx,y=river?screenY(b,fixture,powered,c,bob):wy-height(fixture)-bob;
+            float x=river?c.screenX(wx,wy):wx,y=river?c.screenY(wx,wy)-((b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture))*.81649658f+bob)*scale:wy-height(fixture)-bob;
+            if(powered && fixture==MAST && river){x=screenX(b,fixture,true,c);y=screenY(b,fixture,true,c,bob);}
             // Newly modeled housings are distinct from painted warm work lamps.
             if(fixture!=MAST)canvas.rect(x-1.8f*scale,y-1.6f*scale,3.6f*scale,3.8f*scale,alpha(0xff101e28,visible,220));
             glow(canvas,x,y,scale,visible,color(fixture),g.visualTicks,fixture);
@@ -64,9 +100,10 @@ public final class VesselNavigationLights {
     public static void reflections(Game g,Painter p,Body b,boolean powered){
         if(!(p instanceof RiverPainter))return;
         RiverCamera c=((RiverPainter)p).camera;Painter water=new WaterEffectsPainter(g,p);
-        for(int fixture=0;fixture<count(powered);fixture++){
-            float visible=visibility(b.angle,fixture);if(visible<=0)continue;
-            float x=c.screenX(worldX(b,fixture),worldY(b,fixture)),y=c.screenY(worldX(b,fixture),worldY(b,fixture));
+        int pushed=powered?0:pushedEnd(g,b),end=powered?1:forwardEnd(g,b,pushed);
+        for(int fixture=0;fixture<count(b,powered);fixture++){
+            float visible=energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
+            float x=c.screenX(worldX(b,fixture,end),worldY(b,fixture,end)),y=c.screenY(worldX(b,fixture,end),worldY(b,fixture,end));
             for(int i=0;i<5;i++){
                 float phase=g.visualTicks*.04f+fixture*1.7f+i*.9f;
                 float drift=(float)StrictMath.sin(phase)*1.5f*c.scale;

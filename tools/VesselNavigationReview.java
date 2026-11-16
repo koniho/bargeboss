@@ -12,8 +12,9 @@ public final class VesselNavigationReview {
         for(int f=0;f<32;f++){
             Body body=new Body(tug?0:1,tug?-1:2,300,500,(f-RiverCamera.DIRECTION_OFFSET)*(float)(StrictMath.PI/16));
             float size=2*(body.half+body.radius)/(tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION),spriteScale=tug?TugArt.SCALE:BargeArt.HULL_SCALE;
-            for(int k=0;k<3;k++){
-                float dx=VesselNavigationLights.worldX(body,k)-body.x,dy=VesselNavigationLights.worldY(body,k)-body.y;
+            for(int end=tug?1:-1;end<=1;end+=2)for(int index=0;index<(tug?3:4);index++){
+                int k=index==3?VesselNavigationLights.SPECIAL:index;
+                float dx=end*(VesselNavigationLights.worldX(body,k)-body.x),dy=end*(VesselNavigationLights.worldY(body,k)-body.y);
                 float u=(tug?TugArt.pivotX(f):BargeArt.pivotX(false,f))+RiverCamera.Q*(dx+dy)/(size*spriteScale);
                 float v=(tug?TugArt.pivotY(f):BargeArt.pivotY(false,f))+(RiverCamera.Q*RiverCamera.DEPTH*(dy-dx)-VesselNavigationLights.height(k)*.81649658f)/(size*spriteScale);
                 int l=Math.round(source.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),t=Math.round(source.getHeight()*SpriteAtlas.sourceTop(atlas,f));
