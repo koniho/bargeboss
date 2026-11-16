@@ -5,10 +5,6 @@ public final class TitleView {
     private TitleView() {}
     private static float sine(double value) { return (float)StrictMath.sin(value); }
     private static float scroll(float value,float period) { return (value%period+period)%period; }
-    private static void strip(Painter p,int atlas,float width,float height,float top,float extent,float drift) {
-        for(float x=-drift;x<extent;x+=width)
-            p.sprite(atlas,0,x+width/2,top+height/2,width,height,0,1);
-    }
     public static float horizon(Game g) {return 260+g.layout.offsetY;}
     public static void background(Game g,Painter p) {
         int tick=g.visualTicks;float horizon=horizon(g);
@@ -18,29 +14,13 @@ public final class TitleView {
         float skyPeriod=skyWidth*.88f;
         float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyPeriod);
         sky(p,skyWidth,skyHeight,g.layout.width,skyDrift);
+        p.rect(0,0,g.layout.width,horizon,0x7609192b);
         Painter water=TitleWaterView.perspective(p,horizon,g.layout.height);
         WaveView.draw(water,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
         float sun=scroll(skyWidth*.73f-skyDrift,skyPeriod);
         for(float x=sun-skyPeriod;x<g.layout.width;x+=skyPeriod) reflections(water,tick,x,horizon,g.layout.height);
     }
-    private static void shore(Game g,Painter p) {
-        int tick=g.visualTicks;float horizon=horizon(g);
-        // A separate transparent bridge/industrial shore passes in front of the
-        // distant city. No close quay or bottom bank encloses the foreground water.
-        float harborWidth=690,harborHeight=harborWidth/3;
-        float harborDrift=scroll(harborWidth*.61f-(420+g.layout.offsetX)+tick*.19f,harborWidth);
-        coast(p,harborWidth,horizon+40,g.layout.width,harborDrift);
-        strip(p,SpriteAtlas.TITLE_HARBOR,harborWidth,harborHeight,horizon+40-harborHeight*.92f,
-                g.layout.width,harborDrift);
-    }
-    private static void coast(Painter p,float period,float shore,float extent,float drift) {
-        for(float x=-drift;x<extent;x+=period) {
-            p.sprite(SpriteAtlas.TITLE_LAND,0,x+period*.13f,shore-6,235,235*4/3f,0,1);
-            p.sprite(SpriteAtlas.TITLE_LAND,1,x+period*.36f,shore-2,190,190*4/3f,0,1);
-            p.sprite(SpriteAtlas.TITLE_LAND,2,x+period*.86f,shore-5,225,225*4/3f,0,1);
-            p.sprite(SpriteAtlas.TITLE_LAND,3,x+period*.02f,shore+43,72,96,0,1);
-        }
-    }
+    private static void shore(Game g,Painter p) {TitleShoreView.draw(g,p);}
     private static void sky(Painter p,float width,float height,float extent,float drift) {
         float overlap=width*.12f,period=width-overlap,slice=overlap/SpriteAtlas.TITLE_SKY_FADE_SLICES;
         // Overlap painted edges with registered alpha slices. This keeps

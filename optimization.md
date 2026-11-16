@@ -1233,3 +1233,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Reverted experiment. These are wall timings, not isolated RenderThread CPU or
   GPU measurements. Existing Perfetto CPU bottleneck remains unresolved.
   Raw local evidence: out/android-profile/matrix-{before,after}{,-repeat}.
+
+## Three-plane title harbor scenery (2026-11-16)
+
+- Replaced old skyline strips with a foreground rock breakwater and beacon-marked
+  entrance, middle truss bridges/pipelines, and distant factory atlas modules.
+  Preserves horizontal loaded convoy and horizon-compressed water effects.
+- 1,120 title assertions and full shared checks pass; native/JVM parity matches
+  abaa466b:2:1350. Release iOS simulator build and native visual review pass.
+  Signed Android build passes with the existing debug key. Review images are in
+  out/title-shore-v3. Android installation pending USB reconnection after matrix
+  profiling; the phone still has the isolated matrix candidate installed.
+- No title FPS improvement claimed. Factory frames can still be demand-prepared
+  on cold title entry; current Android preparation API warms whole atlases, while
+  iOS does not consume LevelAssets plans. Exact-frame preparation remains future
+  work rather than introducing a separate native loading change in this round.
