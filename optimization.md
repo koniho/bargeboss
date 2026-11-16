@@ -910,3 +910,33 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   to assign the cause. Do not blame fluid physics or GPU saturation from this
   capture. Next investigation should separately compare emission/noise motion
   and presentation pacing; original arcs were not changed again.
+
+### Industrial shore art and bridge material audit (2026-11-16)
+
+- User requested parallel agents for bollards, loading equipment, trucks and
+  shore tiles using supplied industrial references, then emphasized large
+  steelworks factories and bridge/lock materials. New versioned source PNGs and
+  exact prompts are being kept separate from runtime asset selection. Canonical
+  references and integration notes: `docs/art-studies/industrial-shore-v1/`.
+- Fixed camera target is the real shared 45-degree yaw / 35.264-degree elevation,
+  with 30-degree projected ground axes. Do not treat a requested sheet layout as
+  verified runtime registration. Generated cell dimensions, alpha gutters and
+  intended pivots are recorded separately; trucks are static opposing views,
+  not an animation family. Shore modules need seam and raised-ground split review.
+- Bridge/lock audit: `ArticulatedModel.Poly.paint` currently assigns a single lit
+  RGB per face; `BridgeModel` and `LockView` already have suitable rigid geometry.
+  Keep pivots and BSP ordering. A future surface-material polygon primitive needs
+  part-local UVs interpolated through BSP clipping, opaque rust/paint/grime
+  shading, and shared water-level inputs. Existing effect patches do not provide
+  this surface-mapping contract. Avoid screen-space noise that swims as parts move.
+- These source additions are not selected by runtime manifests and introduce no
+  active texture/cache cost. Before enabling them, crop retained frames, declare
+  assets in shared manifests, bound caches, verify foreground shore coverage and
+  compare native frames/timing. Alpha/image audits are not native runtime
+  validation. No Android phone use in this asset round.
+- Completed five source PNGs: six bollards/fittings, four loading props, four
+  empty/loaded truck views, six shore modules, and a large steelworks complex.
+  Inspected generated subjects and audited real alpha rather than relying on
+  inline RGB previews. Prompts document small alpha residue and unregistered
+  pivots. No runtime code or selected artwork was changed in this asset round;
+  app builds/device checks were not repeated for these unreferenced sources.
