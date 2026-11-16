@@ -14,6 +14,7 @@ vertex Raster bbVertex(uint index [[vertex_id]], const device Vertex *vertices [
 }
 fragment float4 bbFragment(Raster v [[stage_in]], texture2d<float> image [[texture(0)]]) {
     constexpr sampler sampling(coord::normalized,address::clamp_to_edge,filter::linear);
+    if(v.kind>=40) return v.color*effectCoverage(v.uv,float(v.kind-37),v.detail,v.phase);
     if(v.kind>=32) return v.color*foamCoverage(v.uv,v.phase,float(v.kind-24));
     if(v.kind==30) { float4 t=image.sample(sampling,v.uv); return v.color*t.a*boatSurfaceLight(t.rgb/max(t.a,.001f),v.uv,v.light.xyz,v.light.w); }
     if(v.kind>=20) return v.color*shorelineCoverage(v.uv,v.phase,v.detail,float(v.kind-20));

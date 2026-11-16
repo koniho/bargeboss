@@ -523,3 +523,16 @@ stroke submissions. Pulse comes only from shared `visualTicks`. Rings and slip
 corners project through `RiverPainter`; destination and gate arrows now construct
 their heads in that plane too, including screen-edge direction cues. Labels remain
 in the HUD. Glow widths stay bounded across zoom, while interiors stay open.
+
+## Arcade direction arrows
+
+Gameplay arrows are filled, glowing planes projected through `RiverCamera`, not
+screen-stroked HUD arrows. `WorldArrows` collects the existing shared cue rules
+before scene drawing, sorts by each arrow's ground-plane midpoint, and merges
+with the Montrose and Calumet depth passes. This includes steering, destination,
+training and mooring arrows. The later overlay pass suppresses duplicates;
+labels remain screen aligned. Collection is bounded and cleared in `finally`.
+Long arrows spanning several hull depths currently use one midpoint; split them
+if a scene requires different parts to straddle a hull, as with towline spans.
+Follow [gameplay highlight guidelines](../art-direction/gameplay-highlights.md)
+for saturated cores, segmentation and visual hierarchy.

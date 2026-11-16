@@ -1,4 +1,4 @@
-# Quiet gameplay guidance and shoreline depth
+# Gameplay guidance and shoreline depth
 
 See [the full drawing-order contract](../rendering/drawing-order.md) for the
 authoritative surface, height, orientation, clipping and fading rules.
@@ -12,11 +12,10 @@ land coverage from vessels and ropes; cap sorting alone cannot hide a hull
 that projects over the bank. Only eligible buildings whose painted
 silhouettes actually obscure watercraft fade; shorelines are not buildings.
 
-`SoftCue` defines the shared gameplay guidance style: translucent feathered
-strokes, unfilled arrowheads, diffuse dots and slow visual-clock breathing.
-Stroke widths stay thin through docking zoom. Rings leave their centers empty;
-colors and progress fractions still communicate target and hold state. Cached
-hull bloom breathes at a restrained opacity rather than flashing opaque gold.
+The visual style is now governed by [gameplay highlight guidelines](../art-direction/gameplay-highlights.md).
+The former thin strokes, unfilled arrows and pale/white centers are superseded:
+use saturated neon cores, broader broken outlines, filled planar arrows and soft
+colored glow. `WorldArrows` merges arrows with world depth. Rings keep empty centers.
 
 Reduce competing instructions as well as their opacity: only the current
 training buoy has a ring, the idle tug has no permanent ring, steering replaces
@@ -25,7 +24,7 @@ finger demonstration. Only the closest actionable barge shows a readiness
 label. Physical ropes, machinery and UI instructions keep their readable form.
 
 `SceneCueTest` checks shoreline/vessel/factory ordering across tutorial phases and
-viewport sizes, transparent open guidance and bounded stroke thickness.
+viewport sizes, saturated guidance, planar arrow ordering and bounded stroke thickness.
 `SoftCueReview` exports wide-phone driving, pushing and lasso captures through
 the real shared renderer. The full render-budget checks remain enabled.
 

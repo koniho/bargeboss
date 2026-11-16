@@ -258,7 +258,7 @@ static vector_float4 BBColor(jint argb) {
 }
 - (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
     vector_float4 color=BBColor(argb);if(color.w<=0 || amount<=0)return;self.materialPatches++;
-    vector_float2 a={ax,ay},b={bx,by},p=(vector_float2){x,y}-(a+b)*.5f;uint32_t mode=11+kind;
+    vector_float2 a={ax,ay},b={bx,by},p=(vector_float2){x,y}-(a+b)*.5f;uint32_t mode=kind>=3?37+kind:11+kind;
     BBVertex v[]={{p,{0,0},color,mode,amount,detail},{p+a,{1,0},color,mode,amount,detail},{p+b,{0,1},color,mode,amount,detail},
         {p+a,{1,0},color,mode,amount,detail},{p+a+b,{1,1},color,mode,amount,detail},{p+b,{0,1},color,mode,amount,detail}};
     [self append:v count:6 texture:self.white mode:0];

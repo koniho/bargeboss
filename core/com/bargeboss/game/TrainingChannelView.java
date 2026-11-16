@@ -36,8 +36,11 @@ public final class TrainingChannelView {
         factoriesAndVessels(g,canvas);
         BridgeView.draw(g,canvas);
         DockView.draw(g,canvas);
+        gateIndicator(g,canvas);
+    }
+    static void gateIndicator(Game g,Painter canvas){RiverCamera c=g.layout.camera;
         if(g.trainingChannel()) {
-            int next=Math.min(gate,TrainingChannel.X.length-1);
+            int next=Math.min(g.tutorial==null?0:g.tutorial.channelGate,TrainingChannel.X.length-1);
             float gx=TrainingChannel.X[next],gy=TrainingChannel.Y[next];
             float sy=c.screenY(gx,gy);
             if(sy<82) {
@@ -131,7 +134,7 @@ public final class TrainingChannelView {
         Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int[] workers=DockWorkers.ordered(g);int[] splashes=g.splashes.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
-            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<2 || prop<CalumetArt.count() || crew<workers.length) {
+            while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<2 || prop<CalumetArt.count() || crew<workers.length || WorldArrows.pending()) {
                 float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
                 float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
                 float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
@@ -141,6 +144,8 @@ public final class TrainingChannelView {
                 float gd=gateIndex<2?LockView.gateDepth(g,gateIndex):Float.MAX_VALUE;
                 float pd=prop<CalumetArt.count()?CalumetArt.depth(g,prop):Float.MAX_VALUE;
                 float wd=crew<workers.length?DockWorkers.depth(g,workers[crew]):Float.MAX_VALUE;
+                float ad=WorldArrows.depth();
+                if(WorldArrows.pending()&&ad<=Math.min(next,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))))))){WorldArrows.draw(world);continue;}
                 float other=Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))));
                 if(gd<=other && gd<=pd && gd<=wd && gd<=next){LockView.drawGate(g,g.lock,canvas,gateIndex++);continue;}
                 if(pd<=other && pd<=wd && pd<=next){CalumetArt.draw(g,canvas,prop++);continue;}

@@ -1447,3 +1447,35 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   `docs/performance/point-lights-2026-11-16`; raw CSVs retained in ignored `out/`.
   Still not locked 60 FPS. Four-source cutoff, center-tested navigation sectors,
   no cabin self-shadow maps, and filtered normal seams remain approximations.
+
+## 2026-11-16: saturated arcade guides and planar arrow ordering
+
+- Replaced pale/white cue cores with saturated yellow, cyan, green, red and violet
+  families. Guide core widths are doubled (5.6–9 reference units before zoom
+  compensation). Rings and target borders are segmented, with empty centers,
+  same-color shoulders/glow and simulation-clock breathing. Montrose's slip is a
+  full dashed rectangle rather than dock-like isolated corner strokes.
+- Filled arrows project all corners and feathering in the water plane. A bounded
+  16-arrow thread-local queue collects existing shared cue rules against a no-op
+  painter and merges with watercraft/scenery in both depth sorters. The later
+  overlay pass suppresses duplicates. No gameplay mutation or wall-clock animation.
+  Current sorting uses arrow midpoint, not per-fragment depth; very long arrows
+  spanning multiple hull depths would need subdivision. The cue prepass has CPU
+  cost and must be measured, not described as free.
+- Shared `effects.inc` has single-patch arrow and dashed-line materials on AGSL
+  and Metal. A long border no longer requires three native strokes per dash;
+  dashed rings retain three bounded material passes. No new textures or render
+  targets. Reference/older painters use projected polygons and segmented strokes;
+  their feathering differs from shader pixels.
+- `SceneCueTest` now verifies saturated palettes, doubled/bounded widths, planar
+  arrows ahead of and behind the tug in both environments, and cleanup after a
+  frame. Full checks pass; 1,439,937 all-heading hull/cargo shoreline assertions
+  and 197,334 foam/splash assertions pass. JVM/J2ObjC parity `a13d1f49:2:1350`.
+  Android and iOS Metal builds pass; final Metal simulator pixels reviewed.
+  Android installed/launched successfully, but the phone changed to another app
+  before a final visual/profile check completed. The overwritten capture contains
+  zero sample frames and is rejected; do not reuse the prior lighting timings as
+  neon-guide results. Final Android pixel/timing validation remains pending.
+- Added `docs/art-direction/gameplay-highlights.md`, linked from `AGENTS.md` and
+  the drawing-order contract. It cites verified Valve readability guidance and
+  separates those principles from the user's Barge Boss arcade style decisions.

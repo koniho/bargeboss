@@ -9,6 +9,9 @@ the same `Painter`. Do not add a second game implementation for any platform.
   unless the user explicitly requests another ambience. Docks should appear almost
   dark; keep shore/scenery subdued and cool, with warm lamps/windows and navigation
   lights supplying localized contrast. Preserve readable vessels, goals and controls.
+- Follow [gameplay highlight guidelines](docs/art-direction/gameplay-highlights.md) for
+  arcade guidance: saturated colored cores, broad segmented outlines, soft glow,
+  and projected arrows sorted with watercraft. Keep them distinct from scenery.
 - Push completed, checked development increments as work progresses; do not hold
   unrelated completed changes until a large batch is finished.
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area
