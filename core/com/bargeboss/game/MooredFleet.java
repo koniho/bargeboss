@@ -18,7 +18,10 @@ public final class MooredFleet {
         }
     }
     FloatBoat[] boats=new FloatBoat[0];int[] order=new int[0];private final float[] force=new float[2];
-    public void reset(Game g){int count=g.montroseStage()?MooredBoats.BERTHS.length:0;boats=new FloatBoat[count];order=new int[count];for(int i=0;i<count;i++){boats[i]=new FloatBoat(MooredBoats.BERTHS[i]);order[i]=i;}}
+    public void reset(Game g){java.util.ArrayList<FloatBoat> list=new java.util.ArrayList<FloatBoat>();
+        if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b))list.add(new FloatBoat(b));
+        boats=list.toArray(new FloatBoat[list.size()]);order=new int[boats.length];for(int i=0;i<order.length;i++)order[i]=i;
+    }
     FloatBoat sorted(int i){return i<order.length?boats[order[i]]:null;}
     public void step(Game g){if(!g.montroseStage())return;
         for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];float dx=b.x-b.berth.x,dy=b.y-b.berth.y;

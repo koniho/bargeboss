@@ -9,7 +9,7 @@ public final class CareerTest {
         System.out.println(assertions+" challenge, rank and progress persistence assertions passed");
     }
     private static void challengeRules() {
-        check(Challenges.COUNT==6 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
+        check(Challenges.COUNT==8 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
         check(Challenges.quota(1)==3 && Challenges.quota(2)==2 && Challenges.quota(3)==3,"shared slip and deep channel use three loads; lock passage uses two");
         check(Challenges.stars(0,1,0,100)==0 && Challenges.stars(0,2,0,0)==0,"incomplete goal or wreck earns no stars");
         check(Challenges.stars(0,2,1,79)==1 && Challenges.stars(0,2,0,79)==2
@@ -119,9 +119,14 @@ public final class CareerTest {
         finishFixture(game,1,0,100,1200);ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
         check(game.mode==Game.PLAY && game.indianaStage(),"marina completion unlocks Indiana Harbor");
         finishFixture(game,1,0,100,1400);ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
-        check(game.mode==Game.FINISH && game.challengeId==Challenges.INDIANA,"final catalog level has no out-of-range next level");
+        check(game.mode==Game.PLAY && game.challengeId==Challenges.RAFT_RESCUE,"Indiana leads to raft rescue");
+        finishFixture(game,2,0,100,2400);ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
+        check(game.challengeId==Challenges.SWIMMER_RESCUE,"raft rescue leads to swimmer rescue");
+        finishFixture(game,20,0,100,2000);ReplayInput.tap(game,Layout.NEXT_CHALLENGE);
+        check(game.mode==Game.FINISH,"last rescue has no out-of-range next level");
         ReplayInput.tap(game,Layout.FINISH_CHALLENGES);
-        check(game.challengePage==1,"challenge board opens on the selected level page");
+        check(game.challengePage==2,"challenge board opens on the selected rescue page");
+        ReplayInput.tap(game,Layout.CHALLENGE_PREV_PAGE);
         ReplayInput.tap(game,Layout.CHALLENGE_PREV_PAGE);check(game.challengePage==0,"previous page reveals the original three levels");
         ReplayInput.tap(game,Layout.CHALLENGE_NEXT_PAGE);check(game.challengePage==1,"next page reveals appended levels");
         ReplayInput.tap(game,Layout.CHALLENGE_CARDS[0]);check(game.challengeId==3,"page-two card maps to its stable catalog ID");
@@ -133,7 +138,7 @@ public final class CareerTest {
     private static void boundedChallenges() {
         Career unlocks=new Career(); unlocks.record(0,1,1); unlocks.record(1,1,1); unlocks.record(2,1,1);
         for(int id=0;id<Challenges.COUNT;id++) {
-            if(id==Challenges.MONTROSE)continue; // MontroseTest drives the actual towing mission.
+            if(Challenges.kind(id)==Challenges.MONTROSE)continue; // MontroseTest drives the actual towing mission.
             Game game=new Game(); game.restoreProgress(unlocks.save()); game.selectChallenge(id); game.reset();
             for(int i=0;i<game.shiftTicks() && game.mode==Game.PLAY;i++) { ReplayInput.work(game); game.step(); }
             check(game.mode==Game.FINISH && game.ticks<game.shiftTicks(),"bounded player completes the goal before its replay bound "+id);

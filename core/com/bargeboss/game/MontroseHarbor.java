@@ -314,17 +314,20 @@ public final class MontroseHarbor {
         return Math.abs(area)>.0001;
     }
     public void setup(Game g){
+        if(MontroseRescue.active(g)){g.rescue.setup(g);return;}
         g.tug.x=mapX(453);g.tug.y=mapY(1340);g.tug.angle=-(float)Math.PI/2;
         g.cargo[0]=new Body(g.nextId++,2,mapX(453),mapY(1417),-(float)Math.PI/2,true);
         g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+55,Game.TRANSIT_ZOOM*ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
     public String status(Game g){
+        if(MontroseRescue.active(g))return g.rescue.status(g);
         if(!wasTowed)return "DRAG FROM YACHT TO TUG / RELEASE TO LINK";
         if(!entered)return "TOW THROUGH THE RED AND GREEN INLET";
         if(settledTicks>0)return "HOLD STEADY IN THE SLIP";
         return "TOW INTO THE GLOWING SLIP / SLOW TO DOCK";
     }
     public void step(Game g){
+        if(MontroseRescue.active(g)){g.rescue.step(g);return;}
         Body b=g.cargo[0];if(b==null || !b.active || b.deliveryRecorded)return;
         boolean towing=g.tow.connected(b,g.tug);
         if(towing)wasTowed=true;

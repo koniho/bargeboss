@@ -8,6 +8,7 @@ public final class MooredBoats {
         public final float x,y,angle,length,width,ax,ay,bx,by;
         public final int frame,kind;
         final float[] hull;
+        int row=-1,station,side;
         Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by){
             this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
             length=length(kind);width=width(kind);frame=kind*ORIENTATIONS+(Math.round(angle*ORIENTATIONS/(2*(float)Math.PI))+ORIENTATIONS)%ORIENTATIONS;
@@ -32,6 +33,7 @@ public final class MooredBoats {
                 float bx=ax+c*finger,by=ay+s*finger;
                 Berth b=new Berth(x,y,a,orientation,kind,ax,ay,bx,by);boolean valid=true;
                 for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(b.hull[i],b.hull[i+1]))valid=false;
+                b.row=row;b.station=(int)at;b.side=side;
                 if(valid)out.add(b);
             }
         }
@@ -43,7 +45,7 @@ public final class MooredBoats {
         }
         out.sort((a,b)->Float.compare(a.y-a.x,b.y-b.x));return out.toArray(new Berth[out.size()]);
     }
-    public static int count(Game g){return g.montroseStage()?BERTHS.length:0;}
+    public static int count(Game g){return g.montroseStage()?g.mooredFleet.boats.length:0;}
     public static float depth(Game g,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=BERTHS[i];return g.layout.camera.screenY(f==null?b.x:f.x,f==null?b.y:f.y);}
     public static float bob(int ticks,int i){return .35f*(float)StrictMath.sin(ticks*.026+i*1.73);}
     public static void draw(Game g,Painter p,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=f==null?BERTHS[i]:f.berth;

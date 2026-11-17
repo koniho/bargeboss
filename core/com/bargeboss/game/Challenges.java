@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Append-only level catalog. Existing IDs stay stable in saved careers. */
 public final class Challenges {
-    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,PAGE_SIZE=3;
+    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,RAFT_RESCUE=6,SWIMMER_RESCUE=7,PAGE_SIZE=3;
     private static final class Definition {
         final int kind,quota,replaySeconds;
         final String title,description,summary,cardGoal,cardHint;
@@ -24,11 +24,15 @@ public final class Challenges {
         new Definition(MONTROSE,1,600,"MONTROSE HARBOR","TOW AN 80 FT YACHT FROM THE INLET INTO ITS SLIP.",
                 "80 FT YACHT / MARINA TOW","INLET TO WOODEN SLIP","ATTACH / TOW / SETTLE"),
         new Definition(INDIANA,1,900,"INDIANA HARBOR","TOW STEEL THROUGH THE SHIP CANAL TO THE SOUTH MILL.",
-                "STEEL TOW / THE FORKS","OUTER HARBOR TO SOUTH MILL","PASS HICK TOWER / TAKE SOUTH FORK")
+                "STEEL TOW / THE FORKS","OUTER HARBOR TO SOUTH MILL","PASS HICK TOWER / TAKE SOUTH FORK"),
+        new Definition(MONTROSE,2,1200,"RAFTED CRUISERS","SEPARATE TWO RAFTED CRUISERS. TOW BOTH TO DOCK C.",
+                "2 CRUISERS / DOCK C","SEPARATE / TOW / DOCK","RETURN TO C-38 AND C-22"),
+        new Definition(MONTROSE,20,900,"SWIMMER RESCUE","THROW BUOYS TO 20 SWIMMERS OFF THE SEAWALL.",
+                "20 SWIMMERS / KEEP CLEAR","SLOW DOWN / THROW BUOYS","AVOID HULL AND PROPELLER CONTACT")
     };
     public static final int COUNT=LEVELS.length;
     private Challenges() {}
-    public static boolean standalone(int id) {return id==MONTROSE || id==INDIANA;}
+    public static boolean standalone(int id) {return id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
     public static int kind(int id) { return level(id).kind; }

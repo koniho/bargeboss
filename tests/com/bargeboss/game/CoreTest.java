@@ -114,6 +114,7 @@ public final class CoreTest {
         SurfaceLightingTest.run();
         LevelAssetsTest.run();
         MontroseTest.run();
+        MontroseRescueTest.run();
         MontroseGeometryTest.run();
         MontroseShoreTest.run();
         MontroseBoatHoistTest.run();
@@ -156,7 +157,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Reviewed bow/foam shader fallbacks change drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("231ffc43:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("801fa6bb:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

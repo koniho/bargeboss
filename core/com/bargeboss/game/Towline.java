@@ -16,6 +16,7 @@ public final class Towline {
     public float speedFactor(Body tug){return 1/(1+.075f*loadMass(tug));}
     public float pullLoad(Body tug){float sum=0;for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null && l.cargo!=null && l.leader==tug)sum+=l.tension;}return sum;}
     public boolean canAttach(Game g,Body b,Body parent) {
+        if(MontroseRescue.cruisers(g) && (g.rescue.rafted || b!=null && b.deliveryRecorded))return false;
         if(b==null || parent==null || b==parent || b.id<=0 || !b.active || b.lineAttached && !b.deliveryRecorded || incoming(b)!=null || count()>=CAPACITY)return false;
         if(parent!=g.tug && (parent.id<=0 || !parent.active || parent.lineAttached))return false;
         for(Body cursor=parent;cursor!=null;) {if(cursor==b)return false;Towline l=incoming(cursor);cursor=l==null?null:l.leader;}

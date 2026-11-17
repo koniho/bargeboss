@@ -17,7 +17,7 @@ public final class VesselShoreLight {
         for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)vessel(g,p,f.boat,walls);
         if(g.trafficActive())vessel(g,p,g.trafficBoat,walls);
     }
-    private static void vessel(Game g,Painter p,Body b,boolean walls){if(!b.active)return;
+    private static void vessel(Game g,Painter p,Body b,boolean walls){if(!b.active || b.cruiser)return;
         // Warm working lamps, separately colored from red/green/white navigation lamps.
         if(b.berth<0)lamp(g,p,b.x,b.y,22,85,0xffffbc6b,.30f,b.angle,-1,walls);
         else if(!b.yacht)for(int end=0;end<2;end++){float u=VesselLighting.bargeLocalX(b,end);lamp(g,p,b.x+u*(float)StrictMath.cos(b.angle),b.y+u*(float)StrictMath.sin(b.angle),5,42,0xffffbc6b,.16f,b.angle,-1,walls);}

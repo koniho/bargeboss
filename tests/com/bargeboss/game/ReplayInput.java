@@ -24,6 +24,8 @@ public final class ReplayInput {
     }
     public static void work(Game g) {
         if(g.mode!=Game.PLAY || g.ropePhase!=0) return;
+        if(MontroseRescue.swimmers(g)){swimmerRescue(g);return;}
+        if(MontroseRescue.cruisers(g))return; // Dedicated phase fixtures cover raft release and both narrow slips.
         if(g.indianaStage()){indianaTow(g);return;}
         if(g.montroseStage()){marinaTow(g);return;}
         if(g.lockStage()){lockPassage(g);return;}
@@ -105,6 +107,17 @@ public final class ReplayInput {
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
         if(!g.pointer)down(g,g.tug.x,g.tug.y);
         move(g,g.downX+dx/len*52,g.downY+dy/len*52);
+    }
+    private static void swimmerRescue(Game g){
+        if(g.rescue.flying>=0 || g.rescue.cooldown>0)return;
+        int target=-1;for(int col=0;col<10 && target<0;col++)for(int row=0;row<2;row++){int i=col+row*10;if(g.rescue.state[i]==0){target=i;break;}}
+        if(target<0)return;
+        float x=g.rescue.x[target],y=650+(target%10)*3;
+        float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
+        if(len>18){if(!g.pointer)down(g,g.tug.x,g.tug.y);move(g,g.downX+dx/len*55,g.downY+dy/len*55);return;}
+        if(g.pointer)up(g,g.pointerX,g.pointerY);
+        if(g.tug.speed()>3)return;
+        down(g,g.rescue.x[target],g.rescue.y[target]);up(g,g.rescue.x[target],g.rescue.y[target]);
     }
     private static void marinaTow(Game g) {
         Body b=g.cargo[0];

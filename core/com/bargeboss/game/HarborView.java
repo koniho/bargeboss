@@ -73,6 +73,14 @@ public final class HarborView {
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
+        if(MontroseRescue.swimmers(g)){
+            int nearest=-1;float distance=Float.MAX_VALUE;for(int i=0;i<20;i++)if(g.rescue.state[i]==0){float d=Physics.length(g.tug.x-g.rescue.x[i],g.tug.y-g.rescue.y[i]);if(d<distance){nearest=i;distance=d;}}
+            if(nearest>=0)destination(g,canvas,g.rescue.x[nearest],g.rescue.y[nearest],"THROW RESCUE BUOYS");return;
+        }
+        if(MontroseRescue.cruisers(g)){
+            Body target=null;for(Body b:g.cargo)if(b!=null && !b.deliveryRecorded){target=b;break;}
+            if(target!=null){boolean tow=g.rescue.towed[target.berth];destination(g,canvas,tow?g.dockX(target.berth):target.x,tow?g.dockY(target.berth):target.y,g.rescue.rafted?"RELEASE RAFT LINE":tow?"DOCK "+MontroseRescue.slip(target.berth):"ATTACH TOWLINE");}return;
+        }
         if(g.montroseStage()){Body yacht=g.cargo[0];boolean attached=g.mission.wasTowed;destination(g,canvas,attached?MontroseHarbor.SLIP_X:yacht.x,attached?MontroseHarbor.SLIP_Y:yacht.y,attached?"YACHT SLIP":"ATTACH TOWLINE");return;}
         if(g.lockStage()) {
             if(g.ropeDragging || g.ropePhase!=0)return;

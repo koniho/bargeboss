@@ -2034,3 +2034,44 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   shared Joystick renderer in neutral/forward/reverse via public pointer input
   (`out/joystick-gear-colors.png`). Combined parity/build/device validation is
   coordinated with the in-progress Montrose rescue mission increment.
+
+## 2026-11-16: first playable Montrose rescue missions
+
+- Shared Java adds two append-only challenge IDs: rafted cabin-cruiser recovery
+  to two reserved Dock C bays, and twenty-swimmer buoy rescue beyond the southern
+  seawall. Original Montrose yacht geography/mission remains intact. Dock C source
+  map arrows are interpreted as C-38/C-22, mapped to existing row8 stations345/405,
+  sides+1/-1; simplified survey does not encode every real slip number. Mechanics
+  and the remaining full two-cruiser voyage validation are documented in
+  `docs/missions/montrose-rescues.md`.
+- Reuse existing32-heading cabin-cruiser color/normal art; no new platform
+  rendering primitive. Unpowered cruisers have no lamps and receive local light.
+  Swimmers use the parent's packed512x384 RGBA atlas (12x128px cells,768KiB total,
+  64KiB per cell), warmed only for their mission. Both rescue manifests omit
+  unused yacht rotations. Fixed limits are20 swimmers plus1 flying buoy; all
+  state/input/camera/animation and depth-merge decisions remain shared Java.
+- Visual review reduced swimmer world width22→11 to match tug scale, while
+  retaining generous independent touch targets. Camera has240/330-unit entry/
+  exit hysteresis and eased2.4→3.6 rescue framing, frozen during aim/flight.
+  Quiet cues, existing semantic success haptics and non-graphic contact failure.
+- Validation:77 new rescue assertions, including real raft-release/tow gestures,
+  physical35-unit dock-crew approaches and settling in both reserved slots,
+  all20 buoy throws, cancellation, speed gate, contact failure and zoom. A
+  continuous public-pointer swimmer voyage completes safely in1,892 fixed steps.
+  Combined JVM/J2ObjC gameplay/drawing parity passed `801fa6bb:2:1350`, including
+  the parallel joystick gear-color change. Full `check.sh` through Android build
+  and `preview.sh` passed, including1,382,037 production hull/cargo shoreline
+  pixel assertions across32 headings and153,366 foam/splash shoreline assertions.
+- Android signed APK built, installed retaining data and launched on the unlocked
+  WiFi phone. Actual native swimmer scene reviewed at2410x1080; local captures
+  `out/rescue-swimmers-android.png` and `.csv`. In a360-frame steady/live close
+  rescue sample: interval median16.489ms/p9517.206ms/max34.983ms; shared/native
+  draw submission median7.535ms/p958.924ms; advance2.222/2.527ms. No decode,
+  static-layer builds or frame-texture builds during sampling. This short scene
+  is not a GPU timing measurement or evidence of60FPS headroom across all boats.
+- Limits: full two-cruiser entrance-to-both-slips autonomous voyage is still
+  unverified; both berth approaches and real attachment work in isolated physical
+  fixtures. Physical iOS pixels/haptics not checked. Native profiler deliberately
+  ignores touch; after returning to ordinary play the phone appeared to be in use,
+  so further injected touches were stopped. Joystick native forward/reverse color
+  capture remains outstanding, with its shared render and translated parity checked.

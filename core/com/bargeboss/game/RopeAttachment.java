@@ -7,7 +7,7 @@ public final class RopeAttachment {
         float reach=b.yacht?b.half+b.radius*.70f:b.berth<0?b.half+b.radius*.65f:CargoArt.HOLD_LENGTH*.5f+3;
         return end<0?-reach:reach;
     }
-    public static float height(Body b){return b.yacht?8.0f:b.berth<0?8.5f:CargoArt.RIM*.81649658f+1;}
+    public static float height(Body b){return b.cruiser?4f:b.yacht?8.0f:b.berth<0?8.5f:CargoArt.RIM*.81649658f+1;}
     public static float x(Body b,float end){return b.x+along(b,end)*(float)StrictMath.cos(b.angle);}
     public static float y(Body b,float end){return b.y+along(b,end)*(float)StrictMath.sin(b.angle);}
     /** Pick a stable end/side fitting facing a shore bollard, rather than a moving hull-ray intersection. */

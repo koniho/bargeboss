@@ -82,6 +82,7 @@ public final class Parity implements Painter {
         progression(p);
         feeders(p);
         goalLevels(p);
+        rescue(p);
         joystick(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
     }
@@ -98,7 +99,7 @@ public final class Parity implements Painter {
         }
     }
     private static void goalLevels(Parity p) {
-        for(int id=1;id<Challenges.COUNT;id++) {
+        for(int id=1;id<Challenges.RAFT_RESCUE;id++) {
             Game g=new Game();g.challengeId=id;g.reset();
             int phases=0;
             for(int i=0;i<g.shiftTicks() && g.mode==Game.PLAY;i++) {
@@ -119,6 +120,15 @@ public final class Parity implements Painter {
             if(id==2 && (phases&127)!=127)throw new IllegalStateException("Lock replay missed a cycle phase");
             p.add(g.earnedStars);p.add(g.score);p.add(g.tow.count());Renderer.draw(g,p);
         }
+    }
+    private static void rescue(Parity p){
+        Game g=new Game();g.challengeId=Challenges.RAFT_RESCUE;g.reset();Renderer.draw(g,p);
+        float x=(g.cargo[0].x+g.cargo[1].x)*.5f,y=g.cargo[0].y;
+        ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.add(g.rescue.rafted?1:0);Renderer.draw(g,p);
+        g=new Game();g.challengeId=Challenges.SWIMMER_RESCUE;g.reset();
+        for(int i=0;i<4000 && g.mode==Game.PLAY;i++){ReplayInput.work(g);g.step();if(i%60==0){p.add(g.delivered);p.add(g.rescue.flying);p.value(g.tug.x);p.value(g.tug.y);p.value(g.layout.camera.zoom);Renderer.draw(g,p);}}
+        if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
+        p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {
         Game g=new Game(); g.reset();

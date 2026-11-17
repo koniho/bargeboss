@@ -26,6 +26,7 @@ public final class ControlView {
     }
     public static String hint(Game g) {
         if(g.tutorial!=null && g.tutorial.entering)return "TAKE THE HELM ONCE INSIDE";
+        if(MontroseRescue.active(g))return g.rescue.status(g);
         if(g.montroseStage())return g.tow.count()>0?"DRAG TUG TO TOW / TAP YACHT TO UNCOUPLE":"DRAG YACHT TO TUG / RELEASE TO LINK";
         if(g.towAiming) return "RELEASE OVER THE HIGHLIGHTED BOAT TO LINK";
         if(g.ropeToTug && g.ropePhase==1) return "TOWLINE AWAY / WATCH THE TARGET";

@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
@@ -34,6 +34,11 @@ public final class ProfileScenario {
             for(int tick=0;tick<16;tick++)root.step();
             root.layout=Layout.focused(width,height,300,500,3.2f,width*.5f,height*.58f);
             if(root.splashes.emitted==0)throw new AssertionError("Impact fixture missed contact");return;
+        }
+        if(name.equals("montrose-raft") || name.equals("montrose-swimmers")){
+            root.selectChallenge(name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE);root.reset();
+            if(name.equals("montrose-swimmers")){root.tug.x=660;root.tug.y=640;root.tug.angle=0;root.layout=Layout.focused(width,height,660,590,3.6f,width*.5f,height*.52f);}
+            return;
         }
         if(name.startsWith("montrose-")){
             root.selectChallenge(Challenges.MONTROSE);root.reset();

@@ -5,11 +5,12 @@ package com.bargeboss.game;
 public final class LevelAssets {
     public static final class Plan {
         private final int[] rotations;
-        private final boolean marina,geometryScenery;
+        private final boolean marina,geometryScenery,swimmers;
         private Plan(int... sources){this(false,sources);}
-        private Plan(boolean geometry,int... sources){geometryScenery=geometry;rotations=SpriteAtlas.rotationAtlases(sources);boolean yacht=false;for(int source:sources)if(source==SpriteAtlas.YACHT)yacht=true;marina=yacht;}
+        private Plan(boolean geometry,int... sources){this(0,geometry,sources);}
+        private Plan(int rescue,boolean geometry,int... sources){swimmers=rescue==2;geometryScenery=geometry;rotations=SpriteAtlas.rotationAtlases(sources);boolean yacht=false;for(int source:sources)if(source==SpriteAtlas.YACHT)yacht=true;marina=yacht||rescue>0;}
         public int[] sceneryAtlases(){return geometryScenery?new int[0]:marina?new int[]{SpriteAtlas.MARINA,SpriteAtlas.MOORED_BOATS,SpriteAtlas.MOORED_NORMALS}:new int[]{SpriteAtlas.SHORE_BOLLARDS,SpriteAtlas.SHORE_LOADING,SpriteAtlas.SHORE_TRUCKS,SpriteAtlas.STEELWORKS};}
-        public int[] preparationAtlases(){int[] scenery=sceneryAtlases(),all=new int[rotations.length+scenery.length+3];System.arraycopy(rotations,0,all,0,rotations.length);System.arraycopy(scenery,0,all,rotations.length,scenery.length);all[all.length-3]=SpriteAtlas.FOAM;all[all.length-2]=SpriteAtlas.SPLASH;all[all.length-1]=SpriteAtlas.RIPPLES;return all;}
+        public int[] preparationAtlases(){int[] scenery=sceneryAtlases(),all=new int[rotations.length+scenery.length+(swimmers?4:3)];System.arraycopy(rotations,0,all,0,rotations.length);System.arraycopy(scenery,0,all,rotations.length,scenery.length);if(swimmers)all[all.length-4]=SpriteAtlas.SWIMMERS;all[all.length-3]=SpriteAtlas.FOAM;all[all.length-2]=SpriteAtlas.SPLASH;all[all.length-1]=SpriteAtlas.RIPPLES;return all;}
         public int[] rotationAtlases(){return rotations.clone();}
         public int rotationFrames(){int count=0;for(int atlas:rotations)count+=SpriteAtlas.count(atlas);return count;}
     }
@@ -19,7 +20,7 @@ public final class LevelAssets {
     static {
         for(int id=0;id<CHALLENGES.length;id++) {
             if(id==Challenges.INDIANA){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL);continue;}
-            if(id==Challenges.MONTROSE){CHALLENGES[id]=new Plan(SpriteAtlas.TUG,SpriteAtlas.YACHT);continue;}
+            if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=id==Challenges.MONTROSE?new Plan(SpriteAtlas.TUG,SpriteAtlas.YACHT):new Plan(id==Challenges.SWIMMER_RESCUE?2:1,false,SpriteAtlas.TUG);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {
                 int berth=Challenges.feedBerth(id,load);

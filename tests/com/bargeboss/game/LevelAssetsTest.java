@@ -13,14 +13,19 @@ final class LevelAssetsTest {
         for(int id=0;id<Challenges.COUNT;id++) {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
-            check(scenery.length==(id==Challenges.INDIANA?0:id==Challenges.MONTROSE?3:4),"Level prepares its permanent scenery family");
-            check(preparation.length==plan.rotationAtlases().length+scenery.length+3,"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
+            check(scenery.length==(id==Challenges.INDIANA?0:Challenges.kind(id)==Challenges.MONTROSE?3:4),"Level prepares its permanent scenery family");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length+(id==Challenges.SWIMMER_RESCUE?4:3),"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
-            for(int atlas:scenery)check(id==Challenges.MONTROSE?(atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS,"Scenery stays level-specific");
+            for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS,"Scenery stays level-specific");
             Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==plan,"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
             check(LevelAssets.upcoming(game)==plan,"Menu prepares upcoming selected level");
+            if(id==Challenges.RAFT_RESCUE || id==Challenges.SWIMMER_RESCUE){
+                check(includes(plan,SpriteAtlas.TUG) && !includes(plan,SpriteAtlas.YACHT),"Rescue prepares tug without unused yacht rotations");
+                if(id==Challenges.SWIMMER_RESCUE)check(preparation[preparation.length-4]==SpriteAtlas.SWIMMERS,"Swimmer atlas warmed before active draws");
+                continue;
+            }
             if(id==Challenges.MONTROSE){
                 check(plan.rotationFrames()==544,"Montrose prepares complete tug and yacht families");
                 check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");
