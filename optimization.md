@@ -2177,3 +2177,11 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Development phone absent from adb and mDNS; requested reconnection. Android
   APK built but this increment could not be installed/launched on the phone.
   No awake override was applied while disconnected.
+- Wireless-device follow-up: installed the checked APK preserving data and ran
+  tow-tight-circle. Android AudioFlinger showed both PCM loops active (95697 and
+  40572 frames), changing playback sample rates and the working layer rising
+  from zero volume under load. No captured loop-load errors. Home transition
+  recorded audio-focus abandonment; normal title launch restored, with no old
+  engine tracks remaining. Restored screen timeout to 300000 ms. This verifies
+  native playback plumbing, not subjective sound/loop quality; listening remains
+  a user audition.
