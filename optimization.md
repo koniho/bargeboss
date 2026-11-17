@@ -2185,3 +2185,26 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   engine tracks remaining. Restored screen timeout to 300000 ms. This verifies
   native playback plumbing, not subjective sound/loop quality; listening remains
   a user audition.
+
+## 2026-11-17: lower engine pitch and suppress intrusive water/high frequencies
+
+- User's first phone audition found intrusive splashing and a high idle. Added
+  offline sixth-order zero-phase low-pass filtering before loop seam construction:
+  500 Hz for marine idle, 1000 Hz for truck working loop. No runtime filter cost.
+  Marine 50–250 Hz power is unchanged to measurement precision; 1.2–8 kHz power
+  falls about 59.7 dB. This is spectral suppression, not perfect water isolation.
+- Shared playback-rate ranges lowered from .86–1.10 to .72–.92 (marine) and
+  .78–1.12 to .68–.96 (truck), roughly 2–3 semitones below the first integration.
+  Gains, load crossfade, lifecycle and source provenance stay unchanged. Same
+  frame counts and decoded memory budget; originals remain intact in studies.
+- Further user report identified a splash-like sound about every two seconds
+  underway. The old truck excerpt spanned a rev decay and another attack inside
+  its 1.84-second loop: 100 ms RMS max/min ratio 4.74. Replaced it with the
+  sustained 3.55–4.35-second source plateau and offline 60 ms envelope leveling,
+  before the existing seam crossfade. Working loop now .64 seconds / 28224 PCM
+  bytes; ratio falls to 1.54. The load controller now supplies the large swell
+  instead of looping the recorded throttle gesture. Total PCM is 219618 bytes.
+- Final full Android checks/build pass; translated parity remains 3f4e890:2:1350.
+  Installed successfully on the wireless phone and launched for user listening;
+  restored prior display timeout. No native code changed in this tuning round.
+  Spectral/envelope measurements support the change but do not replace audition.

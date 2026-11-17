@@ -13,5 +13,5 @@ public final class EngineAudio {
         work=work*work*(3-2*work);
         return layer==0?.42f-.14f*work:.48f*work;
     }
-    public static float rate(Game root,int layer){float load=load(root);return layer==0?.86f+.24f*load:.78f+.34f*load;}
+    public static float rate(Game root,int layer){float load=load(root);return layer==0?.72f+.20f*load:.68f+.28f*load;}
 }

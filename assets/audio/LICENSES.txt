@@ -7,13 +7,14 @@ Diesel motor on Fishing Boat.MP3 by Bansemer
 https://freesound.org/people/Bansemer/sounds/35499/
 Source: public HQ preview, downloaded 2026-11-17.
 Derivative diesel-idle-v1.wav: spectral diesel emphasis, excerpt, mono downmix,
-22.05 kHz resampling, DC removal and complementary loop crossfade.
+22.05 kHz resampling, 500 Hz low-pass to suppress residual water, DC removal and complementary loop crossfade.
 
 Truck-Diesel 07Dodge Rev.mp3 by canucklovingbrit
 https://freesound.org/people/canucklovingbrit/sounds/478125/
 Source: public HQ preview, downloaded 2026-11-17.
-Derivative diesel-working-v1.wav: gain reduction, 65–3200 Hz band limiting,
-excerpt, mono downmix, 22.05 kHz resampling, DC removal and loop crossfade.
+Derivative diesel-working-v1.wav: gain reduction, 65–3200 Hz source band limiting, an additional 1000 Hz low-pass,
+sustained-plateau excerpt, envelope leveling, mono downmix, 22.05 kHz resampling,
+DC removal and loop crossfade.
 
 Source previews, processing scripts and provenance are retained in the repository
 under docs/audio and tools. These are edited recordings, not pristine originals.
