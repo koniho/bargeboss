@@ -11,7 +11,9 @@ float surfaceNoise(float2 p) {
         mix(surfaceHash(i+float2(0,1)),surfaceHash(i+float2(1,1)),f.x),f.y);
 }
 float3 surfaceShade(float2 uv,float material,float wetness) {
-    float broad=surfaceNoise(uv*0.17),grain=surfaceNoise(uv*0.65);
+    // Concrete aggregate is fine model-space grain, separate from slab dimensions.
+    float grainScale=(material>0.5 && material<1.5)?2.6:0.65;
+    float broad=surfaceNoise(uv*0.17),grain=surfaceNoise(uv*grainScale);
     float seam=1.0-smoothstep(0.0,0.28,min(abs(fract(uv.x/24.0)-0.5)*24.0,abs(fract(uv.y/18.0)-0.5)*18.0));
     float3 shade=float3(0.82+0.24*broad+0.05*grain);
     if(material<0.5) {
@@ -21,8 +23,8 @@ float3 surfaceShade(float2 uv,float material,float wetness) {
         float bolt=1.0-smoothstep(0.45,0.80,length(rivet));
         shade*=1.0-seam*0.20;shade+=bolt*0.17;
     } else if(material<1.5) {
-        shade=float3(0.88,0.90,0.86)*(0.82+broad*0.28+grain*0.08);
-        shade*=1.0-seam*0.15;
+        shade=float3(0.88,0.90,0.86)*(0.955+broad*0.045+grain*0.045);
+        shade*=1.0-seam*0.06;
     } else if(material<2.5) {
         float chip=smoothstep(0.68,0.82,broad*0.6+grain*0.4);
         shade=mix(float3(1.12,1.06,0.89),float3(0.34,0.31,0.28),chip);

@@ -1809,3 +1809,14 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   scene remains within the 16.7 ms target; it does not resolve the tight-circle
   towing slowdown or establish whole-level performance. Evidence saved in
   docs/performance/indiana-harbor-2026-11-16/shores-summary.json.
+
+## 2026-11-16: concrete aggregate scale
+
+- Shared Metal/AGSL surface kernel: concrete grain frequency increased 4x, broad
+  mottling amplitude reduced from .28 to .045, joint contrast .15 to .06. Keeps
+  model-space anchoring and existing slab dimensions. No extra noise samples,
+  geometry, texture allocation or changes to other material frequencies.
+- Android native Hick screenshot reviewed: fine, quieter aggregate replaces the
+  oversized high-contrast mottling. Full Android checks/build and Metal build pass;
+  installed on phone. Screenshot saved to Downloads as BargeBoss-concrete-fine-v1.png.
+  Metal shader compiled but this adjustment has not had a fresh simulator image review.
