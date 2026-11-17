@@ -1820,3 +1820,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   oversized high-contrast mottling. Full Android checks/build and Metal build pass;
   installed on phone. Screenshot saved to Downloads as BargeBoss-concrete-fine-v1.png.
   Metal shader compiled but this adjustment has not had a fresh simulator image review.
+
+## 2026-11-16: turning-tow Perfetto investigation
+
+- Three-second full-throttle circle trace after wake accumulation, revision 11b524b.
+  49 complete RT frames: DrawFrames median wall 57.735 ms, running CPU 30.345 ms;
+  nested flush median wall 46.874 ms, running CPU 20.246 ms. QueueSubmit median
+  wall 31.715 ms, mostly sleeping (1297.82 ms sleeping / 247.50 ms running across
+  50 slices). Main postAndWait median 43.981 ms; dequeueBuffer median .007 ms.
+- This identifies native renderer CPU pressure plus submission/driver waits, not
+  expensive tow simulation. GPU slices unavailable / reported duration zero, so
+  specific shader/GPU-pass attribution remains unknown. Trace overhead is large;
+  untraced replay remains ~26 FPS. Raw trace stays untracked; app-only SQL/reports
+  under docs/performance/perfetto-tow-2026-11-16. No error/lost/overrun stats found.
+- Added default-off developer `bb_skip_foam` drawing isolation in CanvasPainter;
+  physics, camera, rope and non-foam rendering retained. Production appearance
+  stays unchanged. Full shared checks and Android build pass; installed on phone.
+- Matched foam isolation, same APK/route, 600 warmup + 900 samples: normal foam
+  mean interval 42.044 ms (23.78 FPS), p95 58.193 ms; skipping waterFoam drawing
+  mean 16.656 ms (60.04 FPS), p95 17.050 ms. Draw p95 falls 14.012 -> 7.150 ms.
+  All 1500 rows match exactly in physics, tow tension and camera zoom. Major
+  contributor isolated to foam rendering, but shader arithmetic/overlap/driver
+  setup/clip interaction not yet separated. One sequential pair, not randomized.
+  Production foam retained; no claim of a production performance fix or headroom.
+  Summaries and reproducible flags recorded in the Perfetto tow report.

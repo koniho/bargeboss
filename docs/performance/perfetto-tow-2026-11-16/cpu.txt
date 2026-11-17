@@ -1,0 +1,26 @@
+| label | n | cpu_total_ms | wall_total_ms | cpu_p50_ms | cpu_p95_ms |
+|---|---|---|---|---|---|
+| DrawFrames | 49 | 1503.32 | 2848.05 | 30.345 | 33.237 |
+| flush commands | 49 | 997.51 | 2307.09 | 20.246 | 21.629 |
+
+| name | n | total_ms |
+|---|---|---|
+| Texture upload(122) 363x363 | 31 | 0.42 |
+| Texture upload(118) 272x272 | 21 | 0.31 |
+| Texture upload(861) 207x207 | 33 | 0.27 |
+| Texture upload(120) 220x220 | 23 | 0.22 |
+| Texture upload(438) 43x45 | 25 | 0.16 |
+| Texture upload(444049) 42x40 | 2 | 0.11 |
+| Texture upload(259973) 42x43 | 3 | 0.11 |
+| Texture upload(263071) 44x69 | 2 | 0.1 |
+| Texture upload(809360) 43x67 | 2 | 0.09 |
+| Texture upload(6824) 20x19 | 1 | 0.09 |
+| Texture upload(425) 43x45 | 25 | 0.09 |
+| Texture upload(410) 43x45 | 25 | 0.09 |
+
+(12 rows)
+
+| name | n | total_ms |
+|---|---|---|
+| AAConvexPathOp | 6365 | 61.39 |
+| TriangulatingPathOp | 2398 | 7.2 |

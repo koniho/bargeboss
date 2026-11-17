@@ -43,6 +43,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         waterReview=intent.getBooleanExtra("bb_water_review",false);
         waterGrouping=intent.getBooleanExtra("bb_water_grouping",false);
         painter.profileWaterGrouping(waterGrouping);
+        painter.profileSkipFoam(intent.getBooleanExtra("bb_skip_foam",false));
         terrainReview=intent.getBooleanExtra("bb_terrain_review",false);
         compoundPaths=intent.getBooleanExtra("bb_compound_paths",false);
         frameTextures=intent.getBooleanExtra("bb_frame_textures",true);

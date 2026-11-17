@@ -177,6 +177,9 @@ public final class CanvasPainter implements Painter {
     // contours. Skip shared grouping as well when individual paths are preferred.
     private boolean compoundPaths=false,frameTextures=true,forceWaterGrouping=false;
     public boolean prefersPolygonBatches(){return compoundPaths || forceWaterGrouping;}
+    private boolean profileSkipFoam;
+    /** Developer-only effect isolation; default production appearance is unchanged. */
+    public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
     public void profileWaterGrouping(boolean enabled){forceWaterGrouping=enabled;}
     /** Diagnostic host strategies; only the debuggable session calls this. */
     public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}
@@ -462,7 +465,7 @@ public final class CanvasPainter implements Painter {
         else Painter.super.smokePuff(x,y,radius,phase,color);
     }
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
-        if(alpha<=.005f)return;
+        if(profileSkipFoam || alpha<=.005f)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
             waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind>=8?kind+22:kind,alpha,0xffe5fcf7);
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
