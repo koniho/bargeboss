@@ -95,11 +95,8 @@ public final class TitleWaterView {
                 patch(p,b,x+dx*.5f,y+dy*.5f,dx,dy,-dy/len*4,dx/len*4,WaterFoam.phase(tick,packet*12+part),5,alpha);
             }
         }
-        for(int side=-1;side<=1;side+=2)for(int i=0;i<9;i++){
-            float t=((tick+i*13)%117)/117f;
-            patch(p,b,side*(b.radius+1+sin(t*9+tick*.03)*1.3f),b.half+7-t*(b.half*2+17),
-                side*.6f,-6,4,0,WaterFoam.phase(tick,i),i%2,.45f);
-        }
+        // No marching side-contact stamps: the shared clipped hull supplies
+        // one continuous waterline, without a dotted conveyor along its sides.
         for(int side=-1;side<=1;side+=2)patch(p,b,side*b.radius*.45f,b.half+b.radius*.6f,
             side*11,-8,5,4,WaterFoam.phase(tick,side),4,.55f);
     }

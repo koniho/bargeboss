@@ -1586,3 +1586,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   JVM/J2ObjC parity `32309ad0:2:1350`. Metal simulator launch passes.
 - Installed successfully on the Wi-Fi development phone; returned to normal
   gameplay. Native frame timing was not profiled for this small follow-up.
+
+## 2026-11-16: quiet continuous waterline and title contact cleanup
+
+- Added the requested thin single-color translucent stroke on the exact submerged
+  clipping curve: 0.55 world units, constant #6e9b9c at 28% alpha. No dash pattern,
+  moving opacity, white core or added foam. Hull occlusion is unchanged.
+- Removed the title-only marching row of 18 small side-foam patches per vessel
+  (72 patches across the tug and three barges). These were separate from the
+  shared waterline and produced a moving dotted effect. Bow and trailing wakes
+  remain. Reuses existing line/clip primitives; no textures or caches added.
+- Validation: full shared checks, Android and Metal builds pass; JVM/J2ObjC
+  parity `7d1b9e29:2:1350`. Reviewed actual shared title layouts and vessel
+  animation; 767,778 submerged-pixel checks pass with unchanged hidden/retained
+  counts. Native frame timing was not measured for this cosmetic follow-up.
+- Installed successfully over wireless adb and launched on the development phone.

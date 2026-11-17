@@ -57,6 +57,13 @@ public final class VesselWaterline {
         }
         return mask;
     }
+    /** One quiet constant-color stroke; geometry is exactly the occlusion boundary. */
+    static void contact(Painter canvas,float[] edge,float scale) {
+        for(int i=0;i<SEGMENTS;i++) {
+            int j=i*2;
+            canvas.line(edge[j],edge[j+1],edge[j+2],edge[j+3],.55f*scale,0x486e9b9c);
+        }
+    }
     private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
         int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);
         float x=a[j]+(b[j]-a[j])*blend,y=a[k]+(b[k]-a[k])*blend;
