@@ -20,6 +20,8 @@ public final class SceneryOcclusion implements Painter {
     }
     public void popClip(){recordingClip=clipStack.remove(clipStack.size()-1);target.popClip();}
     public SceneryOcclusion(Painter target) {this.target=target;}
+    public void beginWaterFoamBatch(){target.beginWaterFoamBatch();}
+    public void endWaterFoamBatch(){target.endWaterFoamBatch();}
     public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){target.waterFoam(xx,yy,ax,ay,bx,by,phase,kind,alpha);}
     public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){target.shoreline(xy,uv,phase,energy,kind,color);}
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){target.surfacePolygon(xy,uv,material,color,wetness);}

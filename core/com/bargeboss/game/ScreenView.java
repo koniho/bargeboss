@@ -323,6 +323,8 @@ public final class ScreenView {
             if(shear==0)p.layer(layer,x+xx*scale,y+yy*scale,size*scale,alpha);
             else layer.draw(this,xx,yy,size,alpha);
         }
+        public void beginWaterFoamBatch(){p.beginWaterFoamBatch();}
+        public void endWaterFoamBatch(){p.endWaterFoamBatch();}
         public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){p.waterFoam(tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,kind,alpha);}
         public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){
             float[] projected=new float[xy.length];for(int i=0;i<xy.length;i+=2){projected[i]=tx(xy[i],xy[i+1]);projected[i+1]=ty(xy[i+1]);}

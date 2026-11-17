@@ -412,6 +412,8 @@ static vector_float4 BBColor(jint argb) {
     for(NSUInteger i=0;i+5<data.length/sizeof(float);i+=6) [self triangle:(vector_float2){xy[i],xy[i+1]} b:(vector_float2){xy[i+2],xy[i+3]} c:(vector_float2){xy[i+4],xy[i+5]} color:(vector_float4){1,1,1,1} mode:mode];
 }
 - (jboolean)supportsUnionClips {return NO;}
+- (void)beginWaterFoamBatch {}
+- (void)endWaterFoamBatch {}
 - (void)pushClipOutsideWithFloatArray:(IOSFloatArray *)triangles {
     NSData *data=[NSData dataWithBytes:triangles->buffer_ length:triangles->size_*sizeof(float)];[self.clips addObject:data];[self clipData:data mode:1];
 }

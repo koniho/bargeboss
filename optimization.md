@@ -1869,3 +1869,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Unlock requested. Native pixel equivalence, Mesh allocation/submission costs
   and frame-interval improvement remain unverified. Candidate code is deliberately
   uncommitted pending this comparison; no production speedup claimed.
+
+## 2026-11-16: foam Mesh batching validated and enabled
+
+- Android API 34+ expanding-crest batches now enabled by default. Phone unlocked;
+  same installed APK, same full-throttle single-barge circular tow, 600 warmup
+  + 900 sampled frames per run, both comparison orders.
+- Original -> batched: 24.18 -> 59.85 FPS; interval mean 41.351 -> 16.707 ms,
+  p95 58.314 -> 17.417 ms; UI draw p95 13.945 -> 8.978 ms.
+- Reverse order: batched 60.05 FPS vs original 23.89 FPS; interval p95
+  17.488 vs 58.183 ms; UI draw p95 9.130 vs 13.827 ms. No sampled cache
+  builds/evictions. All four 1,500-row runs match exactly in physics and camera.
+- Native final-frame screenshot pairs each differ in 6,023 of 2,602,800 pixels,
+  max channel delta 6/255, RGB MAE 0.001144/255. Reviewed wake density, placement
+  and overlap; minor triangle-raster rounding differences only. No foam density,
+  lifetime or simulation reduction. Bounded 72 KiB staging, 512 patches/batch;
+  each flush still allocates a native Mesh. Older Android keeps existing drawing.
+- Shared checks, all-heading shoreline and foam pixel checks, Android/iOS builds,
+  parity and iOS simulator compatibility completed in preceding round. Candidate
+  APK installed and tested on development phone. Physical iPhone and other
+  Android GPUs untested; total GPU headroom and busy Montrose not established
+  by this tow fixture. Reports: docs/performance/foam-mesh-2026-11-16.

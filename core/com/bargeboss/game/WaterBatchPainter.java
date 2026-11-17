@@ -46,6 +46,8 @@ public final class WaterBatchPainter implements Painter {
     public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){flush();target.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);}
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){flush();target.sprite(a,f,x,y,w,h,r,alpha);}
     public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){flush();target.spriteBlend(a,f,ff,x,y,w,h,r,mix,alpha);}
+    public void beginWaterFoamBatch(){flush();target.beginWaterFoamBatch();}
+    public void endWaterFoamBatch(){flush();target.endWaterFoamBatch();}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         flush();target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }

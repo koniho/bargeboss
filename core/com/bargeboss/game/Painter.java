@@ -27,6 +27,9 @@ public interface Painter {
         for(int i=0;i<4;i++){float u=corners[i]%2-px,v=corners[i]/2-py;q[i*2]=x+ax*u+bx*v;q[i*2+1]=y+ay*u+by*v;}
         poly(q,((int)(255*alpha)<<24)|0x020913);
     }
+    /** Optional ordered batching scope: contains only foam patches; no visual semantic change. */
+    default void beginWaterFoamBatch() {}
+    default void endWaterFoamBatch() {}
     /** Local water-foam patch centered at x,y with full affine basis vectors.
      * Modes 0/1: shoulder foam, 2/3: prop wash, 4: bow crest, 5: spreading crest; 8: ballistic spray, 9: impact crown.
      * Phase is supplied by shared simulation ticks. Hosts never advance it.

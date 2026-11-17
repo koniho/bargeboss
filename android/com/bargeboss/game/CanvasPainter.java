@@ -34,6 +34,12 @@ public final class CanvasPainter implements Painter {
     private static final PorterDuffXfermode ADD=new PorterDuffXfermode(PorterDuff.Mode.ADD);
     private final AssetManager assets;
     private WaterFoamShader waterFoamShader;
+    private FoamMesh foamMesh;
+    private boolean meshFoam=true,inFoamBatch;
+    public void profileMeshFoam(boolean enabled){meshFoam=enabled;}
+    public void beginWaterFoamBatch(){inFoamBatch=meshFoam && foamMesh!=null && canvas.isHardwareAccelerated();}
+    public void endWaterFoamBatch(){flushFoam();inFoamBatch=false;}
+    private void flushFoam(){if(foamMesh!=null)foamMesh.flush(canvas);}
     private NormalSpriteShader normalSpriteShader;
     private final ConcurrentMap<Integer,Atlas> atlases=new ConcurrentHashMap<Integer,Atlas>();
     private final ConcurrentMap<Integer,Object> atlasLocks=new ConcurrentHashMap<Integer,Object>();
@@ -194,12 +200,13 @@ public final class CanvasPainter implements Painter {
 
     public boolean supportsUnionClips(){return true;}
     public void pushClipOutside(float[] triangles) {
+        flushFoam();
         if(profile!=null)profile.clips++;
         canvas.save();path.reset();path.setFillType(Path.FillType.WINDING);
         for(int i=0;i<triangles.length;i+=6){path.moveTo(triangles[i],triangles[i+1]);path.lineTo(triangles[i+2],triangles[i+3]);path.lineTo(triangles[i+4],triangles[i+5]);path.close();}
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
-    public void popClip(){canvas.restore();}
+    public void popClip(){flushFoam();canvas.restore();}
     public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
@@ -277,6 +284,10 @@ public final class CanvasPainter implements Painter {
             if(android.os.Build.VERSION.SDK_INT>=33) {
                 try {waterFoamShader=new WaterFoamShader(assets);normalSpriteShader=new NormalSpriteShader(assets);}
                 catch(IllegalArgumentException ex) {android.util.Log.w("BargeBoss","Water shader unavailable; using textured fallback",ex);}
+                if(android.os.Build.VERSION.SDK_INT>=34 && waterFoamShader!=null){
+                    try {foamMesh=new FoamMesh(assets);}
+                    catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Foam mesh unavailable; retaining patch renderer",ex);}
+                }
             }
         }
     }
@@ -466,6 +477,8 @@ public final class CanvasPainter implements Painter {
     }
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         if(profileSkipFoam || alpha<=.005f)return;
+        if(inFoamBatch && kind==5){foamMesh.add(canvas,x,y,ax,ay,bx,by,phase,alpha);return;}
+        if(inFoamBatch)flushFoam();
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
             waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,kind>=8?kind+22:kind,alpha,0xffe5fcf7);
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);

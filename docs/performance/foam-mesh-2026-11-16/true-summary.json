@@ -1,0 +1,91 @@
+{
+  "file": "out/foam-mesh/true.csv",
+  "samples": 900,
+  "lessons": [
+    -1
+  ],
+  "advance_ms": {
+    "p50": 0.481,
+    "p95": 0.918
+  },
+  "draw_ms": {
+    "p50": 7.868,
+    "p95": 8.978
+  },
+  "interval_ms": {
+    "p50": 16.647,
+    "p95": 17.417
+  },
+  "layer_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "decode_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_mib": {
+    "p50": 0.909,
+    "p95": 0.909
+  },
+  "sprites": {
+    "p50": 17.0,
+    "p95": 17.0
+  },
+  "blends": {
+    "p50": 0.0,
+    "p95": 11.0
+  },
+  "affines": {
+    "p50": 12.0,
+    "p95": 18.0
+  },
+  "circles": {
+    "p50": 48.0,
+    "p95": 54.0
+  },
+  "polys": {
+    "p50": 1849.0,
+    "p95": 1917.0
+  },
+  "clips": {
+    "p50": 12.0,
+    "p95": 16.0
+  },
+  "texture_mib": {
+    "p50": 12.905,
+    "p95": 19.11
+  },
+  "source_mib": {
+    "p50": 78.19,
+    "p95": 78.19
+  },
+  "frame_mib": {
+    "p50": 59.663,
+    "p95": 59.663
+  },
+  "frame_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "pending_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "worker_source_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "background_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_builds": 0,
+  "cache_fallbacks": 0,
+  "cache_evictions": 0,
+  "frame_builds": 0,
+  "frame_evictions": 0,
+  "background_builds": 0,
+  "async_misses": 0,
+  "cold_decode_ms": 115.049
+}

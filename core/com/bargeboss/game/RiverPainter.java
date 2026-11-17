@@ -42,6 +42,8 @@ public final class RiverPainter implements Painter {
     public void line(float x,float y,float xx,float yy,float w,int c) {
         painter.line(camera.screenX(x,y),camera.screenY(x,y),camera.screenX(xx,yy),camera.screenY(xx,yy),w*camera.scale,c);
     }
+    public void beginWaterFoamBatch(){painter.beginWaterFoamBatch();}
+    public void endWaterFoamBatch(){painter.endWaterFoamBatch();}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
         float s=camera.scale;
         painter.waterFoam(camera.screenX(x,y),camera.screenY(x,y),RiverCamera.Q*(ax+ay)*s,RiverCamera.Q*RiverCamera.DEPTH*(ay-ax)*s,RiverCamera.Q*(bx+by)*s,RiverCamera.Q*RiverCamera.DEPTH*(by-bx)*s,phase,kind,alpha);

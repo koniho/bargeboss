@@ -20,6 +20,8 @@ public final class TitleWaterView {
         Perspective(Painter p,float top,float foreground){this.p=p;this.top=top;this.foreground=foreground;}
         float y(float y){return projectedY(y,top,foreground);}
         float thin(float y){return Physics.clamp((y-top)/Math.max(1,foreground-top),.06f,1);}
+        public void beginWaterFoamBatch(){p.beginWaterFoamBatch();}
+        public void endWaterFoamBatch(){p.endWaterFoamBatch();}
         public void waterFoam(float x,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){
             p.waterFoam(x,y(yy),ax,y(yy+ay*.5f)-y(yy-ay*.5f),bx,y(yy+by*.5f)-y(yy-by*.5f),phase,kind,alpha);
         }
@@ -33,6 +35,8 @@ public final class TitleWaterView {
     private static final class WaterPlane implements Painter {
         final Painter p;final float top;
         WaterPlane(Painter p,float top){this.p=p;this.top=top;}
+        public void beginWaterFoamBatch(){p.beginWaterFoamBatch();}
+        public void endWaterFoamBatch(){p.endWaterFoamBatch();}
         public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
             float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
             if(y+h<=top)return;

@@ -108,7 +108,8 @@ public final class WaterSurface {
             clip=ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
         } else p=new WaterEffectsPainter(g,p);
         if(clip.length>0)canvas.pushClipOutside(clip);
-        try {drawCrests(g,p);} finally {if(clip.length>0)canvas.popClip();}
+        p.beginWaterFoamBatch();
+        try {drawCrests(g,p);} finally {p.endWaterFoamBatch();if(clip.length>0)canvas.popClip();}
     }
     private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {

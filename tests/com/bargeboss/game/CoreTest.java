@@ -97,6 +97,7 @@ public final class CoreTest {
         VesselWaterlineTest.run();
         WaterFoamTest.run();
         SurfaceMaterialTest.run();
+        FoamBatchTest.run();
         SceneLightingTest.run();
         WaterEnergyBoundsTest.run();
         UnionClipTest.run();
