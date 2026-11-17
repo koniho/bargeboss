@@ -1,0 +1,13 @@
+{
+  "sample_rate": 48000,
+  "channels": 2,
+  "duration_seconds": 40.416979166666664,
+  "shared_gain": 0.9891037305160123,
+  "reconstruction_peak_error": 1.1102230246251565e-16,
+  "engine_peak": 0.7006032064888899,
+  "residual_peak": 0.3536038219188537,
+  "engine_rms": 0.17265600604842501,
+  "residual_rms": 0.051676426594998985,
+  "method": "stereo-linked harmonic/steady mask with bass retention",
+  "limitations": "Not semantic isolation; engine and water overlap. Not listening-approved."
+}

@@ -2138,3 +2138,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   review was not completed this round; shared
   views and state tests do not establish physical iOS/Android touch behavior.
   No new frame-time improvement is claimed for these behavior changes.
+
+## 2026-11-17: diesel audio source and overlay auditions
+
+- Retained three CC0 public HQ previews with source/license provenance under
+  docs/audio, outside packaged assets. Marine diesel is Bansemer 35499; truck
+  rev candidates are canucklovingbrit 478125 and DAVESTALKER 443319.
+- Created complementary marine engine/water-noise stems using a stereo-linked
+  soft spectral mask with bass retention. Residual is not clean water; overlap
+  prevents claiming semantic isolation. 48 kHz stereo, 40.417 seconds; decoded
+  24-bit FLAC reconstruction error below 1.2e-7, no clipped stems.
+- Added filtered rev candidates and a 12-second marine-plus-Dodge mix audition.
+  Original previews remain intact. Ford source explicitly includes speech.
+  No runtime audio integration, texture/cache changes or performance claims.
+  Audio signal checks do not establish listening quality. Phone disconnected;
+  no device audition/copy or APK rebuild for these unshipped study files.
