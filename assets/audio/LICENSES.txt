@@ -1,0 +1,19 @@
+Barge Boss diesel engine loops v1
+
+Both source recordings are dedicated under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Diesel motor on Fishing Boat.MP3 by Bansemer
+https://freesound.org/people/Bansemer/sounds/35499/
+Source: public HQ preview, downloaded 2026-11-17.
+Derivative diesel-idle-v1.wav: spectral diesel emphasis, excerpt, mono downmix,
+22.05 kHz resampling, DC removal and complementary loop crossfade.
+
+Truck-Diesel 07Dodge Rev.mp3 by canucklovingbrit
+https://freesound.org/people/canucklovingbrit/sounds/478125/
+Source: public HQ preview, downloaded 2026-11-17.
+Derivative diesel-working-v1.wav: gain reduction, 65–3200 Hz band limiting,
+excerpt, mono downmix, 22.05 kHz resampling, DC removal and loop crossfade.
+
+Source previews, processing scripts and provenance are retained in the repository
+under docs/audio and tools. These are edited recordings, not pristine originals.

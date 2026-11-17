@@ -34,11 +34,11 @@ public final class MainActivity extends Activity {
         }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
-    protected void onDestroy(){if(gameView!=null)gameView.painter.close();super.onDestroy();}
+    protected void onDestroy(){if(gameView!=null){gameView.audio.close();gameView.painter.close();}super.onDestroy();}
     protected void onPause() { gameView.stop(); super.onPause(); }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if(hasFocus) fullscreen(); else if(gameView!=null) gameView.game.background();
+        if(hasFocus) fullscreen(); else if(gameView!=null) {gameView.game.background();gameView.audio.stop();}
         if(gameView!=null) gameView.requestRedraw();
     }
     private void fullscreen() {
@@ -59,6 +59,7 @@ public final class MainActivity extends Activity {
 
     private final class GameView extends View implements Choreographer.FrameCallback {
         private final FrameGate frames=new FrameGate();
+        private final EngineSound audio=new EngineSound(MainActivity.this);
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
         private final DeveloperHooks.Session developer=DeveloperHooks.create(MainActivity.this,painter);
         private final Game game=developer==null?new Game():developer.game();
@@ -95,10 +96,11 @@ public final class MainActivity extends Activity {
         void requestRedraw() { frames.markDirty(); invalidate(); }
         void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.pause(); requestRedraw(); }
         void start() { requestRedraw(); if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
+        void stop() { audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
             if(!running) return;
             if(last!=0) {if(developer==null)game.advance((now-last)/1e9);else developer.advance((now-last)/1e9);} last=now;
+            audio.update(game);
             int event=game.pollHaptic();
             if(event!=0) {
                 int feedback=event==Game.HAPTIC_IMPACT?HapticFeedbackConstants.LONG_PRESS:

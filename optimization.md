@@ -2153,3 +2153,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   No runtime audio integration, texture/cache changes or performance claims.
   Audio signal checks do not establish listening quality. Phone disconnected;
   no device audition/copy or APK rebuild for these unshipped study files.
+
+## 2026-11-17: initial mobile diesel playback
+
+- Shared EngineAudio maps the already-smoothed tug.engineLoad to two loop gains
+  and playback rates. Idle is marine diesel; Dodge growl blends above .12 load.
+  Full-load sound remains present at zero boat velocity. Forward/reverse share
+  the same engine; practice follows activeGame. Non-play modes are silent.
+- Android uses two predecoded SoundPool streams with audio focus; iOS uses two
+  preloaded AVAudioEngine buffers and Varispeed nodes with interruption handling.
+  Pause/background stop playback. No audio decoding or new geometry in draws.
+  Desktop playback and title sound are outside this initial mobile integration.
+- Offline complementary seam crossfades, mono 22.05 kHz 16-bit PCM: 4.34-second
+  idle and 1.84-second working loop, 272538 total PCM bytes. Each is below the
+  SoundPool sample limit. Originals/studies stay outside shipped assets; CC0
+  attribution/provenance accompanies the two shipped derivatives.
+- Shared idle/load, bounded gain/rate, stationary-load and lifecycle tests pass.
+  Full Android checks/build pass; iOS simulator build and launch pass with no
+  engine initialization errors in captured logs. JVM/J2ObjC parity remains
+  3f4e890:2:1350. Simulator reached title behind an Apple account verification
+  dialog; in-play audio was not auditioned there. No claim of audible parity or
+  measured frame-time change. Truck modulation/seam quality needs listening.
+- Development phone absent from adb and mDNS; requested reconnection. Android
+  APK built but this increment could not be installed/launched on the phone.
+  No awake override was applied while disconnected.
