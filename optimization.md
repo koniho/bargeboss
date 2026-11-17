@@ -2092,3 +2092,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   APK installed, native full-throttle arc reviewed in the scripted tow scene,
   then normal launch restored. Physical iOS appearance and native partial/reverse
   arc states were not separately tested this round.
+
+## 2026-11-16: directional radial-throttle segment
+
+- Replaced clockwise progress with a fixed 80-degree segment centered on the
+  commanded screen-space travel vector. Direct hull drags use the same camera
+  projection; neutral uses the hull's forward bearing. Latched gear still selects
+  cyan/amber. The fill grows radially from radius91 to107 with throttle, inside
+  a persistent full-scale outline including both curved edges and end caps.
+- Uses existing affine RING material, up to four bounded material submissions
+  and two cap strokes. No assets, cache or simulation changes. Reviewed shared
+  neutral/25/50/75/100-percent captures in both gears using JoystickReview.
+- Native review caught a downward meter overlapping the score panel. Raised the
+  joystick center by 26 reference units so the radius 107 full-scale outline
+  clears the bottom HUD; hit testing follows the same shared center.
+- Final full checks/build pass; JVM/J2ObjC parity c4e0b238:2:1350.
+  Installed Android APK and reviewed native directional full-throttle fill and
+  bottom-HUD clearance. Shared partial/reverse views reviewed; physical iOS and
+  native partial/reverse views not separately verified this round.

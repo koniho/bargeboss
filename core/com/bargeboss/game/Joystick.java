@@ -52,7 +52,7 @@ public final class Joystick {
             SoftCue.line(p,cx+x*25,cy+y*25,cx+x*51,cy+y*51,1,SoftCue.alpha(reverse,.75f));}
     }
     public static float centerX(Game g){return g.settings.joystickSide()==GameSettings.RIGHT?g.layout.width-(RADIUS+32):RADIUS+32;}
-    public static float centerY(Game g){return g.layout.height-(RADIUS+64);}
+    public static float centerY(Game g){return g.layout.height-(RADIUS+90);}
     public static boolean visible(Game g){return g.mode==Game.PLAY && g.settings.joystickSide()!=GameSettings.OFF && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE && !g.tutorial.entering);}
     public static boolean hit(Game g,float x,float y){return visible(g) && Physics.length(x-centerX(g),y-centerY(g))<=RADIUS+8;}
     public void begin(Game g,float px,float py){
@@ -82,11 +82,29 @@ public final class Joystick {
         SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x667a9fa9,1);
         float throttle=j.active?j.throttle():g.holdingTug() && g.pushing && g.manualSteering?
                 Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;
-        float diameter=(2*(RADIUS+13)+4)/.98f;
-        p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,2/diameter,1,0x287a9fa9);
-        if(throttle>0 && g.driveDirection()!=0){
-            p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,8/diameter,throttle,0x20000000|rgb);
-            p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,4/diameter,throttle,0xe0000000|rgb);
+        float dx=j.active?j.x:0,dy=j.active?j.y:0;
+        if(!j.active && g.holdingTug() && g.manualSteering){
+            float wx=g.pointerX-g.downX,wy=g.pointerY-g.downY;
+            dx=RiverCamera.Q*(wx+wy);dy=RiverCamera.Q*RiverCamera.DEPTH*(wy-wx);
         }
+        float angle=Physics.length(dx,dy)>.001f?(float)StrictMath.atan2(dy,dx):
+                projectedAngle(g.tug.angle+(g.driveDirection()<0?(float)StrictMath.PI:0));
+        throttleArc(p,cx,cy,angle,g.driveDirection()==0?0:throttle,rgb);
+    }
+    /** Fixed angular span; radial fill measures thrust against a full-throttle outline. */
+    private static void throttleArc(Painter p,float x,float y,float angle,float throttle,int rgb){
+        float inner=RADIUS+10,outer=RADIUS+26,sweep=(float)(StrictMath.PI*4/9);
+        arcBand(p,x,y,angle,sweep,inner,outer,0x18000000|rgb);
+        if(throttle>0)arcBand(p,x,y,angle,sweep,inner,inner+(outer-inner)*throttle,0xc8000000|rgb);
+        arcBand(p,x,y,angle,sweep,inner-.6f,inner+.6f,0x88000000|rgb);
+        arcBand(p,x,y,angle,sweep,outer-.6f,outer+.6f,0x88000000|rgb);
+        for(int end=-1;end<=1;end+=2){float a=angle+end*sweep*.5f,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
+            p.line(x+c*inner,y+s*inner,x+c*outer,y+s*outer,1.2f,0x88000000|rgb);
+        }
+    }
+    private static void arcBand(Painter p,float x,float y,float angle,float sweep,float inner,float outer,int color){
+        float diameter=2*outer/.98f,rotation=angle-sweep*.5f+(float)StrictMath.PI/2;
+        float c=(float)StrictMath.cos(rotation)*diameter,s=(float)StrictMath.sin(rotation)*diameter;
+        p.material(x,y,c,s,-s,c,EffectMaterial.RING,(outer-inner)/diameter,sweep/(float)(2*StrictMath.PI),color);
     }
 }
