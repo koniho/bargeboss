@@ -1749,3 +1749,34 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   the native screenshot; tower detail was reviewed in the shared preview.
   Furnace scene has no separate native timing capture. Details summary stored
   beside the initial Indiana performance summary. Montrose remains unaffected.
+
+## 2026-11-16: single-barge tight-circle reproduction
+
+- Added debug-only `tow-tight-circle`: actual throw gesture attaches one steel
+  barge in the open Indiana basin, then held forward steering follows a radius-110
+  circle. Shared gameplay/tow physics determines all motion after setup. Keeps
+  normal camera, wakes, ropes, sprite heading selection and surface effects.
+- Developer regression runs two independent 6000-tick executions and checks exact
+  repeatability, one persistent tow, water containment and multiple full laps.
+  Passed with 7.109 laps at moderate throttle, then 11.839 laps at full throttle
+  following the user’s request for a faster test. Full shared checks and profiling Android APK build pass.
+- Android frame logs now include tug/barge heading and speed, tow count/tension,
+  and tug position. `tools/profile-tow-circle.sh` collects 360 warmup + 2400 sample
+  frames and rejects incomplete captures/detached tows. Replay advances one fixed
+  physics tick per rendered frame, so wall time is not simulated gameplay time.
+  Usage and scope: docs/performance/tow-tight-circle.md. No production gameplay or
+  rendering changes; this is a reproduction workload, not an optimization fix.
+- Preliminary moderate-throttle Android capture completed: 2400 samples, mean
+  interval 40.076 ms (24.95 effective FPS), median/p95 49.512/57.056 ms. Tug speed
+  remained 23.76..24.02 world units/s with one tow throughout. Advance p95 0.943 ms,
+  draw p95 13.678 ms; five sampled frame builds, no evictions. Frame pacing clearly
+  degrades without a physical tug-speed drop. CPU submission alone does not explain
+  the interval; RenderThread/GPU/presentation attribution still needs a trace.
+  Preserved moderate-summary.json under docs/performance/tow-circle-2026-11-16.
+- Full-throttle Android run completed all 2400 samples with one tow throughout:
+  tug speed mean 45.93 (range 44.96..47.64), mean interval 38.962 ms / 25.67 FPS,
+  median/p95 interval 49.529/57.412 ms. Advance p95 0.893 ms, draw p95 13.706 ms.
+  Zero sampled frame builds, decodes or evictions. Faster physical motion still
+  reproduces the frame-pacing problem; not evidence of a shader/driver diagnosis.
+  Native scene visually reviewed. Full-throttle summary stored with the moderate
+  run. iOS native execution of this developer fixture has not been checked.

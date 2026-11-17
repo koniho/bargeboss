@@ -2,12 +2,26 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
+        CIRCLES.remove(root);
         root.configureCanvas(width,height);
+        if(name.equals("tow-tight-circle")){
+            root.selectChallenge(Challenges.INDIANA);root.reset();
+            // Open basin isolates turning/tow work from shore and moored-fleet collisions.
+            root.tug.x=710;root.tug.y=-400;root.tug.angle=(float)(StrictMath.PI/2);
+            Body b=root.cargo[0];b.x=710;b.y=-520;b.angle=root.tug.angle;
+            root.layout=Layout.focused(width,height,650,-430,1.4f,width*.5f,height*.52f);
+            ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,root.tug.x,root.tug.y);
+            ReplayInput.up(root,root.tug.x,root.tug.y);
+            for(int i=0;i<90 && !root.tow.connected(b,root.tug);i++)root.step();
+            if(!root.tow.connected(b,root.tug))throw new AssertionError("Circle fixture failed to catch tow");
+            CIRCLES.put(root,Boolean.TRUE);return;
+        }
         if(name.startsWith("indiana-")){
             root.selectChallenge(Challenges.INDIANA);root.reset();
             if(name.equals("indiana-hick")){root.tug.x=375;root.tug.y=430;root.cargo[0].x=375;root.cargo[0].y=320;}
@@ -52,7 +66,16 @@ public final class ProfileScenario {
     }
     public static void replayTick(Game root) {
         Game g=root.activeGame();
-        if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DONE)ReplayInput.tutorial(root);
+        if(CIRCLES.containsKey(root)){
+            // Look ahead on a 110-world-unit circle; the real steering and tow solver
+            // determine motion. Never reposition bodies or prescribe their angles here.
+            double angle=StrictMath.atan2(g.tug.y+400,g.tug.x-600)+.65;
+            float dx=600+110*(float)StrictMath.cos(angle)-g.tug.x;
+            float dy=-400+110*(float)StrictMath.sin(angle)-g.tug.y;
+            float len=Math.max(1,Physics.length(dx,dy));
+            if(!g.pointer)ReplayInput.down(root,g.tug.x,g.tug.y);
+            ReplayInput.move(root,g.downX+dx/len*90,g.downY+dy/len*90);
+        }else if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DONE)ReplayInput.tutorial(root);
         else if(g.montroseStage())ReplayInput.work(g);
         root.step();
     }
