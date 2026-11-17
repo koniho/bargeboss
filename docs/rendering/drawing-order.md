@@ -436,8 +436,8 @@ phase, hull registration, speed response and lifetime; native Metal/AGSL execute
 one shared kernel. Bow pressure patches draw in the existing below-hull water
 scope. Vessel water contact is a continuous animated intersection curve derived from the
 registered lower silhouette, independent of hull heave. Disjoint clip trapezoids
-hide hull, cargo and surface-light/glow pixels below it; the same curve draws the
-quiet meniscus after the hull. Random contact-foam patches are removed. Detached
+hide hull, cargo and surface-light/glow pixels below it. The boundary itself is
+invisible: no outline or contact-foam patches are drawn. Detached
 wakes, bow pressure and propwash remain separate water effects.
 Expanding wake crests share a water-plane shore/dock exclusion scope, bounded by
 the visible world region. Title patches also exclude pixels above their water

@@ -4,29 +4,19 @@ package com.bargeboss.game;
 public final class VesselWaterlineTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
-    private static final class Trace implements Painter {
-        int hash=1,sprites;float energy;
-        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
-        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
-        public void rect(float x,float y,float w,float h,int c){}
-        public void poly(float[] p,int c){}
-        public void circle(float x,float y,float r,int c){}
-        public void line(float x,float y,float xx,float yy,float w,int color){sprites++;energy+=((color>>>24)&255)/255f;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);}
-        public void spriteAffine(int atlas,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
-            check(atlas==SpriteAtlas.FOAM && frame>=0 && frame<4,"reviewed foam texture");
-            check(Float.isFinite(x+ax+bx) && Float.isFinite(y+ay+by) && alpha>0 && alpha<=1,"finite sprite projection and opacity");
-            sprites++;energy+=alpha;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);hash=hash*31+Float.floatToIntBits(alpha);
-        }
-    }
+    private static final class Trace { int hash=1,points; }
     private static Trace draw(Game g,Body b) {
-        Trace p=new Trace();VesselWaterline.draw(g,new RiverPainter(p,new RiverCamera(0,0,2)),b,b.berth<0,2*(b.half+b.radius)/.78f,true);return p;
+        Trace out=new Trace();
+        float[] edge=VesselWaterline.boundary(g,null,b,b.berth<0,2*(b.half+b.radius)/.78f);
+        for(float value:edge){check(Float.isFinite(value),"finite water boundary");out.hash=out.hash*31+Float.floatToIntBits(value);}
+        out.points=edge.length/2;return out;
     }
     public static void run() {
         Game g=new Game();g.mode=Game.TITLE;
         for(int kind=0;kind<2;kind++)for(int heading=0;heading<64;heading++) {
             Body b=new Body(kind,kind-1,300,400,heading*(float)StrictMath.PI/32);b.floatingInitialized=true;
             g.visualTicks=0;Trace idle=draw(g,b),again=draw(g,b);
-            check(idle.hash==again.hash && idle.sprites==24 && idle.energy>0,"repeatable bounded contact sprites");
+            check(idle.hash==again.hash && idle.points==25,"repeatable bounded invisible water boundary");
             g.visualTicks=17;check(draw(g,b).hash!=idle.hash,"idle contact follows surface waves");
             g.visualTicks=0;b.vx=65;Trace moving=draw(g,b);
             check(moving.hash==idle.hash,"contact boundary does not emit speed-dependent random foam");

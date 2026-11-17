@@ -1573,3 +1573,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   builds, and JVM/J2ObjC parity `ee7274a9:2:1350` pass. Installed over wireless
   adb and inspected Android and Metal Montrose captures. No timing measurement
   or physical-iPhone validation in this round.
+
+## 2026-11-16: invisible vessel waterline
+
+- Per follow-up feedback, removed the visible meniscus entirely. The animated
+  boundary is used only to occlude hull/cargo/lighting below the water surface.
+  No contact foam or painted line remains. Detached wakes and propwash unchanged.
+- Removes 24 line submissions per active vessel; keeps the same tested submerged
+  geometry. This is a submission-count change, not a measured frame-time gain.
+- Validation: 767,778 submerged-pixel checks pass; shared animation previews
+  reviewed without the outline. Full shared checks and Android/Metal builds pass;
+  JVM/J2ObjC parity `32309ad0:2:1350`. Metal simulator launch passes.
+- Installed successfully on the Wi-Fi development phone; returned to normal
+  gameplay. Native frame timing was not profiled for this small follow-up.

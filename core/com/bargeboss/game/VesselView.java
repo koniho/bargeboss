@@ -64,9 +64,6 @@ public final class VesselView {
                 }
             }
         } finally {canvas.popClip();}
-        if(surface.length>0)canvas.pushClipOutside(surface);
-        try{VesselWaterline.contact(canvas,waterline,waterScale);}
-        finally{if(surface.length>0)canvas.popClip();}
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         boolean river=p instanceof RiverPainter;

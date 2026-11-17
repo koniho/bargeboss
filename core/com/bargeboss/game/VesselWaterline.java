@@ -57,21 +57,6 @@ public final class VesselWaterline {
         }
         return mask;
     }
-    static void contact(Painter canvas,float[] edge,float scale) {
-        for(int i=0;i<SEGMENTS;i++) {
-            int j=i*2;
-            canvas.line(edge[j],edge[j+1],edge[j+2],edge[j+3],.85f*scale,0x786eaaa9);
-        }
-    }
-    public static void draw(Game g,Painter p,Body b,boolean tug,float size,boolean contact) {
-        if(!contact)return;
-        RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
-        Painter canvas=river==null?p:river.canvas();
-        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,true);
-        if(clip.length>0)canvas.pushClipOutside(clip);
-        try{contact(canvas,boundary(g,p,b,tug,size),river==null?1:river.camera.scale);}
-        finally{if(clip.length>0)canvas.popClip();}
-    }
     private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
         int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);
         float x=a[j]+(b[j]-a[j])*blend,y=a[k]+(b[k]-a[k])*blend;
