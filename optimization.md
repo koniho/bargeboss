@@ -2249,3 +2249,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   wireless Android phone and inspected the practice harbor screenshot: the
   interactive bollard now matches the weathered shore props. Native coverage
   is representative practice, not every level; restored normal launch/timeout.
+
+## 2026-11-17: reachable bollard glow during lasso aiming
+
+- Shared MooringView now draws one bounded, softly pulsing mint halo behind a
+  reachable interactive bollard while a cargo lasso gesture is active. It uses
+  the release path's ropeWithinReach predicate and the held hull's assigned
+  berth, so decorative, blocked and out-of-range bollards are not advertised.
+  Release/cancel removes the halo; gameplay and catch rules are unchanged.
+- Reuses EffectMaterial.DOT and existing elevated anchors; no new texture,
+  raster preparation or persistent cache. At most one extra material submission
+  per held cargo, only while aiming. No frame-time improvement is claimed.
+- Extended the raised-bollard regression with idle, held-before-aim, wrong berth,
+  out-of-range and released states at two canvas widths. Reviewed actual shared
+  renderer idle/held practice captures in out/lasso-bollard-{0,1}.png.
+- Full Android checks/build passed; JVM/J2ObjC parity passed unchanged at
+  1414b3da:2:1350 (canonical replay does not hold a lasso at a reachable berth).
+  Installed APK on wireless Android and restored normal launch and timeout.
+  Halo appearance was reviewed in shared desktop rendering; no on-device
+  lasso-gesture visual validation or iOS pixel check in this round.

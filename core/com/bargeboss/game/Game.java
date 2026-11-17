@@ -436,7 +436,7 @@ public final class Game {
                 && inTieArea(b)
                 && (tutorial==null || tutorial.lesson==Tutorial.TIE && b==cargo[0]);
     }
-    private boolean ropeWithinReach(Body b) {
+    boolean ropeWithinReach(Body b) {
         return b!=null && !b.yacht && b.active && !b.deliveryRecorded && !b.lineAttached && berthEnabled(b.berth) && berthBlocker(b.berth,b)==null
                 && Math.abs(b.x-dockX(b.berth))<105 && Math.abs(b.y-dockY(b.berth))<105;
     }

@@ -13,6 +13,7 @@ public final class MooringView {
             for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
             }
+            if(reachableBollard(g,berth)) bollardGlow(g,p,x,y);
             bollard(g,p,x,y);
             if(ready) {
                 float pulse=2*(float)StrictMath.sin(tick*.11);
@@ -94,6 +95,19 @@ public final class MooringView {
             SoftCue.line(canvas,x-dx*5+dy*4,y-dy*5-dx*4,x,y,1,SoftCue.animated(g,GREEN));
         }
 
+    }
+    /** Show only a target the held hull can actually catch, independent of aim direction. */
+    static boolean reachableBollard(Game g,int berth) {
+        Body held=g.heldCargo();
+        return g.pointer && (g.ropeDragging || g.towAiming) && g.ropePhase==0
+                && held!=null && held.berth==berth && g.ropeWithinReach(held);
+    }
+    private static void bollardGlow(Game g,Painter p,float x,float y) {
+        float scale=1;
+        if(p instanceof RiverPainter){RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;
+            float sx=c.screenX(x,y);y=c.screenY(x,y);x=sx;
+            scale=c.scale;p=river.canvas();}
+        SoftCue.dot(p,x,y-5*scale,10*scale,SoftCue.animated(g,0x996be3bf));
     }
     private static void bollard(Game g,Painter p,float x,float y) {
         // Use the same weathered iron artwork as the shore scenery. Coordinates

@@ -171,10 +171,17 @@ public final class ContinuousTutorialTest {
             check(p.first!=null && Math.abs(p.first[0]-sx)<.002f
                     && Math.abs(p.first[1]-sy)<.002f,
                     "rendered bollard foundation uses the same elevated anchor as the gesture target");
-            ReplayInput.down(root,load.x,load.y);ReplayInput.move(root,wx,wy);
+            check(!MooringView.reachableBollard(g,load.berth),"bollard stays quiet before lasso hold");
+            ReplayInput.down(root,load.x,load.y);
+            check(MooringView.reachableBollard(g,load.berth),"reachable bollard glows before aiming at it");
+            check(!MooringView.reachableBollard(g,(load.berth+1)%3),"unusable berth does not glow");
+            float savedX=load.x;load.x+=500;
+            check(!MooringView.reachableBollard(g,load.berth),"out-of-reach bollard does not glow");load.x=savedX;
+            ReplayInput.move(root,wx,wy);
             check(g.overTiePoint(load,wx,wy) && Math.abs(g.aimX(load,wx,wy)-wx)<.002f
                     && Math.abs(g.aimY(load,wx,wy)-wy)<.002f,"aiming at the exact raised visual anchor has no hidden snap offset");
             ReplayInput.up(root,wx,wy);
+            check(!MooringView.reachableBollard(g,load.berth),"bollard glow ends on release");
             check(Math.abs(g.ropeEndX-wx)<.002f && Math.abs(g.ropeEndY-wy)<.002f,
                     "released lasso targets the raised bollard rather than the old water-plane point");
             for(int tick=0;tick<Game.ROPE_FLIGHT_TICKS;tick++) root.step();
