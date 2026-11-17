@@ -26,40 +26,47 @@ public final class VesselView {
             ShadowView.vessel(g,p,b,tug,size);
             WaterFoam.bow(g,p,b);
         } finally {if(surface.length>0)canvas.popClip();}
-        boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
-        if(flash) {
-            // A bright hull-shaped pulse under the fading sprite flashes the
-            // vessel itself; normal fender contacts never start this timer.
-            p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
-                    2*b.radius+7,0x88ff935a);
-            p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
-                    2*b.radius+1,0xffffedc0);
-        }
-        SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
-        SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
-        RopeAttachment.fittings(g,p,b);
-        if(tug) {
-            VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
-            VesselLighting.tug(g,p,b,bob);
-            VesselNavigationLights.draw(g,p,b,true,bob,true);
-            exhaust(p,b,tick,b.engineLoad,bob);
-        } else if(b.yacht) {
-            YachtArt.mast(g,p,b,bob);
-            VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
-            VesselNavigationLights.draw(g,p,b,false,bob,true);
-        } else {
-            // Coaming fittings sit behind cargo; the painted loads occlude them.
-            VesselLighting.barge(g,p,b,bob);
-            VesselNavigationLights.draw(g,p,b,false,bob,false);
-            CargoView.draw(g,p,b,hullX,hullY,size);
-            VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
-            VesselNavigationLights.draw(g,p,b,false,bob,true);
-            if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
-                float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;
-                p.circle(b.x-c*28+s*9,b.y-s*28-c*9,1.7f+pulse,b.lineAttached?0xffd3e8a1:0xffffd34e);
+        float[] waterline=VesselWaterline.boundary(g,p,b,tug,size);
+        float waterScale=river?((RiverPainter)p).camera.scale:1;
+        canvas.pushClipOutside(VesselWaterline.submerged(waterline,size*waterScale));
+        try {
+            boolean flash=tug && b==g.tug && g.damageFlashTicks>0 && (40-g.damageFlashTicks)%20<7;
+            if(flash) {
+                // A bright hull-shaped pulse under the fading sprite flashes the
+                // vessel itself; normal fender contacts never start this timer.
+                p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
+                        2*b.radius+7,0x88ff935a);
+                p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
+                        2*b.radius+1,0xffffedc0);
             }
-        }
-        VesselWaterline.draw(g,p,b,tug,size,true);
+            SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
+            SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
+            RopeAttachment.fittings(g,p,b);
+            if(tug) {
+                VesselHighlight.draw(g,p,b,true,hullX,hullY,size);
+                VesselLighting.tug(g,p,b,bob);
+                VesselNavigationLights.draw(g,p,b,true,bob,true);
+                exhaust(p,b,tick,b.engineLoad,bob);
+            } else if(b.yacht) {
+                YachtArt.mast(g,p,b,bob);
+                VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
+                VesselNavigationLights.draw(g,p,b,false,bob,true);
+            } else {
+                // Coaming fittings sit behind cargo; the painted loads occlude them.
+                VesselLighting.barge(g,p,b,bob);
+                VesselNavigationLights.draw(g,p,b,false,bob,false);
+                CargoView.draw(g,p,b,hullX,hullY,size);
+                VesselHighlight.draw(g,p,b,false,hullX,hullY,size);
+                VesselNavigationLights.draw(g,p,b,false,bob,true);
+                if(b.lineAttached || (b.berth>=0 && g.canTie(b))) {
+                    float pulse=(float)StrictMath.sin(tick*.12)*.5f+.5f;
+                    p.circle(b.x-c*28+s*9,b.y-s*28-c*9,1.7f+pulse,b.lineAttached?0xffd3e8a1:0xffffd34e);
+                }
+            }
+        } finally {canvas.popClip();}
+        if(surface.length>0)canvas.pushClipOutside(surface);
+        try{VesselWaterline.contact(canvas,waterline,waterScale);}
+        finally{if(surface.length>0)canvas.popClip();}
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         boolean river=p instanceof RiverPainter;

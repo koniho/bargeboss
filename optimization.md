@@ -1552,3 +1552,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   idle/cruise/push/astern frames at separated animation phases. Metal Release
   build and simulator launch pass. Android install was attempted but adb reports
   no connected devices; real-device pixels and frame timing remain unverified.
+
+## 2026-11-16: submerged hull intersection (supersedes contact-foam adjustment)
+
+- User correctly identified that moving foam did not submerge the hull. Replaced
+  all seven contact stamps with a continuous animated meniscus and a matching
+  inverse clip. Tug/barge/mission-yacht hulls, cargo, surface lighting and glows
+  are clipped below the water boundary before compositing. Surface height remains
+  independent of hull heave, so bobbing reveals/hides the lower hull.
+- Shared registered 32-heading geometry, 24 segments and two end guards form
+  disjoint triangles, compatible with every Painter. One wave sample per hull;
+  bounded transient geometry (~1.5 KiB per visible active vessel). No texture or
+  cache growth. Additional native clip/path cost is unmeasured; no speedup claim.
+  Moored NPC models use their separate rendering path and are unchanged.
+- Added a real-atlas submerged-pixel regression across all three vessel types,
+  32 headings and three bob phases. Reviewed idle/cruise/push/astern previews;
+  all 1,439,937 shoreline assertions pass. Final native/build results follow.
+- Final: 767,778 submerged-pixel assertions pass (181,066 actual hull pixels
+  removed, 550,076 retained samples). Full shared checks, Android and Metal
+  builds, and JVM/J2ObjC parity `ee7274a9:2:1350` pass. Installed over wireless
+  adb and inspected Android and Metal Montrose captures. No timing measurement
+  or physical-iPhone validation in this round.

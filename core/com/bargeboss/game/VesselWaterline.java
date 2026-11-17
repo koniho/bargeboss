@@ -28,42 +28,49 @@ public final class VesselWaterline {
         }
         return result;
     }
-    /** Sparse contact filaments; detached foam lives independently in WaterSurface.foam. */
+    /** Screen-space water intersection. Its height is independent of hull heave. */
+    static float[] boundary(Game g,Painter p,Body b,boolean tug,float size) {
+        RiverCamera c=p instanceof RiverPainter?((RiverPainter)p).camera:null;
+        float scale=c==null?1:c.scale,x=c==null?b.x:c.screenX(b.x,b.y),y=c==null?b.y:c.screenY(b.x,b.y);
+        float heading=b.angle/(float)(StrictMath.PI/16),whole=(float)StrictMath.floor(heading);
+        int a=(((int)whole+(c==null?0:RiverCamera.DIRECTION_OFFSET))%32+32)%32,bb=(a+1)%32;
+        float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
+        float[] from=EDGE[b.yacht?2:tug?0:1][a],to=EDGE[b.yacht?2:tug?0:1][bb];
+        float surface=g.water.height(b.x,b.y,g.visualTicks,b)*.35f;
+        float[] edge=new float[(SEGMENTS+1)*2];
+        for(int i=0;i<=SEGMENTS;i++) {
+            float wave=.4f*(float)StrictMath.sin(g.visualTicks*.048+b.id*.7+i*.38);
+            edge[2*i]=x+offset(from,to,i,false,0,mix)*size*scale;
+            edge[2*i+1]=y+(offset(from,to,i,true,0,mix)*size-2.2f-surface-wave)*scale;
+        }
+        return edge;
+    }
+    /** Disjoint trapezoids hide every hull/lit/glow pixel below the same contact curve. */
+    static float[] submerged(float[] edge,float extent) {
+        float bottom=-Float.MAX_VALUE;for(int i=1;i<edge.length;i+=2)bottom=Math.max(bottom,edge[i]+extent);
+        float[] mask=new float[(SEGMENTS+2)*12];
+        for(int i=0;i<SEGMENTS+2;i++) {
+            int a=Math.max(0,i-1)*2,b=Math.min(SEGMENTS,i)*2;
+            float x=edge[a]-(i==0?extent:0),xx=edge[b]+(i==SEGMENTS+1?extent:0),y=edge[a+1],yy=edge[b+1];
+            int j=i*12;mask[j]=x;mask[j+1]=y;mask[j+2]=xx;mask[j+3]=yy;mask[j+4]=xx;mask[j+5]=bottom;
+            mask[j+6]=x;mask[j+7]=y;mask[j+8]=xx;mask[j+9]=bottom;mask[j+10]=x;mask[j+11]=bottom;
+        }
+        return mask;
+    }
+    static void contact(Painter canvas,float[] edge,float scale) {
+        for(int i=0;i<SEGMENTS;i++) {
+            int j=i*2;
+            canvas.line(edge[j],edge[j+1],edge[j+2],edge[j+3],.85f*scale,0x786eaaa9);
+        }
+    }
     public static void draw(Game g,Painter p,Body b,boolean tug,float size,boolean contact) {
         if(!contact)return;
-        boolean river=p instanceof RiverPainter;RiverCamera c=river?((RiverPainter)p).camera:null;
-        Painter canvas=river?((RiverPainter)p).canvas():p;
-        float scale=river?c.scale:1,x=river?c.screenX(b.x,b.y):b.x,y=river?c.screenY(b.x,b.y):b.y;
-        float[] clip=river?ShoreOcclusion.vessel(g,c,b,true):ShoreOcclusion.EMPTY;
+        RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
+        Painter canvas=river==null?p:river.canvas();
+        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,true);
         if(clip.length>0)canvas.pushClipOutside(clip);
-        try {
-            float heading=b.angle/(float)(StrictMath.PI/16),whole=(float)StrictMath.floor(heading);
-            int a=(((int)whole+(river?RiverCamera.DIRECTION_OFFSET:0))%32+32)%32,bb=(a+1)%32;
-            float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
-            float[] from=EDGE[b.yacht?2:tug?0:1][a],to=EDGE[b.yacht?2:tug?0:1][bb];
-            float speed=b.speed(),motion=Math.min(1,speed/65);
-            // Water contact rides the surface, never the filtered hull heave. The
-            // broad hull averages waves; its visible meniscus has a quieter rise.
-            // Sample once per hull, not once per patch (height scans wake packets).
-            float surface=g.water.height(b.x,b.y,g.visualTicks,b)*.35f;
-            float travelX=river?RiverCamera.Q*(b.vx+b.vy):b.vx;
-            // Patches travel toward the trailing end; their envelopes leave clear gaps between crests.
-            for(int patch=0;patch<7;patch++) {
-                float age=Math.floorMod(g.visualTicks+patch*13+b.id*7,78)/78f;
-                float u=(patch+.5f+(travelX<0?age-.5f:.5f-age)*.65f)/7;
-                float index=u*SEGMENTS;int i=Math.min(SEGMENTS-1,(int)index);float t=index-i;
-                float ex=offset(from,to,i,false,t,mix),ey=offset(from,to,i,true,t,mix);
-                float tx=offset(from,to,i+1,false,0,mix)-offset(from,to,i,false,0,mix);
-                float ty=offset(from,to,i+1,true,0,mix)-offset(from,to,i,true,0,mix);
-                float leading=.35f+.65f*(travelX>=0?u:1-u);
-                float envelope=(float)StrictMath.sin(age*StrictMath.PI);
-                float crest=envelope*envelope;
-                float alpha=.22f*(.65f+.35f*crest)+motion*.72f*leading*crest;
-                float length=(22+motion*8)*scale,width=(8+motion*22)*scale;
-                VesselFoam.patch(canvas,patch%2,x+ex*size*scale,y+(ey*size-surface-.5f)*scale,
-                        (float)StrictMath.atan2(ty,tx),length,width,alpha,WaterFoam.phase(g.visualTicks,b.id+patch));
-            }
-        } finally {if(clip.length>0)canvas.popClip();}
+        try{contact(canvas,boundary(g,p,b,tug,size),river==null?1:river.camera.scale);}
+        finally{if(clip.length>0)canvas.popClip();}
     }
     private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
         int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);
