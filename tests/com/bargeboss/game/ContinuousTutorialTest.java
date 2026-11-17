@@ -168,8 +168,8 @@ public final class ContinuousTutorialTest {
             check(Math.abs(wx-g.bollardX(load.berth))<.002f && Math.abs(wy-g.bollardY(load.berth))<.002f,
                     "raised bollard hit point is the exact inverse of its elevated visual anchor");
             BollardCapture p=new BollardCapture();MooringView.draw(g,new RiverPainter(p,camera));
-            check(p.first!=null && Math.abs(p.first[0]-(sx-12*camera.scale*.8f))<.002f
-                    && Math.abs(p.first[1]-(sy+4*camera.scale*.8f))<.002f,
+            check(p.first!=null && Math.abs(p.first[0]-sx)<.002f
+                    && Math.abs(p.first[1]-sy)<.002f,
                     "rendered bollard foundation uses the same elevated anchor as the gesture target");
             ReplayInput.down(root,load.x,load.y);ReplayInput.move(root,wx,wy);
             check(g.overTiePoint(load,wx,wy) && Math.abs(g.aimX(load,wx,wy)-wx)<.002f
@@ -183,11 +183,11 @@ public final class ContinuousTutorialTest {
     }
     private static final class BollardCapture implements Painter {
         float[] first;
-        public void poly(float[] xy,int color) {if(first==null) first=xy.clone();}
+        public void poly(float[] xy,int color) {}
         public void rect(float x,float y,float w,float h,int color) {}
         public void circle(float x,float y,float r,int color) {}
         public void line(float x,float y,float xx,float yy,float w,int color) {}
-        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {if(a==SpriteAtlas.SHORE_BOLLARDS && first==null)first=new float[]{x,y};}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha) {}
     }
     private static void holdFromMouth() {

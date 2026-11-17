@@ -96,17 +96,15 @@ public final class MooringView {
 
     }
     private static void bollard(Game g,Painter p,float x,float y) {
+        // Use the same weathered iron artwork as the shore scenery. Coordinates
+        // already include quay rise: preserve the gameplay/lasso attachment point.
         if(p instanceof RiverPainter) {
             RiverPainter river=(RiverPainter)p; RiverCamera c=river.camera;
-            p=ScreenView.scaled(river.canvas(),c.screenX(x,y),c.screenY(x,y),c.scale*.8f); x=0;y=0;
-        }
-        p.poly(new float[]{x-12,y+4,x-7,y-2,x+9,y-2,x+14,y+6,x+8,y+12,x-8,y+12},DARK);
-        p.poly(new float[]{x-9,y+3,x-5,y-1,x+7,y-1,x+10,y+5,x+6,y+9,x-6,y+9},0xff6a7381);
-        p.rect(x-5,y-9,11,14,DARK); p.rect(x-4,y-9,8,12,0xffbc7a27);
-        p.rect(x-4,y-9,3,11,VisualStyle.GOLD); p.rect(x-7,y-12,14,6,DARK);
-        p.rect(x-6,y-12,12,4,VisualStyle.GOLD); p.rect(x-4,y-12,8,1,HIGHLIGHT);
-        p.rect(x-9,y-7,18,3,DARK); p.rect(x-8,y-7,16,1,HIGHLIGHT);
+            river.canvas().sprite(SpriteAtlas.SHORE_BOLLARDS,1,c.screenX(x,y),c.screenY(x,y),
+                    28*c.scale,28*c.scale,0,1);
+        } else p.sprite(SpriteAtlas.SHORE_BOLLARDS,1,x,y,28,28,0,1);
     }
+
     private static void aim(Game g,Painter p,Body b) {
         boolean tow=g.towAiming;
         Body target=tow?g.towTargetBody(b,g.pointerX,g.pointerY):null;

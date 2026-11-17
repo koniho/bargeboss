@@ -2232,3 +2232,20 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - The legacy decorative payload animation was removed with the old crane.
   Actual individual cargo-piece hoisting remains future work; this change
   provides the shared rigid boom/hook model, not a completed unloading sequence.
+
+## 2026-11-17: remove remaining legacy interactive bollard artwork
+
+- Traced the flat yellow/black bollards to MooringView's separate primitive
+  drawing, not the decorative CalumetArt placements. All interactive cargo
+  mooring points now reuse frame 1 of the existing weathered SHORE_BOLLARDS atlas.
+  No new textures, caches or asset decoding paths were introduced.
+- Preserved elevated world anchors and touch/lasso coordinates. Updated the
+  existing raised-bollard regression to inspect the sprite anchor instead of
+  the removed polygon; it still exercises actual lasso catching at two widths.
+- Re-exported all 12 level/berth review views and inspected the replacement at
+  the Two Banks berth. Canonical gameplay result remains 2 deliveries / 1350;
+  drawing signature changes to 1414b3da:2:1350.
+- Full Android checks/build and JVM/J2ObjC parity passed. Installed on the
+  wireless Android phone and inspected the practice harbor screenshot: the
+  interactive bollard now matches the weathered shore props. Native coverage
+  is representative practice, not every level; restored normal launch/timeout.
