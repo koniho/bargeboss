@@ -592,3 +592,12 @@ union and boundary. The arrival voyage uses the same tug body, navigation physic
 shore clips and camera as the lesson. Its fixed red/green shore beacons follow
 +X as the returning direction; the red light is on +Y/starboard. Never draw an
 opening only in the artwork while leaving a collision wall or dry mask across it.
+
+### Cargo berth cranes
+
+Cargo berths and the Montrose service apron share `HarborCrane` rigid geometry.
+Place crane bases on dry land at the shore elevation, with root yaw facing the
+berth. Merge cranes by unraised ground-anchor depth with scenery and vessels;
+do not append them as screen overlays. Prepare model/BSP instances on level
+reset and retain only a bounded placement cache. Montrose rescue variants reuse
+the surveyed service crane rather than adding cargo-berth duplicates.

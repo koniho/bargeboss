@@ -2208,3 +2208,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Installed successfully on the wireless phone and launched for user listening;
   restored prior display timeout. No native code changed in this tuning round.
   Spectral/envelope measurements support the change but do not replace audition.
+
+## 2026-11-17: reuse Montrose cranes across all cargo berths
+
+- Shared Java: extracted Montrose's rigid three-node crane into HarborCrane and
+  replaced the legacy screen-space DockView crane. Practice, Calumet cargo berths
+  and Indiana now use this model on dry shore, oriented toward their berth.
+  Montrose's surveyed service crane and its rescue-stage variants retain their
+  original geometry and position. Lock Run has no cargo berth crane.
+- Instances prepare their geometry/BSP during reset, outside active drawing;
+  reuse is bounded to 32 placement/heading entries. Visible cranes join the
+  existing world-depth merge instead of painting over the completed scene.
+  No frame-time improvement is claimed; this is geometry/style consistency.
+- Placement tests cover practice and all eight levels, including eight enabled
+  cargo berths, dry base corners, model hierarchy and depth. AllCranesReview
+  exports 12 actual shared-renderer views; reviewed the full contact sheet.
+  Full Android checks/build and preview pass, including 1,382,037 production
+  hull/cargo shoreline pixel assertions across 32 headings. JVM/J2ObjC parity
+  passes with updated drawing hash c16a16f0:2:1350; replay outcome unchanged.
+- Installed on wireless Android phone and inspected the native practice scene.
+  Every-level visual coverage is desktop shared rendering, not a full native
+  device playthrough. No iOS device pixel check in this round.
+- The legacy decorative payload animation was removed with the old crane.
+  Actual individual cargo-piece hoisting remains future work; this change
+  provides the shared rigid boom/hook model, not a completed unloading sequence.

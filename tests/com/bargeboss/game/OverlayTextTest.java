@@ -23,7 +23,7 @@ public final class OverlayTextTest {
         Game g=new Game();ReplayInput.controlFixture(g);p=new Count();Painter world=new RiverPainter(p,g.layout.camera);
         SoftCue.caption(world,"NO WORLD LABEL",300,400,12,0xffffffff);RiverPainter.center(world,"NO LABEL",300,400,12,0xffffffff);
         HarborView.draw(g,world);Renderer.body(g,world,g.tug);for(Body b:g.cargo)if(b!=null)Renderer.body(g,world,b);
-        DockView.draw(g,p);MooringView.draw(g,world);check(p.text==0,"vessels, berths, dock machinery and mooring cues contain no world text");
+        for(int crane:DockView.ordered(g))DockView.draw(g,p,crane);MooringView.draw(g,world);check(p.text==0,"vessels, berths, dock machinery and mooring cues contain no world text");
         ScreenView.hud(g,p);check(p.text>0,"HUD still has readable cached text");
         g.startTutorial();g=g.activeGame();p=new Count();TutorialView.draw(g,p);check(p.text>0,"tutorial instruction overlay remains readable");
         System.out.println(checks+" cached UI and world-text removal assertions passed");

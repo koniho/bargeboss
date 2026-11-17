@@ -10,6 +10,7 @@ public final class CoreTest {
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
         EngineAudioTest.run();
+        DockCraneTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
         g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
@@ -158,7 +159,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Reviewed bow/foam shader fallbacks change drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("3f4e890:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("c16a16f0:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

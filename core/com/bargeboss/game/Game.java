@@ -30,6 +30,7 @@ public final class Game {
     public CollisionSplashes splashes=new CollisionSplashes();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
+    DockView.Crane[] dockCranes;
     public Bridge bridge=new Bridge();
     public Lock lock=new Lock();
     public MontroseHarbor mission=new MontroseHarbor();
@@ -351,6 +352,7 @@ public final class Game {
         mode=PLAY; tell(goalStatus());
         buoys=new Buoys();buoys.reset(this);mooredFleet=new MooredFleet();mooredFleet.reset(this);splashes=new CollisionSplashes();
         ShorelineView.prepare(montroseStage());
+        DockView.prepare(this);
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
