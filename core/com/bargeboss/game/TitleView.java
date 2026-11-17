@@ -13,10 +13,22 @@ public final class TitleView {
         float skyHeight=horizon/.89f,skyWidth=skyHeight*3;
         float skyPeriod=skyWidth*.88f;
         float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyPeriod);
+        // The painted cloud/smog plane veils the independent, much slower lunar plane.
+        p.rect(0,0,g.layout.width,skyHeight,0xff101b24);
+        moon(g,p);
         sky(p,skyWidth,skyHeight,g.layout.width,skyDrift);
         p.rect(0,0,g.layout.width,horizon,0x18091920);
         Painter water=TitleWaterView.perspective(p,horizon,g.layout.height);
         WaveView.draw(water,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
+    }
+    private static void moon(Game g,Painter p) {
+        float x=g.layout.width*.55f+55*sine(g.visualTicks*.00012),y=65+g.layout.offsetY*.2f;
+        p.circle(x,y,44,0x0ce1c99c);
+        p.circle(x,y,35,0x15e1c99c);
+        p.circle(x,y,27,0xffd9c9a5);
+        p.circle(x-8,y+4,7,0x28797971);
+        p.circle(x+9,y-7,5,0x20797971);
+        p.circle(x+7,y+12,3,0x18797971);
     }
     private static void shore(Game g,Painter p) {TitleShoreView.draw(g,p);}
     private static void sky(Painter p,float width,float height,float extent,float drift) {
@@ -26,9 +38,9 @@ public final class TitleView {
         for(float x=-drift-period;x<extent;x+=period) {
             for(int i=0;i<SpriteAtlas.TITLE_SKY_FADE_SLICES;i++) {
                 float alpha=(i+.5f)/SpriteAtlas.TITLE_SKY_FADE_SLICES;alpha=alpha*alpha*(3-2*alpha);
-                p.sprite(SpriteAtlas.TITLE_BACKDROP,i+1,x+(i+.5f)*slice,height/2,slice,height,0,alpha);
+                p.sprite(SpriteAtlas.TITLE_BACKDROP,i+1,x+(i+.5f)*slice,height/2,slice,height,0,alpha*.82f);
             }
-            p.sprite(SpriteAtlas.TITLE_BACKDROP,0,x+overlap+period/2,height/2,period,height,0,1);
+            p.sprite(SpriteAtlas.TITLE_BACKDROP,0,x+overlap+period/2,height/2,period,height,0,.82f);
         }
     }
     static final float HEADING=(float)StrictMath.PI/4;

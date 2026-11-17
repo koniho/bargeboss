@@ -1672,3 +1672,15 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   reviewed. Physical iPhone and controlled title frame-time A/B remain untested.
   Prompts/specifications: docs/art-prompts/title-industrial-dusk-v3.md. Production
   artwork and composed preview also copied to development-phone Downloads.
+
+## 2026-11-16: title moon and returning navigation markers
+
+- Shared title moon draws behind the cloud/smog plane, with bounded visualTicks
+  drift (maximum 0.396 logical px/sec versus cloud drift 2.1 px/sec). Six small
+  circles and one sky base rectangle; no new texture/cache. Cloud plane at 82%
+  opacity veils the moon. Existing painted sky reused, not a volumetric cloud model.
+- Edited foreground lamps to green left / red right viewed into each opening.
+  Geometry, alpha and 2172x724 frame size retained. Prompt recorded with title art.
+- Four-layout shared preview reviewed; full Android checks/build and iOS Metal
+  build pass. JVM/J2ObjC parity 4b1a0c56:2:1350. Android installed and launched.
+  No new frame-time benchmark; physical iPhone untested.

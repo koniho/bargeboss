@@ -16,3 +16,16 @@ Transparent panoramic 3:1 game parallax sprite. Strict side elevation of old Cal
 
 Production game parallax sprite on genuine transparent background, panoramic 3:1 canvas. Strict SIDE ELEVATION, eye level, no isometric perspective. A very old rough irregular limestone and dark basalt harbor breakwater runs along the bottom 15 percent of the canvas. Large battered angular rocks with cracks, eroded chipped faces, soot, moss and wet black bases. Rockwall spans from left edge to 64 percent width, then an open transparent harbor entrance from 64 to 84 percent width, then rocks from 84 percent to right edge. At 61 percent width a tall weathered Calumet steel navigation lighthouse stands on the rockwall: rusted riveted four-legged lattice tower, cross braces, ladder, circular enclosed glass lantern, safety rail and battered dark red conical metal roof, small warm amber lamp. Lighthouse rises to near upper quarter of canvas. Smaller green navigation beacon at right lip of opening. All artwork side-on, not three-quarter. Grimy richly painted industrial realism, subdued charcoal blue gray materials with muted rust, late dusk almost night, worn and old. No sky, no water, no factories, no bridges, no boats, no text or UI. Transparent above rocks and between lighthouse braces and through harbor opening. Preserve transparent gap fully down to bottom edge.
 
+
+## Navigation correction (2026-11-16)
+
+Built-in imagegen edit of title-rocks-lighthouse-v1.png, transparency retained:
+
+Edit this exact production transparent panorama with minimal changes. Preserve canvas size, positions, side-view geometry, all rocks, weathering, alpha transparency, opening, and lighthouse structure exactly. Change ONLY the navigation lamp glass/emission colors: tall lattice lighthouse on LEFT side of the harbor opening must emit subdued GREEN light (currently amber), and the small beacon on RIGHT side of the opening must emit RED light (currently green). Red right returning, viewed from the water toward the opening. Do not recolor surrounding rocks or roofs; preserve dim polluted dusk style. No new objects, no sky or background.
+
+Title openings must retain green on the viewer's left and red on the right when
+viewed from seaward. Do not mirror this artwork to make variants.
+
+The moon is shared Java geometry behind the painted sky/cloud plane at 82%
+opacity. Its slow bounded drift uses visualTicks, with no wall-clock animation
+or extra textures. Cloud parallax moves faster across the moon.
