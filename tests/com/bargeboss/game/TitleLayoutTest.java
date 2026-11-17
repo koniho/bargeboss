@@ -6,11 +6,12 @@ public final class TitleLayoutTest {
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Capture implements Painter {
         float left=Float.MAX_VALUE,top=left,right=-left,bottom=-left;
-        int factories,factoryOrder=-1,vessels,shoreOrder=-1,vesselOrder=-1,order;
+        int factories,middle,middleOrder=-1,vessels,shoreOrder=-1,vesselOrder=-1,order;
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha) {
             order++;
-            if(a==SpriteAtlas.FACTORY){factories++;factoryOrder=order;}
-            if(a==SpriteAtlas.TITLE_HARBOR || a==SpriteAtlas.TITLE_LAND)shoreOrder=order;
+            if(a==SpriteAtlas.FACTORY){factories++;}
+            if(a==SpriteAtlas.TITLE_STEEL){middle++;middleOrder=order;}
+            if(a==SpriteAtlas.TITLE_ROCKS)shoreOrder=order;
             if(a>SpriteAtlas.BULK || alpha<.15f)return;
             if(vesselOrder<0)vesselOrder=order;vessels++;
             w*=SpriteAtlas.widthScale(a,f);h*=SpriteAtlas.heightScale(a,f);
@@ -24,7 +25,7 @@ public final class TitleLayoutTest {
         public void rect(float x,float y,float w,float h,int c){order++;}
         public void circle(float x,float y,float r,int c){order++;}
         public void line(float x,float y,float xx,float yy,float w,int c){order++;}
-        public void poly(float[] xy,int c){order++;if(c==TitleShoreView.ROCK_SHADOW)shoreOrder=order;}
+        public void poly(float[] xy,int c){order++;}
     }
     private static final class WaterCheck implements Painter {
         int commands;
@@ -45,7 +46,7 @@ public final class TitleLayoutTest {
                 check(p.left>=24 && p.right<=menuLeft-16,"complete convoy stays left of menu panel");
                 check(p.top>=238,"mast and cargo stay below the compact logo");
                 check(p.bottom<=g.layout.height-76,"convoy clears the rank bar throughout heave");
-                check(p.factories>=4 && p.factoryOrder<p.shoreOrder,"distant factory modules stay behind the near rock wall");
+                check(p.factories==0 && p.middle>=1 && p.middleOrder<p.shoreOrder,"side-elevation steel stays behind rockwall without isometric factories");
                 check(p.shoreOrder>0 && p.vesselOrder>p.shoreOrder,"shoreline covers wake while vessels remain in front");
             }
             check(g.controlBox(Layout.START).x==size[0]-328,"title action is anchored to the actual right edge");

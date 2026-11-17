@@ -1650,3 +1650,25 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Initial pull returned the old 42.20 FPS capture while the replay was running;
   discarded it and pulled the completed file stamped 18:13. Only current figures
   above are evidence for this round. Physical iPhone remains untested.
+
+## 2026-11-16: side-elevation polluted-dusk title scenery
+
+- Shared Java / Android / iOS: replaced title-only isometric factory modules and
+  procedural clean bridge/rocks with three painted 3:1 panoramas: polluted sky
+  with side-on factories, riveted rusty bridge/pipework, and rough old riprap with
+  a Calumet-inspired lattice lighthouse. Separate deterministic parallax and
+  existing horizon clipping, convoy, menus and input remain shared.
+- Three 2172x724 images total about 18 MiB decoded RGBA; two are new transparent
+  single-frame textures (about 12 MiB), sky replaces the previous backdrop.
+  Uses existing bounded native frame storage, no new cache or native primitive.
+  Replaces many rock/truss paths with a few sprite draws; this is not measured
+  evidence of a frame-time improvement. No 60 FPS claim for this art change.
+- Reviewed actual shared renderer at 960x600, 1243x600, 1333x600 and 960x720;
+  corrected initial lighthouse placement to clear the small-screen logo.
+  Full check suite (including 1120 title layout/order assertions), Android build,
+  Release Metal build, and JVM/J2ObjC parity ac9249f0:2:1350 pass. The drawing
+  signature changed intentionally; deliveries/score remain 2/1350.
+- Installed/launched Android over Wi-Fi; native Metal simulator screenshot
+  reviewed. Physical iPhone and controlled title frame-time A/B remain untested.
+  Prompts/specifications: docs/art-prompts/title-industrial-dusk-v3.md. Production
+  artwork and composed preview also copied to development-phone Downloads.

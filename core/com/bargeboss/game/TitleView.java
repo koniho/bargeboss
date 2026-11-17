@@ -8,17 +8,15 @@ public final class TitleView {
     public static float horizon(Game g) {return 260+g.layout.offsetY;}
     public static void background(Game g,Painter p) {
         int tick=g.visualTicks;float horizon=horizon(g);
-        // The original panoramic composition, repainted in the gameplay palette.
-        // Register the painted waterline and keep the sunset visible beside the logo.
+        // Side-elevation steelworks and polluted dusk, painted as one distant plane.
+        // Register the factory bases behind the closer bridge and rockwall planes.
         float skyHeight=horizon/.89f,skyWidth=skyHeight*3;
         float skyPeriod=skyWidth*.88f;
         float skyDrift=scroll(skyWidth*.73f-(550+g.layout.offsetX)+tick*.035f,skyPeriod);
         sky(p,skyWidth,skyHeight,g.layout.width,skyDrift);
-        p.rect(0,0,g.layout.width,horizon,0x7609192b);
+        p.rect(0,0,g.layout.width,horizon,0x18091920);
         Painter water=TitleWaterView.perspective(p,horizon,g.layout.height);
         WaveView.draw(water,tick,0,horizon,g.layout.width,g.layout.height-horizon,1.35f,-tick*.25f);
-        float sun=scroll(skyWidth*.73f-skyDrift,skyPeriod);
-        for(float x=sun-skyPeriod;x<g.layout.width;x+=skyPeriod) reflections(water,tick,x,horizon,g.layout.height);
     }
     private static void shore(Game g,Painter p) {TitleShoreView.draw(g,p);}
     private static void sky(Painter p,float width,float height,float extent,float drift) {
@@ -31,18 +29,6 @@ public final class TitleView {
                 p.sprite(SpriteAtlas.TITLE_BACKDROP,i+1,x+(i+.5f)*slice,height/2,slice,height,0,alpha);
             }
             p.sprite(SpriteAtlas.TITLE_BACKDROP,0,x+overlap+period/2,height/2,period,height,0,1);
-        }
-    }
-    private static void reflections(Painter p,int tick,float center,float top,float bottom) {
-        for(int i=0;i<16;i++) {
-            float y=top+9+i*17+sine(tick*.024+i)*3;if(y>bottom) continue;
-            float span=13+i*3.4f,x=center+sine(i*2.3)*(15+i*3)+sine(tick*.017+i)*5;
-            int alpha=(int)((.55f+.45f*sine(tick*.035+i))*(76-i*2));
-            for(int part=1;part<=8;part++) {
-                float a=(part-1)/8f,b=part/8f;
-                p.line(x+(a-.5f)*span,y-sine(a*Math.PI)*(2+i*.2f),
-                        x+(b-.5f)*span,y-sine(b*Math.PI)*(2+i*.2f),1.5f+i*.06f,(alpha<<24)|0xffcc87);
-            }
         }
     }
     static final float HEADING=(float)StrictMath.PI/4;
