@@ -4,6 +4,7 @@ cd "$(dirname "$0")"
 rm -rf build/preview
 mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
+echo tools/IndianaReview.java >> build/preview/sources.txt
 echo tools/MontroseReview.java >> build/preview/sources.txt
 echo tools/MontroseShoreReview.java >> build/preview/sources.txt
 echo tools/MontroseBoatHoistReview.java >> build/preview/sources.txt
@@ -136,3 +137,5 @@ java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoAssetChe
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.GenerateCargoShadows --check
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoStyleReview --all
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.CargoStyleReview --unload
+
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.IndianaReview

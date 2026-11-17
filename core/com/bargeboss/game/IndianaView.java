@@ -15,10 +15,7 @@ public final class IndianaView {
     private static ArticulatedModel ground(){ArticulatedModel.Builder b=new ArticulatedModel.Builder();int i=0;
         for(float[] r:IndianaHarbor.LAND){int n=b.node("indiana-quay-"+i++,-1,(r[0]+r[2])*.5f,(r[1]+r[3])*.5f,0,0,0);
             b.box(n,0,0,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE/2,r[2]-r[0],r[3]-r[1],GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,CONCRETE,SurfaceMaterial.CONCRETE);}
-        int road=b.node("indiana-mill-service-road",-1,550,900,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE+.2f,0,0);
-        b.box(road,0,0,0,30,1800,.4f,0xff443936,SurfaceMaterial.CONCRETE);
-        for(int rail=0;rail<2;rail++){int n=b.node("indiana-rail-approach-"+rail,-1,205+rail*18,420,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE+1,0,0);
-            b.beam(n,0,-260,0,0,260,0,1.7f,STEEL,SurfaceMaterial.STEEL);}
+        IndianaShoreTiles.append(b);
         return b.build();
     }
     private static Landmark[] landmarks(){Landmark[] a={

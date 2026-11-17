@@ -61,3 +61,17 @@ exhaust ducts to vary the skyline. These industrial details are stylized scenery
 not claims of exact plant equipment or present-day building condition.
 All detail stays within existing landmark footprints and uses preprepared rigid
 geometry, with no new texture atlases or changes to channel collision.
+
+## Shore modules
+
+The [satellite reference and kit notes](indiana-harbor-shore-reference.md) separate
+working inner quays from exposed outer margins. Indiana now uses dry-land-clipped
+concrete coping, corrugated sheet-pile wall skins, industrial fill aprons, patched
+service roads, ballast/rail strips and sparse low entrance slabs. Calumet's material
+shaders and rigid primitives are reused, with Indiana-specific placements.
+
+The old continuous east service-road rectangle crossed the outer basin. Its
+replacement is clipped to land and shifted clear of Hick Tower and the south mill.
+The west-fork lane also clears the mill footprint. No navigable water or collision
+boundaries changed. `check.sh` enforces exact dry-footprint, building-clearance,
+elevation and a 400-source-face budget for the modules (currently 396 faces).

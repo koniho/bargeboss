@@ -1780,3 +1780,25 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   reproduces the frame-pacing problem; not evidence of a shader/driver diagnosis.
   Native scene visually reviewed. Full-throttle summary stored with the moderate
   run. iOS native execution of this developer fixture has not been checked.
+
+## 2026-11-16: satellite-informed Indiana shore modules
+
+- Reference agent reviewed USACE aerial harbor sheet and material evidence;
+  docs/maps/indiana-harbor-shore-reference.md distinguishes evidence/inference.
+  Dredged-channel overlays were not traced as coastline. Geometry agent reused
+  Calumet material primitives with Indiana placements, not Calumet's fixed map.
+- Added dry-land-clipped coping, sheet-pile skins, industrial aprons, rough service
+  lanes, ballast/rails and 13 low entrance slabs. Fixed old east road crossing
+  basin water; service lanes clear Hick and mill footprints. Collision unchanged.
+- 66 cullable nodes / 396 source faces, with a 400-face regression bound; helper
+  BSP has 218 fragments. Static preparation remains outside active draws; no new
+  textures, effects or caches. Full-map BSP/frame cost still needs native evidence.
+- 512 exact dry-footprint/building/elevation checks integrated into check.sh.
+  Shared overview/Hick/mill/light previews reviewed; IndianaReview now included
+  in preview.sh. 1,438,849 all-heading Indiana shoreline pixel checks pass.
+- Full shared checks / Android APK build / Release Metal build pass. JVM/J2ObjC
+  parity 7430b369:2:1350. Metal simulator Hick screenshot reviewed with native
+  material shaders. Android installed and launch intent delivered, but the phone
+  locked before the scene configured; no Android timing/visual result is claimed
+  for this shore increment. Unlock requested. Physical iPhone untested. Preview
+  copied to phone Downloads as BargeBoss-Indiana-shores-v1.png.
