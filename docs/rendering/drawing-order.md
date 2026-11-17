@@ -531,3 +531,19 @@ WorldArrows retains its bounded queue and midpoint depth ordering with vessels.
 Arrow appearance is restored to thin, open feathered strokes. The filled neon
 planes and segmented guidance materials were rejected and removed. See the
 [current highlight policy](../art-direction/gameplay-highlights.md).
+
+### Underway bow shedding and title foreground foam
+
+Above 32.5 world units/s of forward motion (half the existing 65-unit foam
+reference), attached bow-pressure crests give way to smaller shoulder emissions.
+Pressure fades between 26 and 32.5 units/s. Gameplay reuses the bounded
+`VesselFoam` pool: released patches retain world positions, drift outward, expand
+and expire after 72 ticks. Reverse and sideways movement retain their existing
+displacement behavior. No new unbounded particle system is introduced.
+
+The title's steady convoy uses fixed-step patch ages and relative travel to leave
+foam behind each bow. Far-side patches precede hulls; near-side patches follow
+their owning hull. At low speed, title pressure crests are split by unraised
+water-plane depth, with the near portion after the hull. Hull/submerged clipping
+and horizon projection remain independent. Do not put the entire title bow wake
+back in a single below-hull pass.

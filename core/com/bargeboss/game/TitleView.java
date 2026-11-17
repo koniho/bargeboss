@@ -84,10 +84,10 @@ public final class TitleView {
             leader=barge;
         }
         for(int i=BARGES-1;i>=0;i--){
-            VesselView.draw(g,p,barges[i],false,false);RopeAttachment.fitting(g,p,barges[i],1);
+            VesselView.draw(g,p,barges[i],false,false);TitleWaterView.foreground(water,barges[i],tick);RopeAttachment.fitting(g,p,barges[i],1);
             if(i<BARGES-1)RopeAttachment.fitting(g,p,barges[i],-1);
         }
-        VesselView.draw(g,p,tug,true,false);RopeAttachment.fitting(g,p,tug,-1);
+        VesselView.draw(g,p,tug,true,false);TitleWaterView.foreground(water,tug,tick);RopeAttachment.fitting(g,p,tug,-1);
         g.titleSmoke.draw(canvas,c,g.layout.width,g.layout.height);
     }
     /** Shared pose for the title renderer and fixed-step exhaust emitter. */

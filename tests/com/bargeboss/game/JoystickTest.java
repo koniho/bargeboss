@@ -39,7 +39,7 @@ public final class JoystickTest {
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}){
             g=playing();g.configureCanvas(size[0],size[1]);g.settings.setJoystickSide(side);
             float cx=Joystick.centerX(g),cy=Joystick.centerY(g);
-            check(cx>=62 && cx+62<=g.layout.width && cy+62<=g.layout.height-44,"pad fits safe logical canvas above footer");
+            check(cx>=Joystick.RADIUS+8 && cx+Joystick.RADIUS+8<=g.layout.width && cy+Joystick.RADIUS+8<=g.layout.height-44,"pad fits safe logical canvas above footer");
             hold(g,0,0);steps(g,1);check(g.joystick.active && !g.navigating,"center dead zone is neutral");
             g.pointerMove(3,cx+3,cy);steps(g,1);check(!g.navigating,"small thumb jitter stays neutral");
             g.pointerMove(3,cx+100,cy);steps(g,1);

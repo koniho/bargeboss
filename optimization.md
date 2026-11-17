@@ -1890,3 +1890,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   APK installed and tested on development phone. Physical iPhone and other
   Android GPUs untested; total GPU headroom and busy Montrose not established
   by this tow fixture. Reports: docs/performance/foam-mesh-2026-11-16.
+
+## 2026-11-16: dissipating bow foam and larger drive control
+
+- Shared composition: title near-side bow foam now follows its owning hull; far
+  side stays behind. Low-speed pressure patches split at unraised water depth.
+  Underway pressure fades out at 32.5 world units/s, replaced by smaller
+  outward-drifting bow-shoulder emissions. Gameplay reuses the existing 160-slot
+  foam pool and eight-tick emission cadence, with 72-tick high-speed lifetime.
+  Title uses six fixed-age patches per side, no persistent allocation/pool growth
+  or gameplay mutation. Existing expanding stern arcs and Mesh batching remain.
+- Shared control: radius 54 -> 81, travel 42 -> 63; thumb and directional guide
+  scale 1.5x. Center moved inward/upward to preserve edge/footer clearance.
+  Dead zone and direction-intent distance retained. Left/right layouts checked.
+- Full Android build/checks pass. Bow tests cover 32 headings, both shoulder
+  emissions, independence from source motion, expiry, and title front/back order.
+  Joystick input/lifecycle/layout tests pass. Parity 7ade6f6d:2:1350 matches
+  native J2ObjC; shoreline/foam pixel regressions pass. Android installed and
+  native title screenshot reviewed: front foam hugs lower hull while fading aft.
+  Physical iOS appearance/touch response not tested in this round.
+- Follow-up Android circular tow: 360 warmup + 2,400 samples, mean 60.05 FPS,
+  frame interval p95 17.352 ms; tow remained attached throughout. Native enlarged
+  control screenshot reviewed for edge/footer clearance. This is a regression
+  sanity run, not a new matched A/B; no additional GPU headroom claim. Summary
+  stored in docs/performance/bow-shedding-2026-11-16/tow-summary.json.

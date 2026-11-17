@@ -32,7 +32,13 @@ public final class WaterFoamTest {
             Trace idle=new Trace();WaterFoam.bow(g,idle,b);check(idle.count==0,"idle has no bow pressure wake");
             b.vx=c*15;b.vy=s*15;Trace slow=new Trace();WaterFoam.bow(g,slow,b);
             b.vx=c*60;b.vy=s*60;Trace fast=new Trace();WaterFoam.bow(g,fast,b);
-            check(fast.count==2 && slow.count==2 && fast.energy>slow.energy,"two bounded crests grow with forward speed");
+            check(fast.count==0 && slow.count==2,"attached pressure crests yield to shed foam above half speed");
+            VesselFoam shed=new VesselFoam();g.visualTicks=Math.floorMod(-b.id*7,8);shed.emit(g,b);g.visualTicks=0;
+            check(shed.emitted==2 && shed.kind[0]<2 && shed.kind[1]<2,"underway bow sheds foam from both shoulders");
+            float xx=shed.x[0],yy=shed.y[0];b.x+=100;b.y+=100;shed.step();
+            check(Math.abs(shed.x[0]-xx)<1 && Math.abs(shed.y[0]-yy)<1,"shed bow foam stays behind its source");
+            b.x=300;b.y=400;for(int i=0;i<90;i++)shed.step();
+            check(shed.age[0]>=shed.life[0] && shed.age[1]>=shed.life[1],"shed bow foam dissipates within its bounded life");
             b.vx=-c*40;b.vy=-s*40;Trace reverse=new Trace();WaterFoam.bow(g,reverse,b);check(reverse.count==0,"no bow wave when going astern");
             b.vx=-s*40;b.vy=c*40;Trace sideways=new Trace();WaterFoam.bow(g,sideways,b);check(sideways.count==0,"sideways motion does not manufacture forward pressure");
             check(b.x==300 && b.y==400 && g.visualTicks==0,"drawing does not advance physics");

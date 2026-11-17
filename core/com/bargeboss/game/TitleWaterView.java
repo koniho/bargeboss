@@ -101,7 +101,22 @@ public final class TitleWaterView {
         }
         // No marching side-contact stamps: the shared clipped hull supplies
         // one continuous waterline, without a dotted conveyor along its sides.
-        for(int side=-1;side<=1;side+=2)patch(p,b,side*b.radius*.45f,b.half+b.radius*.6f,
-            side*11,-8,5,4,WaterFoam.phase(tick,side),4,.55f);
+        bow(p,b,tick,1);
+    }
+    /** The title heading places negative local side on the near side of the hull. */
+    public static void foreground(Painter p,Body b,int tick){bow(p,b,tick,-1);}
+    private static void bow(Painter p,Body b,int tick,int side){
+        float speed=b.vx*(float)StrictMath.cos(b.angle)+b.vy*(float)StrictMath.sin(b.angle);
+        if(speed>=WaterFoam.SHED_SPEED) {
+            // Fixed-step ages describe a steady voyage: released patches stay behind
+            // the moving convoy rather than remaining attached to its bow.
+            for(int packet=5;packet>=0;packet--) {
+                int age=Math.floorMod(tick+b.id*7,8)+packet*8;float t=age/48f;
+                float alpha=.72f*Math.min(1,age/4f)*(1-t)*(1-t);
+                patch(p,b,side*(b.radius*.85f+age*.12f),b.half+b.radius*.62f-speed*Physics.DT*age,
+                    0,18+age*.2f,10+age*.22f,0,WaterFoam.phase(tick,packet+b.id*12),side<0?0:1,alpha);
+            }
+        } else patch(p,b,side*b.radius*.45f,b.half+b.radius*.6f,
+            side*11,-8,5,4,WaterFoam.phase(tick,side),4,.55f*WaterFoam.pressure(speed));
     }
 }

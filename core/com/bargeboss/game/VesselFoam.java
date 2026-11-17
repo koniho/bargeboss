@@ -25,8 +25,11 @@ public final class VesselFoam {
             for(int side=-1;side<=1;side+=2) {
                 float xx=b.x+c*end+b.radius*dx*.62f-shoulder*dy*side*.8f;
                 float yy=b.y+s*end+b.radius*dy*.62f+shoulder*dx*side*.8f;
-                add(xx,yy,b.vx*.0015f-dy*side*.09f,b.vy*.0015f+dx*side*.09f,
-                        (float)StrictMath.atan2(dy,dx),32+motion*24,18+motion*18,.32f+motion*.65f,90,side<0?0:1);
+                boolean shedding=b.vx*c+b.vy*s>=WaterFoam.SHED_SPEED;
+                float outward=shedding?.16f:.09f;
+                add(xx,yy,b.vx*.0015f-dy*side*outward,b.vy*.0015f+dx*side*outward,
+                        (float)StrictMath.atan2(dy,dx),shedding?18+motion*12:32+motion*24,
+                        shedding?10+motion*8:18+motion*18,.32f+motion*.65f,shedding?72:90,side<0?0:1);
             }
         }
         float load=Physics.clamp((b.engineLoad-.12f)/.88f,0,1);

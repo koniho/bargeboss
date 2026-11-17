@@ -36,7 +36,31 @@ public final class TitleLayoutTest {
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new AssertionError("water cannot contain sprite artwork");}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha){throw new AssertionError("water cannot contain sprite artwork");}
     }
+    private static final class BowOrder implements Painter {
+        boolean hull;int before,after,clips;
+        public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){
+            if(kind==4){if(hull)after++;else before++;}
+        }
+        public void pushClipOutside(float[] xy){clips++;}
+        public void popClip(){clips--;check(clips>=0,"bow clips remain balanced");}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){if(a==SpriteAtlas.TUG || a==SpriteAtlas.BARGE)hull=true;}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){sprite(a,f,x,y,w,h,r,alpha);}
+        public void rect(float x,float y,float w,float h,int c){}
+        public void circle(float x,float y,float r,int c){}
+        public void line(float x,float y,float xx,float yy,float w,int c){}
+        public void poly(float[] xy,int c){}
+    }
     public static void run() {
+        for(boolean tug:new boolean[]{false,true}){
+            Game g=new Game();Body b=new Body(tug?0:1,tug?-1:0,300,300,TitleView.HEADING);
+            b.vx=b.vy=20*RiverCamera.Q;BowOrder order=new BowOrder();
+            VesselView.draw(g,new RiverPainter(order,TitleView.camera(g)),b,tug,false);
+            check(order.before>0 && order.after>0,"title bow crest straddles its owning hull draw");
+            check(order.clips==0,"title bow depth masks restore all clips");
+            b.vx=b.vy=48*RiverCamera.Q;BowOrder fast=new BowOrder();
+            VesselView.draw(g,new RiverPainter(fast,TitleView.camera(g)),b,tug,false);
+            check(fast.before==0 && fast.after==0,"underway hull replaces attached pressure crest with shed foam");
+        }
         for(int[] size:new int[][]{{960,600},{1243,600},{1333,600},{960,720}}) {
             Game g=new Game();g.configureCanvas(size[0],size[1]);
             for(int tick=0;tick<=720;tick+=37) {

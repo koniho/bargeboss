@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Screen-space thumb input. Projection and boat physics remain in shared Game. */
 public final class Joystick {
-    public static final float RADIUS=54,TRAVEL=42,DEAD_ZONE=7,INTENT_DISTANCE=14;
+    public static final float RADIUS=81,TRAVEL=63,DEAD_ZONE=7,INTENT_DISTANCE=14;
     public static final int FORWARD_COLOR=0xba7fe1db,REVERSE_COLOR=0xbaffb875;
     public boolean active;
     public float x,y;
@@ -51,8 +51,8 @@ public final class Joystick {
         for(int i=0;i<2;i++){float angle=a+i*sweep,x=(float)StrictMath.cos(angle),y=(float)StrictMath.sin(angle);
             SoftCue.line(p,cx+x*25,cy+y*25,cx+x*51,cy+y*51,1,SoftCue.alpha(reverse,.75f));}
     }
-    public static float centerX(Game g){return g.settings.joystickSide()==GameSettings.RIGHT?g.layout.width-86:86;}
-    public static float centerY(Game g){return g.layout.height-118;}
+    public static float centerX(Game g){return g.settings.joystickSide()==GameSettings.RIGHT?g.layout.width-(RADIUS+32):RADIUS+32;}
+    public static float centerY(Game g){return g.layout.height-(RADIUS+64);}
     public static boolean visible(Game g){return g.mode==Game.PLAY && g.settings.joystickSide()!=GameSettings.OFF && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
     public static boolean hit(Game g,float x,float y){return visible(g) && Physics.length(x-centerX(g),y-centerY(g))<=RADIUS+8;}
     public void begin(Game g,float px,float py){
@@ -72,12 +72,12 @@ public final class Joystick {
         if(!visible(g))return;
         Joystick j=g.joystick;float cx=centerX(g),cy=centerY(g),tx=cx+j.x*TRAVEL,ty=cy+j.y*TRAVEL;
         p.circle(cx,cy,RADIUS,0x44101c30);
-        driveGuide(g,p,cx,cy);
+        driveGuide(g,ScreenView.scaled(p,cx,cy,1.5f),0,0);
         SoftCue.ring(p,cx,cy,RADIUS,1,j.active?0x7983c8d5:0x467a9fa9,1.3f);
         SoftCue.ring(p,cx,cy,DEAD_ZONE,1,0x327a9fa9,.8f);
         if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x5083c8d5);
-        p.circle(tx,ty,17,j.active?0x987cc7d2:0x507a9fa9);
-        SoftCue.ring(p,tx,ty,18,1,j.active?0xb8cee6df:0x667a9fa9,1);
+        p.circle(tx,ty,25.5f,j.active?0x987cc7d2:0x507a9fa9);
+        SoftCue.ring(p,tx,ty,27,1,j.active?0xb8cee6df:0x667a9fa9,1);
         Lettering.center(p,g.driveDirection()>0?"FORWARD":g.driveDirection()<0?"REVERSE":"DRIVE",cx,cy+RADIUS+6,8,g.driveDirection()>0?FORWARD_COLOR:g.driveDirection()<0?REVERSE_COLOR:0x997ca5ac);
     }
 }
