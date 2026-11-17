@@ -2,10 +2,12 @@ package com.bargeboss.game;
 
 /** Screen-space thumb input. Projection and boat physics remain in shared Game. */
 public final class Joystick {
-    public static final float RADIUS=54,TRAVEL=42,DEAD_ZONE=7;
+    public static final float RADIUS=54,TRAVEL=42,DEAD_ZONE=7,INTENT_DISTANCE=14;
     public static final int FORWARD_COLOR=0xba7fe1db,REVERSE_COLOR=0xbaffb875;
     public boolean active;
     public float x,y;
+    private float touchX,touchY;
+    private boolean directionReady;
     private float guideAlpha=1;
     private static final ThreadLocal<float[]> SECTOR=new ThreadLocal<float[]>(){
         protected float[] initialValue(){return new float[8];}
@@ -53,10 +55,19 @@ public final class Joystick {
     public static float centerY(Game g){return g.layout.height-118;}
     public static boolean visible(Game g){return g.mode==Game.PLAY && g.settings.joystickSide()!=GameSettings.OFF && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
     public static boolean hit(Game g,float x,float y){return visible(g) && Physics.length(x-centerX(g),y-centerY(g))<=RADIUS+8;}
-    public void begin(Game g,float px,float py){active=true;move(g,px,py);}
-    public void move(Game g,float px,float py){float dx=px-centerX(g),dy=py-centerY(g),d=Physics.length(dx,dy);float scale=Math.max(TRAVEL,d);x=dx/scale;y=dy/scale;if(throttle()>0)g.selectDriveDirection((x-y/RiverCamera.DEPTH)/(2*RiverCamera.Q),(x+y/RiverCamera.DEPTH)/(2*RiverCamera.Q));}
-    public float throttle(){return Physics.clamp((Physics.length(x,y)-DEAD_ZONE/TRAVEL)/(1-DEAD_ZONE/TRAVEL),0,1);}
-    public void cancel(){active=false;x=y=0;}
+    public void begin(Game g,float px,float py){
+        active=true;touchX=px;touchY=py;x=y=0;directionReady=false;
+    }
+    public void move(Game g,float px,float py){
+        // Measure intent from where the thumb actually landed, not an assumed
+        // perfect hit on the pad center. Touch-down alone must never select gear.
+        float dx=px-touchX,dy=py-touchY,d=Physics.length(dx,dy),scale=Math.max(TRAVEL,d);
+        x=dx/scale;y=dy/scale;
+        if(!directionReady && d>=INTENT_DISTANCE)directionReady=true;
+        if(directionReady && throttle()>0)g.selectDriveDirection((x-y/RiverCamera.DEPTH)/(2*RiverCamera.Q),(x+y/RiverCamera.DEPTH)/(2*RiverCamera.Q));
+    }
+    public float throttle(){return directionReady?Physics.clamp((Physics.length(x,y)-DEAD_ZONE/TRAVEL)/(1-DEAD_ZONE/TRAVEL),0,1):0;}
+    public void cancel(){active=false;directionReady=false;x=y=0;}
     public static void draw(Game g,Painter p) {
         if(!visible(g))return;
         Joystick j=g.joystick;float cx=centerX(g),cy=centerY(g),tx=cx+j.x*TRAVEL,ty=cy+j.y*TRAVEL;

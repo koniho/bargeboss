@@ -1601,3 +1601,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   animation; 767,778 submerged-pixel checks pass with unchanged hidden/retained
   counts. Native frame timing was not measured for this cosmetic follow-up.
 - Installed successfully over wireless adb and launched on the development phone.
+
+## 2026-11-16: drive-intent tolerance and uniform waterline alpha
+
+- Joystick touchdown previously called move immediately: a seven-point offset
+  from pad center could latch the wrong gear before any deliberate finger motion.
+  Begin now records the actual touchdown and stays neutral. Selection waits for
+  14 logical points of travel; steering/neutral remain relative to that touchdown.
+  After selection, the existing seven-point neutral zone and gesture-long gear
+  latch remain. Direct tug drag retains its existing 42-world-unit threshold.
+- Added public-pointer tests for both pad sides, 16 headings and both directions,
+  with off-center landing on the wrong side, opposite initial jitter, subthreshold
+  motion, intended drag, no unintended spin and returning to actual neutral.
+  Confirmed these tests fail on the old Joystick at off-center touchdown.
+- Waterline now uses one translucent strip instead of 24 separately alpha-blended
+  capped strokes. The same color/alpha and occlusion curve remain; internal joins
+  no longer accumulate opacity into visible dots. Adds one bounded 400-byte strip
+  per active vessel and reduces 24 line submissions to one polygon. No measured
+  performance claim. 236 actual alpha probes, including joins, all equal 72/255.
+- Final validation: 1,038 drive-direction and 107 joystick assertions pass,
+  including the new wrong-way touchdown regression and existing public tutorial.
+  Full shared checks, Android/Metal builds and JVM/J2ObjC parity
+  `3e84e3d7:2:1350` pass. 767,778 submerged-pixel checks remain unchanged; shared
+  animation and native Metal strip reviewed. Installed over Wi-Fi on Android.
+  Human thumb feel/touch latency and physical-iPhone validation remain unmeasured.

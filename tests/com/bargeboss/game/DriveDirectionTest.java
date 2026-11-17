@@ -14,6 +14,27 @@ public final class DriveDirectionTest {
     private static void step(Game g,int n){for(int i=0;i<n;i++)g.step();}
     private static void release(Game g,int side){if(side==GameSettings.OFF)ReplayInput.up(g,g.pointerX,g.pointerY);else g.pointerUp(21,Joystick.centerX(g),Joystick.centerY(g));}
     public static void run(){
+        // Thumb placement and a small initial movement must not commit the
+        // opposite gear before the intended drag, even after several ticks.
+        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(int pose=0;pose<16;pose++)for(int direction:new int[]{-1,1}){
+            Game g=fixture(side);g.tug.angle=pose*(float)Math.PI/8;
+            float angle=g.tug.angle+(direction<0?(float)Math.PI:0),wx=(float)StrictMath.cos(angle),wy=(float)StrictMath.sin(angle);
+            float sx=RiverCamera.Q*(wx+wy),sy=RiverCamera.Q*RiverCamera.DEPTH*(wy-wx),len=Physics.length(sx,sy);sx/=len;sy/=len;
+            float x=Joystick.centerX(g)-sx*35,y=Joystick.centerY(g)-sy*35;
+            g.pointerDown(21,x,y);step(g,4);
+            check(g.driveDirection()==0 && !g.navigating && g.joystick.throttle()==0,"off-center touchdown cannot select gear or thrust");
+            g.pointerMove(21,x-sx*9,y-sy*9);step(g,4);
+            check(g.driveDirection()==0 && !g.navigating,"initial opposite jitter stays neutral");
+            g.pointerMove(21,x+sx*13,y+sy*13);step(g,2);
+            check(g.driveDirection()==0 && !g.navigating,"wait for enough finger travel before choosing direction");
+            g.pointerMove(21,x+sx*22,y+sy*22);step(g,1);
+            check(g.driveDirection()==direction && g.reversing==(direction<0) && g.navigating,"intended drag chooses gear despite landing on opposite side of pad");
+            check(Math.abs(g.tug.spin)<.01f,"straight intended drag does not trigger a turnaround");
+            g.pointerMove(21,x,y);step(g,1);
+            check(!g.navigating && g.driveDirection()==direction,"return to actual touchdown coasts without switching gear");
+            release(g,side);
+        }
+
         for(int side:new int[]{GameSettings.OFF,GameSettings.LEFT,GameSettings.RIGHT})for(int pose=0;pose<8;pose++)for(int direction:new int[]{-1,1}){
             Game g=fixture(side);g.tug.angle=pose*(float)Math.PI/4;float angle=g.tug.angle+(direction<0?(float)Math.PI:0);
             down(g,side);move(g,side,angle,true);step(g,1);check(g.driveDirection()==0,"neutral first press does not choose direction");

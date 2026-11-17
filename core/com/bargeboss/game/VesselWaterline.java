@@ -59,10 +59,18 @@ public final class VesselWaterline {
     }
     /** One quiet constant-color stroke; geometry is exactly the occlusion boundary. */
     static void contact(Painter canvas,float[] edge,float scale) {
-        for(int i=0;i<SEGMENTS;i++) {
-            int j=i*2;
-            canvas.line(edge[j],edge[j+1],edge[j+2],edge[j+3],.55f*scale,0x486e9b9c);
+        // One strip is composited once. Separate translucent strokes overlap
+        // at their round caps and create brighter dots at every join.
+        int count=edge.length/2;float[] strip=new float[count*4];float half=.275f*scale;
+        for(int i=0;i<count;i++) {
+            int before=Math.max(0,i-1)*2,after=Math.min(count-1,i+1)*2;
+            float dx=edge[after]-edge[before],dy=edge[after+1]-edge[before+1];
+            float length=Math.max(.001f,Physics.length(dx,dy)),nx=-dy/length*half,ny=dx/length*half;
+            int front=i*2,back=(count*2-1-i)*2;
+            strip[front]=edge[i*2]+nx;strip[front+1]=edge[i*2+1]+ny;
+            strip[back]=edge[i*2]-nx;strip[back+1]=edge[i*2+1]-ny;
         }
+        canvas.poly(strip,0x486e9b9c);
     }
     private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
         int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);

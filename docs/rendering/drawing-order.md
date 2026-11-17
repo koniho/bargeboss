@@ -437,7 +437,8 @@ one shared kernel. Bow pressure patches draw in the existing below-hull water
 scope. Vessel water contact is a continuous animated intersection curve derived from the
 registered lower silhouette, independent of hull heave. Disjoint clip trapezoids
 hide hull, cargo and surface-light/glow pixels below it. A thin, constant-color
-translucent stroke follows the exact boundary. No contact-foam patches or moving
+translucent strip follows the exact boundary in a single composite, avoiding
+brighter overlapping endpoint dots. No contact-foam patches or moving
 dash pattern are drawn, including the title voyage. Detached
 wakes, bow pressure and propwash remain separate water effects.
 Expanding wake crests share a water-plane shore/dock exclusion scope, bounded by

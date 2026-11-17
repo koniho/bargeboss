@@ -3,7 +3,9 @@
 The shared Java HUD offers a fixed thumb pad in the bottom left by default.
 Settings (title screen or live HUD) selects Left, Right or Off. Both pad and tug
 press-and-drag remain available. A pad press owns its pointer immediately; thrust
-starts beyond its seven-point dead zone, without the tug gesture's 12-tick hold.
+waits for 14 logical points of travel from the actual touchdown, without the tug
+gesture's 12-tick hold. After direction selection, the seven-point neutral zone
+allows fine throttle/coasting control. An off-center press alone never drives.
 Thumb travel up to 42 logical points scales requested speed. Screen direction is
 inverse-projected to the water plane, then uses the existing navigation, astern,
 acceleration, tow-load, collision and coasting rules. Release cuts engine demand;
@@ -38,7 +40,7 @@ is held and back in after release/cancel, on fixed simulation ticks. The label
 beneath the pad shows the selected FORWARD or REVERSE while a drive gesture owns it.
 
 The first deliberate input chooses direction for the whole gesture: beyond the
-joystick's seven-point dead zone, or when direct tug drag enters its existing
+joystick's 14-point intent threshold measured from touchdown, or when direct tug drag enters its existing
 42-world-unit steering threshold. This selection occurs on pointer input, so a
 second move before the next simulation tick cannot replace the first intent.
 Heading changes, crossing the colored boundary and returning to neutral do not
@@ -59,3 +61,8 @@ velocity sideways toward the finger. The existing steering-error speed reduction
 acceleration limits, tow load and coasting remain active. Automated cargo pickup
 assistance retains its separate target-following behavior. Tight towing turns may
 need less throttle so the following load can turn without overstretching its rope.
+
+Joystick steering and neutral remain relative to the original touchdown for the
+whole gesture, so landing on one side of the pad cannot invert an intended drag.
+The fixed pad displays this relative command. Small opposite-direction jitter
+before the threshold remains neutral and does not latch a gear.
