@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
@@ -48,11 +48,17 @@ public final class ProfileScenario {
             return;
         }
         root.startTutorial();Game g=root.activeGame();
+        if(name.equals("seawall-corner")){
+            g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.channelGate=1;
+            g.tug.x=-1118;g.tug.y=437;g.tug.angle=0;
+            g.layout=Layout.focused(width,height,g.tug.x,g.tug.y,2.2f,width*.52f,height*.56f);return;
+        }
         int channelTicks=0;
         for(int tick=0;tick<24000;tick++) {
             int lesson=g.tutorial.lesson;
             if(lesson==Tutorial.CHANNEL)channelTicks++;
-            if(name.equals("basin-entry")
+            if(name.equals("buoy-complete") && g.tutorial.driveMarker==1 && g.tutorial.buoyClearTicks[0]>0 && g.tutorial.buoyClearTicks[0]<=84
+                    || name.equals("basin-entry")
                     || name.equals("canal-entry") && channelTicks==1
                     || name.equals("canal-middle") && channelTicks==700
                     || name.equals("barge-arrival") && lesson==Tutorial.HOLD

@@ -1978,3 +1978,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   stern arcs and foam. Circular tow, 360 warmup + 2,400 samples: 60.05 FPS,
   interval p95 17.453 ms; no sampled decodes, frame builds or cache evictions.
   Summary: docs/performance/cyclic-foam-2026-11-16/tow-summary.json.
+
+## 2026-11-16: industrial corner occlusion and tutorial completion feedback
+
+- Screenshot_20261116-214727 exposed a rear seawall protruding through a raised
+  foreground quay. Both unlit cached markings and live light/wetness receivers
+  could overpaint that corner. StaticTerrain now retains clip scopes in its
+  separate material and raster passes. ShoreTopClip shares a single bounded
+  visible-view mask; wall effects exclude raised dry land, while top spill keeps
+  its own receiver. Montrose's existing single-pass light path is unchanged.
+- Added pixel probes around every industrial boundary corner, alongside the
+  all-32-heading hull regression: 1,950,453 assertions pass. Disabling the new
+  mask fails immediately at corner 0, pixel 128,118. Native Android corner
+  screenshot reviewed: the wall terminates behind the foreground top.
+- Buoy completion keeps a fixed-step 96-tick mint ring, thickens/pulses then
+  fades, including the final buoy after lesson transition. At most two transient
+  rings, no new textures. Tutorial checkpoint/lesson completions now emit the
+  existing semantic SUCCESS haptic, like cargo/mission goals, respecting OFF.
+  Continuous tutorial tests verify completion feedback at all three layouts.
+- Full Android build/checks and preview suite pass. JVM/J2ObjC parity:
+  86405d76:2:1350. APK installed on the Wi-Fi development phone; physical iOS
+  appearance and physical haptic feel remain unverified.

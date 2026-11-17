@@ -31,7 +31,13 @@ public final class BuoyOrbitTest {
         for(int direction:new int[]{-1,1}) {
             g=practice();circle(g,0,direction);
             check(g.tutorial.driveMarker==1 && g.tutorial.lesson==Tutorial.MOVE,"full winding advances only the first buoy in either direction");
+            check(g.tutorial.buoyClearTicks[0]>0,"first completed buoy starts feedback while next buoy is active");
             circle(g,1,-direction);check(g.tutorial.driveMarker==2 && g.tutorial.lesson==Tutorial.COAST,"opposite winding around second buoy advances into coasting");
+            check(g.tutorial.buoyClearTicks[1]>0,"last buoy feedback survives transition to coasting");
+            int remaining=g.tutorial.buoyClearTicks[1];TutorialView.buoyFeedback(g,new Parity());
+            check(g.tutorial.buoyClearTicks[1]==remaining,"drawing completion feedback does not age it");
+            for(int tick=0;tick<Tutorial.BUOY_CLEAR_LIFE;tick++)g.tutorial.update(g);
+            check(g.tutorial.buoyClearTicks[0]==0 && g.tutorial.buoyClearTicks[1]==0,"completion feedback expires");
             check(g.tutorial.channelGate==1,"circling never bypasses canal navigation");
         }
         g=practice();for(int i=0;i<32;i++)point(g,0,90,i*StrictMath.PI/64);

@@ -576,3 +576,13 @@ broad low-speed arcs and elongated/narrower cruise arcs (13 to 32.5 world units/
 The bow-facing part of each ellipse is excluded with a hull-local clip, applied
 inside the existing shore mask. Centers move aft with speed and cycle age. Idle
 boats retain circles; moored boats never enter the arc/foam speed transitions.
+
+### Industrial inside-corner wall receivers
+
+Raised industrial tops exclude wall pixels in both the live material pass and
+cached raster markings. `StaticTerrain` retains clip push/pop commands in both
+passes; separating materials from markings must not drop their masks. The same
+bounded `ShoreTopClip` hides wall wetness and vessel-light receivers behind the
+quay at concave corners. Top light spill remains a separate, unclipped receiver.
+The mask uses the shared dry footprint at LAND_RISE, independently of vessel
+heading or light availability. Montrose retains its separate dock/shore geometry.

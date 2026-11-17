@@ -98,6 +98,10 @@ public final class TrainingGroundView {
         p.surfacePolygon(xy,xy,SurfaceMaterial.CONCRETE,0xff62605a,.12f);
     }
     public static void walls(Game g,Painter canvas) {
+        canvas.pushClipOutside(ShoreTopClip.get(g));
+        try {wallsUnclipped(g,canvas);} finally {canvas.popClip();}
+    }
+    private static void wallsUnclipped(Game g,Painter canvas) {
         float[] bank=TrainingChannel.WATER_BOUNDARY;
         for(int i=0;i<bank.length;i+=2) {
             int next=(i+2)%bank.length;

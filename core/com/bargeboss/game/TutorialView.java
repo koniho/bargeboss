@@ -4,9 +4,21 @@ package com.bargeboss.game;
 public final class TutorialView {
     private static final int PAPER=VisualStyle.CREAM,MUTED=VisualStyle.MUTED;
     private TutorialView() {}
+    static void buoyFeedback(Game g,Painter p){
+        Painter river=new RiverPainter(p,g.layout.camera);
+        for(int i=0;i<Tutorial.DRIVE_X.length;i++){
+            int remaining=g.tutorial.buoyClearTicks[i];if(remaining<=0)continue;
+            float age=Tutorial.BUOY_CLEAR_LIFE-remaining,grow=Physics.clamp(age/8,0,1);
+            float t=Physics.clamp((age-28)/(Tutorial.BUOY_CLEAR_LIFE-28f),0,1),fade=1-t*t*(3-2*t);
+            float pulse=.5f+.5f*(float)StrictMath.cos(age*.22f);
+            float radius=Tutorial.DRIVE_RADIUS+grow*(1+3*pulse),width=2+grow*(3+2*pulse);
+            SoftCue.ring(river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],radius,1,SoftCue.alpha(0xe06fffc2,fade),width);
+        }
+    }
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
         gateFeedback(g,p);
+        buoyFeedback(g,p);
         if(t.lesson==Tutorial.DONE) {
             p=ScreenView.menu(g,p);
             ScreenView.overlay(p,104,412);

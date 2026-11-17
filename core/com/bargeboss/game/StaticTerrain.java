@@ -62,14 +62,14 @@ public final class StaticTerrain {
     static final class Tile extends StaticLayer {
         final int key;final ArrayList<Command> commands;final float left,top,w,h;final boolean hasRaster;
         Tile(int key,Recorder r){this.key=key;commands=r.commands;
-            boolean raster=false;for(Command command:commands)if(command.type!=5){raster=true;break;}hasRaster=raster;
+            boolean raster=false;for(Command command:commands)if(command.type<5){raster=true;break;}hasRaster=raster;
             left=Math.max(0,(float)StrictMath.floor(r.left));top=Math.max(0,(float)StrictMath.floor(r.top));
             w=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.right))-left);
             h=Math.max(1,Math.min(CHUNK,(float)StrictMath.ceil(r.bottom))-top);
         }
         public boolean backgroundSafe(){return true;}
         public int key(){return key;}public float width(){return w;}public float height(){return h;}
-        void surfaces(Painter p){for(Command command:commands)if(command.type==5)command.paint(p);}
+        void surfaces(Painter p){for(Command command:commands)if(command.type>=5)command.paint(p);}
         public void paint(Painter p){p=ScreenView.offset(p,-left,-top);for(Command command:commands)if(command.type!=5)command.paint(p);}
     }
     private static final class Command {
@@ -81,6 +81,8 @@ public final class StaticTerrain {
             case 2:p.poly(v,color);break;
             case 3:p.circle(v[0],v[1],v[2],color);break;
             case 5:p.surfacePolygon(v,uv,a,color,wetness);break;
+            case 6:p.pushClipOutside(v);break;
+            case 7:p.popClip();break;
             default:p.sprite(a,b,v[0],v[1],v[2],v[3],v[4],v[5]);
         }}
     }
@@ -104,6 +106,8 @@ public final class StaticTerrain {
             for(int i=0;i<points.length;i++){out[i*2]=points[i][0];out[i*2+1]=points[i][1];texture[i*2]=points[i][2];texture[i*2+1]=points[i][3];}
             Command command=new Command(5,material,0,color,out);command.uv=texture;command.wetness=wetness;commands.add(command);
         }
+        public void pushClipOutside(float[] triangles){commands.add(new Command(6,0,0,0,triangles.clone()));}
+        public void popClip(){commands.add(new Command(7,0,0,0,new float[0]));}
         public void rect(float x,float y,float w,float h,int c){commands.add(new Command(0,0,0,c,new float[]{x,y,w,h}));bounds(x,y,x+w,y+h);}
         public void line(float x,float y,float xx,float yy,float w,int c){commands.add(new Command(1,0,0,c,new float[]{x,y,xx,yy,w}));bounds(Math.min(x,xx)-w/2,Math.min(y,yy)-w/2,Math.max(x,xx)+w/2,Math.max(y,yy)+w/2);}
         public void poly(float[] xy,int c){commands.add(new Command(2,0,0,c,xy.clone()));for(int i=0;i<xy.length;i+=2)bounds(xy[i],xy[i+1],xy[i],xy[i+1]);}

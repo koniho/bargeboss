@@ -21,12 +21,15 @@ public final class Tutorial {
     public static final float[] DRIVE_X={-1570,-1450},DRIVE_Y={650,440};
     public int lesson=MOVE, actionTicks,channelGate=1;
     public int driveMarker;
+    public static final int BUOY_CLEAR_LIFE=96;
+    public final int[] buoyClearTicks=new int[DRIVE_X.length];
     public int clearedGate,gateClearTicks;
     public boolean exitRequested, resumeShift;
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
+        for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
         orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;reverseArmed=false;reverseTravel=0;
         g.cancelInputs();g.reversing=false;
@@ -88,12 +91,13 @@ public final class Tutorial {
     }
     public void update(Game g) {
         if(gateClearTicks>0) gateClearTicks--;
+        for(int i=0;i<buoyClearTicks.length;i++)if(buoyClearTicks[i]>0)buoyClearTicks[i]--;
         // A player may keep driving before following the coast instruction.
         // Remember genuine crossings so lifting late never strands progression.
         if(lesson<=CHANNEL) {
             if(channelGate<TrainingChannel.X.length && TrainingChannel.reachedGate(channelGate,
                     channelPreviousX,channelPreviousY,g.tug.x,g.tug.y)) {
-                clearedGate=channelGate++;gateClearTicks=90;g.haptic(Game.HAPTIC_CONTACT);
+                clearedGate=channelGate++;gateClearTicks=90;g.haptic(Game.HAPTIC_SUCCESS);
             }
             channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         }
@@ -104,7 +108,7 @@ public final class Tutorial {
             if(actionTicks>=60) {
                 lesson=REVERSE;actionTicks=0;armReverse(g);
                 channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
-                g.haptic(Game.HAPTIC_TICK);
+                g.haptic(Game.HAPTIC_SUCCESS);
             }
         } else if(lesson==REVERSE) {
             updateReverse(g);
@@ -123,10 +127,10 @@ public final class Tutorial {
             Body b=g.cargo[0];
             if(g.pushing && !g.manualSteering && g.heldCargo()==b && Physics.touching(g.tug,b,5)) actionTicks++; else actionTicks=0;
             if(actionTicks>=12 && Physics.length(b.x-startX,b.y-startY)>3) {
-                lesson=DOCK;actionTicks=0;g.haptic(Game.HAPTIC_TICK);
+                lesson=DOCK;actionTicks=0;g.haptic(Game.HAPTIC_SUCCESS);
             }
         } else if(lesson==DOCK && g.inTieArea(g.cargo[0])) {
-            lesson=TIE;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
+            lesson=TIE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
         } else if(lesson==TIE && g.delivered>0) {
             // The unloaded barge stays alongside. The next job uses the second
             // hull that has been waiting in the same harbor since the start.
@@ -135,7 +139,7 @@ public final class Tutorial {
             g.haptic(Game.HAPTIC_SUCCESS);
         }
         else if(lesson==CONNECT && direct(g,g.cargo[0])) {
-            lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
+            lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
         } else if(lesson==PULL) {
             Body b=g.cargo[0];if(g.navigating)actionTicks++;
             if(!g.tow.connected(b,g.tug) && g.ropePhase==0){lesson=CONNECT;g.cancelInputs();}
@@ -143,7 +147,7 @@ public final class Tutorial {
                 lesson=DOUBLE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
             }
         } else if(lesson==DOUBLE && doubleTow(g)) {
-            lesson=BRIDGE;rememberTow(g);g.cancelInputs();g.haptic(Game.HAPTIC_TICK);
+            lesson=BRIDGE;rememberTow(g);g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
         } else if(lesson==BRIDGE) {
             if(doubleTow(g)) {
                 bridgeCrossed=crossed(g,BRIDGE_CLEAR_Y,bridgeCrossed);
@@ -238,6 +242,7 @@ public final class Tutorial {
         }
         orbitPreviousX=g.tug.x;orbitPreviousY=g.tug.y;
         if(Math.abs(orbitSweep)>=ORBIT_TURN) {
+            buoyClearTicks[driveMarker]=BUOY_CLEAR_LIFE;
             driveMarker++;actionTicks=0;orbitArmed=false;orbitSweep=0;
             g.haptic(Game.HAPTIC_SUCCESS);
             if(driveMarker==DRIVE_X.length)lesson=COAST;

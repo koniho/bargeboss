@@ -9,6 +9,7 @@ public final class ShoreOcclusionPixelTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void main(String[] args) {
+        wallCorners();
         Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
         for(int bank=0;bank<4;bank++)for(int kind=0;kind<4;kind++)for(int heading=0;heading<32;heading++) {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
@@ -39,4 +40,36 @@ public final class ShoreOcclusionPixelTest {
         check(landProbes>10000 && wetPixels>10000,"regression covers both hidden and visible hull pixels");
         System.out.println(checks+" production hull/cargo shoreline pixel assertions passed across all 32 headings");
     }
+    private static void wallCorners(){
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        int visible=0,hidden=0;float[] bank=TrainingChannel.WATER_BOUNDARY;
+        for(int corner=0;corner<bank.length;corner+=2){
+            float x=bank[corner],y=bank[corner+1];
+            // Put a work light on the navigable side of each corner.
+            for(int dx=-1;dx<=1;dx+=2)for(int dy=-1;dy<=1;dy+=2){
+                if(!g.inWater(x+dx*20,y+dy*20))continue;
+                g.tug.x=x+dx*20;g.tug.y=y+dy*20;
+                RiverCamera base=new RiverCamera(0,0,2);
+                RiverCamera c=new RiverCamera(128-base.screenX(x,y),150-base.screenY(x,y),2);
+                g.layout=Layout.renderTile(256,256,c);
+                BufferedImage image=new BufferedImage(256,256,BufferedImage.TYPE_INT_ARGB_PRE);
+                Graphics2D graphics=image.createGraphics();Painter p=new DesktopPainter(graphics);
+                TrainingGroundView.walls(g,p);ShorelineView.walls(g,p);VesselShoreLight.walls(g,p);
+                p.rect(1,1,2,2,0xffff00ff);graphics.dispose();
+                check(image.getRGB(1,1)==0xffff00ff,"wall receiver clips restore");
+                for(int py=8;py<248;py+=2)for(int px=8;px<248;px+=2){
+                    float wx=c.worldX(px+.5f,py+.5f+GroundArt.LAND_RISE*c.scale);
+                    float wy=c.worldY(px+.5f,py+.5f+GroundArt.LAND_RISE*c.scale);
+                    boolean dry=!g.inWater(wx,wy)&&!g.inWater(wx-2,wy)&&!g.inWater(wx+2,wy)
+                        &&!g.inWater(wx,wy-2)&&!g.inWater(wx,wy+2);
+                    int alpha=image.getRGB(px,py)>>>24;
+                    if(dry){hidden++;check(alpha==0,"wall wetness/light cannot leak through raised corner: "+corner+" at "+px+","+py);}
+                    else if(alpha>4)visible++;
+                }
+            }
+        }
+        check(hidden>10000 && visible>100,"corner checks retain visible walls and exclude foreground land");
+    }
+
 }

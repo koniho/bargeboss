@@ -16,9 +16,12 @@ public final class ShoreOcclusion {
     }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
-        ArrayList<float[]> dry=new ArrayList<float[]>();
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
-        else subtract(dry,left,top,right,bottom,g.indianaStage()?IndianaHarbor.WATER:CalumetMap.water(),0);
+        return industrial(c,left,top,right,bottom,depth,g.indianaStage());
+    }
+    static float[] industrial(RiverCamera c,float left,float top,float right,float bottom,float depth,boolean indiana){
+        ArrayList<float[]> dry=new ArrayList<float[]>();
+        subtract(dry,left,top,right,bottom,indiana?IndianaHarbor.WATER:CalumetMap.water(),0);
         if(dry.isEmpty())return EMPTY;
         float rise=GroundArt.LAND_RISE*c.scale;
         ArrayList<float[]> pieces=new ArrayList<float[]>();int count=0;

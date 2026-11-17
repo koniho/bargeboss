@@ -21,6 +21,7 @@ public final class ContinuousTutorialTest {
             int seen=0,transitions=0,waitAtTow=0;boolean closeWorkSeen=false;
             for(int tick=0;tick<12000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
                 int lesson=g.tutorial.lesson;seen|=1<<lesson;
+                int marker=g.tutorial.driveMarker,gate=g.tutorial.channelGate;root.pollHaptic();
                 float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;
                 RiverCamera camera=g.layout.camera;
                 if(lesson==Tutorial.CONNECT && waitAtTow++<180) {
@@ -29,6 +30,9 @@ public final class ContinuousTutorialTest {
                     if(g.pointer) ReplayInput.up(root,g.pointerX,g.pointerY);
                 } else ReplayInput.tutorial(root);
                 root.step();
+                int feedback=root.pollHaptic();
+                if(g.tutorial.lesson>lesson || g.tutorial.driveMarker>marker || g.tutorial.channelGate>gate)
+                    check(feedback==Game.HAPTIC_SUCCESS,"each completed tutorial goal emits success feedback");
                 check(g.tug==tug && present(g,load) && present(g,towLoad),"lesson progression preserves all vessel identities");
                 check(Physics.length(tug.x-x,tug.y-y)<8,"tug moves physically instead of teleporting between lessons");
                 check(Physics.length(load.x-lx,load.y-ly)<8 && Physics.length(towLoad.x-bx,towLoad.y-by)<8,
