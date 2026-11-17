@@ -73,6 +73,7 @@ public final class Game {
     private final float[] route=new float[2];
     private float engineDemand;
     public int cameraZoomHoldTicks;
+    final PinchZoom pinchZoom=new PinchZoom();
     private boolean cameraTransit;
     public static final float TRAFFIC_Y=420;
     private double accumulator, visualAccumulator;
@@ -242,6 +243,7 @@ public final class Game {
     }
     private void updateCamera() {
         RiverCamera c=layout.camera;
+        if(pinchZoom.active())return;
         if(ropeDragging || towAiming || ropePhase!=0 || MontroseRescue.swimmers(this) && (rescue.aiming>=0 || rescue.flying>=0)){cameraZoomHoldTicks=90;return;}
         boolean steering=joystick.active || pointer && (holdingTug() || manualSteering);
         if(steering)cameraZoomHoldTicks=90;else if(cameraZoomHoldTicks>0)cameraZoomHoldTicks--;
@@ -266,6 +268,7 @@ public final class Game {
         // Early tutorial framing must still reveal the next lesson's cargo and tie target.
         boolean guidedReveal=tutorial!=null && tutorial.lesson<Tutorial.PULL;
         if(!guidedReveal && cameraZoomHoldTicks>0 && targetZoom<c.zoom)targetZoom=c.zoom;
+        targetZoom=pinchZoom.target(targetZoom,steering);
         float zoom=c.zoom+(targetZoom-c.zoom)*.035f;
         // Ease the world focus, not its zoom-dependent camera origin. This avoids
         // a sideways sweep when zoom changes around a far-upstream position.
@@ -278,7 +281,7 @@ public final class Game {
                 && Math.abs(zoom-c.zoom)<.000001f) return;
         changeCamera(next);
     }
-    private void changeCamera(Layout nextLayout) {
+    void changeCamera(Layout nextLayout) {
         RiverCamera c=layout.camera;
         float px=c.screenX(pointerX,pointerY),py=c.screenY(pointerX,pointerY);
         float dx=c.screenX(downX,downY),dy=c.screenY(downX,downY);
@@ -334,7 +337,7 @@ public final class Game {
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
-        earnedStars=0; rankPromoted=false;cameraZoomHoldTicks=0;cameraTransit=false;
+        earnedStars=0; rankPromoted=false;pinchZoom.reset();cameraZoomHoldTicks=0;cameraTransit=false;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();rescue=new MontroseRescue();buildingFades=new BuildingFades();
         water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
@@ -378,6 +381,12 @@ public final class Game {
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
+        if(pinchZoom.active()){pinchZoom.down(this,id,x,y);return;}
+        if(liveRiverInput() && !(tutorial!=null && tutorial.entering) && ropePhase==0
+                && !joystick.active && !ropeDragging && !towAiming && !holdingTug() && heldCargo()==null
+                && rescue.aiming<0 && x>=0 && x<=layout.width && y>=64 && y<layout.height-64
+                && !liveButton(x,y) && !Joystick.hit(this,x,y)
+                && pinchZoom.down(this,id,x,y))return;
         if(mapPointer!=-1 || pointer || x<0 || x>layout.width || y<0 || y>layout.height) return;
         if(!(tutorial!=null && tutorial.entering) && Joystick.hit(this,x,y)) {
             beginDown(x,y,false);mapPointer=id;joystick.begin(this,x,y);haptic(HAPTIC_TICK);return;
@@ -390,12 +399,14 @@ public final class Game {
     }
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
+        if(pinchZoom.move(this,id,x,y))return;
         if(id!=mapPointer) return;
         if(joystick.active){pointerX=x;pointerY=y;joystick.move(this,x,y);return;}
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
+        if(pinchZoom.up(id))return;
         if(id!=mapPointer) return;
         mapPointer=-1;
         if(joystick.active){cancel();return;}
@@ -409,6 +420,7 @@ public final class Game {
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
         if(practice!=null) { practice.pointerCancel(id); return; }
+        if(pinchZoom.up(id))return;
         if(id==mapPointer) { cancel(); mapPointer=-1; }
     }
     private void finishPractice() {
@@ -420,7 +432,7 @@ public final class Game {
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
-        joystick.cancel();driveDirection=0;rescue.aiming=-1;
+        pinchZoom.cancelTouches();joystick.cancel();driveDirection=0;rescue.aiming=-1;
         pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }

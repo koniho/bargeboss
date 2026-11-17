@@ -2268,3 +2268,30 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Installed APK on wireless Android and restored normal launch and timeout.
   Halo appearance was reviewed in shared desktop rendering; no on-device
   lasso-gesture visual validation or iOS pixel check in this round.
+
+## 2026-11-17: player pinch zoom with gradual automatic return
+
+- Shared Java PinchZoom consumes two scene fingers, preserving the world point
+  under their midpoint and clamping zoom to .65–4.5. Existing Android/iOS pointer
+  transport already supplies all touches; no native gesture implementation added.
+  Steering, owned cargo/lasso gestures, UI controls and tutorial arrival retain
+  their input ownership. Lift both pinch fingers before starting another action.
+- Manual zoom holds for 360 quiet simulation ticks, then blends toward current
+  stage-aware automatic framing over another 360 ticks with smoothstep plus the
+  existing camera easing. Steering pauses that timer; lasso/flight freezes the
+  camera and timer as before. New levels clear the override. Lifecycle cancellation
+  clears touch ownership and cannot turn the remaining finger into a drive/tap.
+- No texture/cache changes or draw-side work. Camera changes allocate the same
+  Layout/Camera values as existing auto framing; no frame-time benefit claimed.
+- Tests exercise two canvas widths, midpoint invariance, both zoom limits,
+  partial finger release, hold/return timing, steering deferral, lifecycle/reset
+  and lasso projection protection. Full Android checks/build passed. Signed iOS
+  device build installed/launched on the paired iPhone 12 (process confirmed).
+  Android phone was absent from adb and mDNS; installation could not run and no
+  awake override was applied. Native multi-touch feel still needs user audition.
+- JVM/J2ObjC parity passed unchanged at 1414b3da:2:1350. All-heading shoreline
+  regression passed 1,382,037 pixel assertions; before/after shared pinch renders
+  exported to out/pinch-zoom-{0,1}.png and the zoomed view inspected.
+- Full preview export completed successfully, including cargo and scenery asset
+  checks. iPhone native build and launch verified; no physical pinch automation
+  was run, so finger feel and native zoom rendering remain user validation.

@@ -9,6 +9,7 @@ public final class CoreTest {
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
+        PinchZoomTest.run();
         EngineAudioTest.run();
         DockCraneTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
