@@ -73,7 +73,7 @@ public final class ContinuousTutorialTest {
             for(int x=-100;x<=100;x+=20) for(int y=-100;y<=100;y+=20)
                 check(TrainingChannel.contains(Tutorial.DRIVE_X[marker]+x,Tutorial.DRIVE_Y[marker]+y),"practice markers have open maneuvering water on every side");
         for(float width:new float[]{960,1333}) {
-            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();Body tug=g.tug;
+            Game root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);Game g=root.activeGame();Body tug=g.tug;
             check(tug.x==Tutorial.START_X && tug.y==Tutorial.START_Y && g.layout.camera.zoom==Game.PRACTICE_DRIVE_ZOOM,
                     "practice starts inside the new basin with a close driving camera");
             for(int tick=0;tick<120;tick++)root.step();
@@ -109,7 +109,7 @@ public final class ContinuousTutorialTest {
     }
     private static void nativeOpeningCadence() {
         for(int width:new int[]{960,1333}) for(int idle:new int[]{0,30,60,180,300}) {
-            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();int attempts=0;
+            Game root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);Game g=root.activeGame();int attempts=0;
             while(g.tutorial.lesson==Tutorial.MOVE && attempts++<100) {
                 float dx=g.tutorial.driveTargetX()-g.tug.x,dy=g.tutorial.driveTargetY()-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
                 // Match the native test's fresh snapshot, gesture duration and
@@ -131,7 +131,7 @@ public final class ContinuousTutorialTest {
     }
     private static void nativePushCadence() {
         for(float width:new float[]{960,1333}) for(int coast:new int[]{180,300,480}) {
-            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
+            Game root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);Game g=root.activeGame();
             g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);Body load=g.cargo[0];
             int attempts=0;
             while(g.tutorial.lesson==Tutorial.HOLD && attempts++<40) {
@@ -159,7 +159,7 @@ public final class ContinuousTutorialTest {
     }
     private static void raisedBollard() {
         for(float width:new float[]{960,1333}) {
-            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
+            Game root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);Game g=root.activeGame();
             g.tutorial.lesson=Tutorial.TIE;g.tutorial.setup(g);Body load=g.cargo[0];
             RiverCamera camera=g.layout.camera;
             float sx=camera.screenX(Game.TIE_X[load.berth],g.dockY(load.berth));
@@ -191,7 +191,7 @@ public final class ContinuousTutorialTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha) {}
     }
     private static void holdFromMouth() {
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();
         g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);
         g.tug.x=TrainingChannel.X[7];g.tug.y=TrainingChannel.Y[7];g.tug.angle=0;
         g.fitTutorialCamera();Body tug=g.tug,load=g.cargo[0];
@@ -211,7 +211,7 @@ public final class ContinuousTutorialTest {
         check(!g.pointer && g.tug==tug && g.cargo[0]==load,"releasing the assisted approach preserves the same scene");
     }
     private static void lateCoast() {
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0];
+        Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0];
         for(int tick=0;tick<1800 && g.tutorial.lesson==Tutorial.MOVE;tick++) {ReplayInput.tutorial(root);root.step();}
         for(int tick=0;tick<6500 && g.tutorial.channelGate<TrainingChannel.X.length;tick++) {
             // Deliberately ignore the lift instruction and keep steering. These
@@ -247,7 +247,7 @@ public final class ContinuousTutorialTest {
         }
     }
     private static void retryTow() {
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();
         g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);
         Body tug=g.tug,load=g.cargo[0];
         for(int i=0;i<300 && g.tutorial.lesson==Tutorial.CONNECT;i++) { ReplayInput.tutorial(root);root.step(); }

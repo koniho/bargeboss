@@ -86,7 +86,7 @@ public final class Parity implements Painter {
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
     }
     private static void joystick(Parity p) {
-        Game g=new Game();g.configureCanvas(1333.3334f,600);g.startTutorial();
+        Game g=new Game();g.configureCanvas(1333.3334f,600);ReplayInput.startPractice(g);
         for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}) {
             ReplayInput.tap(g,Layout.SETTINGS);
             ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:side==GameSettings.RIGHT?Layout.JOYSTICK_RIGHT:Layout.JOYSTICK_OFF);

@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
@@ -48,8 +48,9 @@ public final class ProfileScenario {
             return;
         }
         root.startTutorial();Game g=root.activeGame();
+        if(name.equals("tutorial-entrance"))return;
         if(name.equals("seawall-corner")){
-            g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.channelGate=1;
+            g.tutorial.entering=false;g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.channelGate=1;
             g.tug.x=-1118;g.tug.y=437;g.tug.angle=0;
             g.layout=Layout.focused(width,height,g.tug.x,g.tug.y,2.2f,width*.52f,height*.56f);return;
         }

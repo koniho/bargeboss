@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class BuoyOrbitTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
-    private static Game practice(){Game g=new Game();g.startTutorial();return g.activeGame();}
+    private static Game practice(){Game g=new Game();ReplayInput.startPractice(g);return g.activeGame();}
     private static void point(Game g,int buoy,float radius,double angle){
         g.tug.x=Tutorial.DRIVE_X[buoy]+radius*(float)StrictMath.cos(angle);
         g.tug.y=Tutorial.DRIVE_Y[buoy]+radius*(float)StrictMath.sin(angle);

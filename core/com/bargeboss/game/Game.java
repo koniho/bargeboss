@@ -295,7 +295,7 @@ public final class Game {
         practice.settings=settings;
         practice.layout=layout.camera.zoom==1 && layout.camera.worldTop==148?layout:new Layout(layout.width,layout.height);
         practice.hapticsEnabled=hapticsEnabled;
-        practice.tutorial.setup(practice);practice.fitTutorialCamera();
+        practice.tutorial.setup(practice);practice.tutorial.enter(practice);practice.fitTutorialCamera();
         practice.tutorial.resumeShift=returnToShift;
     }
     public void render(Painter painter) { Renderer.draw(this,painter); }
@@ -360,7 +360,7 @@ public final class Game {
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(mapPointer!=-1 || pointer || x<0 || x>layout.width || y<0 || y>layout.height) return;
-        if(Joystick.hit(this,x,y)) {
+        if(!(tutorial!=null && tutorial.entering) && Joystick.hit(this,x,y)) {
             beginDown(x,y,false);mapPointer=id;joystick.begin(this,x,y);haptic(HAPTIC_TICK);return;
         }
         boolean river=liveRiverInput() && (indianaStage() || montroseStage() || layout.camera.contains(x,y));
@@ -481,12 +481,13 @@ public final class Game {
     private boolean worldTouch(float x,float y) {
         if(indianaStage())return x>=-700 && x<=1400 && y>=-1400 && y<=1800;
         if(montroseStage())return x>=-900 && x<=2700 && y>=-1600 && y<=1100;
-        return x>=(TrainingChannel.BASIN_LEFT-40)
+        return x>=(TrainingChannel.ENTRY_LEFT-40)
                 && x<=CalumetMap.EAST+40
                 && y>=channelTop()-67 && y<=RiverPainter.WORLD_BOTTOM;
     }
     private void beginDown(float x,float y,boolean river) {
         if(pointer) return;
+        if(tutorial!=null && tutorial.entering && river)return;
         if(river) {
             if(!worldTouch(x,y)) return;
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
@@ -750,7 +751,10 @@ public final class Game {
     }
     private void motionStep() {
         engineDemand=0;reversing=false;
-        if(joystick.active) {
+        if(tutorial!=null && tutorial.entering){
+            control=MOVING;navigating=true;
+            navigate(Tutorial.START_X+40,Tutorial.START_Y,48);
+        } else if(joystick.active) {
             float throttle=joystick.throttle();
             if(throttle>0) {
                 float dx=(joystick.x-joystick.y/RiverCamera.DEPTH)/(2*RiverCamera.Q);

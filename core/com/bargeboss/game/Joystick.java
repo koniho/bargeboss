@@ -53,7 +53,7 @@ public final class Joystick {
     }
     public static float centerX(Game g){return g.settings.joystickSide()==GameSettings.RIGHT?g.layout.width-(RADIUS+32):RADIUS+32;}
     public static float centerY(Game g){return g.layout.height-(RADIUS+64);}
-    public static boolean visible(Game g){return g.mode==Game.PLAY && g.settings.joystickSide()!=GameSettings.OFF && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && g.settings.joystickSide()!=GameSettings.OFF && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE && !g.tutorial.entering);}
     public static boolean hit(Game g,float x,float y){return visible(g) && Physics.length(x-centerX(g),y-centerY(g))<=RADIUS+8;}
     public void begin(Game g,float px,float py){
         active=true;touchX=px;touchY=py;x=y=0;directionReady=false;

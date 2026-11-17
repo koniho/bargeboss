@@ -6,7 +6,7 @@ public final class CollisionSplashTest {
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     private static Body hull(int id,float x,float y,float a){return new Body(id,id==0?-1:0,x,y,a);}
     private static float diff(float a,float b){return Math.abs(Physics.angle(a-b));}
-    private static Game practice(){Game g=new Game();g.startTutorial();return g.activeGame();}
+    private static Game practice(){Game g=new Game();ReplayInput.startPractice(g);return g.activeGame();}
     public static void run(){
         for(int f=0;f<32;f++)for(boolean swapped:new boolean[]{false,true}){
             CollisionSplashes s=new CollisionSplashes();float angle=(float)(f*StrictMath.PI/16),c=(float)StrictMath.cos(angle),sn=(float)StrictMath.sin(angle);

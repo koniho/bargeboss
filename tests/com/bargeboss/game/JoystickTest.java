@@ -5,7 +5,7 @@ public final class JoystickTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static void steps(Game g,int n){for(int i=0;i<n;i++)g.step();}
-    private static Game playing(){Game g=new Game();g.startTutorial();return g.activeGame();}
+    private static Game playing(){Game g=new Game();ReplayInput.startPractice(g);return g.activeGame();}
     private static void hold(Game g,float x,float y){float cx=Joystick.centerX(g),cy=Joystick.centerY(g);g.pointerDown(3,cx,cy);g.pointerMove(3,cx+x,cy+y);}
     private static void release(Game g){g.pointerUp(3,Joystick.centerX(g)+g.joystick.x*42,Joystick.centerY(g)+g.joystick.y*42);}
     private static float loadedSpeed(int count) {
@@ -30,7 +30,7 @@ public final class JoystickTest {
         }
         restored.restoreProgress(g.career.save());check(restored.settings.joystickSide()==GameSettings.LEFT && restored.career.save().equals(g.career.save()),"legacy career loads with default joystick");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(g.mode==Game.TITLE,"settings returns to title");
-        g.startTutorial();Game practice=g.activeGame();String career=g.career.save();v=g.progressVersion();
+        ReplayInput.startPractice(g);Game practice=g.activeGame();String career=g.career.save();v=g.progressVersion();
         ReplayInput.tap(g,Layout.SETTINGS);ReplayInput.tap(g,Layout.JOYSTICK_OFF);
         check(g.settings.joystickSide()==GameSettings.OFF && g.progressVersion()>v && g.career.save().equals(career),"practice preferences persist without changing career");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(practice.mode==Game.PLAY && !Joystick.visible(practice),"off hides joystick and resumes practice");

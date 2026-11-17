@@ -25,6 +25,7 @@ public final class ControlView {
         return null;
     }
     public static String hint(Game g) {
+        if(g.tutorial!=null && g.tutorial.entering)return "TAKE THE HELM ONCE INSIDE";
         if(g.montroseStage())return g.tow.count()>0?"DRAG TUG TO TOW / TAP YACHT TO UNCOUPLE":"DRAG YACHT TO TUG / RELEASE TO LINK";
         if(g.towAiming) return "RELEASE OVER THE HIGHLIGHTED BOAT TO LINK";
         if(g.ropeToTug && g.ropePhase==1) return "TOWLINE AWAY / WATCH THE TARGET";
@@ -64,6 +65,7 @@ public final class ControlView {
             if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) { label=b.unloadingTicks>0?"CREW UNLOADING":Mooring.aligning(b)?"DRAWING ALONGSIDE":"TIGHTENING LINE"; break; }
         if(g.ropePhase==0 && !g.towAiming && !g.ropeDragging && g.tow.count()==0
                 && (g.control==Game.IDLE || g.heldCargo()!=null) && emptyToMove(g)!=null)label="EMPTY / TOW CLEAR";
+        if(g.tutorial!=null && g.tutorial.entering)label="ARRIVING";
         Layout layout=g.layout;
         Lettering.center(p,label,layout.statusX(),layout.statusY(),14,label.equals("READY TO TIE")?GREEN:color(g));
         Lettering.center(p,hint(g),layout.statusX(),layout.statusHintY(),10,PAPER);

@@ -21,6 +21,14 @@ public final class Tutorial {
     public static final float[] DRIVE_X={-1570,-1450},DRIVE_Y={650,440};
     public int lesson=MOVE, actionTicks,channelGate=1;
     public int driveMarker;
+    public boolean entering;
+    public int entranceTicks;
+    public void enter(Game g){
+        if(lesson!=MOVE)return;
+        entering=true;entranceTicks=0;g.cancelInputs();
+        g.tug.x=TrainingChannel.BASIN_LEFT-105;g.tug.y=START_Y;g.tug.angle=0;g.tug.vx=42;g.tug.vy=0;
+        g.fitTutorialCamera();
+    }
     public static final int BUOY_CLEAR_LIFE=96;
     public final int[] buoyClearTicks=new int[DRIVE_X.length];
     public int clearedGate,gateClearTicks;
@@ -28,6 +36,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
+        entering=false;entranceTicks=0;
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
@@ -90,6 +99,11 @@ public final class Tutorial {
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
     public void update(Game g) {
+        if(entering){
+            entranceTicks++;
+            if(g.tug.x>=START_X-2){entering=false;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);}
+            return;
+        }
         if(gateClearTicks>0) gateClearTicks--;
         for(int i=0;i<buoyClearTicks.length;i++)if(buoyClearTicks[i]>0)buoyClearTicks[i]--;
         // A player may keep driving before following the coast instruction.

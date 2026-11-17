@@ -19,7 +19,7 @@ public final class JoystickReverseTest {
                 check(Joystick.reverseScreen(heading,x,y)==(dot<-.5f),"Screen predicate agrees with independent world dot-product");
             }
             for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(boolean reverse:new boolean[]{false,true}){
-                Game g=new Game();g.startTutorial();g=g.activeGame();g.settings.setJoystickSide(side);g.tug.angle=heading;
+                Game g=new Game();ReplayInput.startPractice(g);g=g.activeGame();g.settings.setJoystickSide(side);g.tug.angle=heading;
                 float angle=heading+(reverse?(float)Math.PI:0),x=(float)StrictMath.cos(angle),y=(float)StrictMath.sin(angle);
                 float sx=RiverCamera.Q*(x+y),sy=RiverCamera.Q*RiverCamera.DEPTH*(y-x),len=Physics.length(sx,sy);
                 g.pointerDown(0,Joystick.centerX(g),Joystick.centerY(g));g.pointerMove(0,Joystick.centerX(g)+sx/len*42,Joystick.centerY(g)+sy/len*42);g.step();

@@ -1999,3 +1999,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full Android build/checks and preview suite pass. JVM/J2ObjC parity:
   86405d76:2:1350. APK installed on the Wi-Fi development phone; physical iOS
   appearance and physical haptic feel remain unverified.
+- Follow-up native circular-tow capture for the corner fix: 2,400 samples,
+  interval p50 16.654 ms / p95 17.466 ms, shared draw p95 8.908 ms;
+  no sampled decode or layer builds. Summary is in
+  docs/performance/seawall-corners-2026-11-16/tow-summary.json.
+
+## 2026-11-16: physical practice-harbor arrival
+
+- Added a 160-unit-wide entrance through the lower-left practice-basin wall,
+  joined to a 384-unit approach channel. Collision, ground, walls, water clips
+  and shoreline materials share the same rectangle/boundary geometry. Existing
+  beacon artwork marks red-right-returning for the inward +X course.
+- New tutorials sail the original tug through the entrance using shared navigate
+  and physics steps, then hand control over inside the basin without replacing
+  the hull or zeroing momentum. Arrival blocks drive gestures, hides the joystick,
+  and pauses normally; no goals are awarded during it. No new textures or pools.
+- Dedicated tests exercise arrival/clearance/pause/handoff at three widths; full
+  tutorial replay includes arrival. Focused steering/buoy fixtures explicitly
+  start at the exercise, and resize tests wait for the real arrival before input.
+  Water union coverage now includes the new approach, and native/JVM parity
+  includes the opening voyage. Preview exports crossing and handoff states.
+- Full checks/Android build and preview regressions pass; final JVM/J2ObjC parity
+  is 231ffc43:2:1350. Native Android opening and 138-tick handoff screenshots
+  reviewed: grounded beacons, open passage, restored joystick/first-buoy cues.
+  APK installed and launched. No fresh physical iOS visual/haptic check.

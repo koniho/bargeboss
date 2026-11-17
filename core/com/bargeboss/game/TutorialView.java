@@ -17,6 +17,13 @@ public final class TutorialView {
     }
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
+        if(t.entering){
+            VisualStyle.panel(p,g.layout.width-340,72,320,92,VisualStyle.NAVY);
+            Lettering.draw(p,"INDUSTRIAL PRACTICE HARBOR",g.layout.width-326,88,12,PAPER);
+            Lettering.draw(p,"BRINGING HER IN...",g.layout.width-326,114,16,VisualStyle.GOLD);
+            Lettering.draw(p,"TAKE THE HELM ONCE INSIDE.",g.layout.width-326,143,9,MUTED);
+            return;
+        }
         gateFeedback(g,p);
         buoyFeedback(g,p);
         if(t.lesson==Tutorial.DONE) {

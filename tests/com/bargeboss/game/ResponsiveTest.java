@@ -81,6 +81,8 @@ public final class ResponsiveTest {
     private static void practiceAndResize(Game game) {
         float originalX=game.tug.x,originalY=game.tug.y;
         tap(game,Layout.PRACTICE); Game practice=game.activeGame();
+        for(int i=0;i<480 && practice.tutorial.entering;i++)game.step();
+        int practiceTicks=practice.ticks;
         check(practice!=game && practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"practice inherits the exact current layout");
         ReplayInput.down(game,practice.tug.x,practice.tug.y);
         check(practice.holdingTug() && !game.pointer,"root pointer routes through the practice camera");
@@ -90,7 +92,7 @@ public final class ResponsiveTest {
         game.configureCanvas(unchanged.width+96,unchanged.height+40);
         check(!practice.pointer && !practice.navigating,"resizing cancels gestures before changing projection");
         check(practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"active practice receives resized bounds");
-        check(game.tug.x==originalX && game.tug.y==originalY && game.ticks==0 && practice.ticks==0,"resizing cannot advance either simulation");
+        check(game.tug.x==originalX && game.tug.y==originalY && game.ticks==0 && practice.ticks==practiceTicks,"resizing cannot advance either simulation");
         checkPracticeLayout(practice);
         ReplayInput.down(game,practice.tug.x,practice.tug.y);
         check(practice.holdingTug(),"new gesture works after camera resize");

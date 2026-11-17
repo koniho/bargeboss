@@ -152,8 +152,11 @@ public final class ReplayInput {
         float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
         move(root,g.downX+90*dx/len,g.downY+90*dy/len);
     }
+    /** Focused exercise fixture; entrance motion is covered by TutorialEntranceTest. */
+    public static void startPractice(Game root){root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);}
     public static void tutorial(Game root) {
         Game g=root.activeGame();
+        if(g.tutorial.entering)return;
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
                 drive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY());break;

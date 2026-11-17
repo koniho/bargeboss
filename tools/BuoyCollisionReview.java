@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 /** Real shared simulation: drive into a float, back away, then watch the mooring settle. */
 public final class BuoyCollisionReview {
     public static void main(String[] args)throws Exception{
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);
         int marker=NavigationLights.count(g)-2;Buoys.Buoy b=g.buoys.get(g,marker);
         g.tug.x=b.anchorX-72;g.tug.y=b.anchorY;g.tug.angle=0;
         g.down(g.tug.x,g.tug.y);g.move(g.downX+110,g.downY);

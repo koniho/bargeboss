@@ -586,3 +586,9 @@ bounded `ShoreTopClip` hides wall wetness and vessel-light receivers behind the
 quay at concave corners. Top light spill remains a separate, unclipped receiver.
 The mask uses the shared dry footprint at LAND_RISE, independently of vessel
 heading or light availability. Montrose retains its separate dock/shore geometry.
+
+The practice basin's lower-left entrance is part of the permanent Calumet water
+union and boundary. The arrival voyage uses the same tug body, navigation physics,
+shore clips and camera as the lesson. Its fixed red/green shore beacons follow
++X as the returning direction; the red light is on +Y/starboard. Never draw an
+opening only in the artwork while leaving a collision wall or dry mask across it.

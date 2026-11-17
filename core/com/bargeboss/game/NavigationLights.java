@@ -15,7 +15,8 @@ public final class NavigationLights {
         new Entrance("OPEN BASIN / CANAL",TrainingChannel.MIN+26,500,1,0,76),
         new Entrance("CANAL / HARBOR",TrainingChannel.MAX-26,500,1,0,76),
         new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP-26,0,-1,48),
-        new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48)
+        new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48),
+        new Entrance("PRACTICE HARBOR ENTRANCE",TrainingChannel.BASIN_LEFT-12,650,1,0,94)
     };
     // Fixed east/red and west/green towers at the two official map breakwater tips.
     // Returning vector is perpendicular to their slightly diagonal entrance line.
