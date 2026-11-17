@@ -1802,3 +1802,10 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   locked before the scene configured; no Android timing/visual result is claimed
   for this shore increment. Unlock requested. Physical iPhone untested. Preview
   copied to phone Downloads as BargeBoss-Indiana-shores-v1.png.
+- Android follow-up after unlock: fresh 180-frame Hick capture and native screenshot
+  reviewed. New sheet-pile skins, coping and dry service/rail strips are visible;
+  Hick windows/stairs remain clear. Draw median/p95 5.392/6.473 ms, interval
+  median/p95 8.350/9.102 ms; no sampled builds, decodes or evictions. This local
+  scene remains within the 16.7 ms target; it does not resolve the tight-circle
+  towing slowdown or establish whole-level performance. Evidence saved in
+  docs/performance/indiana-harbor-2026-11-16/shores-summary.json.
