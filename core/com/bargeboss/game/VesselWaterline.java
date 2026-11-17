@@ -57,44 +57,6 @@ public final class VesselWaterline {
         }
         return mask;
     }
-    /** Continuous, water-side foam ribbon; no emitted stamps or marching dots. */
-    static void foam(Game g,Painter canvas,Body body,float[] edge,float scale) {
-        float speed=Physics.clamp((body.speed()-3)/57,0,1);
-        float motion=speed*speed*(3-2*speed);
-        if(motion<=.005f)return;
-        int count=edge.length/2;float[] outside=new float[edge.length];
-        float width=(2.2f+motion*2.8f)*scale;
-        for(int i=0;i<count;i++) {
-            int before=Math.max(0,i-1)*2,after=Math.min(count-1,i+1)*2;
-            float dx=edge[after]-edge[before],dy=edge[after+1]-edge[before+1],length=Math.max(.001f,Physics.length(dx,dy));
-            outside[i*2]=edge[i*2]-dy/length*width;outside[i*2+1]=edge[i*2+1]+dx/length*width;
-        }
-        float u=body.id*37,phase=g.visualTicks/60f;
-        int color=(Math.round(motion*195)<<24)|0xc1ddd8;
-        float[] xy=new float[8],uv=new float[8];
-        for(int i=0;i<count-1;i++) {
-            int j=i*2;float next=u+Physics.length(edge[j+2]-edge[j],edge[j+3]-edge[j+1])/scale;
-            xy[0]=edge[j];xy[1]=edge[j+1];xy[2]=edge[j+2];xy[3]=edge[j+3];
-            xy[4]=outside[j+2];xy[5]=outside[j+3];xy[6]=outside[j];xy[7]=outside[j+1];
-            uv[0]=u;uv[1]=0;uv[2]=next;uv[3]=0;uv[4]=next;uv[5]=7;uv[6]=u;uv[7]=7;
-            canvas.shoreline(xy,uv,phase,motion,0,color);u=next;
-        }
-    }
-    /** One quiet constant-color stroke; geometry is exactly the occlusion boundary. */
-    static void contact(Painter canvas,float[] edge,float scale) {
-        // One strip is composited once. Separate translucent strokes overlap
-        // at their round caps and create brighter dots at every join.
-        int count=edge.length/2;float[] strip=new float[count*4];float half=.275f*scale;
-        for(int i=0;i<count;i++) {
-            int before=Math.max(0,i-1)*2,after=Math.min(count-1,i+1)*2;
-            float dx=edge[after]-edge[before],dy=edge[after+1]-edge[before+1];
-            float length=Math.max(.001f,Physics.length(dx,dy)),nx=-dy/length*half,ny=dx/length*half;
-            int front=i*2,back=(count*2-1-i)*2;
-            strip[front]=edge[i*2]+nx;strip[front+1]=edge[i*2+1]+ny;
-            strip[back]=edge[i*2]-nx;strip[back+1]=edge[i*2+1]-ny;
-        }
-        canvas.poly(strip,0x486e9b9c);
-    }
     private static float offset(float[] a,float[] b,int i,boolean vertical,float t,float blend) {
         int j=i*2+(vertical?1:0),k=Math.min(i+1,SEGMENTS)*2+(vertical?1:0);
         float x=a[j]+(b[j]-a[j])*blend,y=a[k]+(b[k]-a[k])*blend;

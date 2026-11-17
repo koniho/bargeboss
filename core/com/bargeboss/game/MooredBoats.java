@@ -52,6 +52,11 @@ public final class MooredBoats {
         if(x+size*.5f<0||x-size*.5f>g.layout.width||y+size*.3f<0||y-size*.7f>g.layout.height)return;
         float heading=angle*ORIENTATIONS/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
+        float reach=b.length*.65f+6;
+        float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY);
+        if(rippleClip.length>0)p.pushClipOutside(rippleClip);
+        try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true);}
+        finally{if(rippleClip.length>0)p.popClip();}
         dissolve(p,base+a,base+next,x,y,size,mix,1);
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         for(int n=0;n<lights.count;n++){

@@ -12,12 +12,10 @@ public final class VesselWaterlineTest {
         out.points=edge.length/2;return out;
     }
     private static final class FoamTrace implements Painter {
-        int patches,alpha;float endU,maxY;
-        public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){
-            if(patches>0)check(uv[0]==endU,"foam UV stays continuous across hull segments");
-            check(kind==0 && energy>0 && energy<=1,"foam uses shared water-side shoreline shader");
-            patches++;endU=uv[2];alpha=color>>>24;
-            for(int i=1;i<xy.length;i+=2)maxY=Math.max(maxY,xy[i]);
+        int patches;float alpha,maxWidth;
+        public void spriteAffine(int atlas,int frame,float x,float y,float ax,float ay,float bx,float by,float opacity){
+            check(atlas==SpriteAtlas.RIPPLES && frame>=0 && frame<4,"uses registered ripple stamps");
+            patches++;alpha=Math.max(alpha,opacity);maxWidth=Math.max(maxWidth,Physics.length(bx,by));
         }
         public void rect(float x,float y,float w,float h,int c){} public void circle(float x,float y,float r,int c){}
         public void poly(float[] p,int c){} public void line(float x,float y,float xx,float yy,float w,int c){}
@@ -37,14 +35,14 @@ public final class VesselWaterlineTest {
             check(b.x==300 && b.y==400 && g.visualTicks==0,"rendering does not advance vessels");
         }
         Body tug=new Body(0,-1,300,400,0),barge=new Body(1,0,300,400,0);
-        float[] edge=new float[50];for(int i=0;i<25;i++){edge[i*2]=i*4;edge[i*2+1]=10;}
-        FoamTrace still=new FoamTrace();tug.engineLoad=1;VesselWaterline.foam(g,still,tug,edge,1);
-        check(still.patches==0,"stationary hull has no contact foam even under engine load");tug.engineLoad=0;
-        FoamTrace slow=new FoamTrace();tug.vx=12;VesselWaterline.foam(g,slow,tug,edge,1);
-        FoamTrace fast=new FoamTrace();tug.vx=48;VesselWaterline.foam(g,fast,tug,edge,1);
-        check(slow.patches==24 && fast.patches==24 && fast.alpha>slow.alpha*3 && fast.maxY>slow.maxY,"foam strengthens and widens smoothly with actual speed");
-        FoamTrace backing=new FoamTrace();tug.vx=-48;VesselWaterline.foam(g,backing,tug,edge,1);
-        check(backing.alpha==fast.alpha,"astern movement also displaces water");tug.vx=0;
+        g.visualTicks=45;
+        FoamTrace idle=new FoamTrace();VesselRipples.draw(g,idle,0,300,400,0,80,30,0,false);
+        FoamTrace fast=new FoamTrace();VesselRipples.draw(g,fast,0,300,400,0,80,30,48,false);
+        check(idle.patches==2 && fast.patches==2 && fast.alpha>idle.alpha && fast.maxWidth>idle.maxWidth,"bounded idle rings strengthen and expand with speed");
+        FoamTrace later=new FoamTrace();g.visualTicks=60;VesselRipples.draw(g,later,0,300,400,0,80,30,0,false);
+        check(later.maxWidth>idle.maxWidth,"rings expand over lifetime");
+        FoamTrace berth=new FoamTrace();VesselRipples.draw(g,berth,0,300,400,0,40,16,0,true);
+        check(berth.alpha<idle.alpha,"moored vessels retain subdued ripples");
 
         VesselFoam foam=new VesselFoam();g.visualTicks=0;foam.emit(g,tug);
         check(foam.emitted==0,"idle hull creates no continuous whitewater");

@@ -24,6 +24,7 @@ public final class VesselView {
             if(tug)VesselLighting.reflection(g,p,b);
             VesselNavigationLights.reflections(g,p,b,tug);
             ShadowView.vessel(g,p,b,tug,size);
+            VesselRipples.draw(g,p,b.id,b.x,b.y,b.angle,2*(b.half+b.radius),2*b.radius,b.speed(),false);
             WaterFoam.bow(g,p,b);
         } finally {if(surface.length>0)canvas.popClip();}
         float[] waterline=VesselWaterline.boundary(g,p,b,tug,size);
@@ -64,9 +65,6 @@ public final class VesselView {
                 }
             }
         } finally {canvas.popClip();}
-        if(surface.length>0)canvas.pushClipOutside(surface);
-        try{VesselWaterline.foam(g,canvas,b,waterline,waterScale);VesselWaterline.contact(canvas,waterline,waterScale);}
-        finally{if(surface.length>0)canvas.popClip();}
     }
     private static void exhaust(Painter p,Body b,int tick,float power,float bob) {
         boolean river=p instanceof RiverPainter;

@@ -1684,3 +1684,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Four-layout shared preview reviewed; full Android checks/build and iOS Metal
   build pass. JVM/J2ObjC parity 4b1a0c56:2:1350. Android installed and launched.
   No new frame-time benchmark; physical iPhone untested.
+
+## 2026-11-16: expanding painted under-hull ripple stamps
+
+- Shared Java / all painters: removed the visible contact strip and 24-quad moving
+  foam ribbon. Preserved the exact animated submerged-hull clip. Two staggered
+  painted rings now expand/fade beneath each tug, barge, mission yacht and visible
+  moored boat; actual speed strengthens moving-vessel ripples, idle remains subtle.
+  No rotating vortex, discrete marching side dots, gameplay mutation or wall clock.
+- New four-cell 1254x1254 RGBA atlas (~6 MiB total; 627x627 runtime cells), included
+  in upcoming-level preparation. Existing bounded native caches/affine sprite
+  primitive reused. Moored ripples retain local shore/dock cutouts; those additional
+  clip queries/submissions may cost CPU and require measurement in Montrose.
+- Actual shared title and idle/cruise/slow-push/astern previews reviewed. Full
+  Android checks/build, Release Metal build and JVM/J2ObjC parity 1a32b00a:2:1350
+  passed. 767,778 submerged-hull pixel checks and 1,439,937 shoreline pixel checks
+  pass across all headings. Removed obsolete visible-line alpha probe, replaced
+  ribbon assertions with bounded ring growth/fade and speed/idle checks.
+- Android installed; native Metal title screenshot reviewed. Production stamp
+  and preview copied to phone Downloads. Prompt: docs/art-prompts/vessel-ripples-v1.md.
+  Physical iPhone remains untested.
+- Fresh 180-frame Montrose docks replay: draw median/p95 18.585/22.641 ms; interval median/p95 24.750/34.854 ms; effective 38.44 FPS. No sampled decode, frame builds or evictions. This is a sanity capture, not a matched A/B; still below 60 FPS. Added moored-boat clip cost remains an optimization candidate. Native screenshot reviewed. Summary: docs/performance/ripple-stamps-2026-11-16/summary.json.

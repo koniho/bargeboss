@@ -1,0 +1,91 @@
+{
+  "file": "out/ripples-montrose.csv",
+  "samples": 180,
+  "lessons": [
+    -1
+  ],
+  "advance_ms": {
+    "p50": 2.465,
+    "p95": 2.788
+  },
+  "draw_ms": {
+    "p50": 18.585,
+    "p95": 22.641
+  },
+  "interval_ms": {
+    "p50": 24.75,
+    "p95": 34.854
+  },
+  "layer_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "decode_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_mib": {
+    "p50": 1.055,
+    "p95": 1.055
+  },
+  "sprites": {
+    "p50": 66.0,
+    "p95": 74.0
+  },
+  "blends": {
+    "p50": 0.0,
+    "p95": 6.0
+  },
+  "affines": {
+    "p50": 35.0,
+    "p95": 38.0
+  },
+  "circles": {
+    "p50": 41.0,
+    "p95": 46.0
+  },
+  "polys": {
+    "p50": 696.0,
+    "p95": 716.0
+  },
+  "clips": {
+    "p50": 62.0,
+    "p95": 66.0
+  },
+  "texture_mib": {
+    "p50": 12.428,
+    "p95": 12.96
+  },
+  "source_mib": {
+    "p50": 120.772,
+    "p95": 120.772
+  },
+  "frame_mib": {
+    "p50": 114.77,
+    "p95": 114.77
+  },
+  "frame_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "pending_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "worker_source_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "background_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_builds": 0,
+  "cache_fallbacks": 0,
+  "cache_evictions": 0,
+  "frame_builds": 0,
+  "frame_evictions": 0,
+  "background_builds": 0,
+  "async_misses": 0,
+  "cold_decode_ms": 131.834
+}
