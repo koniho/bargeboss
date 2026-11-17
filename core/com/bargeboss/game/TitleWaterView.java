@@ -25,6 +25,9 @@ public final class TitleWaterView {
         public void waterFoam(float x,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){
             p.waterFoam(x,y(yy),ax,y(yy+ay*.5f)-y(yy-ay*.5f),bx,y(yy+by*.5f)-y(yy-by*.5f),phase,kind,alpha);
         }
+        public void spriteAffine(int a,int f,float x,float yy,float ax,float ay,float bx,float by,float alpha){
+            p.spriteAffine(a,f,x,y(yy),ax,y(yy+ay*.5f)-y(yy-ay*.5f),bx,y(yy+by*.5f)-y(yy-by*.5f),alpha);
+        }
         public void line(float x,float yy,float xx,float y2,float w,int color){p.line(x,y(yy),xx,y(y2),w*thin((yy+y2)*.5f),color);}
         public void poly(float[] xy,int color){float[] q=xy.clone();for(int i=1;i<q.length;i+=2)q[i]=y(q[i]);p.poly(q,color);}
         public void rect(float x,float yy,float w,float h,int color){p.rect(x,y(yy),w,y(yy+h)-y(yy),color);}
@@ -44,6 +47,12 @@ public final class TitleWaterView {
             if(clipped)p.pushClipOutside(new float[]{x-w-1,y-h-1,x+w+1,y-h-1,x-w-1,top,
                     x+w+1,y-h-1,x+w+1,top,x-w-1,top});
             try {p.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);} finally {if(clipped)p.popClip();}
+        }
+        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){
+            float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
+            if(y+h<=top)return;boolean clip=y-h<top;
+            if(clip)p.pushClipOutside(new float[]{x-w-1,y-h-1,x+w+1,y-h-1,x-w-1,top,x+w+1,y-h-1,x+w+1,top,x-w-1,top});
+            try{p.spriteAffine(a,f,x,y,ax,ay,bx,by,alpha);}finally{if(clip)p.popClip();}
         }
         public void line(float x,float y,float xx,float yy,float w,int color) {
             float edge=top+w*.5f;
@@ -85,12 +94,12 @@ public final class TitleWaterView {
         if(tug)for(int i=0;i<20;i++){
             float age=((tick+i*13)%180)/180f;
             patch(p,b,sin(age*19+i)*(2+age*8),stern-3-age*72,0,14+age*18,9+age*14,0,
-                WaterFoam.phase(tick,i),2,.55f*(1-age)*(1-age));
+                WaterFoam.phase(tick,i),2,.22f*(1-age)*(1-age));
         }
         if(tug || b.id==TitleView.BARGES)for(int packet=7;packet>=0;packet--){
             int age=tick%20+packet*20;float t=age/160f;
             float spread=b.radius*.6f+age*.15f,back=stern-age*.38f;
-            float alpha=(tug?.5f:.38f)*(1-t)*(1-t);
+            float alpha=(tug?.22f:.16f)*(1-t)*(1-t);
             // Curved rear-facing arcs spread outwards while their origin trails left.
             for(int part=0;part<12;part++){
                 float a=(float)Math.PI+part*(float)Math.PI/12,z=a+(float)Math.PI/12;
@@ -113,10 +122,12 @@ public final class TitleWaterView {
             for(int packet=5;packet>=0;packet--) {
                 int age=Math.floorMod(tick+b.id*7,8)+packet*8;float t=age/48f;
                 float alpha=.72f*Math.min(1,age/4f)*(1-t)*(1-t);
-                patch(p,b,side*(b.radius*.85f+age*.12f),b.half+b.radius*.62f-speed*Physics.DT*age,
-                    0,18+age*.2f,10+age*.22f,0,WaterFoam.phase(tick,packet+b.id*12),side<0?0:1,alpha);
+                float lateral=side*(b.radius*.85f+age*.12f),forward=BowShed.forward(b)-speed*Physics.DT*age;
+                float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
+                int seed=Math.floorDiv(tick+b.id*7,8)-packet+b.id*13+(side<0?0:3);
+                BowShed.stamp(p,seed,b.x+lateral*s+forward*c,b.y-lateral*c+forward*s,b.angle,
+                    18+age*.2f,10+age*.22f,age,alpha);
             }
-        } else patch(p,b,side*b.radius*.45f,b.half+b.radius*.6f,
-            side*11,-8,5,4,WaterFoam.phase(tick,side),4,.55f*WaterFoam.pressure(speed));
+        }
     }
 }

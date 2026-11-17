@@ -1914,3 +1914,32 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   control screenshot reviewed for edge/footer clearance. This is a regression
   sanity run, not a new matched A/B; no additional GPU headroom claim. Summary
   stored in docs/performance/bow-shedding-2026-11-16/tow-summary.json.
+
+## 2026-11-16: lofted bow-shed stamps
+
+- Shared rendering: barge emitters move seven world units toward the bow. Reuse
+  the existing four SPLASH atlas cells with stable packet variants/orientations.
+  Each shed patch follows a 24-tick parabola peaking at six world units, then
+  becomes expanding, fading surface residue. Tug/yacht bow anchors unchanged.
+- Gameplay retains the 160-slot VesselFoam pool and original emission cadence.
+  No new texture or particle pool. Airborne patches join collision spray in the
+  same depth merge as hulls, shores, ropes and machinery in both stage renderers.
+  Ground depth sorts them; ballistic height only shifts the drawn stamp. Existing
+  foreground shore masks apply in flight, all-dry-land masks after landing.
+  Title uses fixed-step ages and retains separate near/far hull passes.
+- Full Android checks/build, shared shoreline/foam pixel regressions and native
+  J2ObjC parity dfa94488:2:1350 pass. Tests cover flight apex/landing, shifted
+  barge anchor, detached source independence and expiry across 32 headings.
+  Android installed and native title screenshot reviewed. Physical iOS visuals
+  not tested this round; no platform-specific composition introduced.
+- User correction: default title convoy reduced from 48 to 18 world units/s
+  with lighter trailing wash/arcs and lower engine loading. No attached bow
+  pressure or lofted bow shedding in the title at this speed. Faster gameplay
+  retains the new stamped trajectory. Final parity baseline 1d3387b:2:1350.
+- Gameplay lofted-spray regression run before the title-only speed correction:
+  360 warmup + 2,400 samples, 60.05 FPS, interval p95 17.490 ms, tow attached
+  throughout. Summary under docs/performance/bow-loft-2026-11-16. This does not
+  establish performance for crowded scenes or other devices.
+- Final quiet-title APK installed/launched; native screenshot confirms no bow
+  pressure sheet or airborne bow stamps, with subdued trailing wake and ripples.
+  Full final build/checks and parity pass after the title correction.

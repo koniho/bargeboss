@@ -541,9 +541,23 @@ Pressure fades between 26 and 32.5 units/s. Gameplay reuses the bounded
 and expire after 72 ticks. Reverse and sideways movement retain their existing
 displacement behavior. No new unbounded particle system is introduced.
 
-The title's steady convoy uses fixed-step patch ages and relative travel to leave
-foam behind each bow. Far-side patches precede hulls; near-side patches follow
-their owning hull. At low speed, title pressure crests are split by unraised
-water-plane depth, with the near portion after the hull. Hull/submerged clipping
-and horizon projection remain independent. Do not put the entire title bow wake
-back in a single below-hull pass.
+The default title convoy travels at 18 world units/s, below the bow-shedding
+threshold. It has subtle hull ripples and reduced trailing wash/arcs, with no
+attached bow-pressure crest or lofted bow spray. The optional faster title path
+retains fixed-step patch ages and separate far/near hull passes. Hull/submerged
+clipping and horizon projection remain independent.
+
+### Lofted bow-shed stamps
+
+Underway shoulder emissions use the four existing irregular SPLASH cells with
+stable per-packet variants. Barge origins move seven world units farther toward
+the bow; tug/yacht anchors stay unchanged. A 24-tick parabola peaks at six world
+units and lands at zero height, then the same stamp spreads and fades as surface
+residue. Title ages derive from its steady voyage; gameplay positions remain
+detached in the existing bounded foam pool.
+
+`SprayView` merges airborne bow packets and collision spray by unraised ground
+depth in ordinary stages and the tutorial. Height only changes projected draw
+position. Airborne stamps use the foreground-shore cutout; landed residue returns
+to the all-dry-shore water pass. Title near/far passes and horizon projection
+apply to affine stamps as well as shader patches.

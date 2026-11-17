@@ -131,7 +131,7 @@ public final class TrainingChannelView {
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
-        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int[] workers=DockWorkers.ordered(g);int[] splashes=g.splashes.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int[] workers=DockWorkers.ordered(g);int[] splashes=SprayView.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
             while(boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<2 || prop<CalumetArt.count() || crew<workers.length || WorldArrows.pending()) {
@@ -140,7 +140,7 @@ public final class TrainingChannelView {
                 float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
                 float rd=span<rope.count?rope.depth(c,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
-                float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
+                float ed=spray<splashes.length?SprayView.depth(g,splashes[spray]):Float.MAX_VALUE;
                 float gd=gateIndex<2?LockView.gateDepth(g,gateIndex):Float.MAX_VALUE;
                 float pd=prop<CalumetArt.count()?CalumetArt.depth(g,prop):Float.MAX_VALUE;
                 float wd=crew<workers.length?DockWorkers.depth(g,workers[crew]):Float.MAX_VALUE;
@@ -151,7 +151,7 @@ public final class TrainingChannelView {
                 if(pd<=other && pd<=wd && pd<=next){CalumetArt.draw(g,canvas,prop++);continue;}
                 if(wd<=other && wd<=next && crew<workers.length){DockWorkers.draw(g,canvas,workers[crew++]);continue;}
                 if(Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))>next)break;
-                if(ed<=ld && ed<=rd && ed<=sd && ed<=bd && ed<=vd && spray<splashes.length){g.splashes.draw(g,canvas,splashes[spray++]);continue;}
+                if(ed<=ld && ed<=rd && ed<=sd && ed<=bd && ed<=vd && spray<splashes.length){SprayView.draw(g,canvas,splashes[spray++]);continue;}
                 if(ld<=rd && ld<=sd && ld<=bd && ld<=vd && mark<lights.length){NavigationLights.draw(g,canvas,lights[mark++]);continue;}
                 if(rd<=sd && rd<=bd && rd<=vd && span<rope.count){rope.draw(world,span++);continue;}
                 if(sd<=bd && sd<=vd && shore<TrainingGroundView.frontCount()){TrainingGroundView.frontSection(g,canvas,shore++);continue;}

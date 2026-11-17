@@ -55,7 +55,7 @@ public final class TitleLayoutTest {
             Game g=new Game();Body b=new Body(tug?0:1,tug?-1:0,300,300,TitleView.HEADING);
             b.vx=b.vy=20*RiverCamera.Q;BowOrder order=new BowOrder();
             VesselView.draw(g,new RiverPainter(order,TitleView.camera(g)),b,tug,false);
-            check(order.before>0 && order.after>0,"title bow crest straddles its owning hull draw");
+            check(order.before==0 && order.after==0,"title displacement voyage has no attached bow pressure crest");
             check(order.clips==0,"title bow depth masks restore all clips");
             b.vx=b.vy=48*RiverCamera.Q;BowOrder fast=new BowOrder();
             VesselView.draw(g,new RiverPainter(fast,TitleView.camera(g)),b,tug,false);
@@ -87,6 +87,7 @@ public final class TitleLayoutTest {
         for(int tick=0;tick<720;tick+=17){
             Game g=new Game();RiverCamera camera=TitleView.camera(g);
             Body tug=new Body(0,-1,0,0,0);TitleView.tugPose(tug,tick);
+            check(tug.speed()<WaterFoam.SHED_SPEED,"title voyage stays below bow-shedding speed");
             float prior=camera.screenX(tug.x,tug.y),waterY=camera.screenY(tug.x,tug.y);
             check(Math.abs(tug.vx-tug.vy)<.0001f && tug.vx>0,"title travels horizontally right in camera space");
             for(int i=0;i<TitleView.BARGES;i++){

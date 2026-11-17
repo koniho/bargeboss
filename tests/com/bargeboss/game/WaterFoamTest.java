@@ -26,6 +26,10 @@ public final class WaterFoamTest {
     }
     public static void run() {
         Game g=new Game();
+        check(BowShed.lift(0)==0 && BowShed.lift(12)==6 && BowShed.lift(24)==0 && BowShed.lift(40)==0,"bow spray rises, lands and stays on water");
+        Body bargeBow=new Body(1,0,0,0,0),tugBow=new Body(0,-1,0,0,0);
+        check(Math.abs(BowShed.forward(bargeBow)-(bargeBow.half+bargeBow.radius*.62f+7))<.001f,"barge shedding starts seven units farther forward");
+        check(Math.abs(BowShed.forward(tugBow)-(tugBow.half+tugBow.radius*.62f))<.001f,"tug keeps its bow shoulder anchor");
         for(int kind=0;kind<3;kind++)for(int heading=0;heading<32;heading++) {
             Body b=new Body(kind,kind-1,300,400,heading*(float)StrictMath.PI/16,kind==2);
             float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
@@ -34,7 +38,7 @@ public final class WaterFoamTest {
             b.vx=c*60;b.vy=s*60;Trace fast=new Trace();WaterFoam.bow(g,fast,b);
             check(fast.count==0 && slow.count==2,"attached pressure crests yield to shed foam above half speed");
             VesselFoam shed=new VesselFoam();g.visualTicks=Math.floorMod(-b.id*7,8);shed.emit(g,b);g.visualTicks=0;
-            check(shed.emitted==2 && shed.kind[0]<2 && shed.kind[1]<2,"underway bow sheds foam from both shoulders");
+            check(shed.emitted==2 && shed.kind[0]>=4 && shed.kind[1]>=4,"underway bow sheds foam from both shoulders");
             float xx=shed.x[0],yy=shed.y[0];b.x+=100;b.y+=100;shed.step();
             check(Math.abs(shed.x[0]-xx)<1 && Math.abs(shed.y[0]-yy)<1,"shed bow foam stays behind its source");
             b.x=300;b.y=400;for(int i=0;i<90;i++)shed.step();

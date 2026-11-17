@@ -45,13 +45,14 @@ public final class TitleView {
     }
     static final float HEADING=(float)StrictMath.PI/4;
     static final int BARGES=3;
+    static final float SPEED=18; // Quiet displacement-speed title voyage, below bow shedding.
     static final float GAP=18,SPACING=77.5f+GAP;
     static void bargePose(Body barge,int index,int tick){
         float behind=27.5f+38.75f+GAP+index*SPACING;
         barge.x=300-RiverCamera.Q*behind;barge.y=300-RiverCamera.Q*behind;
         barge.angle=HEADING;
         barge.heave=sine(tick*.048-index*.55f)*1.1f;
-        barge.floatingInitialized=true;barge.vx=barge.vy=48*RiverCamera.Q;
+        barge.floatingInitialized=true;barge.vx=barge.vy=SPEED*RiverCamera.Q;
     }
     static RiverCamera camera(Game g){
         float menuLeft=g.layout.width-352,available=menuLeft-64;
@@ -95,7 +96,7 @@ public final class TitleView {
         float pressure=.5f+.5f*sine(tick*.065);
         tug.x=300;tug.y=300;tug.angle=HEADING;
         tug.heave=sine(tick*.048)*1.6f+sine(tick*.031)*.4f;
-        tug.floatingInitialized=true;tug.vx=tug.vy=48*RiverCamera.Q;tug.engineLoad=.75f+pressure*.2f;
+        tug.floatingInitialized=true;tug.vx=tug.vy=SPEED*RiverCamera.Q;tug.engineLoad=.25f+pressure*.08f;
         tug.wakeKickTicks=(int)(18*Math.max(0,sine(tick*.048+Math.PI/2)));
     }
 }

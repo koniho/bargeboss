@@ -11,7 +11,7 @@ public final class VesselFoam {
     public void step() {
         for(int i=0;i<CAPACITY;i++)if(age[i]<life[i]) {
             age[i]++;x[i]+=vx[i];y[i]+=vy[i];vx[i]*=.982f;vy[i]*=.982f;
-            if(kind[i]>=2)angle[i]+=(i%2==0?1:-1)*.006f;
+            if(kind[i]==2 || kind[i]==3)angle[i]+=(i%2==0?1:-1)*.006f;
         }
     }
     public void emit(Game g,Body b) {
@@ -19,17 +19,17 @@ public final class VesselFoam {
         if(speed>4 && Math.floorMod(g.visualTicks+b.id*7,8)==0) {
             float dx=b.vx/speed,dy=b.vy/speed,motion=Math.min(1,speed/65);
             float along=dx*c+dy*s;
-            float end=b.half*Physics.clamp(along/.3f,-1,1);
+            boolean shedding=b.vx*c+b.vy*s>=WaterFoam.SHED_SPEED;
+            float end=b.half*Physics.clamp(along/.3f,-1,1)+(shedding && !b.yacht && b.berth>=0?7:0);
             float shoulder=b.radius+(1-Math.min(1,Math.abs(along)/.3f))*b.half;
             // Shoulders of the leading end of the capsule, including stern-first travel and drift.
             for(int side=-1;side<=1;side+=2) {
                 float xx=b.x+c*end+b.radius*dx*.62f-shoulder*dy*side*.8f;
                 float yy=b.y+s*end+b.radius*dy*.62f+shoulder*dx*side*.8f;
-                boolean shedding=b.vx*c+b.vy*s>=WaterFoam.SHED_SPEED;
                 float outward=shedding?.16f:.09f;
                 add(xx,yy,b.vx*.0015f-dy*side*outward,b.vy*.0015f+dx*side*outward,
                         (float)StrictMath.atan2(dy,dx),shedding?18+motion*12:32+motion*24,
-                        shedding?10+motion*8:18+motion*18,.32f+motion*.65f,shedding?72:90,side<0?0:1);
+                        shedding?10+motion*8:18+motion*18,.32f+motion*.65f,shedding?72:90,(shedding?4:0)+(side<0?0:1));
             }
         }
         float load=Physics.clamp((b.engineLoad-.12f)/.88f,0,1);
@@ -75,6 +75,10 @@ public final class VesselFoam {
                 float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=(l+w)*c.scale;
                 if(sx+bound<0 || sy+bound<0 || sx-bound>g.layout.width || sy-bound>g.layout.height)continue;
                 int texture=kind[i];
+                if(texture>=4){
+                    if(age[i]>=BowShed.FLIGHT)BowShed.stamp(p,i,x[i],y[i],angle[i],l,w,age[i],alpha*.75f);
+                    continue;
+                }
                 if(texture==2 && t>.35f) {
                     float mix=Math.min(1,(t-.35f)/.3f);
                     patch(p,2,x[i],y[i],angle[i],l,w,alpha*(1-mix),WaterFoam.phase(g.visualTicks,i));
@@ -82,6 +86,18 @@ public final class VesselFoam {
                 } else patch(p,texture,x[i],y[i],angle[i],l,w,alpha,WaterFoam.phase(g.visualTicks,i));
             }
         } finally {if(clip.length>0)canvas.popClip();}
+    }
+
+    boolean airborne(int i){return kind[i]>=4 && age[i]<life[i] && age[i]<BowShed.FLIGHT;}
+    float depth(Game g,int i){return g.layout.camera.screenY(x[i],y[i]);}
+    void drawAir(Game g,Painter canvas,int i){
+        RiverCamera c=g.layout.camera;float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/4f)*(1-t)*(1-t*.4f);
+        float extent=length[i]+width[i]+12,sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]);
+        if(alpha<.008f || sx+extent*c.scale<0 || sx-extent*c.scale>g.layout.width || sy+extent*c.scale<0 || sy-extent*c.scale>g.layout.height)return;
+        float[] clip=ShoreOcclusion.region(g,c,x[i]-extent,y[i]-extent,x[i]+extent,y[i]+extent,depth(g,i));
+        if(clip.length>0)canvas.pushClipOutside(clip);
+        try{BowShed.stamp(new RiverPainter(canvas,c),i,x[i],y[i],angle[i],length[i]*(1+t*.8f),width[i]*(1+t*1.5f),age[i],alpha*.75f);}
+        finally{if(clip.length>0)canvas.popClip();}
     }
 
     static void patch(Painter p,int frame,float x,float y,float angle,float length,float width,float alpha) {
