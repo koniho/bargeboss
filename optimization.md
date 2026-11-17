@@ -1844,3 +1844,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   setup/clip interaction not yet separated. One sequential pair, not randomized.
   Production foam retained; no claim of a production performance fix or headroom.
   Summaries and reproducible flags recorded in the Perfetto tow report.
+
+## 2026-11-16: foam submission optimization investigation
+
+- Android experiment: split the existing foam kernel into precompiled kind-specific
+  RuntimeShaders, preserving the coverage function. Matched 600-warmup/900-sample
+  tight-circle runs remained 24.666 FPS (original) vs 24.413 FPS (specialized).
+  Screenshot comparison changed only one pixel by one channel level out of
+  2,602,800 pixels. Rejected specialization: no measured gain. Summary evidence
+  is in docs/performance/foam-specialized-2026-11-16; experimental code removed.
+- Candidate, not yet performance-validated: API 34+ Mesh batching for kind-5
+  expanding crests, retaining patch coordinates, phase, opacity and triangle
+  order. Uses the unchanged shared foam kernel, a reusable 72 KiB vertex buffer,
+  and at most 512 patches per submission. Older Android retains the patch path.
+  Batch ends before shore clip restoration; shared wrappers forward the scope.
+  iOS native painters explicitly implement the scope as no-ops. No simulation,
+  wake lifetime/density or artwork change.
+- Full shared checks and Android/iOS builds pass. New batch scope/exception
+  cleanup test passes; JVM/J2ObjC parity 7430b369:2:1350. Preview passes
+  1,439,937 all-heading hull/cargo shoreline assertions and 197,334 foam/splash
+  transparency/shoreline assertions. iOS simulator completed 180 sampled towing
+  frames and screenshot reviewed; this is compatibility, not Android Mesh proof.
+- Candidate APK installed, but phone locked before native Mesh A/B could start.
+  Unlock requested. Native pixel equivalence, Mesh allocation/submission costs
+  and frame-interval improvement remain unverified. Candidate code is deliberately
+  uncommitted pending this comparison; no production speedup claimed.
