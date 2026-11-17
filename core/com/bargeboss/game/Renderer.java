@@ -11,7 +11,8 @@ public final class Renderer {
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         try {WorldArrows.begin(g);
-        if(g.montroseStage())MontroseView.draw(g,p);
+        if(g.indianaStage())IndianaView.draw(g,p);
+        else if(g.montroseStage())MontroseView.draw(g,p);
         else TrainingChannelView.draw(g,p);
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
@@ -46,22 +47,22 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
-        TowView.Segments rope=new TowView.Segments(g);int spray=0;int[] splashes=g.splashes.ordered(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0,pedestal=0,pedestalCount=g.montroseStage()?MarinaPedestals.count(g):0;int[] lights=NavigationLights.ordered(g);boolean hoist=g.montroseStage();int moored=0,mooredCount=MooredBoats.count(g);
+        TowView.Segments rope=new TowView.Segments(g);int spray=0;int[] splashes=g.splashes.ordered(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0,pedestal=0,pedestalCount=g.montroseStage()?MarinaPedestals.count(g):0;int[] lights=NavigationLights.ordered(g);boolean hoist=g.montroseStage();int landmark=0;int moored=0,mooredCount=MooredBoats.count(g);
         for(int n=0;n<count;n++) {
             float depth=g.layout.camera.screenY(ordered[n].x,ordered[n].y);
-            while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || moored<mooredCount || WorldArrows.pending()) {
+            while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<IndianaView.count(g) || moored<mooredCount || WorldArrows.pending()) {
                 float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
                 float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
                 float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
                 float pd=pedestal<pedestalCount?MarinaPedestals.depth(g,pedestal):Float.MAX_VALUE;
-                float hd=hoist?MontroseBoatHoist.depth(g):Float.MAX_VALUE;
+                float hd=hoist?MontroseBoatHoist.depth(g):landmark<IndianaView.count(g)?IndianaView.depth(g,landmark):Float.MAX_VALUE;
                 float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
                 float ad=WorldArrows.depth();
                 if(WorldArrows.pending()&&ad<=Math.min(depth,Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){WorldArrows.draw(p);continue;}
                 if(Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))>depth)break;
                 if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-                if(hoist && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;continue;}
+                if((hoist || landmark<IndianaView.count(g)) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else IndianaView.landmark(g,((RiverPainter)p).canvas(),landmark++);continue;}
                 if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
                 if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){g.splashes.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
                 if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
@@ -69,18 +70,18 @@ public final class Renderer {
             }
             body(g,p,ordered[n]);
         }
-        while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || moored<mooredCount || WorldArrows.pending()) {
+        while(span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<IndianaView.count(g) || moored<mooredCount || WorldArrows.pending()) {
             float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
             float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
             float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
             float ed=spray<splashes.length?g.splashes.depth(g,splashes[spray]):Float.MAX_VALUE;
             float pd=pedestal<pedestalCount?MarinaPedestals.depth(g,pedestal):Float.MAX_VALUE;
-            float hd=hoist?MontroseBoatHoist.depth(g):Float.MAX_VALUE;
+            float hd=hoist?MontroseBoatHoist.depth(g):landmark<IndianaView.count(g)?IndianaView.depth(g,landmark):Float.MAX_VALUE;
             float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
             float ad=WorldArrows.depth();
             if(WorldArrows.pending()&&ad<=Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))){WorldArrows.draw(p);continue;}
             if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-            if(hoist && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;continue;}
+            if((hoist || landmark<IndianaView.count(g)) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else IndianaView.landmark(g,((RiverPainter)p).canvas(),landmark++);continue;}
             if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
             if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){g.splashes.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
             if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}

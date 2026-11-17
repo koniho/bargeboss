@@ -5,6 +5,7 @@ public final class HarborView {
     private static final int DARK=VisualStyle.OUTLINE, GOLD=VisualStyle.GOLD;
     private HarborView() {}
     public static void draw(Game g,Painter p) {
+        if(g.indianaStage()){IndianaView.berth(g,p);return;}
         if(g.montroseStage()){MontroseView.slip(g,p);return;}
         berths(g,p);
     }

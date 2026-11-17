@@ -135,12 +135,8 @@ public final class ArticulatedModel {
         }
     }
     public static final class Stats {public int sourceFaces,visibleFaces,fragments,drawnFaces,culledNodes;}
-    public Stats draw(Game g,Painter p,Pose pose) {
-        Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
-        for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
-            if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
-        for(Poly f:pose.polygons)if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;
-        if(stats.visibleFaces==0)return stats;
+    /** Build immutable face ordering during level preparation, before active draws. */
+    public void prepare(Pose pose) {
         if(pose.tree==null) {
             Stats build=new Stats();
             for(Poly f:pose.polygons)if(-f.nx+f.ny+f.nz>EPS) {
@@ -148,6 +144,14 @@ public final class ArticulatedModel {
             }
             pose.fragments=build.fragments;
         }
+    }
+    public Stats draw(Game g,Painter p,Pose pose) {
+        Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
+        for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
+            if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
+        for(Poly f:pose.polygons)if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;
+        if(stats.visibleFaces==0)return stats;
+        prepare(pose);
         stats.fragments=pose.fragments;
         if(pose.tree!=null)pose.tree.paint(p,g.layout.camera,alpha,stats);
         return stats;

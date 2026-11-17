@@ -9,10 +9,11 @@ public final class ShoreOcclusionPixelTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void main(String[] args) {
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();int wetPixels=0,landProbes=0;
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
         for(int bank=0;bank<4;bank++)for(int kind=0;kind<4;kind++)for(int heading=0;heading<32;heading++) {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
             float y=bank==0?TrainingChannel.BASIN_BOTTOM-16:bank==3?TrainingChannel.BASIN_TOP+16:600;
+            if(g.indianaStage()){x=bank==0?266:bank==1?484:bank==2?116:1134;y=bank<2?700:-300;}
             Body b=new Body(kind==0?0:1,kind-1,x,y,heading*(float)Math.PI/16);b.floatingInitialized=true;b.heave=(heading%3-1)*1.5f;
             b.vx=45*(float)StrictMath.cos(b.angle);b.vy=45*(float)StrictMath.sin(b.angle);
             float scale=heading%2==0?1.8f:2.7f;RiverCamera base=new RiverCamera(0,0,scale);
@@ -26,10 +27,10 @@ public final class ShoreOcclusionPixelTest {
             float rise=GroundArt.LAND_RISE*scale,depth=c.screenY(x,y);
             for(int py=20;py<380;py+=3)for(int px=8;px<376;px+=3) {
                 float wx=c.worldX(px+.5f,py+.5f+rise),wy=c.worldY(px+.5f,py+.5f+rise);
-                boolean land=!TrainingChannel.contains(wx,wy);
+                boolean land=!g.inWater(wx,wy);
                 // Ignore one-pixel antialias boundary and the sprite's ground-depth plane.
-                boolean dryInterior=land && !TrainingChannel.contains(wx-2,wy) && !TrainingChannel.contains(wx+2,wy)
-                    && !TrainingChannel.contains(wx,wy-2) && !TrainingChannel.contains(wx,wy+2);
+                boolean dryInterior=land && !g.inWater(wx-2,wy) && !g.inWater(wx+2,wy)
+                    && !g.inWater(wx,wy-2) && !g.inWater(wx,wy+2);
                 if(dryInterior && py+rise>depth+2 && Math.abs(wx-x)<150 && Math.abs(wy-y)<150) {
                     landProbes++;check((image.getRGB(px,py)>>>24)==0,"painted hull/cargo/light pixels must not show through solid foreground land: bank="+bank+" kind="+kind+" heading="+heading+" pixel="+px+","+py);
                 } else if(!land && (image.getRGB(px,py)>>>24)>40)wetPixels++;

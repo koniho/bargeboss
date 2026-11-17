@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Append-only level catalog. Existing IDs stay stable in saved careers. */
 public final class Challenges {
-    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,PAGE_SIZE=3;
+    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,PAGE_SIZE=3;
     private static final class Definition {
         final int kind,quota,replaySeconds;
         final String title,description,summary,cardGoal,cardHint;
@@ -22,11 +22,13 @@ public final class Challenges {
         new Definition(DEEP_CHANNEL,3,360,"DEEP FIRST","NARROW CHANNEL. WORK THE DEEPEST BERTH FIRST.",
                 "3 BARGES / DEEPEST FIRST","DEEP FIRST / NARROW REACH","PLAN SPACE FOR THE EMPTIES"),
         new Definition(MONTROSE,1,600,"MONTROSE HARBOR","TOW AN 80 FT YACHT FROM THE INLET INTO ITS SLIP.",
-                "80 FT YACHT / MARINA TOW","INLET TO WOODEN SLIP","ATTACH / TOW / SETTLE")
+                "80 FT YACHT / MARINA TOW","INLET TO WOODEN SLIP","ATTACH / TOW / SETTLE"),
+        new Definition(INDIANA,1,900,"INDIANA HARBOR","TOW STEEL THROUGH THE SHIP CANAL TO THE SOUTH MILL.",
+                "STEEL TOW / THE FORKS","OUTER HARBOR TO SOUTH MILL","PASS HICK TOWER / TAKE SOUTH FORK")
     };
     public static final int COUNT=LEVELS.length;
     private Challenges() {}
-    public static boolean standalone(int id) {return id==MONTROSE;}
+    public static boolean standalone(int id) {return id==MONTROSE || id==INDIANA;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
     public static int kind(int id) { return level(id).kind; }
@@ -38,6 +40,7 @@ public final class Challenges {
     /** Delivery order also supplies the asset manifest, including loads not yet spawned. */
     public static int feedBerth(int id,int index) {
         int kind=kind(id);
+        if(kind==INDIANA)return 0;
         return kind==SHARED_SLIP || kind==DEEP_CHANNEL?new int[]{2,0,1}[index]:index==0?2:1;
     }
     public static int quota(int id) { return level(id).quota; }

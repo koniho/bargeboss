@@ -143,7 +143,7 @@ public final class Buoys {
         // outside the old river corridor; Physics.banks would teleport their hulls.
         if(touched && !fixed){
             if(g.montroseStage())MontroseHarbor.collide(g,body,g.splashes);
-            else CalumetMap.collide(body,g.splashes);
+            else if(g.indianaStage())IndianaHarbor.collide(body,g.splashes);else CalumetMap.collide(body,g.splashes);
         }
     }
 }

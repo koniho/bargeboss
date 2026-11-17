@@ -2,12 +2,17 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
         root.configureCanvas(width,height);
+        if(name.startsWith("indiana-")){
+            root.selectChallenge(Challenges.INDIANA);root.reset();
+            if(name.equals("indiana-hick")){root.tug.x=375;root.tug.y=430;root.cargo[0].x=375;root.cargo[0].y=320;}
+            root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,1.4f,width*.5f,height*.52f);return;
+        }
         if(name.equals("splash-impact")){
             root.selectChallenge(0);root.reset();for(Feeder f:root.feeders){f.phase=Feeder.IDLE;f.load=null;}
             for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;

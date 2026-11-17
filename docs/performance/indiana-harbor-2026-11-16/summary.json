@@ -1,0 +1,91 @@
+{
+  "file": "out/indiana-hick.csv",
+  "samples": 180,
+  "lessons": [
+    -1
+  ],
+  "advance_ms": {
+    "p50": 0.468,
+    "p95": 0.607
+  },
+  "draw_ms": {
+    "p50": 4.709,
+    "p95": 5.449
+  },
+  "interval_ms": {
+    "p50": 8.324,
+    "p95": 8.877
+  },
+  "layer_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "decode_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_mib": {
+    "p50": 0.72,
+    "p95": 0.72
+  },
+  "sprites": {
+    "p50": 11.0,
+    "p95": 11.0
+  },
+  "blends": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "affines": {
+    "p50": 18.0,
+    "p95": 18.0
+  },
+  "circles": {
+    "p50": 46.0,
+    "p95": 58.0
+  },
+  "polys": {
+    "p50": 966.0,
+    "p95": 976.0
+  },
+  "clips": {
+    "p50": 16.0,
+    "p95": 17.0
+  },
+  "texture_mib": {
+    "p50": 18.858,
+    "p95": 18.858
+  },
+  "source_mib": {
+    "p50": 78.19,
+    "p95": 78.19
+  },
+  "frame_mib": {
+    "p50": 59.717,
+    "p95": 59.717
+  },
+  "frame_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "pending_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "worker_source_mib": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "background_build_ms": {
+    "p50": 0.0,
+    "p95": 0.0
+  },
+  "cache_builds": 0,
+  "cache_fallbacks": 0,
+  "cache_evictions": 0,
+  "frame_builds": 0,
+  "frame_evictions": 0,
+  "background_builds": 0,
+  "async_misses": 0,
+  "cold_decode_ms": 68.21
+}

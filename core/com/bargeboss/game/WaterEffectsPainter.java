@@ -18,9 +18,10 @@ public final class WaterEffectsPainter implements Painter {
     private final float[][] water;
     private final boolean marina;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;marina=g.montroseStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.montroseStage()?null:CHANNEL;
+        this.target=target;marina=g.montroseStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()?IndianaHarbor.WATER:g.montroseStage()?null:CHANNEL;
     }
     public static boolean contains(Game g,float x,float y) {
+        if(g.indianaStage())return IndianaHarbor.contains(x,y);
         if(g.montroseStage())return MontroseHarbor.contains(x,y);
         return CalumetMap.contains(x,y);
     }

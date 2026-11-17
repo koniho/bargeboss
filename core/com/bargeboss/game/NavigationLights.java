@@ -21,10 +21,11 @@ public final class NavigationLights {
     // Returning vector is perpendicular to their slightly diagonal entrance line.
     private static final float MARINA_HALF=Physics.length(89.5f,16);
     private static final Entrance[] MARINA={new Entrance("MONTROSE INLET",MontroseHarbor.mapX(458.5f),MontroseHarbor.mapY(1274),16/MARINA_HALF,-89.5f/MARINA_HALF,MARINA_HALF*MontroseHarbor.MAP_SCALE)};
+    private static final Entrance[] INDIANA={new Entrance("INDIANA OUTER HARBOR",600,-890,0,1,165),new Entrance("SHIP CANAL",375,210,0,1,88)};
     private static final Entrance[] LOCAL={new Entrance("HARBOR ENTRANCE",300,Physics.BOTTOM-45,0,-1,120)};
     private static final Entrance[] TRANSIT={LOCAL[0],new Entrance("UPSTREAM HARBOR",300,-280,0,-1,20)};
     private NavigationLights(){}
-    public static Entrance[] entrances(Game g){return g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
+    public static Entrance[] entrances(Game g){return g.indianaStage()?INDIANA:g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
     /** One single flash every two seconds; long dark interval preserves the marine rhythm. */
     public static float flash(int ticks,int phase){return flash(ticks,phase,120);}
     private static float flash(int ticks,int phase,int period){

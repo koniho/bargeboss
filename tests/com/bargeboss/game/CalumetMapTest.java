@@ -4,7 +4,7 @@ final class CalumetMapTest {
  private static int checks;
  private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
  static void run(){
-  for(int id=0;id<Challenges.COUNT;id++)if(id!=Challenges.MONTROSE){Game g=new Game();g.challengeId=id;g.reset();
+  for(int id=0;id<Challenges.COUNT;id++)if(!Challenges.standalone(id)){Game g=new Game();g.challengeId=id;g.reset();
    for(float y=-1050;y<900;y+=23)for(float x=-1900;x<950;x+=23)check(g.inWater(x,y)==CalumetMap.contains(x,y),"Every Calumet mission shares coastline");
    check(g.hasBridge(),"Fixed bridge exists in every Calumet mission");
   }

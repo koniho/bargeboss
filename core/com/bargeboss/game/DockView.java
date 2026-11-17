@@ -5,7 +5,7 @@ public final class DockView {
     private static final int GOLD=SceneLighting.sceneryColor(VisualStyle.GOLD),DARK=SceneLighting.sceneryColor(VisualStyle.OUTLINE),LIGHT=SceneLighting.sceneryColor(VisualStyle.CREAM);
     private DockView() {}
     public static void draw(Game g,Painter canvas) {
-        if(g.montroseStage())return;
+        if(g.montroseStage() || g.indianaStage())return;
         for(int berth=0;berth<3;berth++) {
             if(!g.berthDisplayEnabled(berth)) continue;
             Body load=null,mooring=null;

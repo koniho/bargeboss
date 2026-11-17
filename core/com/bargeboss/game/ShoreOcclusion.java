@@ -18,7 +18,7 @@ public final class ShoreOcclusion {
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
         ArrayList<float[]> dry=new ArrayList<float[]>();
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
-        else subtract(dry,left,top,right,bottom,CalumetMap.water(),0);
+        else subtract(dry,left,top,right,bottom,g.indianaStage()?IndianaHarbor.WATER:CalumetMap.water(),0);
         if(dry.isEmpty())return EMPTY;
         float rise=GroundArt.LAND_RISE*c.scale;
         ArrayList<float[]> pieces=new ArrayList<float[]>();int count=0;

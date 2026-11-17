@@ -1705,3 +1705,26 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   and preview copied to phone Downloads. Prompt: docs/art-prompts/vessel-ripples-v1.md.
   Physical iPhone remains untested.
 - Fresh 180-frame Montrose docks replay: draw median/p95 18.585/22.641 ms; interval median/p95 24.750/34.854 ms; effective 38.44 FPS. No sampled decode, frame builds or evictions. This is a sanity capture, not a matched A/B; still below 60 FPS. Added moored-boat clip cost remains an optimization candidate. Native screenshot reviewed. Summary: docs/performance/ripple-stamps-2026-11-16/summary.json.
+
+## 2026-11-16: Indiana Harbor first playable map and Hick Tower
+
+- Shared Java / Android / iOS: appended level 6 with protected outer basin, canal,
+  west and south forks, steel delivery, East Breakwater light, mill halls and Hick
+  Tower beside two raised rail bridges. Compressed game geography, not a survey;
+  bridges are static raised rigid parts, not operating hazards. References and
+  remaining scenery detail: docs/maps/indiana-harbor.md.
+- Reused articulated 3D geometry and existing native material shaders. Static BSP
+  preparation happens at setup. No new textures; Indiana omits unrelated Calumet
+  scenery atlases and reflection lamps. Water and scenery receive a restrained
+  red-biased dusk palette; navigation lights and UI preserve their colors.
+- Full shared checks and actual-input bounded delivery replay pass (100% hull).
+  1,438,849 Indiana all-heading shoreline pixel assertions pass. Android APK and
+  Release iOS Metal build pass; JVM/J2ObjC parity c417beb7:2:1350. Android installed
+  and launched; Android and iOS simulator native screenshots inspected. Physical
+  iPhone untested. Java2D previews use flat material fallback.
+- Fresh 180-frame Android Hick scene sanity capture: draw median/p95 4.709/5.449
+  ms; frame interval median/p95 8.324/8.877 ms; no sampled decode, frame builds,
+  cache builds or evictions. This local scene is substantially simpler than
+  Montrose and is not evidence that Montrose's bottleneck is resolved. Phone had
+  a picture-in-picture video overlay, so this is not a controlled benchmark.
+  Summary: docs/performance/indiana-harbor-2026-11-16/summary.json.

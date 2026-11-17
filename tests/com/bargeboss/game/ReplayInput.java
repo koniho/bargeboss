@@ -24,6 +24,7 @@ public final class ReplayInput {
     }
     public static void work(Game g) {
         if(g.mode!=Game.PLAY || g.ropePhase!=0) return;
+        if(g.indianaStage()){indianaTow(g);return;}
         if(g.montroseStage()){marinaTow(g);return;}
         if(g.lockStage()){lockPassage(g);return;}
         if(g.sharedBerthStage() && clearSharedSlip(g))return;
@@ -96,6 +97,15 @@ public final class ReplayInput {
         drive(g,300,g.lock.phase>=Lock.EXIT?-280:90);
     }
     /** Public gestures through the inlet, clear turning fairway and physical yacht slip. */
+    private static void indianaTow(Game g){
+        Body b=g.cargo[0];if(b==null || b.lineAttached || b.deliveryRecorded)return;
+        if(g.canTie(b)){if(g.pointer)up(g,g.pointerX,g.pointerY);if(g.tow.incoming(b)!=null)releaseTow(g);lasso(g,b);return;}
+        if(!g.tow.connected(b,g.tug)){if(g.pointer)up(g,g.pointerX,g.pointerY);down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;}
+        float x=g.tug.y<1200?375:325,y=g.tug.y< -250?-180:1640;
+        float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+        if(!g.pointer)down(g,g.tug.x,g.tug.y);
+        move(g,g.downX+dx/len*52,g.downY+dy/len*52);
+    }
     private static void marinaTow(Game g) {
         Body b=g.cargo[0];
         if(!g.tow.connected(b,g.tug)){
