@@ -1625,3 +1625,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   `3e84e3d7:2:1350` pass. 767,778 submerged-pixel checks remain unchanged; shared
   animation and native Metal strip reviewed. Installed over Wi-Fi on Android.
   Human thumb feel/touch latency and physical-iPhone validation remain unmeasured.
+
+## 2026-11-16: velocity-driven waterline foam
+
+- Moving tug/barge/mission-yacht hulls now receive a continuous water-side ribbon
+  along the exact occlusion curve. Reuses shared Metal/AGSL shoreline foam with
+  continuous arc-length UVs; no discrete emitted patches or marching side dots.
+  Actual speed (including astern/drift) smoothly increases width/opacity between
+  3 and 60 world units/sec. Engine load alone produces no hull-contact foam.
+- Quiet translucent line and submerged hull clip remain. Title vessels use the
+  same shared effect at their authored 48-unit velocity. Each moving vessel adds
+  at most 24 bounded shoreline quads; idle adds none. No new native primitive,
+  textures, cache entries or gameplay state. Native cost remains unmeasured.
+- Regression covers stationary loaded engines, slow/fast/astern opacity and width,
+  continuous UV joins. Shared title and waterline animation previews reviewed.
+- Final: full shared checks, Android/Metal builds and JVM/J2ObjC parity
+  `53daa28f:2:1350` pass. 767,778 submerged-pixel and 236 uniform-line alpha probes
+  pass. Native Android/Metal screenshots reviewed; installed over Wi-Fi.
+- Current 300-frame Montrose replay (ticks 2596–2895): draw median/p95
+  17.688/19.693 ms; interval median/p95 24.754/47.524 ms; effective 35.21 FPS,
+  no sample frame builds. This is not a controlled A/B, and intervening clipping
+  and control changes prevent assigning the slowdown to foam alone. Still below
+  the 60 FPS target. Summary: docs/performance/waterline-foam-2026-11-16/summary.json.
+  Initial pull returned the old 42.20 FPS capture while the replay was running;
+  discarded it and pulled the completed file stamped 18:13. Only current figures
+  above are evidence for this round. Physical iPhone remains untested.

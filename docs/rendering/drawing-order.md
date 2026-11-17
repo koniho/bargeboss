@@ -438,8 +438,10 @@ scope. Vessel water contact is a continuous animated intersection curve derived 
 registered lower silhouette, independent of hull heave. Disjoint clip trapezoids
 hide hull, cargo and surface-light/glow pixels below it. A thin, constant-color
 translucent strip follows the exact boundary in a single composite, avoiding
-brighter overlapping endpoint dots. No contact-foam patches or moving
-dash pattern are drawn, including the title voyage. Detached
+brighter overlapping endpoint dots. Moving vessels add a water-side foam ribbon
+using continuous arc-length UVs and the shared shoreline material; speed controls
+its width and opacity, with no foam at idle. This also applies to the title voyage.
+No marching contact stamps or dotted dash pattern are drawn. Detached
 wakes, bow pressure and propwash remain separate water effects.
 Expanding wake crests share a water-plane shore/dock exclusion scope, bounded by
 the visible world region. Title patches also exclude pixels above their water
