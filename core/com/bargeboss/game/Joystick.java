@@ -80,6 +80,13 @@ public final class Joystick {
         if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x50000000|rgb);
         p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0x507a9fa9);
         SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x667a9fa9,1);
-        Lettering.center(p,g.driveDirection()>0?"FORWARD":g.driveDirection()<0?"REVERSE":"DRIVE",cx,cy+RADIUS+6,8,g.driveDirection()>0?FORWARD_COLOR:g.driveDirection()<0?REVERSE_COLOR:0x997ca5ac);
+        float throttle=j.active?j.throttle():g.holdingTug() && g.pushing && g.manualSteering?
+                Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;
+        float diameter=(2*(RADIUS+13)+4)/.98f;
+        p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,2/diameter,1,0x287a9fa9);
+        if(throttle>0 && g.driveDirection()!=0){
+            p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,8/diameter,throttle,0x20000000|rgb);
+            p.material(cx,cy,diameter,0,0,diameter,EffectMaterial.RING,4/diameter,throttle,0xe0000000|rgb);
+        }
     }
 }

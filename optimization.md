@@ -2075,3 +2075,20 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   ignores touch; after returning to ordinary play the phone appeared to be in use,
   so further injected touches were stopped. Joystick native forward/reverse color
   capture remains outstanding, with its shared render and translated parity checked.
+
+## 2026-11-16: thumb-visible joystick throttle arc
+
+- Removed the joystick gear/DRIVE text. A faint outer track sits 13 reference
+  units beyond the pad; cyan forward or amber reverse fills clockwise from the
+  top with commanded throttle. The knob and existing rings retain matching gear
+  colors. Direct tug dragging uses its existing throttle formula too. No fill
+  before direction intent or at zero throttle; coasting does not imply thrust.
+- Reuses EffectMaterial.RING: one track and at most two colored arc submissions,
+  no new textures, particles, cached bitmaps or gameplay mutations. Gear follows
+  the existing latched direction, independently of heading changes.
+- Shared renderer reviewed at neutral and 25/50/75/100 percent in both gears;
+  tools/JoystickReview.java exports out/joystick-throttle-arcs.png.
+- Full Android build/checks passed; JVM/J2ObjC parity 5636994e:2:1350.
+  APK installed, native full-throttle arc reviewed in the scripted tow scene,
+  then normal launch restored. Physical iOS appearance and native partial/reverse
+  arc states were not separately tested this round.
