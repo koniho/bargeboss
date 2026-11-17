@@ -4,7 +4,7 @@ Both missions reuse the surveyed Montrose shoreline, docks, mooring field, late-
 
 ## Rafted cruisers
 
-Two unpowered cabin cruisers are anchored side by side outside the entrance. Approach within 125 world units and tap the two rafting lines to release them. Throw a towline with the existing boat-to-tug drag gesture, then tow each cruiser into the harbor. Their lights remain off; their existing 32-pose cabin-cruiser artwork receives local directional illumination.
+Two unpowered cabin cruisers are anchored side by side outside the entrance. Approach within 125 world units and tap the two rafting lines to release them. Throw a towline with the existing boat-to-tug drag gesture, then tow each cruiser into the harbor. While waiting they show one all-round white anchor light. An active connection to the tug switches on heading-correct red/green sidelights and a white stern light; detaching restores the anchor light, and delivery switches their lamps off. Unrelated moored NPC boats remain unlit. Their existing 32-pose cabin-cruiser artwork receives local directional illumination.
 
 Dock C has two reserved bays, with their usual NPC boats omitted. The reference arrows are interpreted as C-38 on the northeast side and C-22 on the southwest side. The simplified survey uses Dock C row 8, longitudinal stations 345/405 and sides +1/-1 respectively. Those are existing bays, not new dock geometry. Since this game map has evenly spaced fingers rather than all real-world slip numbers, the labels identify the intended source-map bays rather than a claim of cadastral precision.
 

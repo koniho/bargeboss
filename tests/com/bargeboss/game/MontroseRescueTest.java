@@ -10,6 +10,7 @@ public final class MontroseRescueTest {
     static void focus(Game g,float x,float y){g.layout=Layout.focused(g.layout.width,g.layout.height,x,y,3.6f,g.layout.width*.5f,g.layout.height*.52f);}
     static Game swimmers(){Game g=game(Challenges.SWIMMER_RESCUE);g.tug.x=660;g.tug.y=640;focus(g,660,590);return g;}
     public static void run(){
+        CruiserLightingTest.run();
         Game g=game(Challenges.RAFT_RESCUE);Body a=g.cargo[0],b=g.cargo[1];
         check(a.cruiser && b.cruiser && a.awaitingPickup && b.awaitingPickup,"Two anchored cabin cruisers");
         check(g.mooredFleet.boats.length==MooredBoats.BERTHS.length-2,"Only two Dock C mission slips are reserved");

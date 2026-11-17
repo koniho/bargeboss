@@ -22,10 +22,12 @@ final class MooredBoatLight {
     }
     private static void points(Game g,Lights out,float x,float y,float z,Body b){if(!b.active)return;
         if(b.berth<0)out.add(b.x-x,b.y-y,22-z,100,.65f,0xffffbc6b);
-        for(int f=0;f<VesselNavigationLights.count(b.berth<0);f++){
+        for(int f=0;f<VesselNavigationLights.sourceCount(b);f++){
+            if(!VesselNavigationLights.emitting(g,b,f))continue;
             float lx=VesselNavigationLights.sourceX(g,b,f),ly=VesselNavigationLights.sourceY(g,b,f);
-            float e=.55f*VesselShoreLight.sector(VesselNavigationLights.sourceHeading(g,b),f,x-lx,y-ly);
-            float height=b.yacht?(f==VesselNavigationLights.STERN?12.1f:15.4f):VesselNavigationLights.height(f);
+            float strength=b.cruiser?(f==VesselNavigationLights.ANCHOR?.12f:.22f):.55f;
+            float e=strength*VesselShoreLight.sector(VesselNavigationLights.sourceHeading(g,b),f,x-lx,y-ly);
+            float height=VesselNavigationLights.height(b,f);
             out.add(lx-x,ly-y,height-z,55,e,VesselNavigationLights.color(f));
         }
     }

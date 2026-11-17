@@ -17,17 +17,18 @@ public final class VesselShoreLight {
         for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)vessel(g,p,f.boat,walls);
         if(g.trafficActive())vessel(g,p,g.trafficBoat,walls);
     }
-    private static void vessel(Game g,Painter p,Body b,boolean walls){if(!b.active || b.cruiser)return;
+    private static void vessel(Game g,Painter p,Body b,boolean walls){if(!b.active)return;
         // Warm working lamps, separately colored from red/green/white navigation lamps.
         if(b.berth<0)lamp(g,p,b.x,b.y,22,85,0xffffbc6b,.30f,b.angle,-1,walls);
         else if(!b.yacht)for(int end=0;end<2;end++){float u=VesselLighting.bargeLocalX(b,end);lamp(g,p,b.x+u*(float)StrictMath.cos(b.angle),b.y+u*(float)StrictMath.sin(b.angle),5,42,0xffffbc6b,.16f,b.angle,-1,walls);}
-        for(int fixture=0;fixture<VesselNavigationLights.count(b.berth<0);fixture++){
-            lamp(g,p,VesselNavigationLights.sourceX(g,b,fixture),VesselNavigationLights.sourceY(g,b,fixture),b.yacht?(fixture==2?12.1f:15.4f):VesselNavigationLights.height(fixture),fixture<2?48:60,VesselNavigationLights.color(fixture),fixture<2?.24f:.16f,VesselNavigationLights.sourceHeading(g,b),fixture,walls);
+        for(int fixture=0;fixture<VesselNavigationLights.sourceCount(b);fixture++){
+            if(!VesselNavigationLights.emitting(g,b,fixture))continue;
+            lamp(g,p,VesselNavigationLights.sourceX(g,b,fixture),VesselNavigationLights.sourceY(g,b,fixture),VesselNavigationLights.height(b,fixture),fixture<2?48:60,VesselNavigationLights.color(fixture),fixture<2?.24f:.16f,VesselNavigationLights.sourceHeading(g,b),fixture,walls);
         }
     }
     /** Illumination uses direction to the receiver, never lamp visibility from the camera. */
     static float sector(float angle,int fixture,float dx,float dy){
-        if(fixture<0)return 1;
+        if(fixture<0 || fixture==VesselNavigationLights.ANCHOR)return 1;
         float bearing=Physics.angle((float)StrictMath.atan2(dy,dx)-angle),edge;
         if(fixture==VesselNavigationLights.PORT)edge=Math.min(bearing+(float)Math.PI*.625f,-bearing);
         else if(fixture==VesselNavigationLights.STARBOARD)edge=Math.min((float)Math.PI*.625f-bearing,bearing);

@@ -4,7 +4,7 @@ package com.bargeboss.game;
  * New deck fixtures use body-local XYZ; the mast uses the reviewed source anchor.
  * This is a readable game rig, not a complete vessel-class/length rules model. */
 public final class VesselNavigationLights {
-    public static final int PORT=0,STARBOARD=1,STERN=2,MAST=3,SPECIAL=4;
+    public static final int PORT=0,STARBOARD=1,STERN=2,MAST=3,SPECIAL=4,ANCHOR=5;
     public static final int RED=0xffff4545,GREEN=0xff39f49a,WHITE=0xffe8f4ff,YELLOW=0xffffcd4b;
     private static final float VIEW_BEARING=(float)(StrictMath.PI*.75),SIDE_ARC=(float)(StrictMath.PI*.625);
     // Elevated-camera readability: two authored heading steps of soft spill past
@@ -12,7 +12,16 @@ public final class VesselNavigationLights {
     private static final float CAMERA_OVERLAP=(float)(StrictMath.PI/8);
     private VesselNavigationLights(){}
     public static int count(boolean powered){return powered?4:3;}
-    private static int count(Body b,boolean powered){return !powered && !b.yacht?5:count(powered);}
+    private static int count(Body b,boolean powered){return b.cruiser?6:!powered && !b.yacht?5:count(powered);}
+    /** Waiting rescue cruisers show an all-round anchor lamp; an active tow enables running lamps. */
+    public static boolean emitting(Game g,Body b,int fixture){
+        if(!b.cruiser)return true;
+        if(!b.active || b.deliveryRecorded)return false;
+        boolean underway=g.tow.connected(b,g.tug);
+        return underway?fixture>=PORT && fixture<=STERN:fixture==ANCHOR;
+    }
+    static int sourceCount(Body b){return b.cruiser?6:count(b.berth<0);}
+    static float height(Body b,int fixture){return b.cruiser?(fixture==ANCHOR?12:fixture==STERN?4.5f:9.8f):b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture);}
     /** One eased pulse per second (60/min), with a dark interval; fixed-step clock only. */
     public static float specialPulse(int ticks){
         int t=Math.floorMod(ticks,60);
@@ -42,13 +51,15 @@ public final class VesselNavigationLights {
         return visible*(fixture==SPECIAL?specialPulse(ticks):1);
     }
     public static float energy(Game g,Body b,boolean powered,int fixture){
+        if(!emitting(g,b,fixture))return 0;
+        if(b.cruiser && fixture==ANCHOR)return 1;
         int pushed=powered?0:pushedEnd(g,b);
         return energy(b,powered,fixture,pushed,powered?1:forwardEnd(g,b,pushed),g.visualTicks);
     }
-    public static String id(int fixture){return fixture==PORT?"nav-port":fixture==STARBOARD?"nav-starboard":fixture==STERN?"nav-stern":fixture==SPECIAL?"nav-special-flasher":"nav-masthead";}
+    public static String id(int fixture){return fixture==ANCHOR?"anchor-all-round":fixture==PORT?"nav-port":fixture==STARBOARD?"nav-starboard":fixture==STERN?"nav-stern":fixture==SPECIAL?"nav-special-flasher":"nav-masthead";}
     public static int color(int fixture){return fixture==PORT?RED:fixture==STARBOARD?GREEN:fixture==SPECIAL?YELLOW:WHITE;}
-    public static float localX(Body b,int fixture){if(b.yacht)return fixture==STERN?-52.8f:26.4f;return fixture==STERN?-(b.half+b.radius*.65f):fixture==MAST?0:b.half+b.radius*.12f;}
-    public static float localY(Body b,int fixture){if(b.yacht)return fixture==PORT?-9.9f:fixture==STARBOARD?9.9f:0;return fixture==PORT?-b.radius*.65f:fixture==STARBOARD?b.radius*.65f:0;}
+    public static float localX(Body b,int fixture){if(b.cruiser){float length=b.berth%2==0?39:44;return length*(fixture==STERN?-.46f:fixture==ANCHOR?.08f:.14f);}if(b.yacht)return fixture==STERN?-52.8f:26.4f;return fixture==STERN?-(b.half+b.radius*.65f):fixture==MAST?0:b.half+b.radius*.12f;}
+    public static float localY(Body b,int fixture){if(b.cruiser)return fixture==PORT?-5.8f:fixture==STARBOARD?5.8f:0;if(b.yacht)return fixture==PORT?-9.9f:fixture==STARBOARD?9.9f:0;return fixture==PORT?-b.radius*.65f:fixture==STARBOARD?b.radius*.65f:0;}
     public static float height(int fixture){return fixture==MAST?28:6;}
     public static float worldX(Body b,int fixture){return worldX(b,fixture,1);}
     private static float worldX(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.x+end*(localX(b,fixture)*c-localY(b,fixture)*s);}
@@ -81,7 +92,7 @@ public final class VesselNavigationLights {
     }
     public static float screenY(Body b,int fixture,boolean powered,RiverCamera camera,float bob){
         if(powered && fixture==MAST){float size=2*(b.half+b.radius)/TugArt.HULL_FRACTION;return camera.screenY(b.x,b.y)+(TugLightArt.offset(0,b.angle,true,true)*size-bob)*camera.scale;}
-        return camera.screenY(worldX(b,fixture),worldY(b,fixture))-((b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture))*.81649658f+bob)*camera.scale;
+        return camera.screenY(worldX(b,fixture),worldY(b,fixture))-(height(b,fixture)*.81649658f+bob)*camera.scale;
     }
     private static int alpha(int color,float energy,int strength){return ((int)(Physics.clamp(energy,0,1)*strength)<<24)|(color&0xffffff);}
     private static void glow(Painter p,float x,float y,float scale,float visible,int color,int tick,int fixture){
@@ -97,12 +108,14 @@ public final class VesselNavigationLights {
         Painter canvas=river?((RiverPainter)p).canvas():p;float scale=river?c.scale:1;
         int pushed=powered?0:pushedEnd(g,b),end=powered?1:forwardEnd(g,b,pushed);
         for(int fixture=0;fixture<count(b,powered);fixture++){
-            float visible=energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
+            float visible=b.cruiser?energy(g,b,powered,fixture):energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
             float wx=worldX(b,fixture,end),wy=worldY(b,fixture,end);
             boolean near=river?c.screenY(wx,wy)>=c.screenY(b.x,b.y):wy>=b.y;
-            if(!powered && !b.yacht && near!=nearCargo)continue;
-            float x=river?c.screenX(wx,wy):wx,y=river?c.screenY(wx,wy)-((b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture))*.81649658f+bob)*scale:wy-height(fixture)-bob;
+            if(b.cruiser && fixture==ANCHOR){if(!nearCargo)continue;}
+            else if(!powered && (!b.yacht || b.cruiser) && near!=nearCargo)continue;
+            float x=river?c.screenX(wx,wy):wx,y=river?c.screenY(wx,wy)-(height(b,fixture)*.81649658f+bob)*scale:wy-height(fixture)-bob;
             if(powered && fixture==MAST && river){x=screenX(b,fixture,true,c);y=screenY(b,fixture,true,c,bob);}
+            if(b.cruiser && fixture==ANCHOR)canvas.line(x,y,x,y+2.3f*.81649658f*scale,.65f*scale,0xff647476);
             // Newly modeled housings are distinct from painted warm work lamps.
             if(fixture!=MAST)canvas.rect(x-1.8f*scale,y-1.6f*scale,3.6f*scale,3.8f*scale,alpha(0xff101e28,visible,220));
             glow(canvas,x,y,scale,visible,color(fixture),g.visualTicks,fixture);
@@ -114,7 +127,7 @@ public final class VesselNavigationLights {
         RiverCamera c=((RiverPainter)p).camera;
         int pushed=powered?0:pushedEnd(g,b),end=powered?1:forwardEnd(g,b,pushed);
         for(int fixture=0;fixture<count(b,powered);fixture++){
-            float visible=energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
+            float visible=b.cruiser?energy(g,b,powered,fixture):energy(b,powered,fixture,pushed,end,g.visualTicks);if(visible<=0)continue;
             float x=c.screenX(worldX(b,fixture,end),worldY(b,fixture,end)),y=c.screenY(worldX(b,fixture,end),worldY(b,fixture,end));
             WaterReflection.draw(g,p,c.worldX(x,y+6*c.scale),c.worldY(x,y+6*c.scale),
                     10,25,alpha(color(fixture),visible,150),b.id*7+fixture);
