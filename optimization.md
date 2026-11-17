@@ -2110,3 +2110,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Installed Android APK and reviewed native directional full-throttle fill and
   bottom-HUD clearance. Shared partial/reverse views reviewed; physical iOS and
   native partial/reverse views not separately verified this round.
+
+## 2026-11-16: stable working camera and rescue-cruiser lamps
+
+- Shared camera: zoom was selected by tutorial/stage, proximity and vessel fit;
+  ending a tow cast resumed those rules, and delivery forced a three-second
+  overview. Removed the delivery overview. Hold zoom-out while steering and for
+  90 fixed steps after steering/casting ends, while retaining panning and closer
+  approach views. Early tutorial reveals remain exempt so cargo stays reachable.
+- Transit now has separate 340/260-distance enter/exit thresholds (lock reach
+  uses separate 220/140 offsets), and Montrose/Indiana use the selected load's
+  berth rather than always the original mission berth. This prevents boundary
+  oscillation and unrelated-berth zoom decisions. No new render caches/assets.
+- Rescue cruisers: waiting/detached boats emit a white all-round anchor lamp;
+  an actual connection to the tug selects sector-aware red/green/stern lights;
+  delivered boats turn off. Model-local anchors track heading and bob; near/far
+  fixture drawing respects hull depth. Shore and boat receivers share the same
+  emission mask, removing inherited phantom yacht lights. Receiver strength is
+  .12 at anchor/.22 underway to preserve dark dusk hulls. Other moored NPC lamps
+  remain off. No new atlas or painter primitive.
+- Reviewed shared anchored, eight towing headings, detached and delivered views.
+  Added cruiser-state/anchor checks and camera steering/release/pause/transit
+  regression checks; continuous tutorial traversal retains reachable goals.
+- Final full Android build/checks passed; JVM/J2ObjC gameplay/drawing parity
+  3f4e890:2:1350 passed. APK installed successfully and Android activity launched.
+  Phone did not remain on the game during capture, so native pixel/gesture
+  review was not completed this round; shared
+  views and state tests do not establish physical iOS/Android touch behavior.
+  No new frame-time improvement is claimed for these behavior changes.

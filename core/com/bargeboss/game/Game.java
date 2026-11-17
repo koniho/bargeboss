@@ -71,7 +71,8 @@ public final class Game {
     private int nextFeedTick;
     private final float[] route=new float[2];
     private float engineDemand;
-    public int cameraOverviewTicks;
+    public int cameraZoomHoldTicks;
+    private boolean cameraTransit;
     public static final float TRAFFIC_Y=420;
     private double accumulator, visualAccumulator;
 
@@ -240,18 +241,31 @@ public final class Game {
     }
     private void updateCamera() {
         RiverCamera c=layout.camera;
-        if(ropeDragging || towAiming || ropePhase!=0 || MontroseRescue.swimmers(this) && (rescue.aiming>=0 || rescue.flying>=0)) return;
+        if(ropeDragging || towAiming || ropePhase!=0 || MontroseRescue.swimmers(this) && (rescue.aiming>=0 || rescue.flying>=0)){cameraZoomHoldTicks=90;return;}
+        boolean steering=joystick.active || pointer && (holdingTug() || manualSteering);
+        if(steering)cameraZoomHoldTicks=90;else if(cameraZoomHoldTicks>0)cameraZoomHoldTicks--;
         Layout desired;
         if(tutorial!=null) desired=tutorialCamera();
         else if(MontroseRescue.swimmers(this))desired=Layout.focused(layout.width,layout.height,tug.x,tug.y,rescue.closeCamera?3.6f:2.4f,layout.width*.5f,layout.height*.52f);
         else {
-            if(cameraOverviewTicks>0) cameraOverviewTicks--;
-            // The long bridge reach is a transit phase even when carrying a load.
-            boolean transit=indianaStage()?Physics.length(tug.x-IndianaHarbor.DOCK_X,tug.y-IndianaHarbor.DOCK_Y)>300:montroseStage()?Physics.length(tug.x-MontroseHarbor.SLIP_X,tug.y-MontroseHarbor.SLIP_Y)>300:lockStage() && tug.y<Feeder.DROP_Y-180;
-            boolean overview=cameraOverviewTicks>0;
-            desired=workCamera(overview?1:transit?TRANSIT_ZOOM:WORK_ZOOM,transit || overview?0:1,false);
+            // Distinct enter/leave thresholds avoid zoom pumping near a transit boundary.
+            if(indianaStage() || montroseStage()){
+                Body load=cameraLoad();int berth=load==null?0:load.berth;
+                float distance=Physics.length(tug.x-dockX(berth),tug.y-dockY(berth));
+                if(distance>340)cameraTransit=true;else if(distance<260)cameraTransit=false;
+            }else if(lockStage()){
+                if(tug.y<Feeder.DROP_Y-220)cameraTransit=true;
+                else if(tug.y>Feeder.DROP_Y-140)cameraTransit=false;
+            }else cameraTransit=false;
+            desired=workCamera(cameraTransit?TRANSIT_ZOOM:WORK_ZOOM,cameraTransit?0:1,false);
         }
-        float zoom=c.zoom+(desired.camera.zoom-c.zoom)*(tutorial==null && cameraOverviewTicks>0?.04f:.035f);
+        float targetZoom=desired.camera.zoom;
+        // Do not pull the view away while the player steers or immediately after a cast/release.
+        // Keep panning and allow closer approach views, including swimmer rescue proximity.
+        // Early tutorial framing must still reveal the next lesson's cargo and tie target.
+        boolean guidedReveal=tutorial!=null && tutorial.lesson<Tutorial.PULL;
+        if(!guidedReveal && cameraZoomHoldTicks>0 && targetZoom<c.zoom)targetZoom=c.zoom;
+        float zoom=c.zoom+(targetZoom-c.zoom)*.035f;
         // Ease the world focus, not its zoom-dependent camera origin. This avoids
         // a sideways sweep when zoom changes around a far-upstream position.
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
@@ -319,7 +333,7 @@ public final class Game {
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
-        earnedStars=0; rankPromoted=false;cameraOverviewTicks=0;
+        earnedStars=0; rankPromoted=false;cameraZoomHoldTicks=0;cameraTransit=false;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();rescue=new MontroseRescue();buildingFades=new BuildingFades();
         water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
@@ -709,7 +723,7 @@ public final class Game {
             if(b.lineAttached) { if(!b.deliveryRecorded && correctOrder(b)) Mooring.step(this,b); }
             else { b.dockTime=0; b.lineAttached=false; }
             if(b.unloadingTicks>=UNLOAD_TICKS && !b.deliveryRecorded && berthEnabled(b.berth) && berthBlocker(b.berth,b)==null) {
-                b.deliveryRecorded=true;b.active=true;cameraOverviewTicks=180; delivered++; combo++; int points=600+Math.min(4,combo)*50;
+                b.deliveryRecorded=true;b.active=true; delivered++; combo++; int points=600+Math.min(4,combo)*50;
                 celebrationTicks=90; celebrationPoints=points; celebrationX=b.x; celebrationY=b.y;
                 score+=points; tell("DELIVERED +"+points+" / "+delivered+" OF "+quota());
                 haptic(HAPTIC_SUCCESS);

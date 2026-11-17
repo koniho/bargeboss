@@ -32,19 +32,19 @@ public final class StageCameraTest {
         check(b.lineAttached && g.layout.camera==frozen,"throw uses the same projected bollard until hit");
         for(int i=0;i<Mooring.TIGHTEN_TICKS+Mooring.ALIGN_TICKS+Game.UNLOAD_TICKS+60 && g.delivered==0;i++) g.step();
         steps(g,135);
-        check(g.delivered==1 && g.layout.camera.zoom<1.01f && g.cameraOverviewTicks>0,"camera opens the view while leaving a completed delivery");
-        steps(g,240);check(g.layout.camera.zoom>1.49f,"camera restores the closer default after the delivery overview");
+        check(g.delivered==1 && g.layout.camera.zoom>1.49f,"completed delivery retains the working view");
+        steps(g,240);check(g.layout.camera.zoom>1.49f,"camera keeps the closer default after delivery");
         g=stage(0);for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
         b=new Body(1,2,230,g.dockY(2),0);g.cargo[0]=b;g.tug.x=300;g.tug.y=b.y;
         steps(g,180);check(g.layout.camera.zoom>1.3f,"nearby cargo triggers docking view");
         Mooring.attach(b);b.mooringTicks=Mooring.ALIGN_TICKS;b.x=197.5f;b.angle=(float)Math.PI/2;
         b.unloadingTicks=Game.UNLOAD_TICKS-1;
         Body next=new Body(2,1,265,b.y+100,0);g.cargo[1]=next;
-        g.step();check(g.delivered==1 && g.cameraOverviewTicks>0,"delivery starts an overview grace period");
-        int grace=g.cameraOverviewTicks;g.background();steps(g,60);
-        check(g.cameraOverviewTicks==grace,"pause freezes overview grace period");g.pause();steps(g,120);
-        check(next.active && g.layout.camera.zoom<1.02f && g.cameraOverviewTicks>0,"nearby next load cannot prevent delivery zoom-out");
-        g.reset();check(g.cameraOverviewTicks==0,"restart clears overview grace period");
+        g.step();check(g.delivered==1,"delivery is recorded without a forced overview");
+        RiverCamera deliveryCamera=g.layout.camera;g.background();steps(g,60);
+        check(g.layout.camera==deliveryCamera,"pause freezes camera");g.pause();steps(g,120);
+        check(next.active && g.layout.camera.zoom>1.3f,"nearby next load retains a working view after delivery");
+        steeringZoom();transitHysteresis();
         g=stage(1);check(g.orderStage() && g.hasBridge() && g.bridge.passable(),"ordered berth shares the open Calumet bridge");
         g.bridge.phase=Bridge.CLOSED;
         // The continuous tutorial still uses the bridge; preserve its all-heading collision regression.
@@ -75,4 +75,33 @@ public final class StageCameraTest {
         g.reset();check(g.layout.camera.zoom==1 && g.layout.camera.worldTop==148 && g.lock.phase==Lock.READY,"restart restores overview and ready lock");
         System.out.println(checks+" stage, docking zoom, gesture stability, lock lifecycle and bridge collision assertions passed");
     }
+    private static void steeringZoom(){
+        Game g=stage(Challenges.INDIANA);g.tug.x=710;g.tug.y=-400;g.tug.angle=0;
+        g.layout=Layout.focused(1333,600,g.tug.x,g.tug.y,2.4f,666,312);
+        float cx=Joystick.centerX(g),cy=Joystick.centerY(g);
+        g.pointerDown(9,cx,cy);g.pointerMove(9,cx+30,cy-18);
+        float zoom=g.layout.camera.zoom;steps(g,120);
+        check(g.layout.camera.zoom>=zoom-.0001f,"steering cannot trigger transit or tow-fit zoom-out");
+        g.pointerUp(9,cx+30,cy-18);zoom=g.layout.camera.zoom;steps(g,60);
+        check(g.layout.camera.zoom>=zoom-.0001f,"lifting the drive finger does not immediately zoom out");
+        int remaining=g.cameraZoomHoldTicks;g.background();steps(g,120);
+        check(g.cameraZoomHoldTicks==remaining,"pause freezes camera hold");g.pause();steps(g,180);
+        check(g.layout.camera.zoom<zoom-.2f,"idle camera can eventually fit the transit scene");
+        g.reset();check(g.cameraZoomHoldTicks==0,"restart clears camera hold");
+    }
+
+    private static void transitHysteresis(){
+        Game g=stage(Challenges.INDIANA);for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        g.tug.x=IndianaHarbor.DOCK_X;g.tug.y=IndianaHarbor.DOCK_Y-250;steps(g,180);
+        check(g.layout.camera.zoom>2.1f,"near berth selects working scale");
+        g.tug.y=IndianaHarbor.DOCK_Y-310;steps(g,180);
+        check(g.layout.camera.zoom>2.1f,"crossing old 300-unit boundary does not immediately widen");
+        g.tug.y=IndianaHarbor.DOCK_Y-350;steps(g,180);
+        check(g.layout.camera.zoom<1.25f,"leaving berth buffer selects transit scale");
+        g.tug.y=IndianaHarbor.DOCK_Y-290;steps(g,180);
+        check(g.layout.camera.zoom<1.25f,"returning across old boundary does not pump zoom");
+        g.tug.y=IndianaHarbor.DOCK_Y-250;steps(g,180);
+        check(g.layout.camera.zoom>2.1f,"entering close berth region restores working scale");
+    }
+
 }
