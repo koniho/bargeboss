@@ -65,6 +65,9 @@ public final class IndianaView {
             for(int i=0;i<3;i++)b.box(root,-35+i*32,90,25,22,24,50,RUST,SurfaceMaterial.STEEL);
             b.beam(root,-45,85,43,45,85,43,7,STEEL,SurfaceMaterial.RUST);
         }
+        if(type==0)IndianaDetails.light(b,root);
+        if(type==2)IndianaDetails.tower(b,root);
+        if(type==1)IndianaDetails.mill(b,root,x>1000 || y>1300);
         return b.build();
     }
     static int count(Game g){return g.indianaStage()?LANDMARKS.length:0;}

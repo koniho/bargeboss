@@ -49,3 +49,15 @@ water color. Entrance markers use the shared red-right-returning convention.
 Refine real shoreline bends and the full rail bridge cluster from mapping/photo
 references; add differentiated blast-furnace/ore-unloader equipment and more
 quay-side services. This first pass establishes playable geography and landmarks.
+
+## Landmark detail pass
+
+Hick Tower now has upper windows on all four sides, dark mullions and sills,
+lower doors, a stair landing with handrails, and roof equipment. The East
+Breakwater light has recessed openings and a gallery railing. Mill halls have
+structural ribs, roof-monitor windows, loading doors, awnings and stack collars.
+Two mills add compact furnace-like rooftop masses, service platforms and large
+exhaust ducts to vary the skyline. These industrial details are stylized scenery,
+not claims of exact plant equipment or present-day building condition.
+All detail stays within existing landmark footprints and uses preprepared rigid
+geometry, with no new texture atlases or changes to channel collision.

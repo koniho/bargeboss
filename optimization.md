@@ -1728,3 +1728,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Montrose and is not evidence that Montrose's bottleneck is resolved. Phone had
   a picture-in-picture video overlay, so this is not a controlled benchmark.
   Summary: docs/performance/indiana-harbor-2026-11-16/summary.json.
+
+## 2026-11-16: Indiana landmark detail increment
+
+- Shared Java: bounded rigid detail for Hick Tower (four-sided window frames,
+  landing/rails, doors and roof equipment), lighthouse gallery/openings, and mill
+  ribs, roof monitors, loading doors and stack collars. Two mill variants have
+  furnace-like masses, platforms and exhaust ducts. Industrial equipment is
+  stylized, not survey-accurate. Existing footprint, collision and light anchors
+  retained; no texture additions. Static BSP preparation remains at level setup.
+- Full shared checks / Android build pass. 1,438,849 all-heading Indiana shoreline
+  pixel assertions pass. Expanded actual-renderer review covers tower, lighthouse
+  and furnace views; desktop uses flat material fallback. Android installed and
+  launched. This increment does not include a fresh iOS simulator raster review.
+- JVM/J2ObjC state/drawing parity passes: 540cd639:2:1350 (intentional geometry
+  trace change). Fresh 180-frame Android Hick capture: draw median/p95
+  5.235/6.446 ms, interval median/p95 8.327/8.614 ms, no sampled decode/cache/frame
+  builds or evictions. Prior capture draw p95 was 5.449 ms; no controlled A/B or
+  causality claim. Picture-in-picture video remains active and obscures Hick in
+  the native screenshot; tower detail was reviewed in the shared preview.
+  Furnace scene has no separate native timing capture. Details summary stored
+  beside the initial Indiana performance summary. Montrose remains unaffected.
