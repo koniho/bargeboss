@@ -2023,3 +2023,14 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   is 231ffc43:2:1350. Native Android opening and 138-tick handoff screenshots
   reviewed: grounded beacons, open passage, restored joystick/first-buoy cues.
   APK installed and launched. No fresh physical iOS visual/haptic check.
+
+## 2026-11-16: joystick gear colors
+
+- Active thumb, outer/dead-zone rings and drag stem now use the same cyan/amber
+  RGB as the forward/reverse segments, preserving each layer's translucency.
+  Uses the latched driveDirection, so turning does not change the gear color;
+  direct hull steering also colors the visible pad. Neutral stays subdued.
+- No added primitives, assets or allocations. Compiled and reviewed the actual
+  shared Joystick renderer in neutral/forward/reverse via public pointer input
+  (`out/joystick-gear-colors.png`). Combined parity/build/device validation is
+  coordinated with the in-progress Montrose rescue mission increment.

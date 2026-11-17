@@ -71,13 +71,15 @@ public final class Joystick {
     public static void draw(Game g,Painter p) {
         if(!visible(g))return;
         Joystick j=g.joystick;float cx=centerX(g),cy=centerY(g),tx=cx+j.x*TRAVEL,ty=cy+j.y*TRAVEL;
+        boolean engaged=j.active || g.driveDirection()!=0;
+        int rgb=(g.driveDirection()<0?REVERSE_COLOR:g.driveDirection()>0?FORWARD_COLOR:0x997ca5ac)&0xffffff;
         p.circle(cx,cy,RADIUS,0x44101c30);
         driveGuide(g,ScreenView.scaled(p,cx,cy,1.5f),0,0);
-        SoftCue.ring(p,cx,cy,RADIUS,1,j.active?0x7983c8d5:0x467a9fa9,1.3f);
-        SoftCue.ring(p,cx,cy,DEAD_ZONE,1,0x327a9fa9,.8f);
-        if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x5083c8d5);
-        p.circle(tx,ty,25.5f,j.active?0x987cc7d2:0x507a9fa9);
-        SoftCue.ring(p,tx,ty,27,1,j.active?0xb8cee6df:0x667a9fa9,1);
+        SoftCue.ring(p,cx,cy,RADIUS,1,engaged?(0x79000000|rgb):0x467a9fa9,1.3f);
+        SoftCue.ring(p,cx,cy,DEAD_ZONE,1,engaged?(0x32000000|rgb):0x327a9fa9,.8f);
+        if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x50000000|rgb);
+        p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0x507a9fa9);
+        SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x667a9fa9,1);
         Lettering.center(p,g.driveDirection()>0?"FORWARD":g.driveDirection()<0?"REVERSE":"DRIVE",cx,cy+RADIUS+6,8,g.driveDirection()>0?FORWARD_COLOR:g.driveDirection()<0?REVERSE_COLOR:0x997ca5ac);
     }
 }
