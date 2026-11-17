@@ -1952,3 +1952,29 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full Android build/checks, shared preview and shoreline/foam pixel regressions
   pass; JVM/J2ObjC parity 24bbe157:2:1350. Android APK installed and launched.
   Shared driving preview reviewed; no fresh physical iOS visual test.
+
+## 2026-11-16: fluffy cyclic foam above hull speed
+
+- Shared VesselRipples now crossfades its two existing staggered cycles from
+  quiet rings to broad, porous FOAM stamps between 32.5 and 42.5 world units/s.
+  Above the crossover there are two fluffy expanding/fading patches, no ring
+  texture. Below it and for moored craft, original ripples remain. Title speed
+  stays below the transition. Existing all-dry-shore clipping and hull order kept.
+- Reuses existing FOAM artwork; no new shader/particle pool. Two steady-state
+  draws, at most four during crossover. FOAM joins level preparation so its four
+  640x640 frames are decoded ahead of active drawing (6.25 MiB RGBA frame storage
+  within the existing bounded cache; no budget increase).
+- Android build/full checks, shared previews and shoreline/foam pixel regressions
+  pass. Tests distinguish slow rings, high-speed foam and their crossfade; level
+  preparation test checks explicit FOAM inclusion. JVM/J2ObjC parity matches
+  3eb24380:2:1350. Physical iOS appearance not tested this round.
+- Follow-up below-hull-speed shaping: idle rings transition to broad rear-facing
+  arcs, then elongated/narrower cruise arcs between 13 and 32.5 world units/s.
+  Geometry interpolates; each of two ripple stamps uses a simple hull-local
+  bow-exclusion clip inside existing shore clipping. Foam above hull speed is
+  unchanged. Tests check balanced masks, aft shift and longer cruise shape.
+  Final parity baseline updated to 3b73c679:2:1350.
+- Final Android APK installed; native title/replay screenshots reviewed for
+  stern arcs and foam. Circular tow, 360 warmup + 2,400 samples: 60.05 FPS,
+  interval p95 17.453 ms; no sampled decodes, frame builds or cache evictions.
+  Summary: docs/performance/cyclic-foam-2026-11-16/tow-summary.json.

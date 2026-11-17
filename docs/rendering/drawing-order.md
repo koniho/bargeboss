@@ -561,3 +561,18 @@ depth in ordinary stages and the tutorial. Height only changes projected draw
 position. Airborne stamps use the foreground-shore cutout; landed residue returns
 to the all-dry-shore water pass. Title near/far passes and horizon projection
 apply to affine stamps as well as shader patches.
+
+### Speed-dependent cyclic displacement foam
+
+`VesselRipples` retains its two staggered expanding cycles. Below 32.5 world
+units/s they use the existing quiet ring stamps. Between 32.5 and 42.5 units/s
+they crossfade into broad, porous FOAM cells 2/3; above that, only fluffy foam
+is drawn. The center remains under the hull and the footprint expands/fades
+continuously. Moored craft always keep their subdued ripples. All remain in the
+existing below-hull water/shore clip. Prewarm the FOAM atlas in level preparation.
+
+Below hull speed, moving hulls use two interpolated stern-facing arc shapes:
+broad low-speed arcs and elongated/narrower cruise arcs (13 to 32.5 world units/s).
+The bow-facing part of each ellipse is excluded with a hull-local clip, applied
+inside the existing shore mask. Centers move aft with speed and cycle age. Idle
+boats retain circles; moored boats never enter the arc/foam speed transitions.

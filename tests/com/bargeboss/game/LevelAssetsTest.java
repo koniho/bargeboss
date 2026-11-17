@@ -14,7 +14,8 @@ final class LevelAssetsTest {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
             check(scenery.length==(id==Challenges.INDIANA?0:id==Challenges.MONTROSE?3:4),"Level prepares its permanent scenery family");
-            check(preparation.length==plan.rotationAtlases().length+scenery.length+2,"Complete preparation includes scenery, rotations, splashes and ripples");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length+3,"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
+            check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
             for(int atlas:scenery)check(id==Challenges.MONTROSE?(atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS,"Scenery stays level-specific");
             Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==plan,"Gameplay manifest matches selected level");

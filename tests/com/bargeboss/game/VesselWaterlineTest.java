@@ -12,9 +12,13 @@ public final class VesselWaterlineTest {
         out.points=edge.length/2;return out;
     }
     private static final class FoamTrace implements Painter {
-        int patches;float alpha,maxWidth;
+        int patches,rings,foam,clips,depth;float alpha,maxWidth,minX=Float.MAX_VALUE,maxLength;
+        public void pushClipOutside(float[] xy){clips++;depth++;}
+        public void popClip(){depth--;check(depth>=0,"ripple masks balance");}
         public void spriteAffine(int atlas,int frame,float x,float y,float ax,float ay,float bx,float by,float opacity){
-            check(atlas==SpriteAtlas.RIPPLES && frame>=0 && frame<4,"uses registered ripple stamps");
+            check((atlas==SpriteAtlas.RIPPLES || atlas==SpriteAtlas.FOAM) && frame>=0 && frame<4,"uses registered water stamps");
+            if(atlas==SpriteAtlas.RIPPLES)rings++;else foam++;
+            minX=Math.min(minX,x);maxLength=Math.max(maxLength,Physics.length(ax,ay));
             patches++;alpha=Math.max(alpha,opacity);maxWidth=Math.max(maxWidth,Physics.length(bx,by));
         }
         public void rect(float x,float y,float w,float h,int c){} public void circle(float x,float y,float r,int c){}
@@ -38,7 +42,14 @@ public final class VesselWaterlineTest {
         g.visualTicks=45;
         FoamTrace idle=new FoamTrace();VesselRipples.draw(g,idle,0,300,400,0,80,30,0,false);
         FoamTrace fast=new FoamTrace();VesselRipples.draw(g,fast,0,300,400,0,80,30,48,false);
-        check(idle.patches==2 && fast.patches==2 && fast.alpha>idle.alpha && fast.maxWidth>idle.maxWidth,"bounded idle rings strengthen and expand with speed");
+        check(idle.rings==2 && idle.foam==0 && fast.foam==2 && fast.rings==0 && fast.alpha>idle.alpha && fast.maxWidth>idle.maxWidth,"two fluffy foam cycles replace rings above hull speed");
+        FoamTrace crossing=new FoamTrace();VesselRipples.draw(g,crossing,0,300,400,0,80,30,WaterFoam.SHED_SPEED+5,false);
+        check(crossing.rings==2 && crossing.foam==2,"speed crossover blends rather than popping between textures");
+        FoamTrace slow=new FoamTrace(),cruise=new FoamTrace();
+        VesselRipples.draw(g,slow,0,300,400,0,80,30,10,false);
+        VesselRipples.draw(g,cruise,0,300,400,0,80,30,28,false);
+        check(idle.clips==0 && slow.clips==2 && cruise.clips==2 && slow.depth==0 && cruise.depth==0,"moving ripples use balanced stern arc masks, idle keeps circles");
+        check(cruise.minX<slow.minX && cruise.maxLength>slow.maxLength,"higher displacement speed elongates arcs and shifts them aft");
         FoamTrace later=new FoamTrace();g.visualTicks=60;VesselRipples.draw(g,later,0,300,400,0,80,30,0,false);
         check(later.maxWidth>idle.maxWidth,"rings expand over lifetime");
         FoamTrace berth=new FoamTrace();VesselRipples.draw(g,berth,0,300,400,0,40,16,0,true);
