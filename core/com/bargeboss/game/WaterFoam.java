@@ -21,7 +21,7 @@ public final class WaterFoam {
         if(motion<=0 || pressure<=0)return;
         float nose=b.half+b.radius*.86f,spread=b.radius*(1.5f+motion*.65f),trail=18+motion*26;
         for(int side=-1;side<=1;side+=2) {
-            float ax=-c*trail-s*side*spread,ay=-s*trail+c*side*spread;
+            float ax=(-c*trail-s*side*spread)*.5f,ay=(-s*trail+c*side*spread)*.5f;
             float length=Physics.length(ax,ay),width=12+motion*18;
             float x=b.x+c*nose+ax*.48f,y=b.y+s*nose+ay*.48f;
             float bx=-ay/length*width,by=ax/length*width;

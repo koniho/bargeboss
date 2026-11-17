@@ -1943,3 +1943,12 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Final quiet-title APK installed/launched; native screenshot confirms no bow
   pressure sheet or airborne bow stamps, with subdued trailing wake and ripples.
   Full final build/checks and parity pass after the title correction.
+
+## 2026-11-16: half-length hull-speed bow pressure wake
+
+- Shared WaterFoam bow crest long axis reduced to 50%, maintaining bow anchor,
+  perpendicular width, opacity, phase and speed crossover. Detached lofted spray
+  and the quiet title voyage unchanged. No added submissions or textures.
+- Full Android build/checks, shared preview and shoreline/foam pixel regressions
+  pass; JVM/J2ObjC parity 24bbe157:2:1350. Android APK installed and launched.
+  Shared driving preview reviewed; no fresh physical iOS visual test.
