@@ -36,11 +36,16 @@ clear. Do not add a filled panel, buildings or isometric projection. World +X (u
 (lower-right) is right. Keep this orientation independent of the camera. A yellow
 player dot pulses gently; cyan cargo markers and amber target outlines remain
 secondary. Clip the scrolling map and live markers to its fixed square viewport.
+Draw a faint inset viewport outline (0x26 alpha, 0.8px) beneath chart contents;
+the actual play boundary retains its stronger chart opacity wherever visible.
 The chart is informational and does not intercept steering gestures.
-Its horizontal zoom slider sits in the bottom HUD row, centered under the map;
+Its horizontal zoom slider sits in the bottom HUD row, centered eight pixels below the map;
 Help/Practice are centered on the screen so the slider clears them on either side.
-The slider captures its own drag until release/cancel, excluding steering,
-lasso and camera pinch input. Its permanent thumb and filled track show relative
+The slider captures its own pointer ID until release/cancel. A separate finger
+can simultaneously steer with the joystick or drag the tug; either control can
+start first and releasing/canceling one must preserve the other. Slider touches
+never enter steering, lasso or camera pinch routing. Pause/background/reset cancel
+both owners. Its permanent thumb and filled track show relative
 zoom even while idle. Left is maximum zoom-out: half the full-chart fit scale,
 which can show all bounds with a centered player at any world corner. Right is
 four times fit scale; use logarithmic interpolation for even zoom steps. The

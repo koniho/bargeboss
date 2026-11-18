@@ -209,7 +209,9 @@ Career progress and settings are kept; starting again begins a fresh voyage.
 The overview map stays centered on your tug. Drag its horizontal slider at the
 bottom of the screen to zoom the map; the filled track and thumb always show
 the current setting relative to maximum zoom-out at the left end. This control
-does not change the main gameplay camera. Help and Practice sit at bottom center.
+does not change the main gameplay camera. You can keep driving with one finger
+while zooming with another. A faint square marks the map window; the actual
+play-area boundary uses a stronger line. Help and Practice sit at bottom center.
 
 Completing the goal earns one star. Earn an additional star for no lost loads,
 and another for finishing with at least 80% hull. Each level saves its best stars

@@ -9,11 +9,15 @@ public final class OverviewMap {
     static final float MIN_ZOOM=.5f,MAX_ZOOM=4;
     private static final float[] OUTSIDE=outside();
     private float level=1f/3,zoom=1;
+    private int pointerId=-1;
     boolean active;
     OverviewMap(){}
     float level(){return level;}
     float zoom(){return zoom;}
-    void reset(){level=1f/3;zoom=1;active=false;}
+    void reset(){level=1f/3;zoom=1;cancelTouch();}
+    boolean owns(int id){return active && pointerId==id;}
+    void begin(Game g,int id,float x){pointerId=id;active=true;setFromX(g,x);}
+    void cancelTouch(){pointerId=-1;active=false;}
     void setFromX(Game g,float x){
         Layout.Box b=sliderBounds(g);level=Physics.clamp((x-b.x-24)/(b.w-48),0,1);
         zoom=MIN_ZOOM*(float)StrictMath.pow(MAX_ZOOM/MIN_ZOOM,level);
@@ -44,7 +48,7 @@ public final class OverviewMap {
         SoftCue.ring(p,thumb,y,8,1,0x907fe1db,1);
     }
     public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
-    public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,Joystick.centerY(g)-HEIGHT*.5f,WIDTH,HEIGHT);}
+    public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
     static Chart chart(Game g){return CHARTS[g.montroseStage()?1:g.indianaStage()?2:g.calumetStage()?3:0];}
     static float pulse(int tick){return .65f+.35f*(float)StrictMath.sin(tick*StrictMath.PI/60);}
     public static void draw(Game g,Painter p){
@@ -53,6 +57,13 @@ public final class OverviewMap {
         float zoom=g.overview.zoom();
         p.prepareLayer(c,zoom);
         Painter local=ScreenView.offset(p,box.x,box.y);
+        // A faint viewport edge stays readable where zoom crops the world. The
+        // stronger actual play boundary is drawn over it with the chart below.
+        int frame=0x2696c5ce;
+        local.line(.5f,.5f,WIDTH-.5f,.5f,.8f,frame);
+        local.line(WIDTH-.5f,.5f,WIDTH-.5f,HEIGHT-.5f,.8f,frame);
+        local.line(WIDTH-.5f,HEIGHT-.5f,.5f,HEIGHT-.5f,.8f,frame);
+        local.line(.5f,HEIGHT-.5f,.5f,.5f,.8f,frame);
         local.pushClipOutside(OUTSIDE);
         try {
         local.layer(c,WIDTH*.5f-c.x(g.tug.y)*zoom,HEIGHT*.5f-c.y(g.tug.x)*zoom,zoom,.53f);

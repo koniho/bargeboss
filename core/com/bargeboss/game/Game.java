@@ -395,16 +395,16 @@ public final class Game {
     public void cancelInputs() {
         rescue.aiming=-1;
         if(practice!=null) { practice.cancelInputs(); return; }
+        overview.cancelTouch();
         cancel(); mapPointer=-1; hapticPending=0; reversing=false; navigating=false;
     }
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
-        if(overview.active)return;
         if(OverviewMap.sliderHit(this,x,y)) {
-            if(!pointer && !pinchZoom.active()) {
-                beginDown(x,y,false);mapPointer=id;overview.active=true;overview.setFromX(this,x);
-            }
+            // A second finger may zoom while the existing drive touch remains held.
+            // Slider fingers never enter the world/pinch pointer router.
+            if(!overview.active && id!=mapPointer && !pinchZoom.active())overview.begin(this,id,x);
             return;
         }
         if(pinchZoom.active()){pinchZoom.down(this,id,x,y);return;}
@@ -425,18 +425,18 @@ public final class Game {
     }
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
+        if(overview.owns(id)){overview.setFromX(this,x);return;}
         if(pinchZoom.move(this,id,x,y))return;
         if(id!=mapPointer) return;
-        if(overview.active){overview.setFromX(this,x);return;}
         if(joystick.active){pointerX=x;pointerY=y;joystick.move(this,x,y);return;}
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
+        if(overview.owns(id)){overview.setFromX(this,x);overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
         if(id!=mapPointer) return;
         mapPointer=-1;
-        if(overview.active){overview.setFromX(this,x);cancel();return;}
         if(joystick.active){cancel();return;}
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
@@ -448,6 +448,7 @@ public final class Game {
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
         if(practice!=null) { practice.pointerCancel(id); return; }
+        if(overview.owns(id)){overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
         if(id==mapPointer) { cancel(); mapPointer=-1; }
     }
@@ -472,7 +473,6 @@ public final class Game {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
         pinchZoom.cancelTouches();joystick.cancel();driveDirection=0;rescue.aiming=-1;
-        overview.active=false;
         pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
@@ -800,7 +800,7 @@ public final class Game {
             else if(montroseStage())advanceMontroseJob();
             if(ticks>=nextFeedTick && spawn()) nextFeedTick=ticks+feedInterval();
             if(goalComplete() || goalFailed()) {
-                mode=FINISH; cancel();
+                mode=FINISH; overview.cancelTouch(); cancel();
                 if(goalComplete() && !goalFailed()) {
                     if(lockStage()) {score+=1200;delivered=quota();haptic(HAPTIC_SUCCESS);}
                     earnedStars=Challenges.stars(challengeId,goalProgress(),lost,hull);

@@ -42,6 +42,10 @@ public final class OverviewMapPixelTest {
             }
             int player=image.getRGB(Math.round(map.centerX()),Math.round(map.centerY()));
             if((player&0xffffff)!=(OverviewMap.PLAYER&0xffffff))throw new AssertionError("player pixel not centered");
+            if(level==0) {
+                int edge=image.getRGB(Math.round(map.centerX()),(int)map.y)>>>24;
+                if(edge==0 || edge>=70)throw new AssertionError("viewport border must be visible but fainter than play boundary");
+            }
             int thumb=image.getRGB(Math.round(slider.x+24+(slider.w-48)*level),Math.round(slider.centerY()));
             if(g.overview.active || (thumb>>>24)<200)throw new AssertionError("idle slider must retain its relative indicator");
         }

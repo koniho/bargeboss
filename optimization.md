@@ -2973,3 +2973,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Downloads (BargeBoss-overview-slider-{wide,default,close}.png): clipping,
   stationary player dot and persistent slider indicator are visible. Restored
   the slider near its default after review. Native iOS remains untested.
+
+## 2026-11-18 — Overview spacing, two-touch driving and viewport border
+
+- Anchored the 184px map eight pixels above its slider hit area (23px lower than
+  the old joystick-centered placement). Added a faint inset viewport outline
+  behind chart contents; actual play-area bounds retain the stronger chart line.
+  Four simple strokes add no texture/cache family; cached geography is unchanged.
+- The slider now owns an independent pointer ID. Joystick/tug driving and map
+  zoom can start in either order; releasing/canceling either preserves the other.
+  Slider touches bypass world/pinch input. Pause/background/reset and voyage
+  finish clear slider ownership. Main camera and simulation rules are unchanged.
+- Shared regressions exercise both drive methods, both start orders, independent
+  release/cancel, tug movement during zoom and lifecycle cleanup. Desktop pixel
+  review confirms tighter spacing, faint viewport versus real boundary, centered
+  tug and persistent slider. Reviewed trace fc515d17:2:1350; delivery/score unchanged.
+  Full normal Android checks/build follow; no frame-rate claim for this UI update.
+- Full check.sh and normal Android APK build passed, including simultaneous
+  pointer ownership, all four maps' group opacity (124,040 pixels), and clipped
+  rendering/faint frame/idle slider checks (281,778 pixels). Desktop gameplay
+  image reviewed. Device was locked at this round's final validation, so native
+  multitouch/pixel review was not performed; native iOS is unavailable here.

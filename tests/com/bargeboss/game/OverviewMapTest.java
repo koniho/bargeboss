@@ -32,10 +32,11 @@ final class OverviewMapTest {
             check(side==GameSettings.RIGHT?b.centerX()<width/2:b.centerX()>width/2,"overview opposite throttle");
             check(b.y>64 && b.y+b.h<552 && b.w==b.h,"square overview clears top and bottom HUD");
             Layout.Box slider=OverviewMap.sliderBounds(g),help=g.layout.box(Layout.HELP),practice=g.layout.box(Layout.PRACTICE);
-            check(slider.centerX()==b.centerX() && slider.y>b.y+b.h && slider.y+slider.h<=g.layout.height,"slider centered under map at old score row");
+            check(slider.centerX()==b.centerX() && slider.y-(b.y+b.h)==8 && slider.y+slider.h<=g.layout.height,"slider centered eight pixels below map");
             check(slider.x+slider.w<help.x || slider.x>practice.x+practice.w,"slider clears centered action buttons");
         }
         zoomControls();
+        simultaneousControls();
         g=new Game();ReplayInput.controlFixture(g);g.tug.vx=30;g.control=Game.REVERSING;g.reversing=true;
         int reverse=arrows(g,new Ink());g.control=Game.IDLE;g.reversing=false;check(reverse==arrows(g,new Ink()),"reverse adds no velocity heading arrow");
         g=new Game();ReplayInput.controlFixture(g);Body b=g.cargo[0];b.x=300;b.y=600;g.down(b.x,b.y);for(int i=0;i<12;i++)g.step();
@@ -84,6 +85,37 @@ final class OverviewMapTest {
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();Layout.Box slider=OverviewMap.sliderBounds(practice);
         ReplayInput.tap(root,slider.x+slider.w-24,slider.centerY());
         check(practice.overview.zoom()==OverviewMap.MAX_ZOOM && root.overview.zoom()==1,"practice routes slider to its active game");
+    }
+    private static void simultaneousControls(){
+        for(boolean joystick:new boolean[]{false,true})for(boolean zoomFirst:new boolean[]{false,true})for(boolean releaseZoomFirst:new boolean[]{false,true}) {
+            Game g=new Game();ReplayInput.controlFixture(g);g.settings.setJoystickSide(GameSettings.RIGHT);
+            Layout.Box slider=OverviewMap.sliderBounds(g);
+            float dx=joystick?Joystick.centerX(g):g.layout.camera.screenX(g.tug.x,g.tug.y);
+            float dy=joystick?Joystick.centerY(g):g.layout.camera.screenY(g.tug.x,g.tug.y);
+            if(zoomFirst)g.pointerDown(7,slider.x+24,slider.centerY());
+            g.pointerDown(2,dx,dy);g.pointerMove(2,dx+65,dy);
+            if(!zoomFirst)g.pointerDown(7,slider.x+24,slider.centerY());
+            check(g.pointer && g.overview.active && (joystick?g.joystick.active:g.holdingTug()),"zoom and drive both own their touch in either start order");
+            float startX=g.tug.x,startY=g.tug.y;
+            for(int i=0;i<24;i++) {g.pointerMove(7,slider.x+24+(slider.w-48)*i/23,slider.centerY());g.step();}
+            check(g.overview.zoom()==OverviewMap.MAX_ZOOM && !g.pinchZoom.active(),"zoom moves while drive remains held without main camera pinch");
+            check(Physics.length(g.tug.x-startX,g.tug.y-startY)>1 && (joystick?g.joystick.active:g.holdingTug()),"tug keeps moving during map zoom");
+            if(releaseZoomFirst) {
+                if(zoomFirst)g.pointerCancel(7);else g.pointerUp(7,slider.x+slider.w-24,slider.centerY());
+                check(!g.overview.active && g.pointer && (joystick?g.joystick.active:g.holdingTug()),"zoom release/cancel preserves drive");
+                g.pointerCancel(2);
+            } else {
+                g.pointerCancel(2);
+                check(g.overview.active && !g.pointer,"drive cancel preserves zoom touch");
+                g.pointerMove(7,slider.x+24,slider.centerY());
+                check(g.overview.zoom()==OverviewMap.MIN_ZOOM,"zoom still responds after driving ends");
+                g.pointerUp(7,slider.x+24,slider.centerY());
+            }
+            check(!g.pointer && !g.overview.active && !g.joystick.active,"both inputs release independently");
+            g.pointerDown(2,Joystick.centerX(g),Joystick.centerY(g));
+            g.pointerDown(7,slider.centerX(),slider.centerY());g.background();
+            check(!g.pointer && !g.overview.active && !g.joystick.active,"background cancels both touch owners");
+        }
     }
     public static void main(String[] args){run();}
 }
