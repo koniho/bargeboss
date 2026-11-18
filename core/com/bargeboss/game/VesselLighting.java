@@ -8,12 +8,12 @@ public final class VesselLighting {
     }
     /** Four gentle halos and a small hot lens, independent of scenery grading. */
     private static void lamp(Painter p,float x,float y,float radius,float opacity,int tick,float phase) {
-        float energy=SceneryEffects.intensity(tick,phase);
+        float energy=SceneryEffects.workIntensity(tick,phase);
         p.circle(x,y,radius*5.2f,warm(opacity*energy,13,0xffad46));
         p.circle(x,y,radius*3.3f,warm(opacity*energy,22,0xffbd58));
         p.circle(x,y,radius*1.8f,warm(opacity*energy,55,0xffce72));
         p.circle(x,y,radius*.8f,warm(opacity*energy,160,0xffdc92));
-        p.circle(x,y,radius*.38f,warm(opacity,238,0xfff0bd));
+        p.circle(x,y,radius*.38f,warm(opacity*energy,238,0xfff0bd));
     }
     public static void tug(Game g,Painter p,Body b,float bob) {
         boolean river=p instanceof RiverPainter;
@@ -25,7 +25,7 @@ public final class VesselLighting {
             float opacity=TugLightArt.opacity(i,b.angle,river);if(opacity<=0)continue;
             float x=sx+TugLightArt.offset(i,b.angle,river,false)*size*scale;
             float y=sy+(TugLightArt.offset(i,b.angle,river,true)*size-bob)*scale;
-            lamp(canvas,x,y,(i==0?1.25f:1.05f)*size/70*scale,opacity,g.visualTicks,b.id*.71f+i*1.73f);
+            lamp(canvas,x,y,(i==0?1.25f:1.05f)*size/70*scale,opacity,g.visualTicks,b.id*.71f);
         }
     }
     /** Broken warm water shimmer is drawn before the hull and clipped to real water.
@@ -36,8 +36,9 @@ public final class VesselLighting {
         float sx=river?camera.screenX(b.x,b.y):b.x,sy=river?camera.screenY(b.x,b.y):b.y,scale=river?camera.scale:1;
         sx+=TugLightArt.offset(0,b.angle,river,false)*size*scale;
         float xx=sx,yy=sy+b.radius*.65f*scale;
-        if(river)WaterReflection.draw(g,p,camera.worldX(xx,yy),camera.worldY(xx,yy),12,36,0x99ffba5c,b.id);
-        else p.waterReflection(xx,yy+15,18,0,0,30,WaterFoam.phase(g.visualTicks,b.id),0x99ffba5c);
+        int reflection=((int)(153*SceneryEffects.workIntensity(g.visualTicks,b.id*.71f))<<24)|0xffba5c;
+        if(river)WaterReflection.draw(g,p,camera.worldX(xx,yy),camera.worldY(xx,yy),12,36,reflection,b.id);
+        else p.waterReflection(xx,yy+15,18,0,0,30,WaterFoam.phase(g.visualTicks,b.id),reflection);
     }
     /** Two newly authored low coaming service lamps: bow/stern centerline, +Z normal.
      * These fittings are explicitly additional geometry, not painted-source anchors. */
@@ -51,7 +52,7 @@ public final class VesselLighting {
             float local=bargeLocalX(b,i),wx=b.x+c*local,wy=b.y+s*local;
             float sx=river?camera.screenX(wx,wy):wx,sy=(river?camera.screenY(wx,wy):wy)-(bob+BARGE_LAMP_Z*(river?.81649658f:1))*scale;
             canvas.rect(sx-1.1f*scale,sy-.9f*scale,2.2f*scale,3.1f*scale,0xff342c23);
-            lamp(canvas,sx,sy,.7f*scale,1,g.visualTicks,b.id*.71f+i*2.1f);
+            lamp(canvas,sx,sy,.7f*scale,1,g.visualTicks,b.id*.71f);
         }
     }
 }

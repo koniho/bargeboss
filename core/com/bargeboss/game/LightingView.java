@@ -18,8 +18,8 @@ public final class LightingView {
             p.line(x+.7f*s,foot,x+.7f*s,y,0.65f*s,0xff8f7654);
             SceneryEffects.glow(p,x,y,3.3f*s,0xffffb354,1,g.visualTicks,phase);
             p.rect(x-3.1f*s,y-2.9f*s,6.2f*s,6.1f*s,0xff20282d);
-            p.rect(x-2.1f*s,y-2.0f*s,4.2f*s,3.8f*s,0xffffb94d);
-            p.rect(x-1.25f*s,y-1.6f*s,2.5f*s,2.3f*s,0xffffebba);
+            p.rect(x-2.1f*s,y-2.0f*s,4.2f*s,3.8f*s,((int)(255*pulse)<<24)|0xffb94d);
+            p.rect(x-1.25f*s,y-1.6f*s,2.5f*s,2.3f*s,((int)(255*pulse)<<24)|0xffebba);
             p.line(x-3.7f*s,y-3.4f*s,x+3.7f*s,y-3.4f*s,1.2f*s,0xff4b4438);
         }
     }

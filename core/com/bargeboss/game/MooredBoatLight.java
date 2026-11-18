@@ -17,11 +17,11 @@ final class MooredBoatLight {
     }
     private static final ThreadLocal<Lights> SCRATCH=new ThreadLocal<Lights>(){protected Lights initialValue(){return new Lights();}};
     static Lights lights(Game g,float x,float y,float heave){Lights out=SCRATCH.get();out.count=0;float z=heave/ArticulatedModel.Z_SCALE;
-        for(float[] f:MontroseHarbor.PEDESTALS)out.add(f[0]-x,f[1]-y,MarinaPedestals.LAMP_Z-z,90,.16f,0xffffd68d);
+        for(int i=0;i<MontroseHarbor.PEDESTALS.length;i++){float[] f=MontroseHarbor.PEDESTALS[i];out.add(f[0]-x,f[1]-y,MarinaPedestals.LAMP_Z-z,90,.16f*MarinaPedestals.brightness(g,i),0xffffd68d);}
         points(g,out,x,y,z,g.tug);for(Body b:g.cargo)if(b!=null&&b.active)points(g,out,x,y,z,b);return out;
     }
     private static void points(Game g,Lights out,float x,float y,float z,Body b){if(!b.active)return;
-        if(b.berth<0)out.add(b.x-x,b.y-y,22-z,100,.65f,0xffffbc6b);
+        if(b.berth<0)out.add(b.x-x,b.y-y,22-z,100,.65f*SceneryEffects.workIntensity(g.visualTicks,b.id*.71f),0xffffbc6b);
         for(int f=0;f<VesselNavigationLights.sourceCount(b);f++){
             if(!VesselNavigationLights.emitting(g,b,f))continue;
             float lx=VesselNavigationLights.sourceX(g,b,f),ly=VesselNavigationLights.sourceY(g,b,f);

@@ -85,7 +85,7 @@ public final class SurfaceLighting {
     }
     private static void vessel(Game g,float[] w,float x,float y,Body b,Body receiver){
         if(b==receiver || !b.active)return;
-        float energy=SceneryEffects.intensity(g.visualTicks,b.id*.71f);
+        float energy=SceneryEffects.workIntensity(g.visualTicks,b.id*.71f);
         if(b.berth<0)add(w,x,y,b.x,b.y,18,100,.45f*energy);
         else for(int end=0;end<2;end++){
             float local=VesselLighting.bargeLocalX(b,end);

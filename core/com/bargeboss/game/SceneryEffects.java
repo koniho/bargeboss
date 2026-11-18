@@ -14,17 +14,24 @@ public final class SceneryEffects {
     }
     /** Several slow frequencies avoid a synchronized on/off pulse across a harbor. */
     public static float intensity(int ticks,float phase) {
-        return .91f+.065f*(float)StrictMath.sin(ticks*.021+phase)
-                +.028f*(float)StrictMath.sin(ticks*.067+phase*1.73)
-                +.012f*(float)StrictMath.sin(ticks*.137+phase*.61);
+        return .91f+.025f*(float)StrictMath.sin(ticks*.0031+phase)
+                +.011f*(float)StrictMath.sin(ticks*.0067+phase*1.73);
+    }
+    /** Work lamps share one subtle supply variation with their spill/reflection. */
+    public static float workIntensity(int ticks,float phase) {
+        return .91f+(intensity(ticks,phase)-.91f)*.4f;
     }
     private static int tint(int rgb,float alpha) {
         return ((int)Physics.clamp(alpha,0,255)<<24)|(rgb&0xffffff);
     }
     /** Soft layered light, kept in the same source-cell coordinates as its fixture. */
     public static void glow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase) {
+        glow(p,x,y,radius,color,opacity,ticks,phase,intensity(ticks,phase));
+    }
+    /** Explicit energy lets navigation signals bypass ambient variation. */
+    public static void glow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase,float power) {
         if(opacity<=0 || radius<=0) return;
-        float energy=2.4f*intensity(ticks,phase),breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
+        float energy=2.4f*power,breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
         float driftX=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
         float driftY=radius*.12f*(float)StrictMath.sin(ticks*.013+phase*1.7);
         float scale=radius*breath/KERNEL_RADIUS;

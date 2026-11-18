@@ -97,8 +97,8 @@ public final class VesselNavigationLights {
     private static int alpha(int color,float energy,int strength){return ((int)(Physics.clamp(energy,0,1)*strength)<<24)|(color&0xffffff);}
     private static void glow(Painter p,float x,float y,float scale,float visible,int color,int tick,int fixture){
         // The same cached feathered kernel as factory lamps avoids hard halo
-        // disks. Running lamps stay lit; only their scattered glow breathes.
-        SceneryEffects.glow(p,x,y,1.8f*scale,color,visible,tick,fixture*1.7f);
+        // disks. Running-lamp energy stays steady; signal flashes are explicit.
+        SceneryEffects.glow(p,x,y,1.8f*scale,color,visible,tick,fixture*1.7f,.91f);
         p.circle(x,y,1.35f*scale,alpha(color,visible,235));
         p.circle(x,y,.45f*scale,alpha(WHITE,visible,245));
     }

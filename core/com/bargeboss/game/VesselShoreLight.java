@@ -19,8 +19,8 @@ public final class VesselShoreLight {
     }
     private static void vessel(Game g,Painter p,Body b,boolean walls){if(!b.active)return;
         // Warm working lamps, separately colored from red/green/white navigation lamps.
-        if(b.berth<0)lamp(g,p,b.x,b.y,22,85,0xffffbc6b,.30f,b.angle,-1,walls);
-        else if(!b.yacht)for(int end=0;end<2;end++){float u=VesselLighting.bargeLocalX(b,end);lamp(g,p,b.x+u*(float)StrictMath.cos(b.angle),b.y+u*(float)StrictMath.sin(b.angle),5,42,0xffffbc6b,.16f,b.angle,-1,walls);}
+        if(b.berth<0)lamp(g,p,b.x,b.y,22,85,0xffffbc6b,.30f*SceneryEffects.workIntensity(g.visualTicks,b.id*.71f),b.angle,-1,walls);
+        else if(!b.yacht)for(int end=0;end<2;end++){float u=VesselLighting.bargeLocalX(b,end);lamp(g,p,b.x+u*(float)StrictMath.cos(b.angle),b.y+u*(float)StrictMath.sin(b.angle),5,42,0xffffbc6b,.16f*SceneryEffects.workIntensity(g.visualTicks,b.id*.71f),b.angle,-1,walls);}
         for(int fixture=0;fixture<VesselNavigationLights.sourceCount(b);fixture++){
             if(!VesselNavigationLights.emitting(g,b,fixture))continue;
             lamp(g,p,VesselNavigationLights.sourceX(g,b,fixture),VesselNavigationLights.sourceY(g,b,fixture),VesselNavigationLights.height(b,fixture),fixture<2?48:60,VesselNavigationLights.color(fixture),fixture<2?.24f:.16f,VesselNavigationLights.sourceHeading(g,b),fixture,walls);

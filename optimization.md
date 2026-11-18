@@ -2366,3 +2366,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   physical-device validation this round. Remaining~23ms draw cost needs another
   attribution capture after these changes; prior trace percentages no longer
   describe the current bottleneck reliably.
+
+## 2026-11-17: slow shared lamp brightness
+
+- Shared ambient illumination now drifts by at most .036 around .91 over
+  roughly 16/34-second cycles, replacing faster .105 variation. Stable source
+  phases keep dock/factory lamps independent; existing furnace activity remains.
+  Vessel work lamps use a smaller .0144 drift, shared by lenses, halos, surface
+  spill, shoreline/dock illumination and water reflection. Pedestal light received
+  by moored boats now follows the same source energy as its pool/halo.
+- Navigation lamp intensity bypasses ambient drift; explicit signal timing stays
+  unchanged. No new textures, cache entries or geometry were added.
+- Android full checks/build passed; slow-change bounds test updated to the new
+  art direction. JVM/J2ObjC parity 90354d26:2:1350 (gameplay outcome unchanged).
+  Preview shoreline and foam pixel regressions passed. Installed on Pixel and
+  reviewed native wide-view screenshot out/slow-lights.png. No physical iOS check.
+- Follow-up trace after prior wide-view optimizations ranks surfacePolygon /
+  WaterFoamShader polygon submission highly (27% inclusive); sampled trace is
+  attribution only. Live zoom override is currently restricted by developer
+  tooling; extend that before claiming animated-view frame rates.

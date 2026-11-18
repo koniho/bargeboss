@@ -51,6 +51,7 @@ public final class MarinaPedestals {
         while(j>0 && FIXTURES[out[j-1]].y-FIXTURES[out[j-1]].x>depth){out[j]=out[j-1];j--;}out[j]=i;}return out;}
     public static int count(Game g){return g.montroseStage()?ORDER.length:0;}
     public static float depth(Game g,int sortedIndex){Fixture f=FIXTURES[ORDER[sortedIndex]];return g.layout.camera.screenY(f.x,f.y);}
+    static float brightness(Game g,int index){return energy(g,FIXTURES[index]);}
     private static float energy(Game g,Fixture f){return SceneryEffects.intensity(g.visualTicks,f.phase);}
     private static boolean visible(Game g,float x,float y,float padding){return x+padding>=0 && x-padding<=g.layout.width && y+padding>=0 && y-padding<=g.layout.height;}
 

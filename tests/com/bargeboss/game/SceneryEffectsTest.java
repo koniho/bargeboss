@@ -10,11 +10,11 @@ public final class SceneryEffectsTest {
         float previous=SceneryEffects.intensity(0,.8f),min=previous,max=previous;
         for(int tick=1;tick<=2400;tick++) {
             float value=SceneryEffects.intensity(tick,.8f);
-            check(value>.79f && value<1.03f,"industrial glow remains bounded without on/off flashes");
-            check(Math.abs(value-previous)<.006f,"glow changes smoothly between simulation ticks");
+            check(value>=.874f && value<=.946f,"industrial glow remains bounded without on/off flashes");
+            check(Math.abs(value-previous)<.00016f,"glow changes smoothly between simulation ticks");
             min=Math.min(min,value);max=Math.max(max,value);previous=value;
         }
-        check(max-min>.12f,"glow visibly breathes over time");
+        check(max-min>.04f && max-min<.073f,"subtle slow brightness drift remains visible over forty seconds");
         Capture clear=new Capture();SceneryEffects.glow(clear,50,70,3,0xffffbd50,0,90,.8f);
         SceneryEffects.smoke(clear,50,70,3,1,0,90,.8f);check(clear.calls==0,"invisible prop has no remaining glow or smoke");
         Capture a=new Capture(),b=new Capture();
