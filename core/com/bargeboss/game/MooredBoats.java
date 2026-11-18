@@ -52,17 +52,25 @@ public final class MooredBoats {
         float wx=f==null?b.x:f.x,wy=f==null?b.y:f.y,angle=b.angle+(f==null?0:f.yaw),heave=f==null?0:f.heave;
         RiverCamera c=g.layout.camera;float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-heave*c.scale,size=CELL_WORLD*c.scale;
         if(x+size*.5f<0||x-size*.5f>g.layout.width||y+size*.3f<0||y-size*.7f>g.layout.height)return;
-        float heading=angle*ORIENTATIONS/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
+        float detail=SceneDetail.boat(g,b.length,wx,wy);
+        // Fade yaw detail toward the nearest authored resting pose. At distance
+        // this becomes one cached dusk sprite, while position/heave remain live.
+        float rest=b.frame%ORIENTATIONS,full=angle*ORIENTATIONS/(2*(float)Math.PI);
+        float delta=full-rest;delta-=ORIENTATIONS*(float)StrictMath.floor((delta+ORIENTATIONS*.5f)/ORIENTATIONS);
+        float heading=rest+delta*detail,whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
-        float reach=b.length*.65f+6;
-        float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY);
-        if(rippleClip.length>0)p.pushClipOutside(rippleClip);
-        try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true);}
-        finally{if(rippleClip.length>0)p.popClip();}
+        if(detail>.001f){
+            float reach=b.length*.65f+6;
+            float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY);
+            if(rippleClip.length>0)p.pushClipOutside(rippleClip);
+            try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
+            finally{if(rippleClip.length>0)p.popClip();}
+        }
         dissolve(p,base+a,base+next,x,y,size,mix,1);
+        if(detail<=.001f)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         for(int n=0;n<lights.count;n++){
-            float energy=lights.energy[n],second=energy*mix,first=energy*(1-mix)/(1-second);
+            float energy=lights.energy[n]*detail,second=energy*mix,first=energy*(1-mix)/(1-second);
             p.normalSprite(base+a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],first);
             if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
         }

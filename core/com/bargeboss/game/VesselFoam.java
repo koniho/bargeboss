@@ -56,6 +56,7 @@ public final class VesselFoam {
         for(int i=0;i<CAPACITY;i++) {
             if(age[i]>=life[i])continue;
             float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t*.4f);
+            alpha*=SceneDetail.foam(c.scale,length[i],width[i],i,t);
             if(alpha<.008f)continue;
             float extent=length[i]*(1+t*.8f)+width[i]*(1+t*1.5f);
             float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=extent*c.scale;
@@ -70,6 +71,7 @@ public final class VesselFoam {
             for(int n=0;n<CAPACITY;n++) {
                 int i=(cursor+n)%CAPACITY;if(age[i]>=life[i])continue;
                 float t=age[i]/(float)life[i],alpha=strength[i]*Math.min(1,age[i]/6f)*(1-t)*(1-t*.4f);
+                alpha*=SceneDetail.foam(c.scale,length[i],width[i],i,t);
                 if(alpha<.008f)continue;
                 float l=length[i]*(1+t*.8f),w=width[i]*(1+t*1.5f);
                 float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i]),bound=(l+w)*c.scale;

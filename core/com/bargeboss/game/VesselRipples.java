@@ -4,6 +4,9 @@ package com.bargeboss.game;
 public final class VesselRipples {
     private VesselRipples() {}
     public static void draw(Game g,Painter p,int seed,float x,float y,float angle,float length,float width,float speed,boolean moored){
+        draw(g,p,seed,x,y,angle,length,width,speed,moored,1);
+    }
+    static void draw(Game g,Painter p,int seed,float x,float y,float angle,float length,float width,float speed,boolean moored,float opacity){
         float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);
         float motion=Physics.clamp(speed/60,0,1),spread=moored?5:9+motion*9;
         float foam=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED)/10,0,1);
@@ -13,6 +16,8 @@ public final class VesselRipples {
             float age=Math.floorMod(g.visualTicks+seed*37+i*90,180)/180f;
             float fade=(float)StrictMath.sin(age*StrictMath.PI);
             float alpha=fade*fade*(moored?.09f:.16f+motion*.18f);
+            alpha*=opacity;
+            if(!moored && i==1)alpha*=SceneDetail.fade(length*g.layout.camera.scale,36,80);
             if(alpha<.003f)continue;
             // The transparent center starts inside the footprint and expands outwards.
             float a=length*(1.10f+.30f*cruise)+age*spread*(1+cruise);

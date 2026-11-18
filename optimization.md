@@ -2295,3 +2295,38 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full preview export completed successfully, including cargo and scenery asset
   checks. iPhone native build and launch verified; no physical pinch automation
   was run, so finger feel and native zoom rendering remain user validation.
+
+## 2026-11-17: screen-size detail reduction for moored boats and foam
+
+- Added pure shared SceneDetail weights. Distant moored boats smoothly converge
+  to one existing cached dusk pose, retaining tethered position and heave. Below
+  the detail band, skip ripple shoreline clipping and normal-light collection
+  entirely. Full detail is restored over 36–72 logical pixels of hull length;
+  boats within 70 world units of the tug retain full lighting, fading this
+  proximity exception out by 180 units. No new sprite atlas/cache, physics or
+  emitter-state changes. Continuous weights avoid threshold chatter.
+- Small foam trails smoothly remove alternate stable pool slots and shorten old
+  faint tails (12–28 logical-pixel extent transition). The second hull-ripple
+  cycle fades at small projected size. Large effects retain their full stamps;
+  airborne bow spray remains unchanged. Both foam bounds and submission passes
+  use the same rejection weight before shoreline-mask preparation.
+- Android Pixel 11 Pro A/B: montrose-overview freeze with camera override .65
+  (actual minimum pinch zoom), 1243x600 logical canvas, 60 warmup +120 measured
+  frames, no method sampling. out/lod-before and out/lod-after contain CSVs and
+  screenshots. Median interval 63.452 ->43.948 ms; p95 78.335 ->54.202 ms.
+  Median draw scope 58.180 ->40.331 ms; p95 72.655 ->50.787 ms. Native submission
+  counts: sprites378->207, affines368->43, clips254->126; polygons remain5225.
+  Warm cache builds/decodes/fallbacks were zero in both measured windows.
+  This is roughly31% lower median interval, still far from16.7 ms/60FPS.
+  Freeze mode measures rendering, not live simulation or foam emission; no
+  independent speedup attributed to foam. One sequential A/B pair, not a thermal
+  stability study. Remaining shore/water/light work requires profiling.
+- Initial debug-only .215 overview was interrupted during cold preparation and
+  is not a performance result. Used .65 for the valid comparison instead.
+- Reviewed native optimized wide-view screenshot: dusk boats remain readable,
+  pedestal lamps stay lit, and nearby/player lighting is preserved by policy.
+  Full Android checks/build, complete preview including all-heading shoreline
+  pixels, and JVM/J2ObjC parity passed (b6956fb2:2:1350; gameplay unchanged).
+  Signed iOS build passed, but the previously connected iPhone was unavailable
+  for installation. Android installed; normal launch and timeout restored after
+  profiling. iOS device appearance and live foam cost remain unmeasured.
