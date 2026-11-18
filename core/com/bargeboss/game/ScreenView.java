@@ -33,9 +33,6 @@ public final class ScreenView {
             for(int mark=0;mark<=4;mark++)p.rect(timerX+124+mark*25,29,1,10,0x998bd0c5);
             center(p,g.lock.phase==Lock.FILLING?"RISING":level>=1?"HIGH / MATCHED":"LOW",timerX+174,44,7,GOLD);
         } else for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
-        VisualStyle.panel(p,12,layout.height-48,170,40,0xed101c30);
-        text(p,"SCORE",24,layout.height-39,8,MUTED);
-        text(p,""+g.score,81,layout.height-37,18,PAPER);
         haptics(g,p);
         Layout.Box pause=layout.box(Layout.PAUSE);
         VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);

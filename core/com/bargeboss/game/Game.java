@@ -88,6 +88,7 @@ public final class Game {
     public final Career career=new Career();
     public GameSettings settings=new GameSettings();
     public final Joystick joystick=new Joystick();
+    public final OverviewMap overview=new OverviewMap();
     private int settingsReturnMode=TITLE;
     public int challengeId,earnedStars,challengePage;
     public boolean rankPromoted;
@@ -351,6 +352,7 @@ public final class Game {
         practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
+        overview.reset();
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;pinchZoom.reset();cameraZoomHoldTicks=0;cameraTransit=false;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
@@ -398,6 +400,13 @@ public final class Game {
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
+        if(overview.active)return;
+        if(OverviewMap.sliderHit(this,x,y)) {
+            if(!pointer && !pinchZoom.active()) {
+                beginDown(x,y,false);mapPointer=id;overview.active=true;overview.setFromX(this,x);
+            }
+            return;
+        }
         if(pinchZoom.active()){pinchZoom.down(this,id,x,y);return;}
         if(liveRiverInput() && !(tutorial!=null && tutorial.entering) && ropePhase==0
                 && !joystick.active && !ropeDragging && !towAiming && !holdingTug() && heldCargo()==null
@@ -418,6 +427,7 @@ public final class Game {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(pinchZoom.move(this,id,x,y))return;
         if(id!=mapPointer) return;
+        if(overview.active){overview.setFromX(this,x);return;}
         if(joystick.active){pointerX=x;pointerY=y;joystick.move(this,x,y);return;}
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
@@ -426,6 +436,7 @@ public final class Game {
         if(pinchZoom.up(id))return;
         if(id!=mapPointer) return;
         mapPointer=-1;
+        if(overview.active){overview.setFromX(this,x);cancel();return;}
         if(joystick.active){cancel();return;}
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
@@ -461,6 +472,7 @@ public final class Game {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
         pinchZoom.cancelTouches();joystick.cancel();driveDirection=0;rescue.aiming=-1;
+        overview.active=false;
         pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }

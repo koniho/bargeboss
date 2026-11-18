@@ -56,8 +56,8 @@ public final class Layout {
         if(original==SETTINGS)return new Box(width-260,4,94,40);
         if(original==HAPTICS) return new Box(width-158,4,94,40);
         if(original==PAUSE) return new Box(width-56,4,48,40);
-        if(original==HELP) return new Box(width-224,height-44,100,40);
-        if(original==PRACTICE) return new Box(width-116,height-44,108,40);
+        if(original==HELP) return new Box(width*.5f-110,height-44,100,40);
+        if(original==PRACTICE) return new Box(width*.5f+4,height-44,108,40);
         return new Box(original.x+offsetX,original.y+offsetY,original.w,original.h);
     }
     public float statusX() { return 401; }

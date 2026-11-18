@@ -2939,3 +2939,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   canonical trace and 143 controls/tutorial assertions. Shared menu visuals were
   reviewed on desktop; device touch/pixel review and native iOS parity were not
   performed for this round. No frame-rate improvement is claimed.
+
+## 2026-11-18 — Player-centered overview zoom and quieter HUD
+
+- Removed the in-play score panel and direction/status strip; Help/Practice move
+  to bottom center. A horizontal map zoom slider occupies the old bottom score
+  row, centered beneath the overview on either joystick side. Its permanent
+  filled track/thumb indicate normalized logarithmic zoom, including after lift.
+- Map center always equals tug position, even at world edges. The existing chart
+  scales from 0.5x (full bounds fit at any player corner) to 4x, default 1x. Main
+  camera/physics are unchanged. Markers stay fixed-size; the world border, softer
+  water fill, contours and markers clip to the 184px square viewport.
+- Shared input captures slider drags separately from world controls and pinch,
+  handles cancel/background/practice routing, and retains zoom after release.
+- Geography stays immutable and cached. Panning/zoom does not rebuild polygons
+  or introduce per-position cache entries: existing 2x/3x raster-density buckets
+  use at most about 1.68 MiB per chart together (6.72 MiB across four charts),
+  inside the existing 48 MiB LRU. One additional balanced exclusion clip wraps
+  the overview via existing Android/desktop/Core Graphics/Metal functionality.
+  Zoom exponentiation occurs only on input, not per marker/per render.
+- Reviewed real desktop pixels for four locations at minimum/default/maximum
+  zoom plus Montrose gameplay HUD. Added pixel regression for clipping, centered
+  player and idle slider visibility on both HUD sides, and shared regressions
+  for edge centering, full bounds at maximum zoom-out, touch ownership/lifecycle,
+  unchanged main camera and responsive control spacing. Reviewed draw trace:
+  cdab182b:2:1350. Full normal Android checks/build follow. No native FPS claim;
+  native iOS raster parity remains unavailable here.
+- Final complete check.sh and normal Android build passed. Retained the prior
+  chart group-opacity regression, extending it to all four charts (124,040
+  pixels), alongside 266,770 viewport/slider pixel checks. Normal APK installed
+  and launched successfully. With the device unlocked, exercised native touch
+  drags at minimum/default/maximum zoom and reviewed Android screenshots in
+  Downloads (BargeBoss-overview-slider-{wide,default,close}.png): clipping,
+  stationary player dot and persistent slider indicator are visible. Restored
+  the slider near its default after review. Native iOS remains untested.

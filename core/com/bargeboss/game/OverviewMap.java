@@ -1,11 +1,48 @@
 package com.bargeboss.game;
 
-/** Fixed overhead navigation: world +X points up, world +Y points right. */
+/** Player-centered overhead navigation: world +X points up, world +Y points right. */
 public final class OverviewMap {
     static final float WIDTH=184,HEIGHT=184,PAD=10,TOP=PAD,BOTTOM=PAD;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
     private static final Chart[] CHARTS={new Chart(0),new Chart(1),new Chart(2),new Chart(3)};
-    private OverviewMap(){}
+    // The full chart fits even with the tug at a world corner at minimum zoom.
+    static final float MIN_ZOOM=.5f,MAX_ZOOM=4;
+    private static final float[] OUTSIDE=outside();
+    private float level=1f/3,zoom=1;
+    boolean active;
+    OverviewMap(){}
+    float level(){return level;}
+    float zoom(){return zoom;}
+    void reset(){level=1f/3;zoom=1;active=false;}
+    void setFromX(Game g,float x){
+        Layout.Box b=sliderBounds(g);level=Physics.clamp((x-b.x-24)/(b.w-48),0,1);
+        zoom=MIN_ZOOM*(float)StrictMath.pow(MAX_ZOOM/MIN_ZOOM,level);
+    }
+    static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
+    static boolean sliderHit(Game g,float x,float y){return visible(g) && sliderBounds(g).contains(x,y);}
+    static float mapX(Game g,float worldY){return WIDTH*.5f+(worldY-g.tug.y)*chart(g).scale*g.overview.zoom();}
+    static float mapY(Game g,float worldX){return HEIGHT*.5f-(worldX-g.tug.x)*chart(g).scale*g.overview.zoom();}
+    // Four disjoint rectangles, with consistent triangle winding, work on every
+    // host's existing exclusion clip (including Metal's stencil implementation).
+    private static float[] outside(){
+        float m=32768;float[][] boxes={{-m,-m,m,0},{-m,HEIGHT,m,m},{-m,0,0,HEIGHT},{WIDTH,0,m,HEIGHT}};
+        float[] result=new float[48];int at=0;
+        for(float[] b:boxes){float[] t={b[0],b[1],b[2],b[1],b[2],b[3],b[0],b[1],b[2],b[3],b[0],b[3]};for(float v:t)result[at++]=v;}
+        return result;
+    }
+    static void slider(Game g,Painter p){
+        if(!visible(g))return;
+        Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.centerY(),thumb=left+(right-left)*g.overview.level;
+        SoftCue.line(p,left,y,right,y,3,0x51678691);
+        SoftCue.line(p,left,y,thumb,y,3,0xaac4dedb);
+        for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x527fa9ad);}
+        p.line(b.x+5,y,b.x+13,y,1.5f,0xaac4dedb);
+        p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xaac4dedb);
+        p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xaac4dedb);
+        p.circle(thumb,y,g.overview.active?14:11,g.overview.active?0x387fe1db:0x207fe1db);
+        p.circle(thumb,y,6,0xddc4dedb);
+        SoftCue.ring(p,thumb,y,8,1,0x907fe1db,1);
+    }
     public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,Joystick.centerY(g)-HEIGHT*.5f,WIDTH,HEIGHT);}
     static Chart chart(Game g){return CHARTS[g.montroseStage()?1:g.indianaStage()?2:g.calumetStage()?3:0];}
@@ -13,23 +50,29 @@ public final class OverviewMap {
     public static void draw(Game g,Painter p){
         if(!visible(g))return;
         Layout.Box box=bounds(g);Chart c=chart(g);
-        p.prepareLayer(c,1);p.layer(c,box.x,box.y,1,.53f);
+        float zoom=g.overview.zoom();
+        p.prepareLayer(c,zoom);
         Painter local=ScreenView.offset(p,box.x,box.y);
-        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(local,c,g.dockX(i),g.dockY(i),TARGET);
+        local.pushClipOutside(OUTSIDE);
+        try {
+        local.layer(c,WIDTH*.5f-c.x(g.tug.y)*zoom,HEIGHT*.5f-c.y(g.tug.x)*zoom,zoom,.53f);
+        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
-            float x=c.x(b.y),y=c.y(b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
+            float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
-        if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.channelGate;target(local,c,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
-        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(local,c,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
-        if(g.calumetStage() && g.voyage.job==2)target(local,c,g.voyage.gateX(),g.voyage.gateY(),TARGET);
-        if(g.lockStage())target(local,c,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
-        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(c.x(g.rescue.y[i]),c.y(g.rescue.x[i]),1.7f,TARGET);
-        float x=c.x(g.tug.y),y=c.y(g.tug.x),pulse=pulse(g.visualTicks);
+        if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.channelGate;target(g,local,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(g,local,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
+        if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
+        if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
+        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.y[i]),mapY(g,g.rescue.x[i]),1.7f,TARGET);
+        float x=WIDTH*.5f,y=HEIGHT*.5f,pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));
         SoftCue.ring(local,x,y,4+2*pulse,1,SoftCue.alpha(PLAYER,.4f+.35f*pulse),1);
         local.circle(x,y,2.7f,PLAYER);
+        } finally {local.popClip();}
+        slider(g,p);
     }
-    private static void target(Painter p,Chart c,float wx,float wy,int color){float x=c.x(wy),y=c.y(wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
+    private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wy),y=mapY(g,wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
         final int stage;final boolean enclosed;final float margin,minX,maxX,minY,maxY,scale,cx,cy;
         final float[][] water,docks,waterFill;
@@ -57,8 +100,8 @@ public final class OverviewMap {
             dockHoles=new float[count];int at=0;
             for(float[] dock:docks)for(int i=2;i<dock.length-2;i+=2){dockHoles[at++]=dock[0];dockHoles[at++]=dock[1];dockHoles[at++]=dock[i];dockHoles[at++]=dock[i+1];dockHoles[at++]=dock[i+2];dockHoles[at++]=dock[i+3];}
         }
-        float x(float worldY){return cx+(Physics.clamp(worldY,minY,maxY)-(minY+maxY)*.5f)*scale;}
-        float y(float worldX){return cy-(Physics.clamp(worldX,minX,maxX)-(minX+maxX)*.5f)*scale;}
+        float x(float worldY){return cx+(worldY-(minY+maxY)*.5f)*scale;}
+        float y(float worldX){return cy-(worldX-(minX+maxX)*.5f)*scale;}
         private float[][] project(float[][] shapes){float[][] result=new float[shapes.length][];
             float[] clip=boundary;
             for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=cx+(a[i+1]-(minY+maxY)*.5f)*scale;b[i+1]=cy-(a[i]-(minX+maxX)*.5f)*scale;}result[j]=PolygonWater.clip(b,clip);}

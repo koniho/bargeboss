@@ -20,3 +20,7 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.NormalBoatRevie
 # Fixed Indiana shore modules must stay dry and within the geometry budget.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/IndianaShoreTilesTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.IndianaShoreTilesTest
+
+# Scrolling overview uses a fixed viewport and retains its slider after release.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/OverviewMapPixelTest.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.OverviewMapPixelTest

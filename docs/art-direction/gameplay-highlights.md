@@ -23,8 +23,9 @@ See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 
 ## Overhead overview map
 
-The gameplay overview sits opposite the throttle. Fit the location’s gameplay bounds into the available overview space with equal
-axis scale. The thin border is the projection of those world bounds, not the UI
+The gameplay overview sits opposite the throttle and always centers on the tug,
+including at the location's edges. Pan the chart under the stationary player dot;
+never clamp the center to the chart limits. Use equal axis scale. The thin border is the projection of world bounds, not the UI
 panel edge; rectangular stages retain their actual aspect ratio. Fully enclosed
 water areas (the practice canal/basins) add a uniform world margin of 6% of the
 longer span, showing land between the shoreline and frame. Open-lake locations
@@ -34,7 +35,21 @@ shoreline/dock contours. Navigable water has a softer translucent fill (about
 clear. Do not add a filled panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
 (lower-right) is right. Keep this orientation independent of the camera. A yellow
 player dot pulses gently; cyan cargo markers and amber target outlines remain
-secondary. The chart is informational and does not intercept steering gestures.
+secondary. Clip the scrolling map and live markers to its fixed square viewport.
+The chart is informational and does not intercept steering gestures.
+Its horizontal zoom slider sits in the bottom HUD row, centered under the map;
+Help/Practice are centered on the screen so the slider clears them on either side.
+The slider captures its own drag until release/cancel, excluding steering,
+lasso and camera pinch input. Its permanent thumb and filled track show relative
+zoom even while idle. Left is maximum zoom-out: half the full-chart fit scale,
+which can show all bounds with a centered player at any world corner. Right is
+four times fit scale; use logarithmic interpolation for even zoom steps. The
+default is fit scale. Only the overview changes; main camera zoom is independent.
+The old in-play score panel and direction/status strip are removed; results
+still show earned scores. Preserve tutorial instruction overlays and joystick cues.
 Cache the immutable border, water fill and contours separately from live markers.
+Translate/scale the existing chart texture; do not cache each slider position or
+rebuild geography while dragging. The two existing raster-density buckets bound
+texture growth. Keep marker sizes fixed while the chart scales.
 Apply chart opacity to the cached outline as a whole, not to individual line
 segments: overlapping translucent endpoints create unwanted bright joint dots.
