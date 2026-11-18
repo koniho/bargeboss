@@ -11,6 +11,7 @@ public final class ViewportPainter implements Painter {
     public void beginFrame(){target.beginFrame();}
     public boolean supportsUnionClips(){return target.supportsUnionClips();}
     public boolean prefersPolygonBatches(){return target.prefersPolygonBatches();}
+    public boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){return target.retainedSurfaces(layer,x,y,scale);}
     public boolean preparesLayers(){return target.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){target.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {

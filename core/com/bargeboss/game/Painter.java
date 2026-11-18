@@ -14,6 +14,8 @@ public interface Painter {
     /** Restore the matching saved clip. Scopes must be balanced, including on errors. */
     default void popClip() {}
     /** Optional native cache preparation. Hints never draw pixels or advance gameplay. */
+    /** Optional retained commands for immutable surface-only chunks. False requests direct drawing. */
+    default boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){return false;}
     default boolean preparesLayers(){return false;}
     /** Scale is the actual display scale, exactly as supplied to layer(); hosts choose raster density. */
     default void prepareLayer(StaticLayer layer,float scale) {}

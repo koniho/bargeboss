@@ -290,3 +290,9 @@ Foam submission retains shared preparation. Shore exclusion retains collision
 and solid masks; flat materials retain polygon geometry. Omissions change
 occlusion, overdraw and cache pressure: marginal deltas are not additive GPU
 costs. Freeze isolates rendering but does not measure active tow/physics work.
+
+`--ez bb_surface_sweep true` uses 60-frame direct/retained/retained/direct
+blocks for static shore command reuse (freeze mode,60 warmup,240 samples).
+Mask128 disables command reuse; `surface_command_mib` records retained native
+command allocation. `--ez bb_surface_review true` runs native cache lifecycle
+checks separately from timing. See [retained surfaces](retained-surfaces-2026-11-17/README.md).

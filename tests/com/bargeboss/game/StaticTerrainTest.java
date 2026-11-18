@@ -12,6 +12,14 @@ public final class StaticTerrainTest {
         Game g=new Game();g.startTutorial();g=g.activeGame();
         g.layout=Layout.focused(960,600,300,500,1.4f,480,300);
         RiverCamera firstCamera=g.layout.camera;Capture before=new Capture();StaticTerrain.draw(g,before,false);
+        Capture retained=new Capture(){
+            public boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){
+                check(layer.width()==StaticTerrain.CHUNK && layer.height()==StaticTerrain.CHUNK,"surface command chunk bounds");
+                layer.paint(ScreenView.scaled(this,x,y,scale));return true;
+            }
+        };
+        StaticTerrain.draw(g,new SceneryOcclusion(new ViewportPainter(retained,960,600)),false);
+        check(retained.surfaceHash==before.surfaceHash && retained.surfaces==before.surfaces,"retained surface commands preserve geometry, UVs, color and order through wrappers");
         Capture foreground=new Capture();StaticTerrain.draw(g,foreground,true);
         check(!before.calls.isEmpty() && !foreground.calls.isEmpty(),"working harbor has cached ground and separate foreground cap layers");
         int backgroundSprites=0;
@@ -96,7 +104,7 @@ public final class StaticTerrainTest {
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){commands++;sprites++;mix(4);mix(a);mix(f);value(x);value(y);value(w);value(h);value(r);value(alpha);}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha){throw new AssertionError("static terrain must not retain animated vessel blends");}
     }
-    private static final class Capture extends Trace {
+    private static class Capture extends Trace {
         private final boolean prepare;
         Capture(){this(false);}Capture(boolean prepare){this.prepare=prepare;}
         final Map<Integer,StaticLayer> hints=new HashMap<Integer,StaticLayer>();

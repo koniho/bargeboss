@@ -317,6 +317,7 @@ public final class ScreenView {
         public void line(float xx,float yy,float bx,float by,float w,int c) { p.line(tx(xx,yy),ty(yy),tx(bx,by),ty(by),w*scale,c); }
         public boolean supportsUnionClips(){return p.supportsUnionClips();}
         public boolean prefersPolygonBatches(){return p.prefersPolygonBatches();}
+        public boolean retainedSurfaces(StaticLayer layer,float xx,float yy,float size){return shear==0 && p.retainedSurfaces(layer,x+xx*scale,y+yy*scale,size*scale);}
         public boolean preparesLayers(){return shear==0 && p.preparesLayers();}
         public void prepareLayer(StaticLayer layer,float size){if(shear==0)p.prepareLayer(layer,size*scale);}
         public void layer(StaticLayer layer,float xx,float yy,float size,float alpha) {

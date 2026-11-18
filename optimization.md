@@ -2518,3 +2518,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   validation or new production FPS improvement claimed.
 - Final checked APK installed successfully and launched in ordinary mode with no
   exclusions; previous phone display timeout restored after measurement.
+
+## 2026-11-17: Retain static shore material commands on Android
+
+- Existing caches were not full in the contributor sweep: frame106.614/160MiB,
+  terrain28.813/48MiB, no warm evictions/builds/decodes. Do not raise those limits
+  based on slow-upload counters alone. Referenced bitmap storage166.890MiB is not
+  measured GPU residency. Factory artwork remains a downstream bottleneck.
+- Tried a dedicated smaller surface shader preserving all material math. ABBA
+  draw40.232/42.039/41.450/40.835ms showed no repeatable gain; rejected and removed.
+- Added optional Painter retainedSurfaces admission. Core supplies immutable
+  surface-only chunks; unsupported painters/wrappers fall back to identical direct
+  commands. Android records RenderNodes at canonical scale and reuses their
+  material/path commands across camera movement. No raster textures, flattened
+  foreground scenery or cached dynamic lights. Native LRU96 entries/8MiB reported
+  command allocation; invalid lists rerecord and close releases resources.
+- Same-process direct/retained/retained/direct: draw39.146/24.714/24.504/37.315ms,
+  intervals70.469/70.810/70.592/70.928ms. ~13-14ms draw CPU reduction, no end-to-end
+  FPS improvement. Only.453MiB retained commands, bitmap budgets unchanged.
+- Native screen comparison2534/2602800 changed pixels, max channel5/255,
+  RGB MAE.000655/255; visually reviewed. Tiny transform/AA differences remain.
+  Replay camera.8467..2.5911 reused.453MiB with no frame-texture evictions.
+  Summary/reproduction: docs/performance/retained-surfaces-2026-11-17.
+- Full shared checks passed including retained surface geometry/UV/color/order
+  equivalence through wrappers; JVM/J2ObjC parity436aa8c2:2:1350 unchanged.
+  This optimizes Android submission; no physical iOS performance claim.
+- Native bounds/eviction/reload/invalidation/close regression passed. All-heading
+  shoreline pixel regression passed1,382,037 assertions. Final Android APK built,
+  installed and launched in normal mode; phone timeout restored.

@@ -73,6 +73,7 @@ public final class CanvasPainter implements Painter {
     public long profilePendingBytes(){return terrain==null?0:terrain.reservedBytes();}
     public long profileWorkerSourceBytes(){return terrain==null?0:terrain.sourceBytes();}
     public void close(){
+        if(retainedSurfaces!=null){retainedSurfaces.clear();retainedSurfaces=null;}
         synchronized(frameLock){closed=true;frameImages.clear();frameBytes=0;atlases.clear();sourceImages.clear();}
         if(rotationWorker!=null)rotationWorker.interrupt();
         if(terrain!=null){terrain.close();terrain=null;}
@@ -187,6 +188,23 @@ public final class CanvasPainter implements Painter {
     public void profileFlatSurfaces(boolean enabled){profileFlatSurfaces=enabled;}
     /** Developer-only effect isolation; default production appearance is unchanged. */
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
+    private RetainedSurfaces retainedSurfaces;
+    private boolean retainSurfaces=true;
+    public void profileRetainedSurfaces(boolean enabled){retainSurfaces=enabled;}
+    public long profileSurfaceBytes(){return retainedSurfaces==null?0:retainedSurfaces.bytes();}
+    public boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){
+        if(!retainSurfaces || profileFlatSurfaces || android.os.Build.VERSION.SDK_INT<33 || waterFoamShader==null || !canvas.isHardwareAccelerated())return false;
+        if(retainedSurfaces==null)retainedSurfaces=new RetainedSurfaces();
+        android.graphics.RenderNode node=retainedSurfaces.get(layer.key());
+        if(node==null){
+            node=new android.graphics.RenderNode("shore-surfaces");node.setPosition(0,0,(int)layer.width(),(int)layer.height());node.setClipToBounds(false);
+            Canvas previous=canvas;canvas=node.beginRecording();
+            try{layer.paint(this);}finally{canvas=previous;node.endRecording();}
+            retainedSurfaces.put(layer.key(),node);
+        }
+        int save=canvas.save();try{canvas.translate(x,y);canvas.scale(scale,scale);canvas.drawRenderNode(node);}finally{canvas.restoreToCount(save);}
+        return true;
+    }
     public void profileWaterGrouping(boolean enabled){forceWaterGrouping=enabled;}
     /** Diagnostic host strategies; only the debuggable session calls this. */
     public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}

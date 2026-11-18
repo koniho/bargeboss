@@ -19,7 +19,8 @@ public final class StaticTerrain {
         // Materials stay live on native shaders; cached markings/caps remain above them.
         for(int row=firstY;row<=lastY;row++)for(int col=firstX;col<=lastX;col++) {
             Tile tile=tile(col,row,foreground);
-            tile.surfaces(ScreenView.scaled(p,ox+col*CHUNK*c.scale,oy+row*CHUNK*c.scale,c.scale));
+            if(!p.retainedSurfaces(tile.surfaceLayer,ox+col*CHUNK*c.scale,oy+row*CHUNK*c.scale,c.scale))
+                tile.surfaces(ScreenView.scaled(p,ox+col*CHUNK*c.scale,oy+row*CHUNK*c.scale,c.scale));
         }
         for(int row=firstY;row<=lastY;row++)for(int col=firstX;col<=lastX;col++) {
             Tile tile=tile(col,row,foreground);
@@ -61,6 +62,11 @@ public final class StaticTerrain {
     }
     static final class Tile extends StaticLayer {
         final int key;final ArrayList<Command> commands;final float left,top,w,h;final boolean hasRaster;
+        final StaticLayer surfaceLayer=new StaticLayer(){
+            public int key(){return Tile.this.key;}
+            public float width(){return CHUNK;}public float height(){return CHUNK;}
+            public void paint(Painter p){surfaces(p);}
+        };
         Tile(int key,Recorder r){this.key=key;commands=r.commands;
             boolean raster=false;for(Command command:commands)if(command.type<5){raster=true;break;}hasRaster=raster;
             left=Math.max(0,(float)StrictMath.floor(r.left));top=Math.max(0,(float)StrictMath.floor(r.top));
