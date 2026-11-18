@@ -149,6 +149,8 @@ public final class CanvasPainter implements Painter {
     long profileRotationNs(){return rotationNs;}
     String profileRotationFailure(){return rotationFailure;}
     void profileAwaitRotations(long millis)throws InterruptedException {if(rotationWorker!=null)rotationWorker.join(millis);}
+    Bitmap profileFactoryOriginal(int frame){return atlas(SpriteAtlas.FACTORY).factoryOriginals[frame];}
+    Rect profileFactoryBounds(int frame){return new Rect(atlas(SpriteAtlas.FACTORY).factoryOffsets[frame]);}
     Bitmap profileFrameImage(int id,int frame){return frameImage(atlas(id),frame);}
 
     public boolean preparesLayers(){return asyncLayers && !paintingLayer;}
@@ -208,7 +210,7 @@ public final class CanvasPainter implements Painter {
     public void profileWaterGrouping(boolean enabled){forceWaterGrouping=enabled;}
     /** Diagnostic host strategies; only the debuggable session calls this. */
     public void profileStrategies(boolean compoundPaths,boolean frameTextures){this.compoundPaths=compoundPaths;this.frameTextures=frameTextures;}
-    public long profileSourceBytes(){long bytes=0;for(Bitmap b:sourceImages.values())bytes+=b.getAllocationByteCount();return bytes;}
+    public long profileSourceBytes(){long bytes=0;for(Bitmap b:sourceImages.values())bytes+=b.getAllocationByteCount();Atlas factory=atlases.get(SpriteAtlas.FACTORY);if(factory!=null)for(int i=0;i<factory.images.length;i++){bytes+=factory.images[i].getAllocationByteCount();if(factory.factoryOriginals[i]!=null && factory.factoryOriginals[i]!=factory.images[i])bytes+=factory.factoryOriginals[i].getAllocationByteCount();}return bytes;}
     public long profileFrameBytes(){synchronized(frameLock){return frameBytes;}}
     void profileResetTextures(){synchronized(frameLock){
         if(rotationStarted)throw new IllegalStateException("Cannot reset a prefetching painter");
@@ -312,7 +314,8 @@ public final class CanvasPainter implements Painter {
     }
     private static final class Atlas {
         final Bitmap[] images;
-        final Rect[] frames;
+        final Rect[] frames,authoredFrames,factoryOffsets;
+        final Bitmap[] factoryOriginals;
         final int id;
         final Rect[] cellFrames;
         // The title sky uses very thin adjacent fade strips. Keep their shared
@@ -321,12 +324,12 @@ public final class CanvasPainter implements Painter {
         Rect source(int frame,boolean cropped){return cropped(cropped)?cellFrames[frame]:frames[frame];}
         Atlas(int atlas,AssetManager assets,ConcurrentMap<String,Bitmap> sources,Object publicationLock,CanvasPainter owner,int generation) throws IOException {
             int count=SpriteAtlas.count(atlas);
-            id=atlas;images=new Bitmap[count];frames=new Rect[count];cellFrames=new Rect[count];
+            id=atlas;images=new Bitmap[count];frames=new Rect[count];authoredFrames=new Rect[count];factoryOffsets=new Rect[count];factoryOriginals=new Bitmap[count];cellFrames=new Rect[count];
             for(int f=0;f<count;f++) {
                 if(!owner.currentPlan(generation))throw new java.util.concurrent.CancellationException("Preparation superseded or painter closed");
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
                 String key=SpriteGrade.cacheKey(atlas,path);
-                Bitmap image=sources.get(key);
+                Bitmap image=atlas==SpriteAtlas.FACTORY?null:sources.get(key);
                 if(image==null) {
                     try(InputStream input=assets.open(path)) {
                         BitmapFactory.Options options=new BitmapFactory.Options(); options.inScaled=false;
@@ -342,12 +345,22 @@ public final class CanvasPainter implements Painter {
                         }
                     }
                     synchronized(publicationLock) {
-                        if(owner.currentPlan(generation)){Bitmap published=sources.putIfAbsent(key,image);if(published!=null)image=published;}
+                        if(atlas!=SpriteAtlas.FACTORY && owner.currentPlan(generation)){Bitmap published=sources.putIfAbsent(key,image);if(published!=null)image=published;}
                     }
                 }
                 images[f]=image;
                 frames[f]=new Rect(Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,f)),
                         Math.round(image.getWidth()*SpriteAtlas.sourceRight(atlas,f)),Math.round(image.getHeight()*SpriteAtlas.sourceBottom(atlas,f)));
+                authoredFrames[f]=new Rect(frames[f]);
+                if(atlas==SpriteAtlas.FACTORY){
+                    Rect crop=FactoryTextureCrop.bounds(image,frames[f]);factoryOffsets[f]=crop;
+                    if(owner.keepFactoryOriginals)factoryOriginals[f]=image;
+                    Bitmap trimmed=Bitmap.createBitmap(image,crop.left,crop.top,crop.width(),crop.height());
+                    trimmed.setDensity(Bitmap.DENSITY_NONE);images[f]=trimmed;
+                    // Factory sources belong to this atlas. Never publish a crop as a source
+                    // for a cancelled preparation to decode again with the wrong registration.
+                    frames[f]=new Rect(0,0,trimmed.getWidth(),trimmed.getHeight());
+                }
                 cellFrames[f]=new Rect(0,0,frames[f].width(),frames[f].height());
             }
         }
@@ -414,6 +427,21 @@ public final class CanvasPainter implements Painter {
         if(normalSpriteShader==null || !canvas.isHardwareAccelerated() || !frameTextures){Painter.super.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);return;}
         normalSpriteShader.draw(canvas,frameImage(atlas(SpriteAtlas.MOORED_NORMALS),frame),x-w*.5f,y-h*.7f,w,h,nx,ny,nz,radius,color,alpha);
     }
+    private boolean trimFactories=true,keepFactoryOriginals;
+    void profileKeepFactoryOriginals(boolean enabled){keepFactoryOriginals=enabled;}
+    public void profileTrimFactories(boolean enabled){trimFactories=enabled;}
+    private void drawSpriteImage(Atlas atlas,int frame,RectF destination,Paint paint){
+        if(atlas.id==SpriteAtlas.FACTORY && !trimFactories && atlas.factoryOriginals[frame]!=null){
+            Bitmap original=atlas.factoryOriginals[frame];if(profile!=null)profile.texture(original);
+            canvas.drawBitmap(original,atlas.authoredFrames[frame],destination,paint);return;
+        }
+        if(atlas.id==SpriteAtlas.FACTORY){
+            Rect a=atlas.authoredFrames[frame],r=atlas.factoryOffsets[frame];
+            float x=destination.left,y=destination.top,w=destination.width()/a.width(),h=destination.height()/a.height();
+            destination=new RectF(x+(r.left-a.left)*w,y+(r.top-a.top)*h,x+(r.right-a.left)*w,y+(r.bottom-a.top)*h);
+        }
+        canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),destination,paint);
+    }
     public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         if(profile!=null)profile.sprites++;
@@ -422,7 +450,7 @@ public final class CanvasPainter implements Painter {
         float left=-SpriteAtlas.pivotX(id,frame)*width,top=-SpriteAtlas.pivotY(id,frame)*height;
         canvas.save(); canvas.translate(cx,cy); canvas.rotate(rotation*180f/(float)Math.PI);
         spritePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
-        canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),new RectF(left,top,left+width,top+height),spritePaint);
+        drawSpriteImage(atlas,frame,new RectF(left,top,left+width,top+height),spritePaint);
         canvas.restore();
     }
     /** Map the complete cropped source cell onto supplied axes without another size correction. */
@@ -436,7 +464,7 @@ public final class CanvasPainter implements Painter {
         affineValues[6]=affineValues[7]=0;affineValues[8]=1;affineMatrix.setValues(affineValues);
         affinePaint.setAlpha(Math.round(Math.max(0,Math.min(1,alpha))*255));
         int saved=canvas.save();
-        try {canvas.concat(affineMatrix);canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),affineUnit,affinePaint);}
+        try {canvas.concat(affineMatrix);drawSpriteImage(atlas,frame,affineUnit,affinePaint);}
         finally {canvas.restoreToCount(saved);}
     }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
@@ -457,9 +485,9 @@ public final class CanvasPainter implements Painter {
         canvas.saveLayerAlpha(Math.min(ax,bx)-2,Math.min(ay,by)-2,
                 Math.max(ax+aw,bx+bw)+2,Math.max(ay+ah,by+bh)+2,Math.round(Math.max(0,Math.min(1,alpha))*255));
         spritePaint.setAlpha(255-weight);
-        canvas.drawBitmap(frameImage(atlas,frameA),atlas.source(frameA,frameTextures),new RectF(ax,ay,ax+aw,ay+ah),spritePaint);
+        drawSpriteImage(atlas,frameA,new RectF(ax,ay,ax+aw,ay+ah),spritePaint);
         spritePaint.setAlpha(weight); spritePaint.setXfermode(ADD);
-        canvas.drawBitmap(frameImage(atlas,frameB),atlas.source(frameB,frameTextures),new RectF(bx,by,bx+bw,by+bh),spritePaint);
+        drawSpriteImage(atlas,frameB,new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
     public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color) {

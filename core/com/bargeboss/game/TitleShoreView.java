@@ -7,7 +7,7 @@ final class TitleShoreView {
         float h=TitleView.horizon(g),extent=g.layout.width;
         layer(p,SpriteAtlas.TITLE_STEEL,extent,h+22,780,(g.visualTicks*.12f)%780);
         float offset=(g.visualTicks*.21f+Math.max(0,585-(extent-352-100)))%960;
-        layer(p,SpriteAtlas.TITLE_ROCKS,extent,h+54,960,offset);
+        for(float x=-offset;x<extent;x+=TitleRockWaves.WIDTH)TitleRockWaves.draw(g,p,x,h+54);
     }
     private static void layer(Painter p,int atlas,float extent,float bottom,float width,float offset){
         float height=width/3;

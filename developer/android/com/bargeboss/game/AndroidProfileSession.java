@@ -15,7 +15,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final String scene,mode;
     private final int warmup,samples;
     private final float reviewZoom;
-    private final boolean contributors,surfaceSweep;
+    private final boolean contributors,surfaceSweep,factorySweep;
     private final int exclusion;
     private static final int[] EXCLUSIONS={1,2,4,8,16,32,64,7};
     private int activeExclusion;
@@ -27,7 +27,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private int frame;
     private boolean configured,finished,tracing,reviewStarted,reviewDone;
     private final Activity activity;
-    private final boolean pixelReview,terrainReview,waterReview,waterGrouping,rotationReview,surfaceReview;
+    private final boolean pixelReview,terrainReview,waterReview,waterGrouping,rotationReview,surfaceReview,factoryReview;
     private long drawStart,previousDraw,advanceNs;
     public AndroidProfileSession(Activity activity,CanvasPainter painter) {
         this.activity=activity;Intent intent=activity.getIntent();this.painter=painter;stats=painter.enableProfile();
@@ -38,14 +38,17 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         if(!valid)throw new IllegalArgumentException("Unknown bb_scene");
         reviewZoom=intent.getFloatExtra("bb_camera_zoom",0);
         if(reviewZoom!=0 && (!Float.isFinite(reviewZoom) || reviewZoom<.25f || reviewZoom>5))throw new IllegalArgumentException("Camera override requires zoom .25..5");
+        factorySweep=intent.getBooleanExtra("bb_factory_sweep",false);
         surfaceSweep=intent.getBooleanExtra("bb_surface_sweep",false);
         contributors=intent.getBooleanExtra("bb_contributors",false);
         exclusion=intent.getIntExtra("bb_exclude",0);
-        if((contributors || surfaceSweep) && !mode.equals("freeze"))throw new IllegalArgumentException("Contributor sweep requires freeze mode");
+        painter.profileKeepFactoryOriginals(factorySweep || (exclusion&256)!=0);
+        if((contributors || surfaceSweep || factorySweep) && !mode.equals("freeze"))throw new IllegalArgumentException("Contributor sweep requires freeze mode");
         warmup=Math.max(0,Math.min(1800,intent.getIntExtra("bb_warmup",120)));
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
         systemTrace=intent.getBooleanExtra("bb_system_trace",false);
+        factoryReview=intent.getBooleanExtra("bb_factory_review",false);
         surfaceReview=intent.getBooleanExtra("bb_surface_review",false);
         rotationReview=intent.getBooleanExtra("bb_rotation_review",false);
         painter.profileRotationCache(intent.getIntExtra("bb_frame_cache_mib",160),intent.getBooleanExtra("bb_rotation_prefetch",true));
@@ -69,11 +72,11 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         // Activity startup can briefly report the previous portrait window.
         // Do not prepare or time a landscape fixture against that transient layout.
         if(configured || width<height)return;
-        if((pixelReview || terrainReview || waterReview || rotationReview || surfaceReview) && !reviewDone) {
+        if((pixelReview || terrainReview || waterReview || rotationReview || surfaceReview || factoryReview) && !reviewDone) {
             if(!reviewStarted){
                 reviewStarted=true;
                 new Thread(()->{
-                    try{if(surfaceReview)AndroidSurfaceReview.run();if(rotationReview)AndroidRotationReview.run(activity.getAssets(),directory);if(waterReview)AndroidWaterReview.run(activity.getAssets(),directory);if(pixelReview)AndroidTextureReview.run(activity.getAssets(),directory);if(terrainReview)AndroidTerrainReview.run(activity.getAssets(),directory);}
+                    try{if(factoryReview)AndroidFactoryReview.run(activity.getAssets(),directory);if(surfaceReview)AndroidSurfaceReview.run();if(rotationReview)AndroidRotationReview.run(activity.getAssets(),directory);if(waterReview)AndroidWaterReview.run(activity.getAssets(),directory);if(pixelReview)AndroidTextureReview.run(activity.getAssets(),directory);if(terrainReview)AndroidTerrainReview.run(activity.getAssets(),directory);}
                     catch(Exception e){throw new IllegalStateException(e);}
                     activity.runOnUiThread(()->{reviewDone=true;configure(width,height);});
                 },"bargeboss-texture-review").start();
@@ -113,6 +116,8 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
             activeExclusion=frame<warmup || block%2==0?0:EXCLUSIONS[index];
         }
         if(surfaceSweep){int block=Math.max(0,frame-warmup)/60;activeExclusion=frame<warmup?128:((block%4==0 || block%4==3)?128:0);}
+        if(factorySweep){int block=Math.max(0,frame-warmup)/60;activeExclusion=frame<warmup?256:((block%4==0 || block%4==3)?256:0);}
+        painter.profileTrimFactories((activeExclusion&256)==0);
         painter.profileRetainedSurfaces((activeExclusion&128)==0);
         root.activeGame().renderExclusions=activeExclusion;
         painter.profileSkipFoam((activeExclusion&32)!=0 || activity.getIntent().getBooleanExtra("bb_skip_foam",false));
@@ -147,7 +152,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     public boolean running(){return configured && !finished;}
     public void stop(){if(configured && !finished)finish("interrupted");}
     private void finish(String reason) {
-        finished=true;painter.profileRetainedSurfaces(true);root.activeGame().renderExclusions=0;painter.profileSkipFoam(false);painter.profileFlatSurfaces(false);if(tracing){Debug.stopMethodTracing();tracing=false;}
+        finished=true;painter.profileTrimFactories(true);painter.profileRetainedSurfaces(true);root.activeGame().renderExclusions=0;painter.profileSkipFoam(false);painter.profileFlatSurfaces(false);if(tracing){Debug.stopMethodTracing();tracing=false;}
         final int count=frame;final File output=new File(directory,scene+"-"+mode+".csv");
         new Thread(()->{
             File temporary=new File(directory,scene+"-"+mode+".csv.tmp");

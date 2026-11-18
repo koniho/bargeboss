@@ -2546,3 +2546,54 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Native bounds/eviction/reload/invalidation/close regression passed. All-heading
   shoreline pixel regression passed1,382,037 assertions. Final Android APK built,
   installed and launched in normal mode; phone timeout restored.
+
+## 2026-11-17: Title rock surf and rising spray
+
+- Shared Java only: TitleRockWaves clips the title rock sprite below a traveling
+  crest, revealing the existing water rather than painting a solid water overlay.
+  Four-second visualTicks cycle, three wavelengths per 960-unit repeat, continuous
+  at scroll seams. Green-left/red-right entrance artwork and parallax stay intact.
+- Existing SPLASH stamps supply porous contact foam and a small upward spray arc
+  during the rising crest. No new textures, raster caches, round particles or
+  native timing rules. Per repeat: 48 clip triangles, at most 24 contact stamps
+  and 12 spray candidates, with offscreen and entrance culling. Title-only;
+  removed shoreline bands in playable levels remain removed.
+- Reviewed actual shared title frames and six crest phases in out/title-rock-waves.
+  Focused tests pass 28,337 geometry, entrance-clearance, clip, bounded-work and
+  render-purity assertions. All-heading shoreline pixel regression passes
+  1,382,037 assertions. JVM/J2ObjC parity passes daa6ed07:2:1350; canonical hash
+  updated after verification because the signature includes title drawing.
+- Native title timing/pixels and phone installation are deferred to the parent
+  integration round, which is profiling factory textures concurrently. No title
+  FPS improvement claimed. Details: docs/rendering/title-rock-surf.md.
+- Full check.sh suite passed using an isolated build/title-rock-check output
+  directory to avoid the concurrent Android build's build/check directory.
+
+## 2026-11-17: Factory texture cost follow-up
+
+- Tested lossless padding crops, half-resolution distant textures and retained
+  native factory bitmap commands in same-process ABBA blocks. Full results and
+  reproduction: docs/performance/factory-textures-2026-11-17/summary.json and README.
+- Kept lossless alpha crops and Calumet factory preparation manifests. Runtime
+  sources replace padded images; no extra factory frame-cache copies. Native
+  comparison checked25,160,256 source pixels with zero lost alpha/retained-pixel
+  changes. Storage100,641,024->95,896,812 bytes,4.524MiB saved. Existing160/48MiB
+  cache limits unchanged, warm frames106.614MiB and zero builds/evictions.
+- First crop prototype exceeded the pinned frame budget by retaining duplicate
+  copies and caused292 builds/frame. Rejected; production owns just cropped
+  sources, and cancellation never republishes crops as unregistered originals.
+- Crop ABBA frame intervals67.60/69.86/69.75/70.88ms: no FPS gain claimed.
+  Native full/crop screen comparison2615/2602800 pixels changed, RGB MAE.003331,
+  max channel155 at sparse nearest-sampling boundaries; reviewed difference image.
+- Half-resolution factory textures reduced referenced bytes162.37->93.76MiB,
+  but intervals69.17/64.44/68.48/67.76ms did not improve consistently. Removed
+  the visual tradeoff and extra22.85MiB prebuilt mip storage. Retained native
+  factory commands69.69/70.48/71.21/71.44ms also failed to improve; removed.
+- No evidence for a larger cache. Factory omission still helps, but bitmap size
+  and command retention do not explain its cost; render-thread/presentation
+  work remains unresolved. Full shared checks/build pass with integrated title
+  surf. Translation parity daa6ed07:2:1350; no physical iOS validation this round.
+- Final combined APK installed and launched normally. Reviewed native title surf
+  screenshot; six-second native animation and shared crest previews copied to
+  phone Downloads as BargeBoss-title-rock-surf-*-v1 files. Local evidence in
+  out/title-rock-waves. Previous display timeout restored.

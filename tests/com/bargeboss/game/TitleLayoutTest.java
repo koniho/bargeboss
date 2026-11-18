@@ -51,6 +51,7 @@ public final class TitleLayoutTest {
         public void poly(float[] xy,int c){}
     }
     public static void run() {
+        TitleRockWavesTest.run();
         for(boolean tug:new boolean[]{false,true}){
             Game g=new Game();Body b=new Body(tug?0:1,tug?-1:0,300,300,TitleView.HEADING);
             b.vx=b.vy=20*RiverCamera.Q;BowOrder order=new BowOrder();
