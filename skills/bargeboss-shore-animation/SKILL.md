@@ -24,6 +24,13 @@ moving/static layers, cargo contact points and phase endpoints. Use a projected
 geometry/pose guide for precise booms, cables, doors and bridge leaves rather
 than relying only on a text description of successive angles.
 
+For live 3-D machinery, cache rigid geometry/topology and evaluate the exact
+shared animation phase on every update. Never quantize motion to a small pose
+table or borrow the watercraft's 32-heading limit. Lights, smoke outlets and
+shadows follow the same continuous transform. Consult the checkout's
+`docs/rendering/live-3d-scenery.md` for the prepared-motion API, separation
+constraints and motion/depth/device checks before integrating a new mechanism.
+
 Choose frames to support the requested motion and existing game timing. The
 watercraft requirement for 32 headings does **not** mean every crane or worker
 needs 32 frames. Do not generate redundant yaw views for fixed-camera equipment.

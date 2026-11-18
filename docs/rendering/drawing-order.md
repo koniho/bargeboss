@@ -658,6 +658,7 @@ This uses the same upright billboard-depth assumption as vessel sprites, not a
 full 3-D vessel mesh. Separate fixed/moving rigs and neighboring crossings retain
 local BSP ordering; this is not a whole-world depth buffer. Do not flatten the
 prepared bridges into a single bitmap across depth intervals. Fixed faces and
-33 moving poses are prepared at stage entry; per-frame interval clipping must
-not rebuild the model/BSP. Shore, cargo, rope attachment and waterline rules
+complete part-local BSPs are prepared at stage entry. Moving faces use exact
+continuous rigid transforms; per-frame interval clipping must not rebuild the
+model/BSP or quantize its phase. See [live 3-D scenery](live-3d-scenery.md). Shore, cargo, rope attachment and waterline rules
 remain in force. Independent water-plane deck shadows draw before the dry ground.

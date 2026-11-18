@@ -2788,3 +2788,48 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   updated to `6813e4af:2:1350`. All 55 developer-fixture checks passed after the
   centerline-placement correction. Normal APK installed and launched; development
   profiling hooks are not included in that final APK. Review images copied to Downloads.
+
+
+## 2026-11-18 — Continuous landmark bridge motion
+
+- Cause: 33 prepared poses over a five-second opening only changed the bridge
+  silhouette about 6.4 times/second. Smooth gameplay did not make that animation
+  smooth. Removed phase rounding; all 18 movable Calumet/Indiana rigs now use
+  exact shared hinge/lift transforms every simulation tick.
+- Preparation now builds complete part-local BSPs once, retaining initially
+  hidden faces. Runtime reuses transformed geometry and reorders each local tree
+  using the current view direction. Part separation is validated along the root
+  span axis; this optimization is not a general intersecting-mesh sorter.
+  Lights, normals and deck shadows query the same continuous pose. The 95th
+  under-deck chord now tapers and double leaves have an expansion joint so the
+  animated geometry does not intersect across that separation.
+- JVM preparation probe (all 20 fixed/moving rigs): 42,300 moving fragments,
+  approximate retained heap delta 20,218 KiB, versus the previous sampled-pose
+  probe's 91,088 KiB. Cold preparation 327 ms in this run. These include geometry
+  and class initialization, not native textures; they are not frame-rate claims.
+  A likely-facing-first splitter ordering increased fragments to 53,402 and heap
+  to 24,807 KiB; rejected. A contiguous fragment coalescing trial did not reduce
+  maximum submitted face counts; removed.
+- Added every-opening-tick continuity and exact fractional/reversal transform
+  tests, including lamp positions and normals. Desktop reference comparison:
+  198 live/world-BSP images across 18 rigs, worst differing covered pixels 3/1000
+  (single-pixel split-edge seams included). Exported 301 exact opening frames.
+  New canonical draw signature 91fb813:2:1350 after reviewing the changed geometry
+  and ordering; gameplay state portions remain unchanged.
+- AGENTS, rendering/performance guidance and repository/installed shore-animation
+  skills now require continuous live 3-D motion. Sprite heading counts never
+  govern mechanical animation. Native measurements and final validation follow.
+
+- Full `check.sh` and the profiling APK build passed, including 12,550 geographic
+  bridge assertions, existing practice-rig/shoreline/cargo/surface tests and the
+  canonical replay. Both installed and repository shore-animation skills pass
+  the skill validator. Motion MP4 and half-open review PNG copied to Downloads.
+- Native A/B setup retains an experimental 33-pose build with the same current
+  geometry and fixtures under `out/continuous-baseline/`, plus the continuous
+  profiling APK under `out/continuous-bridges/`. The first replay capture could
+  not run: Android reported NotificationShade focus and a locked keyguard; its
+  screenshot was black. Aborted the waiting script and requested an unlock.
+  This attempt supplies no valid native frame timing. Keep-awake prevents timeout,
+  but does not unlock the phone. Do not reuse historical bridge numbers as an A/B
+  result: earlier fixtures also used different tug placement/camera states.
+  iOS/native parity is untested here (no macOS/Foundation/J2ObjC host available).

@@ -42,6 +42,12 @@ the same `Painter`. Do not add a second game implementation for any platform.
   bitmap. Parent light/smoke anchors to their rigid parts, with stable IDs and
   local XYZ/normals, so effects follow the same transformation. Match the concept
   and shared camera, and review closed, moving and open/working states.
+- Live 3-D scenery must use continuous rigid transforms from the shared animation
+  phase on every simulation update. Cache geometry/topology, not a small table of
+  poses; the 32-heading sprite rule never limits live machinery animation. Lights,
+  smoke anchors, normals and shadows use the same exact transform. Follow
+  [continuous machinery rules](docs/rendering/live-3d-scenery.md), validate every
+  travel tick/reversal and profile the full moving scene on device.
 - Coordinate optimization work through [optimization.md](optimization.md). Read other
   agents’ entries before shared edits and append platform, evidence, changes and
   validation after each meaningful step; do not overwrite their findings.

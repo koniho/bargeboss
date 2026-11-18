@@ -69,10 +69,14 @@ line crossing the gate keeps it requested. Reapproach reverses a closing span.
 Green means fully passable; closed/part-open passages retain a conservative
 full-width collision gate. Skyway and Cline are always passable.
 
-The 33 prepared rigid poses cover 32 intervals of travel. This quantizes visual
-motion; physics uses the continuous fixed-tick position. It avoids rebuilding a
-face/BSP tree during an active draw. Every coordinate, color, light and decision
-is shared Java; no host selects a separate animation or mechanism.
+Moving parts now retain complete local BSP topology and one reusable live pose.
+Every fixed simulation tick evaluates the exact hinge angle/lift height, including
+reversal. There is no animation-frame table: the previous 33 poses made five-second
+opening visibly step at about 6.4 Hz. Fixed geometry remains prepared once. All
+coordinates, color, lights and decisions are shared Java; no host selects a
+separate animation. See [continuous scenery rules](../../rendering/live-3d-scenery.md).
+The 95th below-deck trusses taper toward the leaf tips; the two bascule leaves
+have an expansion joint so their rigid geometry does not intersect during travel.
 
 Lights have unique named IDs, parent node, local XYZ, outward normal, radius and
 signal/warm role. Houses, channel signals, moving leaf tips, lift cabins, tower
@@ -92,10 +96,15 @@ is represented by the opaque footings. No image-derived shadow mask is used.
 Run `tools/LandmarkBridgeReview.java` with core and desktop classes to export
 closed/half/open panels and production scene renders. Source tooling is tracked;
 exports live in `out/landmark-bridges` and user copies in Downloads. The test suite
-checks rigid lengths/pivots, translating lift alignment, anchor identity, full
-pose preparation, approach/hold/closure, collision, reset and pause.
+checks rigid lengths/pivots, translating lift alignment, anchor identity, continuous per-tick
+motion and exact transform agreement, approach/hold/closure, collision, reset and pause.
 
 `BridgeLayers` partitions rigid faces by the same ground-depth event stream as
 boats, ropes, lights and other landmarks. Neither an entire high bridge nor its
 near and far supports may be painted at a single midpoint. See the rendering
 contract for the billboard-depth approximation and native validation limits.
+
+`tools/ContinuousBridgeReview.java` compares 18 moving rigs at 11 exact phases
+against rebuilt world-space BSPs and exports a 301-frame opening sequence.
+Single-pixel split-edge raster seams are tolerated; substantial ordering errors
+fail the comparison. It is a desktop oracle, not native GPU pixel parity.

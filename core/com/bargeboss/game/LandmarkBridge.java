@@ -5,13 +5,12 @@ import java.util.ArrayList;
 /** Photo-led rigid bridge kit. All dimensions are XYZ world units, never rotated artwork. */
 final class LandmarkBridge {
     static final int BASCULE=0,LIFT=1,SKYWAY=2,ROLLING=3,FIXED=4;
-    static final int POSES=33;
     final String id,name;
     final float x,y,yaw,dx,dy,left,right,width,height;
     final int type,style;
     final ArticulatedModel fixed,moving;
     final ArticulatedModel.Pose fixedPose;
-    final ArticulatedModel.Pose[] poses;
+    private ArticulatedModel.Motion motion;
     final Lamp[] lamps;
     final int[] leaves;
     private static final int STEEL=0xff777d80,RUST=0xff896c59,STONE=0xffa39786;
@@ -62,7 +61,7 @@ final class LandmarkBridge {
         }else{
             int count=type==ROLLING?1:2;
             for(int k=0;k<count;k++){
-                int side=k==0?-1:1;float bank=side<0?-left:right,length=type==ROLLING?span:span*.5f;
+                int side=k==0?-1:1;float bank=side<0?-left:right,length=type==ROLLING?span:span*.5f-2;
                 float angle=side<0?0:(float)StrictMath.PI;
                 int leaf=b.movingNode(id+"-leaf-"+k,motion,bank,0,18,angle,1.37f,type==ROLLING?-18:0,0,0);leafIds.add(leaf);
                 float trussHeight=type==ROLLING?46:style==2?17:style==4?40:style==3?27:23;
@@ -80,18 +79,17 @@ final class LandmarkBridge {
                 for(int edge=-1;edge<=1;edge+=2)lamp(b,lights,true,id+"-leaf-tip-"+k+"-"+edge,leaf,length-3,edge*width*.5f,style==2?5:trussHeight+3,2.2f,true);
             }
         }
-        fixed=a.build();fixedPose=fixed.pose(0);moving=b.build();poses=new ArticulatedModel.Pose[type==SKYWAY || type==FIXED?1:POSES];
+        fixed=a.build();fixedPose=fixed.pose(0);moving=b.build();
         lamps=lights.toArray(new Lamp[lights.size()]);leaves=new int[leafIds.size()];for(int i=0;i<leaves.length;i++)leaves[i]=leafIds.get(i);
     }
     private static boolean water(boolean indiana,float x,float y){return indiana?IndianaHarbor.contains(x,y):CalumetRiver.contains(x,y);}
     private static void truss(ArticulatedModel.Builder b,int n,float length,float width,float h,int color,boolean roof,boolean below){
         b.box(n,length*.5f,0,0,length,width,5,STEEL,SurfaceMaterial.STEEL);
         for(int side=-1;side<=1;side+=2){float yy=side*width*.5f;
-            float sign=below?-1:1;
             b.beam(n,0,yy,0,length,yy,0,3.7f,color,SurfaceMaterial.STEEL);
             for(int i=0;i<6;i++){
                 float x=i*length/6,xx=(i+1)*length/6;
-                float z=(roof && i==0?h*.38f:h)*sign,zz=(roof && i==5?h*.38f:h)*sign;
+                float z=below?-h*(1-i/6f):(roof && i==0?h*.38f:h),zz=below?-h*(1-(i+1)/6f):(roof && i==5?h*.38f:h);
                 b.beam(n,x,yy,z,xx,yy,zz,3.1f,color,SurfaceMaterial.RUST);
                 b.beam(n,x,yy,0,xx,yy,zz,2.7f,color,SurfaceMaterial.STEEL);
                 if(i>0)b.beam(n,x,yy,0,x,yy,z,2.4f,color,SurfaceMaterial.STEEL);
@@ -148,8 +146,9 @@ final class LandmarkBridge {
         b.box(node,x,y,z,3,3,3,STEEL,SurfaceMaterial.STEEL);
         lights.add(new Lamp(id,moving,node,x,y,z+1.6f,radius,signal));
     }
-    void prepare(){fixed.prepare(fixedPose);for(int i=0;i<poses.length;i++)if(poses[i]==null){poses[i]=moving.pose(poses.length==1?0:i/(float)(POSES-1));moving.prepare(poses[i]);}}
-    ArticulatedModel.Pose pose(float amount){return poses[Math.min(poses.length-1,Math.max(0,Math.round(amount*(poses.length-1))))];}
+    void prepare(){fixed.prepare(fixedPose);if(motion==null)motion=moving.motion(0,1,0,0);motion.pose(0);}
+    ArticulatedModel.Pose pose(float amount){if(motion==null)throw new IllegalStateException("Prepare bridge motion before drawing");return motion.pose(Math.max(0,Math.min(1,amount)));}
+    int motionFragments(){return motion==null?0:motion.fragmentCount();}
     boolean movable(){return type!=SKYWAY && type!=FIXED;}
     float along(float xx,float yy){return (xx-x)*dx+(yy-y)*dy;}
     float across(float xx,float yy){return -(xx-x)*dy+(yy-y)*dx;}
@@ -158,7 +157,7 @@ final class LandmarkBridge {
     void shadow(Game g,Painter p,float amount){
         if(!visible(g))return;ArticulatedModel.Pose pose=pose(amount);
         if(!movable())shadowQuad(p,fixedPose,0,-left-420,right+420,width,height);
-        else for(int leaf:leaves)shadowQuad(p,pose,leaf,0,type==LIFT || type==ROLLING?left+right:(left+right)*.5f,width,0);
+        else for(int leaf:leaves)shadowQuad(p,pose,leaf,0,type==LIFT || type==ROLLING?left+right:(left+right)*.5f-2,width,0);
     }
     private static void shadowQuad(Painter p,ArticulatedModel.Pose pose,int node,float start,float end,float width,float z){
         for(int soft=3;soft>=0;soft--){float spread=soft*2.5f;float[] q=new float[8];

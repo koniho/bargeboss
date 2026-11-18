@@ -13,7 +13,7 @@ public final class LocationBridgeTest {
                 LandmarkBridge b=g.passages.bridges[i];
                 check(b.left+b.right>=25 && b.left+b.right<400,"survey crossing runs across water, not along the river: "+b.id);
                 check(b.lamps.length>0,"landmark has named effect anchors");
-                for(int j=0;j<b.poses.length;j++)check(b.poses[j]!=null,"all movement poses prepared before play");
+                check(!b.movable() || b.motionFragments()>0,"part-local motion topology prepared before play");
                 for(int leaf:b.leaves){
                     float[] origin=b.pose(0).point(leaf,0,0,0),end=b.pose(0).point(leaf,20,0,0);
                     for(float a:new float[]{0,.25f,.5f,.75f,1}){
@@ -25,6 +25,26 @@ public final class LocationBridgeTest {
                 }
                 for(int a=0;a<b.lamps.length;a++)for(int c=0;c<a;c++)check(!b.lamps[a].id.equals(b.lamps[c].id),"stable unique lighting anchors");
                 if(!b.movable()){check((b.type==LandmarkBridge.SKYWAY || b.type==LandmarkBridge.FIXED) && b.height>=180,"Skyway remains high and fixed");continue;}
+                // Every simulation tick and fractional phase uses exact rigid transforms, not 33 slots.
+                ArticulatedModel.Pose live=b.pose(0);int topology=b.motionFragments();
+                int probe=b.leaves[0];float[] previous=live.point(probe,20,0,0);
+                for(int tick=1;tick<=BridgePassage.OPEN_TICKS;tick++){
+                    float amount=tick/(float)BridgePassage.OPEN_TICKS;
+                    check(b.pose(amount)==live,"bounded reusable live pose buffers");
+                    float[] current=live.point(probe,20,0,0);
+                    check(distance(previous,current)>.001f,"motion advances every tick: "+b.id);
+                    previous=current;
+                }
+                for(float amount:new float[]{.12345f,.5001f,.4999f,.12345f,0,1,0}){
+                    ArticulatedModel.Pose actual=b.pose(amount),exact=b.moving.pose(amount);
+                    for(int leaf:b.leaves){
+                        check(distance(actual.point(leaf,20,3,7),exact.point(leaf,20,3,7))<.001f,"continuous transform agrees with exact model");
+                        check(distance(actual.normal(leaf,0,0,1),exact.normal(leaf,0,0,1))<.0001f,"continuous normal agrees with exact model");
+                    }
+                    for(LandmarkBridge.Lamp lamp:b.lamps)if(lamp.moving)
+                        check(distance(actual.point(lamp.node,lamp.x,lamp.y,lamp.z),exact.point(lamp.node,lamp.x,lamp.y,lamp.z))<.001f,"lamp follows exact live transform");
+                    check(b.motionFragments()==topology,"no new topology during motion or reversal");
+                }
                 g.passages=new BridgePassage(g);g.tug.x=b.x-b.dy*250;g.tug.y=b.y+b.dx*250;
                 for(int t=0;t<BridgePassage.OPEN_TICKS+BridgePassage.WAIT_TICKS+1;t++)g.passages.step(g);
                 check(g.passages.passable(i),"approach opens crossing: "+b.id);

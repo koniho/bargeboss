@@ -23,6 +23,46 @@ public final class ArticulatedModel {
         }
         return cachedPose;
     }
+    /** Prepare complete part-local geometry once. Parts must remain separated along
+     * the authored axis in root coordinates throughout their travel. The returned
+     * motion owns reusable render buffers; keep it on one rendering thread. */
+    public Motion motion(int root,float ax,float ay,float az) {return new Motion(root,ax,ay,az);}
+    private static final class Part {
+        final int node;final Branch tree;final Poly[] fragments;
+        Part(int node,Branch tree){this.node=node;this.tree=tree;ArrayList<Poly> all=new ArrayList<Poly>();tree.flatten(all);fragments=all.toArray(new Poly[all.size()]);}
+    }
+    /** Live rigid animation, not a table of sampled poses. No BSP build in pose(). */
+    public final class Motion {
+        private final Part[] parts;
+        private final int root,count;
+        private final float ax,ay,az;
+        private final Pose live;
+        private float amount=Float.NaN;
+        private Motion(int root,float ax,float ay,float az){
+            float length=(float)StrictMath.sqrt(ax*ax+ay*ay+az*az);
+            if(root<0 || root>=nodes.length || !Float.isFinite(length) || length<.001f)throw new IllegalArgumentException("Motion needs a root and separating axis");
+            this.root=root;this.ax=ax/length;this.ay=ay/length;this.az=az/length;
+            ArrayList<Part> list=new ArrayList<Part>();int total=0;
+            for(int node=0;node<nodes.length;node++){
+                Branch tree=null;Stats build=new Stats();
+                // Both front and back faces are retained. Their visibility changes continuously.
+                for(Face f:faces)if(f.node==node){
+                    int ancestor=node;while(ancestor>=0 && ancestor!=root)ancestor=nodes[ancestor].parent;
+                    if(ancestor<0)throw new IllegalArgumentException("Motion root must contain every geometry node");
+                    Poly poly=new Poly(f.xyz,f.uv,node,f.color,f.material);
+                    if(tree==null)tree=new Branch(poly);else tree.insert(poly,build);
+                }
+                if(tree!=null){Part part=new Part(node,tree);for(Poly f:part.fragments)f.motionIndex=total++;list.add(part);}
+            }
+            parts=list.toArray(new Part[list.size()]);count=total;live=new Pose(this);
+        }
+        public int fragmentCount(){return count;}
+        public Pose pose(float value){
+            if(!Float.isFinite(value))throw new IllegalArgumentException("Non-finite motion");
+            if(Float.floatToIntBits(amount)!=Float.floatToIntBits(value)){amount=Float.NaN;live.update(this,value);amount=value;}
+            return live;
+        }
+    }
     private static final class Node {
         final String id;final int parent;final float x,y,z,yaw,pitchRate,moveX,moveY,moveZ;
         Node(String id,int p,float x,float y,float z,float yaw,float rate,float mx,float my,float mz) {this.id=id;parent=p;this.x=x;this.y=y;this.z=z;this.yaw=yaw;pitchRate=rate;moveX=mx;moveY=my;moveZ=mz;}
@@ -91,16 +131,61 @@ public final class ArticulatedModel {
         private final float[][] projectedBounds=new float[nodes.length][];
         private final float[][] worldBounds=new float[nodes.length][];
         private boolean prepared;
+        private int polygonCount;
+        private Poly[] transformed;
+        private float[][] partRanges;
+        private int[] partOrder;
         private int fragments;
-        private Pose(float amount) {
-            for(int i=0;i<nodes.length;i++) {
-                Node n=nodes[i];float a=n.pitchRate*amount,cy=(float)StrictMath.cos(n.yaw),sy=(float)StrictMath.sin(n.yaw),cp=(float)StrictMath.cos(a),sp=(float)StrictMath.sin(a);
-                float[] m={cy*cp,-sy,-cy*sp,n.x+n.moveX*amount,sy*cp,cy,-sy*sp,n.y+n.moveY*amount,sp,0,cp,n.z+n.moveZ*amount};
-                if(n.parent<0)matrix[i]=m;else {
-                    float[] p=matrix[n.parent],o=matrix[i];
-                    for(int r=0;r<3;r++){for(int c=0;c<3;c++)o[r*4+c]=p[r*4]*m[c]+p[r*4+1]*m[4+c]+p[r*4+2]*m[8+c];o[r*4+3]=p[r*4]*m[3]+p[r*4+1]*m[7]+p[r*4+2]*m[11]+p[r*4+3];}
-                }
+        private Pose(Motion motion){
+            polygons=new Poly[motion.count];transformed=new Poly[motion.count];partOrder=new int[motion.parts.length];partRanges=new float[motion.parts.length][2];
+            for(Part part:motion.parts)for(Poly source:part.fragments)transformed[source.motionIndex]=new Poly(new float[source.xyz.length],source.uv,source);
+            prepared=true;fragments=motion.count;
+        }
+        private void update(Motion motion,float amount){
+            transform(amount);polygonCount=0;
+            for(int n=0;n<nodes.length;n++){
+                if(worldBounds[n]!=null){for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}}
+                if(projectedBounds[n]!=null){projectedBounds[n][0]=projectedBounds[n][1]=Float.POSITIVE_INFINITY;projectedBounds[n][2]=projectedBounds[n][3]=Float.NEGATIVE_INFINITY;}
             }
+            float[] root=matrix[motion.root];
+            float axisX=root[0]*motion.ax+root[1]*motion.ay+root[2]*motion.az;
+            float axisY=root[4]*motion.ax+root[5]*motion.ay+root[6]*motion.az;
+            float axisZ=root[8]*motion.ax+root[9]*motion.ay+root[10]*motion.az;
+            for(int i=0;i<motion.parts.length;i++){
+                Part part=motion.parts[i];float[] m=matrix[part.node];float lo=Float.POSITIVE_INFINITY,hi=Float.NEGATIVE_INFINITY;
+                for(Poly source:part.fragments){Poly target=transformed[source.motionIndex];
+                    target.nx=m[0]*source.nx+m[1]*source.ny+m[2]*source.nz;target.ny=m[4]*source.nx+m[5]*source.ny+m[6]*source.nz;target.nz=m[8]*source.nx+m[9]*source.ny+m[10]*source.nz;
+                    for(int j=0;j<source.xyz.length;j+=3){float x=source.xyz[j],y=source.xyz[j+1],z=source.xyz[j+2];
+                        float xx=m[0]*x+m[1]*y+m[2]*z+m[3],yy=m[4]*x+m[5]*y+m[6]*z+m[7],zz=m[8]*x+m[9]*y+m[10]*z+m[11];
+                        target.xyz[j]=xx;target.xyz[j+1]=yy;target.xyz[j+2]=zz;bounds(part.node,xx,yy,zz);
+                        float along=(xx-root[3])*axisX+(yy-root[7])*axisY+(zz-root[11])*axisZ;lo=Math.min(lo,along);hi=Math.max(hi,along);
+                    }
+                    target.d=target.nx*target.xyz[0]+target.ny*target.xyz[1]+target.nz*target.xyz[2];
+                }
+                partRanges[i][0]=lo;partRanges[i][1]=hi;partOrder[i]=i;
+            }
+            for(int i=1;i<partOrder.length;i++){int id=partOrder[i],j=i;while(j>0 && partRanges[partOrder[j-1]][0]>partRanges[id][0]){partOrder[j]=partOrder[j-1];j--;}partOrder[j]=id;}
+            for(int i=1;i<partOrder.length;i++)if(partRanges[partOrder[i-1]][1]>partRanges[partOrder[i]][0]+.01f)
+                throw new IllegalStateException("Rigid motion parts overlap their separating axis: "+nodes[motion.parts[partOrder[i-1]].node].id+" / "+nodes[motion.parts[partOrder[i]].node].id+" at "+amount);
+            boolean forward=-axisX+axisY+axisZ>=0;
+            for(int i=0;i<partOrder.length;i++){
+                Part part=motion.parts[partOrder[forward?i:partOrder.length-1-i]];float[] m=matrix[part.node];
+                part.tree.order(this,-m[0]+m[4]+m[8],-m[1]+m[5]+m[9],-m[2]+m[6]+m[10]);
+            }
+
+        }
+        private void bounds(int node,float x,float y,float z){
+            if(worldBounds[node]==null)worldBounds[node]=new float[]{x,y,z,x,y,z};else{
+                float[] b=worldBounds[node];b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.min(b[2],z);b[3]=Math.max(b[3],x);b[4]=Math.max(b[4],y);b[5]=Math.max(b[5],z);
+            }
+            float px=RiverCamera.Q*(x+y),py=RiverCamera.Q*RiverCamera.DEPTH*(y-x)-z*Z_SCALE;
+            if(projectedBounds[node]==null)projectedBounds[node]=new float[]{px,py,px,py};else{
+                float[] b=projectedBounds[node];b[0]=Math.min(b[0],px);b[1]=Math.min(b[1],py);b[2]=Math.max(b[2],px);b[3]=Math.max(b[3],py);
+            }
+        }
+        private Pose(float amount) {
+            transform(amount);
+            polygonCount=faces.length;
             for(int i=0;i<faces.length;i++) {
                 Face f=faces[i];float[] xyz=new float[f.xyz.length];
                 for(int j=0;j<xyz.length;j+=3){float[] p=point(f.node,f.xyz[j],f.xyz[j+1],f.xyz[j+2]);xyz[j]=p[0];xyz[j+1]=p[1];xyz[j+2]=p[2];
@@ -115,6 +200,16 @@ public final class ArticulatedModel {
                 polygons[i]=new Poly(xyz,f.uv,f.node,f.color,f.material);
             }
         }
+        private void transform(float amount) {
+            for(int i=0;i<nodes.length;i++) {
+                Node n=nodes[i];float a=n.pitchRate*amount,cy=(float)StrictMath.cos(n.yaw),sy=(float)StrictMath.sin(n.yaw),cp=(float)StrictMath.cos(a),sp=(float)StrictMath.sin(a);
+                float[] m={cy*cp,-sy,-cy*sp,n.x+n.moveX*amount,sy*cp,cy,-sy*sp,n.y+n.moveY*amount,sp,0,cp,n.z+n.moveZ*amount};
+                if(n.parent<0)matrix[i]=m;else {
+                    float[] p=matrix[n.parent],o=matrix[i];
+                    for(int r=0;r<3;r++){for(int c=0;c<3;c++)o[r*4+c]=p[r*4]*m[c]+p[r*4+1]*m[4+c]+p[r*4+2]*m[8+c];o[r*4+3]=p[r*4]*m[3]+p[r*4+1]*m[7]+p[r*4+2]*m[11]+p[r*4+3];}
+                }
+            }
+        }
         public float[] point(int node,float x,float y,float z) {float[] p=normal(node,x,y,z),m=matrix[node];p[0]+=m[3];p[1]+=m[7];p[2]+=m[11];return p;}
         public float[] normal(int node,float x,float y,float z) {float[] m=matrix[node];return new float[]{m[0]*x+m[1]*y+m[2]*z,m[4]*x+m[5]*y+m[6]*z,m[8]*x+m[9]*y+m[10]*z};}
         public float[] nodeWorldBounds(int node) {return worldBounds[node]==null?null:worldBounds[node].clone();}
@@ -127,7 +222,7 @@ public final class ArticulatedModel {
         public float opacity(Game g,Painter painter,int node) {return 1;}
         /** Exact convex-face ray test; halos do not shine through opaque bridge parts. */
         public boolean occluded(float[] origin) {
-            for(Poly f:polygons) {
+            for(int index=0;index<polygonCount;index++) {Poly f=polygons[index];
                 float den=-f.nx+f.ny+f.nz;if(Math.abs(den)<EPS)continue;
                 float t=(f.d-f.nx*origin[0]-f.ny*origin[1]-f.nz*origin[2])/den;if(t<=.08f)continue;
                 float x=origin[0]-t,y=origin[1]+t,z=origin[2]+t;boolean inside=true;
@@ -149,7 +244,7 @@ public final class ArticulatedModel {
         ArrayList<Poly> ordered=new ArrayList<Poly>();if(tree!=null)tree.flatten(ordered);
         // Retain final visible fragments only: discard construction tree, split intermediates,
         // back faces and original polygons replaced by fragments. Same painter order/UVs.
-        pose.polygons=ordered.toArray(new Poly[ordered.size()]);pose.fragments=build.fragments;pose.prepared=true;
+        pose.polygons=ordered.toArray(new Poly[ordered.size()]);pose.polygonCount=pose.polygons.length;pose.fragments=build.fragments;pose.prepared=true;
     }
     public Stats draw(Game g,Painter p,Pose pose) {return drawRange(g,p,pose,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);}
     /** Clip rigid faces to a ground-depth interval before merging billboard craft/ropes. */
@@ -157,15 +252,15 @@ public final class ArticulatedModel {
         Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
             if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
-        for(Poly f:pose.polygons)if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;
+        for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;}
         if(stats.visibleFaces==0)return stats;
         prepare(pose);
         stats.fragments=pose.fragments;
-        for(Poly f:pose.polygons)if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node]);stats.drawnFaces++;}}
+        for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node]);stats.drawnFaces++;}}}
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;final float nx,ny,nz,d;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d;int motionIndex;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
@@ -216,6 +311,12 @@ public final class ArticulatedModel {
         void flatten(ArrayList<Poly> out) {
             boolean positive=-plane.nx+plane.ny+plane.nz>0;Branch far=positive?back:front,near=positive?front:back;
             if(far!=null)far.flatten(out);out.addAll(coplanar);if(near!=null)near.flatten(out);
+        }
+        void order(Pose pose,float vx,float vy,float vz){
+            boolean positive=plane.nx*vx+plane.ny*vy+plane.nz*vz>0;Branch far=positive?back:front,near=positive?front:back;
+            if(far!=null)far.order(pose,vx,vy,vz);
+            for(Poly f:coplanar)if(f.nx*vx+f.ny*vy+f.nz*vz>EPS)pose.polygons[pose.polygonCount++]=pose.transformed[f.motionIndex];
+            if(near!=null)near.order(pose,vx,vy,vz);
         }
     }
 }

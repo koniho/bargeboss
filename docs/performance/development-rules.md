@@ -56,6 +56,10 @@ development phone's measurements, not guarantees for every device/backend.
   bounds and compositing order are equivalent; this remains follow-up work.
 - Keep static UI lettering cached. Visible text belongs to UI overlays; do not
   reintroduce world labels or per-glyph polygon work every frame.
+- For live 3-D machinery, prepare part-local geometry/BSPs once and transform
+  reusable buffers at the exact current phase. Never trade motion cadence for
+  a small pose cache. See [live 3-D scenery](../rendering/live-3d-scenery.md) for
+  separation constraints, effect anchors and full-travel validation.
 - Keep animated effects separate from cached static artwork. Optimize drawing,
   sampling and clipping before reducing smoke density, wake life, lighting,
   rotation frames or physics fidelity. Changes to appearance need explicit review.

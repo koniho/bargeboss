@@ -29,6 +29,25 @@ pier foundations and approaches belong to static scenery layers when possible.
 Art opening must correspond to the shared traversability state; never let a
 native animation decide whether a vessel can pass.
 
+### Live 3-D runtime motion
+
+Prepare part-local geometry and reusable transform buffers during loading. Keep
+all faces needed as the part turns; update rigid matrices and face normals from
+the current phase, without rebuilding geometry or holding sampled poses. A
+five-second bridge with 33 poses only moves visually about 6.4 times per second,
+even when gameplay runs smoothly. Sprite-sheet frame counts do not apply here.
+
+For the current `ArticulatedModel.Motion`, independently animated geometry nodes
+must stay separated along an authored root-local axis throughout their travel.
+Validate this assumption instead of using object-center sorting; use another
+correct depth strategy for overlapping mechanisms. Maintain world-depth slices
+against craft and ropes, plus part-parented light/smoke/shadow anchors.
+
+Review every active tick and arbitrary fractional phases, including reversal,
+rigidity and newly visible faces. Compare with exact geometry and profile an
+actual moving scene. Follow the checkout's `docs/rendering/live-3d-scenery.md`;
+record evidence and device limits in `optimization.md`.
+
 ## Conveyors, lights, steam and crew
 
 Continuous belt motion should loop without translating its frame. Use separate
