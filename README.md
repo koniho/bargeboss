@@ -204,6 +204,8 @@ slot fenders hold handed-off barges until pickup. In both three-load stages, the
 remaining third load waits for a free feeder lane. The calls are visual speech bubbles; there is
 no voice audio yet. The opening bridge remains part of the continuous towing
 tutorial. Pause is in the upper-right corner (Escape on desktop).
+Choose **Title Screen** from the pause menu to leave a voyage or tutorial.
+Career progress and settings are kept; starting again begins a fresh voyage.
 
 Completing the goal earns one star. Earn an additional star for no lost loads,
 and another for finishing with at least 80% hull. Each level saves its best stars

@@ -152,11 +152,12 @@ public final class ScreenView {
     }
     public static void pause(Game g,Painter p) {
         p=menu(g,p);
-        overlay(p,113,370);
+        overlay(p,113,450);
         p.rect(451,142,18,37,GOLD); p.rect(492,142,18,37,GOLD);
         center(p,"VOYAGE PAUSED",480,203,28,PAPER);
         center(p,"LINES HELD. ENGINES QUIET.",480,253,12,MUTED);
         button(g,p,Layout.RESUME,"RESUME",true); button(g,p,Layout.RESTART,"RESTART VOYAGE",false);
+        button(g,p,Layout.TITLE_SCREEN,"TITLE SCREEN",false);
     }
     public static void finish(Game g,Painter p) {
         p=menu(g,p);

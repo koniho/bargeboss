@@ -125,6 +125,25 @@ public final class ControlsTest {
         check(root.activeGame().mode==Game.PAUSE,"practice pauses on background");
         ReplayInput.tap(root,Layout.RESUME); ReplayInput.tap(root,Layout.PRACTICE);
         check(root.activeGame()==root && root.mode==Game.TITLE,"early practice exit returns to title");
+        for(int context=0;context<3;context++) {
+            root=context==1?new Game():game();
+            root.configureCanvas(1280,720);
+            if(context>0) root.startTutorial();
+            g=root.activeGame();
+            String progress=root.saveProgress();
+            ReplayInput.down(root,g.tug.x,g.tug.y);
+            ReplayInput.move(root,g.downX,g.downY-100);
+            root.pause();
+            check(!g.pointer && !g.joystick.active && !g.navigating,"pause clears held drive before title exit");
+            ReplayInput.tap(root,Layout.TITLE_SCREEN);
+            check(root.activeGame()==root && root.mode==Game.TITLE,"pause title button exits voyage and either practice origin: "+context);
+            check(!root.pointer && !root.joystick.active && !root.navigating,"title exit leaves no held controls");
+            check(root.saveProgress().equals(progress),"title exit preserves career and settings");
+            int stoppedTicks=root.ticks; root.advance(.1);
+            check(root.ticks==stoppedTicks,"title does not advance discarded voyage");
+            ReplayInput.tap(root,Layout.START);
+            check(root.activeGame()==root && root.mode==Game.PLAY && root.tutorial==null && root.ticks==0,"start after title exit creates fresh voyage");
+        }
         System.out.println(count+" drag, lasso, unloading, haptic and tutorial assertions passed");
     }
 }

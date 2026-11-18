@@ -441,10 +441,21 @@ public final class Game {
         if(id==mapPointer) { cancel(); mapPointer=-1; }
     }
     private void finishPractice() {
-        if(practice==null || !practice.tutorial.exitRequested) return;
+        if(practice==null) return;
+        // Explicit title navigation also discards a suspended voyage, instead of
+        // following the tutorial's usual return-to-shift/completion behavior.
+        if(practice.mode==TITLE) {
+            hapticsEnabled=practice.hapticsEnabled; practice=null;
+            returnToTitle(); return;
+        }
+        if(!practice.tutorial.exitRequested) return;
         boolean finished=practice.tutorial.lesson==Tutorial.DONE;
         hapticsEnabled=practice.hapticsEnabled; practice=null; accumulator=0;
         if(returnToShift) mode=PLAY; else if(finished) reset();
+    }
+    private void returnToTitle() {
+        cancelInputs(); accumulator=visualAccumulator=0;
+        returnToShift=false; mode=TITLE;
     }
     public void cancel() {
         if(practice!=null) { practice.cancel(); return; }
@@ -673,6 +684,7 @@ public final class Game {
             else if(tap && tapped(Layout.NEXT_CHALLENGE,x,y) && selectChallenge(Challenges.nextStage(challengeId))) reset();
         } else if(mode==PAUSE) {
             if(tap && tapped(Layout.RESUME,x,y)) pause();
+            else if(tap && tapped(Layout.TITLE_SCREEN,x,y)) returnToTitle();
             else if(tap && tapped(Layout.RESTART,x,y)) {
                 boolean training=tutorial!=null, resume=training && tutorial.resumeShift;
                 reset();

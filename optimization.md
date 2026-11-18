@@ -2922,3 +2922,20 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   enclosed-area margin. Revised four-location preview copied to Downloads.
   Shared replay delivery/score outcomes remain 2/1350; native iOS raster parity
   is unavailable here. This changes overview presentation only.
+
+## 2026-11-18 — Pause menu title navigation
+
+- Added shared Title Screen control beneath Restart Voyage. Input cancellation
+  and timer reset also apply when leaving nested practice, including practice
+  opened from an active voyage; that explicit exit must not resume the voyage.
+  Career progress and settings persist. No render caches or live scene work added.
+- Public pointer regression covers ordinary play and both practice origins on
+  a wider canvas, canceled driving, frozen simulation at title and fresh restart.
+  Reviewed pause-menu pixels at 960x600 and 1280x720 in DesktopPainter. The extra
+  button/panel height changes the canonical draw trace to ae302f8c:2:1350;
+  delivery and score outcomes remain unchanged. Full Android checks/build follow;
+  native iOS validation is unavailable on this host.
+- Final normal Android build and complete check.sh passed, including the updated
+  canonical trace and 143 controls/tutorial assertions. Shared menu visuals were
+  reviewed on desktop; device touch/pixel review and native iOS parity were not
+  performed for this round. No frame-rate improvement is claimed.
