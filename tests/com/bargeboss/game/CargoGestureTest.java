@@ -6,7 +6,7 @@ public final class CargoGestureTest {
     private static void check(boolean ok,String message) {checks++;if(!ok) throw new AssertionError(message);}
     private static void steps(Game g,int count) {for(int i=0;i<count;i++) g.step();}
     private static Game fixture(float width) {
-        Game g=new Game();g.configureCanvas(width,600);g.reset();
+        Game g=new Game();g.configureCanvas(width,600);g.resetPracticeYard();
         for(Feeder feeder:g.feeders) {feeder.phase=Feeder.IDLE;feeder.load=null;}
         g.tug=new Body(0,-1,300,570,-(float)Math.PI/2);
         g.cargo[0]=new Body(1,2,300,690,-(float)Math.PI/2);

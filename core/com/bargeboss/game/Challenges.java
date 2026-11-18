@@ -48,8 +48,16 @@ public final class Challenges {
         return kind==SHARED_SLIP || kind==DEEP_CHANNEL?new int[]{2,0,1}[index]:index==0?2:1;
     }
     public static int quota(int id) { return level(id).quota; }
-    public static int pageCount() { return (COUNT+PAGE_SIZE-1)/PAGE_SIZE; }
-    public static int pageFor(int id) { return valid(id)?id/PAGE_SIZE:0; }
+    public static final int LOCATION_COUNT=3;
+    public static boolean calumet(int id){return id>=0 && id<=DEEP_CHANNEL;}
+    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==RAFT_RESCUE || id==SWIMMER_RESCUE?MONTROSE:id;}
+    public static int menuId(int slot){return slot==0?TWO_BANKS:slot==1?MONTROSE:slot==2?INDIANA:-1;}
+    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{4,6,7}:new int[]{5};}
+    public static int nextStage(int id){int entry=stageEntry(id);return entry==TWO_BANKS?MONTROSE:entry==MONTROSE?INDIANA:-1;}
+    public static String locationTitle(int id){return calumet(id)?"CALUMET RIVER":stageEntry(id)==MONTROSE?"MONTROSE HARBOR":"INDIANA HARBOR";}
+    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"YACHT TOW / RAFTED CRUISERS / SWIMMER RESCUE":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
+    public static int pageCount() { return 1; }
+    public static int pageFor(int id) { return 0; }
     public static int maxStars() { return COUNT*3; }
     /** Bounded replay budget retained for tooling, not a gameplay deadline. */
     public static int shiftTicks(int id) { return level(id).replaySeconds*60; }

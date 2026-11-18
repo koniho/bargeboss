@@ -106,7 +106,7 @@ public final class ControlView {
                 if(g.control!=Game.WAITING_BRIDGE && g.control!=Game.DOCKING)
                     arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,b.x+g.pushX*108,b.y+g.pushY*108,SoftCue.animated(g,color));
             } else {
-                float bx=g.dockX(b.berth),by=g.dockY(b.berth);
+                float bx=g.dockX(b),by=g.dockY(b);
                 if(!b.deliveryRecorded && g.berthEnabled(b.berth))ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
                     path(p,g.tug.x,g.tug.y,g.guideX,g.guideY,AMBER);

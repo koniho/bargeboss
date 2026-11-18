@@ -18,7 +18,7 @@ public final class ResponsiveTest {
                     && near(viewport.logicalHeight()*viewport.scale,window[1]),"logical canvas covers every host pixel");
             check(near(viewport.worldX(window[0]),viewport.logicalWidth())
                     && near(viewport.worldY(window[1]),viewport.logicalHeight()),"host edge input maps to canvas edges");
-            Game game=new Game(); game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight());
+            Game game=new Game(); game.layout=new Layout(960,600); game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight());
             checkLayout(game.layout); menuAndGestureRouting(game); practiceAndResize(game);
         }
         independentGames(); cameraMath();
@@ -61,7 +61,7 @@ public final class ResponsiveTest {
         boolean haptics=game.hapticsEnabled; tap(game,Layout.HAPTICS);
         check(game.hapticsEnabled!=haptics,"responsive haptic target routes");
         tap(game,Layout.START);
-        check(game.mode==Game.PLAY && game.layout==layout,"start preserves responsive layout");
+        check(game.mode==Game.PLAY && game.layout.width==layout.width && game.layout.height==layout.height,"start preserves responsive canvas");
         ReplayInput.down(game,game.tug.x,game.tug.y);
         check(game.holdingTug(),"screen-space tug gesture selects the same physical hull");
         ReplayInput.move(game,game.downX,game.downY-90);

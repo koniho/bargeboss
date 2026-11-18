@@ -9,7 +9,7 @@ public final class JoystickTest {
     private static void hold(Game g,float x,float y){float cx=Joystick.centerX(g),cy=Joystick.centerY(g);g.pointerDown(3,cx,cy);g.pointerMove(3,cx+x,cy+y);}
     private static void release(Game g){g.pointerUp(3,Joystick.centerX(g)+g.joystick.x*42,Joystick.centerY(g)+g.joystick.y*42);}
     private static float loadedSpeed(int count) {
-        Game g=new Game();g.challengeId=1;g.reset();g.bridge.phase=Bridge.OPEN;
+        Game g=new Game();g.challengeId=1;g.resetPracticeYard();g.bridge.phase=Bridge.OPEN;
         for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         g.tug=new Body(0,-1,300,100,-(float)Math.PI/2);
         for(int i=0;i<count;i++) {g.addCargo(2,300,100+110*(i+1));g.cargo[i].angle=-(float)Math.PI/2;g.tow.attach(g,g.cargo[i],i==0?g.tug:g.cargo[i-1]);}

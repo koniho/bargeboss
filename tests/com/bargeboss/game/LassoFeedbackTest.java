@@ -67,7 +67,7 @@ public final class LassoFeedbackTest {
         System.out.println(checks+" lasso arc, edge attachment and hull-damage flash assertions passed");
     }
     private static void damage() {
-        Game g=new Game();g.reset();g.tug.x=Physics.LEFT+g.tug.half+g.tug.radius+1;g.tug.y=450;g.tug.angle=0;g.tug.vx=-180;
+        Game g=new Game();g.resetPracticeYard();g.tug.x=Physics.LEFT+g.tug.half+g.tug.radius+1;g.tug.y=450;g.tug.angle=0;g.tug.vx=-180;
         for(int i=0;i<10 && g.hull==100;i++) g.step();
         check(g.hull<100 && g.damageFlashTicks>0,"actual hull loss starts a tug flash");
         Capture flash=new Capture();VesselView.draw(g,flash,g.tug,true,false);
@@ -78,7 +78,7 @@ public final class LassoFeedbackTest {
         check(g.damageFlashTicks==remaining,"damage flash pauses with the game");
         g.pause();for(int i=0;i<50;i++)g.step();Capture recovered=new Capture();VesselView.draw(g,recovered,g.tug,true,false);
         check(g.damageFlashTicks==0 && recovered.tugAlpha==1,"tug returns to its ordinary sprite after the brief flash");
-        g.reset();g.impactTicks=20;Capture contact=new Capture();VesselView.draw(g,contact,g.tug,true,false);
+        g.resetPracticeYard();g.impactTicks=20;Capture contact=new Capture();VesselView.draw(g,contact,g.tug,true,false);
         check(g.damageFlashTicks==0 && contact.tugAlpha==1,"ordinary contact feedback does not imply hull damage");
     }
     public static void main(String[] args) {run();}

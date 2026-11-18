@@ -6,15 +6,16 @@ public final class MooringView {
     private MooringView() {}
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
+        if(g.calumetStage())for(int d=0;d<CalumetRiver.JOB_SITES.length;d++)bollard(g,p,g.voyage.bollardX(d),g.voyage.bollardY(d));
         for(int berth=0;berth<3;berth++) {
             if(g.montroseStage() || !g.berthEnabled(berth)) continue;
             float x=g.bollardX(berth),y=g.bollardY(berth);
             boolean ready=false,tied=false;
-            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth) {
+            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth && (!g.calumetStage() || b.destination==g.voyage.destination(berth))) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
             }
             if(reachableBollard(g,berth)) bollardGlow(g,p,x,y);
-            bollard(g,p,x,y);
+            if(!g.calumetStage())bollard(g,p,x,y);
             if(ready) {
                 float pulse=2*(float)StrictMath.sin(tick*.11);
                 ControlView.ring(g,p,x,y,Game.TIE_RADIUS,1,GREEN,1.5f);
@@ -36,7 +37,7 @@ public final class MooringView {
                 }
                 continue;
             }
-            float x=g.bollardX(b.berth),y=g.bollardY(b.berth);
+            float x=g.bollardX(b),y=g.bollardY(b);
             float[] edge=new float[2];RopeAttachment.mooring(b,x,y,edge);
             float deck=RopeAttachment.height(b)+WaterSurface.lift(g,b);
             float originX=edge[0]+liftX(p,deck),originY=edge[1]+liftY(p,deck);
@@ -85,7 +86,7 @@ public final class MooringView {
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
         float bx=c.screenX(b.x,b.y),by=c.screenY(b.x,b.y);
         if(!c.contains(bx,by)) return;
-        float tx=c.screenX(g.bollardX(b.berth),g.bollardY(b.berth)),ty=c.screenY(g.bollardX(b.berth),g.bollardY(b.berth));
+        float tx=c.screenX(g.bollardX(b),g.bollardY(b)),ty=c.screenY(g.bollardX(b),g.bollardY(b));
         float dx=tx-bx,dy=ty-by,distance=Math.max(1,Physics.length(dx,dy));dx/=distance;dy/=distance;
         for(int i=0;i<4;i++) {
             float t=((g.visualTicks%60)/60f+i*.25f)%1;

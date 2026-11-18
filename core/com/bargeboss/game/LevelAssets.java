@@ -20,7 +20,8 @@ public final class LevelAssets {
     static {
         for(int id=0;id<CHALLENGES.length;id++) {
             if(id==Challenges.INDIANA){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL);continue;}
-            if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=id==Challenges.MONTROSE?new Plan(SpriteAtlas.TUG,SpriteAtlas.YACHT):new Plan(id==Challenges.SWIMMER_RESCUE?2:1,false,SpriteAtlas.TUG);continue;}
+            if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT);continue;}
+            if(Challenges.calumet(id)){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {
                 int berth=Challenges.feedBerth(id,load);

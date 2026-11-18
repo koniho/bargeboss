@@ -39,14 +39,14 @@ public final class CollisionSplashTest {
         s.contact(a,b,320,500,30,0,0,0,30);
         for(int i=0;i<20;i++)s.contact(i%2==0?a:b,i%2==0?b:a,320,500,30,0,0,0,30);
         check(s.emitted==1,"disc solver iterations and swapped participants cannot duplicate a burst");
-        Game g=new Game();g.reset();for(int i=0;i<CollisionSplashes.COOLDOWN;i++)s.step(g);
+        Game g=new Game();g.resetPracticeYard();for(int i=0;i<CollisionSplashes.COOLDOWN;i++)s.step(g);
         s.contact(a,b,320,500,30,0,0,0,30);check(s.emitted==2,"a later renewed impact can splash again");
         a.x=400;a.y=700;float x=s.x[6],y=s.y[6];s.step(g);
         check(s.x[6]>x && Math.abs(s.y[6]-y)<1,"released stamps move independently of relocated source hull");
         for(int i=0;i<100;i++)s.step(g);check(s.ordered(g).length==0,"bursts finish and retire their airborne stamps");
         // Red/green floating channel markers and yellow practice buoys share the watercraft event path.
         for(int kind=0;kind<3;kind++){
-            g=kind==2?practice():new Game();if(kind<2)g.reset();
+            g=kind==2?practice():new Game();if(kind<2)g.resetPracticeYard();
             int index=kind==2?NavigationLights.count(g)-2:kind;
             Buoys.Buoy buoy=g.buoys.get(g,index);check(buoy instanceof Watercraft && g.tug instanceof Watercraft,"vessels and floating marks are watercraft participants");
             g.tug.x=buoy.x;g.tug.y=buoy.y+g.tug.half+g.tug.radius+buoy.radius-2;
@@ -66,7 +66,7 @@ public final class CollisionSplashTest {
         new Lock().collide(a,s);check(s.emitted==1,"closed lock gate contact splashes");
         g=practice();s=new CollisionSplashes();a=hull(0,Physics.LEFT+10,700,0);a.vx=-40;
         TrainingChannel.collideWater(a,s);check(s.emitted==1,"tutorial shoreline and shore-mounted marker frontage splash");
-        g=new Game();g.reset();s=g.splashes;s.contact(g.tug,null,Physics.LEFT+.75f,500,-60,0,0,0,60);
+        g=new Game();g.resetPracticeYard();s=g.splashes;s.contact(g.tug,null,Physics.LEFT+.75f,500,-60,0,0,0,60);
         for(int i=0;i<20;i++)s.step(g);
         for(int j=0;j<CollisionSplashes.STAMPS;j++)check(WaterEffectsPainter.contains(g,s.x[j],s.y[j]),"spray hitting bank rises at the water edge instead of travelling onto land");
         g.layout=Layout.focused(960,600,Physics.LEFT,500,2,480,350);
@@ -83,11 +83,11 @@ public final class CollisionSplashTest {
         x=s.x[0];int age=s.age[0],emitted=s.emitted;Renderer.draw(g,new Parity());Renderer.draw(g,new Parity());
         check(s.x[0]==x && s.age[0]==age && s.emitted==emitted,"rendering cannot advance effects or emit new contacts");
         g.background();g.advance(.2);check(s.age[0]==age,"pause freezes splash lifecycle");
-        g.reset();check(g.splashes.emitted==0 && g.splashes.ordered(g).length==0,"reset clears all old contacts and stamps");
-        g.reset();g.feeders[0].phase=Feeder.RETURNING;g.feeders[0].load=null;g.feeders[0].boat.y=700;g.feeders[0].boat.vy=62;
+        g.resetPracticeYard();check(g.splashes.emitted==0 && g.splashes.ordered(g).length==0,"reset clears all old contacts and stamps");
+        g.resetPracticeYard();g.feeders[0].phase=Feeder.RETURNING;g.feeders[0].load=null;g.feeders[0].boat.y=700;g.feeders[0].boat.vy=62;
         g.tug.x=g.feeders[0].boat.x;g.tug.y=740;g.tug.angle=-(float)Math.PI/2;g.tug.vy=-30;g.step();
         check(g.splashes.emitted>0,"scripted feeder collision emits through the same watercraft path");
-        Game low=new Game(),high=new Game();low.reset();high.reset();
+        Game low=new Game(),high=new Game();low.resetPracticeYard();high.resetPracticeYard();
         low.splashes.contact(low.tug,null,300,500,40,0,0,0,40);high.splashes.contact(high.tug,null,300,500,40,0,0,0,40);
         for(int i=0;i<15;i++)low.advance(1.0/30);for(int i=0;i<72;i++)high.advance(1.0/144);
         check(low.splashes.x[0]==high.splashes.x[0] && low.splashes.z[0]==high.splashes.z[0] && low.splashes.age[0]==high.splashes.age[0],"30/144 Hz splash trajectories agree");

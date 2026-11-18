@@ -33,7 +33,7 @@ public final class SceneryEffectsTest {
         check(near(full.lastX,50) && near(full.lastY,70),"bright core stays at its authored fixture while halo drifts");
         check(near(changed.lastX,80) && near(changed.lastY,95),"animated halo never drags the fixture lens");
         for(int frame=0;frame<2;frame++) for(float width:new float[]{960,1333.3334f}) {
-            Game g=new Game();g.configureCanvas(width,600);g.reset();g.visualTicks=90;
+            Game g=new Game();g.configureCanvas(width,600);g.resetPracticeYard();g.visualTicks=90;
             Capture p=new Capture();ChimneyArt.draw(g,p,frame,508,620);
             check(p.atlas==SpriteAtlas.CHIMNEYS && p.frame==frame,"both chimney views use shared source metadata");
             float x=g.layout.camera.screenX(508,620),y=g.layout.camera.screenY(508,620),size=ChimneyArt.WORLD_SIZE*g.layout.camera.scale;

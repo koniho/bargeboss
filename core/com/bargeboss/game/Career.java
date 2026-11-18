@@ -11,6 +11,10 @@ public final class Career {
     public int version() { return version; }
     public int bestStars(int id) { return Challenges.valid(id)?stars[id]:0; }
     public int bestScore(int id) { return Challenges.valid(id)?scores[id]:0; }
+    /** Geographic cards summarize their stable per-job reward slots. */
+    public int locationRating(int id){int rating=3;for(int job:Challenges.locationJobs(id))rating=Math.min(rating,bestStars(job));return rating;}
+    public int locationScore(int id){int total=0;for(int job:Challenges.locationJobs(id))total+=bestScore(job);return total;}
+    public int locationStars(int id){int total=0;for(int job:Challenges.locationJobs(id))total+=bestStars(job);return total;}
     public boolean unlocked(int id) {
         if(!Challenges.valid(id)) return false;
         if(Challenges.standalone(id))return true;

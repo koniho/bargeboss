@@ -5,7 +5,7 @@ public final class TowTrainTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static Game fixture(int loads) {
-        Game g=new Game();g.reset();g.tutorial=new Tutorial();g.tutorial.lesson=Tutorial.LINK;g.bridge.phase=Bridge.OPEN;
+        Game g=new Game();g.resetPracticeYard();g.tutorial=new Tutorial();g.tutorial.lesson=Tutorial.LINK;g.bridge.phase=Bridge.OPEN;
         // The connected practice waterway retains a long physical reach after career level 2 became ordered berthing.
         for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         g.tug=new Body(0,-1,300,100,-(float)Math.PI/2);
@@ -52,7 +52,7 @@ public final class TowTrainTest {
             float last=-Float.MAX_VALUE;for(int i=0;i<spans.count;i++){float depth=spans.depth(g.layout.camera,i);check(depth>=last,"all links share one stable scene depth sort");last=depth;}
             check(Parity.frame(g)==Parity.frame(g),"multi-rope rendering is pure at every orientation");
         }
-        g.reset();check(g.tow.count()==0,"reset drops all links");
+        g.resetPracticeYard();check(g.tow.count()==0,"reset drops all links");
         float empty=cruise(0),one=cruise(1),two=cruise(2),three=cruise(3);
         check(empty>one*1.08f && one>two*1.08f && two>three*1.05f,"actual cruising speed decreases with each additional barge: "+empty+","+one+","+two+","+three);
         System.out.println(checks+" barge train gesture, graph, load speed and depth assertions passed; speeds "+empty+" / "+one+" / "+two+" / "+three);

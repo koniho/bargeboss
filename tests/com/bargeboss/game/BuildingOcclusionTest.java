@@ -26,7 +26,7 @@ public final class BuildingOcclusionTest {
     }
     public static void run() {
         float size=FactoryArt.size(FRAME),rise=GroundArt.LAND_RISE;
-        Game g=new Game();g.reset();
+        Game g=new Game();g.resetPracticeYard();
         for(Layout camera:new Layout[]{new Layout(960,600),Layout.focused(1333,600,100,450,1.75f,666.5f,300),
                 Layout.focused(960,720,-1400,500,1.2f,480,360)}) {
             g.layout=camera;
@@ -52,14 +52,12 @@ public final class BuildingOcclusionTest {
         }
         // The same placement can be inland in one stage and navigable in another;
         // memoized eligibility must distinguish stage water geometry.
-        g=new Game();g.reset();
+        g=new Game();g.resetPracticeYard();
         check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,300,-400,0,size),"upstream water remains present in every Calumet mission");
-        g.challengeId=2;
-        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,300,-400,0,size),"lock reach uses its own upstream water eligibility");
         g.challengeId=0;
-        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,-1550,500,rise,size),"western basin remains water during ordinary shifts");
+        check(!SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,-1550,500,rise,size),"geographic river does not reuse practice water eligibility");
         g.tutorial=new Tutorial();
-        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,-1550,500,rise,size),"practice basin uses its permanent connected water geometry");
+        check(SceneryOcclusion.buildingOverWater(g,ATLAS,FRAME,-1550,500,rise,size),"practice uses its own cache bucket after geographic river");
         System.out.println(checks+" building placement, painted overlap and camera-independent eligibility assertions passed");
     }
     public static void main(String[] args){run();}

@@ -15,23 +15,25 @@ public final class MontroseRescue {
     public static boolean cruisers(Game g){return g.tutorial==null && g.challengeId==Challenges.RAFT_RESCUE;}
     public static boolean swimmers(Game g){return g.tutorial==null && g.challengeId==Challenges.SWIMMER_RESCUE;}
     public static boolean active(Game g){return cruisers(g)||swimmers(g);}
-    public static boolean reserved(Game g,MooredBoats.Berth b){return cruisers(g)&&isTarget(b);}
+    public static boolean reserved(Game g,MooredBoats.Berth b){return g.montroseStage()&&isTarget(b);}
     private static boolean isTarget(MooredBoats.Berth b){return b.row==8 && (b.station==345 && b.side==1 || b.station==405 && b.side==-1);}
     public static MooredBoats.Berth berth(int slot){for(MooredBoats.Berth b:MooredBoats.BERTHS)if(b.row==8 && b.station==(slot==0?345:405) && b.side==(slot==0?1:-1))return b;throw new IllegalStateException("Missing Dock C rescue berth");}
     public static String slip(int slot){return slot==0?"C-38":"C-22";}
-    public void setup(Game g){
+    public void setup(Game g){setup(g,true);}
+    public void setupContinuation(Game g){setup(g,false);}
+    private void setup(Game g,boolean reposition){
         if(cruisers(g)){
             rafted=true;
             for(int i=0;i<2;i++){Body b=new Body(g.nextId++,i,MontroseHarbor.mapX(455)+i*22,MontroseHarbor.mapY(1430),-(float)Math.PI/2,true,true);
                 b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;g.cargo[i]=b;}
-            g.tug.x=MontroseHarbor.mapX(455);g.tug.y=MontroseHarbor.mapY(1360);g.tug.angle=-(float)Math.PI/2;
+            if(reposition){g.tug.x=MontroseHarbor.mapX(455);g.tug.y=MontroseHarbor.mapY(1360);g.tug.angle=-(float)Math.PI/2;}
         }else{
             // Outside the southern seawall, clear of the entrance and traffic lane.
             for(int i=0;i<PEOPLE;i++){int col=i%10,row=i/10;
                 x[i]=MontroseHarbor.mapX(800+col*22);y[i]=MontroseHarbor.mapY(1220+col*4+row*20);}
-            g.tug.x=MontroseHarbor.mapX(700);g.tug.y=MontroseHarbor.mapY(1320);g.tug.angle=-.2f;
+            if(reposition){g.tug.x=MontroseHarbor.mapX(700);g.tug.y=MontroseHarbor.mapY(1320);g.tug.angle=-.2f;}
         }
-        g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
+        if(reposition)g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
     public String status(Game g){
         if(cruisers(g))return rafted?"APPROACH / TAP THE RAFT LINE TO SEPARATE":"TOW EACH CRUISER TO DOCK C / RELEASE IN ITS SLIP";

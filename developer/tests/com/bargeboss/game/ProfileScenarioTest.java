@@ -24,13 +24,13 @@ public final class ProfileScenarioTest {
         Game a=new Game(),b=new Game();
         ProfileScenario.prepare(a,"tow-tight-circle",1320,600);
         ProfileScenario.prepare(b,"tow-tight-circle",1320,600);
-        double sweep=0,previous=StrictMath.atan2(a.tug.y+400,a.tug.x-600);
+        double sweep=0,previous=StrictMath.atan2(a.tug.y-ProfileScenario.circleY(),a.tug.x-ProfileScenario.circleX());
         for(int i=0;i<6000;i++){
             ProfileScenario.replayTick(a);ProfileScenario.replayTick(b);
             if(a.tug.x!=b.tug.x || a.tug.y!=b.tug.y || a.cargo[0].angle!=b.cargo[0].angle)throw new AssertionError("Circle replay diverged");
             if(a.tow.count()!=1 || !a.tow.connected(a.cargo[0],a.tug))throw new AssertionError("Circle tow detached at "+i);
             if(!a.inWater(a.tug.x,a.tug.y) || !a.inWater(a.cargo[0].x,a.cargo[0].y))throw new AssertionError("Circle left water");
-            double angle=StrictMath.atan2(a.tug.y+400,a.tug.x-600),delta=angle-previous;
+            double angle=StrictMath.atan2(a.tug.y-ProfileScenario.circleY(),a.tug.x-ProfileScenario.circleX()),delta=angle-previous;
             while(delta>Math.PI)delta-=2*Math.PI;while(delta< -Math.PI)delta+=2*Math.PI;
             sweep+=delta;previous=angle;
         }

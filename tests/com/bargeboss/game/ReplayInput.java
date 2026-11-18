@@ -5,8 +5,14 @@ public final class ReplayInput {
     private ReplayInput() {}
     /** Stable local cargo fixture for isolated control/art tests, separate from feeder replays. */
     public static void controlFixture(Game g) {
-        g.challengeId=0;g.reset(); g.tug=new Body(0,-1,376,390,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
+        g.resetPracticeYard(); g.tug=new Body(0,-1,376,390,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
         g.addCargo(2,292,290); g.addCargo(1,320,480);
+    }
+    /** Isolated later Montrose job; production entry always starts with the yacht. */
+    static Game montroseJob(int id){
+        Game g=new Game();g.challengeId=Challenges.MONTROSE;g.reset();
+        g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        g.rescue.setup(g);return g;
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
     public static void tap(Game g,Layout.Box box) { box=g.activeGame().controlBox(box); tap(g,box.centerX(),box.centerY()); }
@@ -19,8 +25,8 @@ public final class ReplayInput {
     }
     public static void lasso(Game root,Body b) {
         Game g=root.activeGame();
-        down(root,b.x,b.y); move(root,g.bollardX(b.berth),g.bollardY(b.berth));
-        up(root,g.bollardX(b.berth),g.bollardY(b.berth));
+        down(root,b.x,b.y); move(root,g.bollardX(b),g.bollardY(b));
+        up(root,g.bollardX(b),g.bollardY(b));
     }
     public static void work(Game g) {
         if(g.mode!=Game.PLAY || g.ropePhase!=0) return;

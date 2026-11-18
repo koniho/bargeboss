@@ -2,21 +2,28 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
+    static float circleX(){return IndianaHarbor.START_X;}
+    static float circleY(){return IndianaHarbor.START_Y;}
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
         CIRCLES.remove(root);
         root.configureCanvas(width,height);
-        if(name.equals("shared-slip-wide")){root.challengeId=Challenges.SHARED_SLIP;root.reset();root.layout=Layout.focused(width,height,280,540,.65f,width*.5f,height*.52f);return;}
+        if(name.startsWith("calumet-") || name.equals("shared-slip-wide")){
+            root.challengeId=0;root.reset();
+            if(name.equals("shared-slip-wide")){for(Body b:root.cargo)if(b!=null)b.deliveryRecorded=true;root.voyage.step(root);root.tug.x=root.dockX(2);root.tug.y=root.dockY(2)+180;}
+            if(name.equals("calumet-basin")){float[] at=CalumetRiver.ROUTE[CalumetRiver.ROUTE.length-1];root.tug.x=at[0];root.tug.y=at[1];}
+            root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,name.equals("shared-slip-wide")?.65f:1.4f,width*.5f,height*.52f);return;
+        }
         if(name.equals("tow-tight-circle")){
             root.selectChallenge(Challenges.INDIANA);root.reset();
             // Open basin isolates turning/tow work from shore and moored-fleet collisions.
-            root.tug.x=710;root.tug.y=-400;root.tug.angle=(float)(StrictMath.PI/2);
-            Body b=root.cargo[0];b.x=710;b.y=-520;b.angle=root.tug.angle;
-            root.layout=Layout.focused(width,height,650,-430,1.4f,width*.5f,height*.52f);
+            root.tug.x=circleX()+110;root.tug.y=circleY();root.tug.angle=(float)(StrictMath.PI/2);
+            Body b=root.cargo[0];b.x=circleX()+110;b.y=circleY()-120;b.angle=root.tug.angle;
+            root.layout=Layout.focused(width,height,circleX()+50,circleY()-30,1.4f,width*.5f,height*.52f);
             ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,root.tug.x,root.tug.y);
             ReplayInput.up(root,root.tug.x,root.tug.y);
             for(int i=0;i<90 && !root.tow.connected(b,root.tug);i++)root.step();
@@ -25,11 +32,11 @@ public final class ProfileScenario {
         }
         if(name.startsWith("indiana-")){
             root.selectChallenge(Challenges.INDIANA);root.reset();
-            if(name.equals("indiana-hick")){root.tug.x=375;root.tug.y=430;root.cargo[0].x=375;root.cargo[0].y=320;}
+            if(name.equals("indiana-hick")){float[] at=IndianaHarbor.ROUTE[IndianaHarbor.ROUTE.length/2];root.tug.x=at[0];root.tug.y=at[1];root.cargo[0].x=at[0]+110;root.cargo[0].y=at[1];}
             root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,1.4f,width*.5f,height*.52f);return;
         }
         if(name.equals("splash-impact")){
-            root.selectChallenge(0);root.reset();for(Feeder f:root.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            root.resetPracticeYard();for(Feeder f:root.feeders){f.phase=Feeder.IDLE;f.load=null;}
             for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;
             root.tug.x=270;root.tug.y=500;root.tug.angle=0;root.tug.vx=65;root.addCargo(0,330,500);root.cargo[0].angle=0;
             for(int tick=0;tick<16;tick++)root.step();
@@ -37,7 +44,7 @@ public final class ProfileScenario {
             if(root.splashes.emitted==0)throw new AssertionError("Impact fixture missed contact");return;
         }
         if(name.equals("montrose-raft") || name.equals("montrose-swimmers")){
-            root.selectChallenge(name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE);root.reset();
+            root.challengeId=Challenges.MONTROSE;root.reset();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);
             if(name.equals("montrose-swimmers")){root.tug.x=660;root.tug.y=640;root.tug.angle=0;root.layout=Layout.focused(width,height,660,590,3.6f,width*.5f,height*.52f);}
             return;
         }
@@ -82,9 +89,9 @@ public final class ProfileScenario {
         if(CIRCLES.containsKey(root)){
             // Look ahead on a 110-world-unit circle; the real steering and tow solver
             // determine motion. Never reposition bodies or prescribe their angles here.
-            double angle=StrictMath.atan2(g.tug.y+400,g.tug.x-600)+.65;
-            float dx=600+110*(float)StrictMath.cos(angle)-g.tug.x;
-            float dy=-400+110*(float)StrictMath.sin(angle)-g.tug.y;
+            double angle=StrictMath.atan2(g.tug.y-circleY(),g.tug.x-circleX())+.65;
+            float dx=circleX()+110*(float)StrictMath.cos(angle)-g.tug.x;
+            float dy=circleY()+110*(float)StrictMath.sin(angle)-g.tug.y;
             float len=Math.max(1,Physics.length(dx,dy));
             if(!g.pointer)ReplayInput.down(root,g.tug.x,g.tug.y);
             ReplayInput.move(root,g.downX+dx/len*90,g.downY+dy/len*90);

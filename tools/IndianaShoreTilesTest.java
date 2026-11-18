@@ -1,39 +1,20 @@
 package com.bargeboss.game;
-
-/** Exact dry-footprint/cost checks for the fixed Indiana shore modules. */
+/** Survey coverage inventory and production tile receiver clipping. */
 public final class IndianaShoreTilesTest {
-    public static void main(String[] args){
-        ArticulatedModel.Builder builder=new ArticulatedModel.Builder();IndianaShoreTiles.append(builder);
-        ArticulatedModel model=builder.build();ArticulatedModel.Pose pose=model.pose(0);
-        int checks=0;
-        for(int i=0;i<model.nodeCount();i++){
-            float[] box=pose.nodeWorldBounds(i);
-            if(box==null)throw new AssertionError("Empty shore module");
-            for(float[] water:IndianaHarbor.WATER){
-                float w=Math.min(box[3],water[2])-Math.max(box[0],water[0]);
-                float h=Math.min(box[4],water[3])-Math.max(box[1],water[1]);
-                if(w>.001f && h>.001f)throw new AssertionError("Module crosses water: "+model.nodeName(i));
-                checks++;
-            }
-            if(model.nodeName(i).contains("service-road") || model.nodeName(i).contains("asphalt-repair")){
-                float[][] buildings={{554,392.5f,626,447.5f},{541,1266,659,1434},{-239,1096,-121,1264},{-29,-584,89,-416},{1171,-484,1289,-316}};
-                for(float[] building:buildings){
-                    if(Math.min(box[3],building[2])>Math.max(box[0],building[0]) && Math.min(box[4],building[3])>Math.max(box[1],building[1]))throw new AssertionError("Road crosses building: "+model.nodeName(i));
-                    checks++;
-                }
-            }
-            if(box[2]<-.001f || box[5]>GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE+1)
-                throw new AssertionError("Shore module changed ground elevation: "+model.nodeName(i));
-            checks++;
-        }
-        if(model.sourceFaceCount()>400)throw new AssertionError("Shore detail budget exceeded: "+model.sourceFaceCount());
-        model.prepare(pose);
-        Game game=new Game();game.challengeId=Challenges.INDIANA;game.reset();
-        game.layout=Layout.focused(1243,700,375,200,.32f,621,350);
-        java.awt.image.BufferedImage image=new java.awt.image.BufferedImage(1243,700,java.awt.image.BufferedImage.TYPE_INT_RGB);
-        java.awt.Graphics2D graphics=image.createGraphics();
-        ArticulatedModel.Stats stats=model.draw(game,new DesktopPainter(graphics),pose);graphics.dispose();
-        System.out.println("Shore detail BSP fragments="+stats.fragments+", overview drawn faces="+stats.drawnFaces);
-        System.out.println(checks+" Indiana shore footprint/elevation checks; "+model.nodeCount()+" cullable nodes, "+model.sourceFaceCount()+" source faces");
-    }
+ public static void main(String[] args){
+  int checks=0;boolean[] kinds=new boolean[7];
+  for(String row:IndianaSurvey.COVER){if(row.length()!=IndianaSurvey.COLS)throw new AssertionError("ragged cover");for(int i=0;i<row.length();i++){int kind=row.charAt(i)-'0';if(kind<0||kind>6)throw new AssertionError("invalid cover");kinds[kind]=true;checks++;}}
+  for(int kind:new int[]{0,1,2,3,4,5})if(!kinds[kind])throw new AssertionError("missing shore material "+kind);
+  Game g=new Game();g.challengeId=Challenges.INDIANA;g.reset();
+  for(float[] center:IndianaHarbor.ROUTE){g.layout=Layout.focused(960,600,center[0],center[1],1,480,300);Receiver p=new Receiver(g);IndianaShoreTiles.ground(g,p);checks+=p.count;}
+  System.out.println(checks+" Indiana survey tile/shore receiver assertions passed");
+ }
+ static final class Receiver implements Painter {
+  final Game g;int count;Receiver(Game g){this.g=g;}
+  public void poly(float[] q,int color){float x=0,y=0;for(int i=0;i<q.length;i+=2){x+=q[i];y+=q[i+1];}x/=q.length/2;y=y/(q.length/2)+GroundArt.LAND_RISE*g.layout.camera.scale;
+   float wx=g.layout.camera.worldX(x,y),wy=g.layout.camera.worldY(x,y);if(IndianaHarbor.contains(wx,wy))throw new AssertionError("ground covers water "+wx+","+wy);count++;}
+  public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wet){poly(xy,color);}
+  public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}public void line(float x,float y,float xx,float yy,float w,int c){}
+  public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
+ }
 }

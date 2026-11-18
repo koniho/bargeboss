@@ -6,7 +6,7 @@ public final class TowTest {
     private static void check(boolean ok,String why) { checks++;if(!ok) throw new AssertionError(why); }
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static Game fixture() {
-        Game g=new Game();g.reset();
+        Game g=new Game();g.resetPracticeYard();
         for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
         g.tug=new Body(0,-1,300,570,-(float)Math.PI/2);
         g.cargo[0]=new Body(1,2,300,690,-(float)Math.PI/2);
@@ -81,12 +81,12 @@ public final class TowTest {
         g.configureCanvas(1333,600);g.pause();steps(g,5);
         check(g.tow.cargo==g.cargo[0],"resume and resize retain cable");
         ReplayInput.releaseTow(g);check(g.tow.cargo==null,"responsive barge tap releases tow");
-        g=fixture();connect(g);g.reset();check(g.tow.cargo==null,"restart clears tow references");
+        g=fixture();connect(g);g.resetPracticeYard();check(g.tow.cargo==null,"restart clears tow references");
         g=fixture();connect(g);g.cargo[0].age=g.contractSeconds()+1;g.step();
         check(g.tow.cargo==g.cargo[0] && g.cargo[0].active,"old cargo retains its tow because goal levels have no expiry");
         ReplayInput.releaseTow(g);check(g.tow.cargo==null && g.cargo[0].active,"explicit detach releases an old load without removing it");
 
-        g=new Game();g.reset();steps(g,180);b=g.cargo[0];
+        g=new Game();g.resetPracticeYard();steps(g,180);b=g.cargo[0];
         check(b!=null && b.awaitingPickup,"feeder parks delivered load for pickup");
         g.tug=new Body(0,-1,b.x,b.y-120,-(float)Math.PI/2);connect(g);drive(g,0,-100);steps(g,90);
         check(!b.awaitingPickup && g.tow.cargo==b && b.y<Feeder.DROP_Y-30,"tow picks up newly dropped feeder load without bumping it");

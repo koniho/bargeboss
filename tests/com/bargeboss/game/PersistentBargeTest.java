@@ -6,7 +6,7 @@ public final class PersistentBargeTest {
     private static void check(boolean value,String why){checks++;if(!value)throw new AssertionError(why);}
     private static void steps(Game g,int n){for(int i=0;i<n;i++)g.step();}
     private static Game fixture(){
-        Game g=new Game();g.reset();
+        Game g=new Game();g.resetPracticeYard();
         for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         g.cargo[0]=new Body(10,2,g.dockX(2),g.dockY(2),(float)Math.PI/2);
         Mooring.attach(g.cargo[0]);return g;

@@ -6,7 +6,7 @@ public final class VesselView {
     public static void draw(Game g,Painter p,Body b,boolean tug) { draw(g,p,b,tug,true); }
     public static void draw(Game g,Painter p,Body b,boolean tug,boolean wake) {
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
-        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,false);
+        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,false,river.canvas().supportsUnionClips());
         if(clip.length>0)river.canvas().pushClipOutside(clip);
         try {if(b.cruiser)CruiserView.draw(g,p,b);else paint(g,p,b,tug,wake);} finally {if(clip.length>0)river.canvas().popClip();}
     }
@@ -17,7 +17,7 @@ public final class VesselView {
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         float size=2*(b.half+b.radius)/(b.yacht?YachtArt.HULL_FRACTION:tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
-        float[] surface=river?ShoreOcclusion.vessel(g,((RiverPainter)p).camera,b,true):ShoreOcclusion.EMPTY;
+        float[] surface=river?ShoreOcclusion.vessel(g,((RiverPainter)p).camera,b,true,((RiverPainter)p).canvas().supportsUnionClips()):ShoreOcclusion.EMPTY;
         Painter canvas=river?((RiverPainter)p).canvas():p;
         if(surface.length>0)canvas.pushClipOutside(surface);
         try {

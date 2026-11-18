@@ -110,3 +110,15 @@ registration/emitter reviews are linked from
 [the factory set review](art-studies/factory-v1/review.md) and
 [the ground study](art-studies/ground-v1/). Corrugated retaining walls are shared
 Java geometry, aligned to the collision boundary rather than baked into a raster.
+
+## Geographic location data
+
+The Calumet and Indiana survey JSON and generated geographic coordinate/material
+arrays contain data derived from © OpenStreetMap contributors under
+[ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/), separate from the MIT
+license for game code. [OSM attribution and copyright](https://www.openstreetmap.org/copyright).
+USGS/USDA aerial imagery was consulted for layout review and broad material zones;
+no imagery is embedded as a runtime texture. Source dates, edits, simplifications
+and export commands are recorded in [Calumet](levels/calumet/README.md) and
+[Indiana Harbor](maps/indiana-harbor.md). These are gameplay maps, not navigational
+products. Preserve the data attribution when redistributing the surveys.

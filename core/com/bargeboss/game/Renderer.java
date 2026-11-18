@@ -11,7 +11,8 @@ public final class Renderer {
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         try {WorldArrows.begin(g);
-        if(g.indianaStage())IndianaView.draw(g,p);
+        if(g.calumetStage())CalumetRiverView.draw(g,p);
+        else if(g.indianaStage())IndianaView.draw(g,p);
         else if(g.montroseStage())MontroseView.draw(g,p);
         else TrainingChannelView.draw(g,p);
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);
@@ -48,16 +49,16 @@ public final class Renderer {
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
-        int crane=0;int[] cranes=DockView.ordered(g);TowView.Segments rope=new TowView.Segments(g);int spray=0;int[] splashes=SprayView.ordered(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0,pedestal=0,pedestalCount=g.montroseStage()?MarinaPedestals.count(g):0;int[] lights=NavigationLights.ordered(g);boolean hoist=g.montroseStage();int landmark=0;int moored=0,mooredCount=MooredBoats.count(g);int swimmer=0;int[] swimmers=MontroseRescueView.ordered(g);
+        int crane=0;int[] cranes=DockView.ordered(g);TowView.Segments rope=new TowView.Segments(g);int spray=0;int[] splashes=SprayView.ordered(g);int span=0,mark=0,gate=0,gateCount=g.lockStage()?2:0,pedestal=0,pedestalCount=g.montroseStage()?MarinaPedestals.count(g):0;int[] lights=NavigationLights.ordered(g);boolean hoist=g.montroseStage();int landmark=0;int[] landmarks=LocationLandmarks.ordered(g);int moored=0,mooredCount=MooredBoats.count(g);int swimmer=0;int[] swimmers=MontroseRescueView.ordered(g);
         for(int n=0;n<count;n++) {
             float depth=g.layout.camera.screenY(ordered[n].x,ordered[n].y);
-            while(crane<cranes.length || span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<IndianaView.count(g) || moored<mooredCount || swimmer<swimmers.length || WorldArrows.pending()) {
+            while(crane<cranes.length || span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<landmarks.length || moored<mooredCount || swimmer<swimmers.length || WorldArrows.pending()) {
                 float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
                 float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
                 float ed=spray<splashes.length?SprayView.depth(g,splashes[spray]):Float.MAX_VALUE;
                 float pd=pedestal<pedestalCount?MarinaPedestals.depth(g,pedestal):Float.MAX_VALUE;
-                float hd=hoist?MontroseBoatHoist.depth(g):landmark<IndianaView.count(g)?IndianaView.depth(g,landmark):Float.MAX_VALUE;
+                float hd=hoist?MontroseBoatHoist.depth(g):landmark<landmarks.length?LocationLandmarks.depth(g,landmarks[landmark]):Float.MAX_VALUE;
                 float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
                 float sd=swimmer<swimmers.length?MontroseRescueView.depth(g,swimmers[swimmer]):Float.MAX_VALUE;
                 float cd=crane<cranes.length?DockView.depth(g,cranes[crane]):Float.MAX_VALUE;
@@ -67,7 +68,7 @@ public final class Renderer {
                 if(WorldArrows.pending()&&ad<=Math.min(depth,Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){WorldArrows.draw(p);continue;}
                 if(Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))>depth)break;
                 if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-                if((hoist || landmark<IndianaView.count(g)) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else IndianaView.landmark(g,((RiverPainter)p).canvas(),landmark++);continue;}
+                if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
                 if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
                 if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
                 if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
@@ -75,13 +76,13 @@ public final class Renderer {
             }
             body(g,p,ordered[n]);
         }
-        while(crane<cranes.length || span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<IndianaView.count(g) || moored<mooredCount || swimmer<swimmers.length || WorldArrows.pending()) {
+        while(crane<cranes.length || span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<landmarks.length || moored<mooredCount || swimmer<swimmers.length || WorldArrows.pending()) {
             float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
             float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
             float gd=gate<gateCount?LockView.gateDepth(g,gate):Float.MAX_VALUE;
             float ed=spray<splashes.length?SprayView.depth(g,splashes[spray]):Float.MAX_VALUE;
             float pd=pedestal<pedestalCount?MarinaPedestals.depth(g,pedestal):Float.MAX_VALUE;
-            float hd=hoist?MontroseBoatHoist.depth(g):landmark<IndianaView.count(g)?IndianaView.depth(g,landmark):Float.MAX_VALUE;
+            float hd=hoist?MontroseBoatHoist.depth(g):landmark<landmarks.length?LocationLandmarks.depth(g,landmarks[landmark]):Float.MAX_VALUE;
             float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
             float sd=swimmer<swimmers.length?MontroseRescueView.depth(g,swimmers[swimmer]):Float.MAX_VALUE;
             float cd=crane<cranes.length?DockView.depth(g,cranes[crane]):Float.MAX_VALUE;
@@ -90,7 +91,7 @@ public final class Renderer {
             float ad=WorldArrows.depth();
             if(WorldArrows.pending()&&ad<=Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))){WorldArrows.draw(p);continue;}
             if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-            if((hoist || landmark<IndianaView.count(g)) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else IndianaView.landmark(g,((RiverPainter)p).canvas(),landmark++);continue;}
+            if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
             if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
             if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
             if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
@@ -112,7 +113,7 @@ public final class Renderer {
             SoftCue.dot(p,b.x,b.y,30,SoftCue.animated(g,0x66fff0ce));
             for(int j=1;j<10;j++) {
                 float t=j/10f;
-                SoftCue.dot(p,b.x+(g.dockX(b.berth)-b.x)*t,b.y+(g.dockY(b.berth)-b.y)*t,1.5f,SoftCue.animated(g,color));
+                SoftCue.dot(p,b.x+(g.dockX(b)-b.x)*t,b.y+(g.dockY(b)-b.y)*t,1.5f,SoftCue.animated(g,color));
             }
         }
         VesselView.draw(g,p,b,false);

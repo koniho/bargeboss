@@ -4,9 +4,9 @@ final class CalumetMapTest {
  private static int checks;
  private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
  static void run(){
-  for(int id=0;id<Challenges.COUNT;id++)if(!Challenges.standalone(id)){Game g=new Game();g.challengeId=id;g.reset();
-   for(float y=-1050;y<900;y+=23)for(float x=-1900;x<950;x+=23)check(g.inWater(x,y)==CalumetMap.contains(x,y),"Every Calumet mission shares coastline");
-   check(g.hasBridge(),"Fixed bridge exists in every Calumet mission");
+  for(int id=0;id<Challenges.COUNT;id++)if(!Challenges.standalone(id)){Game g=new Game();g.challengeId=id;g.resetPracticeYard();
+   for(float y=-1050;y<900;y+=23)for(float x=-1900;x<950;x+=23)check(g.inWater(x,y)==CalumetMap.contains(x,y),"Practice workyard retains coastline");
+   check(g.hasBridge(),"Practice bridge is retained");
   }
   check(CalumetMap.clear(599,660,599,220,20),"Full hull fits eastern berth approach");
   check(!CalumetMap.clear(300,480,599,480,0),"Eastern quay prevents cutting across dry land");

@@ -5,14 +5,6 @@ public final class LockCurrentTest {
     private static int checks;
     private static void check(boolean value,String why){checks++;if(!value)throw new AssertionError(why);}
     private static Body hull(float angle){return new Body(10,0,300,165,angle);}
-    private static Game filling(){
-        Game g=new Game();g.challengeId=2;g.reset();
-        for(int i=0;i<240;i++)g.step();
-        g.tug.x=300;g.tug.y=450;g.lock.step(g); // Acquire the real feeder loads.
-        g.tug.y=100;
-        int slot=0;for(Body b:g.cargo)if(b!=null){b.x=245+slot++*110;b.y=210;b.awaitingPickup=false;}
-        g.lock.phase=Lock.FILLING;g.lock.ticks=70;return g;
-    }
     public static void run(){
         Lock lock=new Lock();lock.phase=Lock.ENTRY;
         check(Lock.GATE_TICKS==300,"gate movement takes five real seconds");
@@ -39,15 +31,8 @@ public final class LockCurrentTest {
         Body along=hull(0),broad=hull(-(float)Math.PI/2);
         for(int i=0;i<60;i++){Physics.integrate(along,25,0);Physics.integrate(broad,25,0);}
         check(broad.vx>along.vx+5,"broadside hull catches more current than an aligned keel");
-        Game a=filling(),b=filling();
-        for(int i=0;i<60;i++)a.advance(1.0/30);
-        for(int i=0;i<288;i++)b.advance(1.0/144);
-        check(a.tug.x==b.tug.x && a.tug.y==b.tug.y && a.cargo[0].x==b.cargo[0].x && a.lock.ticks==b.lock.ticks,"current and loaded hull motion agree at 30 and 144 Hz");
-        float x=a.tug.x,y=a.tug.y,level=a.lock.waterLevel();int ticks=a.lock.ticks;
-        a.background();for(int i=0;i<120;i++)a.advance(1.0/60);
-        check(a.tug.x==x && a.tug.y==y && a.lock.ticks==ticks && a.lock.waterLevel()==level,"pause freezes current-driven motion and water level together");
-        a.pause();int before=Parity.frame(a);a.lock.ticks+=90;int after=Parity.frame(a);
-        check(before!=after,"water gauge and current field visibly change with fill progress");
+        // Fixed-step/pause behavior is covered by CoreTest and LockTest. The
+        // O'Brien lock is outside the inlet-to-Basin-Five location.
         System.out.println(checks+" slow gate, relative-water current, orientation and lifecycle assertions passed");
     }
     public static void main(String[] args){run();}

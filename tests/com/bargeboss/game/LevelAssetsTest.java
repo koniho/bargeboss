@@ -13,16 +13,16 @@ final class LevelAssetsTest {
         for(int id=0;id<Challenges.COUNT;id++) {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
-            check(scenery.length==(id==Challenges.INDIANA?0:Challenges.kind(id)==Challenges.MONTROSE?3:5),"Level prepares its permanent scenery family");
-            check(preparation.length==plan.rotationAtlases().length+scenery.length+(id==Challenges.SWIMMER_RESCUE?4:3),"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
+            check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?3:0),"Level prepares its permanent scenery family");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length+(Challenges.kind(id)==Challenges.MONTROSE?4:3),"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
             for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");
             Game game=new Game();game.challengeId=id;game.reset();
-            check(LevelAssets.upcoming(game)==plan,"Gameplay manifest matches selected level");
+            check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
-            check(LevelAssets.upcoming(game)==plan,"Menu prepares upcoming selected level");
+            check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Menu prepares upcoming selected level");
             if(id==Challenges.RAFT_RESCUE || id==Challenges.SWIMMER_RESCUE){
-                check(includes(plan,SpriteAtlas.TUG) && !includes(plan,SpriteAtlas.YACHT),"Rescue prepares tug without unused yacht rotations");
+                check(includes(plan,SpriteAtlas.TUG) && includes(plan,SpriteAtlas.YACHT),"Rescue retains yacht rotations from earlier job");
                 if(id==Challenges.SWIMMER_RESCUE)check(preparation[preparation.length-4]==SpriteAtlas.SWIMMERS,"Swimmer atlas warmed before active draws");
                 continue;
             }
@@ -46,7 +46,7 @@ final class LevelAssetsTest {
             game.activeGame().tutorial.lesson=Tutorial.TRAIN;
             check(LevelAssets.upcoming(game)==tutorial,"Later train lesson retains the complete tutorial manifest");
         }
-        check(LevelAssets.challenge(0).rotationFrames()==864 && LevelAssets.challenge(2).rotationFrames()==864,"Two Banks and Lock exclude steel");
+        check(LevelAssets.challenge(0).rotationFrames()==1024 && LevelAssets.challenge(2).rotationFrames()==1024,"Calumet prepares cargo for every contiguous job");
         check(LevelAssets.challenge(1).rotationFrames()==1024 && LevelAssets.challenge(3).rotationFrames()==1024,"Ordering levels include all three cargo kinds");
         int[] copy=tutorial.rotationAtlases();copy[0]=999;
         check(!includes(tutorial,999),"Callers cannot mutate manifest");

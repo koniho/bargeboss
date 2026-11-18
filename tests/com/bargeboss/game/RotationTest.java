@@ -48,7 +48,7 @@ public final class RotationTest {
         }
         // Full vessel composition: cargo rotates around the hull instead of drifting
         // when an image frame changes. The game itself never advances during this check.
-        Game g=new Game(); g.reset(); g.visualTicks=43;
+        Game g=new Game(); g.resetPracticeYard(); g.visualTicks=43;
         for(int kind=-1;kind<3;kind++) {
             Body b=new Body(kind<0?0:1,kind,300,550,0); b.lineAttached=true;
             Capture first=new Capture(); VesselView.draw(g,first,b,kind<0);
@@ -68,7 +68,7 @@ public final class RotationTest {
         System.out.println(assertions+" sprite rotation, fixed-anchor and blend continuity assertions passed");
     }
     private static void depthOrder() {
-        Game g=new Game();g.reset();
+        Game g=new Game();g.resetPracticeYard();
         for(Feeder feeder:g.feeders) {feeder.phase=Feeder.IDLE;feeder.load=null;}
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.cargo[0]=new Body(1,2,250,400,0);g.tug.x=350;g.tug.y=650;

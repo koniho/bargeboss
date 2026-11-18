@@ -601,3 +601,45 @@ berth. Merge cranes by unraised ground-anchor depth with scenery and vessels;
 do not append them as screen overlays. Prepare model/BSP instances on level
 reset and retain only a bounded placement cache. Montrose rescue variants reuse
 the surveyed service crane rather than adding cargo-berth duplicates.
+
+### Surveyed Calumet and Indiana river stages
+
+Career river stages use their own geographic polygons; the practice canal keeps
+`TrainingChannel` geometry. North is world +X (upper right in the isometric view),
+east is +Y. The overhead chart projects those same coordinates with north up.
+Never reuse the practice banks, lamp grid, or six-rectangle Indiana approximation
+for a geographic-stage effect or clip.
+
+`HarborPolygonGeometry` indexes immutable water triangles and coastline edges in
+256-world-unit buckets. Local water effects use triangle candidates only. Dry
+complements are convex pieces in a bounded 128-cell cache per geography; land
+rendering and inverse shore masks use this same dry footprint. A separate
+per-thread cache holds at most 32 projected shore masks and 256 KiB of floats.
+These are geometry caches, not new runtime bitmap/texture caches.
+
+Raised tops are clipped by unraised vessel depth before projection; camera-facing
+wall edges are clipped in world/depth space before extrusion. Walls and tops may
+overlap, so default inverse masks are made disjoint; only painters that advertise
+union-clip support receive consistently wound overlapping triangles. Shoreline
+foam and vessel-to-shore light receivers query nearby segments rather than every
+bridge, slip and basin along the river. The clipped outer lake play boundary is
+not a seawall and must not receive wall/foam strips.
+
+Markers are stage-owned positions with explicit returning bearings and red/green
+identity. Physics, reflections, sprite pivots and chart positions use the same
+anchors. Tutorial fixed beacons retain their existing land receivers; geographic
+first-pass water markers are tethered floats and use the ordinary watercraft
+contact rules.
+
+Geographic shore masks also use a conservative 1/8-screen-pixel seam guard on
+union-capable painters. Independent triangle subtraction at long river coordinates
+can leave microscopic cracks that native hard clips rasterize as visible hull
+pixels. Reject sub-millimetre dry slivers before projection and consistently wind
+and expand union triangles before submitting the cutout. The guard changes only
+raster coverage, never collision or water geometry. Fallback even-odd painters
+retain disjoint masks. Run the real hull-pixel tools for both named geographies;
+a point-in-mask assertion alone did not catch the native raster seam.
+
+Quay workers must be merged into the sorted geographic landmark stream before
+merging that stream with craft/ropes. Appending workers after an already sorted
+bridge list produces incorrect depth even if both individual lists are sorted.

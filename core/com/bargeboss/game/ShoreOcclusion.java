@@ -7,8 +7,11 @@ public final class ShoreOcclusion {
     public static final float[] EMPTY=new float[0];
     private ShoreOcclusion(){}
     public static float[] vessel(Game g,RiverCamera c,Body b,boolean surface) {
+        return vessel(g,c,b,surface,false);
+    }
+    public static float[] vessel(Game g,RiverCamera c,Body b,boolean surface,boolean union) {
         return region(g,c,b.x-160,b.y-160,b.x+160,b.y+160,
-                surface?Float.NEGATIVE_INFINITY:c.screenY(b.x,b.y));
+                surface?Float.NEGATIVE_INFINITY:c.screenY(b.x,b.y),union);
     }
     /** depth is the unraised ground depth of the sprite/span, never its heading or speed. */
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth) {
@@ -16,12 +19,15 @@ public final class ShoreOcclusion {
     }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
+        if(g.calumetStage())return CalumetWaterGeometry.shore(c,left,top,right,bottom,depth,union);
+        if(g.indianaStage())return IndianaHarbor.geometry().shore(c,left,top,right,bottom,depth,union);
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
         return industrial(c,left,top,right,bottom,depth,g.indianaStage());
     }
     static float[] industrial(RiverCamera c,float left,float top,float right,float bottom,float depth,boolean indiana){
+        if(indiana)return IndianaHarbor.geometry().tops(c,left,top,right,bottom,depth);
         ArrayList<float[]> dry=new ArrayList<float[]>();
-        subtract(dry,left,top,right,bottom,indiana?IndianaHarbor.WATER:CalumetMap.water(),0);
+        subtract(dry,left,top,right,bottom,CalumetMap.water(),0);
         if(dry.isEmpty())return EMPTY;
         float rise=GroundArt.LAND_RISE*c.scale;
         ArrayList<float[]> pieces=new ArrayList<float[]>();int count=0;

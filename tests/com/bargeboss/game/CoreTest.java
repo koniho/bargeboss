@@ -9,6 +9,10 @@ public final class CoreTest {
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
+        LocationCatalogTest.run();
+        LocationVoyageTest.run();
+        HarborPolygonGeometryTest.run();
+        SurveyedLocationTest.run();
         OverviewMapTest.run();
         PolygonClipFastTest.run();
         SceneDetailTest.run();
@@ -18,7 +22,7 @@ public final class CoreTest {
         DockCraneTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
-        g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
+        g.resetPracticeYard(); g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
         check(g.navigating && g.tug.y<650,"drag drives tug in finger direction");
         g.background(); int ticks=g.ticks; g.advance(1); check(g.ticks==ticks,"background freezes shift");
         check(!g.pointer && !g.pushing,"background cancels gesture"); tap(g,Layout.RESUME); check(g.mode==Game.PLAY,"resume button");
@@ -64,7 +68,7 @@ public final class CoreTest {
         g=playing(); g.advance(Double.NaN); check(g.ticks==0,"invalid frame delta ignored");
         g.advance(10); check(g.ticks==15,"long stall has bounded catch-up");
         // A bounded player exercises arrivals and the introductory berth using the public touch contract.
-        g=new Game(); g.reset();
+        g=new Game(); g.resetPracticeYard();
         for(int i=0;i<Game.SHIFT_TICKS && g.mode==Game.PLAY;i++) {
             ReplayInput.work(g);
             g.step();
@@ -163,8 +167,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Reviewed title breakwater surf changes drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("3858c4fd:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Geographic scene/selector trace reviewed; bounded practice deliveries and score retained.
+        check(Parity.signature().equals("fbb924ab:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

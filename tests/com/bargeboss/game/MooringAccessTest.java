@@ -6,7 +6,7 @@ public final class MooringAccessTest {
     private static void check(boolean ok,String why) { checks++;if(!ok) throw new AssertionError(why); }
     private static void narrow(int stage,int berth){
         for(float width:new float[]{960,1333.3334f})for(float heading:new float[]{-(float)Math.PI/2,(float)Math.PI/2}){
-            Game g=new Game();g.challengeId=stage;g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
+            Game g=new Game();g.challengeId=stage;g.resetPracticeYard();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
             Body b=new Body(1,berth,g.dockX(berth),g.dockY(berth)+10,heading);g.cargo[0]=b;
             g.tug.x=PhysicalBerths.CENTER;g.tug.y=b.y+95;
             g.layout=Layout.focused(width,600,b.x,b.y,1.5f,width*.5f,330);
@@ -21,11 +21,11 @@ public final class MooringAccessTest {
         }
     }
     public static void run() {
-        for(int stage=0;stage<Challenges.COUNT;stage++) for(int berth=0;berth<3;berth++) {
-            Game probe=new Game();probe.challengeId=stage;probe.reset();if(Challenges.standalone(stage) || !probe.berthEnabled(berth)) continue;
+        for(int stage=0;stage<1;stage++) for(int berth=0;berth<3;berth++) {
+            Game probe=new Game();probe.challengeId=stage;probe.resetPracticeYard();if(Challenges.standalone(stage) || !probe.berthEnabled(berth)) continue;
             if(probe.orderStage()){narrow(stage,berth);continue;}
             for(float width:new float[]{960,1333.3334f}) for(int heading=0;heading<8;heading++) for(float offset:new float[]{-40,40}) {
-                Game g=new Game();g.challengeId=stage;g.reset();
+                Game g=new Game();g.challengeId=stage;g.resetPracticeYard();
                 int deliveredBefore=0;
                 g.delivered=deliveredBefore;
                 for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}

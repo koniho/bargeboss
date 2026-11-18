@@ -5,10 +5,10 @@ public final class NavigationLightsTest {
     private static int checks;
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     public static void run(){
-        for(int stage:new int[]{-1,0,1,2,Challenges.MONTROSE}){
+        for(int stage:new int[]{-1,0,Challenges.INDIANA,Challenges.MONTROSE}){
             Game g=new Game();if(stage<0){g.startTutorial();g=g.activeGame();}else {g.challengeId=stage;g.reset();}
             NavigationLights.Entrance[] entrances=NavigationLights.entrances(g);
-            check(entrances.length==(stage<0?5:stage==2?2:1),"only distinct region mouths carry a navigation pair");
+            check(entrances.length==(stage<0?5:stage==Challenges.INDIANA?2:1),"only distinct region mouths carry a navigation pair");
             for(NavigationLights.Entrance e:entrances){
                 float rx=e.markerX(true)-e.x,ry=e.markerY(true)-e.y,gx=e.markerX(false)-e.x,gy=e.markerY(false)-e.y;
                 check(rx*(-e.dy)+ry*e.dx>0 && gx*(-e.dy)+gy*e.dx<0,"red is starboard and green port in the declared returning direction");

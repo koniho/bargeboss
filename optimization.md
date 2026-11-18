@@ -2631,3 +2631,96 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Rebuilt and reinstalled after the join correction; reviewed the live native
   Montrose frame in out/overview-map/android-montrose-v2.png and phone Downloads
   BargeBoss-overview-map-v2.png. Full checks and translation parity passed again.
+
+## 2026-11-18 — geographic river water and shoreline integration (shared Java)
+
+- Added a shared polygon-harbor query helper for the new Calumet and Indiana
+  layouts. Immutable 256-world-unit triangle/edge buckets keep point tests and
+  small water effects local. Dry complements are bounded to 128 cached cells per
+  geography; projected masks retain at most 32 entries / 256 KiB per render thread.
+  No new native texture family or bitmap-cache budget was introduced.
+- Routed water clipping, foreground shore masks, quay-top wall cutouts, vessel
+  shore spill, buoy contact recovery, navigation markers and overhead charts to
+  each geographic stage. Practice retains the original canal boundary. Removed
+  sampling of fictional practice lamps from the new career harbor coordinates.
+- Long shoreline foam/wetness and vessel light passes query local segment buckets.
+  World normals, unraised vessel depth and explicit ground elevation determine
+  opaque shore coverage; union-capable painters and even-odd fallbacks retain
+  equivalent geometry. Degenerate fan triangles are discarded before native clips.
+- Standalone polygon test passed 33,617 assertions covering concave dry/wet
+  complements, point-query agreement, local candidate filtering, bounded cache
+  growth, winding, nonoverlap and union/fallback coverage. This is geometry
+  validation, not native raster or FPS evidence; final geographic integration,
+  production hull pixels and Android installation are validated by the parent.
+
+## 2026-11-18 — geographic location/job continuity (shared Java, integration in progress)
+
+- The location selector groups existing reward IDs into Calumet (0–3), Montrose
+  (4/6/7), and Indiana (5). BB1 save slots and reward/unlock validation remain
+  unchanged; old selected-job IDs enter their complete location. A location rating
+  requires every constituent job, while job stars remain visible during progress.
+- Added stable per-body Calumet destination/job metadata. Advancing jobs keeps old
+  cargo, tug, clock, camera, water and tow graph. The convoy reuses two exchange
+  empties, so all eight cargo hulls fit the existing nine slots. Spawns use a bounded
+  water/clearance search once at job entry, with early exit at the first valid ring.
+  No bitmap, shader or texture-cache family was added by this gameplay work.
+- Montrose transitions keep the delivered yacht and cruisers. Later objectives
+  initialize their actors/counters without resetting the world. Reserved cruiser
+  slips are kept vacant from location entry; no moored-fleet reset at job boundaries.
+- LocationCatalogTest passed 27 checks for legacy BB1 restoration, exact reward
+  slot preservation, roundtrip saves, complete grouping and aggregate location
+  rating/score. LocationVoyageTest has been added for actual handoff behavior;
+  execution awaits the concurrently authored Calumet survey model. No native
+  frame-rate or device-parity claim is made by this logic change.
+
+## 2026-11-18 — geographic layout integration and offline surface inventory
+
+- Shared Java: Calumet uses 432 shore vertices and Indiana 501; material grids
+  are generated offline from reviewed geographic data. Visible tile cells aggregate
+  at wide zooms before clipping (target at most roughly 650 visible-bounds cells).
+  Road strips are omitted at the coarsest overview scale. Physics/shoreline shape
+  does not change with this visual aggregation. No new bitmap family is added.
+- Calumet/Indiana skip the practice factory-fade scan. Fixed bridge models prepare
+  at location entry. Local bank queries and bounded dry/raised-shore caches are
+  shared by all painters. Hull collision still scans the coastline; measure this
+  before adding a more elaborate broad phase. No 60-FPS claim from these changes.
+- Fixed building water-eligibility cache keys to distinguish practice, Calumet,
+  Indiana and Montrose. Sorted quay workers together with geographic landmarks
+  before the vessel depth merge; sorting independent lists was insufficient.
+- Corrected Indiana's clipped shoreline extent: an east-peninsula cut introduced
+  disconnected water contours into a single ring. Including the peninsula and
+  excluding the remote Grand Calumet junction restores valid triangulation.
+- All contiguous Calumet cargo families and all Montrose job assets are prepared
+  from location entry, including the retained yacht and later swimmer sprites.
+  This preserves all 32 rotations/effect derivatives through job handoffs.
+- Integration tests now separate the legacy small practice mechanics fixture from
+  real-location geometry. Existing save/reward slots remain; removed separate-level
+  completion assumptions are replaced by continuous job-boundary tests. Sampled
+  route hulls and projected lasso/unload at all seven berths passed 2,642 checks.
+  This does not prove an entire public-input Calumet voyage or native device FPS.
+- Pixel follow-up: large-coordinate subtraction produced sub-millimetre dry
+  slivers and native clip seams. Discarding slivers and a conservative 1/8-screen-
+  pixel union-mask guard removed visible leaks; vessel masks now request the
+  painter's actual union capability. Desktop production-hull regressions passed
+  2,595,477 Calumet and 2,025,045 Indiana checks across all 32 headings. Dry Indiana
+  surface receivers passed 21,156 checks. These are Java2D pixel results, not iOS.
+- Updated developer fixtures to geographic coordinates, including inlet/Basin 5,
+  shared-berth view, Indiana, tow circles and isolated later Montrose jobs. All 49
+  fixture checks passed; repeatable single-barge physics completed 11.84 circles
+  in 6,000 ticks. The complete Calumet centerline was also traversed through actual
+  drag input with hull 100 in 17,120 ticks; this transit probe does not complete jobs.
+- Long-route public-input follow-up completed Indiana's loaded tow through all
+  18 route waypoints and actual release/lasso/unload with hull 100 in 20,581 ticks.
+  Reusable evidence tool: `tools/GeographicTransitReview.java`. Calumet's 42-point
+  transit remains distinct from the four-job handoff fixtures.
+- Final UI review changed title/pause/result wording to locations and voyages,
+  with four-job/three-job summaries rather than the old single-job start label.
+  Shared menu touch targets and legacy reward persistence are unchanged.
+- Final validation: full `check.sh` passed as part of the signed Android build,
+  including cargo, shadow, surface-light and normal-map contracts. JVM trace is
+  `fbb924ab:2:1350`; the geographic trace deliberately replaces separate fictional
+  stage replays. Both source exporters reproduce generated Java byte-for-byte.
+  Android was installed/launched and the location selector and Calumet lake start
+  were reviewed on the development phone. Layout PNGs were copied to Downloads.
+  No timed Android performance capture or native iOS/J2ObjC run was performed;
+  macOS Foundation/J2ObjC tooling is unavailable in this Termux environment.

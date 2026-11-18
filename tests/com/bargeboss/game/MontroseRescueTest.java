@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class MontroseRescueTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
-    static Game game(int id){Game g=new Game();g.selectChallenge(id);g.reset();return g;}
+    static Game game(int id){return ReplayInput.montroseJob(id);}
     static void steps(Game g,int count){for(int i=0;i<count;i++)g.step();}
     static void tapWorld(Game g,float x,float y){ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);}
     static void focus(Game g,float x,float y){g.layout=Layout.focused(g.layout.width,g.layout.height,x,y,3.6f,g.layout.width*.5f,g.layout.height*.52f);}
@@ -25,7 +25,7 @@ public final class MontroseRescueTest {
             g.tug.x=300;g.tug.y=-400;g.rescue.towed[i]=true;
             steps(g,600);check(boat.deliveryRecorded,"Dock C slot "+i+" holds real hull clear of all docks/NPCs");
         }
-        check(g.goalComplete() && g.career.bestStars(Challenges.RAFT_RESCUE)>0,"Both returned cruisers complete mission");
+        check(g.challengeId==Challenges.SWIMMER_RESCUE && g.career.bestStars(Challenges.RAFT_RESCUE)>0,"Both returned cruisers complete mission");
         g=swimmers();for(int i=0;i<20;i++)check(MontroseHarbor.contains(g.rescue.x[i],g.rescue.y[i]),"Swimmer in open lake");
         ReplayInput.down(g,g.rescue.x[0],g.rescue.y[0]);float zoom=g.layout.camera.zoom;steps(g,10);
         check(g.rescue.aiming==0 && g.layout.camera.zoom==zoom,"Rescue aiming freezes projection");g.cancel();check(g.rescue.aiming==-1,"Cancellation clears rescue aim");

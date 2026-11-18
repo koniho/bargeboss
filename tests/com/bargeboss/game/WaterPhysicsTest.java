@@ -3,7 +3,7 @@ package com.bargeboss.game;
 public final class WaterPhysicsTest {
     private static int checks;
     private static void check(boolean ok,String message) { checks++; if(!ok) throw new AssertionError(message); }
-    private static Game isolated() { Game g=new Game();g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}g.tug.x=300;g.tug.y=450;return g; }
+    private static Game isolated() { Game g=new Game();g.resetPracticeYard();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}g.tug.x=300;g.tug.y=450;return g; }
     public static void run() {
         Body along=new Body(1,0,300,450,0),sideways=new Body(2,0,300,450,(float)Math.PI/2),reverse=new Body(3,0,300,450,0);
         along.vx=sideways.vx=60;reverse.vx=-60;

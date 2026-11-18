@@ -1,7 +1,7 @@
 package com.bargeboss.game;
 
-/** One permanent Calumet geography; missions select objectives, never shoreline shapes.
- * TrainingChannel retains the historical canal authoring helpers used by tutorial gates. */
+/** Legacy practice workyard, shared with tutorial gate authoring.
+ * Production river geography lives in CalumetRiver; never use these small coordinates for career locations. */
 public final class CalumetMap {
     public static final float EAST=628,BERTH_X=599,BERTH_MOUTH=570;
     private CalumetMap(){}

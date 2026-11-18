@@ -16,11 +16,12 @@ public final class WaterEffectsPainter implements Painter {
     private final RiverCamera camera;
     private final float screenWidth,screenHeight;
     private final float[][] water;
-    private final boolean marina;
+    private final boolean marina,calumet,indiana;
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;marina=g.montroseStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()?IndianaHarbor.WATER:g.montroseStage()?null:CHANNEL;
+        this.target=target;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
     }
     public static boolean contains(Game g,float x,float y) {
+        if(g.calumetStage())return CalumetRiver.contains(x,y);
         if(g.indianaStage())return IndianaHarbor.contains(x,y);
         if(g.montroseStage())return MontroseHarbor.contains(x,y);
         return CalumetMap.contains(x,y);
@@ -84,6 +85,8 @@ public final class WaterEffectsPainter implements Painter {
         }
         if(camera!=null && (camera.screenX(maxX,maxY)<-1 || camera.screenX(minX,minY)>screenWidth+1
                 || camera.screenY(minX,maxY)<-1 || camera.screenY(maxX,minY)>screenHeight+1))return;
+        if(calumet){CalumetRiver.paintWater(target,points,color);return;}
+        if(indiana){IndianaHarbor.paintWater(target,points,color);return;}
         if(marina){MontroseHarbor.paintWater(target,points,color);return;}
         for(float[] r:water) {
             if(maxX<=r[0] || minX>=r[2] || maxY<=r[1] || minY>=r[3]) continue;

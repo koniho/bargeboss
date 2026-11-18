@@ -21,7 +21,7 @@ public final class FoamBatchTest {
     }
     public static void run(){
         Game g=new Game();g.challengeId=Challenges.INDIANA;g.reset();
-        g.water.age[0]=45;g.water.strength[0]=.8f;g.water.x[0]=600;g.water.y[0]=-500;
+        g.water.age[0]=45;g.water.strength[0]=.8f;g.water.x[0]=g.tug.x;g.water.y[0]=g.tug.y;
         for(int pass=0;pass<2;pass++){
             Capture c=new Capture();c.fail=pass==1;
             Painter wrapped=new OpacityPainter(new ViewportPainter(c,1320,600),.8f);

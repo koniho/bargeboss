@@ -16,7 +16,7 @@ final class OverviewMapTest {
     static int arrows(Game g,Ink p){int count=0;WorldArrows.begin(g);try{while(WorldArrows.pending()){WorldArrows.draw(p);count++;}}finally{WorldArrows.end();}return count;}
     static void run(){
         Game g=new Game();ReplayInput.controlFixture(g);
-        for(int stage=0;stage<3;stage++){
+        for(int stage=0;stage<4;stage++){
             OverviewMap.Chart c=new OverviewMap.Chart(stage);float x=(c.minX+c.maxX)*.5f,y=(c.minY+c.maxY)*.5f;
             check(c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");

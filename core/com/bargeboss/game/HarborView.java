@@ -5,6 +5,7 @@ public final class HarborView {
     private static final int DARK=VisualStyle.OUTLINE, GOLD=VisualStyle.GOLD;
     private HarborView() {}
     public static void draw(Game g,Painter p) {
+        if(g.calumetStage()){for(int i=0;i<3;i++)if(g.berthDisplayEnabled(i))CalumetRiverView.berth(g,p,i);return;}
         if(g.indianaStage()){IndianaView.berth(g,p);return;}
         if(g.montroseStage()){MontroseView.slip(g,p);return;}
         berths(g,p);
@@ -73,6 +74,15 @@ public final class HarborView {
         return -1;
     }
     public static void objective(Game g,Painter canvas) {
+        if(g.calumetStage()){
+            if(g.voyage.job==2){destination(g,canvas,g.voyage.gateX(),g.voyage.gateY(),"TOW TWO EMPTIES / 106TH STREET");return;}
+            Body target=null;for(Body b:g.cargo)if(b!=null && b.active && !b.deliveryRecorded && b.voyageJob==g.voyage.job){target=b;break;}
+            if(target==null || g.ropeDragging || g.ropePhase!=0)return;
+            Body blocker=g.voyage.blocker(g,target.destination,target);
+            if(blocker!=null && blocker.deliveryRecorded){destination(g,canvas,blocker.x,blocker.y,"TOW EMPTY CLEAR");return;}
+            boolean working=g.tow.connected(target,g.tug) || g.workingCargo()==target;
+            destination(g,canvas,working?g.dockX(target):target.x,working?g.dockY(target):target.y,working?"DELIVERY BERTH":"COLLECT BARGE");return;
+        }
         if(MontroseRescue.swimmers(g)){
             int nearest=-1;float distance=Float.MAX_VALUE;for(int i=0;i<20;i++)if(g.rescue.state[i]==0){float d=Physics.length(g.tug.x-g.rescue.x[i],g.tug.y-g.rescue.y[i]);if(d<distance){nearest=i;distance=d;}}
             if(nearest>=0)destination(g,canvas,g.rescue.x[nearest],g.rescue.y[nearest],"THROW RESCUE BUOYS");return;

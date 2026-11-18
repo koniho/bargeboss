@@ -4,7 +4,7 @@ public final class ThrottleTest {
     private static int checks;
     private static void check(boolean ok,String message) { checks++;if(!ok) throw new AssertionError(message); }
     private static Game moving(float angle) {
-        Game g=new Game();g.reset();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
+        Game g=new Game();g.resetPracticeYard();for(Feeder f:g.feeders) { f.phase=Feeder.IDLE;f.load=null; }
         g.tug=new Body(0,-1,300,500,angle);g.tug.vx=60*(float)StrictMath.cos(angle);g.tug.vy=60*(float)StrictMath.sin(angle);return g;
     }
     public static void run() {

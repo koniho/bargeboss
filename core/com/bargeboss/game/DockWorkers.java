@@ -13,6 +13,14 @@ public final class DockWorkers {
     }
     /** Search real terrain, not the legacy rectangular river or a screen-space offset. */
     static void shoreAnchor(Game g,int berth,float offset,float radius,float[] out) {
+        if(g.calumetStage() || g.indianaStage()){
+            int d=g.calumetStage()?g.voyage.destination(berth):0;
+            float nx=g.calumetStage()?g.voyage.normalX(d):IndianaHarbor.DOCK_NX,ny=g.calumetStage()?g.voyage.normalY(d):IndianaHarbor.DOCK_NY;
+            float x=g.dockX(berth)-ny*offset,y=g.dockY(berth)+nx*offset;
+            for(int i=64;i<400;i+=8){float xx=x+nx*i,yy=y+ny*i;
+                if(!g.inWater(xx,yy) && !g.inWater(xx-radius,yy) && !g.inWater(xx+radius,yy) && !g.inWater(xx,yy-radius) && !g.inWater(xx,yy+radius)){out[0]=xx;out[1]=yy;return;}}
+            out[0]=x+nx*140;out[1]=y+ny*140;return;
+        }
         float x=g.orderStage()?PhysicalBerths.LEFT-25:g.berthRight(berth)?480:120;
         float y=g.dockY(berth)+offset,sign=g.berthRight(berth)?1:-1;
         for(int ring=0;ring<=32;ring++)for(int dy=-ring;dy<=ring;dy++) {

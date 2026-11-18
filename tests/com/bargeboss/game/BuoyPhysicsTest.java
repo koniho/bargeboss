@@ -56,7 +56,7 @@ public final class BuoyPhysicsTest {
         check(fixed.x==x && fixed.y==y && fixed.vx==vx && b.vx>0,"kinematic NPC/secured hull pushes float without moving off its route");
         // Career marks float just inside the banks; their full footprint must stay wet under force.
         for(int stage=0;stage<4;stage++){
-            g=new Game();g.challengeId=stage;g.reset();
+            g=new Game();g.challengeId=stage;g.resetPracticeYard();
             for(int i=0;i<NavigationLights.count(g);i++){
                 b=g.buoys.get(g,i);check(b!=null,"career navigation marks are physical floats");
                 for(int tick=0;tick<80;tick++){
@@ -66,7 +66,7 @@ public final class BuoyPhysicsTest {
             }
         }
         g=practice();for(int i=0;i<NavigationLights.count(g)-2;i++)check(g.buoys.get(g,i)==null,"land markers have no floating collision body");
-        g=new Game();g.reset();b=g.buoys.get(g,0);b.x+=b.reach;
+        g=new Game();g.resetPracticeYard();b=g.buoys.get(g,0);b.x+=b.reach;
         g.tug.x=Physics.LEFT+g.tug.radius;g.tug.y=b.y;g.tug.angle=(float)Math.PI/2;
         g.buoys.step(g);
         for(int disc=0;disc<3;disc++)check(g.tug.discX(disc)-g.tug.radius>=Physics.LEFT-.001f,"buoy contact cannot push hull through adjacent bank");
@@ -91,7 +91,7 @@ public final class BuoyPhysicsTest {
             rollDifference=Math.max(rollDifference,Math.abs(cb.roll-wb.roll));
         }
         check(maxDifference>.15f && rollDifference>.001f,"arriving real wake moves and rocks a noncontact float");
-        Game blocked=new Game();blocked.challengeId=1;blocked.reset();
+        Game blocked=new Game();blocked.challengeId=1;blocked.resetPracticeYard();
         blocked.tug.x=599;blocked.tug.y=500;blocked.tug.vx=50;blocked.tug.wakeTrailTicks=7;blocked.water.step(blocked);
         float[] screened=new float[2],open=new float[2];boolean differs=false;
         Game openWater=new Game();openWater.visualTicks=blocked.visualTicks;

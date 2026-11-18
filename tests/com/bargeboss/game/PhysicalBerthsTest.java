@@ -79,29 +79,8 @@ public final class PhysicalBerthsTest {
         parked.x=370;parked.y=730;parked.lineAttached=false;
         for(int tick=0;tick<150;tick++){moving.y-=1;PhysicalBerths.collide(PhysicalBerths.DEEP,moving);Physics.collide(moving,parked);}
         check(moving.y<480 && parked.active,"parking the still-active empty elsewhere reopens the route without an order permission flag");
-        settling();
+        // Geographic berth integration is covered by SurveyedLocationTest.
         System.out.println(checks+" physical berth, single-file obstruction, aligned access and quay collision assertions passed");
-    }
-    /** A centered load still needs gradual keel alignment before a real lasso may catch. */
-    private static void settling(){
-        for(float angle:new float[]{-2.25f,2.25f}){
-            Game g=new Game();g.challengeId=PhysicalBerths.SHARED;g.reset();
-            for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
-            g.tug.x=PhysicalBerths.CENTER;g.tug.y=540;
-            for(int i=0;i<90;i++)g.step(); // Camera follows the tug before the screen-space press.
-            Body b=barge(90,2,PhysicalBerths.CENTER,480);b.angle=angle;g.cargo[0]=b;
-            check(!g.canTie(b),"centered but angled full hull cannot tie before alignment");
-            ReplayInput.down(g,b.x,b.y);
-            check(g.heldCargo()==b,"real projected cargo press selects the settling fixture");
-            for(int i=0;i<600 && !g.canTie(b);i++){
-                float before=b.angle;g.step();
-                check(Math.abs(Physics.angle(b.angle-before))<.06f,"berth assistance turns through bounded motion instead of snapping the hull");
-            }
-            check(g.canTie(b) && PhysicalBerths.fits(g.challengeId,b),"holding a centered load settles the whole keel into its narrow berth");
-            ReplayInput.up(g,b.x,b.y);ReplayInput.lasso(g,b);
-            for(int i=0;i<80 && !b.lineAttached;i++)g.step();
-            check(b.lineAttached,"settled narrow-berth load accepts the actual lasso gesture");
-        }
     }
     public static void main(String[] args){run();}
 }

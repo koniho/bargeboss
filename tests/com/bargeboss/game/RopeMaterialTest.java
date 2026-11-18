@@ -13,7 +13,7 @@ public final class RopeMaterialTest {
     }
     public static void run(){
         for(int kind=0;kind<4;kind++)for(int heading=0;heading<32;heading++)for(int end:new int[]{-1,1}) {
-            Game g=new Game();g.reset();for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+            Game g=new Game();g.resetPracticeYard();for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
             Body b=new Body(1,kind==3?0:kind,300,500,heading*(float)Math.PI/16,kind==3);g.cargo[0]=b;
             g.tug.x=b.x+end*120*(float)StrictMath.cos(b.angle);g.tug.y=b.y+end*120*(float)StrictMath.sin(b.angle);
             g.tow.attach(g,b);TowView.Segments spans=new TowView.Segments(g);
@@ -27,7 +27,7 @@ public final class RopeMaterialTest {
             float x=spans.x[24],y=spans.y[24],h=spans.height[24];g.tow.release(g);TowView.Segments released=new TowView.Segments(g);
             check(released.x[0]==x && released.y[0]==y && released.height[0]==h,"release begins on the same leader fitting without a height jump");
         }
-        Game crossed=new Game();crossed.reset();crossed.tug.x=300;crossed.tug.y=500;crossed.tug.angle=0;crossed.tug.floatingInitialized=true;crossed.tug.heave=0;
+        Game crossed=new Game();crossed.resetPracticeYard();crossed.tug.x=300;crossed.tug.y=500;crossed.tug.angle=0;crossed.tug.floatingInitialized=true;crossed.tug.heave=0;
         check(RopeOcclusion.blocks(crossed,crossed.tug,300,500,10),"cabin hides a crossing below its roof");
         check(!RopeOcclusion.blocks(crossed,crossed.tug,300,500,40),"high airborne rope clears the roof");
         check(!RopeOcclusion.blocks(crossed,crossed.tug,250,550,3),"near-side water rope remains visible");

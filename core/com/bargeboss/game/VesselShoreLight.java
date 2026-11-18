@@ -41,7 +41,7 @@ public final class VesselShoreLight {
         if(sx+pad<0||sx-pad>g.layout.width||sy+pad<0||sy-pad>g.layout.height)return;
         if(g.montroseStage())DockTopLight.draw(g,p,lx,ly,z,radius,color,strength,angle,fixture);
         float[] q=new float[8];
-        for(ShorelineView.Segment s:ShorelineView.segments(g.montroseStage())){
+        for(ShorelineView.Segment s:ShorelineView.near(g,lx-radius-24,ly-radius-24,lx+radius+24,ly+radius+24)){
             if(!g.montroseStage() && (walls?!s.wallVisible:z<=s.height))continue;
             float mx=(s.ax+s.bx)*.5f,my=(s.ay+s.by)*.5f,dx=lx-mx,dy=ly-my;
             if(Math.abs(dx)>radius+24 || Math.abs(dy)>radius+24 || dx*s.nx+dy*s.ny<=0)continue;
@@ -57,14 +57,14 @@ public final class VesselShoreLight {
                 if(z<=s.height || g.montroseStage() && s.height<=4)continue;
                 float inset=Math.min(20,5+(z-s.height));
                 float ix=x-s.nx*inset,iy=y-s.ny*inset,jx=xx-s.nx*inset,jy=yy-s.ny*inset;
-                boolean wet=g.montroseStage()?(MontroseHarbor.contains(ix,iy)||MontroseHarbor.contains(jx,jy)):(CalumetMap.contains(ix,iy)||CalumetMap.contains(jx,jy));
+                boolean wet=WaterEffectsPainter.contains(g,ix,iy)||WaterEffectsPainter.contains(g,jx,jy);
                 if(!wet){q[0]=c.screenX(x,y);q[1]=c.screenY(x,y)-s.height*c.scale;q[2]=c.screenX(xx,yy);q[3]=c.screenY(xx,yy)-s.height*c.scale;q[4]=c.screenX(jx,jy);q[5]=c.screenY(jx,jy)-s.height*c.scale;q[6]=c.screenX(ix,iy);q[7]=c.screenY(ix,iy)-s.height*c.scale;p.poly(q,((alpha/2)<<24)|(color&0xffffff));}
             }
         }
     }
     private static boolean clear(Game g,float x,float y,float xx,float yy){int n=Math.max(1,(int)(Physics.length(xx-x,yy-y)/6));
         for(int i=1;i<n;i++){float t=i/(float)n,px=x+(xx-x)*t,py=y+(yy-y)*t;
-            if(g.montroseStage()?!MontroseHarbor.contains(px,py):!CalumetMap.contains(px,py))return false;
+            if(!WaterEffectsPainter.contains(g,px,py))return false;
         }return true;
     }
     private static void quad(RiverCamera c,float[] q,float x,float y,float xx,float yy,float low,float high){q[0]=c.screenX(x,y);q[1]=c.screenY(x,y)-low*c.scale;q[2]=c.screenX(xx,yy);q[3]=c.screenY(xx,yy)-low*c.scale;q[4]=q[2];q[5]=c.screenY(xx,yy)-high*c.scale;q[6]=q[0];q[7]=c.screenY(x,y)-high*c.scale;}

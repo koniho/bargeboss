@@ -3,6 +3,8 @@ package com.bargeboss.game;
 /** Three overlapping collision discs approximate an oriented hull and transfer torque. */
 public final class Body implements Watercraft {
     public final int id, berth;
+    /** Stable stage berth and job assignment; cargo family stays in berth. */
+    public int destination=-1,voyageJob=-1;
     public final boolean yacht,cruiser;
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;

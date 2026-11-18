@@ -61,7 +61,7 @@ public final class Parity implements Painter {
     public static String signature() {
         Parity p=new Parity();p.spriteGrades(); Game g=new Game(); Renderer.draw(g,p);
         for(int i=0;i<90;i++) { g.advance(1.0/60); if(i%30==0) Renderer.draw(g,p); }
-        g.reset();
+        g.resetPracticeYard();
         for(int i=0;i<Game.SHIFT_TICKS;i++) {
             ReplayInput.work(g);
             if(i==300) { g.background(); Renderer.draw(g,p); g.pause(); }
@@ -98,47 +98,39 @@ public final class Parity implements Painter {
             Renderer.draw(g,p);g.pointerUp(4,x+28,y-28);g.step();Renderer.draw(g,p);
         }
     }
+    /** Geographic render/state samples; long public voyages have separate tests. */
     private static void goalLevels(Parity p) {
-        for(int id=1;id<Challenges.RAFT_RESCUE;id++) {
+        for(int id:new int[]{0,Challenges.MONTROSE,Challenges.INDIANA}){
             Game g=new Game();g.challengeId=id;g.reset();
-            int phases=0;
-            for(int i=0;i<g.shiftTicks() && g.mode==Game.PLAY;i++) {
-                int oldPhase=g.lock.phase;ReplayInput.work(g);g.step();phases|=1<<g.lock.phase;
-                if(i%30==0 || oldPhase!=g.lock.phase) {
-                    p.add(g.goalProgress());p.add(g.nextRequiredBerth());p.add(g.mode);
-                    for(Body b:g.cargo)if(b!=null){p.add(b.id);p.add(b.active?1:0);p.add(b.deliveryRecorded?1:0);p.add(b.lineAttached?1:0);p.value(b.x);p.value(b.y);p.value(b.angle);}
-                    p.add(g.tow.count());
-                    p.value(g.tug.x);p.value(g.tug.y);p.add(g.lock.phase);p.add(g.lock.ticks);
-                    p.value(g.lock.waterLevel());p.value(g.lock.entryOpening());p.value(g.lock.exitOpening());
-                    p.add(g.lock.insideCount(g));p.add(g.lock.clearedCount(g));
-                    for(int cargo=0;cargo<Lock.REQUIRED;cargo++)p.add(g.lock.targetId(cargo));
-                    p.value(g.layout.camera.zoom);p.value(g.layout.camera.worldTop);p.value(g.layout.camera.worldRight);
+            for(int i=0;i<120;i++){g.step();p.value(g.tug.x);p.value(g.tug.y);p.add(g.hull);}
+            Renderer.draw(g,p);p.add(g.goalProgress());
+            if(id==0){
+                for(int site=0;site<CalumetRiver.JOB_SITES.length;site++){
+                    float[] at=CalumetRiver.JOB_SITES[site];g.layout=Layout.focused(960,600,at[0],at[1],1.5f,480,300);Renderer.draw(g,p);
                 }
-                if(i%120==0 || oldPhase!=g.lock.phase)Renderer.draw(g,p);
+                for(Body body:g.cargo)if(body!=null)body.deliveryRecorded=true;
+                g.voyage.step(g);p.add(g.voyage.job);p.add(g.career.totalStars());Renderer.draw(g,p);
             }
-            if(!g.goalComplete())throw new IllegalStateException("Goal replay did not finish "+id);
-            if(id==2 && (phases&127)!=127)throw new IllegalStateException("Lock replay missed a cycle phase");
-            p.add(g.earnedStars);p.add(g.score);p.add(g.tow.count());Renderer.draw(g,p);
         }
     }
     private static void rescue(Parity p){
-        Game g=new Game();g.challengeId=Challenges.RAFT_RESCUE;g.reset();Renderer.draw(g,p);
+        Game g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);Renderer.draw(g,p);
         float x=(g.cargo[0].x+g.cargo[1].x)*.5f,y=g.cargo[0].y;
         ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.add(g.rescue.rafted?1:0);Renderer.draw(g,p);
-        g=new Game();g.challengeId=Challenges.SWIMMER_RESCUE;g.reset();
+        g=ReplayInput.montroseJob(Challenges.SWIMMER_RESCUE);
         for(int i=0;i<4000 && g.mode==Game.PLAY;i++){ReplayInput.work(g);g.step();if(i%60==0){p.add(g.delivered);p.add(g.rescue.flying);p.value(g.tug.x);p.value(g.tug.y);p.value(g.layout.camera.zoom);Renderer.draw(g,p);}}
         if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
         p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {
-        Game g=new Game(); g.reset();
+        Game g=new Game(); g.resetPracticeYard();
         for(int i=0;i<350;i++) {
             g.step();
             if(i%30==0) { Renderer.draw(g,p); for(Feeder f:g.feeders) {
                 p.add(f.phase); p.add(f.drops); p.add(f.shoutTicks); p.add(f.blocked?1:0); p.value(f.boat.y);
             } }
         }
-        g.reset(); g.tug.x=260; g.tug.y=760;
+        g.resetPracticeYard(); g.tug.x=260; g.tug.y=760;
         for(int i=0;i<410;i++) g.step();
         Renderer.draw(g,p); p.add(g.feeders[0].blockedTicks);
     }

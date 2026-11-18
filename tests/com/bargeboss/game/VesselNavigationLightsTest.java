@@ -31,7 +31,7 @@ public final class VesselNavigationLightsTest {
             check(Math.abs(VesselNavigationLights.visibility(heading,fixture)-VesselNavigationLights.visibility(heading+.001f,fixture))<.005f,
                 "turning never pops a navigation lamp across an overlap edge");
         }
-        Game g=new Game();g.reset();g.visualTicks=123;RiverCamera c=new RiverCamera(0,0,2);
+        Game g=new Game();g.resetPracticeYard();g.visualTicks=123;RiverCamera c=new RiverCamera(0,0,2);
         for(boolean powered:new boolean[]{false,true})for(int frame=-32;frame<64;frame++){
             Body b=new Body(powered?0:1,powered?-1:2,300,500,frame*(float)(StrictMath.PI/16));
             for(int fixture=0;fixture<VesselNavigationLights.count(powered);fixture++){
@@ -76,7 +76,7 @@ public final class VesselNavigationLightsTest {
         System.out.println(checks+" navigation light sectors, orientation, bob, coverage, clipping and purity assertions passed");
     }
     private static void broadsideStern(){
-        Game g=new Game();g.reset();
+        Game g=new Game();g.resetPracticeYard();
         for(int side=0;side<2;side++){
             float heading=(float)(StrictMath.PI/4+side*StrictMath.PI);
             Body b=new Body(1,2,300,500,heading);
@@ -106,7 +106,7 @@ public final class VesselNavigationLightsTest {
         check(pulses==60,"60 eased flashes per minute");
         check(VesselNavigationLights.specialPulse(0)==0 && VesselNavigationLights.specialPulse(15)==1 && VesselNavigationLights.specialPulse(45)==0,"rise, peak, fall and dark interval");
         for(int end:new int[]{-1,1})for(int frame=0;frame<32;frame++){
-            Game g=new Game();g.reset();g.visualTicks=18;
+            Game g=new Game();g.resetPracticeYard();g.visualTicks=18;
             Body b=new Body(1,2,300,500,frame*(float)Math.PI/16);g.cargo[0]=b;
             g.tug.angle=b.angle+(end<0?(float)Math.PI:0);
             g.tug.x=b.x-65*(float)StrictMath.cos(g.tug.angle);g.tug.y=b.y-65*(float)StrictMath.sin(g.tug.angle);
@@ -124,7 +124,7 @@ public final class VesselNavigationLightsTest {
             b.lineAttached=true;g.tow.release(g);
             check(VesselNavigationLights.pushedEnd(g,b)==0,"moored barge cannot show push rig");
         }
-        Game g=new Game();g.reset();Feeder feeder=g.feeders[0];
+        Game g=new Game();g.resetPracticeYard();Feeder feeder=g.feeders[0];
         check(VesselNavigationLights.pushedEnd(g,feeder.load)==1,"NPC inbound load gets push rig even when waiting");
         Body yacht=new Body(9,0,300,500,0,true);
         check(VesselNavigationLights.energy(g,yacht,false,VesselNavigationLights.SPECIAL)==0,"yacht remains on yacht running rig");

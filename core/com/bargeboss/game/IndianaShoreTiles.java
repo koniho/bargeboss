@@ -1,71 +1,42 @@
 package com.bargeboss.game;
 
-/** Sparse industrial shore modules on the existing dry footprint, prepared with the ground. */
+/** Survey land-use tiles. Only visible cells draw; wide views aggregate cells before clipping. */
 final class IndianaShoreTiles {
-    private static final float RISE=GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE;
-    private static final int COPING=0xff8b8075,SHEET=0xff675b55,ASPHALT=0xff49413b,FILL=0xff73675a;
-    private final ArticulatedModel.Builder builder;
-    private int serial;
-    private IndianaShoreTiles(ArticulatedModel.Builder b){builder=b;}
-    static void append(ArticulatedModel.Builder b){new IndianaShoreTiles(b).build();}
-    private void build(){
-        // Inner working quays: continuous coping and sheet-pile wall material, not a post grid.
-        float[] coast=IndianaHarbor.COAST;
-        for(int i=0;i<coast.length;i+=2){int j=(i+2)%coast.length;
-            float x=coast[i],y=coast[i+1],xx=coast[j],yy=coast[j+1];
-            if(Math.min(y,yy)<-820)continue; // Outer margins use rough fill/stone below.
-            float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy),nx=-dy/length,ny=dx/length;
-            if(IndianaHarbor.contains((x+xx)*.5f+nx*3,(y+yy)*.5f+ny*3)){nx=-nx;ny=-ny;}
-            float a=x+nx*2,b=y+ny*2,c=xx+nx*2,d=yy+ny*2;
-            patch("quay-coping",Math.min(a,c)-Math.abs(nx)*2,Math.min(b,d)-Math.abs(ny)*2,
-                    Math.max(a,c)+Math.abs(nx)*2,Math.max(b,d)+Math.abs(ny)*2,RISE-.7f,1.4f,COPING,SurfaceMaterial.CONCRETE);
-            // The wall skin is inside the bank and ends at the same physical shore elevation.
-            a=x+nx*.35f;b=y+ny*.35f;c=xx+nx*.35f;d=yy+ny*.35f;
-            patch("sheet-pile",Math.min(a,c)-Math.abs(nx)*.35f,Math.min(b,d)-Math.abs(ny)*.35f,
-                    Math.max(a,c)+Math.abs(nx)*.35f,Math.max(b,d)+Math.abs(ny)*.35f,RISE*.45f,RISE*.9f,SHEET,SurfaceMaterial.CORRUGATED);
+    private static final int[] COLOR={0xff50604c,0xff928d7d,0xff88796a,0xffa29272,0xff625d53,0xff596574,0xff444849};
+    private IndianaShoreTiles(){}
+    static int kind(float x,float y){int col=(int)StrictMath.floor((x-IndianaSurvey.MIN_X)/IndianaSurvey.CELL),row=(int)StrictMath.floor((y-IndianaSurvey.MIN_Y)/IndianaSurvey.CELL);
+        return row<0||col<0||row>=IndianaSurvey.ROWS||col>=IndianaSurvey.COLS?0:IndianaSurvey.COVER[row].charAt(col)-'0';}
+    static float[] visible(Game g){RiverCamera c=g.layout.camera;float[] b={Float.MAX_VALUE,Float.MAX_VALUE,-Float.MAX_VALUE,-Float.MAX_VALUE};
+        for(int i=0;i<4;i++){float x=c.worldX((i&1)==0?-32:g.layout.width+32,(i&2)==0?-32:g.layout.height+32),y=c.worldY((i&1)==0?-32:g.layout.width+32,(i&2)==0?-32:g.layout.height+32);b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}return b;}
+    static void ground(Game g,Painter p){float[] b=visible(g);float step=IndianaSurvey.CELL;
+        while((b[2]-b[0])*(b[3]-b[1])/(step*step)>650)step*=2;
+        float left=(float)StrictMath.floor(b[0]/step)*step,top=(float)StrictMath.floor(b[1]/step)*step;
+        for(float x=left;x<b[2];x+=step)for(float y=top;y<b[3];y+=step){int kind=kind(x+step*.5f,y+step*.5f);
+            for(float[] dry:IndianaHarbor.geometry().dry(x,y,x+step,y+step))surface(g,p,dry,kind);
         }
-        // Long parallel industrial strips read like the surveyed rail/mill yards.
-        surface("west-basin-apron",-48,-785,94,100,0xff75685d);
-        surface("east-basin-apron",1156,-785,1330,100,0xff7a6a5c);
-        surface("south-mill-apron",506,1120,690,1720,0xff716356);
-        surface("west-fork-yard",-470,1106,220,1250,0xff6c6056);
-        road(-98,-785,-66,100);road(1342,-785,1374,100);
-        road(510,160,538,1800);road(-470,1274,220,1306);
-        surface("hick-ballast",165,170,235,740,FILL);
-        rails(205,185,700);rails(670,210,630);
-        // Dry rough aggregate at the lake-facing shoulders, never into the navigable mouth.
-        surface("west-breakwater-fill",-260,-955,394,-835,FILL);
-        surface("east-breakwater-fill",806,-955,1150,-835,0xff7b6d5e);
-        rockMargin(-230,375,-946,8);rockMargin(825,1135,-946,5);
+        if(step<=256)roads(g,p,b);
     }
-    private void surface(String name,float x,float y,float xx,float yy,int color){
-        patch(name,x,y,xx,yy,RISE+.025f,.05f,color,SurfaceMaterial.CONCRETE);
+    private static void surface(Game g,Painter p,float[] world,int kind){float[] projected=new float[world.length];RiverCamera c=g.layout.camera;
+        for(int i=0;i<world.length;i+=2){projected[i]=c.screenX(world[i],world[i+1]);projected[i+1]=c.screenY(world[i],world[i+1])-GroundArt.LAND_RISE*c.scale;}
+        if(kind==0)p.poly(projected,SceneLighting.sceneryColor(COLOR[0]));
+        else p.surfacePolygon(projected,world,kind==4?SurfaceMaterial.RUST:SurfaceMaterial.CONCRETE,COLOR[kind],.14f);
     }
-    private void road(float x,float y,float xx,float yy){
-        surface("service-road",x,y,xx,yy,ASPHALT);
-        // Sparse irregular repair rectangles rather than a repeating checkerboard.
-        float midY=(y+yy)*.5f;
-        patch("asphalt-repair",x+4,midY-12,Math.min(xx-4,x+22),midY+19,RISE+.06f,.04f,0xff383634,SurfaceMaterial.CONCRETE);
-    }
-    private void rails(float x,float y,float yy){
-        patch("rail-bed",x-10,y,x+28,yy,RISE+.07f,.08f,0xff514a40,SurfaceMaterial.CONCRETE);
-        for(int i=0;i<2;i++)patch("rail",x+i*18-.8f,y,x+i*18+.8f,yy,RISE+.25f,.4f,0xff70645a,SurfaceMaterial.STEEL);
-    }
-    private void rockMargin(float x,float xx,float y,int count){
-        for(int i=0;i<count;i++){
-            float width=18+(i*7)%13,depth=14+(i*11)%17,cx=x+(xx-x)*(i+.5f)/count;
-            // Low irregular slabs retain the existing cap height and collision footprint.
-            patch("breakwater-stone",cx-width*.5f,y+(i%3)*5,cx+width*.5f,y+(i%3)*5+depth,
-                    RISE+.4f,.8f,i%2==0?0xff918273:0xff7d756a,SurfaceMaterial.CONCRETE);
+    private static void roads(Game g,Painter p,float[] bounds){for(int n=0;n<IndianaSurvey.ROADS.length;n++){
+        float[] road=IndianaSurvey.ROADS[n];int kind=IndianaSurvey.ROADS_KIND[n];float width=kind==4?7:15;
+        for(int i=2;i<road.length;i+=2){float x=road[i-2],y=road[i-1],xx=road[i],yy=road[i+1];
+            if(Math.max(x,xx)<bounds[0] || Math.min(x,xx)>bounds[2] || Math.max(y,yy)<bounds[1] || Math.min(y,yy)>bounds[3])continue;
+            if(IndianaHarbor.contains((x+xx)*.5f,(y+yy)*.5f))continue;
+            float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy);if(len<.1f)continue;float nx=-dy/len*width*.5f,ny=dx/len*width*.5f;
+            float[] q={x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny};float[] box=PolygonWater.bounds(q);
+            for(float[] dry:IndianaHarbor.geometry().dry(box[0],box[1],box[2],box[3])){float[] piece=PolygonWater.clip(q,dry);if(piece.length>=6)surface(g,p,piece,kind);}
         }
-    }
-    /** Intersect each authored module with the immutable disjoint land partition. */
-    private void patch(String name,float x,float y,float xx,float yy,float z,float height,int color,int material){
-        for(float[] land:IndianaHarbor.LAND){
-            float left=Math.max(x,land[0]),top=Math.max(y,land[1]),right=Math.min(xx,land[2]),bottom=Math.min(yy,land[3]);
-            if(right-left<.01f || bottom-top<.01f)continue;
-            int n=builder.node("indiana-"+name+"-"+serial++,-1,(left+right)*.5f,(top+bottom)*.5f,z,0,0);
-            builder.box(n,0,0,0,right-left,bottom-top,height,color,material);
+    }}
+    static void walls(Game g,Painter p){float[] box=visible(g),coast=IndianaHarbor.COAST;RiverCamera c=g.layout.camera;float sign=PolygonWater.area(coast)>0?1:-1;
+        for(int i=0;i<coast.length;i+=2){int next=(i+2)%coast.length;float x=coast[i],y=coast[i+1],xx=coast[next],yy=coast[next+1];
+            if(Math.max(x,xx)<box[0] || Math.min(x,xx)>box[2] || Math.max(y,yy)<box[1] || Math.min(y,yy)>box[3] || !IndianaHarbor.geometry().shoreEdge(x,y,xx,yy))continue;
+            float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy),nx=-dy/len*sign,ny=dx/len*sign;if(-nx+ny<=0)continue;
+            float ax=c.screenX(x,y),ay=c.screenY(x,y),bx=c.screenX(xx,yy),by=c.screenY(xx,yy),h=GroundArt.LAND_RISE*c.scale;
+            p.surfacePolygon(new float[]{ax,ay,bx,by,bx,by-h,ax,ay-h},new float[]{0,0,len,0,len,GroundArt.LAND_RISE,0,GroundArt.LAND_RISE},SurfaceMaterial.CORRUGATED,0xff73685e,.65f);
         }
     }
 }

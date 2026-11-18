@@ -32,7 +32,7 @@ public final class WaterEffectsTest {
     public static void run() {
         Game g;Painter p;
         for(int stage:new int[]{1,3}){
-            g=new Game();g.challengeId=stage;g.reset();
+            g=new Game();g.challengeId=stage;g.resetPracticeYard();
             Capture pier=new Capture(g);p=new WaterEffectsPainter(g,pier);
             p.rect(100,100,400,750,0xffffffff);
             int wet=0;

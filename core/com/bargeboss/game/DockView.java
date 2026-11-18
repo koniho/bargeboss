@@ -13,12 +13,13 @@ public final class DockView {
     private DockView(){}
     /** Called on level reset, never from drawing. Cache is bounded across level switches. */
     static void prepare(Game g){
-        g.dockCranes=new Crane[3];if(g.montroseStage())return;
-        for(int berth=0;berth<3;berth++){
+        g.dockCranes=new Crane[g.calumetStage()?CalumetRiver.JOB_SITES.length:3];if(g.montroseStage())return;
+        for(int berth=0;berth<g.dockCranes.length;berth++){
             float[] at=new float[2];
-            if(g.indianaStage()){at[0]=230;at[1]=g.dockY(berth)+38;}
+            if(g.calumetStage()){float[] site=CalumetRiver.JOB_SITES[berth];at[0]=site[0]+site[2]*90-site[3]*70;at[1]=site[1]+site[3]*90+site[2]*70;}
             else DockWorkers.shoreAnchor(g,berth,38,16,at);
-            float heading=(float)StrictMath.atan2(g.dockY(berth)-at[1],g.dockX(berth)-at[0]);
+            float dx=g.calumetStage()?g.voyage.dockX(berth):g.dockX(berth),dy=g.calumetStage()?g.voyage.dockY(berth):g.dockY(berth);
+            float heading=(float)StrictMath.atan2(dy-at[1],dx-at[0]);
             synchronized(CACHE){
                 Crane crane=null;
                 for(Crane candidate:CACHE)if(candidate.x==at[0] && candidate.y==at[1] && candidate.heading==heading){crane=candidate;break;}
@@ -29,8 +30,8 @@ public final class DockView {
     }
     static int[] ordered(Game g){
         if(g.montroseStage() || g.dockCranes==null)return new int[0];
-        int[] ids=new int[3];int count=0;
-        for(int berth=0;berth<3;berth++)if(g.berthDisplayEnabled(berth)){
+        int[] ids=new int[g.dockCranes.length];int count=0;
+        for(int berth=0;berth<g.dockCranes.length;berth++)if(g.calumetStage() || g.berthDisplayEnabled(berth)){
             Crane crane=g.dockCranes[berth];RiverCamera c=g.layout.camera;
             float x=c.screenX(crane.x,crane.y),y=c.screenY(crane.x,crane.y);
             if(x+100*c.scale<0 || x-100*c.scale>g.layout.width || y+80*c.scale<0 || y-150*c.scale>g.layout.height)continue;

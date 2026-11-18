@@ -13,6 +13,8 @@ public final class Mooring {
         return b.lineAttached && b.mooringTicks>=TIGHTEN_TICKS && b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS;
     }
     public static void step(Game g,Body b) {
+        if(g.calumetStage()){g.voyage.moor(g,b);return;}
+        if(g.indianaStage()){indiana(g,b);return;}
         if(g.berthBlocker(b.berth,b)!=null)return;
         if(b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS) b.mooringTicks++;
         b.dockTime=1.2f;
@@ -35,5 +37,21 @@ public final class Mooring {
         b.y=Physics.clamp(b.y,minY+Math.min(0,b.mooringY-minY)*(1-eased),maxY+Math.max(0,b.mooringY-maxY)*(1-eased));
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;
         if(b.mooringTicks>=TIGHTEN_TICKS+ALIGN_TICKS && g.inDock(b)) b.unloadingTicks++;
+    }
+    static boolean orientedFits(Body b,float x,float y,float nx,float ny,float halfWidth,float halfLength){
+        for(int i=0;i<3;i++){float dx=b.discX(i)-x,dy=b.discY(i)-y;
+            if(Math.abs(dx*nx+dy*ny)+b.radius>halfWidth || Math.abs(-dx*ny+dy*nx)+b.radius>halfLength)return false;}
+        return true;
+    }
+    private static void indiana(Game g,Body b){
+        if(g.berthBlocker(b.berth,b)!=null)return;
+        if(b.mooringTicks<ALIGN_TICKS)b.mooringTicks++;
+        float t=b.mooringTicks/(float)ALIGN_TICKS,e=t*t*(3-2*t);
+        float angle=(float)StrictMath.atan2(IndianaHarbor.DOCK_NX,-IndianaHarbor.DOCK_NY);
+        if(Math.abs(Physics.angle(angle-b.mooringAngle))>Math.PI/2)angle+=(float)Math.PI;
+        b.angle=Physics.angle(b.mooringAngle+Physics.angle(angle-b.mooringAngle)*e);
+        b.x=b.mooringX+(IndianaHarbor.DOCK_X-b.mooringX)*e;b.y=b.mooringY+(IndianaHarbor.DOCK_Y-b.mooringY)*e;
+        IndianaHarbor.collide(b,null);b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;b.dockTime=1.2f;
+        if(b.mooringTicks>=ALIGN_TICKS && g.inDock(b))b.unloadingTicks++;
     }
 }

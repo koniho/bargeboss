@@ -16,12 +16,12 @@ public final class MontroseTest {
         ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,g.tug.x,g.tug.y);ReplayInput.up(g,g.tug.x,g.tug.y);
         for(int i=0;i<45;i++)g.step();
         check(g.tow.connected(b,g.tug),"Native screen-space release attaches yacht towline");
-        for(int tick=0;tick<18000 && g.mode==Game.PLAY;tick++){
+        for(int tick=0;tick<18000 && !b.deliveryRecorded && g.mode==Game.PLAY;tick++){
             ReplayInput.work(g);g.step();
             if(log && tick%600==0)System.out.println(tick+" tug="+g.tug.x+","+g.tug.y+" yacht="+b.x+","+b.y+" rope="+g.tow.count()+" settle="+g.mission.settledTicks);
         }
         if(log)System.out.println(g.status()+" yacht="+b.x+","+b.y+" angle="+b.angle+" speed="+b.speed());
-        check(g.goalComplete() && g.mode==Game.FINISH,"Public-input yacht tow completes before replay bound");
+        check(b.deliveryRecorded && g.challengeId==Challenges.RAFT_RESCUE && g.mode==Game.PLAY,"Public-input yacht tow continues to next harbor job");
         check(g.hull==100 && b.active && b.unloadingTicks==0,"Safe delivery retains yacht without cargo unloading");
         check(g.career.bestStars(Challenges.MONTROSE)==3 && g.score==1200,"Yacht goal rewards once");
         return g;
