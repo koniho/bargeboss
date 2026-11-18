@@ -20,6 +20,7 @@ public final class CoreTest {
         PinchZoomTest.run();
         EngineAudioTest.run();
         DockCraneTest.run();
+        CargoTransferTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
         g.resetPracticeYard(); g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
@@ -169,7 +170,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Geographic scene/selector trace reviewed; bounded practice deliveries and score retained.
-        check(Parity.signature().equals("91fb813:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("dd1aa58e:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

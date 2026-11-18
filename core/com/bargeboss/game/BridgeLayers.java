@@ -2,15 +2,18 @@ package com.bargeboss.game;
 /** One bounded frame-local cursor through bridge geometry and the shared depth stream. */
 final class BridgeLayers {
     private final Game game;private final Painter painter;private float previous=Float.NEGATIVE_INFINITY;
-    BridgeLayers(Game g,Painter p){game=g;painter=p;}
+    private final int[] cranes;private final CargoTransfer.Pose[] cranePoses;
+    BridgeLayers(Game g,Painter p){game=g;painter=p;cranes=DockView.visible(g);cranePoses=new CargoTransfer.Pose[cranes.length];
+        for(int i=0;i<cranes.length;i++)cranePoses[i]=new CargoTransfer.Pose(g,g.dockCranes[cranes[i]],cranes[i]);}
+
     void to(float screenDepth){
-        if(game.passages==null || game.passages.bridges.length==0)return;
         RiverCamera c=game.layout.camera;
         float depth=(screenDepth-c.screenY(0,0))/(RiverCamera.Q*RiverCamera.DEPTH*c.scale);
         if(depth<=previous)return;
-        for(int i=0;i<game.passages.bridges.length;i++){LandmarkBridge bridge=game.passages.bridges[i];
+        for(int i=0;game.passages!=null && i<game.passages.bridges.length;i++){LandmarkBridge bridge=game.passages.bridges[i];
             bridge.drawRange(game,painter,game.passages.amount(i),game.passages.passable(i),previous,depth);
         }
+        for(int i=0;i<cranes.length;i++)DockView.drawRange(game,painter,cranes[i],cranePoses[i],previous,depth);
         previous=depth;
     }
 }

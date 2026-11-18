@@ -19,14 +19,14 @@ public final class CargoDepthTest {
                 Painter painter=river?new RiverPainter(capture):capture;
                 VesselView.draw(g,painter,b,false,false);
                 check(capture.hull==1,"unloading keeps one hull");
-                check(capture.count==(tick<Game.UNLOAD_TICKS?1:0),"exactly one whole-load layer until unloading completes");
+                check(capture.count==(tick<CargoTransfer.PICK?1:0),"one registered load remains on hull until pickup");
                 if(capture.count>0){
                     check(near(capture.x,capture.hullX) && near(capture.y,capture.hullY),"cargo and hull retain one fixed waterline anchor including heave");
                     check(near(capture.w,capture.hullW) && near(capture.h,capture.hullH),"quantity changes never shrink or stretch cargo placement");
                     check(capture.first==capture.hullFirst && capture.next==capture.hullNext && near(capture.blend,capture.hullBlend),"cargo uses the same source-heading pair and blend as its hull");
-                    check(capture.alpha>0 && capture.alpha<=1 && capture.alpha<previous,"load fades monotonically through unloading");
+                    check(capture.alpha>0 && capture.alpha<=1 && capture.alpha<=previous,"load stays opaque until physical pickup");
                     check(tick!=0 || near(capture.alpha,1),"full load starts opaque");
-                    check(tick!=90 || near(capture.alpha,.5f),"halfway unloading retains half quantity");
+                    check(near(capture.alpha,1),"cargo does not dissolve before pickup");
                     check(capture.cargoSequence>capture.hullSequence,"registered coaming-cut cargo follows the base hull");
                     previous=capture.alpha;
                 }

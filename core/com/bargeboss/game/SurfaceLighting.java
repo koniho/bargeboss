@@ -93,6 +93,9 @@ public final class SurfaceLighting {
         }
     }
     public static void directional(Game g,Painter p,int source,float angle,float x,float y,float size,float alpha,Body body){
+        directionalAt(g,p,source,angle,x,y,size,alpha,body,body.x,body.y);
+    }
+    static void directionalAt(Game g,Painter p,int source,float angle,float x,float y,float size,float alpha,Body body,float worldX,float worldY){
         int atlas=SurfaceLightArt.forSource(source);if(atlas<0 || alpha<=0)return;
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
         Painter canvas=river==null?p:river.canvas();RiverCamera c=river==null?null:river.camera;
@@ -100,7 +103,7 @@ public final class SurfaceLighting {
         int a=(((int)whole+(river==null?0:RiverCamera.DIRECTION_OFFSET))%32+32)%32,b=(a+1)%32;
         float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
         float sx=river==null?x:c.screenX(x,y),sy=river==null?y:c.screenY(x,y),s=river==null?size:size*c.scale;
-        float[] weights=sample(g,body.x,body.y,body);
+        float[] weights=sample(g,worldX,worldY,body);
         for(int d=0;d<4;d++){
             float shade=shade(weights,d)*ambience(g)*alpha;
             if(shade>.004f)canvas.spriteBlend(atlas,SurfaceLightArt.frame(source,d,a),SurfaceLightArt.frame(source,d,b),sx,sy,s,s,0,mix,shade);

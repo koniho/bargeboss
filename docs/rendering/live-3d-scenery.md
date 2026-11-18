@@ -19,7 +19,9 @@ continues to use a prepared immutable `Pose`.
 This optimization has an explicit constraint: all geometry nodes must descend
 from the supplied root, and independently drawn parts must remain disjoint along
 the supplied root-local separation axis for their entire travel. The bridge kit
-uses its span X axis. Transformed bounds validate separation on every update;
+uses its span X axis. Cargo cranes use vertical Z separation between their
+fixed pedestal/counterweight and upward-luffing jib; cables and payloads have
+independent depth events. Transformed bounds validate separation on every update;
 overlap throws rather than silently sorting parts by their centers. Partition
 another mechanism appropriately or implement a correct different depth strategy
 if it cannot meet this constraint. Do not force arbitrary intersecting machinery

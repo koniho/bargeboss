@@ -11,5 +11,5 @@ public final class CargoArt {
     public static float scale(int atlas){return SCALE[atlas-SpriteAtlas.STEEL];}
     public static float pivotX(int atlas,int frame){return X[atlas-SpriteAtlas.STEEL][frame];}
     public static float pivotY(int atlas,int frame){return Y[atlas-SpriteAtlas.STEEL][frame];}
-    public static float quantity(Body b){return Physics.clamp(1-b.unloadingTicks/(float)Game.UNLOAD_TICKS,0,1);}
+    public static float quantity(Body b){return b.deliveryRecorded || b.unloadingTicks>=CargoTransfer.PICK?0:1;}
 }

@@ -303,3 +303,11 @@ an approaching tug before measurement, then use the real `BridgePassage` fixed
 steps; use `live` to inspect opening/holding and `freeze` for a steady pose.
 `tools/LocationBridgeBenchmark.java` separately reports cold geometry preparation
 and approximate retained JVM heap; it is not a native frame-time measurement.
+
+
+Cargo offloading: `calumet-offload` starts a correctly oriented barge at its
+surveyed destination and uses real mooring updates before the 180-tick crane
+cycle. Use 60 warmup / 240 replay samples (optionally a fixed camera zoom) to
+include the lift, transfer, landing and return. The completed hull and shore
+load remain present. Record timed samples with builds/tests stopped and the
+phone unlocked; replay frame intervals are not equivalent to a live FPS claim.

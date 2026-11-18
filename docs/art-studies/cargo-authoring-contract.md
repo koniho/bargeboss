@@ -37,11 +37,22 @@ repeat independently sized legacy sprites across arbitrary offsets to build the
 load. `CargoArt` owns the predicate, source registration and uniform scale;
 `SpriteAtlas` exposes the exact same source selection and transforms to every host.
 
-The three-second unloading operation fades the whole-load quantity in shared
-simulation/render code. Do not shrink a load or move its anchor during unloading;
-do not vary this behavior by platform. A future discrete-unit unloading model
-requires explicitly authored subloads with the same fit/depth contract, rather
-than reinstating arbitrary placements.
+The three-second unloading operation now transfers the whole registered load on
+one rigid steel lifting tray. It remains opaque and hull-registered until pickup
+at tick 24; then its unchanged artwork, scale and heading follow the crane's
+world-space cargo origin. Keep the foreground coaming cutoff until the load clears
+the rim. Lower onto a verified dry receiving pad, release at tick 132, and return
+the crane to idle by tick 180. Delivered barges stay empty and towable; the latest
+batch remains ashore until the next operation replaces it. This is an arcade
+whole-batch lift, not a simulation of individual coal grabs or container picks.
+
+`CargoTransfer` owns the choreography and `CargoView.lifted` preserves source
+registration, surface lighting and all 32 headings. A separate model-based tray
+supports loose material; it is not baked into the production sheets. Suspended
+and landed cargo cannot trigger watercraft-only building fades. See
+[offloading](../rendering/cargo-offloading.md). A future discrete-unit unloading
+model still requires authored subloads with the same fit/depth contract, rather
+than arbitrary repeated/scaled sprites.
 
 ## Required deliverables and metadata
 

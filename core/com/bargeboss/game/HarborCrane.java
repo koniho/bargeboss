@@ -2,7 +2,36 @@ package com.bargeboss.game;
 
 /** One rigid crane design for every harbor. Placement rotates XYZ before projection. */
 public final class HarborCrane {
+    static final class Lamp {
+        final String id,parent;final float x,y,z,nx=0,ny=0,nz=1;
+        Lamp(String id,String parent,float x,float y,float z){this.id=id;this.parent=parent;this.x=x;this.y=y;this.z=z;}
+    }
+    static final Lamp[] CARGO_LIGHTS={new Lamp("cargo-mast-worklight","cargo-pedestal",-7,-8,CargoTransfer.PIVOT-4),new Lamp("cargo-tip-worklight",MontroseBoatHoist.LIFT_ID,0,0,4)};
+    // Electric shore machinery: no smoke or steam outlets.
     private HarborCrane(){}
+    /** Cargo-duty luffing crane. Mast and jib remain separated vertically over full travel. */
+    static ArticulatedModel cargo(float x,float y,float heading,float reach){
+        ArticulatedModel.Builder b=new ArticulatedModel.Builder();
+        int base=b.node("cargo-pedestal",-1,x,y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,heading,0);
+        b.box(base,0,0,2,26,26,4,0xff85897f,SurfaceMaterial.CONCRETE);
+        for(int side=-1;side<=1;side+=2){
+            b.beam(base,side*10,-8,4,side*5,-5,CargoTransfer.PIVOT,4,0xffb48a34,SurfaceMaterial.RUST);
+            b.beam(base,side*10,8,4,side*5,5,CargoTransfer.PIVOT,4,0xffb48a34,SurfaceMaterial.RUST);
+            for(int j=0;j<6;j++)b.beam(base,side*9,-7,j*16+5,side*6,7,j*16+21,1.7f,0xff656b65,SurfaceMaterial.STEEL);
+        }
+        b.box(base,0,0,CargoTransfer.PIVOT-1,18,18,6,0xff4c5853,SurfaceMaterial.STEEL);
+        int boom=b.node(MontroseBoatHoist.BOOM_ID,base,0,0,CargoTransfer.PIVOT,0,CargoTransfer.LUFF);
+        b.box(base,-13,0,CargoTransfer.PIVOT-10,22,20,12,0xff626861,SurfaceMaterial.STEEL);
+        b.box(base,-13,0,CargoTransfer.PIVOT-3,24,22,3,0xffc89e42,SurfaceMaterial.RUST);
+        for(int side=-1;side<=1;side+=2){
+            b.beam(boom,4,side*5,4,reach,side*2,4,3.2f,0xffd2a239,SurfaceMaterial.RUST);
+            b.beam(boom,4,side*5,16,reach,side*2,9,2.5f,0xffd2a239,SurfaceMaterial.RUST);
+            for(int i=0;i<7;i++)b.beam(boom,4+i*(reach-4)/7,side*(5-i*3/7f),4,4+(i+1)*(reach-4)/7,side*(5-(i+1)*3/7f),16-(i+1),1.5f,0xffad842f,SurfaceMaterial.STEEL);
+        }
+        b.beam(boom,reach,-3,4,reach,3,4,4,0xff48524c,SurfaceMaterial.STEEL);
+        b.node(MontroseBoatHoist.LIFT_ID,boom,reach,0,4,0,0);
+        return b.build();
+    }
     static ArticulatedModel build(float worldX,float worldY,float rise,float heading){ArticulatedModel.Builder b=new ArticulatedModel.Builder();
         int base=b.node("montrose-haulout-pedestal",-1,worldX,worldY,rise/ArticulatedModel.Z_SCALE,heading,0);
         b.box(base,0,0,1.5f,22,22,3,0xff8c8e82,SurfaceMaterial.CONCRETE);

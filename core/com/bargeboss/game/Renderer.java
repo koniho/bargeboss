@@ -32,6 +32,7 @@ public final class Renderer {
     }
     static void river(Game g,Painter p) {
         HarborView.draw(g,p);
+        DockView.shadows(g,((RiverPainter)p).canvas());
         BridgeLayers bridgeLayers=new BridgeLayers(g,((RiverPainter)p).canvas());
         NavigationLights.reflections(g,((RiverPainter)p).canvas());
         if(g.lockStage())LockView.water(g,g.lock,((RiverPainter)p).canvas());

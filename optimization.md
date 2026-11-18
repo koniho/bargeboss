@@ -2833,3 +2833,46 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   but does not unlock the phone. Do not reuse historical bridge numbers as an A/B
   result: earlier fixtures also used different tug placement/camera states.
   iOS/native parity is untested here (no macOS/Foundation/J2ObjC host available).
+
+
+## 2026-11-18 — Live crane and whole-load offloading
+
+- Existing berth cranes were static, while cargo opacity decreased over 180 ticks.
+  Added a shared, deterministic lower/lift/luff/lower/release/return sequence using
+  that same timer; scoring and retained, towable empty barges remain unchanged.
+- Cargo-duty rigs prepare complete local BSPs once in the bounded 32-instance
+  location cache. Fixed pedestal/counterweight and movable jib stay separated in
+  root-local Z. Exact continuous poses reuse the geometry buffers; no sampled
+  animation table, frame-specific meshes, generated textures or native state.
+- Each geographic destination has its own rig. Dry-footing and full receiving-pad
+  searches run only at stage setup, against the actual location water polygon.
+  Review found the first apron placement intersected water at one berth, and the
+  first narrow receiving radius put cargo too close to the mast. Placement now
+  checks the full footprint and keeps the loaded tray clear of the footing.
+- Rig faces use the existing depth-interval stream in both location and tutorial
+  rendering. Cable/hook and cargo are separate depth events. The accepted whole
+  cargo sheet moves as one opaque batch with unchanged scale/heading, a supporting
+  steel tray, coaming cutoff during pickup and separate receiver-plane shadow.
+  Native whole-scene frame cost remains to be measured. The phone is currently
+  locked; no timings are inferred from the JVM or prior bridge captures.
+
+- Added an early world-depth bounds rejection before submitting any crane face
+  fragments. Frame-local machinery states retain the current bounds; empty depth
+  intervals do not rescan/draw the rig. No per-phase topology/raster caches grow
+  during a cycle. This is a work bound, not a measured native FPS improvement.
+- Final validation: signed normal Android build and complete check.sh passed,
+  including 20,900 crane/cargo/pad/idle assertions, retained-hull gameplay,
+  all-heading cargo/coaming checks and asset derivative freshness. Canonical
+  render trace reviewed and updated to dd1aa58e:2:1350; delivery/score outcomes
+  remain unchanged. All 57 developer fixture checks passed; the new isolated
+  offload fixture completes real mooring, unloading and return in 300 replay ticks.
+  It disables the other fixture barges so a nearby starting hull cannot block
+  the measured berth; production collision/blocker logic is unchanged.
+- Reviewed 181 actual shared-renderer frames plus container/steel pickup and
+  landing images. Final video/contact sheet and cargo examples copied to Downloads.
+  Cargo artwork is reused; no image generation or raster derivative changes.
+  The supporting tray and receiver footprint shadow are model-based. A full
+  crane shadow map and individual container/grab-bucket cycles are not included.
+- Android APK installed via the existing authorized path; native frame timings
+  remain unverified because the phone is locked. No iOS/Foundation/J2ObjC host is
+  available here. This round adds no platform-specific animation behavior.

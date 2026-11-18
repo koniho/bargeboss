@@ -10,6 +10,8 @@ import java.util.HashMap;
 public final class SceneryOcclusion implements Painter {
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
+    private int nonVesselDepth;
+    static void nonVessel(Painter p,boolean begin){SceneryOcclusion s=context(p);if(s!=null)s.nonVesselDepth+=begin?1:-1;}
     private float recordingDepth=Float.NEGATIVE_INFINITY;
     private float[] recordingClip=ShoreOcclusion.EMPTY;
     private final ArrayList<float[]> clipStack=new ArrayList<float[]>();
@@ -163,13 +165,8 @@ public final class SceneryOcclusion implements Painter {
         float size=2*(b.half+b.radius)/(b.yacht?YachtArt.HULL_FRACTION:tug?TugArt.HULL_FRACTION:BargeArt.HULL_FRACTION);
         SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,x,y,size,size,1);
         if(tug || b.yacht)return;
-        if(b.berth==2){if(b.unloadingTicks<Game.UNLOAD_TICKS)SpriteAtlas.draw(p,SpriteAtlas.BULK,b.angle,x,y,size,size,1-b.unloadingTicks/(float)Game.UNLOAD_TICKS);return;}
-        int remaining=b.unloadingTicks==0?3:Math.max(0,3-(b.unloadingTicks+50)/60);
-        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle),cargoSize=b.berth==0?58:26;
-        for(int i=0;i<remaining;i++) {
-            float xx=b.berth==0?0:-17+i*17,yy=b.berth==0?-8+i*8:0;
-            SpriteAtlas.draw(p,b.berth==0?SpriteAtlas.STEEL:SpriteAtlas.CONTAINER,b.angle,x+c*xx-s*yy,y+s*xx+c*yy,cargoSize,cargoSize,1);
-        }
+        float fill=CargoArt.quantity(b);
+        if(fill>0)SpriteAtlas.draw(p,b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER,b.angle,x,y,size,size,fill);
     }
     float buildingTarget(Game g,int atlas,int frame,float wx,float wy,float rise,float size) {
         RiverCamera c=g.layout.camera;float depth=c.screenY(wx,wy),x=c.screenX(wx,wy),y=depth-rise*c.scale;
@@ -212,7 +209,7 @@ public final class SceneryOcclusion implements Painter {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){p.spriteBlend(a,f,ff,x,y,w,h,r,mix,alpha);}
     }
     private void remember(int atlas,int frame,float x,float y,float w,float h,float r,float alpha) {
-        if((atlas==SpriteAtlas.YACHT || atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK) && alpha>=.15f && w>0 && h>0)
+        if(nonVesselDepth==0 && (atlas==SpriteAtlas.YACHT || atlas>=SpriteAtlas.TUG && atlas<=SpriteAtlas.BULK) && alpha>=.15f && w>0 && h>0)
             {Sprite vessel=new Sprite(atlas,frame,x,y,w,h,r);vessel.groundDepth=recordingDepth;vessel.hidden=recordingClip;vessels.add(vessel);}
     }
     public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){remember(a,f,x,y,w,h,r,alpha);target.sprite(a,f,x,y,w,h,r,alpha);}

@@ -15,10 +15,20 @@ public final class ProfileScenarioTest {
             if(x.visualTicks!=tick+1)throw new AssertionError("Replay step must be one shared tick");checks++;
             System.out.println(scene+" lesson="+(y.tutorial==null?-1:y.tutorial.lesson)+" tick="+y.visualTicks);
         }
+        offload();
         circle();
         try{ProfileScenario.prepare(new Game(),"invalid",960,600);throw new AssertionError("Unknown fixture accepted");}
         catch(IllegalArgumentException expected){checks++;}
         System.out.println(checks+" developer fixture checks passed");
+    }
+    private static void offload(){
+        Game g=new Game();ProfileScenario.prepare(g,"calumet-offload",1320,600);Body b=g.cargo[0];
+        for(int tick=0;tick<300;tick++)ProfileScenario.replayTick(g);
+        if(!b.deliveryRecorded || !b.active || b.unloadingTicks!=Game.UNLOAD_TICKS || CargoArt.quantity(b)!=0)
+            throw new AssertionError("Offload fixture must complete real unloading and retain empty hull");
+        CargoTransfer.Pose pose=new CargoTransfer.Pose(g,g.dockCranes[b.destination],b.destination);
+        if(pose.phase!=0 || !pose.cargo())throw new AssertionError("Offload fixture did not return idle with shore cargo");
+        System.out.println("Offload fixture completes mooring, unloading and return in 300 replay ticks");
     }
     private static void circle(){
         Game a=new Game(),b=new Game();

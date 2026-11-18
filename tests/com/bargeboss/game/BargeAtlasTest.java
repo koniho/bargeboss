@@ -23,7 +23,7 @@ public final class BargeAtlasTest {
         for(int heading=0;heading<32;heading++) for(int tick:new int[]{0,1,60,120,179,180}) {
             b.angle=heading*(float)Math.PI/16;b.unloadingTicks=tick;
             Capture out=new Capture();VesselView.draw(g,new RiverPainter(out),b,false,false);
-            check(out.hull==1 && out.coal==(tick<Game.UNLOAD_TICKS?1:0),"coal disappears at unload completion while hull remains");
+            check(out.hull==1 && out.coal==(tick<CargoTransfer.PICK?1:0),"coal transfers off hull at pickup while hull remains");
             if(out.coal>0) {
                 check(near(out.hx,out.cx) && near(out.hy,out.cy) && near(out.hw,out.cw) && near(out.hh,out.ch),"coaming mask retains the hull origin and square extent through every scoop and heading");
                 check(out.alpha>0 && out.alpha<=1,"remaining coal quantity has valid opacity");

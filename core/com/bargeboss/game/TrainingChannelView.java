@@ -128,6 +128,7 @@ public final class TrainingChannelView {
             while(j>=0 && c.screenY(bodies[j].x,bodies[j].y)>c.screenY(b.x,b.y)) {bodies[j+1]=bodies[j];j--;}
             bodies[j+1]=b;
         }
+        DockView.shadows(g,canvas);BridgeLayers machinery=new BridgeLayers(g,canvas);
         Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int crane=0;int[] cranes=DockView.ordered(g);int[] workers=DockWorkers.ordered(g);int[] splashes=SprayView.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
@@ -143,6 +144,7 @@ public final class TrainingChannelView {
                 float wd=crew<workers.length?DockWorkers.depth(g,workers[crew]):Float.MAX_VALUE;
                 float ad=WorldArrows.depth();
                 float cd=crane<cranes.length?DockView.depth(g,cranes[crane]):Float.MAX_VALUE;
+                machinery.to(Math.min(next,Math.min(cd,Math.min(ad,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd))))))))))));
                 if(crane<cranes.length && cd<=Math.min(next,Math.min(ad,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd))))))))))){DockView.draw(g,canvas,cranes[crane++]);continue;}
                 if(WorldArrows.pending()&&ad<=Math.min(next,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))))))){WorldArrows.draw(world);continue;}
                 float other=Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))));
@@ -157,7 +159,9 @@ public final class TrainingChannelView {
                 if(bd<=vd && boat<count)Renderer.body(g,world,bodies[boat++]);
                 else YardActivity.drawVehicle(g,canvas,vehicles[vehicle++]);
             }
+            machinery.to(next);
             if(i<FACTORY_PLACEMENTS)FactoryArt.draw(g,canvas,factoryCell(i),factoryX(i),factoryY(i));
         }
+        machinery.to(Float.POSITIVE_INFINITY);
     }
 }

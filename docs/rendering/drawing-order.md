@@ -662,3 +662,16 @@ complete part-local BSPs are prepared at stage entry. Moving faces use exact
 continuous rigid transforms; per-frame interval clipping must not rebuild the
 model/BSP or quantize its phase. See [live 3-D scenery](live-3d-scenery.md). Shore, cargo, rope attachment and waterline rules
 remain in force. Independent water-plane deck shadows draw before the dry ground.
+
+
+### Cargo cranes and offloading
+
+`BridgeLayers` also emits prepared crane face fragments between world-depth events,
+including inside the continuous tutorial. Do not draw an entire crane at its mast
+midpoint. `DockView` sorts the hook/cable and cargo tray separately by their ground
+anchors; height affects projection, never sort depth. The small depth tie-break
+puts the picked load after its own hull; retain the coaming clip during initial
+lift. Landed cargo uses its dry pad anchor even after its barge moves away.
+Crane lamps use named part-local anchors and the same exact mesh pose, with face
+occlusion. Released/suspended cargo must not join watercraft building-fade masks.
+See [cargo offloading](cargo-offloading.md) for motion and validation.
