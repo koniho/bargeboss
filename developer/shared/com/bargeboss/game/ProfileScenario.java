@@ -2,11 +2,19 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
     private ProfileScenario(){}
+    private static void bridgeApproach(Game g,LandmarkBridge b,float[][] route){
+        float mid=(b.right-b.left)*.5f,tx=b.x+b.dx*mid-b.dy*140,ty=b.y+b.dy*mid+b.dx*140,best=Float.MAX_VALUE;
+        for(int i=1;i<route.length;i++){
+            float ax=route[i-1][0],ay=route[i-1][1],dx=route[i][0]-ax,dy=route[i][1]-ay;
+            float t=Math.max(0,Math.min(1,((tx-ax)*dx+(ty-ay)*dy)/(dx*dx+dy*dy))),x=ax+t*dx,y=ay+t*dy,d=(x-tx)*(x-tx)+(y-ty)*(y-ty);
+            if(d<best){best=d;g.tug.x=x;g.tug.y=y;g.tug.angle=(float)StrictMath.atan2(b.y-y,b.x-x);}
+        }
+    }
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
@@ -16,6 +24,10 @@ public final class ProfileScenario {
             root.challengeId=0;root.reset();
             if(name.equals("shared-slip-wide")){for(Body b:root.cargo)if(b!=null)b.deliveryRecorded=true;root.voyage.step(root);root.tug.x=root.dockX(2);root.tug.y=root.dockY(2)+180;}
             if(name.equals("calumet-basin")){float[] at=CalumetRiver.ROUTE[CalumetRiver.ROUTE.length-1];root.tug.x=at[0];root.tug.y=at[1];}
+            if(name.equals("calumet-bridge") || name.equals("calumet-skyway")){
+                LandmarkBridge b=LocationBridges.calumet()[name.equals("calumet-skyway")?5:7];bridgeApproach(root,b,CalumetRiver.ROUTE);
+                root.layout=Layout.focused(width,height,b.x,b.y,name.equals("calumet-skyway")?.65f:1.6f,width*.5f,height*.62f);return;
+            }
             root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,name.equals("shared-slip-wide")?.65f:1.4f,width*.5f,height*.52f);return;
         }
         if(name.equals("tow-tight-circle")){
@@ -32,6 +44,7 @@ public final class ProfileScenario {
         }
         if(name.startsWith("indiana-")){
             root.selectChallenge(Challenges.INDIANA);root.reset();
+            if(name.equals("indiana-bridges")){LandmarkBridge b=LocationBridges.indiana()[1];bridgeApproach(root,b,IndianaHarbor.ROUTE);root.layout=Layout.focused(width,height,b.x,b.y,1.25f,width*.5f,height*.62f);return;}
             if(name.equals("indiana-hick")){float[] at=IndianaHarbor.ROUTE[IndianaHarbor.ROUTE.length/2];root.tug.x=at[0];root.tug.y=at[1];root.cargo[0].x=at[0]+110;root.cargo[0].y=at[1];}
             root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,1.4f,width*.5f,height*.52f);return;
         }

@@ -122,3 +122,13 @@ no imagery is embedded as a runtime texture. Source dates, edits, simplification
 and export commands are recorded in [Calumet](levels/calumet/README.md) and
 [Indiana Harbor](maps/indiana-harbor.md). These are gameplay maps, not navigational
 products. Preserve the data attribution when redistributing the surveys.
+
+### Geographic bridge landmark rigs (2026-11-18)
+
+The original shared-Java rigid geometry is described in
+[the bridge reference inventory](art-studies/landmark-bridges-v1/README.md).
+Photographs informed silhouettes and mechanisms; no reference-photo pixels or
+third-party 3-D models are included in runtime assets. Surveyed headings and
+crossing coordinates retain the Calumet/Indiana OSM-derived data provenance
+above. The inventory distinguishes source-supported features from simplified
+control houses, track grouping, mechanical details and approximate placements.

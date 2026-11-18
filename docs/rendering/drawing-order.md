@@ -643,3 +643,21 @@ a point-in-mask assertion alone did not catch the native raster seam.
 Quay workers must be merged into the sorted geographic landmark stream before
 merging that stream with craft/ropes. Appending workers after an already sorted
 bridge list produces incorrect depth even if both individual lists are sorted.
+
+### Geographic articulated bridges
+
+`BridgeLayers` merges bridge **face fragments**, not a whole bridge midpoint,
+through the existing ground-depth stream. Each next boat, tow segment, marker,
+crane, spray or worker supplies a screen depth. Convert it back through the same
+camera into `worldY - worldX`; clip the prepared BSP faces between the previous
+and next depths, preserving UVs. Emit the final interval after the last item.
+The near bridge pier can then cover a craft while its far pier remains behind it.
+Height still changes projection only. Bridge machinery never fades.
+
+This uses the same upright billboard-depth assumption as vessel sprites, not a
+full 3-D vessel mesh. Separate fixed/moving rigs and neighboring crossings retain
+local BSP ordering; this is not a whole-world depth buffer. Do not flatten the
+prepared bridges into a single bitmap across depth intervals. Fixed faces and
+33 moving poses are prepared at stage entry; per-frame interval clipping must
+not rebuild the model/BSP. Shore, cargo, rope attachment and waterline rules
+remain in force. Independent water-plane deck shadows draw before the dry ground.

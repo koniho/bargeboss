@@ -2724,3 +2724,67 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   were reviewed on the development phone. Layout PNGs were copied to Downloads.
   No timed Android performance capture or native iOS/J2ObjC run was performed;
   macOS Foundation/J2ObjC tooling is unavailable in this Termux environment.
+
+## 2026-11-18 — Geographic bridge rigs, preparation and depth
+
+- Added photo-led Calumet/Indiana rigid bridge families and stage-owned opening,
+  hold and closing states. Each moving rig prepares 33 poses at stage entry;
+  fixed geometry is prepared once. Active draws do not construct a new rig/BSP.
+  Poses and models are bounded by the curated ten crossings per location.
+- Initial desktop-JVM cold preparation of both locations retained approximately
+  164,686 KiB. Keeping source/back faces, split intermediates and BSP nodes per
+  pose was wasteful. `ArticulatedModel.prepare` now flattens final visible faces
+  in the same BSP order and discards that construction data. Same benchmark:
+  91,088 KiB retained heap delta, 483 ms cold preparation (initial run 488 ms).
+  These GC-based heap deltas include water/class initialization, exclude native
+  textures and are approximate, not a phone frame-rate or exact allocation trace.
+  Single-location startup only initializes that location; visiting both retains
+  both bounded geometry catalogs. Memory remains material and should be monitored.
+- Bridge geometry now participates in every relevant depth event as clipped face
+  intervals, rather than painting the whole bridge at its midpoint. This is needed
+  for tall supports/overhead decks and near/far vessel/rope occlusion. UVs, poses
+  and light parents are preserved. The unchanged practice rig passed 379,933
+  mechanical, anchor, opacity, BSP and deterministic draw assertions after flattening.
+- Corrected inlet/rail/Skyway headings from source transport lines. The old +0.82
+  heading produced an 825-unit CN span running along the river. Correct transverse
+  headings produce roughly 105–144-unit movable crossings. Added Torrence/C&WI;
+  replaced three Dickey OSM-way placeholders with one actual crossing; Cline is
+  a high fixed concrete viaduct, distinct from the movable canal bridges.
+- Calumet real-input transit: 42/42 waypoints, 17,448 ticks, hull 100. Indiana:
+  18/18 waypoints, 20,581 ticks, loaded tow/release/lasso/unload, hull 100. These
+  replay results do not measure frame rate. Shoreline Java2D pixel checks passed
+  2,595,477 Calumet and 2,025,045 Indiana assertions across all 32 vessel headings.
+- Added repeatable native fixtures `calumet-bridge`, `calumet-skyway`,
+  `indiana-bridges`, plus `LandmarkBridgeReview` and `LocationBridgeBenchmark`.
+  References, geometric simplifications and anchor/shadow rules are recorded in
+  `docs/art-studies/landmark-bridges-v1/README.md`.
+- Android device follow-up (profile build, no concurrent build/test load):
+  `20261118-083248-calumet-bridge-live`, 60 warmup / 300 samples, median/p95
+  draw 12.153/13.903 ms and draw intervals 16.479/17.454 ms. No measured layer
+  builds, texture builds or evictions. This sampled the operating 106th bridge.
+  `20261118-083321-indiana-bridges-live`, same counts: draw 25.904/30.436 ms,
+  intervals 30.451/35.734 ms. The clustered rail view is **not** at 60 FPS.
+  `20261118-083401-calumet-skyway-freeze`, 60 warmup / 180 samples: draw
+  30.237/33.314 ms, intervals 33.039/36.122 ms. These are different scenes/cameras,
+  not paired before/after performance claims. Complex bridge/terrain views still
+  need face/material submission optimization. Geometry-cache flattening reduced
+  retained JVM data, not a demonstrated native frame-time improvement.
+- Actual Android screenshots reviewed for 106th, the Indiana rail cluster and
+  Skyway; Java2D panels cover closed/half/open poses. Android surface shaders add
+  material detail beyond Java2D's fallback. Native iOS/J2ObjC remains untested.
+  Live fixtures let the normal camera ease: frame CSVs include the changing zoom
+  and tick sequence. The Skyway freeze fixture holds zoom/animation constant.
+  Do not compare their times as if they had identical simulation or camera load.
+- Native screenshot review exposed a developer-fixture placement problem: a
+  perpendicular offset from the Skyway marker put the frozen tug near/on the
+  curved bank. Final bridge fixtures project their approach point onto the actual
+  surveyed route. The timings above belong to the earlier fixtures and are kept
+  as diagnostic evidence, not validated final-route performance benchmarks.
+  Runtime voyage spawning/physics was unaffected; long-route replay remains the
+  separate evidence for traversability. Re-run the final fixtures for future A/Bs.
+- Final validation: complete signed normal Android build/check.sh passed, including
+  1,437 new geographic bridge assertions, cargo/shadow/surface contracts and the
+  21,156 Indiana dry-receiver assertions. Canonical shared trace was reviewed and
+  updated to `6813e4af:2:1350`. All 55 developer-fixture checks passed after the
+  centerline-placement correction. Normal APK installed and launched; development
+  profiling hooks are not included in that final APK. Review images copied to Downloads.

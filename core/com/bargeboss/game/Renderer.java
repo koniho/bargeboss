@@ -32,6 +32,7 @@ public final class Renderer {
     }
     static void river(Game g,Painter p) {
         HarborView.draw(g,p);
+        BridgeLayers bridgeLayers=new BridgeLayers(g,((RiverPainter)p).canvas());
         NavigationLights.reflections(g,((RiverPainter)p).canvas());
         if(g.lockStage())LockView.water(g,g.lock,((RiverPainter)p).canvas());
         if(g.trafficWarning() || g.trafficActive()) {
@@ -62,19 +63,19 @@ public final class Renderer {
                 float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
                 float sd=swimmer<swimmers.length?MontroseRescueView.depth(g,swimmers[swimmer]):Float.MAX_VALUE;
                 float cd=crane<cranes.length?DockView.depth(g,cranes[crane]):Float.MAX_VALUE;
-                if(crane<cranes.length && cd<=Math.min(depth,Math.min(sd,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))))){DockView.draw(g,((RiverPainter)p).canvas(),cranes[crane++]);continue;}
-                if(sd<=Math.min(depth,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))))) {MontroseRescueView.draw(g,((RiverPainter)p).canvas(),swimmers[swimmer++]);continue;}
+                if(crane<cranes.length && cd<=Math.min(depth,Math.min(sd,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))))){bridgeLayers.to(cd);DockView.draw(g,((RiverPainter)p).canvas(),cranes[crane++]);continue;}
+                if(sd<=Math.min(depth,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))))) {bridgeLayers.to(sd);MontroseRescueView.draw(g,((RiverPainter)p).canvas(),swimmers[swimmer++]);continue;}
                 float ad=WorldArrows.depth();
-                if(WorldArrows.pending()&&ad<=Math.min(depth,Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){WorldArrows.draw(p);continue;}
+                if(WorldArrows.pending()&&ad<=Math.min(depth,Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){bridgeLayers.to(ad);WorldArrows.draw(p);continue;}
                 if(Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))>depth)break;
-                if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-                if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
-                if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
-                if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
-                if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
-                if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
+                if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){bridgeLayers.to(md);MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
+                if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){bridgeLayers.to(hd);if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
+                if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){bridgeLayers.to(pd);MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
+                if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){bridgeLayers.to(ed);SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
+                if(gd<=rd && gd<=ld && gate<gateCount){bridgeLayers.to(gd);LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
+                bridgeLayers.to(Math.min(rd,ld));if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
             }
-            body(g,p,ordered[n]);
+            bridgeLayers.to(depth);body(g,p,ordered[n]);
         }
         while(crane<cranes.length || span<rope.count || mark<lights.length || gate<gateCount || spray<splashes.length || pedestal<pedestalCount || hoist || landmark<landmarks.length || moored<mooredCount || swimmer<swimmers.length || WorldArrows.pending()) {
             float rd=span<rope.count?rope.depth(g.layout.camera,span):Float.MAX_VALUE;
@@ -86,19 +87,18 @@ public final class Renderer {
             float md=moored<mooredCount?MooredBoats.depth(g,moored):Float.MAX_VALUE;
             float sd=swimmer<swimmers.length?MontroseRescueView.depth(g,swimmers[swimmer]):Float.MAX_VALUE;
             float cd=crane<cranes.length?DockView.depth(g,cranes[crane]):Float.MAX_VALUE;
-            if(crane<cranes.length && cd<=Math.min(sd,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))))){DockView.draw(g,((RiverPainter)p).canvas(),cranes[crane++]);continue;}
-            if(swimmer<swimmers.length && sd<=Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){MontroseRescueView.draw(g,((RiverPainter)p).canvas(),swimmers[swimmer++]);continue;}
+            if(crane<cranes.length && cd<=Math.min(sd,Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))))){bridgeLayers.to(cd);DockView.draw(g,((RiverPainter)p).canvas(),cranes[crane++]);continue;}
+            if(swimmer<swimmers.length && sd<=Math.min(WorldArrows.depth(),Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld)))))))){bridgeLayers.to(sd);MontroseRescueView.draw(g,((RiverPainter)p).canvas(),swimmers[swimmer++]);continue;}
             float ad=WorldArrows.depth();
-            if(WorldArrows.pending()&&ad<=Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))){WorldArrows.draw(p);continue;}
-            if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
-            if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
-            if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
-            if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
-            if(gd<=rd && gd<=ld && gate<gateCount){LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
-            if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
+            if(WorldArrows.pending()&&ad<=Math.min(md,Math.min(hd,Math.min(pd,Math.min(ed,Math.min(gd,Math.min(rd,ld))))))){bridgeLayers.to(ad);WorldArrows.draw(p);continue;}
+            if(moored<mooredCount && md<=hd && md<=pd && md<=ed && md<=gd && md<=rd && md<=ld){bridgeLayers.to(md);MooredBoats.draw(g,((RiverPainter)p).canvas(),moored++);continue;}
+            if((hoist || landmark<landmarks.length) && hd<=pd && hd<=ed && hd<=gd && hd<=rd && hd<=ld){bridgeLayers.to(hd);if(hoist){MontroseBoatHoist.draw(g,((RiverPainter)p).canvas());hoist=false;}else LocationLandmarks.draw(g,((RiverPainter)p).canvas(),landmarks[landmark++]);continue;}
+            if(pd<=ed && pd<=gd && pd<=rd && pd<=ld && pedestal<pedestalCount){bridgeLayers.to(pd);MarinaPedestals.draw(g,((RiverPainter)p).canvas(),pedestal++);continue;}
+            if(ed<=gd && ed<=rd && ed<=ld && spray<splashes.length){bridgeLayers.to(ed);SprayView.draw(g,((RiverPainter)p).canvas(),splashes[spray++]);continue;}
+            if(gd<=rd && gd<=ld && gate<gateCount){bridgeLayers.to(gd);LockView.drawGate(g,g.lock,((RiverPainter)p).canvas(),gate++);continue;}
+            bridgeLayers.to(Math.min(rd,ld));if(rd<=ld)rope.draw(p,span++);else NavigationLights.draw(g,((RiverPainter)p).canvas(),lights[mark++]);
         }
-
-
+        bridgeLayers.to(Float.POSITIVE_INFINITY);
     }
     /** One vessel and its play cues, shared by the continuous yard depth sorter. */
     static void body(Game g,Painter p,Body b) {

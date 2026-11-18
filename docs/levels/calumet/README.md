@@ -36,8 +36,8 @@ is separate from the game code's license.
 - The inlet, major river bends, branching industrial slips, widening basins and
   Lake Calumet junction, with the same polygon driving water, hull collision,
   tow clearance, raised-shore masking, effects and the navigation chart.
-- Seven bridge groups: former EJ&E lift, Ewing/92nd, 95th, rail lifts, Skyway,
-  100th and 106th. Models are rigid 3-D parts projected by the shared renderer.
+- Ten bridge rigs: former EJ&E lift, Ewing/92nd, 95th, two rail lift groups,
+  Skyway, 100th, 106th, C&WI and Torrence. Models use the shared rigid 3-D renderer.
 - Grass, worksite/concrete, aggregate, rail-yard, woodland, wetland and neighborhood
   surface classes; mapped road and rail guide strips clipped to dry ground.
 - Six permanent berth sites; four contiguous jobs preserve vessels and effects.
@@ -51,10 +51,10 @@ A small railway-pier island is omitted pending explicit island collision support
 Land classes are broad map-derived materials, not claims about individual current
 operators. The distant lakefront beyond the cropped river reach is incomplete.
 
-Bridge groups are fixed in passable poses for this layout review. Their exact
-trusses, piers, approach decks, navigation signals, opening cycles and machinery
-collision still need individual reference/model passes. Nearby railway bridges
-are grouped, not a complete inventory of individual tracks/spans. Surface tiles
+The [bridge landmark pass](../../art-studies/landmark-bridges-v1/README.md) adds
+photo-led trusses, piers, approach decks, parented lights, opening/closing cycles
+and passage collision. Skyway remains a high fixed crossing. Nearby railway
+bridges are grouped, not a complete inventory of individual tracks/spans. Surface tiles
 mark future factories, storage piles, conveyors and work areas; detailed buildings
 have not been populated on this new geography yet.
 

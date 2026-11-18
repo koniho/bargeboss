@@ -37,10 +37,12 @@ Remote lake edges are open visual extent boundaries, not fabricated seawalls.
 
 Shoreline simplification is approximately 1.5 metres. Concrete, grass, industrial,
 aggregate, rail and building-zone tiles establish the site layout. Hick Tower and
-the breakwater light have geographic anchors; canal crossings have initial rigid
-bridge silhouettes. The current bridge silhouettes are generic raised bascules;
-individual bridge types, footprints, mechanisms, signals and collision need a
-reference pass. The new large industrial surfaces are not yet populated with the
+the breakwater light have geographic anchors. The
+[bridge landmark pass](../art-studies/landmark-bridges-v1/README.md) replaces the
+generic silhouettes with single-leaf rail rigs, double road bascules and the
+high fixed Cline viaduct, with opening cycles, parented lights and passage
+collision. It also coalesces the three Dickey survey segments into one crossing.
+Some individual bridgehouse details remain simplified, as recorded in that inventory. The new large industrial surfaces are not yet populated with the
 final factory artwork. This is a layout increment, not a finished harbor replica.
 
 `SurveyedLocationTest` exercises route hull clearance, wet marker anchors and real

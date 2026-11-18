@@ -5,35 +5,18 @@ public final class IndianaView {
     private static final int CONCRETE=0xff8b7870,STEEL=0xff79615c,RUST=0xffa56848;
     private static final Landmark[] LANDMARKS=landmarks();
     private IndianaView(){}
-    static void prepare(){for(Landmark a:LANDMARKS)a.model.prepare(a.pose);}
+    static void prepare(){for(Landmark a:LANDMARKS)a.model.prepare(a.pose);LocationBridges.prepare(LocationBridges.indiana());}
     private static final class Landmark {
         final float x,y;final int type;final float[] smoke;final ArticulatedModel model;final ArticulatedModel.Pose pose;
         Landmark(float x,float y,int type){this.x=x;this.y=y;this.type=type;model=model(x,y,type);pose=model.pose(type==3?1:0);smoke=pose.point(0,35,0,144);}
-        Landmark(int bridgeIndex){float[] path=IndianaSurvey.BRIDGES[bridgeIndex];x=(path[0]+path[path.length-2])*.5f;y=(path[1]+path[path.length-1])*.5f;type=3;model=bridge(bridgeIndex);pose=model.pose(1);smoke=new float[3];}
+
     }
     private static Landmark[] landmarks(){java.util.ArrayList<Landmark> out=new java.util.ArrayList<Landmark>();
         out.add(new Landmark(IndianaHarbor.north(41.68093),IndianaHarbor.east(-87.44040),0));
         out.add(new Landmark(IndianaHarbor.north(41.659805),IndianaHarbor.east(-87.4516675),2));
-        for(int i=0;i<IndianaSurvey.BRIDGES.length;i++)out.add(new Landmark(i));
+
         Landmark[] a=out.toArray(new Landmark[out.size()]);
         java.util.Arrays.sort(a,new java.util.Comparator<Landmark>(){public int compare(Landmark x,Landmark y){return Float.compare(x.y-x.x,y.y-y.x);}});return a;
-    }
-    private static ArticulatedModel bridge(int index){float[] path=IndianaSurvey.BRIDGES[index];
-        float x=(path[0]+path[path.length-2])*.5f,y=(path[1]+path[path.length-1])*.5f;
-        float dx=path[path.length-2]-path[0],dy=path[path.length-1]-path[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
-        float left=0,right=0;while(left<1200 && IndianaHarbor.contains(x-dx*left,y-dy*left))left+=6;while(right<1200 && IndianaHarbor.contains(x+dx*right,y+dy*right))right+=6;
-        float span=left+right;if(span<20)span=len;float width=IndianaSurvey.BRIDGES_KIND[index]==4?22:42;
-        ArticulatedModel.Builder b=new ArticulatedModel.Builder();int root=b.node("survey-bridge-"+index,-1,x,y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,(float)StrictMath.atan2(dy,dx),0);
-        for(int side=-1;side<=1;side+=2){float at=side<0?-left:right;
-            b.box(root,at+side*10,0,5,20,width+16,10,CONCRETE,SurfaceMaterial.CONCRETE);
-            int leaf=b.node("survey-bridge-leaf-"+index+"-"+side,root,at,0,12,side<0?0:(float)StrictMath.PI,1.18f);
-            float half=span*.46f;b.box(leaf,half*.5f,0,0,half,width,5,STEEL,SurfaceMaterial.STEEL);
-            for(int edge=-1;edge<=1;edge+=2){b.beam(leaf,0,edge*width*.5f,3,half,edge*width*.5f,3,2,RUST,SurfaceMaterial.RUST);
-                b.beam(leaf,0,edge*width*.5f,21,half,edge*width*.5f,21,2,RUST,SurfaceMaterial.RUST);
-                for(int n=0;n<4;n++)b.beam(leaf,half*n/4,edge*width*.5f,3,half*(n+1)/4,edge*width*.5f,21,1.7f,STEEL,SurfaceMaterial.STEEL);}
-            b.box(root,at+side*16,-width*.5f-12,16,18,18,28,CONCRETE,SurfaceMaterial.CONCRETE);
-            b.box(root,at+side*16,-width*.5f-22,21,10,1,5,0xffb27634,SurfaceMaterial.EMISSIVE);
-        }return b.build();
     }
     private static ArticulatedModel model(float x,float y,int type){ArticulatedModel.Builder b=new ArticulatedModel.Builder();
         int root=b.node(type==0?"indiana-east-breakwater-light":type==2?"hick-tower":"indiana-industrial-"+x+"-"+y,-1,x,y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,0,0);
@@ -88,7 +71,7 @@ public final class IndianaView {
     public static void draw(Game g,Painter p){
         p.rect(0,0,g.layout.width,g.layout.height,0xff151b25);
         WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
-        ShorelineView.water(g,p);
+        ShorelineView.water(g,p);LocationBridges.shadows(g,p);
         IndianaShoreTiles.walls(g,p);IndianaShoreTiles.ground(g,p);
         ShorelineView.walls(g,p);
         Renderer.river(g,new RiverPainter(p,g.layout.camera));

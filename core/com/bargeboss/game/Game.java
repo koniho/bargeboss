@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class Game {
     /** Developer render exclusions; zero in ordinary play, never read by simulation. */
     public int renderExclusions;
+    BridgePassage passages;
     public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6;
     public static final int SHIFT_TICKS=180*60, QUOTA=2;
     // Two original-size motion steps per real tick: 2x travel/turning with the
@@ -353,7 +354,7 @@ public final class Game {
         ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
         earnedStars=0; rankPromoted=false;pinchZoom.reset();cameraZoomHoldTicks=0;cameraTransit=false;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
-        voyage=new CalumetVoyage();
+        voyage=new CalumetVoyage();passages=new BridgePassage(this);
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();rescue=new MontroseRescue();buildingFades=new BuildingFades();
         water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
@@ -736,7 +737,7 @@ public final class Game {
                 if(held>=0) cargoPushGesture=true;
             }
         }
-        bridge.step(this);
+        bridge.step(this);passages.step(this);
         if(lockStage())lock.step(this);
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) {
@@ -859,6 +860,7 @@ public final class Game {
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
         if(lockStage())lock.integrate(tug);else Physics.integrate(tug);
         if(calumetStage())damage(CalumetRiver.collide(tug,splashes));else if(indianaStage())damage(IndianaHarbor.collide(tug,splashes));else if(!montroseStage()){float hit=CalumetMap.collide(tug,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,tug,splashes));
+        damage(passages.collide(tug,splashes));
         if(hasBridge()) damage(bridge.collide(tug,splashes));
         if(lockStage()) damage(lock.collide(tug,splashes));
         for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(calumetStage())damage(CalumetRiver.collide(b,splashes));else if(indianaStage())damage(IndianaHarbor.collide(b,splashes));else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,b,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
@@ -894,6 +896,7 @@ public final class Game {
             for(Body b:cargo)if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup)damage(lock.collide(b,splashes));
             if(trafficActive())lock.collide(trafficBoat,splashes);
         }
+        damage(passages.collide(tug,splashes));for(Body b:cargo)if(b!=null && b.active)damage(passages.collide(b,splashes));
         if(calumetStage()){damage(CalumetRiver.collide(tug,splashes));for(Body b:cargo)if(b!=null && b.active)damage(CalumetRiver.collide(b,splashes));}
         if(indianaStage()){damage(IndianaHarbor.collide(tug,splashes));for(Body b:cargo)if(b!=null && b.active)damage(IndianaHarbor.collide(b,splashes));}
         if(montroseStage()){

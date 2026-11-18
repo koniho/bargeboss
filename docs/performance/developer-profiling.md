@@ -296,3 +296,10 @@ blocks for static shore command reuse (freeze mode,60 warmup,240 samples).
 Mask128 disables command reuse; `surface_command_mib` records retained native
 command allocation. `--ez bb_surface_review true` runs native cache lifecycle
 checks separately from timing. See [retained surfaces](retained-surfaces-2026-11-17/README.md).
+
+Geographic bridge fixtures: `calumet-bridge` (106th bascule), `calumet-skyway`
+(high fixed viaduct), and `indiana-bridges` (main-channel rail cluster). They place
+an approaching tug before measurement, then use the real `BridgePassage` fixed
+steps; use `live` to inspect opening/holding and `freeze` for a steady pose.
+`tools/LocationBridgeBenchmark.java` separately reports cold geometry preparation
+and approximate retained JVM heap; it is not a native frame-time measurement.
