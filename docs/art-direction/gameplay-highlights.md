@@ -23,12 +23,13 @@ See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 
 ## Overhead overview map
 
-The gameplay overview sits opposite the throttle. Use only thin translucent
-shoreline and dock contours; no filled terrain, buildings, panel or isometric
-projection. World +X (upper-right on the game plane) is up on the chart; world +Y
+The gameplay overview sits opposite the throttle. Use a thin square border and thin translucent
+shoreline/dock contours. Navigable water has a softer translucent fill (about
+17% effective opacity versus 53% for outlines); dry land and dock interiors stay
+clear. Do not add a filled panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
 (lower-right) is right. Keep this orientation independent of the camera. A yellow
 player dot pulses gently; cyan cargo markers and amber target outlines remain
 secondary. The chart is informational and does not intercept steering gestures.
-Cache the immutable contours separately from live markers.
+Cache the immutable border, water fill and contours separately from live markers.
 Apply chart opacity to the cached outline as a whole, not to individual line
 segments: overlapping translucent endpoints create unwanted bright joint dots.

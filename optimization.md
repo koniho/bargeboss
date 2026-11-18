@@ -2876,3 +2876,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Android APK installed via the existing authorized path; native frame timings
   remain unverified because the phone is locked. No iOS/Foundation/J2ObjC host is
   available here. This round adds no platform-specific animation behavior.
+
+
+## 2026-11-18 — Square overview and translucent water
+
+- Overview bounds are now 184 × 184 with a thin square frame. Navigable water
+  uses 0x50 source alpha under the existing 0.53 chart opacity (~17% effective),
+  while border/shore/dock contours retain ~53% effective opacity.
+- Fill uses shared coastline/water geometry; Montrose uses its actual water
+  polygon, not a closed shoreline shortcut, with projected dock triangles cut
+  out. Dry land and dock interiors have no panel fill. Geometry and frame remain
+  in the immutable cached chart; the layer key was bumped. No extra per-frame
+  triangulation, texture family, or gameplay state was introduced.
+- Reviewed all four cached charts and updated the existing map/layout assertions.
+  Canonical draw trace reviewed: a9f26bdb:2:1350. This is a UI appearance change,
+  not a measured frame-rate optimization. Normal Android checks/build follow.
+
+- Complete normal Android build/check.sh passed, including overview layout and
+  unchanged bounded delivery outcomes. All four charts were visually reviewed
+  in the actual desktop cached-layer renderer; review copied to Downloads.
+  Native iOS raster parity is not available in this environment.

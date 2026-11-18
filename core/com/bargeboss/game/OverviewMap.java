@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Fixed overhead navigation: world +X points up, world +Y points right. */
 public final class OverviewMap {
-    static final float WIDTH=184,HEIGHT=164,PAD=10,TOP=22,BOTTOM=14;
+    static final float WIDTH=184,HEIGHT=184,PAD=10,TOP=22,BOTTOM=14;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
     private static final Chart[] CHARTS={new Chart(0),new Chart(1),new Chart(2),new Chart(3)};
     private OverviewMap(){}
@@ -32,7 +32,8 @@ public final class OverviewMap {
     private static void target(Painter p,Chart c,float wx,float wy,int color){float x=c.x(wy),y=c.y(wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
         final int stage;final float minX,maxX,minY,maxY,scale,cx,cy;
-        final float[][] water,docks;
+        final float[][] water,docks,waterFill;
+        final float[] dockHoles;
         Chart(int stage){
             this.stage=stage;
             float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:stage==2?new float[][]{IndianaHarbor.COAST}:stage==3?new float[][]{CalumetRiver.COAST}:new float[][]{TrainingChannel.WATER_BOUNDARY};
@@ -43,6 +44,10 @@ public final class OverviewMap {
             cx=WIDTH*.5f;cy=(TOP+HEIGHT-BOTTOM)*.5f;
             water=project(stage==1?new float[][]{MontroseHarbor.COAST}:extent);
             docks=project(stage==1?MontroseHarbor.DOCKS:new float[0][]);
+            waterFill=project(stage==1?new float[][]{MontroseHarbor.WATER_POLYGON}:extent);
+            int count=0;for(float[] dock:docks)count+=Math.max(0,dock.length/2-2)*6;
+            dockHoles=new float[count];int at=0;
+            for(float[] dock:docks)for(int i=2;i<dock.length-2;i+=2){dockHoles[at++]=dock[0];dockHoles[at++]=dock[1];dockHoles[at++]=dock[i];dockHoles[at++]=dock[i+1];dockHoles[at++]=dock[i+2];dockHoles[at++]=dock[i+3];}
         }
         float x(float worldY){return Physics.clamp(cx+(worldY-(minY+maxY)*.5f)*scale,PAD,WIDTH-PAD);}
         float y(float worldX){return Physics.clamp(cy-(worldX-(minX+maxX)*.5f)*scale,TOP,HEIGHT-BOTTOM);}
@@ -51,10 +56,14 @@ public final class OverviewMap {
             for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=cx+(a[i+1]-(minY+maxY)*.5f)*scale;b[i+1]=cy-(a[i]-(minX+maxX)*.5f)*scale;}result[j]=PolygonWater.clip(b,clip);}
             return result;
         }
-        public int key(){return 0x6d000200+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        public int key(){return 0x6d000300+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
-            // Rasterize opaque strokes, then fade the whole chart once. Segment joins
-            // must not accumulate translucency and turn into bright dots.
+            // Water is softer than contours; dry shore and dock interiors remain clear.
+            if(dockHoles.length>0)p.pushClipOutside(dockHoles);
+            try{for(float[] a:waterFill)if(a.length>=6)p.poly(a,0x5096c5ce);}
+            finally{if(dockHoles.length>0)p.popClip();}
+            // Opaque strokes share one final layer fade, keeping joins even.
+            outline(p,new float[]{1,1,WIDTH-1,1,WIDTH-1,HEIGHT-1,1,HEIGHT-1},true,0xff96c5ce,1);
             for(float[] a:water)outline(p,a,stage!=1,0xff96c5ce,1.15f);
             for(float[] a:docks)outline(p,a,true,0xff7eaab5,.7f);
         }

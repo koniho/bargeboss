@@ -4,12 +4,12 @@ package com.bargeboss.game;
 final class OverviewMapTest {
     static void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}
     static final class Ink implements Painter {
-        boolean chartOnly;int lines;float x,y,xx,yy;
+        boolean chartOnly;int lines,fills;float x,y,xx,yy;
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
         public void rect(float x,float y,float w,float h,int c){if(chartOnly)throw new AssertionError("chart has no filled panel or terrain");}
         public void circle(float x,float y,float r,int c){}
-        public void poly(float[] xy,int c){if(chartOnly)throw new AssertionError("chart has no filled geometry");}
+        public void poly(float[] xy,int c){if(chartOnly){check((c>>>24)>0 && (c>>>24)<255,"water fill is more translucent than chart contours");fills++;}}
         public void material(float x,float y,float ax,float ay,float bx,float by,int k,float d,float v,int c){}
         public void line(float x,float y,float xx,float yy,float w,int c){if(chartOnly)check((c>>>24)==255,"chart strokes are opaque before group translucency");if(lines++==0){this.x=x;this.y=y;this.xx=xx;this.yy=yy;}check(Float.isFinite(x)&&Float.isFinite(y)&&Float.isFinite(xx)&&Float.isFinite(yy),"finite lines");}
     }
@@ -21,12 +21,12 @@ final class OverviewMapTest {
             check(c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
             check(Math.abs((c.x(y+10)-c.x(y))-(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
-            Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8,"chart has shoreline contours");
+            Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0,"chart has shoreline contours and water fill");
         }
         for(float width:new float[]{960,1243,1440})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}){
             g.configureCanvas(width,600);g.settings.setJoystickSide(side);Layout.Box b=OverviewMap.bounds(g);
             check(side==GameSettings.RIGHT?b.centerX()<width/2:b.centerX()>width/2,"overview opposite throttle");
-            check(b.y>64 && b.y+b.h<552,"overview clears top and bottom HUD");
+            check(b.y>64 && b.y+b.h<552 && b.w==b.h,"square overview clears top and bottom HUD");
 
         }
         g=new Game();ReplayInput.controlFixture(g);g.tug.vx=30;g.control=Game.REVERSING;g.reversing=true;
