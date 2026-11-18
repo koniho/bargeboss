@@ -10,6 +10,10 @@ feathering and the original gentle pulse. Restore the original hull-glow assets,
 berth corner treatment and interaction highlighting. Preserve readable hulls and
 keep docks dark. Any further visual redesign needs a small reviewed example first.
 
+Do not draw a persistent circle around a watercraft just because it is being
+towed. Towlines show the connection; brief catch feedback and active targeting
+or tutorial instructions remain separate interaction cues.
+
 The independent moored-boat lighting correction and world-arrow depth ordering
 remain. Arrows use the old open strokes within the retained world depth pass;
 lighting, splash stamps, gameplay and physics are outside this visual rollback.

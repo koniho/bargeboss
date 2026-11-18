@@ -2994,3 +2994,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   rendering/faint frame/idle slider checks (281,778 pixels). Desktop gameplay
   image reviewed. Device was locked at this round's final validation, so native
   multitouch/pixel review was not performed; native iOS is unavailable here.
+
+## 2026-11-18 — Remove persistent towed-vessel circle
+
+- Removed the steady hull-centered ring from TowView for every linked watercraft,
+  including yachts and barge trains. Towline geometry/physics, brief attachment
+  feedback and deliberate tutorial/targeting cues remain unchanged. Documented
+  the visual rule in gameplay-highlights.md so the status ring is not reintroduced.
+- Reviewed an actual shared-renderer Montrose yacht tow: rope remains visible,
+  persistent circle is gone. This removes ring submissions per tow link without
+  adding assets/caches; no measured FPS claim. Reviewed canonical draw trace is
+  a10eac57:2:1350, with unchanged delivery and score. Normal Android checks/build
+  follow; native iOS parity is not available on this host.
+- Complete check.sh and normal Android build passed, including tow/train and
+  tutorial regressions plus the reviewed canonical signature. Desktop pixels
+  were reviewed; native on-device visuals and iOS parity were not checked this round.

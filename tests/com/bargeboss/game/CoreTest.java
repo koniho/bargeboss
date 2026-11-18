@@ -170,7 +170,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Geographic scene/selector trace reviewed; bounded practice deliveries and score retained.
-        check(Parity.signature().equals("fc515d17:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("a10eac57:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
