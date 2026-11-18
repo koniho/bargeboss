@@ -2439,3 +2439,45 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   confound this comparison. Do not attribute the full timing difference to
   removal or compare directly with the previous round's42FPS result. Raw data
   under out/no-shore-band-{before,after}. No new FPS gain claimed.
+
+## 2026-11-17: Shared Slip building-group cache experiment
+
+- Added a dedicated shared-slip-wide developer fixture, forced to challenge1
+  independently of career unlock state. Prototype groups only consecutive equal
+  depth factory placements whose earlier effects cannot overlap later artwork;
+  213 of551 placements qualify. Groups cap at512x320 world units and4 members,
+  use the existing48MiB layer budget, and fall back when any member fades. Smoke
+  and lights remain live. Prototype is disabled for ordinary gameplay pending A/B.
+- Initial frozen Android A/B (.65 zoom,120 warmup/180 samples): baseline draw
+  39.160ms / interval70.201ms; grouped60.038 /135.340ms. Background builds1385
+  versus979 and fallbacks2340 versus6300 in the measured windows show that these
+  were not stable warm caches. Do not interpret this as the intrinsic cost of
+  grouped artwork. Raw captures and prototype patch: out/factory-groups.
+- Found completed background rasters could be replaced by earlier requests after
+  beginFrame cleared visibility, before a late draw consumed them. A first grace
+  implementation stopped rebuilding but let speculative results occupy all four
+  slots indefinitely; rejected. Revised policy protects completed demanded results
+  for two frames, keeps speculation replaceable, and ages out abandoned work.
+  Slot count and total byte budget remain unchanged. Native regression covers
+  late consumption, speculative replacement and expiry, alongside existing queue,
+  full-cache, publication, shutdown and pixel comparisons.
+- Revised handoff passed native queue/pressure checks and3,168,000 exact pixels
+  across barge-arrival, harbor-close, barge-bridge and canal-middle. In the wide
+  baseline it removed measured background builds1385->0 and fallbacks2340->0;
+  frame time did not improve reliably (70.201ms original,75.349ms revised).
+  This is a wasted-work/cache-correctness fix, not a claimed FPS improvement.
+- Full-density grouped caches exceeded the useful working set: median interval
+  175.544ms,704 evictions,2355 fallbacks over180 measured frames. Tried smaller
+  rasters (half-sized local coordinates, matching display transform). Those fit:
+  zero warm misses/evictions/builds,34.772MiB retained versus28.875MiB baseline,
+  199 sprites versus237. Native screenshot reviewed; raster filtering changes
+  RGB mean absolute error0.668/255 over the screen, so not pixel-identical.
+- Small-cache pairs: baseline/grouped median draw37.622/39.555ms and frame
+  interval75.349/69.804ms; repeat55.423/58.223ms and101.352/126.904ms. Both
+  paths slowed substantially between pairs, so device variation prevents a clean
+  causal percentage. Grouping offers no repeatable improvement and worsens draw
+  time in both pairs. Removed the prototype from production/shared code and
+  retained local patch/screenshots/raw CSVs for reproduction. No grouped cache
+  feature enabled. Keep only the validated queue handoff, native regression and
+  Shared Slip profiling fixture. Investigate remaining shader/effect and native
+  submission cost next; fewer sprites alone did not solve this scene.

@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private ProfileScenario(){}
     public static void prepare(Game root,String name,float width,float height) {
@@ -10,6 +10,7 @@ public final class ProfileScenario {
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
         CIRCLES.remove(root);
         root.configureCanvas(width,height);
+        if(name.equals("shared-slip-wide")){root.challengeId=Challenges.SHARED_SLIP;root.reset();root.layout=Layout.focused(width,height,280,540,.65f,width*.5f,height*.52f);return;}
         if(name.equals("tow-tight-circle")){
             root.selectChallenge(Challenges.INDIANA);root.reset();
             // Open basin isolates turning/tow work from shore and moored-fleet collisions.

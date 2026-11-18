@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 /** Native pixel, reservation, publication and shutdown checks. Run separately from timings. */
 final class AndroidTerrainReview {
     static void run(AssetManager assets,File directory)throws Exception {
-        queueChecks(assets);cachePressure(assets);
+        queueChecks(assets);completedHandoff(assets);cachePressure(assets);
         try(FileWriter report=new FileWriter(new File(directory,"terrain-pixels.txt"))) {
             for(String scene:new String[]{"barge-arrival","harbor-close","barge-bridge","canal-middle"}) {
                 CanvasPainter before=new CanvasPainter(assets),after=new CanvasPainter(assets);
@@ -90,6 +90,25 @@ final class AndroidTerrainReview {
             release.countDown();
             if(queue.take(1)!=null)throw new AssertionError("Closed worker published an image");
         } finally {release.countDown();queue.close();}
+    }
+    private static void completedHandoff(AssetManager assets)throws Exception {
+        for(boolean visible:new boolean[]{false,true}) {
+            TerrainRasterizer queue=new TerrainRasterizer(assets);
+            try {
+                for(int i=0;i<4;i++)queue.request(i,block(i,null,null),1,1024,4096,visible);
+                CanvasPainter.Profile stats=new CanvasPainter.Profile();
+                for(int i=0;i<1000 && stats.backgroundBuilds<4;i++){Thread.sleep(2);queue.telemetry(stats);}
+                if(stats.backgroundBuilds!=4)throw new AssertionError("Handoff fixture did not finish");
+                queue.beginFrame();
+                boolean accepted=queue.request(9,block(9,null,null),1,1024,4096,true);
+                if(accepted==visible)throw new AssertionError("Completed visible result lost or speculation blocked demand");
+                if(visible){
+                    Bitmap result=queue.take(0);if(result==null || result.getPixel(0,0)!=0xff123456)throw new AssertionError("Completed result lost before late draw");result.recycle();
+                    queue.beginFrame();queue.beginFrame();queue.trimTo(0);
+                    if(queue.reservedBytes()!=0)throw new AssertionError("Abandoned results did not expire");
+                }
+            } finally {queue.close();}
+        }
     }
     private static void save(Bitmap b,File directory,String name)throws java.io.IOException {
         try(java.io.FileOutputStream out=new java.io.FileOutputStream(new File(directory,name))){b.compress(Bitmap.CompressFormat.PNG,100,out);}
