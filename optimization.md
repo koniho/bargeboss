@@ -2896,3 +2896,29 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   unchanged bounded delivery outcomes. All four charts were visually reviewed
   in the actual desktop cached-layer renderer; review copied to Downloads.
   Native iOS raster parity is not available in this environment.
+
+
+## 2026-11-18 — Overview border follows gameplay bounds
+
+- Replaced the fixed square UI frame with a rectangle projected through the
+  chart's world transform. Calumet/Indiana use their declared location limits;
+  Montrose shares its physical play-boundary polygon; the continuous tutorial
+  uses the enclosing bounds of its navigable-water boundary.
+- Removed extra coastline-crop margins. Uniform overview scale now fits the
+  complete play bounds inside the existing HUD slot, preserving real aspect
+  ratio. Border, water/dock clipping and markers use those same world limits;
+  the softer water opacity is preserved. No gameplay boundary or physics changed.
+- Geometry is still prepared once in the cached chart, with a new layer key.
+  All four cached chart previews and existing overview assertions passed, including
+  world-corner/frame alignment. Reviewed trace is 34922595:2:1350. No native FPS
+  claim is made for this UI correction; the standard Android build/checks follow.
+
+- Follow-up: fully shore-enclosed areas receive a uniform 6%-of-longest-span
+  world margin inside the frame. The practice canal/basins use this; Calumet,
+  Indiana and Montrose remain flush with their open-lake play limits. This is a
+  chart-only zoom adjustment and does not expand the playable world.
+
+- Final normal Android build and complete check.sh passed with the conditional
+  enclosed-area margin. Revised four-location preview copied to Downloads.
+  Shared replay delivery/score outcomes remain 2/1350; native iOS raster parity
+  is unavailable here. This changes overview presentation only.

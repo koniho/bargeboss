@@ -39,7 +39,7 @@ public final class MontroseHarbor {
     private static float[] water(){return append(COAST,new float[]{10000,220,10000,10000,-10000,10000,-10000,1600});}
     private static float[] land(){return append(COAST,new float[]{10000,220,10000,-10000,-10000,-10000,-10000,1600});}
     private static float[] append(float[] first,float[] map){float[] tail=world(map),p=new float[first.length+tail.length];System.arraycopy(first,0,p,0,first.length);System.arraycopy(tail,0,p,first.length,tail.length);return p;}
-    private static final float[] PLAY_BOUNDS=world(new float[]{-200,-200,2200,-200,2200,1600,-200,1600});
+    static final float[] PLAY_BOUNDS=world(new float[]{-200,-200,2200,-200,2200,1600,-200,1600});
     private static final BoxIndex DOCK_INDEX=new BoxIndex(DOCK_BOUNDS),WATER_INDEX=new BoxIndex(WATER_BOUNDS);
     /** Fixed survey geometry, indexed once. Candidate IDs retain original clipping order. */
     private static final class BoxIndex {

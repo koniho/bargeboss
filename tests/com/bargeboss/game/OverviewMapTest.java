@@ -21,6 +21,10 @@ final class OverviewMapTest {
             check(c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
             check(Math.abs((c.x(y+10)-c.x(y))-(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
+            float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:PolygonWater.bounds(TrainingChannel.WATER_BOUNDARY);
+            check(c.minX==actual[0]-c.margin && c.minY==actual[1]-c.margin && c.maxX==actual[2]+c.margin && c.maxY==actual[3]+c.margin,"overview uses authoritative play extents");
+            check(c.boundary[0]==c.x(c.minY) && c.boundary[1]==c.y(c.maxX) && c.boundary[4]==c.x(c.maxY) && c.boundary[5]==c.y(c.minX),"border and world corners share one projection");
+            check(stage==0?c.enclosed && c.margin>0 && c.x(actual[1])>c.boundary[0] && c.y(actual[2])>c.boundary[1]:!c.enclosed && c.margin==0,"only land-enclosed maps receive extra margin");
             Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0,"chart has shoreline contours and water fill");
         }
         for(float width:new float[]{960,1243,1440})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}){

@@ -23,7 +23,12 @@ See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 
 ## Overhead overview map
 
-The gameplay overview sits opposite the throttle. Use a thin square border and thin translucent
+The gameplay overview sits opposite the throttle. Fit the location’s gameplay bounds into the available overview space with equal
+axis scale. The thin border is the projection of those world bounds, not the UI
+panel edge; rectangular stages retain their actual aspect ratio. Fully enclosed
+water areas (the practice canal/basins) add a uniform world margin of 6% of the
+longer span, showing land between the shoreline and frame. Open-lake locations
+keep their frame aligned with the playable limits. Use thin translucent
 shoreline/dock contours. Navigable water has a softer translucent fill (about
 17% effective opacity versus 53% for outlines); dry land and dock interiors stay
 clear. Do not add a filled panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
