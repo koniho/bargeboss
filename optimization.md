@@ -2330,3 +2330,39 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Signed iOS build passed, but the previously connected iPhone was unavailable
   for installation. Android installed; normal launch and timeout restored after
   profiling. iOS device appearance and live foam cost remain unmeasured.
+
+## 2026-11-17: ambient water clipping and wide-view crest density
+
+- Sampled ART trace of the .65-zoom Montrose freeze scene ranked WaveView at
+  36.94% inclusive main CPU, paintWater33.28%, PolygonWater.edge15.05% exclusive,
+  arraycopy11.93% exclusive. Shore-mask building/disjoint work was another14.6%
+  inclusive, largely under remaining moored ripple draws. Trace stored under
+  out/lod-hotspots; no overflow/unmatched transitions. Inclusive figures overlap
+  and are not additive; sampled timings are not used as performance results.
+- Clipping now classifies all-inside/all-outside half-planes before allocating
+  intersection arrays. Intermediate clip planes can reuse unchanged vertices;
+  public edge/clip results still own their arrays so later projection cannot
+  mutate static shore geometry. An initial aliasing implementation failed the
+  union-coverage test and was corrected before any device installation.
+  Added882 exact comparisons with the original edge algorithm and explicit
+  source-ownership assertions.
+- Ambient crests retain a stable world-seeded quarter at low screen scale;
+  remaining crests fade back between1.25 and2.25 pixels/world-unit. Vessel wakes,
+  foam, shore geometry, navigation lights and collision rules are unchanged.
+  Moored ripples request union masks only from painters advertising support,
+  avoiding redundant disjoint preparation on Android; fallback stays available.
+- Full Android checks/build and JVM/J2ObjC parity passed (2b13567c:2:1350).
+  All32heading shoreline pixel and foam/splash clipping regressions passed.
+- Matching untraced Android capture (.65 zoom, freeze,60 warmup/120 measured):
+  median interval43.948->25.626 ms, p9554.202->29.010 ms; median draw
+  40.331->22.752 ms, p9550.787->25.447 ms. Polygons5225->1904;
+  sprites207, affines43, clips126 unchanged. No warm builds/fallbacks/decodes.
+  About42% lower median interval this pass, about60% below the original63.452ms
+  baseline; still roughly39FPS, not60FPS. Sequential short samples do not prove
+  sustained thermal behavior. Data/native screenshot in out/wave-lod-after.
+- Native wide-view screenshot reviewed; quieter ambient water, dock silhouettes
+  and illuminated pedestals retained. Complete preview export passed. Installed
+  and launched on Android, then restored normal launch/display timeout. No iOS
+  physical-device validation this round. Remaining~23ms draw cost needs another
+  attribution capture after these changes; prior trace percentages no longer
+  describe the current bottleneck reliably.

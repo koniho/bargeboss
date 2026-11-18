@@ -61,7 +61,7 @@ public final class MooredBoats {
         int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
         if(detail>.001f){
             float reach=b.length*.65f+6;
-            float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY);
+            float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY,p.supportsUnionClips());
             if(rippleClip.length>0)p.pushClipOutside(rippleClip);
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}

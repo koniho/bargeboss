@@ -30,6 +30,7 @@ public final class WaveView {
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
         int tick=g.visualTicks;
+        float distantDetail=SceneDetail.fade(c.scale,1.25f,2.25f);
         // Cell identities stay in world space. Slow oscillation gives currents
         // motion without a periodic tile jump when the camera crosses a cell.
         int firstX=(int)StrictMath.floor((minX-50)/38),lastColumn=(int)StrictMath.ceil((maxX+50)/38);
@@ -39,6 +40,8 @@ public final class WaveView {
             // Stable spatial thinning keeps ambient water lively without competing
             // with the vessel wakes. Never base this on time or camera position.
             if(noise(seed+41)<.45f)continue;
+            float detail=(seed&3)==0?1:distantDetail;
+            if(detail<.025f)continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
             float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
@@ -55,8 +58,8 @@ public final class WaveView {
                 float bend=BEND[part]*(rise+.3f*(float)StrictMath.sin(t*9+phase));
                 float xx=x+(along-bend)*RiverCamera.Q,yy=y+(along+bend)*RiverCamera.Q;
                 if(part>0) {
-                    p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,0x16102028);
-                    int alpha=(int)((12+fade*68)*EDGE[part]);
+                    p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,SoftCue.alpha(0x16102028,detail));
+                    int alpha=(int)((12+fade*68)*EDGE[part]*detail);
                     if(part!=2 || noise(seed+29)>.35f) p.line(lastX,lastY,xx,yy,.9f+fade*.5f,(alpha<<24)|0x83b3b4);
                 }
                 lastX=xx;lastY=yy;
@@ -65,7 +68,7 @@ public final class WaveView {
                 float arm=2+noise(seed+37)*6;
                 float xx=x+4,yy=y-4;
                 p.line(xx-arm*RiverCamera.Q,yy-arm*RiverCamera.Q,xx+arm*RiverCamera.Q,yy+arm*RiverCamera.Q,
-                        .8f,((int)((life-.58f)*175)<<24)|0xb3d5cb);
+                        .8f,((int)((life-.58f)*175*detail)<<24)|0xb3d5cb);
             }
         }
         if(batch!=null)batch.flush();

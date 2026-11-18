@@ -5,6 +5,7 @@ import java.util.ArrayList;
 /** Simple coastline polygons and convex dock footprints, shared across hosts. */
 final class PolygonWater {
     private PolygonWater(){}
+    private static final float[] EMPTY=new float[0];
     static float cross(float ax,float ay,float bx,float by,float x,float y){return (bx-ax)*(y-ay)-(by-ay)*(x-ax);}
     static float area(float[] p){if(p.length<6)return 0;double a=0;
         for(int i=2;i<p.length-2;i+=2)a+=(double)(p[i]-p[0])*(p[i+3]-p[1])-(double)(p[i+2]-p[0])*(p[i+1]-p[1]);
@@ -14,7 +15,17 @@ final class PolygonWater {
     static float[] bounds(float[] p){float[] b={Float.MAX_VALUE,Float.MAX_VALUE,-Float.MAX_VALUE,-Float.MAX_VALUE};for(int i=0;i<p.length;i+=2){b[0]=Math.min(b[0],p[i]);b[1]=Math.min(b[1],p[i+1]);b[2]=Math.max(b[2],p[i]);b[3]=Math.max(b[3],p[i+1]);}return b;}
     static boolean overlaps(float[] a,float[] b){return a[0]<b[2] && a[2]>b[0] && a[1]<b[3] && a[3]>b[1];}
     static float[] edge(float[] p,float ax,float ay,float bx,float by,boolean positive){
-        if(p.length<6)return new float[0];float[] out=new float[p.length*2+4];int n=0;
+        float[] result=edgeRaw(p,ax,ay,bx,by,positive);return result==p?p.clone():result;
+    }
+    private static float[] edgeRaw(float[] p,float ax,float ay,float bx,float by,boolean positive){
+        if(p.length<6)return EMPTY;
+        // Most small water facets never cross this half-plane. Keep original
+        // vertices/ordering and avoid allocating/copying an unchanged polygon.
+        int insideCount=0;float sign=positive?1:-1;
+        for(int i=0;i<p.length;i+=2)if(cross(ax,ay,bx,by,p[i],p[i+1])*sign>=0)insideCount++;
+        if(insideCount==p.length/2)return p;
+        if(insideCount==0)return EMPTY;
+        float[] out=new float[p.length*2+4];int n=0;
         float x=p[p.length-2],y=p[p.length-1],d=cross(ax,ay,bx,by,x,y)*(positive?1:-1);boolean inside=d>=0;
         for(int i=0;i<p.length;i+=2){float xx=p[i],yy=p[i+1],dd=cross(ax,ay,bx,by,xx,yy)*(positive?1:-1);boolean next=dd>=0;
             if(inside!=next){float t=d/(d-dd);out[n++]=x+(xx-x)*t;out[n++]=y+(yy-y)*t;}
@@ -22,7 +33,7 @@ final class PolygonWater {
         }
         if(n<6)return new float[0];float[] r=new float[n];System.arraycopy(out,0,r,0,n);return r;
     }
-    static float[] clip(float[] p,float[] convex){boolean pos=area(convex)>0;for(int i=0;i<convex.length && p.length>=6;i+=2){int j=(i+2)%convex.length;p=edge(p,convex[i],convex[i+1],convex[j],convex[j+1],pos);}return p;}
+    static float[] clip(float[] p,float[] convex){float[] source=p;boolean pos=area(convex)>0;for(int i=0;i<convex.length && p.length>=6;i+=2){int j=(i+2)%convex.length;p=edgeRaw(p,convex[i],convex[i+1],convex[j],convex[j+1],pos);}return p==source?p.clone():p;}
     static float[] rectangle(float[] p,float l,float t,float r,float b){return clip(p,new float[]{l,t,r,t,r,b,l,b});}
     static void subtract(float[] p,float[] hole,ArrayList<float[]> out){boolean pos=area(hole)>0;for(int i=0;i<hole.length && p.length>=6;i+=2){int j=(i+2)%hole.length;float[] outside=edge(p,hole[i],hole[i+1],hole[j],hole[j+1],!pos);if(outside.length>=6)out.add(outside);p=edge(p,hole[i],hole[i+1],hole[j],hole[j+1],pos);}}
     static float[][] triangles(float[] p){
