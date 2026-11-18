@@ -11,14 +11,12 @@ public final class TrainingChannelView {
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
         WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
-        ShorelineView.water(g,canvas);
         NavigationLights.reflections(g,canvas);
         LockView.water(g,g.lock,canvas);
         FeederView.draw(g,p);
         // Ground is cached; solid lower-bank caps also join the world depth
         // order so they cover hulls without cutting through nearer buildings.
         StaticTerrain.draw(g,canvas,false);
-        ShorelineView.walls(g,canvas);
         VesselShoreLight.draw(g,canvas);
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);

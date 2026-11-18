@@ -160,7 +160,7 @@ public final class MontroseView {
         }finally{p.popClip();}
     }
     private static Ground[] ground(){ArrayList<Ground> out=new ArrayList<Ground>();for(int row=-9;row<8;row++)for(int col=-7;col<14;col++)out.add(new Ground(col,row));return out.toArray(new Ground[out.size()]);}
-    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);ShorelineView.water(g,canvas);
+    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);
         RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);
         MontroseShoreArt.docks(g,canvas);MontroseEntranceShore.pier(g,canvas);
         float[] terraceCut=MontroseShoreArt.terraceCut(land),rockCut=MontroseEntranceShore.wholeTerrainCut(land);
@@ -169,7 +169,6 @@ public final class MontroseView {
         float minX=Float.MAX_VALUE,minY=minX,maxX=-minX,maxY=-minX;
         for(int corner=0;corner<4;corner++){float x=c.worldX(corner%2*g.layout.width,corner/2*g.layout.height),y=c.worldY(corner%2*g.layout.width,corner/2*g.layout.height);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
         walls(canvas,c,minX-60,minY-60,maxX+60,maxY+60);
-        ShorelineView.walls(g,canvas);
         for(Ground layer:GROUND){if(layer.w<=0 || layer.h<=0)continue;
             float wx=layer.col*256,wy=layer.row*256,x=c.screenX(wx,wy)+(layer.left-layer.camera.screenX(wx,wy))*c.scale,y=c.screenY(wx,wy)+(layer.top-layer.camera.screenY(wx,wy))*c.scale;
             if(x+layer.width()*c.scale<0 || x>g.layout.width || y+layer.height()*c.scale<0 || y>g.layout.height)continue;

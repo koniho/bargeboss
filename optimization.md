@@ -2419,3 +2419,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   subdued. Installed on Pixel; no physical iOS validation. Restore ordinary
   launch and saved display timeout after captures. Remaining surface submission
   and simulation costs need fresh attribution before the next optimization.
+
+## 2026-11-17: remove animated shore bands at user request
+
+- Removed ShorelineView water/wall render passes from Montrose and the shared
+  industrial/practice scene. Static shore materials and wet shading remain;
+  vessel waterline occlusion, wakes, splashes, solid-ground masks and collision
+  geometry are unchanged. Shore segment geometry remains available to lighting.
+- Full shared checks and Android build pass. Updated drawing replay baseline to
+  436aa8c2:2:1350; gameplay result unchanged. All-heading hull/cargo shoreline
+  and foam/splash clipping pixel regressions pass.
+- JVM/J2ObjC parity matches436aa8c2:2:1350. Full preview export passed;
+  reviewed industrial tutorial export and native Montrose dock screenshot
+  out/no-shore-band-after/docks.png. Pixel installed and launched; no physical
+  iOS check this round.
+- Fresh live .65 zoom captures (120 warmup/360 measured): before median draw
+  32.991ms / interval44.343ms; after19.684ms /26.207ms. Simulation also fell
+  6.587->3.127ms despite unchanged gameplay, so changing device conditions
+  confound this comparison. Do not attribute the full timing difference to
+  removal or compare directly with the previous round's42FPS result. Raw data
+  under out/no-shore-band-{before,after}. No new FPS gain claimed.
