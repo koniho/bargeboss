@@ -3009,3 +3009,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Complete check.sh and normal Android build passed, including tow/train and
   tutorial regressions plus the reviewed canonical signature. Desktop pixels
   were reviewed; native on-device visuals and iOS parity were not checked this round.
+
+## 2026-11-18 — Green forward throttle segments
+
+- Changed the shared forward throttle color from teal to green (0xba75e68c).
+  Forward guide segments and engaged forward throttle/knob use the same green;
+  reverse remains amber. Opacity, fades, geometry and input behavior are unchanged.
+  No new assets, draw calls or caches.
+- Reviewed actual DesktopPainter controls at four headings, held/released fade
+  states and forward/reverse thrust levels. Reviewed canonical color-only draw
+  trace d0e0cae4:2:1350; delivery/score unchanged. Normal Android checks/build follow.
+- Full check.sh and normal Android APK build passed, including joystick/thrust
+  and reviewed trace checks. Visual validation used the shared desktop renderer;
+  native device color comparison and iOS raster parity were not performed.

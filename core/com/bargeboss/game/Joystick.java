@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Screen-space thumb input. Projection and boat physics remain in shared Game. */
 public final class Joystick {
     public static final float RADIUS=81,TRAVEL=63,DEAD_ZONE=7,INTENT_DISTANCE=14;
-    public static final int FORWARD_COLOR=0xba7fe1db,REVERSE_COLOR=0xbaffb875;
+    public static final int FORWARD_COLOR=0xba75e68c,REVERSE_COLOR=0xbaffb875;
     public boolean active;
     public float x,y;
     private float touchX,touchY;
