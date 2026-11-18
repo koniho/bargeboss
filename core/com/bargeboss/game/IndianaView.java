@@ -74,6 +74,7 @@ public final class IndianaView {
         ShorelineView.water(g,p);LocationBridges.shadows(g,p);
         IndianaShoreTiles.walls(g,p);IndianaShoreTiles.ground(g,p);
         ShorelineView.walls(g,p);
+        VesselShoreLight.draw(g,p);
         Renderer.river(g,new RiverPainter(p,g.layout.camera));
     }
     static void berth(Game g,Painter p){float x=IndianaHarbor.DOCK_X,y=IndianaHarbor.DOCK_Y;

@@ -40,15 +40,28 @@ public final class OverviewMapPixelTest {
                 if(!map.contains(x+.5f,y+.5f) && !slider.contains(x+.5f,y+.5f))
                     throw new AssertionError("overview escaped clip at "+x+","+y+" stage="+stage+" zoom="+level);
             }
-            int player=image.getRGB(Math.round(map.centerX()),Math.round(map.centerY()));
-            if((player&0xffffff)!=(OverviewMap.PLAYER&0xffffff))throw new AssertionError("player pixel not centered");
-            if(level==0) {
-                int edge=image.getRGB(Math.round(map.centerX()),(int)map.y)>>>24;
-                if(edge==0 || edge>=70)throw new AssertionError("viewport border must be visible but fainter than play boundary");
+            float playerX=OverviewMap.mapX(g,g.tug.y),playerY=OverviewMap.mapY(g,g.tug.x);
+            if(playerX>=1 && playerY>=1 && playerX<map.w-1 && playerY<map.h-1) {
+                int player=image.getRGB(Math.round(map.x+playerX),Math.round(map.y+playerY));
+                if((player&0xffffff)!=(OverviewMap.PLAYER&0xffffff))throw new AssertionError("player pixel must match anchored world projection");
+            }
+            // Top/left edges are the real boundary. Cropped/right/bottom edges
+            // retain the faint viewport frame when they are not world limits.
+            int top=image.getRGB((int)map.x+2,(int)map.y)>>>24;
+            int left=image.getRGB((int)map.x,(int)map.y+2)>>>24;
+            if(top<70 || left<70)throw new AssertionError("real top-left play boundary must align with viewport");
+            OverviewMap.Chart chart=OverviewMap.chart(g);
+            float right=OverviewMap.mapX(g,chart.maxY),bottom=OverviewMap.mapY(g,chart.minX);
+            if(level==0 && right<map.w-8) {
+                int edge=image.getRGB((int)(map.x+map.w-1),(int)map.y+2)>>>24;
+                if(edge==0 || edge>=70)throw new AssertionError("unused viewport edge must remain faint");
+            } else if(level==0 && bottom<map.h-8) {
+                int edge=image.getRGB((int)map.x+2,(int)(map.y+map.h-1))>>>24;
+                if(edge==0 || edge>=70)throw new AssertionError("unused viewport edge must remain faint");
             }
             int thumb=image.getRGB(Math.round(slider.x+24+(slider.w-48)*level),Math.round(slider.centerY()));
             if(g.overview.active || (thumb>>>24)<200)throw new AssertionError("idle slider must retain its relative indicator");
         }
-        System.out.println(pixels+" overview pixels clipped; player centered and released zoom indicator visible on both HUD sides");
+        System.out.println(pixels+" overview pixels clipped; top-left play boundary aligned and released zoom indicator visible on both HUD sides");
     }
 }

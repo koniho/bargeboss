@@ -14,6 +14,7 @@ public final class CoreTest {
         HarborPolygonGeometryTest.run();
         SurveyedLocationTest.run();
         OverviewMapTest.run();
+        GeographicShoreLightTest.run();
         PolygonClipFastTest.run();
         SceneDetailTest.run();
         RenderExclusionsTest.run();
@@ -170,7 +171,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Geographic scene/selector trace reviewed; bounded practice deliveries and score retained.
-        check(Parity.signature().equals("d0e0cae4:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("4299fcd5:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

@@ -22,9 +22,10 @@ final class OverviewMapTest {
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
             check(Math.abs((c.x(y+10)-c.x(y))-(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
             float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:PolygonWater.bounds(TrainingChannel.WATER_BOUNDARY);
-            check(c.minX==actual[0]-c.margin && c.minY==actual[1]-c.margin && c.maxX==actual[2]+c.margin && c.maxY==actual[3]+c.margin,"overview uses authoritative play extents");
+            check(c.minX==actual[0] && c.minY==actual[1] && c.maxX==actual[2] && c.maxY==actual[3],"overview uses authoritative play extents without extra margin");
             check(c.boundary[0]==c.x(c.minY) && c.boundary[1]==c.y(c.maxX) && c.boundary[4]==c.x(c.maxY) && c.boundary[5]==c.y(c.minX),"border and world corners share one projection");
-            check(stage==0?c.enclosed && c.margin>0 && c.x(actual[1])>c.boundary[0] && c.y(actual[2])>c.boundary[1]:!c.enclosed && c.margin==0,"only land-enclosed maps receive extra margin");
+            check(c.boundary[0]==OverviewMap.EDGE && c.boundary[1]==OverviewMap.EDGE,"top-left play corner is aligned to viewport stroke");
+            check(Math.abs(c.x(c.maxY)-(OverviewMap.WIDTH-OverviewMap.EDGE))<.001f || Math.abs(c.y(c.minX)-(OverviewMap.HEIGHT-OverviewMap.EDGE))<.001f,"full-area fit reaches at least one far viewport edge without stretching");
             Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0,"chart has shoreline contours and water fill");
         }
         for(float width:new float[]{960,1243,1440})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}){
@@ -72,10 +73,15 @@ final class OverviewMapTest {
             check(g.layout.camera==camera && g.tug.x==tugX && g.tug.y==tugY,"overview zoom leaves main camera and vessel unchanged");
             for(float x:new float[]{c.minX,(c.minX+c.maxX)*.5f,c.maxX})for(float y:new float[]{c.minY,(c.minY+c.maxY)*.5f,c.maxY}) {
                 g.tug.x=x;g.tug.y=y;
-                check(OverviewMap.mapX(g,g.tug.y)==OverviewMap.WIDTH*.5f && OverviewMap.mapY(g,g.tug.x)==OverviewMap.HEIGHT*.5f,"player stays centered even at all world edges");
-                ReplayInput.tap(g,slider.x+24,slider.centerY());
-                check(OverviewMap.mapX(g,c.minY)>=0 && OverviewMap.mapX(g,c.maxY)<=OverviewMap.WIDTH && OverviewMap.mapY(g,c.maxX)>=0 && OverviewMap.mapY(g,c.minX)<=OverviewMap.HEIGHT,"max zoom-out fits world bounds around player at every edge");
+                for(float fraction:new float[]{0,.5f,1}) {
+                    ReplayInput.tap(g,slider.x+24+(slider.w-48)*fraction,slider.centerY());
+                    check(OverviewMap.mapX(g,c.minY)==OverviewMap.EDGE && OverviewMap.mapY(g,c.maxX)==OverviewMap.EDGE,"top-left boundary stays anchored at every zoom and tug position");
+                    check(g.overview.zoom()>=1,"zoom cannot shrink below full play-area fit");
+                    check(Math.abs(OverviewMap.mapX(g,y)-(OverviewMap.EDGE+(y-c.minY)*c.scale*g.overview.zoom()))<.001f && Math.abs(OverviewMap.mapY(g,x)-(OverviewMap.EDGE+(c.maxX-x)*c.scale*g.overview.zoom()))<.001f,"tug marker follows world location in fixed map");
+                    if(fraction==0)check(OverviewMap.mapX(g,c.maxY)<=OverviewMap.WIDTH && OverviewMap.mapY(g,c.minX)<=OverviewMap.HEIGHT,"max zoom-out fits entire play area independent of tug location");
+                }
             }
+            ReplayInput.tap(g,slider.x,slider.centerY());check(g.overview.zoom()==1 && g.overview.level()==0,"left overshoot cannot zoom beyond play-area size");
             g.pointerDown(9,slider.centerX(),slider.centerY());g.background();
             check(!g.overview.active && !g.pointer,"background cancels slider capture");
             g.pause();g.pointerDown(10,slider.centerX(),slider.centerY());g.pointerCancel(10);

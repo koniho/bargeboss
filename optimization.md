@@ -3022,3 +3022,40 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full check.sh and normal Android APK build passed, including joystick/thrust
   and reviewed trace checks. Visual validation used the shared desktop renderer;
   native device color comparison and iOS raster parity were not performed.
+
+## 2026-11-18 — Play-bound overview limit and geographic lighting audit
+
+- Overview now anchors its top-left play-bound corner at the viewport corner at
+  every zoom. Removed surrounding world margin and chart padding; equal scale
+  preserves stage aspect ratio. Minimum/default is the full play-area fit (1x),
+  maximum remains 4x. The actual tug dot follows its projected world position;
+  close zoom may crop it because the map no longer recenters on the player.
+  Faint viewport edges and stronger play-bound edges remain distinct. Static chart
+  key bumped; geometry is still immutable, with the same bounded density buckets.
+- Updated bounds/input tests across all four locations, three zoom positions and
+  nine tug positions per location; reviewed four-location map sheet and checked
+  actual cached-layer pixels for aligned top/left boundaries and correct clipping.
+- Indiana lighting audit found a missed scene integration: IndianaView and
+  CalumetRiverView did not call VesselShoreLight.draw, while MontroseView and
+  TrainingChannelView do. Restored that shared pass after ground/walls and before
+  vessels, using the existing indexed shoreline receivers and raised-top clipping.
+  This adds local vessel illumination to walls and narrow dry quay lips; no new
+  textures or per-face light solver. GeographicShoreLightTest verifies both full
+  scene entry points include the exact local receiver patches and inactive
+  sources contribute none. Actual before/after Indiana and Calumet renders reviewed.
+- Separate remaining gap: ArticulatedModel.Poly.paint applies only a fixed
+  directional face multiplier followed by dusk material grading. New rigid
+  buildings/landmarks do not sample dynamic point lights. EMISSIVE faces and
+  LandmarkBridge glow anchors are visible emitters, not receiver illumination.
+  SurfaceLighting.sample includes tutorial factory sources and Montrose pedestals,
+  but no geographic building/bridge source registry. Adding that broader rigid
+  surface lighting requires a bounded shared source/receiver integration; it is
+  not implemented by this shore-pass repair. No native FPS claim is made.
+- Reviewed combined trace 4299fcd5:2:1350; delivery/score unchanged. Full normal
+  Android checks/build follow; native iOS validation is unavailable here.
+- Complete check.sh and normal Android build passed, including geographic receiver
+  integration, multitouch zoom, 153,882 group-opacity pixels and 332,740 overview
+  clipping/alignment pixels. APK installed/launched; native Indiana overview
+  inspected at its default full-area limit (Downloads/BargeBoss-Indiana-map-bounds-v1.png).
+  Shore lighting before/after validation used desktop rendering; native iOS and
+  on-device frame-time profiling were not performed.

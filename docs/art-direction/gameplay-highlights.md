@@ -27,13 +27,14 @@ See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 
 ## Overhead overview map
 
-The gameplay overview sits opposite the throttle and always centers on the tug,
-including at the location's edges. Pan the chart under the stationary player dot;
-never clamp the center to the chart limits. Use equal axis scale. The thin border is the projection of world bounds, not the UI
-panel edge; rectangular stages retain their actual aspect ratio. Fully enclosed
-water areas (the practice canal/basins) add a uniform world margin of 6% of the
-longer span, showing land between the shoreline and frame. Open-lake locations
-keep their frame aligned with the playable limits. Use thin translucent
+The gameplay overview sits opposite the throttle and keeps the play area's
+top and left boundaries aligned with the viewport at every zoom. Zoom about that
+corner; the player dot moves through the fixed map rather than recentering it.
+Minimum/default zoom fits the full authoritative play bounds, with no surrounding
+world margin, including in the tutorial. Do not allow zoom-out below that fit.
+Use equal axis scale: rectangular stages retain their actual aspect ratio, with
+any unused space on the right/bottom. The stronger border is the projection of
+world bounds. Use thin translucent
 shoreline/dock contours. Navigable water has a softer translucent fill (about
 17% effective opacity versus 53% for outlines); dry land and dock interiors stay
 clear. Do not add a filled panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
@@ -50,8 +51,7 @@ can simultaneously steer with the joystick or drag the tug; either control can
 start first and releasing/canceling one must preserve the other. Slider touches
 never enter steering, lasso or camera pinch routing. Pause/background/reset cancel
 both owners. Its permanent thumb and filled track show relative
-zoom even while idle. Left is maximum zoom-out: half the full-chart fit scale,
-which can show all bounds with a centered player at any world corner. Right is
+zoom even while idle. Left is maximum zoom-out: exactly the full-chart fit scale. Right is
 four times fit scale; use logarithmic interpolation for even zoom steps. The
 default is fit scale. Only the overview changes; main camera zoom is independent.
 The old in-play score panel and direction/status strip are removed; results

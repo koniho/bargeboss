@@ -11,6 +11,7 @@ public final class CalumetRiverView {
         p.rect(0,0,g.layout.width,g.layout.height,0xff151b25);
         WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
         ShorelineView.water(g,p);LocationBridges.shadows(g,p);CalumetRiverTiles.walls(g,p);CalumetRiverTiles.ground(g,p);ShorelineView.walls(g,p);
+        VesselShoreLight.draw(g,p);
         Renderer.river(g,new RiverPainter(p,g.layout.camera));
     }
     static void berth(Game g,Painter p,int kind){int d=g.voyage.destination(kind);float x=g.voyage.dockX(d),y=g.voyage.dockY(d),nx=g.voyage.normalX(d),ny=g.voyage.normalY(d),tx=-ny,ty=nx;

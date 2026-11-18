@@ -1,20 +1,20 @@
 package com.bargeboss.game;
 
-/** Player-centered overhead navigation: world +X points up, world +Y points right. */
+/** Top-left anchored overhead navigation: world +X points up, world +Y points right. */
 public final class OverviewMap {
-    static final float WIDTH=184,HEIGHT=184,PAD=10,TOP=PAD,BOTTOM=PAD;
+    static final float WIDTH=184,HEIGHT=184,EDGE=.5f;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
     private static final Chart[] CHARTS={new Chart(0),new Chart(1),new Chart(2),new Chart(3)};
-    // The full chart fits even with the tug at a world corner at minimum zoom.
-    static final float MIN_ZOOM=.5f,MAX_ZOOM=4;
+    // Never shrink below the full play-area fit; preserve the world's aspect ratio.
+    static final float MIN_ZOOM=1,MAX_ZOOM=4;
     private static final float[] OUTSIDE=outside();
-    private float level=1f/3,zoom=1;
+    private float level,zoom=1;
     private int pointerId=-1;
     boolean active;
     OverviewMap(){}
     float level(){return level;}
     float zoom(){return zoom;}
-    void reset(){level=1f/3;zoom=1;cancelTouch();}
+    void reset(){level=0;zoom=1;cancelTouch();}
     boolean owns(int id){return active && pointerId==id;}
     void begin(Game g,int id,float x){pointerId=id;active=true;setFromX(g,x);}
     void cancelTouch(){pointerId=-1;active=false;}
@@ -24,8 +24,8 @@ public final class OverviewMap {
     }
     static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
     static boolean sliderHit(Game g,float x,float y){return visible(g) && sliderBounds(g).contains(x,y);}
-    static float mapX(Game g,float worldY){return WIDTH*.5f+(worldY-g.tug.y)*chart(g).scale*g.overview.zoom();}
-    static float mapY(Game g,float worldX){return HEIGHT*.5f-(worldX-g.tug.x)*chart(g).scale*g.overview.zoom();}
+    static float mapX(Game g,float worldY){Chart c=chart(g);return EDGE+(worldY-c.minY)*c.scale*g.overview.zoom();}
+    static float mapY(Game g,float worldX){Chart c=chart(g);return EDGE+(c.maxX-worldX)*c.scale*g.overview.zoom();}
     // Four disjoint rectangles, with consistent triangle winding, work on every
     // host's existing exclusion clip (including Metal's stencil implementation).
     private static float[] outside(){
@@ -66,7 +66,7 @@ public final class OverviewMap {
         local.line(.5f,HEIGHT-.5f,.5f,.5f,.8f,frame);
         local.pushClipOutside(OUTSIDE);
         try {
-        local.layer(c,WIDTH*.5f-c.x(g.tug.y)*zoom,HEIGHT*.5f-c.y(g.tug.x)*zoom,zoom,.53f);
+        local.layer(c,EDGE*(1-zoom),EDGE*(1-zoom),zoom,.53f);
         for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
@@ -76,7 +76,7 @@ public final class OverviewMap {
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
         if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.y[i]),mapY(g,g.rescue.x[i]),1.7f,TARGET);
-        float x=WIDTH*.5f,y=HEIGHT*.5f,pulse=pulse(g.visualTicks);
+        float x=mapX(g,g.tug.y),y=mapY(g,g.tug.x),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));
         SoftCue.ring(local,x,y,4+2*pulse,1,SoftCue.alpha(PLAYER,.4f+.35f*pulse),1);
         local.circle(x,y,2.7f,PLAYER);
@@ -85,7 +85,7 @@ public final class OverviewMap {
     }
     private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wy),y=mapY(g,wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
-        final int stage;final boolean enclosed;final float margin,minX,maxX,minY,maxY,scale,cx,cy;
+        final int stage;final float minX,maxX,minY,maxY,scale;
         final float[][] water,docks,waterFill;
         final float[] dockHoles,boundary;
         Chart(int stage){
@@ -96,13 +96,8 @@ public final class OverviewMap {
                     stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:
                     stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:
                     PolygonWater.bounds(TrainingChannel.WATER_BOUNDARY);
-            // The practice canal/basins have solid banks all around. The three
-            // geographic locations connect to open lake water at their outer limits.
-            enclosed=stage==0;
-            margin=enclosed?Math.max(bounds[2]-bounds[0],bounds[3]-bounds[1])*.06f:0;
-            minX=bounds[0]-margin;minY=bounds[1]-margin;maxX=bounds[2]+margin;maxY=bounds[3]+margin;
-            scale=Math.min((WIDTH-2*PAD)/(maxY-minY),(HEIGHT-TOP-BOTTOM)/(maxX-minX));
-            cx=WIDTH*.5f;cy=(TOP+HEIGHT-BOTTOM)*.5f;
+            minX=bounds[0];minY=bounds[1];maxX=bounds[2];maxY=bounds[3];
+            scale=Math.min((WIDTH-2*EDGE)/(maxY-minY),(HEIGHT-2*EDGE)/(maxX-minX));
             boundary=new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
             water=project(stage==1?new float[][]{MontroseHarbor.COAST}:extent);
             docks=project(stage==1?MontroseHarbor.DOCKS:new float[0][]);
@@ -111,14 +106,14 @@ public final class OverviewMap {
             dockHoles=new float[count];int at=0;
             for(float[] dock:docks)for(int i=2;i<dock.length-2;i+=2){dockHoles[at++]=dock[0];dockHoles[at++]=dock[1];dockHoles[at++]=dock[i];dockHoles[at++]=dock[i+1];dockHoles[at++]=dock[i+2];dockHoles[at++]=dock[i+3];}
         }
-        float x(float worldY){return cx+(worldY-(minY+maxY)*.5f)*scale;}
-        float y(float worldX){return cy-(worldX-(minX+maxX)*.5f)*scale;}
+        float x(float worldY){return EDGE+(worldY-minY)*scale;}
+        float y(float worldX){return EDGE+(maxX-worldX)*scale;}
         private float[][] project(float[][] shapes){float[][] result=new float[shapes.length][];
             float[] clip=boundary;
-            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=cx+(a[i+1]-(minY+maxY)*.5f)*scale;b[i+1]=cy-(a[i]-(minX+maxX)*.5f)*scale;}result[j]=PolygonWater.clip(b,clip);}
+            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+1]);b[i+1]=y(a[i]);}result[j]=PolygonWater.clip(b,clip);}
             return result;
         }
-        public int key(){return 0x6d000500+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        public int key(){return 0x6d000600+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
             // Water is softer than contours; dry shore and dock interiors remain clear.
             if(dockHoles.length>0)p.pushClipOutside(dockHoles);

@@ -113,6 +113,11 @@ merge supplies deterministic ordering; do not introduce platform-specific sorts.
 
 Water and ground/piers are drawn before shore structures. Background props
 precede the river's depth-sorted vessels and tow spans; foreground props follow.
+Every location view, including Indiana and Calumet, must call
+`VesselShoreLight.draw` after ground and shore walls, before upright vessels and
+structures. The pass clips wall illumination against raised land and validates
+dry quay lips. Emissive windows or lamp glow alone do not make a 3D building a
+dynamic light receiver; that requires an explicit surface-lighting integration.
 The articulated bridge uses its elevated pass. Piers must not be painted over
 nearer building roofs at the end of the scene. Shore cutouts handle solid-ground
 coverage of vessels without requiring that late pier pass.
