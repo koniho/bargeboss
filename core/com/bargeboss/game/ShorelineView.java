@@ -60,14 +60,21 @@ public final class ShorelineView {
         }
         return r>=-2 && l<=g.layout.width+2 && b>=-2 && t<=g.layout.height+2;
     }
+    private static float detail(Game g,Segment s){
+        return g.montroseStage() && s.height<=MontroseHarbor.DOCK_RISE
+                ?SceneDetail.dockWater(g,(s.ax+s.bx)*.5f,(s.ay+s.by)*.5f):1;
+    }
     /** Before opaque ground: raised tops and walls cover corner overlaps and landward pixels. */
-    public static void water(Game g,Painter p){for(Segment s:segments(g.montroseStage()))if(project(g,s,false))
-        p.shoreline(s.projectedFoam,s.foamUV,phase(g),energy(g,s),0,0xb5b9c9b1);}
+    public static void water(Game g,Painter p){for(Segment s:segments(g.montroseStage())){
+        float detail=detail(g,s);if(detail<.01f || !project(g,s,false))continue;
+        p.shoreline(s.projectedFoam,s.foamUV,phase(g),energy(g,s),0,((int)(181*detail)<<24)|0xb9c9b1);
+    }}
     /** After opaque walls, before top receivers/props/vessels: never paints foam over a hull. */
     public static void walls(Game g,Painter p){
         p.pushClipOutside(ShoreTopClip.get(g));
-        try {for(Segment s:segments(g.montroseStage()))if(s.wallVisible && project(g,s,true))
-            p.shoreline(s.projectedWall,s.wallUV,phase(g),energy(g,s),1,0xb01d393c);
-        } finally {p.popClip();}
+        try {for(Segment s:segments(g.montroseStage())){
+            float detail=detail(g,s);if(detail<.01f || !s.wallVisible || !project(g,s,true))continue;
+            p.shoreline(s.projectedWall,s.wallUV,phase(g),energy(g,s),1,((int)(176*detail)<<24)|0x1d393c);
+        }} finally {p.popClip();}
     }
 }

@@ -2385,3 +2385,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   WaterFoamShader polygon submission highly (27% inclusive); sampled trace is
   attribution only. Live zoom override is currently restricted by developer
   tooling; extend that before claiming animated-view frame rates.
+
+## 2026-11-17: live wide-camera profiling and distant dock animation
+
+- Developer-only camera override now also supports live/replay captures, holding
+  projection while simulation/visual ticks advance. Requested zoom .65 gives
+  .78345 screen scale at this phone layout. Live baseline advances ticks120..1068
+  with constant projection: 360 measured frames after120 warmup, no tracing.
+  Median draw22.503ms, interval29.372ms; p95 interval34.362ms. Warm cache builds,
+  fallbacks and frame decodes were zero. This is slower than the frozen capture;
+  advancing physics contributes median2.8ms.
+- Revisited the previously rejected matrix-retention experiment in the new wide
+  scene because surface shader submission dominated the updated sample. Candidate
+  median interval28.642ms versus29.372, p9534.376 versus34.362; no persuasive
+  improvement. Reverted again; native matrix lifetime remains unchanged.
+- Low dock foam/wet-edge animation now fades with screen scale (.85..1.65),
+  retaining full local response within70 world units and easing to distant detail
+  by180. Geometry, occlusion, coast walls, collisions and close-view animation
+  remain. Skip distant bands before projection, water-energy sampling and shader
+  submission. Moored-light broad-phase rejection now precedes brightness sampling.
+- Live result: median draw22.503->18.016ms, interval29.372->24.067ms;
+  p95 draw26.097->22.246ms, interval34.362->29.323ms. About18% shorter
+  median interval (~34->42FPS), still above16.7ms. Matching frozen captures
+  independently improved draw24.645->21.367ms, interval28.991->24.799ms.
+  Short sequential captures are not sustained thermal tests; differing live
+  sample durations also cover different animation ticks. No warm cache builds,
+  fallbacks or frame decodes in either live window. Data: out/wide-animation-*
+  (matrix candidate excluded from final code).
+- Full checks, Android APK build, preview exports, 1,382,037 all-heading shoreline
+  pixel assertions and153,366 foam/splash clipping assertions passed. JVM/J2ObjC
+  parity remains90354d26:2:1350. Native wide screenshot reviewed: muted docks,
+  boat silhouettes and local lights remain; distant edge foam is intentionally
+  subdued. Installed on Pixel; no physical iOS validation. Restore ordinary
+  launch and saved display timeout after captures. Remaining surface submission
+  and simulation costs need fresh attribution before the next optimization.

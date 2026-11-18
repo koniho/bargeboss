@@ -15,6 +15,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final String scene,mode;
     private final int warmup,samples;
     private final float reviewZoom;
+    private Layout reviewLayout;
     private final boolean trace,systemTrace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
@@ -32,7 +33,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         boolean valid=false;for(String n:ProfileScenario.NAMES)if(n.equals(scene))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown bb_scene");
         reviewZoom=intent.getFloatExtra("bb_camera_zoom",0);
-        if(reviewZoom!=0 && (!mode.equals("freeze") || !Float.isFinite(reviewZoom) || reviewZoom<.25f || reviewZoom>5))throw new IllegalArgumentException("Camera override requires frozen mode and zoom .25..5");
+        if(reviewZoom!=0 && (!Float.isFinite(reviewZoom) || reviewZoom<.25f || reviewZoom>5))throw new IllegalArgumentException("Camera override requires zoom .25..5");
         warmup=Math.max(0,Math.min(1800,intent.getIntExtra("bb_warmup",120)));
         samples=Math.max(30,Math.min(3600,intent.getIntExtra("bb_frames",360)));
         trace=intent.getBooleanExtra("bb_trace",false);
@@ -72,7 +73,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         }
         ProfileScenario.prepare(root,scene,width,height);
         if(reviewZoom>0){Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;
-            g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),reviewZoom,x,y);}
+            g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),reviewZoom,x,y);reviewLayout=g.layout;}
         configured=true;
         root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.
@@ -93,6 +94,8 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         // A Choreographer callback need not produce a draw. Advance replay here
         // so every recorded row has exactly one tick regardless of render speed.
         if(mode.equals("replay")){long start=System.nanoTime();ProfileScenario.replayTick(root);advanceNs+=System.nanoTime()-start;}
+        // Hold only the projection: live physics, bobbing, foam and lamp clocks still advance.
+        if(reviewLayout!=null)root.activeGame().layout=reviewLayout;
         if(systemTrace)android.os.Trace.beginSection("BB draw "+frame);
         drawStart=System.nanoTime();
     }

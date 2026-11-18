@@ -9,6 +9,11 @@ final class SceneDetail {
         float near=1-fade(Physics.length(x-g.tug.x,y-g.tug.y),70,180);
         return Math.max(size,near);
     }
+    /** Tiny distant dock edges need no live foam; keep local maneuvering cues. */
+    static float dockWater(Game g,float x,float y){
+        return Math.max(fade(g.layout.camera.scale,.85f,1.65f),
+                1-fade(Physics.length(x-g.tug.x,y-g.tug.y),70,180));
+    }
     static float foam(float scale,float length,float width,int seed,float age){
         float detail=fade((length+width)*scale,12,28);
         float density=(seed&1)==0?1:detail;

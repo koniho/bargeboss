@@ -17,7 +17,12 @@ final class MooredBoatLight {
     }
     private static final ThreadLocal<Lights> SCRATCH=new ThreadLocal<Lights>(){protected Lights initialValue(){return new Lights();}};
     static Lights lights(Game g,float x,float y,float heave){Lights out=SCRATCH.get();out.count=0;float z=heave/ArticulatedModel.Z_SCALE;
-        for(int i=0;i<MontroseHarbor.PEDESTALS.length;i++){float[] f=MontroseHarbor.PEDESTALS[i];out.add(f[0]-x,f[1]-y,MarinaPedestals.LAMP_Z-z,90,.16f*MarinaPedestals.brightness(g,i),0xffffd68d);}
+        for(int i=0;i<MontroseHarbor.PEDESTALS.length;i++){
+            float[] f=MontroseHarbor.PEDESTALS[i];float dx=f[0]-x,dy=f[1]-y;
+            // Same broad phase as Lights.add, before evaluating animated brightness.
+            if(Math.abs(dx)>118 || Math.abs(dy)>118)continue;
+            out.add(dx,dy,MarinaPedestals.LAMP_Z-z,90,.16f*MarinaPedestals.brightness(g,i),0xffffd68d);
+        }
         points(g,out,x,y,z,g.tug);for(Body b:g.cargo)if(b!=null&&b.active)points(g,out,x,y,z,b);return out;
     }
     private static void points(Game g,Lights out,float x,float y,float z,Body b){if(!b.active)return;
