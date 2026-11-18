@@ -82,26 +82,30 @@ public final class ControlView {
         SoftCue.arrow(p,x,y,xx,yy,color);
     }
     public static void arrow(Game g,Painter p,float x,float y,float xx,float yy,int color) {
-        arrow(p,x,y,xx,yy,SoftCue.animated(g,color));
+        if(!assistPush(g))arrow(p,x,y,xx,yy,SoftCue.animated(g,color));
     }
     public static void path(Painter p,float x,float y,float xx,float yy,int color) {
         float distance=Physics.length(xx-x,yy-y); int count=Math.max(1,(int)(distance/12));
         for(int i=1;i<count;i++) { float t=(float)i/count; SoftCue.dot(p,x+(xx-x)*t,y+(yy-y)*t,1.5f,color); }
     }
+    static boolean assistPush(Game g){return g.pushing && !g.manualSteering && g.workingCargo()!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0;}
     public static void draw(Game g,Painter p) {
         int color=color(g);
         if(g.holdingTug()) {
             dragRing(g,p,BLUE);
             if(!g.pushing) ring(g,p,g.tug.x,g.tug.y,36,g.holdProgress(),AMBER,4);
-            else if(g.manualSteering) {
+            else if(g.manualSteering && !g.reversing && g.control!=Game.REVERSING && g.driveDirection()>=0) {
                 float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
-                arrow(g,p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
+                if(len>0)arrow(g,p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
             }
         }
         Body b=g.workingCargo();
         if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0 && !g.canTie(b)) {
             if(!g.pushing) ring(g,p,b.x,b.y,46,g.holdProgress(),AMBER,5);
-            else {
+            else if(assistPush(g)) {
+                if(g.control!=Game.WAITING_BRIDGE && g.control!=Game.DOCKING)
+                    arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,b.x+g.pushX*108,b.y+g.pushY*108,SoftCue.animated(g,color));
+            } else {
                 float bx=g.dockX(b.berth),by=g.dockY(b.berth);
                 if(!b.deliveryRecorded && g.berthEnabled(b.berth))ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
                 if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
@@ -121,7 +125,7 @@ public final class ControlView {
         }
         // Hull bloom identifies the tug; avoid a second permanent circle over it.
 
-        if(g.control==Game.COASTING || g.control==Game.REVERSING) {
+        if(g.control==Game.COASTING && !g.reversing && g.driveDirection()>=0) {
             float speed=g.tug.speed();
             if(speed>5) arrow(g,p,g.tug.x,g.tug.y,g.tug.x+g.tug.vx*.65f,g.tug.y+g.tug.vy*.65f,color);
         }

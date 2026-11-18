@@ -9,6 +9,7 @@ public final class CoreTest {
     private static void steps(Game g,int n) { for(int i=0;i<n;i++) g.step(); }
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
+        OverviewMapTest.run();
         PolygonClipFastTest.run();
         SceneDetailTest.run();
         RenderExclusionsTest.run();
@@ -163,7 +164,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Reviewed title breakwater surf changes drawing only; native parity retains deliveries and score.
-        check(Parity.signature().equals("daa6ed07:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("3858c4fd:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

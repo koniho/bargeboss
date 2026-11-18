@@ -20,3 +20,15 @@ neon implementation was a project interpretation, not a Valve requirement.
 
 See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 [drawing order](../rendering/drawing-order.md).
+
+## Overhead overview map
+
+The gameplay overview sits opposite the throttle. Use only thin translucent
+shoreline and dock contours; no filled terrain, buildings, panel or isometric
+projection. World +X (upper-right on the game plane) is up on the chart; world +Y
+(lower-right) is right. Keep this orientation independent of the camera. A yellow
+player dot pulses gently; cyan cargo markers and amber target outlines remain
+secondary. The chart is informational and does not intercept steering gestures.
+Cache the immutable contours separately from live markers.
+Apply chart opacity to the cached outline as a whole, not to individual line
+segments: overlapping translucent endpoints create unwanted bright joint dots.

@@ -26,6 +26,7 @@ public final class Renderer {
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);
         else if(g.tutorial!=null) TutorialView.draw(g,p);
         Joystick.draw(g,p);
+        OverviewMap.draw(g,p);
         } finally {WorldArrows.end();}
     }
     static void river(Game g,Painter p) {

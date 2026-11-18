@@ -2597,3 +2597,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   screenshot; six-second native animation and shared crest previews copied to
   phone Downloads as BargeBoss-title-rock-surf-*-v1 files. Local evidence in
   out/title-rock-waves. Previous display timeout restored.
+
+## 2026-11-18 — overhead navigation chart and control cues (shared Java)
+
+- Added a fixed-orientation overhead chart opposite the throttle: world +X maps
+  up, +Y maps right. Thin translucent shoreline/dock contours only; no terrain
+  fills or miniature scenery render. Yellow player pulse, cyan cargo and amber
+  destination/rescue markers use the shared visual clock. Touches pass through.
+- Three immutable 184x164 contour layers reuse the existing bounded 48 MiB native
+  layer cache. Each costs 1.036 MiB at 3x raster density (3.108 MiB for all three);
+  no cache budget increase. Markers draw separately; panning/zooming does not
+  rebuild contours. There are no native platform-specific navigation rules.
+- Removed reverse heading/velocity arrows. Push assist retains just its commanded
+  vector arrow, with normal world-depth ordering, without approach/drag cues or
+  world-bound endpoint clamping that could bend its direction.
+- Full check/build passed; overhead orientation, equal-axis scale, opposite-hand
+  placement, no-fill contour rendering, render purity and arrow-count/vector
+  regressions passed. JVM/J2ObjC trace parity: 3858c4fd:2:1350. All-heading shore
+  pixel regression: 1,382,037 assertions passed.
+- Reviewed shared Calumet, Montrose and Indiana frames with both throttle sides;
+  installed on the wireless Pixel 11 Pro and reviewed the live Montrose map.
+  Evidence: out/overview-map; phone Downloads/BargeBoss-overview-map-v1.png.
+  An initial freeze capture showed the pause overlay, so its frame timing is
+  invalid for gameplay performance conclusions. This round does not establish
+  an FPS improvement or physical iOS raster/touch parity.
+- Follow-up from native review: chart segments are now opaque within the cached
+  layer, with 0.53 opacity applied once to the completed chart. This prevents
+  overlapping translucent endpoints from becoming bright dots. Desktop cached
+  contour check covered 18,037 ink pixels; no alpha exceeded the group opacity.
+  Android and desktop cold-layer fallbacks also preserve group opacity. Metal
+  uses group opacity once cached; its existing cold direct fallback remains
+  per-primitive until the background layer is ready (not device-validated here).
+- Rebuilt and reinstalled after the join correction; reviewed the live native
+  Montrose frame in out/overview-map/android-montrose-v2.png and phone Downloads
+  BargeBoss-overview-map-v2.png. Full checks and translation parity passed again.
