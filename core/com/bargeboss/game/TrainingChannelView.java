@@ -9,14 +9,14 @@ public final class TrainingChannelView {
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;Painter p=new RiverPainter(canvas,c);
         canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
-        WaveView.surface(g,canvas);
+        if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0)WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
         NavigationLights.reflections(g,canvas);
         LockView.water(g,g.lock,canvas);
         FeederView.draw(g,p);
         // Ground is cached; solid lower-bank caps also join the world depth
         // order so they cover hulls without cutting through nearer buildings.
-        StaticTerrain.draw(g,canvas,false);
+        if((g.renderExclusions&RenderExclusions.SHORE_GEOMETRY)==0)StaticTerrain.draw(g,canvas,false);
         VesselShoreLight.draw(g,canvas);
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
@@ -153,7 +153,7 @@ public final class TrainingChannelView {
                 if(ed<=ld && ed<=rd && ed<=sd && ed<=bd && ed<=vd && spray<splashes.length){SprayView.draw(g,canvas,splashes[spray++]);continue;}
                 if(ld<=rd && ld<=sd && ld<=bd && ld<=vd && mark<lights.length){NavigationLights.draw(g,canvas,lights[mark++]);continue;}
                 if(rd<=sd && rd<=bd && rd<=vd && span<rope.count){rope.draw(world,span++);continue;}
-                if(sd<=bd && sd<=vd && shore<TrainingGroundView.frontCount()){TrainingGroundView.frontSection(g,canvas,shore++);continue;}
+                if(sd<=bd && sd<=vd && shore<TrainingGroundView.frontCount()){if((g.renderExclusions&RenderExclusions.SHORE_GEOMETRY)==0)TrainingGroundView.frontSection(g,canvas,shore);shore++;continue;}
                 if(bd<=vd && boat<count)Renderer.body(g,world,bodies[boat++]);
                 else YardActivity.drawVehicle(g,canvas,vehicles[vehicle++]);
             }

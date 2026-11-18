@@ -183,7 +183,8 @@ public final class CanvasPainter implements Painter {
     // contours. Skip shared grouping as well when individual paths are preferred.
     private boolean compoundPaths=false,frameTextures=true,forceWaterGrouping=false;
     public boolean prefersPolygonBatches(){return compoundPaths || forceWaterGrouping;}
-    private boolean profileSkipFoam;
+    private boolean profileSkipFoam,profileFlatSurfaces;
+    public void profileFlatSurfaces(boolean enabled){profileFlatSurfaces=enabled;}
     /** Developer-only effect isolation; default production appearance is unchanged. */
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
     public void profileWaterGrouping(boolean enabled){forceWaterGrouping=enabled;}
@@ -451,7 +452,7 @@ public final class CanvasPainter implements Painter {
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
         if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
-        if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))
+        if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))
             Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {

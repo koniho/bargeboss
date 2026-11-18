@@ -1,0 +1,310 @@
+{
+  "file": "out/contributors/shared-slip-wide.csv",
+  "transition_frames_dropped": 6,
+  "pairs": [
+    {
+      "block": 1,
+      "mask": 1,
+      "name": "Factory artwork",
+      "draw_ms": {
+        "baseline": 60.343,
+        "excluded": 59.883,
+        "saved": 0.461,
+        "percent_saved": 0.8
+      },
+      "interval_ms": {
+        "baseline": 139.0,
+        "excluded": 80.782,
+        "saved": 58.218,
+        "percent_saved": 41.9
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 3,
+      "mask": 2,
+      "name": "Factory smoke and steam",
+      "draw_ms": {
+        "baseline": 60.572,
+        "excluded": 63.422,
+        "saved": -2.851,
+        "percent_saved": -4.7
+      },
+      "interval_ms": {
+        "baseline": 192.857,
+        "excluded": 267.136,
+        "saved": -74.279,
+        "percent_saved": -38.5
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 5,
+      "mask": 4,
+      "name": "Factory glows and furnace effects",
+      "draw_ms": {
+        "baseline": 61.107,
+        "excluded": 77.391,
+        "saved": -16.284,
+        "percent_saved": -26.6
+      },
+      "interval_ms": {
+        "baseline": 163.047,
+        "excluded": 274.116,
+        "saved": -111.069,
+        "percent_saved": -68.1
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 7,
+      "mask": 8,
+      "name": "Ambient water crests",
+      "draw_ms": {
+        "baseline": 61.137,
+        "excluded": 67.439,
+        "saved": -6.302,
+        "percent_saved": -10.3
+      },
+      "interval_ms": {
+        "baseline": 163.233,
+        "excluded": 167.881,
+        "saved": -4.649,
+        "percent_saved": -2.8
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 9,
+      "mask": 16,
+      "name": "Static shore surfaces and caps",
+      "draw_ms": {
+        "baseline": 61.0,
+        "excluded": 35.183,
+        "saved": 25.816,
+        "percent_saved": 42.3
+      },
+      "interval_ms": {
+        "baseline": 163.022,
+        "excluded": 81.117,
+        "saved": 81.905,
+        "percent_saved": 50.2
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 11,
+      "mask": 32,
+      "name": "Native foam submission",
+      "draw_ms": {
+        "baseline": 67.024,
+        "excluded": 59.722,
+        "saved": 7.302,
+        "percent_saved": 10.9
+      },
+      "interval_ms": {
+        "baseline": 184.09,
+        "excluded": 181.136,
+        "saved": 2.954,
+        "percent_saved": 1.6
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 13,
+      "mask": 64,
+      "name": "Surface materials replaced by flat color",
+      "draw_ms": {
+        "baseline": 58.661,
+        "excluded": 34.188,
+        "saved": 24.473,
+        "percent_saved": 41.7
+      },
+      "interval_ms": {
+        "baseline": 146.549,
+        "excluded": 107.456,
+        "saved": 39.093,
+        "percent_saved": 26.7
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 15,
+      "mask": 7,
+      "name": "All factory visuals",
+      "draw_ms": {
+        "baseline": 57.751,
+        "excluded": 48.387,
+        "saved": 9.364,
+        "percent_saved": 16.2
+      },
+      "interval_ms": {
+        "baseline": 147.742,
+        "excluded": 68.56,
+        "saved": 79.182,
+        "percent_saved": 53.6
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 17,
+      "mask": 7,
+      "name": "All factory visuals",
+      "draw_ms": {
+        "baseline": 56.365,
+        "excluded": 46.96,
+        "saved": 9.405,
+        "percent_saved": 16.7
+      },
+      "interval_ms": {
+        "baseline": 100.985,
+        "excluded": 71.093,
+        "saved": 29.892,
+        "percent_saved": 29.6
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 19,
+      "mask": 64,
+      "name": "Surface materials replaced by flat color",
+      "draw_ms": {
+        "baseline": 57.608,
+        "excluded": 33.99,
+        "saved": 23.618,
+        "percent_saved": 41.0
+      },
+      "interval_ms": {
+        "baseline": 159.322,
+        "excluded": 108.309,
+        "saved": 51.013,
+        "percent_saved": 32.0
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 21,
+      "mask": 32,
+      "name": "Native foam submission",
+      "draw_ms": {
+        "baseline": 57.428,
+        "excluded": 57.428,
+        "saved": 0.0,
+        "percent_saved": 0.0
+      },
+      "interval_ms": {
+        "baseline": 136.866,
+        "excluded": 150.325,
+        "saved": -13.458,
+        "percent_saved": -9.8
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 23,
+      "mask": 16,
+      "name": "Static shore surfaces and caps",
+      "draw_ms": {
+        "baseline": 57.257,
+        "excluded": 32.882,
+        "saved": 24.375,
+        "percent_saved": 42.6
+      },
+      "interval_ms": {
+        "baseline": 139.414,
+        "excluded": 60.332,
+        "saved": 79.082,
+        "percent_saved": 56.7
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 25,
+      "mask": 8,
+      "name": "Ambient water crests",
+      "draw_ms": {
+        "baseline": 57.368,
+        "excluded": 56.458,
+        "saved": 0.91,
+        "percent_saved": 1.6
+      },
+      "interval_ms": {
+        "baseline": 141.122,
+        "excluded": 140.979,
+        "saved": 0.143,
+        "percent_saved": 0.1
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 27,
+      "mask": 4,
+      "name": "Factory glows and furnace effects",
+      "draw_ms": {
+        "baseline": 57.316,
+        "excluded": 55.911,
+        "saved": 1.405,
+        "percent_saved": 2.5
+      },
+      "interval_ms": {
+        "baseline": 140.706,
+        "excluded": 136.285,
+        "saved": 4.42,
+        "percent_saved": 3.1
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 29,
+      "mask": 2,
+      "name": "Factory smoke and steam",
+      "draw_ms": {
+        "baseline": 57.342,
+        "excluded": 51.543,
+        "saved": 5.798,
+        "percent_saved": 10.1
+      },
+      "interval_ms": {
+        "baseline": 138.693,
+        "excluded": 134.981,
+        "saved": 3.712,
+        "percent_saved": 2.7
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    },
+    {
+      "block": 31,
+      "mask": 1,
+      "name": "Factory artwork",
+      "draw_ms": {
+        "baseline": 57.248,
+        "excluded": 55.788,
+        "saved": 1.46,
+        "percent_saved": 2.5
+      },
+      "interval_ms": {
+        "baseline": 134.488,
+        "excluded": 78.507,
+        "saved": 55.981,
+        "percent_saved": 41.6
+      },
+      "cache_fallbacks": 0,
+      "cache_evictions": 0
+    }
+  ]
+}

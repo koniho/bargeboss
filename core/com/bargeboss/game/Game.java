@@ -2,6 +2,8 @@ package com.bargeboss.game;
 
 /** All gameplay, timers, gestures and lifecycle behavior live here, never in native hosts. */
 public final class Game {
+    /** Developer render exclusions; zero in ordinary play, never read by simulation. */
+    public int renderExclusions;
     public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6;
     public static final int SHIFT_TICKS=180*60, QUOTA=2;
     // Two original-size motion steps per real tick: 2x travel/turning with the

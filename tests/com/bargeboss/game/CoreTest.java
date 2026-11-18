@@ -11,6 +11,7 @@ public final class CoreTest {
     public static void main(String[] args) {
         PolygonClipFastTest.run();
         SceneDetailTest.run();
+        RenderExclusionsTest.run();
         PinchZoomTest.run();
         EngineAudioTest.run();
         DockCraneTest.run();

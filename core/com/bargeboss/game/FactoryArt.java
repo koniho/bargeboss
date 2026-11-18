@@ -22,6 +22,7 @@ public final class FactoryArt {
     public static float smokeX(int i,int k) { return FactoryArtData.SMOKE[i][k*3]; }
     public static float smokeY(int i,int k) { return FactoryArtData.SMOKE[i][k*3+1]; }
     public static void draw(Game g,Painter p,int i,float wx,float wy) {
+        if((g.renderExclusions&RenderExclusions.ALL_FACTORIES)==RenderExclusions.ALL_FACTORIES)return;
         RiverCamera c=g.layout.camera;float size=size(i)*c.scale;
         float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-(!g.montroseStage()?GroundArt.LAND_RISE*c.scale:0);
         float left=x-pivotX(i)*size,top=y-pivotY(i)*size;
@@ -44,12 +45,12 @@ public final class FactoryArt {
         }
         if(maxX<0 || minX>g.layout.width || maxY<0 || minY>g.layout.height) return;
         float alpha=g.buildingFades.opacity(SpriteAtlas.FACTORY,i,wx,wy);
-        p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
+        if((g.renderExclusions&RenderExclusions.FACTORY_ART)==0)p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
         float phase=i*1.71f+wx*.011f+wy*.007f;
         // A source can be visible while its rooftop emitters are completely offscreen.
         // Cull each emitter separately and use fewer layers for the wider travel view.
         boolean compact=c.zoom<1.35f;
-        for(int k=0;k<lightCount(i);k++) {
+        if((g.renderExclusions&RenderExclusions.FACTORY_LIGHTS)==0)for(int k=0;k<lightCount(i);k++) {
             float sx=left+lightX(i,k)*size,sy=top+lightY(i,k)*size;
             float radius=FactoryArtData.LIGHTS[i][k*3+2]*c.scale;
             float activeRadius=radius*FactoryActivity.radiusGain(i,k,g.visualTicks,phase);
@@ -58,7 +59,7 @@ public final class FactoryArt {
             else SceneryEffects.glow(p,sx,sy,activeRadius,0xffffb34f,alpha,g.visualTicks,phase+k*1.37f);
             FactoryActivity.light(p,i,k,sx,sy,radius,alpha,g.visualTicks,phase);
         }
-        for(int k=0;k<smokeCount(i);k++) {
+        if((g.renderExclusions&RenderExclusions.FACTORY_SMOKE)==0)for(int k=0;k<smokeCount(i);k++) {
             float sx=left+smokeX(i,k)*size,sy=top+smokeY(i,k)*size;
             float radius=FactoryArtData.SMOKE[i][k*3+2]*c.scale,r=radius*5.94f;
             if(sx+6*c.scale+r*1.2f< -1 || sx-48*c.scale-r*1.3f>g.layout.width+1

@@ -2481,3 +2481,40 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   feature enabled. Keep only the validated queue handoff, native regression and
   Shared Slip profiling fixture. Investigate remaining shader/effect and native
   submission cost next; fewer sprites alone did not solve this scene.
+
+## 2026-11-17: Shared Slip contributor isolation (Android)
+
+- Added developer-only controls with shared zero-default render exclusions;
+  normal gameplay appearance/physics is unchanged. Paired 45-frame baseline and
+  omission blocks, eight contributors forward then reverse, 120 warmup/1440
+  measured frames, frozen tick0, camera scale0.7834479. Discard six transition
+  frames per block. All measured omission windows had zero cache fallbacks or
+  evictions. Reproduction: docs/performance/developer-profiling.md; paired values
+  committed in docs/performance/shared-slip-contributors-2026-11-17/summary.json.
+  Raw CSV/native counters retained locally in out/contributors.
+- Flat surface materials (same polygons): draw savings24.473/23.618ms, interval
+  savings39.093/51.013ms (26.7/32.0%). Omitting static shore surfaces/caps:
+  draw25.816/24.375ms, intervals81.905/79.082ms (50.2/56.7%). Surface rendering
+  is a repeatable major contributor; flat surfaces are a diagnostic, not a
+  shipped visual downgrade. Compare retained/material preparation next.
+- Omitting factory artwork: draw savings only0.461/1.460ms, but frame intervals
+  139.000->80.782 and134.488->78.507ms (41.9/41.6%). All factory visuals:
+  draw savings9.364/9.405ms; interval savings53.6/29.6%. This identifies substantial
+  downstream artwork cost, not a reason to retry grouped caches unchanged.
+- Other interval savings, first/reverse pass: factory smoke/steam -38.5/+2.7%,
+  factory glows/furnace -68.1/+3.1%, ambient crests -2.8/+0.1%, native foam
+  +1.6/-9.8%. No repeatable benefit for these isolated omissions. Frozen idle
+  does not measure moving/towing foam load; native foam omission retains shared
+  preparation. Factory glows do not include all scene lights/reflections.
+- Device performance was poor and variable: neighboring baseline intervals
+  100.985..192.857ms. Thermal status2 (moderate) at end. Mid/end-run gfxinfo had
+  slow bitmap uploads on1435/1437 frames, GPU duration p50~6ms/p90~17ms; these
+  aggregate counters span multiple exclusions and are suggestive, not a causal
+  GPU trace. Texture upload/residency pressure needs a focused follow-up. Do not
+  sum omission deltas or compare this heated run with previous session FPS.
+- Validation: full check.sh including new factory exclusion isolation/restoration
+  tests passed; JVM/J2ObjC state/drawing parity436aa8c2:2:1350 passed; Android APK
+  built. Diagnostic scene screenshot confirmed Shared Slip. No physical iOS
+  validation or new production FPS improvement claimed.
+- Final checked APK installed successfully and launched in ordinary mode with no
+  exclusions; previous phone display timeout restored after measurement.

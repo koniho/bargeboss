@@ -272,3 +272,21 @@ See the iOS section in [optimization.md](../../optimization.md) for measured
 headroom, memory budgets, accepted visual differences, and timing limitations.
 The native host ignores saved progress during capture. Build normally without
 `BARGEBOSS_IOS_PROFILE=1` to omit the shared test input/fixture classes.
+
+## Paired contributor exclusions (Android)
+
+A profile build accepts `--ez bb_contributors true` in `freeze` mode. Use
+`shared-slip-wide`, `--ef bb_camera_zoom 0.65`, `--ei bb_warmup 120` and
+`--ei bb_frames 1440`. It alternates 45-frame baseline/exclusion blocks, then
+repeats the order in reverse. `tools/summarize-contributors.py capture.csv`
+discards six transition frames and compares each exclusion to its preceding
+baseline. The CSV records the exclusion mask; ordinary gameplay uses zero.
+
+For a single exclusion use `--ei bb_exclude MASK`: 1 factory artwork, 2 factory
+smoke/steam, 4 factory glows/furnace effects, 8 ambient water crests, 16 static
+shore surfaces/caps, 32 native foam submission, 64 flat surface materials, or
+7 all factory visuals. These are scoped passes, not all lighting or all water.
+Foam submission retains shared preparation. Shore exclusion retains collision
+and solid masks; flat materials retain polygon geometry. Omissions change
+occlusion, overdraw and cache pressure: marginal deltas are not additive GPU
+costs. Freeze isolates rendering but does not measure active tow/physics work.
