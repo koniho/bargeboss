@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Top-left anchored overhead navigation: world +X points up, world +Y points right. */
+/** Player-following overhead navigation, clamped to the play bounds. */
 public final class OverviewMap {
     static final float WIDTH=184,HEIGHT=184,EDGE=.5f;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
@@ -24,8 +24,16 @@ public final class OverviewMap {
     }
     static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
     static boolean sliderHit(Game g,float x,float y){return visible(g) && sliderBounds(g).contains(x,y);}
-    static float mapX(Game g,float worldY){Chart c=chart(g);return EDGE+(worldY-c.minY)*c.scale*g.overview.zoom();}
-    static float mapY(Game g,float worldX){Chart c=chart(g);return EDGE+(c.maxX-worldX)*c.scale*g.overview.zoom();}
+    // Center on each axis only while the enlarged play area covers the viewport.
+    // A shorter axis retains its top/left alignment instead of introducing a gap.
+    private static float offset(float player,float span,float view){
+        if(span<=view+.001f)return 0;
+        return Physics.clamp(view*.5f-player,view-span,0);
+    }
+    static float offsetX(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((g.tug.y-c.minY)*scale,(c.maxY-c.minY)*scale,WIDTH-2*EDGE);}
+    static float offsetY(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.maxX-g.tug.x)*scale,(c.maxX-c.minX)*scale,HEIGHT-2*EDGE);}
+    static float mapX(Game g,float worldY){Chart c=chart(g);return EDGE+(worldY-c.minY)*c.scale*g.overview.zoom()+offsetX(g);}
+    static float mapY(Game g,float worldX){Chart c=chart(g);return EDGE+(c.maxX-worldX)*c.scale*g.overview.zoom()+offsetY(g);}
     // Four disjoint rectangles, with consistent triangle winding, work on every
     // host's existing exclusion clip (including Metal's stencil implementation).
     private static float[] outside(){
@@ -66,7 +74,7 @@ public final class OverviewMap {
         local.line(.5f,HEIGHT-.5f,.5f,.5f,.8f,frame);
         local.pushClipOutside(OUTSIDE);
         try {
-        local.layer(c,EDGE*(1-zoom),EDGE*(1-zoom),zoom,.53f);
+        local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
         for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));

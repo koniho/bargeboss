@@ -3059,3 +3059,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   inspected at its default full-area limit (Downloads/BargeBoss-Indiana-map-bounds-v1.png).
   Shore lighting before/after validation used desktop rendering; native iOS and
   on-device frame-time profiling were not performed.
+
+## 2026-11-18 — Follow the player within overview play bounds
+
+- Refined the map constraint: each axis follows the tug toward viewport center,
+  but clamps its scroll offset to the zoomed play-area limits. At a world edge,
+  that edge stays flush and the tug dot moves away from center. Axes shorter than
+  the viewport retain top/left alignment. Minimum zoom remains full-area fit.
+- Cached chart and live markers use the identical bounded offset. No geometry
+  rebuild, new cache key/texture, asset or main-camera change. Offset calculation
+  is constant-time arithmetic; simultaneous zoom/driving remains supported.
+- Existing overview tests now cover all four locations, 25 tug positions and
+  three zoom levels, checking the player stays visible and may leave center only
+  when constrained by an edge. Desktop pixels and the four-location zoom sheet
+  reviewed; 417,064 viewport pixels checked. Default replay trace remains
+  4299fcd5:2:1350. Normal Android checks/build follow; no frame-rate claim.
+- Complete check.sh and normal Android APK build passed. Visual review used the
+  actual shared desktop renderer; the phone was locked for final device checks,
+  and native iOS raster parity was unavailable. No lighting/physics changes in
+  this increment; prior geographic shore-light integration still passes.

@@ -27,9 +27,12 @@ See [the original guidance notes](../art-prompts/soft-guidance-v1.md) and
 
 ## Overhead overview map
 
-The gameplay overview sits opposite the throttle and keeps the play area's
-top and left boundaries aligned with the viewport at every zoom. Zoom about that
-corner; the player dot moves through the fixed map rather than recentering it.
+The gameplay overview sits opposite the throttle and follows the player while
+zoomed in. Center independently on each axis, clamping the scroll offset so a
+play-area edge cannot move inside the viewport when that axis is larger than the
+window. Near a boundary, the map stops scrolling and the player dot moves away
+from center. An axis that fits within the viewport stays top/left aligned; do
+not center that short axis or add a surrounding margin.
 Minimum/default zoom fits the full authoritative play bounds, with no surrounding
 world margin, including in the tutorial. Do not allow zoom-out below that fit.
 Use equal axis scale: rectangular stages retain their actual aspect ratio, with

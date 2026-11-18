@@ -206,10 +206,12 @@ no voice audio yet. The opening bridge remains part of the continuous towing
 tutorial. Pause is in the upper-right corner (Escape on desktop).
 Choose **Title Screen** from the pause menu to leave a voyage or tutorial.
 Career progress and settings are kept; starting again begins a fresh voyage.
-The overview map stays anchored to the play area's top-left corner. Drag its horizontal slider at the
+The overview centers on the tug when zoomed in, stopping at the play-area edges.
+At full-area fit it aligns top-left. Drag its horizontal slider at the
 bottom of the screen to zoom the map; the filled track and thumb always show
 the current setting relative to the full play-area fit at the left end; you cannot
-zoom farther out. The tug marker moves across the map as you drive. This control
+zoom farther out. Near an edge, the tug marker moves away from center instead of
+scrolling the map beyond the play area. This control
 does not change the main gameplay camera. You can keep driving with one finger
 while zooming with another. A faint square marks the map window; the actual
 play-area boundary uses a stronger line. Help and Practice sit at bottom center.

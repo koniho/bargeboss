@@ -71,13 +71,14 @@ final class OverviewMapTest {
             check(!g.pointer && !g.overview.active && !g.navigating && !g.joystick.active && g.ropePhase==0,"release cannot drive or throw lasso");
             check(g.overview.level()==1 && g.overview.zoom()==OverviewMap.MAX_ZOOM,"relative indicator retains current zoom after release");
             check(g.layout.camera==camera && g.tug.x==tugX && g.tug.y==tugY,"overview zoom leaves main camera and vessel unchanged");
-            for(float x:new float[]{c.minX,(c.minX+c.maxX)*.5f,c.maxX})for(float y:new float[]{c.minY,(c.minY+c.maxY)*.5f,c.maxY}) {
+            for(float fx:new float[]{0,.1f,.5f,.9f,1})for(float fy:new float[]{0,.1f,.5f,.9f,1}) {
+                float x=c.minX+fx*(c.maxX-c.minX),y=c.minY+fy*(c.maxY-c.minY);
                 g.tug.x=x;g.tug.y=y;
                 for(float fraction:new float[]{0,.5f,1}) {
                     ReplayInput.tap(g,slider.x+24+(slider.w-48)*fraction,slider.centerY());
-                    check(OverviewMap.mapX(g,c.minY)==OverviewMap.EDGE && OverviewMap.mapY(g,c.maxX)==OverviewMap.EDGE,"top-left boundary stays anchored at every zoom and tug position");
                     check(g.overview.zoom()>=1,"zoom cannot shrink below full play-area fit");
-                    check(Math.abs(OverviewMap.mapX(g,y)-(OverviewMap.EDGE+(y-c.minY)*c.scale*g.overview.zoom()))<.001f && Math.abs(OverviewMap.mapY(g,x)-(OverviewMap.EDGE+(c.maxX-x)*c.scale*g.overview.zoom()))<.001f,"tug marker follows world location in fixed map");
+                    checkAxis(OverviewMap.mapX(g,c.minY),OverviewMap.mapX(g,c.maxY),OverviewMap.mapX(g,y),OverviewMap.WIDTH);
+                    checkAxis(OverviewMap.mapY(g,c.maxX),OverviewMap.mapY(g,c.minX),OverviewMap.mapY(g,x),OverviewMap.HEIGHT);
                     if(fraction==0)check(OverviewMap.mapX(g,c.maxY)<=OverviewMap.WIDTH && OverviewMap.mapY(g,c.minX)<=OverviewMap.HEIGHT,"max zoom-out fits entire play area independent of tug location");
                 }
             }
@@ -91,6 +92,17 @@ final class OverviewMapTest {
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();Layout.Box slider=OverviewMap.sliderBounds(practice);
         ReplayInput.tap(root,slider.x+slider.w-24,slider.centerY());
         check(practice.overview.zoom()==OverviewMap.MAX_ZOOM && root.overview.zoom()==1,"practice routes slider to its active game");
+    }
+    private static void checkAxis(float low,float high,float player,float size){
+        float edge=OverviewMap.EDGE;
+        check(player>=edge-.002f && player<=size-edge+.002f,"tug stays within overview");
+        if(high-low<=size-2*edge+.002f) {
+            check(Math.abs(low-edge)<.002f,"axis smaller than viewport keeps top/left alignment");
+        } else {
+            check(low<=edge+.002f && high>=size-edge-.002f,"following never pulls playable edge inside viewport");
+            if(player<size*.5f-.002f)check(Math.abs(low-edge)<.002f,"player may leave center near top/left boundary only");
+            else if(player>size*.5f+.002f)check(Math.abs(high-(size-edge))<.002f,"player may leave center near bottom/right boundary only");
+        }
     }
     private static void simultaneousControls(){
         for(boolean joystick:new boolean[]{false,true})for(boolean zoomFirst:new boolean[]{false,true})for(boolean releaseZoomFirst:new boolean[]{false,true}) {
