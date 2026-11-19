@@ -46,10 +46,14 @@ public final class StaticTerrain {
     }
     static synchronized Tile tile(int col,int row,boolean foreground) {
         if(col< -2048 || col>=2048 || row< -2048 || row>=2048)throw new IllegalArgumentException("Terrain chunk outside key range");
-        int key=0x20000000|(foreground?0x01000000:0)|((col+2048)<<12)|(row+2048);
+        int key=0x22000000|(foreground?0x01000000:0)|((col+2048)<<12)|(row+2048);
         Tile tile=TILES.get(key);if(tile!=null)return tile;
         Recorder record=new Recorder();Painter p=new ViewportPainter(record,CHUNK,CHUNK);
         Game scene=new Game();
+        // These chunks belong only to the training yard. A fresh game's default
+        // is the geographic Calumet voyage, whose dry mask would erase our walls.
+        // Set render context without starting/resetting a playable tutorial.
+        scene.tutorial=new Tutorial();
         // Canonical projection is screenX=Q*(x+y), screenY=Q*DEPTH*(y-x).
         RiverCamera c=new RiverCamera(RiverCamera.Q*288-col*CHUNK,-RiverCamera.Q*RiverCamera.DEPTH*312-row*CHUNK,1);
         scene.layout=Layout.renderTile(CHUNK,CHUNK,c);

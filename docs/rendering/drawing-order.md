@@ -680,3 +680,14 @@ lift. Landed cargo uses its dry pad anchor even after its barge moves away.
 Crane lamps use named part-local anchors and the same exact mesh pose, with face
 occlusion. Released/suspended cargo must not join watercraft building-fade masks.
 See [cargo offloading](cargo-offloading.md) for motion and validation.
+
+### Training terrain cache context
+
+`StaticTerrain` is specific to the practice yard. Its temporary rendering scene
+must explicitly carry tutorial context before recording walls, ground and caps.
+A default `Game` selects the geographic Calumet voyage; using that default lets
+`ShoreTopClip` mask the training walls against unrelated dry land. Dynamic vessel
+lighting then appears over empty water because it uses the real tutorial context.
+Do not infer cached geometry's location from the default career selection. Keep
+both recorded material and raster clips, and verify cached wall interiors against
+the direct geometry with lighting disabled (`ShoreOcclusionPixelTest terrain`).

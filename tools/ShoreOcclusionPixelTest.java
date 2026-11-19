@@ -9,6 +9,8 @@ public final class ShoreOcclusionPixelTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void main(String[] args) {
+        cachedWalls();
+        if(args.length>0 && args[0].equals("terrain"))return;
         wallCorners();
         Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
         for(int bank=0;bank<4;bank++)for(int kind=0;kind<4;kind++)for(int heading=0;heading<32;heading++) {
@@ -45,6 +47,41 @@ public final class ShoreOcclusionPixelTest {
         check(landProbes>10000 && wetPixels>10000,"regression covers both hidden and visible hull pixels");
         System.out.println(checks+" production hull/cargo shoreline pixel assertions passed across all 32 headings");
     }
+    /** Cached terrain must retain the same visible wall faces as the live geometry. */
+    private static void cachedWalls(){
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();
+        int probes=0;float[] bank=TrainingChannel.WATER_BOUNDARY;
+        for(int edge=0;edge<bank.length;edge+=2){
+            int next=(edge+2)%bank.length;
+            float dx=bank[next]-bank[edge],dy=bank[next+1]-bank[edge+1];
+            if(dx+dy<=0)continue; // Only water-facing walls visible from this camera.
+            float x=(bank[edge]+bank[next])*.5f,y=(bank[edge+1]+bank[next+1])*.5f;
+            for(float scale:new float[]{1,2}){
+                RiverCamera base=new RiverCamera(0,0,scale);
+                g.layout=Layout.renderTile(256,256,new RiverCamera(128-base.screenX(x,y),150-base.screenY(x,y),scale));
+                BufferedImage direct=new BufferedImage(256,256,BufferedImage.TYPE_INT_ARGB_PRE);
+                BufferedImage cached=new BufferedImage(256,256,BufferedImage.TYPE_INT_ARGB_PRE);
+                Graphics2D a=direct.createGraphics(),b=cached.createGraphics();
+                try{
+                    TrainingGroundView.walls(g,new DesktopPainter(a));
+                    DesktopPainter p=new DesktopPainter(b);p.beginFrame();StaticTerrain.draw(g,p,false);
+                }finally{a.dispose();b.dispose();}
+                for(int py=8;py<248;py+=3)for(int px=8;px<248;px+=3){
+                    // Require a solid interior neighborhood, excluding raster/clip edges.
+                    boolean solid=true;
+                    for(int ox=-2;ox<=2;ox++)for(int oy=-2;oy<=2;oy++)
+                        if((direct.getRGB(px+ox,py+oy)>>>24)<250)solid=false;
+                    if(!solid)continue;
+                    probes++;
+                    check((cached.getRGB(px,py)>>>24)>=250,
+                            "cached training wall missing: edge="+edge+" scale="+scale+" pixel="+px+","+py);
+                }
+            }
+        }
+        check(probes>1000,"cached wall regression covers solid faces across training banks and zooms");
+        System.out.println(probes+" cached training wall interior pixels retained without lighting");
+    }
+
     private static void wallCorners(){
         Game root=new Game();root.startTutorial();Game g=root.activeGame();
         for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;

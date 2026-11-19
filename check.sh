@@ -24,3 +24,7 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.IndianaShoreTil
 # Scrolling overview uses a fixed viewport and retains its slider after release.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/OverviewMapPixelTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.OverviewMapPixelTest
+
+# Cached training terrain must preserve wall faces without dynamic lighting.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/ShoreOcclusionPixelTest.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.ShoreOcclusionPixelTest terrain

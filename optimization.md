@@ -3104,3 +3104,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   screen launch verified on the phone. Gameplay-map pixel review used desktop;
   native gameplay capture was interrupted by concurrent phone use, so no native
   map-pixel or frame-time claim is made for this increment.
+
+## 2026-11-19 — Restore cached training seawalls
+
+- Reproduced missing corrugated wall faces in the shared desktop renderer. The
+  temporary Game used by StaticTerrain to record training chunks defaulted to a
+  geographic Calumet voyage. ShoreTopClip therefore cut walls against unrelated
+  land, while live vessel-light receivers used the correct training footprint.
+- Set explicit tutorial context on the temporary render scene before recording;
+  no tutorial setup, gameplay reset or per-frame geometry was added. Bumped both
+  terrain cache key families. Existing 256-chunk/cache budgets and material/raster
+  pass separation remain unchanged. This repairs geometry coverage, not lighting
+  intensity; no FPS improvement is claimed.
+- Added a real cached-versus-direct wall pixel regression, covering visible bank
+  faces at 1x/2x with lights absent. It fails before the fix and passes afterward:
+  31,329 opaque wall-interior samples. Included this focused check in check.sh.
+  Full all-heading shoreline pixel run also passes (1,413,367 assertions), including
+  inside-corner clipping and foreground land occlusion across all 32 vessel poses.
+- Reviewed before/after practice renders, including channel corners and the
+  working harbor. Render trace now 66057fc4:2:1350; deliveries/score unchanged.
+  Normal Android checks/build and device install follow; native iOS unavailable.
+- Full check.sh and normal Android APK build passed; installed and launched the
+  tutorial on the development phone. Restored wall-face pixels were reviewed in
+  desktop before/after renders; native capture confirmed tutorial entry but was
+  centered on open water, so it does not independently verify the repaired wall
+  faces. Native frame timing was not measured.
