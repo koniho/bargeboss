@@ -27,13 +27,22 @@ public final class OverlayTextTest {
         float wipe=panel.wipe();panel.step(next);check(panel.wipe()>wipe,"clear moves left to right");
         for(int i=2;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);
         check(panel.dropping() && panel.starX()==414 && panel.starY()==39,"clear star reaches top right before dropping");
-        for(int i=0;i<InstructionPanel.DROP_TICKS;i++){check(panel.starX()==414,"star drops straight down");panel.step(next);}
+        float lineHeight=panel.lineHeight();check(lineHeight==65,"wipe line spans from star to bottom");
+        for(int i=0;i<InstructionPanel.DROP_TICKS;i++){
+            check(panel.starX()==414,"star drops straight down");panel.step(next);
+            check(panel.lineHeight()<=lineHeight,"line collapses as star descends");lineHeight=panel.lineHeight();
+        }
         check(panel.returning() && panel.starY()==104,"star reaches lower right before returning");
         float starX=panel.starX(),starY=panel.starY();
         for(int i=0;i<InstructionPanel.RETURN_TICKS;i++){
-            panel.step(next);check(panel.starX()<=starX && panel.starY()<=starY,"return travels toward top left");starX=panel.starX();starY=panel.starY();
+            panel.step(next);check(panel.starX()<=starX && panel.starY()==104 && panel.lineHeight()==0,"return travels right to left along bottom with line collapsed");starX=panel.starX();starY=panel.starY();
         }
-        check(panel.starX()==18 && panel.starY()==39,"new wipe begins at top left");
+        check(panel.rising() && panel.starX()==18 && panel.starY()==104,"star reaches bottom left before rising");
+        for(int i=0;i<InstructionPanel.RISE_TICKS;i++){
+            panel.step(next);check(panel.starX()==18 && panel.starY()<=starY,"star rises vertically at left edge");
+            check(panel.lineHeight()>=lineHeight,"line extends as star rises");starY=panel.starY();lineHeight=panel.lineHeight();
+        }
+        check(panel.starX()==18 && panel.starY()==39 && panel.lineHeight()==65,"new wipe starts at top left with full line");
         check(panel.revealing() && panel.wipe()==0,"new content reveal begins only after clearing finishes");
         panel.step(next);check(panel.wipe()>0,"new content reveals left to right");
         for(int i=1;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);

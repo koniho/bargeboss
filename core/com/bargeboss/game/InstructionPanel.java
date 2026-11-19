@@ -2,8 +2,8 @@ package com.bargeboss.game;
 
 /** Fixed-step CRT show/hide and two-pass left-to-right content wipe. */
 final class InstructionPanel {
-    static final int OPEN_TICKS=18,CLOSE_TICKS=8,WIPE_TICKS=12,DROP_TICKS=8,RETURN_TICKS=12,SHIMMER_TICKS=24;
-    private static final int OPEN=0,STEADY=1,CLEAR=2,REVEAL=3,CLOSE=4,HIDDEN=5,DROP=6,RETURN=7;
+    static final int OPEN_TICKS=18,CLOSE_TICKS=8,WIPE_TICKS=12,DROP_TICKS=8,RETURN_TICKS=12,RISE_TICKS=8,SHIMMER_TICKS=24;
+    private static final int OPEN=0,STEADY=1,CLEAR=2,REVEAL=3,CLOSE=4,HIDDEN=5,DROP=6,RETURN=7,RISE=8;
     private int phase=OPEN,ticks,shimmerTicks;
     private float closeFrom=1;
     private Content content,pending;
@@ -39,7 +39,8 @@ final class InstructionPanel {
         if(phase==OPEN && ticks>=OPEN_TICKS){phase=STEADY;ticks=0;shimmerTicks=SHIMMER_TICKS;}
         else if(phase==CLEAR && ticks>=WIPE_TICKS){phase=DROP;ticks=0;}
         else if(phase==DROP && ticks>=DROP_TICKS){phase=RETURN;ticks=0;}
-        else if(phase==RETURN && ticks>=RETURN_TICKS){content=pending;phase=REVEAL;ticks=0;}
+        else if(phase==RETURN && ticks>=RETURN_TICKS){phase=RISE;ticks=0;}
+        else if(phase==RISE && ticks>=RISE_TICKS){content=pending;phase=REVEAL;ticks=0;}
         else if(phase==REVEAL && ticks>=WIPE_TICKS){phase=STEADY;ticks=0;shimmerTicks=SHIMMER_TICKS;}
         else if(phase==CLOSE && ticks>=CLOSE_TICKS){phase=HIDDEN;ticks=0;}
     }
@@ -50,26 +51,42 @@ final class InstructionPanel {
         float t=phase==CLOSE?1-ticks/(float)CLOSE_TICKS:ticks/(float)OPEN_TICKS;
         t=Physics.clamp(t,0,1);return t*t*(3-2*t)*(phase==CLOSE?closeFrom:1);
     }
-    float textAlpha(){return phase==CLOSE || phase==DROP || phase==RETURN?0:Physics.clamp((open()-.65f)/.35f,0,1);}
+    float textAlpha(){return phase==CLOSE || phase==DROP || phase==RETURN || phase==RISE?0:Physics.clamp((open()-.65f)/.35f,0,1);}
     float wipe(){return ticks/(float)WIPE_TICKS;}
     boolean clearing(){return phase==CLEAR;}
     boolean revealing(){return phase==REVEAL;}
     boolean dropping(){return phase==DROP;}
     boolean returning(){return phase==RETURN;}
+    boolean rising(){return phase==RISE;}
     boolean shimmering(){return shimmerTicks>0;}
     private static float ease(float t){t=Physics.clamp(t,0,1);return t*t*(3-2*t);}
     float starX(){
         if(phase==CLEAR || phase==REVEAL)return 18+396*wipe();
         if(phase==RETURN)return 414-396*ease(ticks/(float)RETURN_TICKS);
+        if(phase==RISE)return 18;
         return 414;
     }
     float starY(){
         if(phase==DROP)return 39+65*ease(ticks/(float)DROP_TICKS);
-        if(phase==RETURN)return 104-65*ease(ticks/(float)RETURN_TICKS);
+        if(phase==RETURN)return 104;
+        if(phase==RISE)return 104-65*ease(ticks/(float)RISE_TICKS);
         return 39;
     }
+    float lineHeight(){
+        return phase==CLEAR || phase==REVEAL || phase==DROP || phase==RISE?104-starY():0;
+    }
+    private void wipeLine(Painter p,float x,float y){
+        float height=lineHeight();if(height<=0)return;
+        float xx=x+starX(),top=y+starY(),bottom=y+104;
+        float pulse=.8f+.2f*(float)StrictMath.sin(ticks*.5f);
+        p.line(xx,top,xx,bottom,6,SoftCue.alpha(0x1895d7d1,pulse));
+        p.line(xx,top,xx,bottom,2.5f,SoftCue.alpha(0x4095d7d1,pulse));
+        p.line(xx,top,xx,bottom,.8f,SoftCue.alpha(0xa0c4e9e5,pulse));
+        float glint=(.5f+.5f*(float)StrictMath.sin(ticks*.55f))*height;
+        p.line(xx,Math.max(top,top+glint-5),xx,Math.min(bottom,top+glint+5),1,0x99edf8ea);
+    }
     private void sparkle(Painter p,float x,float y){
-        boolean moving=phase==CLEAR || phase==DROP || phase==RETURN || phase==REVEAL;
+        boolean moving=phase==CLEAR || phase==DROP || phase==RETURN || phase==RISE || phase==REVEAL;
         float fade=moving?1:shimmerTicks>SHIMMER_TICKS-6?(shimmerTicks-(SHIMMER_TICKS-6))/6f:0;
         if(fade<=0)return;
         float radius=4+.65f*(float)StrictMath.sin(ticks*.65f);
@@ -106,11 +123,7 @@ final class InstructionPanel {
         }
         try{if(textAlpha()>0)shown.draw(ScreenView.offset(new OpacityPainter(p,textAlpha()),x,y));}
         finally{if(wipe)p.popClip();}
-        if(wipe){
-            float edge=x+18+396*wipe();
-            p.line(edge,y+15,edge,y+117,4,0x1895d7d1);
-            p.line(edge,y+15,edge,y+117,.8f,0x8095d7d1);
-        }
+        wipeLine(p,x,y);
         shimmer(p,x,y);
         sparkle(p,x,y);
     }

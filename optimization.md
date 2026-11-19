@@ -3271,3 +3271,19 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   preview is copied to Downloads as BargeBoss-instruction-sparkle-v1.gif.
   Full check.sh and Android build passed; installed/launched on the phone.
   No native animation capture, frame-time profiling or iOS validation this round.
+
+## 2026-11-19 — Rectangular wipe-star return and collapsing line
+
+- Replaced diagonal star return with a bottom-edge right-to-left pass and a
+  separate 8-tick vertical rise at the left. Contents remain cleared through the
+  full return. The new reveal begins only at the top-left with the line restored.
+- Added a soft three-stroke vertical line with a traveling glint, anchored from
+  star to content bottom. It shrinks on descent, stays collapsed on bottom return,
+  and extends on ascent. Effects only draw during movement; no new caches/assets.
+- 72 cached UI/animation assertions passed, including constant-bottom return,
+  vertical ascent and monotonic line collapse/extension. Reviewed five desktop
+  movement phases and replay 9b37d15a:2:1350; delivery/score totals unchanged.
+  Updated animated preview copied to Downloads as BargeBoss-instruction-sparkle-v2.gif.
+- Full check.sh and Android build passed. Installed/launched on the development
+  phone. Visual phase review used desktop rendering; no native animation capture,
+  frame-time profile or iOS validation was performed this round.

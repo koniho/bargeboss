@@ -116,9 +116,12 @@ results screen. Keep the slot clear when framing future tutorial objectives.
 Instruction-panel motion: show uses an 18-tick CRT beam expansion; hide uses an
 8-tick collapse. Content changes retain the full frame and clear the old snapshot
 left-to-right over 12 ticks. A small soft star follows the wipe at the title
-top edge, drops vertically at the right edge over 8 ticks, and returns to the
-top-left over 12 ticks. It then leads the new snapshot reveal left-to-right over
-12 ticks. Keep contents cleared during the drop/return. A soft 24-tick shimmer
+top edge with a soft shimmery vertical line down to the content bottom. It
+drops vertically at the right edge over 8 ticks, collapsing the line; returns
+right-to-left along the bottom over 12 ticks with the line collapsed; then rises
+vertically at the left edge over 8 ticks, extending the line downward. It then
+leads the new snapshot reveal left-to-right over
+12 ticks. Keep contents cleared during the drop/return/rise. A soft 24-tick shimmer
 crosses the panel after opening or revealing text, then stops entirely. Numeric progress/countdown updates stay live without replaying the wipe.
 Transition state advances only in simulation steps and freezes on pause. Clip
 only content, never the frame or world; balance native clip scopes in all cases.
