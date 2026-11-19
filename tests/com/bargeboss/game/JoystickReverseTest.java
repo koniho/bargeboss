@@ -36,6 +36,24 @@ public final class JoystickReverseTest {
         ReplayInput.down(g,g.tug.x,g.tug.y);for(int i=0;i<60;i++)g.step();check(g.joystick.guideAlpha()==0,"Direct boat holding fades the joystick guide too");
         g.cancelInputs();for(int i=0;i<60;i++)g.step();check(g.joystick.guideAlpha()==1,"Cancellation restores guide through normal fade");
         float alpha=g.joystick.guideAlpha();int signature=Parity.frame(g);check(signature==Parity.frame(g) && g.joystick.guideAlpha()==alpha,"Repeated drawing never advances opacity");
+        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(boolean reverse:new boolean[]{false,true}){
+            g=new Game();g.reset();g.settings.setJoystickSide(side);g.tug.angle=0;
+            float cx=Joystick.centerX(g),cy=Joystick.centerY(g),sign=reverse?-1:1;
+            check(g.joystick.throttleAlpha()==0,"Idle throttle sector starts hidden");
+            g.pointerDown(0,cx,cy);g.pointerMove(0,cx+sign*50,cy-sign*29);
+            g.step();float first=g.joystick.throttleAlpha();check(first>0 && first<1,"Thrust fades sector in");
+            for(int i=0;i<40;i++)g.step();check(g.joystick.throttleAlpha()==1,"Sustained thrust fully reveals sector");
+            g.pointerMove(0,cx,cy);g.step();last=g.joystick.throttleAlpha();
+            check(last>0 && last<1,"Held neutral fades sector instead of keeping empty outline");
+            g.pointerMove(0,cx+sign*50,cy-sign*29);g.step();check(g.joystick.throttleAlpha()>last,"Reapplying thrust reverses fade continuously");
+            g.pointerUp(0,cx+sign*50,cy-sign*29);last=g.joystick.throttleAlpha();
+            g.step();check(g.joystick.throttleAlpha()<last,"Release fades out even while boat coasts");
+            g.back();last=g.joystick.throttleAlpha();g.advance(.25);check(g.joystick.throttleAlpha()==last,"Pause freezes throttle fade");g.back();
+            for(int i=0;i<60;i++)g.step();check(g.joystick.throttleAlpha()==0,"Released sector disappears completely");
+            ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX+100,g.downY);
+            for(int i=0;i<20;i++)g.step();check(g.joystick.throttleAlpha()>0,"Direct tug drag also reveals throttle sector");
+            g.cancelInputs();for(int i=0;i<60;i++)g.step();check(g.joystick.throttleAlpha()==0,"Cancel fades direct-drag sector away");
+        }
         System.out.println(checks+" projected reverse-sector, real input and continuous fade assertions passed");
     }
     public static void main(String[] args){run();}

@@ -3151,3 +3151,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   reported a successful launch. Phone was locked during final validation, so
   native Back interaction/pixels were not exercised; desktop render and shared
   interaction regressions provide this round's evidence. iOS remains untested.
+
+## 2026-11-19 — Fade inactive throttle indication
+
+- Outer throttle sector now eases out when commanded thrust is zero, including
+  held neutral, release/coasting and cancelled direct tug drags. It eases back in
+  when either joystick or direct drag applies thrust. Preserve the last powered
+  angle/color while fading so the sector does not jump on release. The inner
+  forward/reverse guide keeps its existing independent press/release behavior.
+- Opacity runs on shared fixed simulation steps, freezes during pause, resets on
+  new voyages and never changes during drawing. Fully transparent sectors submit
+  no material/line primitives; no assets, textures or caches added.
+- 138,550 projected guide/input/fade assertions pass, including both joystick
+  sides, forward/reverse, interrupted fades, neutral, direct drag and pause.
+  Reviewed actual desktop idle/thrust/release/coast states. Render trace now
+  52e1acbe:2:1350; simulation result unchanged. Normal Android checks/build follow.
+- Full check.sh and normal Android APK build passed. Installed and launched on
+  the phone. Fade transitions were reviewed with the actual desktop painter;
+  native transition timing and iOS rendering were not measured this round.

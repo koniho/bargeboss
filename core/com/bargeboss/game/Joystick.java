@@ -8,14 +8,36 @@ public final class Joystick {
     public float x,y;
     private float touchX,touchY;
     private boolean directionReady;
-    private float guideAlpha=1;
+    private float guideAlpha=1,throttleAlpha,throttleAngle;
+    private int throttleRgb;
     private static final ThreadLocal<float[]> SECTOR=new ThreadLocal<float[]>(){
         protected float[] initialValue(){return new float[8];}
     };
     public float guideAlpha(){return guideAlpha;}
-    public void resetGuide(){guideAlpha=1;}
+    public float throttleAlpha(){return throttleAlpha;}
+    public void resetGuide(){guideAlpha=1;throttleAlpha=0;throttleAngle=0;throttleRgb=0;}
     /** Shared fixed-step fade; releasing mid-fade reverses from the current opacity. */
-    public void step(Game g){float target=g.pointer?0:1;guideAlpha+=(target-guideAlpha)*.18f;if(Math.abs(target-guideAlpha)<.001f)guideAlpha=target;}
+    public void step(Game g){
+        guideAlpha=ease(guideAlpha,g.pointer?0:1);
+        boolean powered=appliedThrottle(g)>0;
+        throttleAlpha=ease(throttleAlpha,powered?1:0);
+        if(powered){throttleAngle=thrustAngle(g);throttleRgb=(g.driveDirection()<0?REVERSE_COLOR:FORWARD_COLOR)&0xffffff;}
+    }
+    private static float ease(float value,float target){value+=(target-value)*.18f;return Math.abs(target-value)<.001f?target:value;}
+    private static float appliedThrottle(Game g){
+        if(g.driveDirection()==0)return 0;
+        return g.joystick.active?g.joystick.throttle():g.holdingTug() && g.pushing && g.manualSteering?
+                Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;
+    }
+    private static float thrustAngle(Game g){
+        Joystick j=g.joystick;float dx=j.active?j.x:0,dy=j.active?j.y:0;
+        if(!j.active && g.holdingTug() && g.manualSteering){
+            float wx=g.pointerX-g.downX,wy=g.pointerY-g.downY;
+            dx=RiverCamera.Q*(wx+wy);dy=RiverCamera.Q*RiverCamera.DEPTH*(wy-wx);
+        }
+        return Physics.length(dx,dy)>.001f?(float)StrictMath.atan2(dy,dx):
+                projectedAngle(g.tug.angle+(g.driveDirection()<0?(float)StrictMath.PI:0));
+    }
     public static boolean reverseWorld(float heading,float dx,float dy){
         return dx*(float)StrictMath.cos(heading)+dy*(float)StrictMath.sin(heading)<-.5f*Physics.length(dx,dy);
     }
@@ -80,26 +102,18 @@ public final class Joystick {
         if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x50000000|rgb);
         p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0x507a9fa9);
         SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x667a9fa9,1);
-        float throttle=j.active?j.throttle():g.holdingTug() && g.pushing && g.manualSteering?
-                Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;
-        float dx=j.active?j.x:0,dy=j.active?j.y:0;
-        if(!j.active && g.holdingTug() && g.manualSteering){
-            float wx=g.pointerX-g.downX,wy=g.pointerY-g.downY;
-            dx=RiverCamera.Q*(wx+wy);dy=RiverCamera.Q*RiverCamera.DEPTH*(wy-wx);
-        }
-        float angle=Physics.length(dx,dy)>.001f?(float)StrictMath.atan2(dy,dx):
-                projectedAngle(g.tug.angle+(g.driveDirection()<0?(float)StrictMath.PI:0));
-        throttleArc(p,cx,cy,angle,g.driveDirection()==0?0:throttle,rgb);
+        if(j.throttleAlpha>0)throttleArc(p,cx,cy,j.throttleAngle,appliedThrottle(g),j.throttleRgb,j.throttleAlpha);
     }
+
     /** Fixed angular span; radial fill measures thrust against a full-throttle outline. */
-    private static void throttleArc(Painter p,float x,float y,float angle,float throttle,int rgb){
+    private static void throttleArc(Painter p,float x,float y,float angle,float throttle,int rgb,float alpha){
         float inner=RADIUS+10,outer=RADIUS+26,sweep=(float)(StrictMath.PI*4/9);
-        arcBand(p,x,y,angle,sweep,inner,outer,0x18000000|rgb);
-        if(throttle>0)arcBand(p,x,y,angle,sweep,inner,inner+(outer-inner)*throttle,0xc8000000|rgb);
-        arcBand(p,x,y,angle,sweep,inner-.6f,inner+.6f,0x88000000|rgb);
-        arcBand(p,x,y,angle,sweep,outer-.6f,outer+.6f,0x88000000|rgb);
+        arcBand(p,x,y,angle,sweep,inner,outer,SoftCue.alpha(0x18000000|rgb,alpha));
+        if(throttle>0)arcBand(p,x,y,angle,sweep,inner,inner+(outer-inner)*throttle,SoftCue.alpha(0xc8000000|rgb,alpha));
+        arcBand(p,x,y,angle,sweep,inner-.6f,inner+.6f,SoftCue.alpha(0x88000000|rgb,alpha));
+        arcBand(p,x,y,angle,sweep,outer-.6f,outer+.6f,SoftCue.alpha(0x88000000|rgb,alpha));
         for(int end=-1;end<=1;end+=2){float a=angle+end*sweep*.5f,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
-            p.line(x+c*inner,y+s*inner,x+c*outer,y+s*outer,1.2f,0x88000000|rgb);
+            p.line(x+c*inner,y+s*inner,x+c*outer,y+s*outer,1.2f,SoftCue.alpha(0x88000000|rgb,alpha));
         }
     }
     private static void arcBand(Painter p,float x,float y,float angle,float sweep,float inner,float outer,int color){
