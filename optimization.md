@@ -3215,3 +3215,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Native counters, spacing and cyan/amber text are clean. Desktop tutorial and
   Settings also reviewed; no iOS pixel check or native frame-time profile this round.
   Versioned title/gameplay previews and native capture copied to Downloads.
+
+## 2026-11-19 — Stable tutorial instruction area
+
+- Unified arrival, canal and ordinary lesson cards through one shared upper-right
+  432x124 panel at y=68, 18 units from the screen edge. Removed lesson-dependent
+  left/right switching and the smaller arrival/canal variants. Shared baselines
+  and right-aligned lesson count keep content updates inside the same frame.
+- Gameplay, camera, controls and completion screen unchanged. No new effects,
+  assets or caches. Desktop visual review and normal Android checks/build follow.
+- Added shared fixed-step CRT opening (18 ticks) and completion shutdown (8 ticks).
+  Per updated direction, lesson/context changes keep the frame fully open: old
+  immutable text snapshot clears left-to-right (12 ticks), then new content
+  reveals left-to-right (12 ticks). Numeric progress updates do not restart it.
+- Uses existing cached lettering and two clipped triangles during content wipes;
+  no bitmap snapshots, shader changes, persistent scanlines or flashing. Render
+  does not advance animation; pause freezes the shared clock. Tutorial content
+  selection now runs on simulation steps, retaining only current/pending cards.
+- Reviewed desktop arrival/canal/push/tow positions and five wipe phases; lifecycle
+  assertions cover open, clear, reveal, counter updates, hide and reset. Reviewed
+  parity 65dc7ca8:2:1350; gameplay delivery/score totals unchanged. Full checks and
+  Android build/install follow. Native iOS is unavailable here.
+- Full check.sh and Android build passed. Installed/launched and inspected the
+  settled tutorial panel on the phone with right-side joystick. Wipe phases were
+  reviewed through desktop raster output; no native frame-time profile or iOS
+  validation was performed. Preview/capture copies are in Downloads.

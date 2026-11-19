@@ -23,6 +23,7 @@ public final class Tutorial {
     public int driveMarker;
     public boolean entering;
     public int entranceTicks;
+    final InstructionPanel instructionPanel=new InstructionPanel();
     public void enter(Game g){
         if(lesson!=MOVE)return;
         entering=true;entranceTicks=0;g.cancelInputs();
@@ -36,7 +37,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
-        entering=false;entranceTicks=0;
+        entering=false;entranceTicks=0;instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;

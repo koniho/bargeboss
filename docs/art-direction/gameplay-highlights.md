@@ -106,3 +106,16 @@ marks selection, progress and secondary mission state. Use `Lettering.width`
 for fitting, never fixed pixel-font character counts. The original Barge Boss
 logo deliberately retains `LogoLettering`. Font provenance and regeneration
 instructions are in [the font README](../../assets/fonts/rajdhani/README.md).
+
+Tutorial instructions occupy one fixed upper-right screen-space slot (432x124,
+18 units from the right edge, y=68). Arrival, driving, canal, pushing and towing
+share its title/body baselines. Change copy/progress within the slot; never flip
+sides based on lesson, vessel position or camera. Completion uses the separate
+results screen. Keep the slot clear when framing future tutorial objectives.
+
+Instruction-panel motion: show uses an 18-tick CRT beam expansion; hide uses an
+8-tick collapse. Content changes retain the full frame and clear the old snapshot
+left-to-right over 12 ticks, then reveal the new snapshot left-to-right over 12
+ticks. Numeric progress/countdown updates stay live without replaying the wipe.
+Transition state advances only in simulation steps and freezes on pause. Clip
+only content, never the frame or world; balance native clip scopes in all cases.

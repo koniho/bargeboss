@@ -4,66 +4,20 @@ package com.bargeboss.game;
 public final class TutorialView {
     private static final int PAPER=PilotGlass.TEXT,MUTED=PilotGlass.MUTED;
     private TutorialView() {}
-    static void buoyFeedback(Game g,Painter p){
-        Painter river=new RiverPainter(p,g.layout.camera);
-        for(int i=0;i<Tutorial.DRIVE_X.length;i++){
-            int remaining=g.tutorial.buoyClearTicks[i];if(remaining<=0)continue;
-            float age=Tutorial.BUOY_CLEAR_LIFE-remaining,grow=Physics.clamp(age/8,0,1);
-            float t=Physics.clamp((age-28)/(Tutorial.BUOY_CLEAR_LIFE-28f),0,1),fade=1-t*t*(3-2*t);
-            float pulse=.5f+.5f*(float)StrictMath.cos(age*.22f);
-            float radius=Tutorial.DRIVE_RADIUS+grow*(1+3*pulse),width=2+grow*(3+2*pulse);
-            SoftCue.ring(river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],radius,1,SoftCue.alpha(0xe06fffc2,fade),width);
-        }
-    }
-    public static void draw(Game g,Painter p) {
+    static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
-        if(t.entering){
-            PilotGlass.panel(p,g.layout.width-340,72,320,92,PilotGlass.FILL);
-            Lettering.draw(p,"INDUSTRIAL PRACTICE HARBOR",g.layout.width-326,88,12,PAPER);
-            Lettering.draw(p,"BRINGING HER IN...",g.layout.width-326,114,16,VisualStyle.GOLD);
-            Lettering.draw(p,"TAKE THE HELM ONCE INSIDE.",g.layout.width-326,143,9,MUTED);
-            return;
-        }
-        gateFeedback(g,p);
-        buoyFeedback(g,p);
-        if(t.lesson==Tutorial.DONE) {
-            p=ScreenView.menu(g,p);
-            ScreenView.overlay(p,104,412);
-            Lettering.center(p,"PRACTICE COMPLETE",480,141,27,PAPER);
-            ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
-            Lettering.center(p,"PUSH. TOW. DELIVER.",302,323,20,PAPER);
-            Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
-            Lettering.center(p,"DRAG TUG. DRAG CARGO.",770,241,12,PAPER);
-            Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
-            ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
-            return;
-        }
-        if(t.lesson==Tutorial.CHANNEL) {
+        if(t.lesson==Tutorial.DONE)return null;
+        if(t.entering)return new InstructionPanel.Content("arrival","BRINGING HER IN...","INDUSTRIAL PRACTICE HARBOR","TAKE THE HELM ONCE INSIDE.",-1,0);
+        if(t.lesson==Tutorial.CHANNEL){
             boolean entering=g.tug.x<TrainingChannel.X[0];
-            PilotGlass.panel(p,18,68,286,114,PilotGlass.FILL);
-            Lettering.draw(p,"CAPTAIN'S PRACTICE / "+(Tutorial.CHANNEL+1)+" OF "+Tutorial.DONE,30,79,9,VisualStyle.GOLD);
-            Lettering.draw(p,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",30,100,16,PAPER);
-            Lettering.draw(p,entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
-            Lettering.draw(p,"SLOW AT CORNERS. LIFT TO COAST.",30,145,9,MUTED);
-            p.rect(30,167,260,4,0xff35475a);
-            p.rect(30,167,260*(t.channelGate-1)/(TrainingChannel.X.length-1f),4,ControlView.GREEN);
-            if(entering) {
-                float[] entry=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,t.channelGate,entry);
-                driveArrow(g,new RiverPainter(p,g.layout.camera),entry[0],entry[1],"CANAL ENTRANCE");
-            }
-            return;
+            return new InstructionPanel.Content("channel-"+entering,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",
+                    entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",
+                    "SLOW AT CORNERS. LIFT TO COAST.",t.lesson,(t.channelGate-1)/(TrainingChannel.X.length-1f));
         }
-        // The tow route runs through the upper-left harbor. Keep its touch
-        // targets visible by placing those two cards on the opposite side.
-        Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || (t.lesson==Tutorial.MOVE || t.lesson==Tutorial.REVERSE)?g.layout.width-486:-18,-30);
-        PilotGlass.panel(coach,36,98,432,124,PilotGlass.FILL);
-        coach.line(54,105,450,105,.8f,0x9de7bc73);
-        Lettering.draw(coach,"PRACTICE",54,116,10,PilotGlass.AMBER);
-        Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
         Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
         boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
         boolean unloading=secured && target.unloadingTicks>0;
-        Lettering.draw(coach,secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title(),54,137,19,PAPER);
+        String title=secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title();
         boolean approach=target!=null && (t.lesson==Tutorial.HOLD || t.lesson==Tutorial.CONNECT)
                 && (Physics.length(target.x-g.tug.x,target.y-g.tug.y)>165 || t.lesson==Tutorial.HOLD && g.tug.x<210);
         boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug() && !approach;
@@ -85,11 +39,50 @@ public final class TutorialView {
             first=joystick?"USE THE AMBER JOYSTICK REVERSE AREA.":"DRAG TUG BACKWARD. KEEP BOW AHEAD.";
             second="RELEASE TO CHANGE DRIVE / "+(int)(t.reverseProgress()*100)+"% REVERSED";
         }
-        Lettering.draw(coach,first,54,168,12,PAPER);
-        Lettering.draw(coach,second,54,187,11,MUTED);
-        for(int i=0;i<Tutorial.DONE;i++) {
-            coach.rect(54+i*(400f/Tutorial.DONE),210,400f/Tutorial.DONE-8,4,i<t.lesson?ControlView.GREEN:i==t.lesson?PilotGlass.AMBER:PilotGlass.TRACK);
+        String key=t.lesson+":"+title+":"+approach+":"+wrongTug+":"+t.reverseArmed;
+        if(t.lesson==Tutorial.LINK)key+=":"+first;
+        return new InstructionPanel.Content(key,title,first,second,t.lesson,0);
+    }
+    static void buoyFeedback(Game g,Painter p){
+        Painter river=new RiverPainter(p,g.layout.camera);
+        for(int i=0;i<Tutorial.DRIVE_X.length;i++){
+            int remaining=g.tutorial.buoyClearTicks[i];if(remaining<=0)continue;
+            float age=Tutorial.BUOY_CLEAR_LIFE-remaining,grow=Physics.clamp(age/8,0,1);
+            float t=Physics.clamp((age-28)/(Tutorial.BUOY_CLEAR_LIFE-28f),0,1),fade=1-t*t*(3-2*t);
+            float pulse=.5f+.5f*(float)StrictMath.cos(age*.22f);
+            float radius=Tutorial.DRIVE_RADIUS+grow*(1+3*pulse),width=2+grow*(3+2*pulse);
+            SoftCue.ring(river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],radius,1,SoftCue.alpha(0xe06fffc2,fade),width);
         }
+    }
+    public static void draw(Game g,Painter p) {
+        Tutorial t=g.tutorial;
+        if(t.entering){t.instructionPanel.draw(g,p);return;}
+        gateFeedback(g,p);
+        buoyFeedback(g,p);
+        if(t.lesson==Tutorial.DONE) {
+            if(!t.instructionPanel.hidden()){t.instructionPanel.draw(g,p);return;}
+            p=ScreenView.menu(g,p);
+            ScreenView.overlay(p,104,412);
+            Lettering.center(p,"PRACTICE COMPLETE",480,141,27,PAPER);
+            ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
+            Lettering.center(p,"PUSH. TOW. DELIVER.",302,323,20,PAPER);
+            Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
+            Lettering.center(p,"DRAG TUG. DRAG CARGO.",770,241,12,PAPER);
+            Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
+            ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
+            return;
+        }
+        t.instructionPanel.draw(g,p);
+        if(t.lesson==Tutorial.CHANNEL) {
+            if(g.tug.x<TrainingChannel.X[0]) {
+                float[] entry=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,t.channelGate,entry);
+                driveArrow(g,new RiverPainter(p,g.layout.camera),entry[0],entry[1],"CANAL ENTRANCE");
+            }
+            return;
+        }
+        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
+        boolean approach=target!=null && (t.lesson==Tutorial.HOLD || t.lesson==Tutorial.CONNECT)
+                && (Physics.length(target.x-g.tug.x,target.y-g.tug.y)>165 || t.lesson==Tutorial.HOLD && g.tug.x<210);
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
         if(g.towAiming || g.ropeDragging)return; // The live trajectory replaces the demonstration.

@@ -17,6 +17,24 @@ public final class OverlayTextTest {
         check(Lettering.width("ready",14)==Lettering.width("READY",14),"uppercase normalization has matching metrics");
         check(Lettering.width("",14)==0,"empty text has zero width");
         check(LogoLettering.width("BARGE",7)==29,"title logo keeps original geometry");
+        InstructionPanel panel=new InstructionPanel();
+        InstructionPanel.Content old=new InstructionPanel.Content("old","OLD","FIRST","SECOND",0,0);
+        InstructionPanel.Content next=new InstructionPanel.Content("new","NEW","FIRST","SECOND",1,0);
+        check(panel.open()==0,"CRT starts collapsed");
+        for(int i=0;i<InstructionPanel.OPEN_TICKS;i++)panel.step(old);
+        check(panel.open()==1 && panel.textAlpha()==1,"CRT settles fully open");
+        panel.step(next);check(panel.clearing() && panel.open()==1,"lesson change wipes contents with frame fully open");
+        float wipe=panel.wipe();panel.step(next);check(panel.wipe()>wipe,"clear moves left to right");
+        for(int i=2;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);
+        check(panel.revealing() && panel.wipe()==0,"new content reveal begins only after clearing finishes");
+        panel.step(next);check(panel.wipe()>0,"new content reveals left to right");
+        for(int i=1;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);
+        check(!panel.revealing() && panel.open()==1,"wipe settles without resizing frame");
+        panel.step(new InstructionPanel.Content("new","NEW","UPDATED COUNT","SECOND",1,0));
+        check(!panel.clearing(),"live counters update without restarting wipe");
+        for(int i=0;i<InstructionPanel.CLOSE_TICKS;i++)panel.step(null);
+        check(panel.hidden() && panel.open()==0,"completion shuts instruction panel down");
+        panel.reset();check(!panel.hidden() && panel.open()==0,"reset restarts CRT reveal");
         Count p=new Count();Lettering.draw(p,"READY",10,20,14,0xffabcdef);StaticLayer first=p.last;
         Lettering.draw(p,"READY",40,70,14,0x44abcdef);
         check(p.last==first && Math.abs(p.alpha-68/255f)<.00001f,"pulse and location reuse immutable text raster");
@@ -29,7 +47,7 @@ public final class OverlayTextTest {
         HarborView.draw(g,world);Renderer.body(g,world,g.tug);for(Body b:g.cargo)if(b!=null)Renderer.body(g,world,b);
         for(int crane:DockView.ordered(g))DockView.draw(g,p,crane);MooringView.draw(g,world);check(p.text==0,"vessels, berths, dock machinery and mooring cues contain no world text");
         ScreenView.hud(g,p);check(p.text>0,"HUD still has readable cached text");
-        g.startTutorial();g=g.activeGame();p=new Count();TutorialView.draw(g,p);check(p.text>0,"tutorial instruction overlay remains readable");
+        g.startTutorial();g=g.activeGame();for(int i=0;i<InstructionPanel.OPEN_TICKS;i++)g.tutorial.instructionPanel.step(TutorialView.instructionContent(g));p=new Count();TutorialView.draw(g,p);check(p.text>0,"tutorial instruction overlay remains readable");
         System.out.println(checks+" cached UI and world-text removal assertions passed");
     }
     public static void main(String[] args){run();}

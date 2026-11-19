@@ -753,6 +753,7 @@ public final class Game {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
         visualTicks++;joystick.step(this);splashes.step(this);
+        if(tutorial!=null)tutorial.instructionPanel.step(TutorialView.instructionContent(this));
         if(tutorial!=null && tutorial.lesson==Tutorial.DONE) {
             smoke.step(this);buildingFades.step(this);
             if(celebrationTicks>0) celebrationTicks--;
