@@ -3078,3 +3078,29 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   actual shared desktop renderer; the phone was locked for final device checks,
   and native iOS raster parity was unavailable. No lighting/physics changes in
   this increment; prior geographic shore-light integration still passes.
+
+## 2026-11-18 — Invert the overview terrain fill
+
+- Shade non-traversable land/docks at the existing ~17% effective opacity;
+  navigable water is now clear, with the same stronger contours and play bounds.
+  Use each location's actual water geometry, including Montrose dock exclusions.
+  The inverse cutout is retained in the immutable chart; no per-frame geometry
+  construction or change to player following, controls, physics or raster budgets.
+  Bumped the chart cache key to avoid reusing the previous water-filled image.
+- A single whole-marina water query fragmented against distant docks and made
+  startup expensive. Replaced it with local 256-world-unit cell queries through
+  the existing spatial index. Desktop JVM measurements after geometry loading:
+  chart construction 12/119/58/10 ms for tutorial/Montrose/Indiana/Calumet, retained
+  cutout arrays 1,296/249,624/14,472/10,584 bytes respectively (~270 KiB total).
+  These are one-time chart costs, not native frame timing or FPS claims.
+- Reviewed all four locations at three zoom levels using the actual desktop
+  painter. Regression checks cover 26,351 interior samples against navigable
+  geometry, 285,987 group-opacity pixels and 496,278 clipped map/slider pixels.
+  Shared bounds, follow and simultaneous driving/zoom controls pass. Reviewed
+  render trace now 97b0d8bd:2:1350; deliveries and score are unchanged.
+  Full normal Android build/checks and installation follow. Native iOS raster
+  validation is unavailable in this environment.
+- Complete check.sh and normal Android APK build passed. APK installed and title
+  screen launch verified on the phone. Gameplay-map pixel review used desktop;
+  native gameplay capture was interrupted by concurrent phone use, so no native
+  map-pixel or frame-time claim is made for this increment.

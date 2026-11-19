@@ -38,9 +38,11 @@ world margin, including in the tutorial. Do not allow zoom-out below that fit.
 Use equal axis scale: rectangular stages retain their actual aspect ratio, with
 any unused space on the right/bottom. The stronger border is the projection of
 world bounds. Use thin translucent
-shoreline/dock contours. Navigable water has a softer translucent fill (about
-17% effective opacity versus 53% for outlines); dry land and dock interiors stay
-clear. Do not add a filled panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
+shoreline/dock contours. Non-traversable land and dock interiors have a softer translucent fill (about
+17% effective opacity versus 53% for outlines); navigable water stays clear.
+Cut water from the play-bound fill using the location’s navigable geometry,
+including dock exclusions. Keep this geometry in the cached chart, not the live
+draw loop. Do not add an opaque panel, buildings or isometric projection. World +X (upper-right on the game plane) is up on the chart; world +Y
 (lower-right) is right. Keep this orientation independent of the camera. A yellow
 player dot pulses gently; cyan cargo markers and amber target outlines remain
 secondary. Clip the scrolling map and live markers to its fixed square viewport.

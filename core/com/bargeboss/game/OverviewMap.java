@@ -94,8 +94,8 @@ public final class OverviewMap {
     private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wy),y=mapY(g,wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
         final int stage;final float minX,maxX,minY,maxY,scale;
-        final float[][] water,docks,waterFill;
-        final float[] dockHoles,boundary;
+        final float[][] water,docks;
+        final float[] navigableHoles,boundary;
         Chart(int stage){
             this.stage=stage;
             float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:stage==2?new float[][]{IndianaHarbor.COAST}:stage==3?new float[][]{CalumetRiver.COAST}:new float[][]{TrainingChannel.WATER_BOUNDARY};
@@ -109,10 +109,7 @@ public final class OverviewMap {
             boundary=new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
             water=project(stage==1?new float[][]{MontroseHarbor.COAST}:extent);
             docks=project(stage==1?MontroseHarbor.DOCKS:new float[0][]);
-            waterFill=project(stage==1?new float[][]{MontroseHarbor.WATER_POLYGON}:extent);
-            int count=0;for(float[] dock:docks)count+=Math.max(0,dock.length/2-2)*6;
-            dockHoles=new float[count];int at=0;
-            for(float[] dock:docks)for(int i=2;i<dock.length-2;i+=2){dockHoles[at++]=dock[0];dockHoles[at++]=dock[1];dockHoles[at++]=dock[i];dockHoles[at++]=dock[i+1];dockHoles[at++]=dock[i+2];dockHoles[at++]=dock[i+3];}
+            navigableHoles=navigableClip();
         }
         float x(float worldY){return EDGE+(worldY-minY)*scale;}
         float y(float worldX){return EDGE+(maxX-worldX)*scale;}
@@ -121,12 +118,41 @@ public final class OverviewMap {
             for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+1]);b[i+1]=y(a[i]);}result[j]=PolygonWater.clip(b,clip);}
             return result;
         }
-        public int key(){return 0x6d000600+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        /** Collect convex navigable pieces once, including the marina's dock cutouts. */
+        private float[] navigableClip(){
+            final java.util.ArrayList<float[]> pieces=new java.util.ArrayList<float[]>();
+            Painter collector=new Painter(){
+                public void poly(float[] q,int color){if(q.length>=6 && Math.abs(PolygonWater.area(q))>.001f)pieces.add(q);}
+                public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}
+                public void line(float x,float y,float xx,float yy,float w,int c){}
+                public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
+                public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
+            };
+            float[] region={minX,minY,maxX,minY,maxX,maxY,minX,maxY};
+            if(stage==1){
+                // Query small cells so each water triangle only subtracts nearby
+                // docks; a whole-marina query needlessly fragments distant water.
+                for(float xx=minX;xx<maxX;xx+=256)for(float yy=minY;yy<maxY;yy+=256)
+                    MontroseHarbor.paintWater(collector,new float[]{xx,yy,Math.min(xx+256,maxX),yy,Math.min(xx+256,maxX),Math.min(yy+256,maxY),xx,Math.min(yy+256,maxY)},0xffffffff);
+            }
+            else if(stage==2)IndianaHarbor.paintWater(collector,region,0xffffffff);
+            else if(stage==3)CalumetRiver.paintWater(collector,region,0xffffffff);
+            else for(float[] triangle:PolygonWater.triangles(TrainingChannel.WATER_BOUNDARY))collector.poly(triangle,0xffffffff);
+            int count=0;for(float[] q:pieces)count+=(q.length/2-2)*6;
+            float[] triangles=new float[count];int at=0;
+            for(float[] q:pieces)for(int i=2;i<q.length-2;i+=2){
+                triangles[at++]=x(q[1]);triangles[at++]=y(q[0]);
+                triangles[at++]=x(q[i+1]);triangles[at++]=y(q[i]);
+                triangles[at++]=x(q[i+3]);triangles[at++]=y(q[i+2]);
+            }
+            return triangles;
+        }
+        public int key(){return 0x6d000700+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
-            // Water is softer than contours; dry shore and dock interiors remain clear.
-            if(dockHoles.length>0)p.pushClipOutside(dockHoles);
-            try{for(float[] a:waterFill)if(a.length>=6)p.poly(a,0x5096c5ce);}
-            finally{if(dockHoles.length>0)p.popClip();}
+            // Inverted fill: shade non-traversable land/docks, leaving water clear.
+            p.pushClipOutside(navigableHoles);
+            try{p.poly(boundary,0x5096c5ce);}
+            finally{p.popClip();}
             // Opaque strokes share one final layer fade, keeping joins even.
             outline(p,boundary,true,0xff96c5ce,1);
             for(float[] a:water)outline(p,a,stage!=1,0xff96c5ce,1.15f);

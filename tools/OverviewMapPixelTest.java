@@ -21,7 +21,42 @@ public final class OverviewMapPixelTest {
         }
         System.out.println(ink+" outline pixels checked: joints never exceed group opacity");
     }
+    private static boolean navigable(int stage,float x,float y){
+        return stage==0?TrainingChannel.contains(x,y):stage==1?MontroseHarbor.contains(x,y):
+                stage==2?IndianaHarbor.contains(x,y):CalumetRiver.contains(x,y);
+    }
+    private static void invertedFill(){
+        int checked=0;
+        for(int stage=0;stage<4;stage++){
+            long start=System.nanoTime();
+            OverviewMap.Chart chart=new OverviewMap.Chart(stage);
+            long buildNanos=System.nanoTime()-start;
+            BufferedImage image=new BufferedImage(736,736,BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics=image.createGraphics();graphics.scale(4,4);
+            try{chart.paint(new DesktopPainter(graphics));}finally{graphics.dispose();}
+            int wet=0,dry=0;
+            float pad=1.5f/chart.scale;
+            for(int py=12;py<chart.y(chart.minX)*4-12;py+=7)
+                for(int px=12;px<chart.x(chart.maxY)*4-12;px+=7){
+                    float x=chart.maxX-((py+.5f)/4-OverviewMap.EDGE)/chart.scale;
+                    float y=chart.minY+((px+.5f)/4-OverviewMap.EDGE)/chart.scale;
+                    boolean water=navigable(stage,x,y),edge=false;
+                    for(int dx=-1;dx<=1;dx++)for(int dy=-1;dy<=1;dy++)
+                        if(navigable(stage,x+dx*pad,y+dy*pad)!=water)edge=true;
+                    if(edge)continue;
+                    int alpha=image.getRGB(px,py)>>>24;
+                    if(alpha>80)continue; // Opaque chart contours are independent of the fill.
+                    if(water){wet++;if(alpha!=0)throw new AssertionError("navigable water filled stage="+stage+" alpha="+alpha+" world="+x+","+y);}
+                    else {dry++;if(alpha<79)throw new AssertionError("land/dock fill missing stage="+stage+" world="+x+","+y);}
+                }
+            if(wet==0 || dry==0)throw new AssertionError("inverted fill needs both water and land samples");
+            checked+=wet+dry;
+            System.out.println("chart "+stage+": "+chart.navigableHoles.length*4+" clip bytes, build "+buildNanos/1000000+" ms; water="+wet+" land="+dry);
+        }
+        System.out.println(checked+" interior pixels checked: clear water, shaded land/docks");
+    }
     public static void main(String[] args) {
+        invertedFill();
         groupOpacity();
         int pixels=0;
         for(int stage=0;stage<4;stage++)for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(float level:new float[]{0,1f/3,1}) {

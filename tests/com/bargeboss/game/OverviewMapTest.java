@@ -9,7 +9,7 @@ final class OverviewMapTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
         public void rect(float x,float y,float w,float h,int c){if(chartOnly)throw new AssertionError("chart has no filled panel or terrain");}
         public void circle(float x,float y,float r,int c){}
-        public void poly(float[] xy,int c){if(chartOnly){check((c>>>24)>0 && (c>>>24)<255,"water fill is more translucent than chart contours");fills++;}}
+        public void poly(float[] xy,int c){if(chartOnly){check((c>>>24)>0 && (c>>>24)<255,"non-traversable fill is more translucent than chart contours");fills++;}}
         public void material(float x,float y,float ax,float ay,float bx,float by,int k,float d,float v,int c){}
         public void line(float x,float y,float xx,float yy,float w,int c){if(chartOnly)check((c>>>24)==255,"chart strokes are opaque before group translucency");if(lines++==0){this.x=x;this.y=y;this.xx=xx;this.yy=yy;}check(Float.isFinite(x)&&Float.isFinite(y)&&Float.isFinite(xx)&&Float.isFinite(yy),"finite lines");}
     }
@@ -26,7 +26,7 @@ final class OverviewMapTest {
             check(c.boundary[0]==c.x(c.minY) && c.boundary[1]==c.y(c.maxX) && c.boundary[4]==c.x(c.maxY) && c.boundary[5]==c.y(c.minX),"border and world corners share one projection");
             check(c.boundary[0]==OverviewMap.EDGE && c.boundary[1]==OverviewMap.EDGE,"top-left play corner is aligned to viewport stroke");
             check(Math.abs(c.x(c.maxY)-(OverviewMap.WIDTH-OverviewMap.EDGE))<.001f || Math.abs(c.y(c.minX)-(OverviewMap.HEIGHT-OverviewMap.EDGE))<.001f,"full-area fit reaches at least one far viewport edge without stretching");
-            Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0,"chart has shoreline contours and water fill");
+            Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0 && c.navigableHoles.length>0,"chart has contours and a traversable cutout in the land fill");
         }
         for(float width:new float[]{960,1243,1440})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}){
             g.configureCanvas(width,600);g.settings.setJoystickSide(side);Layout.Box b=OverviewMap.bounds(g);

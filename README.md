@@ -207,6 +207,7 @@ tutorial. Pause is in the upper-right corner (Escape on desktop).
 Choose **Title Screen** from the pause menu to leave a voyage or tutorial.
 Career progress and settings are kept; starting again begins a fresh voyage.
 The overview centers on the tug when zoomed in, stopping at the play-area edges.
+Navigable water stays clear; land and docks have a soft translucent fill.
 At full-area fit it aligns top-left. Drag its horizontal slider at the
 bottom of the screen to zoom the map; the filled track and thumb always show
 the current setting relative to the full play-area fit at the left end; you cannot
