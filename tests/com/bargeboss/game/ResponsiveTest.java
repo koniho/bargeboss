@@ -3,9 +3,9 @@ package com.bargeboss.game;
 /** Exercise the public touch boundary across windows without changing the simulation geometry. */
 public final class ResponsiveTest {
     private static int assertions;
-    private static final Layout.Box[] BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.HELP,
+    private static final Layout.Box[] BUTTONS={Layout.SETTINGS,Layout.HAPTICS,Layout.HELP,
             Layout.PRACTICE,Layout.LEARN,Layout.START,Layout.RESUME,Layout.RESTART,Layout.AGAIN};
-    private static final Layout.Box[] LIVE_BUTTONS={Layout.HAPTICS,Layout.PAUSE,Layout.HELP,Layout.PRACTICE};
+    private static final Layout.Box[] LIVE_BUTTONS={Layout.HELP,Layout.PRACTICE};
     private static void check(boolean condition,String message) { assertions++; if(!condition) throw new AssertionError(message); }
     private static boolean near(float a,float b) { return Math.abs(a-b)<.002f; }
     private static void tap(Game game,Layout.Box box) { ReplayInput.tap(game,box); }
@@ -58,8 +58,10 @@ public final class ResponsiveTest {
     }
     private static void menuAndGestureRouting(Game game) {
         Layout layout=game.layout;
+        tap(game,Layout.SETTINGS);
         boolean haptics=game.hapticsEnabled; tap(game,Layout.HAPTICS);
-        check(game.hapticsEnabled!=haptics,"responsive haptic target routes");
+        check(game.hapticsEnabled!=haptics,"responsive settings haptic target routes");game.back();
+        check(game.mode==Game.TITLE,"Back returns settings to title");
         tap(game,Layout.START);
         check(game.mode==Game.PLAY && game.layout.width==layout.width && game.layout.height==layout.height,"start preserves responsive canvas");
         ReplayInput.down(game,game.tug.x,game.tug.y);
@@ -69,11 +71,11 @@ public final class ResponsiveTest {
         check(game.manualSteering && game.navigating,"responsive drag drives shared navigation");
         ReplayInput.up(game,game.pointerX,game.pointerY);
         check(!game.navigating && !game.pointer,"responsive release cuts throttle");
-        tap(game,Layout.PAUSE); check(game.mode==Game.PAUSE,"responsive pause target routes");
+        game.back(); check(game.mode==Game.PAUSE,"Back pauses gameplay");
         tap(game,Layout.RESUME); check(game.mode==Game.PLAY,"responsive resume target routes");
         tap(game,Layout.HELP); check(game.mode==Game.HELP,"responsive help target routes");
         tap(game,Layout.START); check(game.mode==Game.PLAY,"responsive help return routes");
-        tap(game,Layout.PAUSE); tap(game,Layout.RESTART);
+        game.back(); tap(game,Layout.RESTART);
         check(game.mode==Game.PLAY && game.ticks==0 && game.layout.width==layout.width && game.layout.height==layout.height,"restart preserves canvas and resets shift");
         game.mode=Game.FINISH; tap(game,Layout.AGAIN);
         check(game.mode==Game.PLAY && game.layout.width==layout.width && game.layout.height==layout.height,"results replay uses responsive target");

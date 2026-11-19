@@ -67,3 +67,18 @@ rebuild geography while dragging. The two existing raster-density buckets bound
 texture growth. Keep marker sizes fixed while the chart scales.
 Apply chart opacity to the cached outline as a whole, not to individual line
 segments: overlapping translucent endpoints create unwanted bright joint dots.
+
+## Mission header and menu access
+
+Keep one mission title centered at the top of the safe gameplay canvas. Put
+relevant delivery counts, timed lock windows, and lock water level in a smaller
+subtitle underneath. Show hull condition there when damaged. Tutorial progress
+uses the same subtitle; never show the ambiguous FREE label or empty rating stars
+in play. Stars belong to results and career displays.
+
+Do not put Settings, Haptics, or Pause buttons back over the live scene, including
+invisible hit targets. Settings belongs on the title screen; haptics is a setting
+inside that menu. Android Back, desktop Escape, and the iOS left-edge back gesture
+route to the shared Game.back action. Back cancels held inputs before pausing or
+resuming, including nested tutorials, and closes Settings to its prior screen.
+Keep the instruction overlay below the header and the driving/map controls clear.

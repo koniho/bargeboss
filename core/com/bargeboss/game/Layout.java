@@ -7,7 +7,7 @@ public final class Layout {
     public static final Box SETTINGS=new Box(682,10,94,60),
             JOYSTICK_LEFT=new Box(200,284,176,60),JOYSTICK_RIGHT=new Box(392,284,176,60),
             JOYSTICK_OFF=new Box(584,284,176,60),SETTINGS_BACK=new Box(340,414,280,60);
-    public static final Box HAPTICS=new Box(786,10,94,60), PAUSE=new Box(890,10,54,60);
+    public static final Box HAPTICS=new Box(340,354,280,48);
     public static final Box HELP=new Box(722,534,102,50),
             PRACTICE=new Box(834,534,110,50);
     public static final Box LEARN=new Box(632,330,276,64), START=new Box(632,410,276,72);
@@ -53,9 +53,7 @@ public final class Layout {
     }
     /** Other menus remain centered; live controls use the outer canvas edges. */
     public Box box(Box original) {
-        if(original==SETTINGS)return new Box(width-260,4,94,40);
-        if(original==HAPTICS) return new Box(width-158,4,94,40);
-        if(original==PAUSE) return new Box(width-56,4,48,40);
+        if(original==SETTINGS)return new Box(width-118,12,100,40);
         if(original==HELP) return new Box(width*.5f-110,height-44,100,40);
         if(original==PRACTICE) return new Box(width*.5f+4,height-44,108,40);
         return new Box(original.x+offsetX,original.y+offsetY,original.w,original.h);

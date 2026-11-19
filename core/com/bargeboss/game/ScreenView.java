@@ -8,47 +8,30 @@ public final class ScreenView {
     private static void text(Painter p,String s,float x,float y,float size,int c) { Lettering.draw(p,s,x,y,size,c); }
     private static void center(Painter p,String s,float x,float y,float size,int c) { Lettering.center(p,s,x,y,size,c); }
     public static void hud(Game g,Painter p) {
-        Layout layout=g.layout;
-        boolean lockWindow=g.tutorial==null && g.lockStage() && (g.lock.phase==Lock.ENTRY || g.lock.phase==Lock.EXIT);
-        int seconds=lockWindow?g.lock.secondsRemaining():0;
-        String progress=g.tutorial!=null?"FREE":lockWindow?seconds+"S":g.goalProgress()+"/"+g.quota();
-        VisualStyle.panel(p,12,8,316,48,0xed101c30);
-        text(p,g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle(),24,18,12,PAPER);
-        String status=g.trainingChannel()?"GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1)+" - HEAD UPSTREAM":g.tutorial!=null?"LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE+" - NO TIME LIMIT":g.goalStatus()+" / HULL "+g.hull+"%";
-        text(p,status,24,39,Math.min(9,292*7f/Math.max(1,status.length()*6-1)),GOLD);
-        float timerX=layout.width/2-130;
-        VisualStyle.panel(p,timerX,8,104,48,0xed101c30);
-        if(g.tutorial!=null)center(p,progress,timerX+52,20,23,PAPER);
-        else {
-            center(p,lockWindow?(g.lock.phase==Lock.ENTRY?"ENTRY CLOSES":"EXIT CLOSES"):"GOAL",timerX+52,14,8,MUTED);
-            center(p,progress,timerX+52,30,18,lockWindow && seconds<=10?GOLD:PAPER);
-        }
-        VisualStyle.panel(p,timerX+112,8,124,48,0xed101c30);
-        int rating=g.goalComplete()?Challenges.stars(g.challengeId,g.goalProgress(),g.lost,g.hull):0;
-        if(g.lockStage()) {
-            float level=g.lock.waterLevel();
-            center(p,"WATER "+Math.round(level*100)+"%",timerX+174,14,9,PAPER);
-            p.rect(timerX+124,30,100,8,0xff233f4c);
-            p.rect(timerX+124,30,100*level,8,0xff71cfca);
-            for(int mark=0;mark<=4;mark++)p.rect(timerX+124+mark*25,29,1,10,0x998bd0c5);
-            center(p,g.lock.phase==Lock.FILLING?"RISING":level>=1?"HIGH / MATCHED":"LOW",timerX+174,44,7,GOLD);
-        } else for(int i=0;i<3;i++) star(p,timerX+138+i*35,31,13,i<rating?GOLD:0xff465569);
-        haptics(g,p);
-        Layout.Box pause=layout.box(Layout.PAUSE);
-        VisualStyle.panel(p,pause.x,pause.y,pause.w,pause.h,0xff293a4a);
-        p.rect(pause.centerX()-10,pause.y+10,6,20,PAPER); p.rect(pause.centerX()+4,pause.y+10,6,20,PAPER);
+        float width=Math.min(720,g.layout.width-32),x=(g.layout.width-width)*.5f;
+        String title=g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
+        String subtitle;
+        if(g.tutorial!=null) {
+            subtitle="LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE;
+            if(g.trainingChannel())subtitle+=" / GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1);
+        } else if(g.lockStage()) {
+            boolean window=g.lock.phase==Lock.ENTRY || g.lock.phase==Lock.EXIT;
+            subtitle=g.goalProgress()+" / "+g.quota()+" THROUGH LOCK / "+(window?
+                    (g.lock.phase==Lock.ENTRY?"ENTRY CLOSES IN ":"EXIT CLOSES IN ")+g.lock.secondsRemaining()+"S":g.lock.signal());
+            subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
+        } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
+        if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
+        VisualStyle.panel(p,x,8,width,48,0xed101c30);
+        center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)*7f/Math.max(1,title.length()*6-1)),PAPER);
+        center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)*7f/Math.max(1,subtitle.length()*6-1)),GOLD);
     }
-    private static void haptics(Game g,Painter p) {
-        Layout.Box setup=g.layout.box(Layout.SETTINGS);
+    private static void titleSettings(Game g,Painter p) {
+        Layout.Box setup=g.controlBox(Layout.SETTINGS);
         VisualStyle.panel(p,setup.x,setup.y,setup.w,setup.h,0xff203047);
         center(p,"SETTINGS",setup.centerX(),setup.y+15,10,PAPER);
-        Layout.Box b=g.layout.box(Layout.HAPTICS);
-        VisualStyle.panel(p,b.x,b.y,b.w,b.h,0xff203047);
-        center(p,"HAPTICS",b.centerX(),b.y+7,9,MUTED);
-        center(p,g.hapticsEnabled?"ON":"OFF",b.centerX(),b.y+23,11,g.hapticsEnabled?GOLD:PAPER);
     }
     public static void title(Game g,Painter p) {
-        TitleView.background(g,p); TitleView.voyage(g,p); haptics(g,p);
+        TitleView.background(g,p); TitleView.voyage(g,p); titleSettings(g,p);
         // Title anchors use the full safe canvas instead of centering a fixed
         // 960-wide poster inside a wide phone screen.
         Painter sign=scaled(p,24,-14,.74f);
@@ -143,8 +126,7 @@ public final class ScreenView {
         button(g,p,Layout.JOYSTICK_LEFT,"LEFT",side==GameSettings.LEFT);
         button(g,p,Layout.JOYSTICK_RIGHT,"RIGHT",side==GameSettings.RIGHT);
         button(g,p,Layout.JOYSTICK_OFF,"OFF",side==GameSettings.OFF);
-        center(p,"POINT YOUR THUMB WHERE YOU WANT TO GO.",480,365,12,PAPER);
-        center(p,"PUSH FARTHER FOR THRUST. RELEASE TO COAST.",480,387,10,MUTED);
+        button(g,p,Layout.HAPTICS,"HAPTICS: "+(g.hapticsEnabled?"ON":"OFF"),g.hapticsEnabled);
         button(g,p,Layout.SETTINGS_BACK,"BACK",true);
     }
     public static void pause(Game g,Painter p) {
@@ -237,7 +219,6 @@ public final class ScreenView {
             if(page+1<Challenges.pageCount())button(g,p,Layout.CHALLENGE_NEXT_PAGE,"NEXT",false);
             center(p,"PAGE "+(page+1)+" / "+Challenges.pageCount(),480,539,11,MUTED);
         }
-        haptics(g,screen);
     }
     private static void lock(Painter p,float x,float y) {
         ControlView.ring(p,x,y-6,13,1,0xff718092,5);

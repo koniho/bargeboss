@@ -3129,3 +3129,25 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   desktop before/after renders; native capture confirmed tutorial entry but was
   centered on open water, so it does not independently verify the repaired wall
   faces. Native frame timing was not measured.
+
+## 2026-11-19 — Simplify gameplay header and menu controls
+
+- Removed live Settings/Haptics/Pause controls and their hit regions. Title keeps
+  one Settings button; the haptics toggle now lives inside Settings. Android Back
+  and desktop Escape call shared Game.back; iOS transports the same action from
+  a left-edge gesture or Escape key. Shared handling cancels input and supports
+  nested practice, pause/resume, and returning from Settings/help/location menus.
+- Replaced the separate goal/FREE/rating panels with one centered mission title
+  and a smaller count/status subtitle. Tutorial shows lesson/gate progress; lock
+  countdown and water level remain contextual. Hull condition appears if damaged;
+  rating stars remain on results/career. No new raster caches or scene assets.
+- Reviewed desktop title, Settings, mission, tutorial and pause frames. Updated
+  responsive routing tests; added old-button-coordinate tug-input coverage and
+  Back-driven nested tutorial checks. Shared tests pass apart from the reviewed
+  render baseline update (now 1f30ffbd:2:1350, unchanged deliveries/score).
+  Full normal Android checks/build follow. iOS gesture/native build cannot be
+  validated on this Android host; no FPS claim is made.
+- Full check.sh and normal Android APK build passed. Installed the APK and Android
+  reported a successful launch. Phone was locked during final validation, so
+  native Back interaction/pixels were not exercised; desktop render and shared
+  interaction regressions provide this round's evidence. iOS remains untested.

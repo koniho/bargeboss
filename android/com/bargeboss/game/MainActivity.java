@@ -94,7 +94,7 @@ public final class MainActivity extends Activity {
             } catch(RuntimeException e) { android.util.Log.w("BargeBoss","Could not save captain progress",e); }
         }
         void requestRedraw() { frames.markDirty(); invalidate(); }
-        void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.pause(); requestRedraw(); }
+        void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.back(); requestRedraw(); }
         void start() { requestRedraw(); if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
         void stop() { audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {

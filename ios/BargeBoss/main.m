@@ -78,6 +78,8 @@
         } @catch(NSException *exception) { NSLog(@"Could not read captain progress: %@",exception); }
         self.savedProgressVersion=self.attemptedProgressVersion=[self.game progressVersion];
         self.touches=[NSMutableArray array]; self.touchIDs=[NSMutableArray array];
+        UIScreenEdgePanGestureRecognizer *back=[[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(edgeBack:)];
+        back.edges=UIRectEdgeLeft;[self addGestureRecognizer:back];
         self.selection=[[UISelectionFeedbackGenerator alloc] init];
         self.contact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
         self.impact=[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
@@ -120,6 +122,20 @@
     [self saveProgress:NO]; self.lastTime=link.timestamp;
     if([self.frames needsFrameWithBBGame:self.game]) [self setNeedsDisplay];
 }
+// iOS has no system Back button; the standard left-edge gesture transports
+// the same shared action as Android Back and desktop Escape.
+- (void)edgeBack:(UIScreenEdgePanGestureRecognizer *)gesture {
+    if(gesture.state==UIGestureRecognizerStateBegan)[self navigateBack];
+}
+- (void)navigateBack {
+    [self.game back];[self.touches removeAllObjects];[self.touchIDs removeAllObjects];
+    self.lastTime=0;[self requestRedraw];
+}
+- (BOOL)canBecomeFirstResponder {return YES;}
+- (NSArray<UIKeyCommand *> *)keyCommands {
+    return @[[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(navigateBack)]];
+}
+- (void)didMoveToWindow {[super didMoveToWindow];if(self.window)[self becomeFirstResponder];}
 - (void)requestRedraw { [self.frames markDirty]; [self setNeedsDisplay]; }
 - (void)saveProgress:(BOOL)flush {
     if(self.profiling) return;

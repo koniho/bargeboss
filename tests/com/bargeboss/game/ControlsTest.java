@@ -102,7 +102,7 @@ public final class ControlsTest {
         check(g.pollHaptic()==0,"haptics do not repeat without event");
         g.haptic(Game.HAPTIC_TICK); check(g.pollHaptic()==0,"ticks are rate limited");
         g.haptic(Game.HAPTIC_IMPACT); g.haptic(Game.HAPTIC_SUCCESS); check(g.pollHaptic()==Game.HAPTIC_SUCCESS,"success wins feedback priority");
-        ReplayInput.tap(g,Layout.HAPTICS); g.haptic(Game.HAPTIC_SUCCESS); check(g.pollHaptic()==0,"haptics switch disables feedback");
+        g.openSettings();ReplayInput.tap(g,Layout.HAPTICS); g.haptic(Game.HAPTIC_SUCCESS); check(g.pollHaptic()==0,"haptics switch disables feedback");
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN); g=root.activeGame();
         steps(root,2000); check(g.tutorial.lesson==Tutorial.MOVE && g.hull==100,"waiting never advances practice");
         int seen=0;
@@ -133,7 +133,8 @@ public final class ControlsTest {
             String progress=root.saveProgress();
             ReplayInput.down(root,g.tug.x,g.tug.y);
             ReplayInput.move(root,g.downX,g.downY-100);
-            root.pause();
+            root.back();
+            check(g.mode==Game.PAUSE,"Back pauses the active voyage or nested tutorial");
             check(!g.pointer && !g.joystick.active && !g.navigating,"pause clears held drive before title exit");
             ReplayInput.tap(root,Layout.TITLE_SCREEN);
             check(root.activeGame()==root && root.mode==Game.TITLE,"pause title button exits voyage and either practice origin: "+context);
@@ -143,6 +144,18 @@ public final class ControlsTest {
             check(root.ticks==stoppedTicks,"title does not advance discarded voyage");
             ReplayInput.tap(root,Layout.START);
             check(root.activeGame()==root && root.mode==Game.PLAY && root.tutorial==null && root.ticks==0,"start after title exit creates fresh voyage");
+        }
+        // The removed header controls must not leave invisible UI interception.
+        for(float width:new float[]{960,1333})for(float fromRight:new float[]{213,111,32}) {
+            g=new Game();g.reset();g.configureCanvas(width,600);
+            float sx=width-fromRight,sy=24;
+            RiverCamera camera=g.layout.camera;
+            g.tug.x=camera.worldX(sx,sy);g.tug.y=camera.worldY(sx,sy);
+            boolean enabled=g.hapticsEnabled;
+            g.pointerDown(0,sx,sy);
+            check(g.holdingTug(),"old top-button area now routes to visible tug");
+            g.pointerUp(0,sx,sy);
+            check(g.mode==Game.PLAY && g.hapticsEnabled==enabled,"removed buttons cannot pause, open settings or toggle haptics");
         }
         System.out.println(count+" drag, lasso, unloading, haptic and tutorial assertions passed");
     }

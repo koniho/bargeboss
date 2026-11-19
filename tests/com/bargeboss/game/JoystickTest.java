@@ -31,7 +31,7 @@ public final class JoystickTest {
         restored.restoreProgress(g.career.save());check(restored.settings.joystickSide()==GameSettings.LEFT && restored.career.save().equals(g.career.save()),"legacy career loads with default joystick");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(g.mode==Game.TITLE,"settings returns to title");
         ReplayInput.startPractice(g);Game practice=g.activeGame();String career=g.career.save();v=g.progressVersion();
-        ReplayInput.tap(g,Layout.SETTINGS);ReplayInput.tap(g,Layout.JOYSTICK_OFF);
+        practice.openSettings();ReplayInput.tap(g,Layout.JOYSTICK_OFF);
         check(g.settings.joystickSide()==GameSettings.OFF && g.progressVersion()>v && g.career.save().equals(career),"practice preferences persist without changing career");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(practice.mode==Game.PLAY && !Joystick.visible(practice),"off hides joystick and resumes practice");
         ReplayInput.down(g,practice.tug.x,practice.tug.y);ReplayInput.move(g,practice.downX+90,practice.downY);steps(g,15);

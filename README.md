@@ -61,7 +61,7 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
 - **Joystick:** move the bottom-corner thumb stick toward the direction you want
   to travel on screen. More travel gives more thrust; release to coast. It responds
   immediately. **Settings → Joystick position → Left / Right / Off** is available
-  on the title screen and during play, and is saved across restarts.
+  from the title screen, and is saved across restarts.
 - **Drive:** press the tug and drag in the direction you want to travel. Pull
   farther for more thrust. Keep your finger down for 0.2 seconds to engage; you
   can start dragging immediately. The control ring stays at your original touch point;
@@ -148,7 +148,7 @@ see the [night harbor rendering notes](docs/performance/night-harbor.md).
 - **Engine smoke:** idle boats give off a light trail; acceleration, reverse thrust
   and pushing cargo increase the number, density and size of smokestack puffs.
   Feeder boats produce more exhaust with a load than on their empty return trip.
-- **Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
+- **Title screen → Settings → Haptics ON/OFF** controls gesture, contact, impact and delivery feedback.
   Android/iOS use native feedback when supported and allowed by system settings;
   desktop play has the same visual cues without mouse vibration.
 
@@ -203,7 +203,9 @@ four-second intervals. Queued loads wait outside the tug's pickup approach, and
 slot fenders hold handed-off barges until pickup. In both three-load stages, the
 remaining third load waits for a free feeder lane. The calls are visual speech bubbles; there is
 no voice audio yet. The opening bridge remains part of the continuous towing
-tutorial. Pause is in the upper-right corner (Escape on desktop).
+tutorial. Use Android Back to pause or resume (Escape on desktop; swipe inward from the left edge on iOS).
+The mission title is centered at the top, with relevant progress/countdown information
+in its subtitle. Ratings appear on results, not during play.
 Choose **Title Screen** from the pause menu to leave a voyage or tutorial.
 Career progress and settings are kept; starting again begins a fresh voyage.
 The overview centers on the tug when zoomed in, stopping at the play-area edges.

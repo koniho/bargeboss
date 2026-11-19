@@ -28,7 +28,7 @@ public final class Desktop extends JPanel {
         addMouseListener(mouse); addMouseMotionListener(mouse);
         addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { updateViewport();requestRedraw(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
-        getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.pause();requestRedraw(); } });
+        getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.back();requestRedraw(); } });
         new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
     }
     private void requestRedraw() { frames.markDirty();repaint(); }

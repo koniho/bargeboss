@@ -441,8 +441,7 @@ public final class Game {
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
     private boolean liveButton(float x,float y) {
-        return layout.box(Layout.SETTINGS).contains(x,y) || layout.box(Layout.HAPTICS).contains(x,y) || layout.box(Layout.PAUSE).contains(x,y)
-                || layout.box(Layout.HELP).contains(x,y)
+        return layout.box(Layout.HELP).contains(x,y)
                 || layout.box(Layout.PRACTICE).contains(x,y);
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
@@ -547,6 +546,15 @@ public final class Game {
 
     public float holdProgress() { return pointer && held!=-1?Math.min(1,pressTicks/12f):0; }
     public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
+    /** Host Back/Escape actions share navigation and input cancellation. */
+    public void back() {
+        if(practice!=null){practice.back();return;}
+        if(mode==PLAY || mode==PAUSE){pause();return;}
+        cancelInputs();accumulator=visualAccumulator=0;
+        if(mode==SETTINGS)mode=settingsReturnMode;
+        else if(mode==HELP)mode=PLAY;
+        else if(mode==CHALLENGES || mode==FINISH)mode=TITLE;
+    }
     public void pause() { if(practice!=null) { practice.pause(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; else if(mode==PAUSE) mode=PLAY; }
     /** Direct/replay input uses world coordinates on the board, canvas coordinates in menus. */
     public void down(float x,float y) {
@@ -665,14 +673,16 @@ public final class Game {
                 if(tapped(Layout.JOYSTICK_LEFT,x,y))settings.setJoystickSide(GameSettings.LEFT);
                 else if(tapped(Layout.JOYSTICK_RIGHT,x,y))settings.setJoystickSide(GameSettings.RIGHT);
                 else if(tapped(Layout.JOYSTICK_OFF,x,y))settings.setJoystickSide(GameSettings.OFF);
+                else if(tapped(Layout.HAPTICS,x,y)) {
+                    hapticsEnabled=!hapticsEnabled;hapticPending=0;
+                    if(hapticsEnabled)haptic(HAPTIC_TICK);
+                }
                 else if(tapped(Layout.SETTINGS_BACK,x,y))mode=settingsReturnMode;
             }
             cancel();return;
         }
-        if(tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
-        if(tap && tapped(Layout.HAPTICS,x,y)) {
-            hapticsEnabled=!hapticsEnabled; hapticPending=0; if(hapticsEnabled) haptic(HAPTIC_TICK);
-        } else if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
+        if(mode==TITLE && tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
+        if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
             if(tap && tapped(Layout.START,x,y)) tutorial.exitRequested=true;
         } else if(mode==HELP) {
             if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
@@ -703,8 +713,7 @@ public final class Game {
                 if(training) { tutorial=new Tutorial(); tutorial.resumeShift=resume; tutorial.setup(this);fitTutorialCamera(); }
             }
         } else if(tap) {
-            if(tapped(Layout.PAUSE,x,y)) pause();
-            else if(tapped(Layout.HELP,x,y)) {
+            if(tapped(Layout.HELP,x,y)) {
                 cancelInputs();
                 if(tutorial!=null) tutorial.setup(this); else mode=HELP;
             } else if(tapped(Layout.PRACTICE,x,y)) {
