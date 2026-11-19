@@ -22,8 +22,8 @@ public final class ScreenView {
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
         if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
         PilotGlass.panel(p,x,8,width,48,0x9d091b25);
-        center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)*7f/Math.max(1,title.length()*6-1)),PAPER);
-        center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)*7f/Math.max(1,subtitle.length()*6-1)),GOLD);
+        center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)/Math.max(1,Lettering.width(title,1))),PAPER);
+        center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
         Layout.Box setup=g.controlBox(Layout.SETTINGS);
@@ -46,7 +46,7 @@ public final class ScreenView {
         center(menu,"SAIL "+Challenges.locationTitle(g.challengeId),770,200,11,GOLD);
         center(menu,Challenges.locationTitle(g.challengeId),770,230,20,PAPER);
         String summary=goalSummary(g.challengeId);
-        center(menu,summary,770,274,Math.min(12,288*7f/Math.max(1,summary.length()*6-1)),GOLD);
+        center(menu,summary,770,274,Math.min(12,288/Math.max(1,Lettering.width(summary,1))),GOLD);
         button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
         button(g,menu,Layout.START,"SAIL LOCATION",true);
         button(g,menu,Layout.CHALLENGES,"LOCATIONS",false);
@@ -59,9 +59,9 @@ public final class ScreenView {
 
     private static void logo(Painter p,String word,float x,float y,float size,int fill) {
         Painter italic=new Transform(p,x,y,1,-.18f);
-        Lettering.draw(italic,word,4,6,size,INK); Lettering.draw(italic,word,-2,-2,size,INK);
-        Lettering.draw(italic,word,0,0,size,fill);
-        p.line(x+1,y-1,x+Lettering.width(word,size)-5,y-1,2,fill==VisualStyle.GOLD?0xffffef8a:0xffffffff);
+        LogoLettering.draw(italic,word,4,6,size,INK); LogoLettering.draw(italic,word,-2,-2,size,INK);
+        LogoLettering.draw(italic,word,0,0,size,fill);
+        p.line(x+1,y-1,x+LogoLettering.width(word,size)-5,y-1,2,fill==VisualStyle.GOLD?0xffffef8a:0xffffffff);
     }
     private static void harbor(Game g,Painter p) {
         int[] sky={0xff7467a8,0xff8c6ea7,0xffae7aa5,0xffd98d9c,0xfff5aa8f,0xffffc487};
@@ -262,7 +262,7 @@ public final class ScreenView {
     public static void button(Game g,Painter p,Layout.Box box,String label,boolean primary) { button(g,p,box.x,box.y,box.w,box.h,label,primary); }
     public static void button(Game g,Painter p,float x,float y,float w,float h,String label,boolean primary) {
         PilotGlass.button(p,x,y,w,h,primary);
-        float size=Math.min(label.length()>18?13:16,(w-58)*7/Math.max(1,label.length()*6-1));
+        float size=Math.min(label.length()>18?13:16,(w-58)/Math.max(1,Lettering.width(label,1)));
         center(p,label,x+w/2,y+(h-size)/2,size,primary?GOLD:PAPER);
     }
 

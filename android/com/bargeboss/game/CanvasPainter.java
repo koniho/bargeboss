@@ -282,20 +282,23 @@ public final class CanvasPainter implements Painter {
     Bitmap rasterLayer(StaticLayer layer,float density) {
         Bitmap image=Bitmap.createBitmap((int)StrictMath.ceil(layer.width()*density),(int)StrictMath.ceil(layer.height()*density),Bitmap.Config.ARGB_8888);
         image.setDensity(Bitmap.DENSITY_NONE);
-        Canvas previous=canvas;boolean wasPainting=paintingLayer;
+        Canvas previous=canvas;boolean wasPainting=paintingLayer,wasCompound=compoundPaths;
+        // Font slabs share edges: fill together to avoid antialias seams.
+        if((layer.key()&0xff000000)==0x60000000)compoundPaths=true;
         Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);
         paintingLayer=true;canvas=new Canvas(image);canvas.scale(density,density);canvas.clipRect(0,0,layer.width(),layer.height());
-        try {layer.paint(this);} finally {canvas=previous;paintingLayer=wasPainting;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+        try {layer.paint(this);} finally {canvas=previous;paintingLayer=wasPainting;compoundPaths=wasCompound;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
         return image;
     }
     private void drawLayerDirect(StaticLayer layer,float x,float y,float scale,float alpha) {
-        int saved=canvas.save();boolean previousLayer=paintingLayer;
+        int saved=canvas.save();boolean previousLayer=paintingLayer,wasCompound=compoundPaths;
+        if((layer.key()&0xff000000)==0x60000000)compoundPaths=true;
         Paint previousPaint=new Paint(paint),previousSpritePaint=new Paint(spritePaint);paintingLayer=true;
         try {
             canvas.clipRect(x,y,x+layer.width()*scale,y+layer.height()*scale);
             if(alpha<1) canvas.saveLayerAlpha(x,y,x+layer.width()*scale,y+layer.height()*scale,Math.round(Math.max(0,alpha)*255));
             canvas.translate(x,y);canvas.scale(scale,scale);layer.paint(this);
-        } finally {canvas.restoreToCount(saved);paintingLayer=previousLayer;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
+        } finally {canvas.restoreToCount(saved);paintingLayer=previousLayer;compoundPaths=wasCompound;paint.set(previousPaint);spritePaint.set(previousSpritePaint);}
     }
     public CanvasPainter(AssetManager assets) {this(assets,true);}
     CanvasPainter(AssetManager assets,boolean preloadVessels) {

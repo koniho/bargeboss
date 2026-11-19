@@ -3194,3 +3194,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Other screens were reviewed through desktop rendering. No iOS pixel validation
   or native frame-time profiling was performed. Review previews are in Downloads
   as BargeBoss-pilot-glass-title-v1.png and BargeBoss-pilot-glass-gameplay-v1.png.
+
+## 2026-11-19 — Pilot Glass technical typography
+
+- Replaced UI 5x7 cells with Rajdhani SemiBold uppercase outlines, exported offline
+  into shared Java trapezoids and proportional metrics. Bundled original OFL font,
+  license and reproducible Java generator. No runtime native fonts or TTF parsing.
+- Retained 128-entry immutable string-layer cache and live placement/opacity.
+  Android joins font-only slab faces into a single fill to avoid internal
+  antialias seams, including direct fallback; other scene batching is unchanged.
+  Font geometry can be more expensive on a cold cache; no FPS gain is claimed.
+- Original logo uses independent LogoLettering: desktop pixel comparison confirms
+  all 96,800 pixels of its region remain identical. Updated fitting to actual
+  advances. Reviewed title/tutorial/Settings desktop renders; cached-text tests
+  additionally cover proportional width, case normalization and logo metrics.
+- Reviewed replay signature 2c00b557:2:1350 (same deliveries/score). Android build,
+  device installation and native review follow; iOS cannot be validated here.
+- Full check.sh and normal Android APK build passed. Installed and launched via
+  Shizuku; inspected native title lettering with the retained Montrose selection.
+  Native counters, spacing and cyan/amber text are clean. Desktop tutorial and
+  Settings also reviewed; no iOS pixel check or native frame-time profile this round.
+  Versioned title/gameplay previews and native capture copied to Downloads.

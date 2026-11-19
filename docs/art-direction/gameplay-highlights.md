@@ -99,3 +99,10 @@ logo artwork/colors and animated title harbor while styling the title menu,
 Settings, rank strip, pause/help/results, mission header and tutorial cards.
 Retain existing control hit boxes and Back navigation. This is a UI treatment,
 not a replacement for the separate tutorial-flow improvement ticket.
+
+Pilot Glass typography uses Rajdhani SemiBold, with proportional uppercase
+lettering and restrained tracking. Pale cyan is the primary text color; amber
+marks selection, progress and secondary mission state. Use `Lettering.width`
+for fitting, never fixed pixel-font character counts. The original Barge Boss
+logo deliberately retains `LogoLettering`. Font provenance and regeneration
+instructions are in [the font README](../../assets/fonts/rajdhani/README.md).

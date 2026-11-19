@@ -13,6 +13,10 @@ public final class OverlayTextTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
     }
     public static void run(){
+        check(Lettering.width("WWW",14)>Lettering.width("III",14),"technical font uses proportional metrics");
+        check(Lettering.width("ready",14)==Lettering.width("READY",14),"uppercase normalization has matching metrics");
+        check(Lettering.width("",14)==0,"empty text has zero width");
+        check(LogoLettering.width("BARGE",7)==29,"title logo keeps original geometry");
         Count p=new Count();Lettering.draw(p,"READY",10,20,14,0xffabcdef);StaticLayer first=p.last;
         Lettering.draw(p,"READY",40,70,14,0x44abcdef);
         check(p.last==first && Math.abs(p.alpha-68/255f)<.00001f,"pulse and location reuse immutable text raster");
