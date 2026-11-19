@@ -3253,3 +3253,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full check.sh and Android build passed. Reviewed the desktop canal overview,
   installed and launched on Android. No native pixel capture or iOS validation
   was performed for this small fill adjustment.
+
+## 2026-11-19 — Instruction wipe star and settling shimmer
+
+- Added a restrained four-point sparkle at the title's top edge. It tracks the
+  clear wipe, drops straight down at the right edge (8 ticks), returns to the
+  top-left (12 ticks), and leads the new-content wipe. Old contents stay cleared
+  during the repositioning; the next immutable snapshot is selected on arrival.
+- A faint diagonal three-band shimmer runs for 24 ticks after opening/reveal;
+  the sparkle fades over its first six ticks. Neither effect runs while idle.
+  Existing simulation clock owns timing; no new textures/caches or native APIs.
+- Added lifecycle/position checks for vertical drop, continuous top-left return,
+  reveal start and shimmer expiry. 46 cached UI/animation assertions passed.
+  Reviewed replay c6b2d4af:2:1350, with unchanged delivery/score totals. Rendered
+  a 130-frame desktop animation for visual review; Android checks/build follow.
+- Reviewed clear, drop, return, reveal and shimmer desktop frames. The animated
+  preview is copied to Downloads as BargeBoss-instruction-sparkle-v1.gif.
+  Full check.sh and Android build passed; installed/launched on the phone.
+  No native animation capture, frame-time profiling or iOS validation this round.

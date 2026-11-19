@@ -26,10 +26,21 @@ public final class OverlayTextTest {
         panel.step(next);check(panel.clearing() && panel.open()==1,"lesson change wipes contents with frame fully open");
         float wipe=panel.wipe();panel.step(next);check(panel.wipe()>wipe,"clear moves left to right");
         for(int i=2;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);
+        check(panel.dropping() && panel.starX()==414 && panel.starY()==39,"clear star reaches top right before dropping");
+        for(int i=0;i<InstructionPanel.DROP_TICKS;i++){check(panel.starX()==414,"star drops straight down");panel.step(next);}
+        check(panel.returning() && panel.starY()==104,"star reaches lower right before returning");
+        float starX=panel.starX(),starY=panel.starY();
+        for(int i=0;i<InstructionPanel.RETURN_TICKS;i++){
+            panel.step(next);check(panel.starX()<=starX && panel.starY()<=starY,"return travels toward top left");starX=panel.starX();starY=panel.starY();
+        }
+        check(panel.starX()==18 && panel.starY()==39,"new wipe begins at top left");
         check(panel.revealing() && panel.wipe()==0,"new content reveal begins only after clearing finishes");
         panel.step(next);check(panel.wipe()>0,"new content reveals left to right");
         for(int i=1;i<InstructionPanel.WIPE_TICKS;i++)panel.step(next);
         check(!panel.revealing() && panel.open()==1,"wipe settles without resizing frame");
+        check(panel.shimmering(),"new text completion starts brief shimmer");
+        for(int i=0;i<InstructionPanel.SHIMMER_TICKS;i++)panel.step(next);
+        check(!panel.shimmering(),"shimmer settles and stays off while idle");
         panel.step(new InstructionPanel.Content("new","NEW","UPDATED COUNT","SECOND",1,0));
         check(!panel.clearing(),"live counters update without restarting wipe");
         for(int i=0;i<InstructionPanel.CLOSE_TICKS;i++)panel.step(null);
