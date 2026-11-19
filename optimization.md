@@ -3240,3 +3240,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   settled tutorial panel on the phone with right-side joystick. Wipe phases were
   reviewed through desktop raster output; no native frame-time profile or iOS
   validation was performed. Preview/capture copies are in Downloads.
+
+## 2026-11-19 — Dark translucent overview water
+
+- Added a deep blue-black chart backing (0x30061119), with the existing cyan
+  land/dock overlay above it. Water is roughly 10% opacity after the shared 53%
+  chart fade, softer than land and contours. One extra cached boundary polygon;
+  no new layers/textures or per-frame water tessellation. Bumped chart cache key.
+- Updated existing pixel expectations for water alpha 48 and composite land alpha
+  113. All four-stage fill, clipping, zoom and group-opacity pixel checks passed.
+  Reviewed parity ac16b5b0:2:1350; gameplay totals unchanged. Android build follows.
+- Full check.sh and Android build passed. Reviewed the desktop canal overview,
+  installed and launched on Android. No native pixel capture or iOS validation
+  was performed for this small fill adjustment.

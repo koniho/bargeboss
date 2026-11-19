@@ -45,15 +45,15 @@ public final class OverviewMapPixelTest {
                         if(navigable(stage,x+dx*pad,y+dy*pad)!=water)edge=true;
                     if(edge)continue;
                     int alpha=image.getRGB(px,py)>>>24;
-                    if(alpha>80)continue; // Opaque chart contours are independent of the fill.
-                    if(water){wet++;if(alpha!=0)throw new AssertionError("navigable water filled stage="+stage+" alpha="+alpha+" world="+x+","+y);}
-                    else {dry++;if(alpha<79)throw new AssertionError("land/dock fill missing stage="+stage+" world="+x+","+y);}
+                    if(alpha>113)continue; // Opaque chart contours are independent of the fill.
+                    if(water){wet++;if(alpha!=48)throw new AssertionError("navigable water backing incorrect stage="+stage+" alpha="+alpha+" world="+x+","+y);}
+                    else {dry++;if(alpha<112)throw new AssertionError("land/dock fill missing stage="+stage+" world="+x+","+y);}
                 }
             if(wet==0 || dry==0)throw new AssertionError("inverted fill needs both water and land samples");
             checked+=wet+dry;
             System.out.println("chart "+stage+": "+chart.navigableHoles.length*4+" clip bytes, build "+buildNanos/1000000+" ms; water="+wet+" land="+dry);
         }
-        System.out.println(checked+" interior pixels checked: clear water, shaded land/docks");
+        System.out.println(checked+" interior pixels checked: faint dark water, shaded land/docks");
     }
     public static void main(String[] args) {
         invertedFill();

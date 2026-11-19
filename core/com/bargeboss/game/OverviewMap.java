@@ -147,9 +147,10 @@ public final class OverviewMap {
             }
             return triangles;
         }
-        public int key(){return 0x6d000700+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        public int key(){return 0x6d000800+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
-            // Inverted fill: shade non-traversable land/docks, leaving water clear.
+            // Dark, faint water backing; the stronger cyan overlay distinguishes land/docks.
+            p.poly(boundary,0x30061119);
             p.pushClipOutside(navigableHoles);
             try{p.poly(boundary,0x5096c5ce);}
             finally{p.popClip();}
