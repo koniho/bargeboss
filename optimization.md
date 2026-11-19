@@ -3169,3 +3169,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full check.sh and normal Android APK build passed. Installed and launched on
   the phone. Fade transitions were reviewed with the actual desktop painter;
   native transition timing and iOS rendering were not measured this round.
+
+## 2026-11-19 — Pilot Glass UI first implementation
+
+- Added a shared PilotGlass surface/button vocabulary for mission header, tutorial
+  cards, assist buttons, menus, Settings, title menu and rank strip. Replaced
+  solid yellow controls, thick panel bevels, bolts and moving button arrows with
+  translucent backing, fine cyan outlines, open chevrons and amber accents.
+  Map/throttle and all world rendering retain their existing treatment.
+- Preserved Barge Boss logo geometry/colors and the animated title harbor. Desktop
+  comparison verifies 96,800 pixels across the title-logo/background region are
+  identical. Title location-summary lettering now fits its panel width. Tutorial
+  driving text correctly names the existing green forward sector.
+- No native APIs, textures, blur pass, cache families or gameplay/input changes.
+  Glass uses one polygon fill with bounded thin strokes; existing Lettering cache
+  remains in use. Removed decorative moving lesson-progress tick; actual progress
+  remains. More outline primitives per panel are not an FPS improvement claim.
+- Reviewed shared desktop title, mission, tutorial, Settings and pause renders.
+  Reviewed replay signature 4e40665b:2:1350; deliveries/score unchanged. Existing
+  responsive/menu/input checks and normal Android build follow. Native iOS
+  rendering cannot be checked on this host.
+- Full check.sh and normal Android build passed. Installed/launched on the phone;
+  inspected the native location-selection screen with the new glass treatment.
+  Other screens were reviewed through desktop rendering. No iOS pixel validation
+  or native frame-time profiling was performed. Review previews are in Downloads
+  as BargeBoss-pilot-glass-title-v1.png and BargeBoss-pilot-glass-gameplay-v1.png.

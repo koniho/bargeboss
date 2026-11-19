@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Compact field-guide cards and upright cues on the rotated landscape board. */
 public final class TutorialView {
-    private static final int PAPER=VisualStyle.CREAM,MUTED=VisualStyle.MUTED;
+    private static final int PAPER=PilotGlass.TEXT,MUTED=PilotGlass.MUTED;
     private TutorialView() {}
     static void buoyFeedback(Game g,Painter p){
         Painter river=new RiverPainter(p,g.layout.camera);
@@ -18,7 +18,7 @@ public final class TutorialView {
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
         if(t.entering){
-            VisualStyle.panel(p,g.layout.width-340,72,320,92,VisualStyle.NAVY);
+            PilotGlass.panel(p,g.layout.width-340,72,320,92,PilotGlass.FILL);
             Lettering.draw(p,"INDUSTRIAL PRACTICE HARBOR",g.layout.width-326,88,12,PAPER);
             Lettering.draw(p,"BRINGING HER IN...",g.layout.width-326,114,16,VisualStyle.GOLD);
             Lettering.draw(p,"TAKE THE HELM ONCE INSIDE.",g.layout.width-326,143,9,MUTED);
@@ -40,7 +40,7 @@ public final class TutorialView {
         }
         if(t.lesson==Tutorial.CHANNEL) {
             boolean entering=g.tug.x<TrainingChannel.X[0];
-            VisualStyle.panel(p,18,68,286,114,VisualStyle.NAVY);
+            PilotGlass.panel(p,18,68,286,114,PilotGlass.FILL);
             Lettering.draw(p,"CAPTAIN'S PRACTICE / "+(Tutorial.CHANNEL+1)+" OF "+Tutorial.DONE,30,79,9,VisualStyle.GOLD);
             Lettering.draw(p,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",30,100,16,PAPER);
             Lettering.draw(p,entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",30,127,9,PAPER);
@@ -56,9 +56,9 @@ public final class TutorialView {
         // The tow route runs through the upper-left harbor. Keep its touch
         // targets visible by placing those two cards on the opposite side.
         Painter coach=ScreenView.offset(p,t.lesson>=Tutorial.PULL || (t.lesson==Tutorial.MOVE || t.lesson==Tutorial.REVERSE)?g.layout.width-486:-18,-30);
-        VisualStyle.panel(coach,36,98,432,124,VisualStyle.NAVY);
-        coach.rect(44,105,416,3,VisualStyle.GOLD);
-        Lettering.draw(coach,"CAPTAIN'S PRACTICE",54,116,10,VisualStyle.GOLD);
+        PilotGlass.panel(coach,36,98,432,124,PilotGlass.FILL);
+        coach.line(54,105,450,105,.8f,0x9de7bc73);
+        Lettering.draw(coach,"PRACTICE",54,116,10,PilotGlass.AMBER);
         Lettering.draw(coach,(t.lesson+1)+" / "+Tutorial.DONE,403,116,10,MUTED);
         Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
         boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
@@ -78,7 +78,7 @@ public final class TutorialView {
         if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
             first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
         }
-        if(t.lesson==Tutorial.MOVE && g.settings.joystickSide()!=GameSettings.OFF)first="CYAN FORWARD / AMBER REVERSE. DRAG TUG.";
+        if(t.lesson==Tutorial.MOVE && g.settings.joystickSide()!=GameSettings.OFF)first="GREEN FORWARD / AMBER REVERSE. DRAG TUG.";
         if(t.lesson==Tutorial.MOVE)second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% COMPLETE";
         if(t.lesson==Tutorial.REVERSE && t.reverseArmed){
             boolean joystick=g.settings.joystickSide()!=GameSettings.OFF;
@@ -88,8 +88,7 @@ public final class TutorialView {
         Lettering.draw(coach,first,54,168,12,PAPER);
         Lettering.draw(coach,second,54,187,11,MUTED);
         for(int i=0;i<Tutorial.DONE;i++) {
-            coach.rect(54+i*(400f/Tutorial.DONE),210,400f/Tutorial.DONE-8,4,i<t.lesson?ControlView.GREEN:i==t.lesson?VisualStyle.GOLD:0xff35475a);
-            if(i==t.lesson) coach.rect(54+i*(400f/Tutorial.DONE)+(g.visualTicks%60)/60f*(400f/Tutorial.DONE-15),208,7,2,PAPER);
+            coach.rect(54+i*(400f/Tutorial.DONE),210,400f/Tutorial.DONE-8,4,i<t.lesson?ControlView.GREEN:i==t.lesson?PilotGlass.AMBER:PilotGlass.TRACK);
         }
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
@@ -200,7 +199,7 @@ public final class TutorialView {
         float x=g.layout.width*.5f,y=217;
         p=new OpacityPainter(p,alpha);
         int cream=0xffffefcf,green=0xffb9df9c;
-        VisualStyle.panel(p,x-117,y-9,234,43,0xe1101c30);
+        PilotGlass.panel(p,x-117,y-9,234,43,0xe1101c30);
         float pop=1+2*(float)StrictMath.sin(Math.min(1,age*5)*Math.PI);
         Lettering.center(p,complete?"CANAL CLEARED!":"GATE "+t.clearedGate+" CLEARED!",x,y,13+pop,cream);
         Lettering.center(p,complete?"READY TO PUSH":"KEEP GOING, CAPTAIN",x,y+21,9,green);

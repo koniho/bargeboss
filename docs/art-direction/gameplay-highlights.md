@@ -82,3 +82,20 @@ inside that menu. Android Back, desktop Escape, and the iOS left-edge back gestu
 route to the shared Game.back action. Back cancels held inputs before pausing or
 resuming, including nested tutorials, and closes Settings to its prior screen.
 Keep the instruction overlay below the header and the driving/map controls clear.
+
+## Pilot Glass UI
+
+Use the approved Pilot Glass concept for screen-space panels and controls:
+translucent blue-black surfaces, a single fine cyan perimeter with clipped
+corners, short calibration marks, cool readable lettering, and restrained amber
+for active/primary actions. Primary buttons use a thin edge accent and open
+chevron, not solid yellow fills or moving attention arrows. Keep instructional
+backing dark enough to read over detailed scenery. Progress segments show real
+lesson progress; do not animate decorative progress unrelated to the task.
+
+`PilotGlass` owns these UI primitives. Keep `VisualStyle` world materials, vessel
+cues, map projection and throttle behavior independent. Preserve the Barge Boss
+logo artwork/colors and animated title harbor while styling the title menu,
+Settings, rank strip, pause/help/results, mission header and tutorial cards.
+Retain existing control hit boxes and Back navigation. This is a UI treatment,
+not a replacement for the separate tutorial-flow improvement ticket.

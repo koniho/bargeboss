@@ -2,8 +2,8 @@ package com.bargeboss.game;
 
 /** Landscape harbor cabinet, with the same shared scene and controls on every host. */
 public final class ScreenView {
-    private static final int INK=VisualStyle.OUTLINE, NAVY=VisualStyle.NAVY, PAPER=VisualStyle.CREAM,
-            GOLD=VisualStyle.GOLD, MUTED=VisualStyle.MUTED;
+    private static final int INK=VisualStyle.OUTLINE, NAVY=VisualStyle.NAVY, PAPER=PilotGlass.TEXT,
+            GOLD=PilotGlass.AMBER, MUTED=PilotGlass.MUTED;
     private ScreenView() {}
     private static void text(Painter p,String s,float x,float y,float size,int c) { Lettering.draw(p,s,x,y,size,c); }
     private static void center(Painter p,String s,float x,float y,float size,int c) { Lettering.center(p,s,x,y,size,c); }
@@ -21,13 +21,13 @@ public final class ScreenView {
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
         if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
-        VisualStyle.panel(p,x,8,width,48,0xed101c30);
+        PilotGlass.panel(p,x,8,width,48,0x9d091b25);
         center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)*7f/Math.max(1,title.length()*6-1)),PAPER);
         center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)*7f/Math.max(1,subtitle.length()*6-1)),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
         Layout.Box setup=g.controlBox(Layout.SETTINGS);
-        VisualStyle.panel(p,setup.x,setup.y,setup.w,setup.h,0xff203047);
+        PilotGlass.panel(p,setup.x,setup.y,setup.w,setup.h,0xaf0b202a);
         center(p,"SETTINGS",setup.centerX(),setup.y+15,10,PAPER);
     }
     public static void title(Game g,Painter p) {
@@ -38,19 +38,20 @@ public final class ScreenView {
         sign.poly(new float[]{44,132,125,110,143,66,533,66,492,238,133,270,151,240,32,246,78,169},INK);
         sign.poly(new float[]{55,132,133,117,150,74,521,74,484,231,143,258,163,231,47,237,91,169},0xffa92d37);
         sign.poly(new float[]{70,134,143,125,158,82,509,82,476,223,156,246,173,223,62,227,103,169},NAVY);
-        logo(sign,"BARGE",76,93,84,PAPER); logo(sign,"BOSS",155,181,93,GOLD);
+        logo(sign,"BARGE",76,93,84,VisualStyle.CREAM); logo(sign,"BOSS",155,181,93,VisualStyle.GOLD);
         float lamp=1+(float)StrictMath.sin(g.visualTicks*.065)*.25f;
-        sign.rect(99,263,15*lamp,4,GOLD); sign.rect(496,91,5,19*lamp,PAPER);
+        sign.rect(99,263,15*lamp,4,VisualStyle.GOLD); sign.rect(496,91,5,19*lamp,VisualStyle.CREAM);
         Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
-        VisualStyle.panel(menu,608,180,324,368,0xf5101c30);
+        PilotGlass.panel(menu,608,180,324,368,0xbf091b25);
         center(menu,"SAIL "+Challenges.locationTitle(g.challengeId),770,200,11,GOLD);
         center(menu,Challenges.locationTitle(g.challengeId),770,230,20,PAPER);
-        center(menu,goalSummary(g.challengeId),770,274,12,GOLD);
+        String summary=goalSummary(g.challengeId);
+        center(menu,summary,770,274,Math.min(12,288*7f/Math.max(1,summary.length()*6-1)),GOLD);
         button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
         button(g,menu,Layout.START,"SAIL LOCATION",true);
         button(g,menu,Layout.CHALLENGES,"LOCATIONS",false);
         Painter rank=offset(p,0,g.layout.height-Layout.HEIGHT);
-        VisualStyle.panel(rank,28,536,545,40,0xe8101c30);
+        PilotGlass.panel(rank,28,536,545,40,0xa3091b25);
         captainBadge(rank,52,556,.37f,g.career.stripes());
         text(rank,g.career.rankTitle(),77,548,13,PAPER);
         text(rank,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",367,549,10,GOLD);
@@ -60,7 +61,7 @@ public final class ScreenView {
         Painter italic=new Transform(p,x,y,1,-.18f);
         Lettering.draw(italic,word,4,6,size,INK); Lettering.draw(italic,word,-2,-2,size,INK);
         Lettering.draw(italic,word,0,0,size,fill);
-        p.line(x+1,y-1,x+Lettering.width(word,size)-5,y-1,2,fill==GOLD?0xffffef8a:0xffffffff);
+        p.line(x+1,y-1,x+Lettering.width(word,size)-5,y-1,2,fill==VisualStyle.GOLD?0xffffef8a:0xffffffff);
     }
     private static void harbor(Game g,Painter p) {
         int[] sky={0xff7467a8,0xff8c6ea7,0xffae7aa5,0xffd98d9c,0xfff5aa8f,0xffffc487};
@@ -114,7 +115,7 @@ public final class ScreenView {
         center(p,"COMPLETE THE GOAL TO ADVANCE.",770,257,11,MUTED);
     }
     private static void instruction(Painter p,int index,float y,String title,String detail) {
-        VisualStyle.panel(p,106,y-3,39,39,0xff344453); center(p,""+index,126,y+6,20,GOLD);
+        PilotGlass.panel(p,106,y-3,39,39,0xb51c333e); center(p,""+index,126,y+6,20,GOLD);
         text(p,title,159,y,16,PAPER); text(p,detail,159,y+28,10,MUTED);
     }
     public static void settings(Game g,Painter p) {
@@ -190,7 +191,7 @@ public final class ScreenView {
             if(!Challenges.valid(i))continue;
             Layout.Box card=Layout.CHALLENGE_CARDS[slot];
             boolean open=g.career.unlocked(i),selected=Challenges.stageEntry(g.challengeId)==i;
-            VisualStyle.panel(p,card.x,card.y,card.w,card.h,selected?0xff294656:open?0xff1c3045:0xff162334);
+            PilotGlass.panel(p,card.x,card.y,card.w,card.h,selected?0xd0233d46:open?0xbf0c222c:0xc30b1922);
             p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
             center(p,"0"+(slot+1)+(open?" / LOCATION":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
             center(p,Challenges.locationTitle(i),card.centerX(),card.y+47,18,open?PAPER:MUTED);
@@ -222,7 +223,7 @@ public final class ScreenView {
     }
     private static void lock(Painter p,float x,float y) {
         ControlView.ring(p,x,y-6,13,1,0xff718092,5);
-        VisualStyle.panel(p,x-19,y-5,38,27,0xff43566a);
+        PilotGlass.panel(p,x-19,y-5,38,27,0xff43566a);
         p.circle(x,y+7,3,GOLD); p.rect(x-1.5f,y+7,3,7,GOLD);
     }
     /** A tiny uniform badge: a cheerful duck above braided gold captain bands. */
@@ -255,21 +256,16 @@ public final class ScreenView {
     }
     public static void overlay(Painter p,float top,float height) {
         p.rect(0,Layout.HEADER_HEIGHT,Layout.WIDTH,Layout.HEIGHT-Layout.HEADER_HEIGHT,0xcc07101f);
-        VisualStyle.panel(p,28,top,904,height,NAVY);
-        for(int i=0;i<2;i++) { VisualStyle.bolt(p,40+i*880,top+14); VisualStyle.bolt(p,40+i*880,top+height-14); }
-        p.rect(56,top+3,848,3,GOLD);
+        PilotGlass.panel(p,28,top,904,height,0xe0091b25);
+        p.line(56,top+7,904,top+7,1,0x8de7bc73);
     }
     public static void button(Game g,Painter p,Layout.Box box,String label,boolean primary) { button(g,p,box.x,box.y,box.w,box.h,label,primary); }
     public static void button(Game g,Painter p,float x,float y,float w,float h,String label,boolean primary) {
-        p.rect(x+2,y+5,w,h,INK); VisualStyle.panel(p,x,y,w,h,primary?GOLD:0xff2b4156);
-        if(primary) {
-            p.rect(x+7,y+5,w-14,3,0xffffe891); p.rect(x+7,y+h-7,w-14,3,0xffbb791d);
-            float pulse=2*(float)StrictMath.sin(g.visualTicks*.075);
-            p.poly(new float[]{x+16+pulse,y+h/2-6,x+25+pulse,y+h/2,x+16+pulse,y+h/2+6},NAVY);
-        }
-        float size=Math.min(label.length()>18?14:18,(w-62)*7/Math.max(1,label.length()*6-1));
-        center(p,label,x+w/2,y+(h-size)/2,size,primary?INK:PAPER);
+        PilotGlass.button(p,x,y,w,h,primary);
+        float size=Math.min(label.length()>18?13:16,(w-58)*7/Math.max(1,label.length()*6-1));
+        center(p,label,x+w/2,y+(h-size)/2,size,primary?GOLD:PAPER);
     }
+
     public static Painter scaled(Painter p,float x,float y,float scale) { return new Transform(p,x,y,scale,0); }
     public static Painter offset(Painter p,float x,float y) { return x==0 && y==0?p:new Transform(p,x,y,1,0); }
     public static Painter centered(Game g,Painter p) { return offset(p,g.layout.offsetX,g.layout.offsetY); }
