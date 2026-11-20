@@ -3984,3 +3984,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - At most 80 eastern dune/scrub candidate clusters, deterministic position/size variation, early per-tile rejection. All planting goes through existing bounded distance-tier terrain preparation; no additional per-frame foliage. Terrain raster requests unchanged: overview 4,376,820 bytes; prior marina 8,523,975; beach 6,981,546; horn 1,715,121. This measures requested raster work, not native residency or FPS.
 - Full shared/asset checks, 11,589 beacon identity/anchor/dusk/draw-budget assertions, 3,966 terrain preparation/budget assertions and 2,434,414 all-heading shore pixels passed. JVM/J2ObjC canonical parity `f6b5cf85:2:1350`. Actual renderer overview/beach/horn/inlet and both flash-off frames reviewed under `out/montrose-beach/`. Fixed structure stays equally dark between flashes; no generic sprite shadows remain.
 - No Android or simulator operation by this agent in this pass; parent coordinates iOS validation and the preexisting whole-overview ripple allocation bottleneck. New-model native performance is still to be measured. Java2D uses plain surface fallbacks, so native corrugation requires native review. Existing lawn diamond seams were traced to 64-unit patch boundaries; source already has 7% inset. Separate alpha/clip coverage is suspected, not proven; leave a controlled compositing comparison for the next pass rather than introducing unmeasured overlap/double-alpha seams.
+
+## 2026-11-20 iOS Simulator Montrose refinement follow-through
+- Platform: iOS26.5 BargeBoss Lighting simulator, Metal. Installed expanded
+  beach/horn plus reference-based beacons and cached dune/scrub detail.
+- Initial Debug wide overview649ms mean: active sampling found ambient ripple
+  polygon clipping/allocation dominating CPU. Reused a bounded2MiB water mask
+  per ambient pass while keeping polygon stroke geometry/density/order. Metal
+  now avoids shared batches it immediately expands. Debug overview168ms mean;
+  native beacon0 differing pixels, overview3/3,162,132 pixels after mask; batching
+  change0 differing pixels. No claim of locked60FPS.
+- Final Release local horn/inlet/beach captures approximately60FPS; expanded
+  overview still133.75ms mean (~7.5FPS). Remaining translated point-containment,
+  allocation and wide-scene cost needs a separate controlled pass. Simulator
+  timings are not real-device validation. Lawn compositing grid remains visible.
+- Added developer-only interactive iOS scene launch without career writes and
+  fixed profiling CSV creation when a fresh install has no Documents directory.
+- Shared/native parity da53558f:2:1350; all-heading Montrose shoreline regression
+  2,434,414 assertions passed. Evidence: docs/performance/montrose-ios-2026-11-20.

@@ -180,7 +180,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Unified waves, instructor radio and edge reply layout; JVM/native parity verified.
-        check(Parity.signature().equals("f6b5cf85:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("da53558f:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

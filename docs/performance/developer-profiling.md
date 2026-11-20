@@ -331,3 +331,10 @@ shared camera behavior after initial setup. The simulator helper accepts
 and `Documents/ios-profile-metadata.json` from the app data container afterward.
 Different device aspect ratios change visible coverage, so compare zoom variants
 on the same device rather than treating Android/iPad timings as like-for-like.
+
+For interactive inspection, builds made with `BARGEBOSS_IOS_PROFILE=1` also
+accept `--ios-live-scene=montrose-beacon` (or another shared fixture name).
+Launch without `--ios-profile`: normal input, simulation and camera behavior
+continue after the fixture loads. This mode neither restores nor writes career
+progress. An optional `--ios-zoom=` sets the initial zoom only. Release builds
+without the developer fixture flag ignore the live-scene argument.

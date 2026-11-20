@@ -9,6 +9,7 @@ public final class WaterSurface {
     public final VesselFoam foam=new VesselFoam();
     private int cursor;
     private final WaterClip surfaceClip=new WaterClip();
+    final WaterClip ambientClip=new WaterClip();
     public int emitted,pulses;
     public WaterSurface() { for(int i=0;i<CAPACITY;i++) age[i]=LIFE; }
     static final float WAKE_SPEED=.55f, WAKE_WIDTH=26;

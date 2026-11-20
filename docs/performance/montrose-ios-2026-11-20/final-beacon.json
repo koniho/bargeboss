@@ -1,0 +1,18 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=montrose-beacon"
+  ],
+  "frames": 120,
+  "mean_ms": 16.662147499999996,
+  "median_ms": 16.6968,
+  "p95_ms": 18.2543,
+  "max_ms": 18.3057,
+  "fps": 60.016273412535824,
+  "draw_median_ms": 8.5698,
+  "draw_p95_ms": 9.5127,
+  "draw_max_ms": 10.3775,
+  "gpu_median_ms": 0.0942,
+  "gpu_p95_ms": 0.131
+}

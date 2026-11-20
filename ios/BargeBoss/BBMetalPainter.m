@@ -295,7 +295,8 @@ static vector_float4 BBColor(jint argb) {
         {p+a,{1,0},color,8,phase},{p+a+b,{1,1},color,8,phase},{p+b,{0,1},color,8,phase}};
     [self append:v count:6 texture:self.white mode:0];
 }
-- (jboolean)prefersPolygonBatches {return YES;}
+// Metal already coalesces adjacent triangles; shared polygon batches are expanded below.
+- (jboolean)prefersPolygonBatches {return NO;}
 // Java interface defaults are not inherited by handwritten Objective-C hosts.
 - (jboolean)retainedSurfacesWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale {return NO;}
 - (jboolean)preparesLayers {return YES;}

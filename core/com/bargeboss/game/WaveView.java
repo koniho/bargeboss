@@ -22,13 +22,17 @@ public final class WaveView {
         RiverCamera c=g.layout.camera;
         // Hosts that expand batches should not pay to collect and reorder them first.
         WaterBatchPainter batch=canvas.prefersPolygonBatches()?new WaterBatchPainter(canvas,g.layout.width,g.layout.height):null;
-        Painter p=new WaterEffectsPainter(g,new RiverPainter(batch==null?canvas:batch,c));
+        WaterEffectsPainter p=new WaterEffectsPainter(g,new RiverPainter(batch==null?canvas:batch,c));
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         for(int corner=0;corner<4;corner++) {
             float sx=corner%2*g.layout.width,sy=corner/2*g.layout.height;
             float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
+        float[] mask=g.montroseStage()?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
+        if(g.montroseStage())p.preclipped();
+        if(mask.length>0)canvas.pushClipOutside(mask);
+        try {
         int tick=g.visualTicks;
         float distantDetail=SceneDetail.fade(c.scale,1.25f,2.25f);
         // Cell identities stay in world space. Slow oscillation gives currents
@@ -88,6 +92,7 @@ public final class WaveView {
             }
         }
         if(batch!=null)batch.flush();
+        } finally {if(mask.length>0)canvas.popClip();}
     }
 
     public static void draw(Painter p,int tick,float left,float top,float width,float height,float scale,float origin) {
