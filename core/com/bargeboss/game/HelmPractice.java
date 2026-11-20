@@ -8,6 +8,8 @@ public final class HelmPractice {
     public float progress,targetX,targetY;
     private float previousX,previousY,previousAngle,phaseHeading;
     public void reset(Game g){phase=0;progress=0;previousX=g.tug.x;previousY=g.tug.y;previousAngle=phaseHeading=g.tug.angle;target(g);}
+    void skip(Game g){phase=Math.min(RENDEZVOUS,phase+1);progress=0;previousX=g.tug.x;previousY=g.tug.y;
+        previousAngle=phaseHeading=g.tug.angle;target(g);}
     public boolean step(Game g){
         Body b=g.tug;float dx=b.x-previousX,dy=b.y-previousY,turn=Physics.angle(b.angle-previousAngle);
         previousX=b.x;previousY=b.y;previousAngle=b.angle;

@@ -10,6 +10,7 @@ public final class HelmPracticeTest {
         for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}){
             Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.settings.setJoystickSide(side);int seen=0;
             for(int tick=0;tick<2000 && g.tutorial.lesson==Tutorial.MOVE;tick++){
+                if(g.tutorial.instructorRadio.teach || g.tutorial.instructorRadio.phase!=0){ReplayInput.tutorial(root);g.step();continue;}
                 HelmPractice h=g.tutorial.helm;seen|=1<<h.phase;
                 if(!g.joystick.active){
                     g.pointerDown(18,Joystick.centerX(g),Joystick.centerY(g));float sign=h.phase==HelmPractice.REVERSE?-1:1;

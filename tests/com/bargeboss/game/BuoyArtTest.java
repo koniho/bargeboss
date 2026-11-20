@@ -35,9 +35,10 @@ public final class BuoyArtTest {
             }
         }
         check(maxRoll-minRoll>.02f && maxY-minY>1,"ambient waves visibly sway and bob every buoy");
-        // Emit real wake packets, rather than injecting anonymous packets ignored by height(null).
+        // Sample a real emitted packet behind the vessel, at its visible crest.
         g.tug.x=wx;g.tug.y=wy;g.tug.vx=45;g.tug.vy=0;g.tug.wakeTrailTicks=7;g.water.step(g);
-        check(g.water.emitted>0 && g.water.energy(wx,wy,null)>0,"nearby watercraft wake reaches marker wave field");
+        wx=g.water.x[0]-WaterSurface.wakeRadius(g.water.age[0]);wy=g.water.y[0];
+        check(g.water.emitted>0 && g.water.energy(g,wx,wy,null)>0,"nearby watercraft wake reaches marker wave field");
         int tick=g.ticks,emitted=g.water.emitted;BuoyArt.Pose wake=BuoyArt.pose(g,wx,wy,48);
         Game calm=new Game();calm.layout=g.layout;calm.visualTicks=g.visualTicks;BuoyArt.Pose idle=BuoyArt.pose(calm,wx,wy,48);
         check(wake.y!=idle.y && wake.roll!=idle.roll,"nearby wake changes both heave and roll");

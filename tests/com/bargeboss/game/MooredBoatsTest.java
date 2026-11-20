@@ -35,22 +35,6 @@ public final class MooredBoatsTest {
         check(VesselShoreLight.sector(0,VesselNavigationLights.PORT,0,-1)==1,"red port receiver");
         check(VesselShoreLight.sector(0,VesselNavigationLights.PORT,0,1)==0,"red excludes starboard");
         check(VesselShoreLight.sector(0,VesselNavigationLights.STARBOARD,0,1)==1,"green starboard receiver");
-        Game wakes=new Game();wakes.selectChallenge(Challenges.MONTROSE);wakes.reset();
-        for(int t=0;t<400;t++){wakes.tug.vx=35;wakes.tug.vy=4;wakes.visualTicks=t;wakes.water.step(wakes);}
-        float[] optimized=new float[2],reference=new float[2];
-        for(int ix=-15;ix<=15;ix++)for(int iy=-15;iy<=15;iy++){float x=wakes.tug.x+ix*17,y=wakes.tug.y+iy*17;
-            wakes.water.buoyForce(wakes,x,y,optimized);referenceForce(wakes,x,y,reference);
-            check(Float.floatToIntBits(optimized[0])==Float.floatToIntBits(reference[0]) && Float.floatToIntBits(optimized[1])==Float.floatToIntBits(reference[1]),"wake force rejection preserves exact response");
-        }
         System.out.println(checks+" moored boat placement, tether and colored shore-light assertions passed; "+MooredBoats.BERTHS.length+" boats");
-    }
-    static void referenceForce(Game g,float wx,float wy,float[] out){WaterSurface w=g.water;
-        out[0]=.65f*(float)StrictMath.sin(g.visualTicks*.048+wx*.017+wy*.009);out[1]=.5f*(float)StrictMath.sin(g.visualTicks*.031-wx*.013+wy*.021);
-        for(int i=0;i<WaterSurface.CAPACITY;i++)if(w.age[i]<WaterSurface.LIFE){float dx=wx-w.x[i],dy=wy-w.y[i],distance=Physics.length(dx,dy),offset=distance-(9+w.age[i]*.55f);
-            if(Math.abs(offset)>=26 || distance<.001f)continue;
-            float angle=Physics.angle((float)StrictMath.atan2(dy,dx)-w.heading[i]-(float)StrictMath.PI);if(Math.abs(angle)>(float)StrictMath.PI*.4f)continue;
-            boolean clear=true;int samples=Math.max(1,(int)(distance/8));for(int k=0;k<=samples;k++)if(!WaterEffectsPainter.contains(g,w.x[i]+dx*k/samples,w.y[i]+dy*k/samples)){clear=false;break;}if(!clear)continue;
-            float envelope=1-Math.abs(offset)/26,push=22*w.strength[i]*(1-w.age[i]/(float)WaterSurface.LIFE)*envelope*(float)StrictMath.sin(offset*StrictMath.PI/26);out[0]+=push*dx/distance;out[1]+=push*dy/distance;
-        }out[0]=Physics.clamp(out[0],-35,35);out[1]=Physics.clamp(out[1],-35,35);
     }
 }

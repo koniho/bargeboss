@@ -98,7 +98,7 @@ public final class BuoyPhysicsTest {
         for(int age=160;age<250;age++){
             blocked.water.age[0]=age;blocked.water.buoyForce(blocked,200,500,screened);
             blocked.water.buoyForce(openWater,200,500,open);
-            float ambient=.65f*(float)StrictMath.sin(blocked.visualTicks*.048+200*.017+500*.009);
+            float ambient=SeaWaves.value(blocked,200,500,blocked.visualTicks,1)*1.4f;
             check(Math.abs(screened[0]-ambient)<.0001f,"solid quay screens horizontal wake force");
             if(Math.abs(open[0]-screened[0])>.01f)differs=true;
         }

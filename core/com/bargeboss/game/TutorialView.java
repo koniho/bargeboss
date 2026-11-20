@@ -6,6 +6,7 @@ public final class TutorialView {
     private TutorialView() {}
     static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
+        InstructionPanel.Content radio=t.instructorRadio.content();if(radio!=null)return radio;
         if(t.lesson==Tutorial.CHANNEL && !t.entering)return t.canal.content(g);
         if(t.arrival!=null && t.arrival.warningTicks>0)return t.arrival.warning();
         if(t.lesson==Tutorial.DONE)return null;
@@ -72,6 +73,8 @@ public final class TutorialView {
             return;
         }
         t.instructionPanel.draw(g,p);
+        t.instructorRadio.cue(g,p);
+        if(t.instructorRadio.teach || t.instructorRadio.phase!=0)return;
         if(t.lesson==Tutorial.CHANNEL) {
             if(!t.canal.authorized || !g.passages.passable(0))return;
             if(g.tug.x<TrainingChannel.X[0]) {

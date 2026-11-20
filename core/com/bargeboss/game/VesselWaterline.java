@@ -36,12 +36,13 @@ public final class VesselWaterline {
         int a=(((int)whole+(c==null?0:RiverCamera.DIRECTION_OFFSET))%32+32)%32,bb=(a+1)%32;
         float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
         float[] from=EDGE[b.yacht?2:tug?0:1][a],to=EDGE[b.yacht?2:tug?0:1][bb];
-        float surface=g.water.height(b.x,b.y,g.visualTicks,b)*.35f;
         float[] edge=new float[(SEGMENTS+1)*2];
         for(int i=0;i<=SEGMENTS;i++) {
-            float wave=.4f*(float)StrictMath.sin(g.visualTicks*.048+b.id*.7+i*.38);
-            edge[2*i]=x+offset(from,to,i,false,0,mix)*size*scale;
-            edge[2*i+1]=y+(offset(from,to,i,true,0,mix)*size-2.2f-surface-wave)*scale;
+            float px=x+offset(from,to,i,false,0,mix)*size*scale;
+            float py=y+(offset(from,to,i,true,0,mix)*size-2.2f)*scale;
+            float wx=c==null?px:c.worldX(px,py),wy=c==null?py:c.worldY(px,py);
+            float surface=g.water.height(g,wx,wy,g.visualTicks,b);
+            edge[2*i]=px;edge[2*i+1]=py-surface*scale;
         }
         return edge;
     }

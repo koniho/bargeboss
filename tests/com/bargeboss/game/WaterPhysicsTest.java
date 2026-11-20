@@ -30,10 +30,10 @@ public final class WaterPhysicsTest {
         Game still=isolated();for(int i=0;i<500;i++){still.visualTicks++;still.water.step(still);}
         check(still.water.emitted==0,"stationary floating hulls bob without creating underway wakes");
         int latest=-1;for(int i=0;i<WaterSurface.CAPACITY;i++) if(g.water.age[i]<WaterSurface.LIFE && (latest<0 || g.water.age[i]<g.water.age[latest]))latest=i;
-        float x=g.water.x[latest]+g.water.age[latest]*.55f,y=g.water.y[latest];
-        check(g.water.energy(x,y,null)>g.water.energy(x+500,y+500,null),"wake energy spreads locally rather than changing the whole river");
+        float x=g.water.x[latest]-WaterSurface.wakeRadius(g.water.age[latest]),y=g.water.y[latest];
+        check(g.water.energy(g,x,y,null)>g.water.energy(g,x+500,y+500,null),"wake energy spreads locally rather than changing the whole river");
         WaterSurface quiet=new WaterSurface();float roughMax=0,quietMax=0;
-        for(int i=0;i<250;i++) { roughMax=Math.max(roughMax,Math.abs(g.water.height(x,y,i,null)));quietMax=Math.max(quietMax,Math.abs(quiet.height(x,y,i,null))); }
+        for(int i=0;i<250;i++) { roughMax=Math.max(roughMax,Math.abs(g.water.height(g,x,y,i,null)));quietMax=Math.max(quietMax,Math.abs(quiet.height(g,x,y,i,null))); }
         check(roughMax>quietMax*1.2f,"passing wakes increase local rise-and-fall amplitude");
         float height=g.tug.heave;int age=g.water.age[latest];g.background();g.advance(.25);
         check(g.tug.heave==height && g.water.age[latest]==age,"background pause freezes floating motion and persistent wakes");

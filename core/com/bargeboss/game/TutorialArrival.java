@@ -7,10 +7,20 @@ final class TutorialArrival {
     Body teacher;
     private int replyTicks,warningCooldown,warningSerial,reactionTicks,returnCooldown;
     private boolean returnWarning;
-    int warningTicks;
+    int warningTicks,pushedTicks;
     private final TeacherFollow follow=new TeacherFollow();
     private String reply="";
     void observe(){teacher=new Body(0,-1,TrainingChannel.MIN-280,TrainingChannel.Y[0]-90,0);}
+    void observe(Game g){
+        teacher=new Body(0,-1,g.tug.x,g.tug.y,0);
+        for(int radius=90;radius<=360;radius+=45)for(int side=0;side<8;side++){
+            double angle=side*StrictMath.PI/4;float x=g.tug.x+radius*(float)StrictMath.cos(angle),y=g.tug.y+radius*(float)StrictMath.sin(angle);
+            if(!CalumetMap.clear(x,y,x,y,teacher.half+teacher.radius+3))continue;
+            boolean clear=true;for(Body b:g.cargo)if(b!=null && b.active && Physics.length(x-b.x,y-b.y)<90)clear=false;
+            if(clear){teacher.x=x;teacher.y=y;return;}
+        }
+    }
+    void pushed(){pushedTicks=90;}
     void start(Game g){
         teacher=new Body(0,-1,-1820,TEACHER_Y,0);replyTicks=0;reply="";
         g.tug.x=DOCK_X;g.tug.y=DOCK_Y;g.tug.angle=0;g.tug.vx=g.tug.vy=g.tug.spin=0;
@@ -41,7 +51,10 @@ final class TutorialArrival {
                 if(replyTicks>=180){t.entering=false;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);}
             }
         } else {
-            follow.step(g,teacher);
+            if(pushedTicks>0){
+                pushedTicks--;teacher.engineLoad*=.95f;Physics.integrate(teacher);
+                CalumetMap.collide(teacher,g.splashes);g.passages.collide(teacher,g.splashes);g.bridge.collide(teacher,g.splashes);
+            }else follow.step(g,teacher);
             if(strayed(g)
                     && returnCooldown==0 && warningTicks==0 && reactionTicks==0){
                 returnWarning=true;warningTicks=240;returnCooldown=900;warningSerial++;g.radio.transmit(RadioAudio.TEACHER);

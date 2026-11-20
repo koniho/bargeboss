@@ -5,6 +5,7 @@ public final class Tutorial {
     public static final int MOVE=0, FIGURE_EIGHT=1, REVERSE=2, SLIP=3, MAP=4, CHANNEL=5, HOLD=6, STEER=7, DOCK=8, TIE=9, CONNECT=10, PULL=11, DOUBLE=12, BRIDGE=13, LINK=14, TRAIN=15, RELEASE=16, DONE=17;
     public static final float TOW_BERTH_X=245,TOW_BERTH_Y=310,TOW_BERTH_RADIUS=58;
     public static final float BRIDGE_CLEAR_Y=Bridge.Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
+    final InstructorRadio instructorRadio=new InstructorRadio();
     public final HelmPractice helm=new HelmPractice();
     public final NavigationPractice navigation=new NavigationPractice();
     public final TutorialCanalBridge canal=new TutorialCanalBridge();
@@ -40,6 +41,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
+        boolean hadTeacher=arrival!=null;instructorRadio.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
         canal.reset(lesson>CHANNEL);g.passages=new BridgePassage(g);LocationBridges.prepare(g.passages.bridges);
@@ -103,13 +105,22 @@ public final class Tutorial {
         startY=lesson==TRAIN?g.cargo[2].y:lesson>=HOLD?g.cargo[0].y:g.tug.y;
         channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         helm.reset(g);navigation.reset(g);
+        if(hadTeacher && arrival==null){arrival=new TutorialArrival();arrival.observe(g);}
         g.fitTutorialCamera();
+    }
+    /** Explicit radio skip prepares the next exercise, including its prerequisite tow state. */
+    void skip(Game g){
+        g.cancelInputs();
+        if(lesson==MOVE && helm.phase<HelmPractice.RENDEZVOUS){helm.skip(g);return;}
+        if(lesson<DONE){lesson++;if(lesson<DONE)setup(g);else g.dialogue.close(g);}
+        g.haptic(Game.HAPTIC_SUCCESS);
     }
     private static void park(Body b) {
         b.vx=b.vy=b.spin=0;b.awaitingPickup=true;
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
     public void update(Game g) {
+        if(instructorRadio.step(g))return;
         canal.step(g);
         if(arrival!=null)arrival.step(g);
         if(entering)return;
@@ -124,7 +135,10 @@ public final class Tutorial {
             channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         }
         if(lesson==MOVE) {
-            if(helm.step(g)){lesson=FIGURE_EIGHT;driveMarker=0;orbitArmed=false;orbitSweep=0;firstOrbitDirection=0;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+            int previous=helm.phase;
+            boolean complete=helm.step(g);
+            if(previous==HelmPractice.FORWARD && helm.phase==HelmPractice.LEFT)instructorRadio.introduce(g);
+            if(complete){lesson=FIGURE_EIGHT;driveMarker=0;orbitArmed=false;orbitSweep=0;firstOrbitDirection=0;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
         } else if(lesson==FIGURE_EIGHT || lesson==REVERSE) {
             updateOrbit(g);reverseTargetX=driveTargetX();reverseTargetY=driveTargetY();
         } else if(lesson==SLIP) {

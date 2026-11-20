@@ -11,7 +11,7 @@ public final class FeederView {
             p.rect(f.x-42,790,84,46,(f.blocked?0x44000000:0x22000000)|(color&0xffffff));
             for(int side=-1;side<=1;side+=2) {
                 SoftCue.line(p,f.x+side*42,789,f.x+side*42,836,1,color);
-                float bob=g.water.height(f.x+side*42,805,g.visualTicks,null)*.8f;
+                float bob=g.water.height(g,f.x+side*42,805,g.visualTicks,null)*.8f;
                 p.circle(f.x+side*42+RiverCamera.riseX(bob),805+RiverCamera.riseY(bob),5,VisualStyle.OUTLINE);
                 p.circle(f.x+side*42+RiverCamera.riseX(bob),805+RiverCamera.riseY(bob),3,(g.visualTicks/18)%2==0?color:VisualStyle.CREAM);
             }

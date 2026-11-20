@@ -38,7 +38,7 @@ public final class ShorelineViewTest {
                     check(previous.u1==s.u0,"adjacent segments share exact UV phase");
                 previous=s;
             }
-            Game g=new Game();g.challengeId=marina?Challenges.MONTROSE:Challenges.TWO_BANKS;g.reset();g.configureCanvas(960,600);
+            Game g=new Game();g.challengeId=marina?Challenges.MONTROSE:Challenges.TWO_BANKS;if(marina)g.reset();else g.resetPracticeYard();g.configureCanvas(960,600);
             ShorelineView.Segment sample=strips[strips.length/2];float x=(sample.ax+sample.bx)*.5f,y=(sample.ay+sample.by)*.5f;
             g.layout=Layout.focused(960,600,x,y,2,480,300);g.visualTicks=120;
             float[] uv=sample.foamUV.clone();int ticks=g.ticks,emitted=g.water.emitted;
@@ -52,7 +52,7 @@ public final class ShorelineViewTest {
             g.tug.vx=50;g.tug.vy=0;for(int i=0;i<8;i++)g.water.step(g);
             check(g.water.emitted>0,"real vessel emits wake sample");
             int packet=0;while(packet<WaterSurface.CAPACITY && g.water.age[packet]>=WaterSurface.LIFE)packet++;
-            g.water.x[packet]=x+sample.nx*6;g.water.y[packet]=y+sample.ny*6;g.water.age[packet]=0;g.water.strength[packet]=1.8f;
+            g.water.x[packet]=x+sample.nx*15;g.water.y[packet]=y+sample.ny*15;g.water.heading[packet]=(float)StrictMath.atan2(sample.ny,sample.nx);g.water.age[packet]=0;g.water.strength[packet]=1.8f;
             check(ShorelineView.energy(g,sample)>.9f,"arriving wake intensifies shoreline response");
             g.layout=Layout.focused(960,600,100000,100000,2,480,300);Trace outside=render(g);
             check(outside.foam==0 && outside.walls==0,"offscreen shores cull before material submission");

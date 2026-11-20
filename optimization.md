@@ -3764,3 +3764,27 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - No baseline comparison or real-device claim. The user's connected phone remains
   reserved for another agent and untouched. Evidence and limits:
   `docs/performance/tutorial-yard-2026-11-20/README.md`.
+
+### 2026-11-20 — Unified waves and first Montrose sea-state experiment
+
+- Shared Java owns ambient and signed wake height/flow, rear wake fan, shore
+  blocking, hull sampling, force caps and crest phase. No native gameplay, new
+  images, textures or caches. Sea crests cap at 512 candidates; wakes retain 192
+  packets. Four hull samples produce heave and bounded planar/yaw response.
+- Buoy, moored-fleet and hull-waterline samples now use the same field. Montrose
+  uses authored smooth shelter; no bathymetric/refraction claim. Forces run once
+  per real fixed tick before the existing two motion integrations.
+- Full checks and signed profile APK build passed; JVM/J2ObjC signature
+  `be7ee63a:2:1350`. All-heading shoreline regression passed 1,461,230 hull/cargo
+  pixel assertions. Actual desktop sequences and Android Vulkan inlet reviewed.
+- Development phone Vulkan inlet: displayed mean 17.31 ms, median 16.65, p95 24.97
+  (180 measured frames, 120 warmup). Wide fixed-camera view: mean 85.88 ms;
+  original core baseline 89.94 ms; repeated wave build 92.50 ms. CPU drawing is
+  expensive in both. No improvement/regression or sustained 60 FPS claim from
+  these short sequential captures. All measured frames remained Vulkan.
+- Full preview's tutorial completion guard also fails on unchanged HEAD at 9,000
+  ticks; targeted wave and all-heading pixel exports were run independently.
+  iOS device pixels/performance and Canvas were not measured for this increment.
+- Reproduction, raw counters and native/compositor evidence:
+  docs/performance/montrose-waves-2026-11-20/. Concurrent tutorial changes are being
+  integrated separately at the user's request; these timings precede them.

@@ -10,51 +10,72 @@ public final class WaterSurface {
     private int cursor;
     public int emitted,pulses;
     public WaterSurface() { for(int i=0;i<CAPACITY;i++) age[i]=LIFE; }
-    public float energy(float wx,float wy,Body ignore) {
-        float total=0;
-        for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE && source[i]!=ignore) {
-            float dx=wx-x[i],dy=wy-y[i],radius=age[i]*.55f;
-            // Outside the crest's bounding square the contribution is exactly zero.
-            // A one-unit guard keeps this rejection clear of float rounding at the band edge.
-            float reach=radius+33;
-            if(Math.abs(dx)>reach || Math.abs(dy)>reach)continue;
-            float distance=Physics.length(dx,dy);
-            float band=Math.max(0,1-Math.abs(distance-radius)/32);
-            total+=strength[i]*band*(1-age[i]/(float)LIFE);
+    static final float WAKE_SPEED=.55f, WAKE_WIDTH=26;
+    /** All consumers use the same signed packet, fan, decay and shore visibility. */
+    static float wakeRadius(int age){return 9+age*WAKE_SPEED;}
+    static float wakeProfile(float offset){
+        if(Math.abs(offset)>=WAKE_WIDTH)return 0;
+        double phase=offset*StrictMath.PI/WAKE_WIDTH;
+        return (float)(StrictMath.cos(phase)*(1+StrictMath.cos(phase))*.5);
+    }
+    private float wake(Game g,int i,float wx,float wy,Body ignore){
+        if(age[i]>=LIFE || ignore!=null && source[i]==ignore)return 0;
+        float dx=wx-x[i],dy=wy-y[i],reach=wakeRadius(age[i])+WAKE_WIDTH;
+        if(Math.abs(dx)>reach || Math.abs(dy)>reach)return 0;
+        float d=Physics.length(dx,dy),profile=wakeProfile(d-wakeRadius(age[i]));
+        if(profile==0 || d<.001f)return 0;
+        float angle=Math.abs(Physics.angle((float)StrictMath.atan2(dy,dx)-heading[i]-(float)StrictMath.PI));
+        float fan=1-SeaWaves.smooth(.32f*(float)StrictMath.PI,.4f*(float)StrictMath.PI,angle);
+        if(fan==0)return 0;
+        // The exact same visibility rule applies to height and orbital flow.
+        int samples=Math.max(1,(int)StrictMath.ceil(d/8));
+        for(int k=0;k<=samples;k++)if(!WaterEffectsPainter.contains(g,x[i]+dx*k/samples,y[i]+dy*k/samples))return 0;
+        return strength[i]*(1-age[i]/(float)LIFE)*profile*fan;
+    }
+    public float energy(Game g,float wx,float wy,Body ignore){
+        float sum=0;for(int i=0;i<CAPACITY;i++)sum+=Math.abs(wake(g,i,wx,wy,ignore));
+        return Math.min(1.8f,sum);
+    }
+    /** Height in sprite-rise units; orbital flow in world units/second. */
+    public float value(Game g,float wx,float wy,float tick,Body ignore,int component){
+        float total=SeaWaves.value(g,wx,wy,tick,component);
+        for(int i=0;i<CAPACITY;i++){
+            float h=wake(g,i,wx,wy,ignore)*1.2f;if(h==0)continue;
+            if(component==0)total+=h;
+            else {float dx=wx-x[i],dy=wy-y[i],d=Physics.length(dx,dy);
+                total+=h*(WAKE_SPEED/Physics.DT)*(float)StrictMath.PI/WAKE_WIDTH*(component==1?dx:dy)/d;}
         }
-        return Math.min(1.8f,total);
+        return Physics.clamp(total,component==0?-6:-12,component==0?6:12);
     }
-    public float height(float wx,float wy,int tick,Body ignore) {
-        float local=energy(wx,wy,ignore);
-        float wave=(float)StrictMath.sin(tick*.048+wx*.017+wy*.009);
-        float cross=(float)StrictMath.sin(tick*.031-wx*.013+wy*.021);
-        return (.65f+local*1.2f)*wave+.22f*cross;
-    }
-    /** Horizontal orbital motion of floats: arriving wake packets push then draw back.
-     * Only nearby crest bands need a shoreline visibility check. No temporary allocations. */
+    public float height(Game g,float wx,float wy,float tick,Body ignore){return value(g,wx,wy,tick,ignore,0);}
     public void buoyForce(Game g,float wx,float wy,float[] out){
-        out[0]=.65f*(float)StrictMath.sin(g.visualTicks*.048+wx*.017+wy*.009);
-        out[1]=.5f*(float)StrictMath.sin(g.visualTicks*.031-wx*.013+wy*.021);
-        for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE && source[i]!=null){
-            float dx=wx-x[i],dy=wy-y[i],reach=36+age[i]*.55f;
-            if(Math.abs(dx)>reach || Math.abs(dy)>reach)continue;
-            float distance=Physics.length(dx,dy),offset=distance-(9+age[i]*.55f);
-            if(Math.abs(offset)>=26 || distance<.001f)continue;
-            // Match the rear-facing fan used by draw(), not a full circular blast.
-            float angle=Physics.angle((float)StrictMath.atan2(dy,dx)-heading[i]-(float)StrictMath.PI);
-            if(Math.abs(angle)>(float)StrictMath.PI*.4f)continue;
-            boolean clear=true;int samples=Math.max(1,(int)(distance/8));
-            for(int k=0;k<=samples;k++)if(!WaterEffectsPainter.contains(g,x[i]+dx*k/samples,y[i]+dy*k/samples)){clear=false;break;}
-            if(!clear)continue;
-            float envelope=1-Math.abs(offset)/26;
-            float push=22*strength[i]*(1-age[i]/(float)LIFE)*envelope*(float)StrictMath.sin(offset*StrictMath.PI/26);
-            out[0]+=push*dx/distance;out[1]+=push*dy/distance;
-        }
-        out[0]=Physics.clamp(out[0],-35,35);out[1]=Physics.clamp(out[1],-35,35);
+        out[0]=value(g,wx,wy,g.visualTicks,null,1)*1.4f;
+        out[1]=value(g,wx,wy,g.visualTicks,null,2)*1.4f;
     }
-    public void step(Game g) {
+    /** Four hull samples share the wave phase. No direct position/heading edits. */
+    public void affect(Game g,Body b){
+        if(!g.montroseStage() || b.lineAttached || b.awaitingPickup)return;
+        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
+        float ax=0,ay=0,torque=0;
+        for(int i=0;i<4;i++){
+            float along=i<2?(i==0?b.half:-b.half):0,across=i<2?0:(i==2?b.radius:-b.radius);
+            float rx=c*along-s*across,ry=s*along+c*across;
+            float ux=value(g,b.x+rx,b.y+ry,g.visualTicks,b,1),uy=value(g,b.x+rx,b.y+ry,g.visualTicks,b,2);
+            // Existing hull drag still handles still-water resistance. Add only its wave contribution.
+            float forward=ux*c+uy*s,side=-ux*s+uy*c;
+            float fx=.22f*forward*c-1.2f*side*s,fy=.22f*forward*s+1.2f*side*c;
+            ax+=fx*.25f;ay+=fy*.25f;torque+=(rx*fy-ry*fx)*b.mass*.25f;
+        }
+        // Called once per real 60 Hz tick, before the game's two motion steps.
+        b.vx+=Physics.clamp(ax,-5,5)*Physics.DT;b.vy+=Physics.clamp(ay,-5,5)*Physics.DT;
+        b.spin+=Physics.clamp(torque/b.inertia,-.12f,.12f)*Physics.DT;
+    }
+    public void step(Game g) { advanceWakes();floatBoats(g); }
+    public void advanceWakes(){
         foam.step();
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) age[i]++;
+    }
+    public void floatBoats(Game g){
         floatBoat(g,g.tug);
         if(g.teacherBoat()!=null)floatBoat(g,g.teacherBoat());
         for(Body b:g.cargo) if(b!=null && b.active) floatBoat(g,b);
@@ -68,9 +89,13 @@ public final class WaterSurface {
         float old=b.heave,velocity=b.heaveVelocity;
         float response=b.berth>=0?.76f:1;
         if(b.lineAttached || b.awaitingPickup) response*=.45f;
-        float value=height(b.x,b.y,g.visualTicks,b)*response;
+        float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
+        float value=(height(g,b.x+c*b.half,b.y+s*b.half,g.visualTicks,b)
+                +height(g,b.x-c*b.half,b.y-s*b.half,g.visualTicks,b)
+                +height(g,b.x-s*b.radius,b.y+c*b.radius,g.visualTicks,b)
+                +height(g,b.x+s*b.radius,b.y-c*b.radius,g.visualTicks,b))*.25f*response;
         // Hull response is filtered, so nearby wakes cannot make the sprite snap vertically.
-        b.heave+= (value-b.heave)*.18f;
+        b.heave+= (value-b.heave)*(b.cruiser?.18f:b.berth>=0?.075f:.12f);
         b.heaveVelocity=(b.heave-old)/Physics.DT;
         if(b.wakeKickTicks>0) b.wakeKickTicks--;
         if(b.wakeCooldown>0) b.wakeCooldown--;
@@ -93,7 +118,7 @@ public final class WaterSurface {
     public static float lift(Game g,Body b) {
         if(b.floatingInitialized) return b.heave;
         // Title/preview hulls have no simulation clock, but still ride ambient water.
-        return g.water.height(b.x,b.y,g.visualTicks,b)*(b.lineAttached?.25f:b.berth>=0?.5f:.75f);
+        return g.water.height(g,b.x,b.y,g.visualTicks,b)*(b.lineAttached?.25f:b.berth>=0?.5f:.75f);
     }
     public void draw(Game g,Painter p) {
         foam.draw(g,p);
@@ -110,22 +135,24 @@ public final class WaterSurface {
         } else p=new WaterEffectsPainter(g,p);
         if(clip.length>0)canvas.pushClipOutside(clip);
         p.beginWaterFoamBatch();
-        try {drawCrests(g,p);} finally {p.endWaterFoamBatch();if(clip.length>0)canvas.popClip();}
+        try {SeaWaves.draw(g,p);drawCrests(g,p);} finally {p.endWaterFoamBatch();if(clip.length>0)canvas.popClip();}
     }
     private void drawCrests(Game g,Painter p) {
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
-            float t=age[i]/(float)LIFE,r=9+age[i]*.55f;
+            float t=age[i]/(float)LIFE,r=wakeRadius(age[i]);
             int alpha=(int)Math.min(255,330*strength[i]*(1-t)*(1-t*.35f));
             if(alpha<3)continue;
             float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
             for(int j=0;j<16;j++) {
                 float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
-                float ra=r*(1+.018f*(float)StrictMath.sin(a*7+i*1.1)),rb=r*(1+.018f*(float)StrictMath.sin(b*7+i*1.1));
+                float ra=r,rb=r;
                 float xx=x[i]+ra*(float)StrictMath.cos(a),yy=y[i]+ra*(float)StrictMath.sin(a);
                 float bx=x[i]+rb*(float)StrictMath.cos(b),by=y[i]+rb*(float)StrictMath.sin(b);
                 // Full stroke clipping prevents crests cutting across quay corners.
-                // A slight local swell keeps expanding packets from reading as compass arcs.
-                float crest=.55f+.45f*(float)StrictMath.sin(i*1.73+j*.81+age[i]*.055);
+                // Fan opacity follows the same shore-visible packet sampled by hulls.
+                float mid=(a+b)*.5f;
+                float crest=Math.max(0,wake(g,i,x[i]+r*(float)StrictMath.cos(mid),y[i]+r*(float)StrictMath.sin(mid),null));
+                crest/=Math.max(.001f,strength[i]*(1-t));
                 if(crest<.17f && age[i]>45) continue;
                 float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=10+strength[i]*8;
                 if(len<.01f)continue;

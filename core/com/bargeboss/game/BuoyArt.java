@@ -31,9 +31,9 @@ public final class BuoyArt {
     }
     public static Pose pose(Game g,float wx,float wy,float size,float contactRoll){
         RiverCamera c=g.layout.camera;int tick=g.visualTicks;
-        float surface=g.water.height(wx,wy,tick,null),heave=g.water.height(wx,wy,tick-10,null)*1.1f;
-        float across=g.water.height(wx+6,wy+6,tick,null)-g.water.height(wx-6,wy-6,tick,null);
-        float roll=Physics.clamp(across*.07f+.018f*(float)StrictMath.sin(tick*.032+wx*.017+wy*.009),-MAX_ROLL,MAX_ROLL);
+        float surface=g.water.height(g,wx,wy,tick,null),heave=surface;
+        float across=g.water.height(g,wx+6,wy+6,tick,null)-g.water.height(g,wx-6,wy-6,tick,null);
+        float roll=Physics.clamp(across*.07f,-MAX_ROLL,MAX_ROLL);
         roll=Physics.clamp(roll+contactRoll,-.26f,.26f);
         return new Pose(c.screenX(wx,wy),c.screenY(wx,wy)-heave*c.scale,size*c.scale,roll,
                 c.screenY(wx,wy)-surface*c.scale-size*c.scale*.022f,tick*.045f+wx*.017f+wy*.009f);
@@ -56,7 +56,7 @@ public final class BuoyArt {
         }
         return triangles;
     }
-    /** Curved surface is deliberately independent of the sprite's roll and delayed heave. */
+    /** Curved water surface stays independent of the sprite's contact roll. */
     static void hull(Painter p,int frame,Pose pose){
         p.pushClipOutside(submerged(pose));
         try{p.spriteAffine(SpriteAtlas.BUOY,frame,pose.x,pose.y,pose.size*pose.cos,pose.size*pose.sin,-pose.size*pose.sin,pose.size*pose.cos,1);}

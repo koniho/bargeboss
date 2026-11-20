@@ -71,7 +71,7 @@ public final class Game {
     public final SoundEffects sounds=new SoundEffects();
     public final RadioAudio radio=new RadioAudio(sounds);
     public Body teacherBoat(){return tutorial==null || tutorial.arrival==null?null:tutorial.arrival.teacher;}
-    public boolean conversation(){return dialogue.active || tutorial!=null && tutorial.entering;}
+    public boolean conversation(){return dialogue.active || tutorial!=null && (tutorial.entering || tutorial.instructorRadio.phase!=0);}
     public static final int HAPTIC_TICK=1, HAPTIC_CONTACT=2, HAPTIC_IMPACT=3, HAPTIC_SUCCESS=4;
     public boolean hapticsEnabled=true;
     private int hapticPending, hapticCooldown, contactCooldown, contactId=-1, mapPointer=-1;
@@ -190,6 +190,8 @@ public final class Game {
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
         if(tutorial.entering)return Layout.focused(layout.width,layout.height,TutorialArrival.DOCK_X,780,2.4f,layout.width*.36f,layout.height*.57f);
+        if(tutorial.instructorRadio.teach && teacherBoat()!=null)return Layout.focused(layout.width,layout.height,
+                (tug.x+teacherBoat().x)*.5f,(tug.y+teacherBoat().y)*.5f,1.4f,layout.width*.48f,layout.height*.53f);
         if(tutorial.lesson==Tutorial.MOVE)return Layout.focused(layout.width,layout.height,tug.x,tug.y,
                 PRACTICE_DRIVE_ZOOM,layout.width*.52f,layout.height*.55f);
         if(tutorial.lesson==Tutorial.FIGURE_EIGHT || tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
@@ -319,7 +321,7 @@ public final class Game {
         return status()+"; dialogue "+(dialogue.active?dialogue.count():0)+"; arrival "+(tutorial!=null && tutorial.entering?1:0)+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
                 +(tutorial==null?"":"; slip phase "+tutorial.navigation.slipPhase+"; slip retry "+(tutorial.navigation.retry?1:0)+"; map phase "+tutorial.navigation.mapPhase+"; navigation target "+tutorial.navigation.targetX(this)+","+tutorial.navigation.targetY(this)+"; helm phase "+tutorial.helm.phase+"; heading "+tug.angle+"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
                 +(tutorial==null?"":"; reverse target "+tutorial.reverseTargetX+","+tutorial.reverseTargetY+"; reverse progress "+tutorial.reverseProgress()+"; reverse armed "+(tutorial.reverseArmed?1:0))
-                +(tutorial==null?"":"; canal contact "+(tutorial.canal.contactable(this)?1:0)+"; canal ready "+(tutorial.canal.authorized && passages.passable(0)?1:0)+"; bridge house "+tutorial.canal.houseX(this)+","+tutorial.canal.houseY(this)+"; teacher "+(teacher==null?"0,0":teacher.x+","+teacher.y))
+                +(tutorial==null?"":"; instructor teach "+(tutorial.instructorRadio.teach?1:0)+"; instructor call "+tutorial.instructorRadio.phase+"; instructor radio "+(teacher==null?"0,0":tutorial.instructorRadio.x(this)+","+tutorial.instructorRadio.y(this))+"; canal contact "+(tutorial.canal.contactable(this)?1:0)+"; canal ready "+(tutorial.canal.authorized && passages.passable(0)?1:0)+"; bridge house "+tutorial.canal.houseX(this)+","+tutorial.canal.houseY(this)+"; teacher "+(teacher==null?"0,0":teacher.x+","+teacher.y))
                 +"; bollard "+(load==null?"none":bollardX(load)+","+bollardY(load))
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
@@ -406,7 +408,7 @@ public final class Game {
         rescue.aiming=-1;
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
-        if(tutorial!=null)tutorial.canal.cancelTouch();
+        if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.instructorRadio.cancelTouch();}
         dialogue.cancel();cancel(); mapPointer=-1; hapticPending=0; reversing=false; navigating=false;
     }
     /** Native input is always in landscape canvas coordinates. */
@@ -419,6 +421,7 @@ public final class Game {
             if(!overview.active && id!=mapPointer && !pinchZoom.active())overview.begin(this,id,x);
             return;
         }
+        if(tutorial!=null && tutorial.instructorRadio.down(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.down(this,id,x,y))return;
         if(pinchZoom.active()){pinchZoom.down(this,id,x,y);return;}
         if(liveRiverInput() && !(tutorial!=null && tutorial.entering) && ropePhase==0
@@ -439,6 +442,7 @@ public final class Game {
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(mode==PLAY && conversation()){dialogue.move(this,id,x,y);return;}
+        if(tutorial!=null && tutorial.instructorRadio.move(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.move(this,id,x,y))return;
         if(overview.owns(id)){overview.setFromX(this,x);return;}
         if(pinchZoom.move(this,id,x,y))return;
@@ -449,6 +453,7 @@ public final class Game {
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(mode==PLAY && conversation()){dialogue.up(this,id,x,y);return;}
+        if(tutorial!=null && tutorial.instructorRadio.up(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.up(this,id,x,y))return;
         if(overview.owns(id)){overview.setFromX(this,x);overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
@@ -465,7 +470,7 @@ public final class Game {
     public void pointerCancel(int id) {
         if(practice!=null) { practice.pointerCancel(id); return; }
         dialogue.cancel(id);
-        if(tutorial!=null)tutorial.canal.cancel(id);
+        if(tutorial!=null){tutorial.canal.cancel(id);tutorial.instructorRadio.cancel(id);}
         if(overview.owns(id)){overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
         if(id==mapPointer) { cancel(); mapPointer=-1; }
@@ -795,6 +800,9 @@ public final class Game {
         }
         bridge.step(this);passages.step(this);
         if(lockStage())lock.step(this);
+        water.advanceWakes();
+        water.affect(this,tug);
+        for(Body b:cargo)if(b!=null && b.active)water.affect(this,b);
         for(int i=0;i<MOTION_STEPS;i++) motionStep();
         if(tutorial==null) for(Feeder feeder:feeders) {
             feeder.step(this);
@@ -804,7 +812,7 @@ public final class Game {
             float load=feeder.phase==Feeder.IDLE || feeder.blocked?0:feeder.phase==Feeder.INBOUND?.9f:.45f;
             feeder.boat.engineLoad+=(load-feeder.boat.engineLoad)*.08f;
         }
-        water.step(this);
+        water.floatBoats(this);
         smoke.step(this);
         tow.tick(this);
         updateRope();
@@ -927,7 +935,10 @@ public final class Game {
         if(teacherBoat()!=null){
             Body teacher=teacherBoat();float dx=teacher.x-tug.x,dy=teacher.y-tug.y,d=Math.max(1,Physics.length(dx,dy));
             if((tug.vx*dx+tug.vy*dy)/d>5 && Physics.touching(tug,teacher,0))tutorial.arrival.warn(this);
-            feederContact(teacher);
+            float impact=Physics.collide(tug,teacher,splashes);
+            for(Body b:cargo)if(b!=null && b.active)impact=Math.max(impact,Physics.collide(b,teacher,splashes));
+            if(impact>1)tutorial.arrival.pushed();
+            CalumetMap.collide(teacher,splashes);passages.collide(teacher,splashes);bridge.collide(teacher,splashes);
         }
         if(tutorial==null) for(Feeder f:feeders) if(f.phase!=Feeder.IDLE) {
             feederContact(f.boat);

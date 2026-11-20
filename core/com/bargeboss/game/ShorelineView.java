@@ -77,7 +77,7 @@ public final class ShorelineView {
         return near(g,l,t,r,b);
     }
     static float phase(Game g){return g.visualTicks*Physics.DT;}
-    static float energy(Game g,Segment s){return Physics.clamp(g.water.energy((s.ax+s.bx)*.5f+s.nx*6,(s.ay+s.by)*.5f+s.ny*6,null)/1.8f,0,1);}
+    static float energy(Game g,Segment s){return Physics.clamp(g.water.energy(g,(s.ax+s.bx)*.5f+s.nx*6,(s.ay+s.by)*.5f+s.ny*6,null)/1.8f,0,1);}
     private static boolean project(Game g,Segment s,boolean wall){
         RiverCamera c=g.layout.camera;float[] out=wall?s.projectedWall:s.projectedFoam;
         float l=Float.MAX_VALUE,t=l,r=-l,b=-l;

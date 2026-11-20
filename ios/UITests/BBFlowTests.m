@@ -235,6 +235,15 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if(lesson==BBLessonChannel)break;
         XCTAssertTrue(lesson>=BBLessonMove && lesson<=BBLessonMap,@"Opening lesson: %@",status);
         seen|=BBLessonMask((BBTutorialLesson)lesson);
+        if([self integerInStatus:status tag:@"instructor teach"]==1){
+            CGPoint radio=[self worldPositionInStatus:status tag:@"instructor radio"];
+            [[self point:stage x:radio.x y:radio.y] tap];continue;
+        }
+        if([self integerInStatus:status tag:@"instructor call"]>0){
+            if([self integerInStatus:status tag:@"dialogue"]>0){CGSize size=[self logicalSize:stage];
+                [[self point:stage x:size.width*.5-fmin(440,(size.width-64)/2)*.5-8 y:size.height-69] tap];}
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
         NSInteger phase=[self integerInStatus:status tag:@"helm phase"];
         if(lesson==BBLessonMove)helm|=(1u<<phase);
         CGPoint tug=[self worldPositionInStatus:status tag:@"tug"],target=[self worldPositionInStatus:status tag:@"drive target"];

@@ -1,0 +1,21 @@
+{
+  "renderer": "vulkan",
+  "samples": 180,
+  "reuse_commands": false,
+  "minimal": false,
+  "exclude": 0,
+  "interval_ms": {
+    "median": 85.4445565,
+    "p95": 90.407447
+  },
+  "draw_ms": {
+    "median": 81.7976685,
+    "p95": 86.324149
+  },
+  "presentation_ms": {
+    "count": 179,
+    "median": 83.284062,
+    "p95": 91.626119,
+    "mean": 85.88353562011173
+  }
+}

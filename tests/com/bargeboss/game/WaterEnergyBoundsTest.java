@@ -1,35 +1,49 @@
 package com.bargeboss.game;
 
-/** Exact comparison with the original full-distance wake sum, including crest edges. */
+/** Cross-consumer contract and behavior checks for signed, sheltered waves. */
 public final class WaterEnergyBoundsTest {
     private static int checks;
-    private static void compare(WaterSurface w,Body ignore,Body owner,float x,float y){
-        float sum=0;
-        for(int i=0;i<WaterSurface.CAPACITY;i++)if(w.age[i]<WaterSurface.LIFE && owner!=ignore){
-            float distance=Physics.length(x-w.x[i],y-w.y[i]),radius=w.age[i]*.55f;
-            float band=Math.max(0,1-Math.abs(distance-radius)/32);
-            sum+=w.strength[i]*band*(1-w.age[i]/(float)WaterSurface.LIFE);
-        }
-        checks++;
-        if(Float.floatToIntBits(w.energy(x,y,ignore))!=Float.floatToIntBits(Math.min(1.8f,sum)))
-            throw new AssertionError("Wake energy changed at "+x+","+y);
-    }
+    private static void check(boolean yes,String message){checks++;if(!yes)throw new AssertionError(message);}
     public static void run(){
-        WaterSurface w=new WaterSurface();Body owner=new Body(1,0,0,0,0,false);
-        try{
-            java.lang.reflect.Field field=WaterSurface.class.getDeclaredField("source");field.setAccessible(true);
-            Body[] source=(Body[])field.get(w);
-            for(int i=0;i<WaterSurface.CAPACITY;i++){
-                source[i]=owner;w.x[i]=(i%16)*83-650;w.y[i]=(i/16)*101-600;
-                w.age[i]=(i*17)%301;w.strength[i]=(i%11+1)*.09f;
-            }
-        }catch(Exception e){throw new AssertionError(e);}
-        for(int y=-1400;y<=1400;y+=19)for(int x=-1400;x<=1400;x+=17)compare(w,null,owner,x,y);
-        for(int i=0;i<WaterSurface.CAPACITY;i++)for(float delta:new float[]{-33,-32,-31.999f,0,31.999f,32,33}){
-            float r=w.age[i]*.55f+delta;
-            compare(w,null,owner,w.x[i]+r,w.y[i]);compare(w,null,owner,w.x[i],w.y[i]+r);
-            compare(w,owner,owner,w.x[i]+r,w.y[i]);
+        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();
+        float x=MontroseHarbor.mapX(900),y=MontroseHarbor.mapY(1500);
+        WaterSurface w=g.water;w.x[0]=x;w.y[0]=y;w.age[0]=80;w.strength[0]=1;w.heading[0]=0;
+        float r=WaterSurface.wakeRadius(80),crestX=x-r;
+        float calm=SeaWaves.value(g,crestX,y,0,0);
+        check(w.height(g,crestX,y,0,null)>calm+.8f,"packet crest directly raises surface at rendered radius");
+        check(w.energy(g,x+r,y,null)==0,"front of vessel is outside rear wake fan");
+        check(w.energy(g,x-r-27,y,null)==0,"wake has bounded support");
+        check(w.height(g,x-r-19,y,0,null)<SeaWaves.value(g,x-r-19,y,0,0),"packet includes signed return trough");
+        float[] force=new float[2];w.buoyForce(g,crestX,y,force);
+        float expected=(w.height(g,crestX,y,0,null)-calm)*WaterSurface.WAKE_SPEED/Physics.DT*(float)StrictMath.PI/26;
+        check(Math.abs(force[0]/1.4f-SeaWaves.value(g,crestX,y,0,1)+expected)<.0001f,"crest orbital flow shares height phase and direction");
+        check(Math.abs(force[1]/1.4f-SeaWaves.value(g,crestX,y,0,2))<.0001f,"radial wake has no transverse flow");
+        // A packet originating on dry ground cannot influence water across it.
+        w.x[0]=MontroseHarbor.mapX(1000);w.y[0]=MontroseHarbor.mapY(1100);w.age[0]=200;
+        check(!MontroseHarbor.contains(w.x[0],w.y[0]),"blocking fixture is dry");
+        check(w.energy(g,w.x[0]-WaterSurface.wakeRadius(200),w.y[0],null)==0,"shore blocks packet height and force together");
+        w.age[0]=WaterSurface.LIFE;
+        float innerX=MontroseHarbor.SLIP_X,innerY=MontroseHarbor.SLIP_Y;
+        check(SeaWaves.exposure(x,y)>.99f && SeaWaves.exposure(innerX,innerY)<.15f,"lake and slip have distinct exposure");
+        float previous=SeaWaves.exposure(MontroseHarbor.mapX(350),MontroseHarbor.mapY(650));
+        for(int my=651;my<=1500;my++){
+            float next=SeaWaves.exposure(MontroseHarbor.mapX(350),MontroseHarbor.mapY(my));
+            check(next>=previous && next-previous<.005f,"entrance shelter changes continuously");previous=next;
         }
-        System.out.println(checks+" exact bounded wake-energy comparisons passed");
+        Body head=new Body(0,-1,x,y,-(float)StrictMath.PI/2),beam=new Body(0,-1,x,y,0);
+        float headMotion=0,beamMotion=0;
+        for(int tick=0;tick<600;tick++){
+            g.visualTicks=tick;w.affect(g,head);w.affect(g,beam);
+            headMotion+=Math.abs(head.vy);beamMotion+=Math.abs(beam.vy);
+            head.vx=head.vy=head.spin=beam.vx=beam.vy=beam.spin=0;
+        }
+        check(beamMotion>headMotion*2,"beam seas exert more lateral response than head seas");
+        head.lineAttached=true;w.affect(g,head);check(head.vx==0 && head.vy==0 && head.spin==0,"moored gameplay hull stays secured");
+        Game a=new Game(),b=new Game();a.selectChallenge(Challenges.MONTROSE);b.selectChallenge(Challenges.MONTROSE);a.reset();b.reset();
+        for(int t=0;t<180;t++){a.advance(1.0/60);b.advance(1.0/120);b.advance(1.0/120);}
+        check(a.tug.x==b.tug.x && a.tug.y==b.tug.y && a.tug.heave==b.tug.heave && a.tug.spin==b.tug.spin,"render cadence does not change wave simulation");
+        float px=a.tug.x,py=a.tug.y,heave=a.tug.heave;a.background();a.advance(.25);
+        check(a.tug.x==px && a.tug.y==py && a.tug.heave==heave,"pause freezes wave-driven hull motion");
+        System.out.println(checks+" shared wave phase, wake visibility, shelter and response assertions passed");
     }
 }
