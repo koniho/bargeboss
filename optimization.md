@@ -4002,3 +4002,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   fixed profiling CSV creation when a fresh install has no Documents directory.
 - Shared/native parity da53558f:2:1350; all-heading Montrose shoreline regression
   2,434,414 assertions passed. Evidence: docs/performance/montrose-ios-2026-11-20.
+
+## 2026-11-20 full Montrose overview optimization
+- iOS26.5 simulator / Release Metal baseline:133.75ms mean (7.48FPS).
+  Sampled main-thread work identified open-lake point queries falling outside
+  BoxIndex's play grid and scanning every dock. Added an exact overall-geometry
+  bounds rejection before the existing point candidates; broad polygon queries
+  retain their conservative fallback. Full checks passed, native overview pixels
+  unchanged (0/3,162,132); first mean83.75ms, CPU median61.98ms.
+- Next sample shows repeated scene-kind object-array reads creating translated
+  retain/autorelease traffic. Testing primitive catalog kinds, per-call scene
+  flags and conservative offscreen-cell rejection before expensive wave math.
+  No ripple density, lighting, geometry or physics changes intended.
+- Replaced active dock-light map lookups with a prepared bounded grid:63,840
+  reference slots (<=510,720bytes at8-byte references),6,336 occupied cells and
+  7,122 unchanged polygons. Source construction maps are discarded. Sampling had
+  exposed HashMap collision trees invoking generic reflection on translated Long
+  keys. Row/column order and every receiver/lighting equation remain unchanged.
+- Paired orbital samples share phase/cosine calculations; fast smooth retains
+  signed-zero, NaN and endpoint behavior. Existing distance-hidden ripple cells
+  are rejected before any expensive exposure math; visible density is unchanged.
+- Final quiet Release overview repeats mean34.44/33.47ms (~29–30FPS), median33.33ms;
+  CPU medians29.91/29.65ms versus original105.04ms. Beacon remains60FPS. Native
+  overview and beacon comparisons:0/3,162,132 differing pixels each; Java2D sweep
+  10,368,000 pixels identical across wave power/bearing/tick combinations.
+- Full checks pass; JVM/J2ObjC parity unchanged da53558f:2:1350. Cold camera-transition
+  replay still hitches (p95 100ms, maximum726ms); not a locked60FPS or startup-stutter
+  fix. Analytic water and cold preparation remain follow-ups. Evidence retained
+  in docs/performance/montrose-overview-2026-11-20; native captures under out/ios-profile.

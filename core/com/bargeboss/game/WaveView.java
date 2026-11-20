@@ -19,7 +19,7 @@ public final class WaveView {
     }
     /** Wave detail without clearing a scene that has already drawn its land/water mask. */
     public static void surface(Game g,Painter canvas) {
-        RiverCamera c=g.layout.camera;
+        RiverCamera c=g.layout.camera;boolean montrose=g.montroseStage();
         // Hosts that expand batches should not pay to collect and reorder them first.
         WaterBatchPainter batch=canvas.prefersPolygonBatches()?new WaterBatchPainter(canvas,g.layout.width,g.layout.height):null;
         WaterEffectsPainter p=new WaterEffectsPainter(g,new RiverPainter(batch==null?canvas:batch,c));
@@ -29,11 +29,12 @@ public final class WaveView {
             float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
-        float[] mask=g.montroseStage()?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
-        if(g.montroseStage())p.preclipped();
+        float[] mask=montrose?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
+        if(montrose)p.preclipped();
         if(mask.length>0)canvas.pushClipOutside(mask);
         try {
         int tick=g.visualTicks;
+        float[] displacement=montrose?new float[2]:null;
         float distantDetail=SceneDetail.fade(c.scale,1.25f,2.25f);
         // Cell identities stay in world space. Slow oscillation gives currents
         // motion without a periodic tile jump when the camera crosses a cell.
@@ -41,26 +42,31 @@ public final class WaveView {
         int firstY=(int)StrictMath.floor((minY-50)/30),lastRow=(int)StrictMath.ceil((maxY+50)/30);
         for(int row=firstY;row<=lastRow;row++) for(int col=firstX;col<=lastColumn;col++) {
             int seed=col*1973+row*9277+19037;
-            // Stable spatial thinning keeps ambient water lively without competing
-            // with the vessel wakes. Never base this on time or camera position.
-            float rough=g.montroseStage()?g.settings.waveIntensity()*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
-            if(noise(seed+41)<(g.montroseStage()?Math.max(.1f,.45f-rough*.12f):.45f))continue;
             float detail=(seed&3)==0?1:distantDetail;
             if(detail<.025f)continue;
+            // Conservative cell bounds include drift, maximum orbital displacement,
+            // heave and the longest crest. Reject invisible cells before wave math.
+            float cellX=(col+.5f)*38,cellY=(row+.5f)*30;
+            float cellScreenX=c.screenX(cellX,cellY),cellScreenY=c.screenY(cellX,cellY),pad=90*c.scale;
+            if(cellScreenX<-pad || cellScreenX>g.layout.width+pad || cellScreenY<-pad || cellScreenY>g.layout.height+pad)continue;
+            // Stable spatial thinning keeps ambient water lively without competing
+            // with the vessel wakes. Never base this on time or camera position.
+            float rough=montrose?g.settings.waveIntensity()*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
+            if(noise(seed+41)<(montrose?Math.max(.1f,.45f-rough*.12f):.45f))continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
             float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
-            if(g.montroseStage()){
+            if(montrose){
                 float calm=1-Physics.clamp(rough,0,1);
                 x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4*calm;
                 y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3*calm;
-                float baseX=x,baseY=y;x+=SeaWaves.value(g,baseX,baseY,tick,3);y+=SeaWaves.value(g,baseX,baseY,tick,4);
+                SeaWaves.montroseDisplacement(g,x,y,tick,displacement);x+=displacement[0];y+=displacement[1];
             }
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
             if(sx<-45*c.scale || sx>g.layout.width+45*c.scale || sy<-25*c.scale || sy>g.layout.height+25*c.scale) continue;
             if(!WaterEffectsPainter.contains(g,x,y)) continue;
             float phase=tick*(.016f+noise(seed+11)*.009f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
-            if(g.montroseStage()){
+            if(montrose){
                 rough=g.settings.waveIntensity()*SeaWaves.exposure(x,y);
                 float waveLife=.5f+.5f*Physics.clamp(SeaWaves.value(g,x,y,tick,0)/Math.max(.1f,3.2f*rough),-1,1);
                 life+=(waveLife-life)*Physics.clamp(rough,0,1);
@@ -69,13 +75,13 @@ public final class WaveView {
             float span=10+noise(seed+7)*23,rise=.8f+noise(seed+13)*2.3f;
             // Broad dark trough and a discontinuous highlight, each with a
             // slightly different phase. No evenly spaced full-width bands.
-            float stroke=g.montroseStage()?Math.max(1,.65f+.35f*rough):1;
+            float stroke=montrose?Math.max(1,.65f+.35f*rough):1;
             float lastX=0,lastY=0;
             for(int part=0;part<=CREST_SEGMENTS;part++) {
                 float t=part/(float)CREST_SEGMENTS,along=(t-.5f)*span;
                 float bend=BEND[part]*(rise+.3f*(float)StrictMath.sin(t*9+phase));
                 float xx=x+(along-bend)*RiverCamera.Q,yy=y+(along+bend)*RiverCamera.Q;
-                if(g.montroseStage()){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
+                if(montrose){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
                 if(part>0) {
                     p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,SoftCue.alpha(0x16102028,detail));
                     int alpha=(int)((12+fade*68)*EDGE[part]*detail);
@@ -86,7 +92,7 @@ public final class WaveView {
             if(life>.58f && noise(seed+31)>.35f) {
                 float arm=2+noise(seed+37)*6;
                 float xx=x+4,yy=y-4;
-                if(g.montroseStage()){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
+                if(montrose){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
                 p.line(xx-arm*RiverCamera.Q,yy-arm*RiverCamera.Q,xx+arm*RiverCamera.Q,yy+arm*RiverCamera.Q,
                         .8f,((int)((life-.58f)*175*detail)<<24)|0xb3d5cb);
             }

@@ -44,16 +44,21 @@ public final class MontroseHarbor {
     /** Fixed survey geometry, indexed once. Candidate IDs retain original clipping order. */
     private static final class BoxIndex {
         static final float CELL=128;
+        private static final int[] EMPTY=new int[0];
+        final float minX,minY,maxX,maxY;
         final float left=PLAY_BOUNDS[0],top=PLAY_BOUNDS[1];
         final int cols=(int)StrictMath.ceil((PLAY_BOUNDS[2]-left)/CELL),rows=(int)StrictMath.ceil((PLAY_BOUNDS[5]-top)/CELL);
         final int[] all;final int[][] points,nearby;
         BoxIndex(float[][] bounds){
+            float l=Float.POSITIVE_INFINITY,t=l,r=Float.NEGATIVE_INFINITY,b=r;
+            for(float[] q:bounds){l=Math.min(l,q[0]);t=Math.min(t,q[1]);r=Math.max(r,q[2]);b=Math.max(b,q[3]);}
+            minX=l;minY=t;maxX=r;maxY=b;
             all=new int[bounds.length];for(int i=0;i<all.length;i++)all[i]=i;
             points=new int[cols*rows][];nearby=new int[cols*rows][];
             int[] work=new int[bounds.length];
             for(int y=0;y<rows;y++)for(int x=0;x<cols;x++)for(int margin=0;margin<=1;margin++){
-                float l=left+(x-margin)*CELL,t=top+(y-margin)*CELL,r=left+(x+1+margin)*CELL,b=top+(y+1+margin)*CELL;int n=0;
-                for(int i=0;i<bounds.length;i++){float[] q=bounds[i];if(q[0]<=r && q[2]>=l && q[1]<=b && q[3]>=t)work[n++]=i;}
+                float cellLeft=left+(x-margin)*CELL,cellTop=top+(y-margin)*CELL,cellRight=left+(x+1+margin)*CELL,cellBottom=top+(y+1+margin)*CELL;int n=0;
+                for(int i=0;i<bounds.length;i++){float[] q=bounds[i];if(q[0]<=cellRight && q[2]>=cellLeft && q[1]<=cellBottom && q[3]>=cellTop)work[n++]=i;}
                 (margin==0?points:nearby)[y*cols+x]=java.util.Arrays.copyOf(work,n);
             }
         }
@@ -61,7 +66,12 @@ public final class MontroseHarbor {
             if(!(x>=left && y>=top && x<left+cols*CELL && y<top+rows*CELL))return -1;
             return (int)(((double)y-top)/CELL)*cols+(int)(((double)x-left)/CELL);
         }
-        int[] point(float x,float y){int i=cell(x,y);return i<0?all:points[i];}
+        int[] point(float x,float y){
+            // The overview includes open lake beyond the play grid. Those points
+            // cannot touch any dock; do not fall back to scanning every footprint.
+            if(x<minX || x>maxX || y<minY || y>maxY)return EMPTY;
+            int i=cell(x,y);return i<0?all:points[i];
+        }
         int[] area(float[] b){
             if(!(b[2]-b[0]<=CELL && b[3]-b[1]<=CELL))return all;
             int i=cell((b[0]+b[2])*.5f,(b[1]+b[3])*.5f);return i<0?all:nearby[i];
