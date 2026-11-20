@@ -15,6 +15,12 @@ public final class ProfileScenario {
             if(d<best){best=d;g.tug.x=x;g.tug.y=y;g.tug.angle=(float)StrictMath.atan2(b.y-y,b.x-x);}
         }
     }
+    /** Developer-only fixed camera; same anchor and projection on every host. */
+    public static void cameraZoom(Game root,float width,float height,float zoom) {
+        if(!Float.isFinite(zoom) || zoom<.25f || zoom>5)throw new IllegalArgumentException("Profile zoom requires .25..5");
+        Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;
+        g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),zoom,x,y);
+    }
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);

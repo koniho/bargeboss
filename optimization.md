@@ -3527,3 +3527,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - iOS Metal already batches material triangles; new scope hooks are no-ops.
   No iOS performance gain claimed. Connected iPad currently needs Developer Mode
   before native testing. Evidence: docs/performance/live-surfaces-2026-11-19/README.md.
+
+
+## 2026-11-19 — Physical iPad minimum-zoom tutorial
+
+- Added `--ios-zoom` to developer profiling using a shared Java camera helper,
+  preserving world anchor without changing gameplay. Validated anchor and invalid
+  values in developer tests; built signed Release and installed on the connected
+  M2 iPad Pro 12.9-inch (6th gen), iPadOS 26.6.1.
+- Metal frozen barge-push at .65 zoom: median interval 16.678 ms, p95 16.725;
+  CPU draw 7.819 ms, GPU 5.412 ms (p95 8.260). Normal zoom interval 16.676 ms,
+  CPU 6.810, GPU 6.214. Moving replay also sustained 60 Hz; its camera resumes
+  automatic behavior, so it is not a fixed-wide comparison.
+- This scene is already 60 FPS on this iPad; Metal already batches surfaces.
+  Android's per-face path/uniform costs do not transfer directly. No cache-size
+  increase indicated: zero evictions/pending preparation, ~101 MiB textures of
+  160 MiB budget. CPU/GPU are pipelined; do not sum their times.
+- Raw evidence and limitations: docs/performance/ipad-tutorial-2026-11-19/README.md.
+  No fresh native screenshot comparison; no claims about older iPhones or long
+  thermal runs. App returned to normal gameplay after capture.

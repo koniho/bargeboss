@@ -36,6 +36,7 @@
 @property(nonatomic) double profileLastCost;
 @property(nonatomic) NSInteger profileWarmup,profileSamples;
 @property(nonatomic) BOOL profileReplay,profileConfigured;
+@property(nonatomic) float profileZoom;
 @property(nonatomic,strong) NSString *profileScene;
 @property(nonatomic,strong) NSMutableData *profileIntervals;
 - (void)suspend;
@@ -61,6 +62,7 @@
             self.profileWarmup=30;self.profileSamples=120;
             self.profileReplay=[arguments containsObject:@"--ios-replay"];
             for(NSString *arg in arguments) {
+                if([arg hasPrefix:@"--ios-zoom="]) self.profileZoom=[[arg substringFromIndex:11] floatValue];
                 if([arg hasPrefix:@"--ios-scene="]) self.profileScene=[arg substringFromIndex:12];
                 if([arg hasPrefix:@"--ios-warmup="]) self.profileWarmup=MAX(0,MIN(1800,[[arg substringFromIndex:13] integerValue]));
                 if([arg hasPrefix:@"--ios-frames="]) self.profileSamples=MAX(30,MIN(3600,[[arg substringFromIndex:13] integerValue]));
@@ -104,6 +106,7 @@
 #if BB_IOS_PROFILE
     if(self.profiling && self.profileScene && !self.profileConfigured) {
         [BBProfileScenario prepareWithBBGame:self.game withNSString:self.profileScene withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
+        if(self.profileZoom>0) [BBProfileScenario cameraZoomWithBBGame:self.game withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight] withFloat:self.profileZoom];
         self.profileConfigured=YES;
     }
 #endif

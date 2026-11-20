@@ -317,3 +317,17 @@ API 34+ static shore mesh default. Meshes retain each chunk's shader, geometry,
 UVs and clipping order; `surface_command_mib` includes estimated vertex storage.
 Use fixed zoom and a frozen fixture for A/B, then check moving-camera behavior.
 See [wide tutorial measurements](tutorial-wide-2026-11-19/README.md).
+
+
+### iOS fixed-camera comparison
+
+Developer iOS builds accept `--ios-zoom=.65` with `--ios-profile` and
+`--ios-scene=barge-push`. The shared developer fixture preserves the current
+world anchor while changing camera zoom, matching Android's `bb_camera_zoom`.
+Use frozen mode for fixed-camera comparisons; `--ios-replay` resumes normal
+shared camera behavior after initial setup. The simulator helper accepts
+`--zoom=.65`. Physical devices can launch with the same `--ios-*` arguments via
+`xcrun devicectl device process launch`; retrieve `Documents/ios-profile.csv`
+and `Documents/ios-profile-metadata.json` from the app data container afterward.
+Different device aspect ratios change visible coverage, so compare zoom variants
+on the same device rather than treating Android/iPad timings as like-for-like.

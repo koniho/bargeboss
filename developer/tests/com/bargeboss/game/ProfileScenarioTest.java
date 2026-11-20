@@ -15,6 +15,13 @@ public final class ProfileScenarioTest {
             if(x.visualTicks!=tick+1)throw new AssertionError("Replay step must be one shared tick");checks++;
             System.out.println(scene+" lesson="+(y.tutorial==null?-1:y.tutorial.lesson)+" tick="+y.visualTicks);
         }
+        Game cameraGame=new Game();ProfileScenario.prepare(cameraGame,"barge-push",1320,600);
+        Game active=cameraGame.activeGame();RiverCamera old=active.layout.camera;
+        float cx=660,cy=312,wx=old.worldX(cx,cy),wy=old.worldY(cx,cy);int tick=active.visualTicks;
+        ProfileScenario.cameraZoom(cameraGame,1320,600,.65f);
+        if(Math.abs(active.layout.camera.worldX(cx,cy)-wx)>.001f || Math.abs(active.layout.camera.worldY(cx,cy)-wy)>.001f || active.visualTicks!=tick)
+            throw new AssertionError("Profile zoom moved anchor or advanced gameplay");
+        try{ProfileScenario.cameraZoom(cameraGame,1320,600,Float.NaN);throw new AssertionError("Invalid zoom accepted");}catch(IllegalArgumentException expected){}
         offload();
         circle();
         try{ProfileScenario.prepare(new Game(),"invalid",960,600);throw new AssertionError("Unknown fixture accepted");}

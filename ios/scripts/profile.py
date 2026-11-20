@@ -45,7 +45,7 @@ if "--metal" in sys.argv:
 if "--replay" in sys.argv:
     args.append("--ios-replay")
 for argument in sys.argv[2:]:
-    if argument.startswith(("--scene=", "--frames=", "--warmup=", "--texture-mib=")):
+    if argument.startswith(("--scene=", "--frames=", "--warmup=", "--texture-mib=", "--zoom=")):
         args.append(argument.replace("--", "--ios-", 1))
 print(sim("launch", "--terminate-running-process", device, bundle, *args), flush=True)
 deadline = time.monotonic() + 120

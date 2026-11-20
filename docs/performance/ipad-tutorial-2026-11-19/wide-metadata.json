@@ -1,0 +1,17 @@
+{
+  "material_patches" : 117,
+  "water_foam_patches" : 867,
+  "direct_layer_fallbacks" : 92,
+  "rope_patches" : 0,
+  "surface_patches" : 4434,
+  "smoke_patches" : 191,
+  "peak_frame_texture_bytes" : 97809688,
+  "texture_bytes" : 105806976,
+  "evictions" : 0,
+  "water_reflection_patches" : 17,
+  "vertex_capacity_bytes" : 16777216,
+  "pending_preparations" : 0,
+  "uploads" : 148,
+  "water_shaders" : true,
+  "texture_budget" : 167772160
+}
