@@ -91,7 +91,6 @@ public final class SeaWaves {
         if(!g.montroseStage() || !(p instanceof RiverPainter))return;
         RiverCamera c=((RiverPainter)p).camera;
         if(g.settings.waveIntensity()==0)return;
-        int budget=512;
         for(int wave=0;wave<2;wave++){
             float dx=directionX(g,wave),dy=directionY(g,wave),lo=Float.MAX_VALUE,hi=-lo,left=lo,right=-lo;
             for(int corner=0;corner<4;corner++){
@@ -102,22 +101,31 @@ public final class SeaWaves {
             float phase=OMEGA[wave]*g.visualTicks*Physics.DT,period=(float)(2*StrictMath.PI);
             int first=(int)StrictMath.floor((lo*K[wave]-phase-period*.25f)/period)-1;
             int last=(int)StrictMath.ceil((hi*K[wave]-phase-period*.25f)/period)+1;
-            float segment=Math.max(24,Math.max(24/c.scale,(right-left)*(last-first+1)/240));
-            for(int crest=first;crest<=last;crest++){
-                float u=(phase+period*.25f+crest*period)/K[wave];
-                if(u<lo-30 || u>hi+30)continue;
-                for(float v=(float)StrictMath.floor(left/segment)*segment;v<=right;v+=segment){
-                    if(--budget<0)return;
-                    float mid=v+segment*.5f,at=u+bend(mid,wave);
-                    float x=dx*at-dy*mid,y=dy*at+dx*mid;
-                    if(!MontroseHarbor.contains(x,y))continue;
-                    float e=exposure(x,y);if(e==0)continue;
-                    float broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
-                    if(broken<.03f)continue;
-                    float curve=bend(v+segment,wave)-bend(v,wave);
-                    float width=4+3*g.settings.waveIntensity();
-                    WavePatch.foam(g,p,x,y,dx*curve-dy*segment,dy*curve+dx*segment,dx*width,dy*width,
-                            WaterFoam.phase(g.visualTicks,crest),5,e*broken*(wave==0?.14f:.06f)*Math.min(2,g.settings.waveIntensity()));
+            // Stable world grids: zoom changes opacity, never the identity/position
+            // of a segment. Use continuous view extents, not integer crest counts,
+            // so a crest entering the view cannot change detail everywhere.
+            float desired=Math.max(24,Math.max(24/c.scale,
+                    (right-left)*((hi-lo)*K[wave]/period+4)/120));
+            float fine=24;while(fine*2<=desired)fine*=2;
+            float mix=smooth(fine,fine*2,desired);
+            for(int level=0;level<2;level++){
+                float segment=level==0?fine:fine*2,weight=level==0?1-mix:mix;
+                if(weight<=0)continue;
+                for(int crest=first;crest<=last;crest++){
+                    float u=(phase+period*.25f+crest*period)/K[wave];
+                    if(u<lo-30 || u>hi+30)continue;
+                    for(float v=(float)StrictMath.floor(left/segment)*segment;v<=right;v+=segment){
+                        float mid=v+segment*.5f,at=u+bend(mid,wave);
+                        float x=dx*at-dy*mid,y=dy*at+dx*mid;
+                        if(!MontroseHarbor.contains(x,y))continue;
+                        float e=exposure(x,y);if(e==0)continue;
+                        float broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
+                        if(broken<.03f)continue;
+                        float curve=bend(v+segment,wave)-bend(v,wave);
+                        float width=4+3*g.settings.waveIntensity();
+                        WavePatch.foam(g,p,x,y,dx*curve-dy*segment,dy*curve+dx*segment,dx*width,dy*width,
+                                WaterFoam.phase(g.visualTicks,crest),5,e*broken*(wave==0?.14f:.06f)*Math.min(2,g.settings.waveIntensity())*weight);
+                    }
                 }
             }
         }

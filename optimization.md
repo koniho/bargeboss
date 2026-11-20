@@ -4117,3 +4117,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   No performance improvement claimed. Installed final APK. Single-sample subpixel
   aliasing remains distinct from this confirmed geometry-loss bug; no claim all
   zoom shimmer is resolved. Evidence: docs/performance/wave-zoom-2026-11-20/.
+
+## 2026-11-20 Android broad wave fronts during camera zoom
+- Follow-up to the user's still-visible disappearance after d2d36d4. Inspected
+  live Pixel 11 Pro Montrose inlet at wave power3.0. Broad foam fronts use
+  SeaWaves.draw, independently of the small ripple triangulation fixed earlier.
+- Continuous camera-dependent segment lengths moved all sampling midpoints,
+  changing broken-front brightness/gaps during zoom; integer crest counts also
+  changed the spacing. A shared512-iteration return could truncate a wave family.
+  Replaced this with nested world grids and smooth opacity blending between
+  adjacent detail levels, selected from continuous view extents. Both wave
+  families complete; view-dependent spacing controls cost. Physics unchanged.
+- New regression fails with the old broad-front code and passes14,857 anchor/
+  opacity checks across nine scales and24 bearings, with a submission guard.
+  Full checked APK and encoder regressions pass. JVM/J2ObjC parity is now
+  38137f35:2:1350 (drawing change); all-heading shoreline regression passes
+  1,461,230 hull/cargo pixels plus32,273 cached-wall pixels.
+- Installed and tested four actual two-finger scene pinches at3x power. Reviewed
+  sampled native transition frames and full-size endpoint: broad fronts persist
+  in the inspected zoom-out/zoom-in sequence. Early map-slider/title captures
+  were excluded from scene-zoom validation. Raw native recording/screenshots:
+  out/wave-zoom-phone-after-live/. Not an exhaustive visual check of all bearings.
+  Evidence: docs/performance/broad-wave-zoom-2026-11-20/.
+- Final overview120/360 capture all Vulkan: mean78.81ms,median74.08ms,p95 101.25ms,
+  12.69FPS. Prior single capture76.13/75.65/84.19ms respectively; median similar,
+  tails worse. Not a thermal-controlled A/B; no speedup or exact cost claim.

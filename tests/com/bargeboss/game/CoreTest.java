@@ -121,7 +121,7 @@ public final class CoreTest {
         SurfaceMaterialTest.run();
         FoamBatchTest.run();
         SceneLightingTest.run();
-        WaterEnergyBoundsTest.run();WaterClipTest.run();
+        WaterEnergyBoundsTest.run();WaterClipTest.run();SeaWaveZoomTest.run();
         UnionClipTest.run();
         ShorelineMaterialTest.run();
         ShorelineViewTest.run();
@@ -179,8 +179,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Unified waves, instructor radio and edge reply layout; JVM/native parity verified.
-        check(Parity.signature().equals("da53558f:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // World-anchored broad wave detail; JVM/native drawing parity verified.
+        check(Parity.signature().equals("38137f35:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
