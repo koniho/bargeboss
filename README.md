@@ -330,7 +330,11 @@ requires Java; a graphical desktop session is needed for play.
 
 As in DDDumpling, the build uses `aapt2`, `javac`, `d8`, `zip`, `zipalign` when
 available, and `apksigner`. Install Android platform 36 and build-tools 36.0.0,
-and put the build-tools directory on `PATH`. Termux's native tools also work.
+and NDK 27.0.12077973, and put the build-tools directory on `PATH`.
+Vulkan is the default Android renderer, paced to 60 FPS with automatic Canvas
+fallback. The native library currently targets arm64. Set `BARGEBOSS_VULKAN=0`
+for a Canvas-only build (including Termux without the host NDK toolchain).
+For diagnosis, launch with `--es bb_renderer canvas` to force Canvas.
 
 ```sh
 export ANDROID_HOME=/path/to/android-sdk

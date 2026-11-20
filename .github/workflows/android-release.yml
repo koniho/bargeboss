@@ -55,7 +55,7 @@ jobs:
           BARGEBOSS_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           BARGEBOSS_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.0.12077973'
           export PATH="$ANDROID_HOME/build-tools/36.0.0:$PATH"
           ./build-bundle.sh
           python3 tools/verify-release.py android

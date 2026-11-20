@@ -5,6 +5,14 @@ public final class FrameGateTest {
     private static int checks;
     private static void check(boolean ok,String message) {checks++;if(!ok)throw new AssertionError(message);}
     public static void run() {
+        for(int hz:new int[]{60,90,120,144}){
+            FramePacer pacer=new FramePacer();int count=0;
+            for(int i=0;i<hz*2;i++)if(pacer.allow(1000000000L+i*1000000000L/hz))count++;
+            check(count==120,"pacing targets60 draws at "+hz+" Hz: "+count);
+            check(pacer.allow(10000000000L),"resume after long gap");
+            check(!pacer.allow(10000000000L),"no catch-up burst");
+            pacer.reset();check(pacer.allow(10000000000L),"reset allows immediate exposure");
+        }
         for(int hz:new int[]{60,120,144}) for(boolean play:new boolean[]{false,true}) {
             Game game=new Game(),control=new Game();if(play){game.reset();control.reset();}
             FrameGate gate=new FrameGate();check(gate.needsFrame(game),"first frame is mandatory");gate.rendered(game);

@@ -19,7 +19,7 @@ if [ "${BARGEBOSS_PROFILE:-0}" = 1 ]; then
     bargeboss_manifest=build/android/profile-manifest.xml
 fi
 bargeboss_gpu_assets=
-if [ "${BARGEBOSS_VULKAN:-0}" = 1 ]; then
+if [ "${BARGEBOSS_VULKAN:-1}" = 1 ]; then
     ./tools/build-vulkan.sh
     bargeboss_gpu_assets='-A build/android/vulkan/assets'
 fi
@@ -33,7 +33,7 @@ javac -Xlint:-options --release 8 -encoding UTF-8 -cp "$SDK_JAR" -d build/androi
 find build/android/classes -name '*.class' | sort > build/android/classes.txt
 d8 --lib "$SDK_JAR" --min-api 24 --output build/android/dex @build/android/classes.txt
 (cd build/android/dex && zip -q -j ../base.apk classes*.dex)
-if [ "${BARGEBOSS_VULKAN:-0}" = 1 ]; then
+if [ "${BARGEBOSS_VULKAN:-1}" = 1 ]; then
     (cd build/android/vulkan && zip -q ../base.apk lib/arm64-v8a/libbargeboss_vulkan.so)
 fi
 if command -v zipalign >/dev/null; then

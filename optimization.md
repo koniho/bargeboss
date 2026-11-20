@@ -3706,3 +3706,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Combined full Android build/checks and signed install passed; 240-warmup/180-sample
   smoke capture: 11.29 ms mean displayed interval, 16.67 ms p95, no fallback. Earlier
   A/B captures predate that scenery revision.
+
+
+### 2026-11-20 — Android Vulkan default, paced to 60 FPS
+
+- User requested Vulkan as default and 60 FPS pacing. Normal Android startup now
+  attempts Vulkan; Canvas remains automatic failure fallback and explicit intent
+  override. Standard builds include the arm64 library/shaders; CI/release install
+  the required NDK. Canvas-only builds remain possible with BARGEBOSS_VULKAN=0.
+- Shared FramePacer gates Vulkan drawing before scene composition, including input
+  invalidations and developer fixtures. Simulation/input/haptics keep their existing
+  cadence. Deadline accumulation handles 60/90/120/144 Hz; long stalls do not burst.
+  No per-frame allocations or larger runtime caches. Command reuse remains OFF.
+- Full checks/build passed in an isolated worktree (other agent editing main).
+  Plain launch of signed, installed non-profile APK selected Vulkan. Phone title:
+  683 displayed intervals, mean 16.68 ms, median 16.65 ms, p95 24.99 ms; native 120 frames
+  per ~2 seconds, no replaced packets. Pacing confirmed, not perfectly even delivery.
+- Device evidence: docs/performance/vulkan-default-2026-11-20/. Cross-vendor and
+  sustained gameplay remain unvalidated; iOS unchanged. Existing single-sample
+  rasterization limitations remain. No claim of sustained headroom.

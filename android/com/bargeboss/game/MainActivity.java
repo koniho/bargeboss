@@ -29,7 +29,7 @@ public final class MainActivity extends Activity {
             view.setPadding(left,top,right,bottom); return insets;
         });
         gameView=new GameView();
-        if("vulkan".equals(getIntent().getStringExtra("bb_renderer"))) {
+        if(!"canvas".equals(getIntent().getStringExtra("bb_renderer"))) {
             SurfaceView surface=new SurfaceView(this);root.addView(surface,new FrameLayout.LayoutParams(-1,-1));gameView.gpuSurface=surface;
             surface.getHolder().addCallback(new SurfaceHolder.Callback(){
                 public void surfaceCreated(SurfaceHolder holder){gameView.openGpu(holder);}
@@ -81,6 +81,7 @@ public final class MainActivity extends Activity {
         void closeGpu(){if(gpu!=null){gpu.close();gpu=null;}}
         void fallbackGpu(Throwable error){android.util.Log.e("BargeBoss","Vulkan unavailable; using Canvas",error);gpuFailed=true;closeGpu();if(gpuSurface!=null)gpuSurface.setVisibility(View.GONE);requestRedraw();}
         private final FrameGate frames=new FrameGate();
+        private final FramePacer gpuPacer=new FramePacer();
         private final EngineSound audio=new EngineSound(MainActivity.this);
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
         private final DeveloperHooks.Session developer=DeveloperHooks.create(MainActivity.this,painter);
@@ -117,7 +118,7 @@ public final class MainActivity extends Activity {
         }
         void requestRedraw() { frames.markDirty(); invalidate(); }
         void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.back(); requestRedraw(); }
-        void start() { requestRedraw(); if(running) return; running=true; last=0; Choreographer.getInstance().postFrameCallback(this); }
+        void start() { requestRedraw(); if(running) return; running=true; last=0; gpuPacer.reset(); Choreographer.getInstance().postFrameCallback(this); }
         void stop() { audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
             if(!running) return;
@@ -139,6 +140,7 @@ public final class MainActivity extends Activity {
             requestRedraw();
         }
         protected void onDraw(Canvas canvas) {
+            if(gpu!=null && !gpuPacer.allow(System.nanoTime()))return;
             prepareLevelAssets();
             if(developer!=null)developer.beforeDraw();
             if(gpu!=null){
