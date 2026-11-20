@@ -2,8 +2,29 @@ package com.bargeboss.game;
 
 /** Retained static shore geometry must agree with direct masks after camera changes. */
 public final class WaterClipTest {
+    private static final class QuadCapture implements Painter {
+        int quads,polygons;float[] points;int color;
+        public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int c){quads++;points=new float[]{ax,ay,bx,by,cx,cy,dx,dy};color=c;}
+        public void poly(float[] p,int c){polygons++;points=p;color=c;}
+        public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}
+        public void line(float x,float y,float xx,float yy,float w,int c){}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float blend,float alpha){}
+    }
+    private static void directPath(Game g){
+        QuadCapture direct=new QuadCapture(),reference=new QuadCapture();
+        RiverCamera c=Layout.focused(960,600,100,100,1,480,300).camera;
+        Painter fast=new RiverPainter(new SceneryOcclusion(new ViewportPainter(new OpacityPainter(direct,.5f),960,600)),c);
+        Painter slow=new RiverPainter(new SceneryOcclusion(new ViewportPainter(new OpacityPainter(reference,.5f),960,600)),c);
+        g.settings.directWaterQuads=true;new WaterEffectsPainter(g,fast).preclipped().line(100,100,110,110,2,0x8083b3b4);
+        g.settings.directWaterQuads=false;new WaterEffectsPainter(g,slow).preclipped().line(100,100,110,110,2,0x8083b3b4);
+        g.settings.directWaterQuads=true;
+        if(direct.quads!=1 || direct.polygons!=0 || reference.polygons!=1)throw new AssertionError("Scene wrappers must preserve the native quad fast path");
+        if(direct.color!=reference.color || !java.util.Arrays.equals(direct.points,reference.points))throw new AssertionError("Direct path changes projected vertices or opacity");
+    }
     public static void run(){
         Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();
+        directPath(g);
         WaterClip cache=new WaterClip();int checks=0;
         float x=MontroseHarbor.mapX(350),y=MontroseHarbor.mapY(1250);
         for(boolean union:new boolean[]{false,true})for(float zoom:new float[]{.65f,1.5f,2.5f}){

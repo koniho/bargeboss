@@ -123,6 +123,12 @@ final class VulkanPainter implements Painter,AutoCloseable {
         vertex(xy[b*2],xy[b*2+1],0,0,color,1,0,0,0,0,0,0,0);
         vertex(xy[c*2],xy[c*2+1],0,0,color,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);
     }
+    private final float[] convexScratch=new float[8];
+    public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
+        if((color>>>24)==0)return;
+        float[] q=convexScratch;q[0]=ax;q[1]=ay;q[2]=bx;q[3]=by;q[4]=cx;q[5]=cy;q[6]=dx;q[7]=dy;
+        triangle(q,3,0,1,color,0);triangle(q,3,1,2,color,0);
+    }
     public void poly(float[] xy,int color){
         int n=xy.length/2;if(n<3||(color>>>24)==0)return;int[] index=new int[n];double area=0;
         // Measure winding relative to the first vertex. Absolute screen products

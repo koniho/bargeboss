@@ -93,6 +93,8 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
             return;
         }
         ProfileScenario.prepare(root,scene,width,height);
+        root.activeGame().settings.waterDetail=Math.max(0,Math.min(2,activity.getIntent().getIntExtra("bb_water_detail",2)));
+        root.activeGame().settings.directWaterQuads=activity.getIntent().getBooleanExtra("bb_water_quads",true);
         root.activeGame().settings.resetWeather();root.activeGame().settings.adjustRain(rainLevel);root.activeGame().settings.adjustFog(fogLevel);root.activeGame().settings.adjustLightning(lightningLevel);
         if(weatherFlash)root.activeGame().settings.weatherFlashTick=root.activeGame().visualTicks-4;
         if(reviewZoom>0){Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;

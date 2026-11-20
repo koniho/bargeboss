@@ -4329,3 +4329,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Separate observation: mission yacht still has its existing silhouette-wide
   pulsing target bloom after surface shading, making it appear lit at night.
   That guidance treatment is unchanged by this fix.
+
+## 2026-11-20 Ambient water isolation and direct quads
+- Isolated Montrose overview: iOS CPU draw 57.45 ms full, 23.73 ms without fine
+  ambient strokes, 22.20 ms solid. CPU sampling exposed stroke allocation,
+  wrapper projection and general polygon triangulation in WaveView.
+- Added shared convexQuad and native Metal/Vulkan paths, retaining vertices,
+  colors, clipping and animation. Scene/viewport/opacity wrappers forward it;
+  regression catches accidental fallback. No new textures/cache; eight-float
+  Vulkan scratch. Added unsaved diagnostic switches for repeatable comparisons.
+- Final iOS CPU median 46.13/47.15 ms, mean presentation 50.00/53.33 ms, roughly
+  19–20 FPS versus 15. Final native image differs in only 37 tiny ripple pixels
+  out of 3,162,132; direct triangulation restores thin coverage.
+- Pixel 11 Pro/Vulkan first pair CPU median 66.97 -> 63.45 ms; repeated direct
+  68.66 ms and original 100.90 ms show unresolved timing drift. No reliable
+  Android speedup percentage claimed. Solid-water CPU 12.79 ms. Final paired
+  images match all 2,602,800 pixels; all samples same tick/zoom and Vulkan path.
+- Shared/asset checks, Android APK, iOS build, direct-quad encoder/wrapper checks,
+  2,434,414 Montrose shoreline pixels plus 32,273 walls and final native/JVM parity
+  b0bbe1a2:2:1350 pass. Evidence: docs/performance/water-detail-2026-11-20/.
+  Wide-water sampling/submission remains a major cost; this is not a 60 FPS fix.

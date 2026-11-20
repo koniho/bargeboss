@@ -452,6 +452,13 @@ static vector_float4 BBColor(jint argb) {
     [self triangle:(vector_float2){xx+nx,yy+ny} b:(vector_float2){xx-nx,yy-ny} c:(vector_float2){x-nx,y-ny} color:color mode:0];
     [self circleWithFloat:x withFloat:y withFloat:width/2 withInt:c];[self circleWithFloat:xx withFloat:yy withFloat:width/2 withInt:c];
 }
+- (void)convexQuadWithFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)cx withFloat:(jfloat)cy withFloat:(jfloat)dx withFloat:(jfloat)dy withInt:(jint)argb {
+    vector_float4 color=BBColor(argb);if(color.w<=0)return;
+    vector_float2 a={ax,ay},b={bx,by},c={cx,cy},d={dx,dy};
+    BBVertex vertices[]={{d,{0,0},color},{a,{0,0},color},{b,{0,0},color},
+                         {d,{0,0},color},{b,{0,0},color},{c,{0,0},color}};
+    [self append:vertices count:6 texture:self.white mode:0];
+}
 - (void)polyWithFloatArray:(IOSFloatArray *)xy withInt:(jint)c {
     vector_float4 color=BBColor(c);if(color.w<=0)return;
     // Shared painter polygons are emitted as simple contours; ear clipping also

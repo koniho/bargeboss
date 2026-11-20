@@ -347,3 +347,17 @@ the flash flag starts the fixture at the peak of a test flash. Use frozen mode
 for a repeatable heavy-rain/peak-flash comparison, and live mode to inspect motion.
 Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain, fog and
 lightning controls, plus TEST FLASH and RESET ALL. Weather is currently Montrose-only.
+
+For iOS water isolation, build with `BARGEBOSS_IOS_PROFILE=1` and use
+`ios/scripts/profile.py NAME --scene=montrose-overview --water-detail=0`.
+Mode 2 is normal rendering; mode 1 omits the fine ambient WaveView strokes;
+mode 0 also omits water-surface crests/foam, vessel ripples/bow foam and light
+reflections. The base water fill, scene, physics and camera stay intact. These
+are unsaved render diagnostics, not quality settings. Mode 1 still includes
+SeaWaves' larger wave crests. Compare equal warmup/frame counts and repeat in
+reverse order; do not run builds or CPU sampling during timed captures.
+
+Android profiling builds accept `--ei bb_water_detail 0|1|2` and
+`--ez bb_water_quads false|true` with the normal scene/mode extras. The latter
+selects the original polygon path or direct convex-quadrilateral path in the
+same APK; default is true. Neither switch affects water physics or saved settings.

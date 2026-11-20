@@ -19,6 +19,7 @@ public final class WaveView {
     }
     /** Wave detail without clearing a scene that has already drawn its land/water mask. */
     public static void surface(Game g,Painter canvas) {
+        if(g.settings.waterDetail<2)return;
         RiverCamera c=g.layout.camera;boolean montrose=g.montroseStage();
         // Hosts that expand batches should not pay to collect and reorder them first.
         WaterBatchPainter batch=canvas.prefersPolygonBatches()?new WaterBatchPainter(canvas,g.layout.width,g.layout.height):null;

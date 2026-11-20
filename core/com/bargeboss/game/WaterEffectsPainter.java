@@ -20,10 +20,11 @@ public final class WaterEffectsPainter implements Painter {
     private final float[][] water;
     private final boolean marina,calumet,indiana;
     private boolean preclipped;
+    private final boolean directQuads;
     /** Preserve polygon stroke geometry when a caller already installed the water mask. */
     WaterEffectsPainter preclipped(){preclipped=true;return this;}
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
+        this.target=target;directQuads=g.settings.directWaterQuads;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
     }
     public static boolean contains(Game g,float x,float y) {
         if(g.calumetStage())return CalumetRiver.contains(x,y);
@@ -78,7 +79,8 @@ public final class WaterEffectsPainter implements Painter {
         float dx=xx-x,dy=yy-y,length=(float)Math.sqrt(dx*dx+dy*dy);
         if(length<.0001f) {circle(x,y,width*.5f,color);return;}
         float nx=-dy/length*width*.5f,ny=dx/length*width*.5f;
-        poly(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny},color);
+        if(preclipped && directQuads)target.convexQuad(x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny,color);
+        else poly(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny},color);
     }
     public void poly(float[] points,int color) {
         if(points.length<6 || (color>>>24)==0) return;

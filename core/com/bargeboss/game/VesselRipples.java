@@ -7,6 +7,7 @@ public final class VesselRipples {
         draw(g,p,seed,x,y,angle,length,width,speed,moored,1);
     }
     static void draw(Game g,Painter p,int seed,float x,float y,float angle,float length,float width,float speed,boolean moored,float opacity){
+        if(g.settings.waterDetail<1)return;
         float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);
         float motion=Physics.clamp(speed/60,0,1),spread=moored?5:9+motion*9;
         float foam=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED)/10,0,1);

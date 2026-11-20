@@ -11,6 +11,7 @@ public final class OpacityPainter implements Painter {
     public void popClip(){p.popClip();}
     public void rect(float x,float y,float w,float h,int c) { p.rect(x,y,w,h,color(c)); }
     public void circle(float x,float y,float r,int c) { p.circle(x,y,r,color(c)); }
+    public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){p.convexQuad(ax,ay,bx,by,cx,cy,dx,dy,color(color));}
     public void poly(float[] xy,int c) { p.poly(xy,color(c)); }
     public void line(float x,float y,float xx,float yy,float w,int c) { p.line(x,y,xx,yy,w,color(c)); }
     public boolean supportsUnionClips(){return p.supportsUnionClips();}
