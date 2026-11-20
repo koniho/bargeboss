@@ -5,9 +5,9 @@ public final class WeatherTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Trace implements Painter {
-        int lines,rects;long hash;
-        public void line(float x,float y,float xx,float yy,float w,int c){lines++;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);check(Float.isFinite(x+y+xx+yy+w),"finite rain");}
-        public void rect(float x,float y,float w,float h,int c){rects++;check((c>>>24)<=34,"weather wash keeps boats readable");}
+        int lines,rects;long hash,firstHash;float length,width;
+        public void line(float x,float y,float xx,float yy,float w,int c){lines++;length+=Math.abs(yy-y);width+=w;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);if(lines==192)firstHash=hash;check(Float.isFinite(x+y+xx+yy+w),"finite rain");}
+        public void rect(float x,float y,float w,float h,int c){rects++;check((c>>>24)<=63,"weather wash keeps boats readable");}
         public void poly(float[] p,int c){throw new AssertionError("no weather mesh builds");}
         public void circle(float x,float y,float r,int c){}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new AssertionError("no weather textures");}
@@ -21,17 +21,32 @@ public final class WeatherTest {
         g.settings.adjustRain(99);g.settings.adjustLightning(99);
         for(int tick:new int[]{0,120,124,130,143,144,539,540,544,35999,36000}){
             g.visualTicks=tick;float x=g.tug.x,y=g.tug.y;Trace a=draw(g),b=draw(g);
-            check(a.lines==WeatherView.MAX_STREAKS && a.rects<=2,"fixed heavy weather submission cap");
+            check(a.lines>0 && a.lines<=WeatherView.MAX_STREAKS && a.rects<=3,"fixed heavy weather submission cap");
             check(a.hash==b.hash && a.lines==b.lines,"draw time does not advance rain");
             check(g.visualTicks==tick && g.tug.x==x && g.tug.y==y,"weather rendering cannot mutate gameplay");
         }
+        g.settings.adjustLightning(-99);
+        g.layout=Layout.focused(960,600,g.tug.x,g.tug.y,2.5f,480,300);Trace near=draw(g);
+        g.layout=Layout.focused(960,600,g.tug.x,g.tug.y,.65f,480,300);Trace far=draw(g);
+        check(far.lines>near.lines,"zoom out increases rain density");
+        check(near.firstHash==far.firstHash,"zoom preserves existing rain positions");
+        check(far.length/far.lines<near.length/near.lines && far.width/far.lines<near.width/near.lines,"zoom out makes rain finer");
+        int previous=0;
+        for(int step=0;step<=100;step++){
+            float zoom=2.5f-step*.024f;g.layout=Layout.focused(960,600,g.tug.x,g.tug.y,zoom,480,300);Trace t=draw(g);
+            check(t.lines>=previous && t.lines<=WeatherView.MAX_STREAKS,"rain density monotonic and capped through zoom");previous=t.lines;
+        }
+        g.settings.resetWeather();g.settings.adjustFog(99);Trace fog=draw(g);
+        check(fog.lines==0 && fog.rects==1,"fog works without rain or lightning in one pass");
+        g.settings.adjustFog(-99);check(draw(g).rects==0,"fog off restores clear");
         g.settings.resetWeather();g.settings.developerWaves=true;tap(g,30,90);
-        tap(g,250,232);check(g.settings.rainLevel()==1,"rain control");
-        tap(g,250,278);check(g.settings.lightningLevel()==1,"lightning control");
-        g.pointerDown(93,250,232);g.pointerCancel(93);g.pointerUp(93,250,232);check(g.settings.rainLevel()==1,"cancel weather tap");
+        tap(g,250,210);check(g.settings.rainLevel()==1,"rain control");
+        tap(g,250,248);check(g.settings.lightningLevel()==1,"lightning control");
+        g.pointerDown(93,250,210);g.pointerCancel(93);g.pointerUp(93,250,210);check(g.settings.rainLevel()==1,"cancel weather tap");
+        tap(g,250,286);check(g.settings.fogLevel()==1,"fog control");
         tap(g,60,330);g.visualTicks+=4;check(WeatherView.flash(g)==1,"test flash peaks after four ticks");
         check(!g.pointer,"weather taps never steer");tap(g,200,330);
-        check(g.settings.rainLevel()==0 && g.settings.lightningLevel()==0 && draw(g).lines==0 && WeatherView.flash(g)==0,"reset all returns clear");
+        check(g.settings.fogLevel()==0 && g.settings.rainLevel()==0 && g.settings.lightningLevel()==0 && draw(g).lines==0 && WeatherView.flash(g)==0,"reset all returns clear");
         System.out.println(checks+" weather budget, determinism, flash and input assertions passed");
     }
     public static void main(String[] args){run();}

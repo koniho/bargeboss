@@ -21,6 +21,8 @@ public final class WeatherReview {
         g.settings.developerWaves=true;g.waveControls.down(g,93,30,90);g.waveControls.up(g,93,30,90);
         g.settings.adjustRain(3);g.settings.adjustLightning(1);capture(g,"rain");
         g.settings.weatherFlashTick=g.visualTicks-4;capture(g,"lightning");
+        g.settings.resetWeather();g.settings.adjustFog(2);capture(g,"fog");
+        g.settings.adjustRain(3);g.layout=Layout.focused(1244,600,g.tug.x,g.tug.y,.65f,622,300);capture(g,"wide-rain-fog");
         System.out.println("Actual shared weather/panel and peak-lightning frames exported");
     }
 }

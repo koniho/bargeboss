@@ -341,9 +341,9 @@ without the developer fixture flag ignore the live-scene argument.
 
 ### Weather experiment
 
-Android profile builds accept `--ei bb_rain 0..3`, `--ei bb_lightning 0..2`
+Android profile builds accept `--ei bb_rain 0..3`, `--ei bb_fog 0..3`, `--ei bb_lightning 0..2`
 and `--ez bb_weather_flash true`. These set shared session-only weather settings;
 the flash flag starts the fixture at the peak of a test flash. Use frozen mode
 for a repeatable heavy-rain/peak-flash comparison, and live mode to inspect motion.
-Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain and
+Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain, fog and
 lightning controls, plus TEST FLASH and RESET ALL. Weather is currently Montrose-only.

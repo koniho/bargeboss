@@ -4160,3 +4160,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   (showing=true/inputRestricted=true); asked user to unlock. Aborted capture
   produces no performance evidence. Native pixels/motion/FPS remain pending;
   no keyguard change. Evidence: docs/performance/weather-2026-11-20/.
+
+## 2026-11-20 Zoom-aware rain and independent fog
+- Rain now smoothly increases from192 close-view heavy streaks to a384 cap as
+  zoom decreases. Distant streaks are shorter/narrower/softer; extra identities
+  fade in, preserving existing positions/phases. Beyond the cap a restrained
+  haze replaces more geometry. Fog OFF/LIGHT/MEDIUM/DENSE is independent of rain
+  and shares the haze pass. Max combined weather384 streaks/three rectangles;
+  no new textures/cache/physics. Compact shared panel retains steering clearance.
+-31,014 budget, identity, monotonic density, size, deterministic draw, fog-only,
+  input/cancel/reset assertions pass. Full checked APK/encoder regressions pass;
+  JVM/J2ObjC parity unchanged38137f35:2:1350. Fog-only/wide-rain shared previews
+  reviewed. APK installed and normal launch requested on Pixel11 Pro.
+- Preliminary clear/max-weather/clear inlet captures at player zoom0.65,120/360
+  samples: mean intervals16.667/16.680/16.659ms; CPU draw7.981/8.685/8.589ms.
+  All frames Vulkan, native480 completed per run. No precise cost attribution.
+- Native screenshots black: window policy says unlocked, but a system biometric
+  prompt covers the game. Asked user to complete/dismiss it. Timings measure
+  rendering beneath that overlay; unobstructed presentation/native visual check
+  remains pending. No security changes. Evidence: docs/performance/weather-fog-2026-11-20/.

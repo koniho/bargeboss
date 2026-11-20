@@ -15,7 +15,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final String scene,mode;
     private final int warmup,samples;
     private final float reviewZoom;
-    private final int rainLevel,lightningLevel;
+    private final int rainLevel,lightningLevel,fogLevel;
     private final boolean weatherFlash;
     private final boolean contributors,surfaceSweep,factorySweep;
     private final int exclusion;
@@ -38,7 +38,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         if(!mode.equals("live") && !mode.equals("freeze") && !mode.equals("replay"))throw new IllegalArgumentException("bb_mode must be live, freeze or replay");
         boolean valid=false;for(String n:ProfileScenario.NAMES)if(n.equals(scene))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown bb_scene");
-        rainLevel=intent.getIntExtra("bb_rain",0);lightningLevel=intent.getIntExtra("bb_lightning",0);weatherFlash=intent.getBooleanExtra("bb_weather_flash",false);
+        fogLevel=intent.getIntExtra("bb_fog",0);rainLevel=intent.getIntExtra("bb_rain",0);lightningLevel=intent.getIntExtra("bb_lightning",0);weatherFlash=intent.getBooleanExtra("bb_weather_flash",false);
         reviewZoom=intent.getFloatExtra("bb_camera_zoom",0);
         if(reviewZoom!=0 && (!Float.isFinite(reviewZoom) || reviewZoom<.25f || reviewZoom>5))throw new IllegalArgumentException("Camera override requires zoom .25..5");
         factorySweep=intent.getBooleanExtra("bb_factory_sweep",false);
@@ -93,7 +93,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
             return;
         }
         ProfileScenario.prepare(root,scene,width,height);
-        root.activeGame().settings.resetWeather();root.activeGame().settings.adjustRain(rainLevel);root.activeGame().settings.adjustLightning(lightningLevel);
+        root.activeGame().settings.resetWeather();root.activeGame().settings.adjustRain(rainLevel);root.activeGame().settings.adjustFog(fogLevel);root.activeGame().settings.adjustLightning(lightningLevel);
         if(weatherFlash)root.activeGame().settings.weatherFlashTick=root.activeGame().visualTicks-4;
         if(reviewZoom>0){Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;
             g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),reviewZoom,x,y);reviewLayout=g.layout;}
