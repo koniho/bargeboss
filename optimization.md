@@ -4030,3 +4030,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   replay still hitches (p95 100ms, maximum726ms); not a locked60FPS or startup-stutter
   fix. Analytic water and cold preparation remain follow-ups. Evidence retained
   in docs/performance/montrose-overview-2026-11-20; native captures under out/ios-profile.
+
+## 2026-11-20 Android validation of full Montrose overview
+- Pixel11 Pro / Android17, revision5631953, existing debug signature. Full build
+  and checks passed; APK installed without data removal. Beach/beacon frozen
+  Vulkan captures: about60FPS, CPU medians7.60/6.77ms,120 warmup/360 samples.
+  Native screenshots reviewed; existing lawn seams remain.
+- Full overview FAILED twice on cold launch: missing terrain raster fallback
+  expands beyond32MiB Vulkan vertex budget; host switches to Canvas, then native
+  RenderThread crashes inside PowerVR/HWUI Vulkan pipeline barrier. No complete
+  overview timing capture. Do not treat simulator improvements as Android pass.
+- Cold inlet replay completed, mean18.54ms/p95 23.52ms/max628.29ms; preparation
+  hitch remains. No renderer changes in this validation round. Evidence and next
+  investigation recorded in docs/performance/montrose-overview-2026-11-20/README.md.

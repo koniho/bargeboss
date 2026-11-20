@@ -54,3 +54,34 @@ scenery still hitch; warm overview gains do not establish smooth startup or60FPS
 at every scale. Per-frame analytic ripple evaluation remains a substantial warm
 cost. No reduction to ripple density or replacement of artwork was made.
 All-heading Montrose shoreline regression also passed2,434,414 assertions.
+
+## Android phone validation
+
+Tested revision5631953 on Pixel11 Pro, Android17 (CD1A.261005.003), with the
+instrumented APK and existing debug signature. Full build/shared checks passed;
+installation used `adb install --no-incremental -r` without clearing app data.
+Frozen beach and beacon runs used120 warmup draws and360 samples, with Vulkan
+active for every measured draw. Mean intervals were16.67ms and16.65ms (about60FPS);
+p95 intervals22.18ms and17.65ms. CPU draw medians7.60ms and6.77ms. Native images
+were reviewed: corrugated horn walls and red lattice beacon render, beach planting
+is present, and existing lawn tile seams remain visible. These frozen captures do
+not validate the beacon's entire flash cycle or interactive touch latency.
+
+**Full overview failed both cold launches.** The initial direct terrain fallback
+exceeded VulkanPainter's8,388,608-float vertex limit (32MiB). The logged stack goes
+through MontroseView.surface, Ground.paint and VulkanPainter.layer while its
+background raster is missing. MainActivity then permanently selects Canvas.
+Both processes subsequently exited with native SIGSEGV on RenderThread, with the
+first tombstone identifying vendor `vulkan.powervr.so` IMG_vkCmdPipelineBarrier
+through HWUI/Skia and a likely stack overflow. No completed overview CSV exists;
+there is no valid Android overview FPS claim for this revision. The Java vertex
+limit is established; the driver's internal failure mechanism remains unresolved.
+This was not corrected as part of the device validation run. Next work should
+bound cold terrain fallback/preparation without increasing geometry budgets or
+reducing artwork, then repeat cold launches and steady overview measurements.
+
+A360-frame cold inlet camera replay completed: mean18.54ms, median16.45ms,
+p95 23.52ms, maximum628.29ms. CPU draw maximum476.92ms. This includes startup
+and temporary Canvas draws; replay advances one simulation tick per draw and is
+not a live gameplay FPS guarantee. Raw captures, screenshots and failure logs
+remain in `out/android-overview-review/`; compact summaries are tracked here.
