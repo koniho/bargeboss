@@ -331,3 +331,19 @@ shared camera behavior after initial setup. The simulator helper accepts
 and `Documents/ios-profile-metadata.json` from the app data container afterward.
 Different device aspect ratios change visible coverage, so compare zoom variants
 on the same device rather than treating Android/iPad timings as like-for-like.
+
+For interactive inspection, builds made with `BARGEBOSS_IOS_PROFILE=1` also
+accept `--ios-live-scene=montrose-beacon` (or another shared fixture name).
+Launch without `--ios-profile`: normal input, simulation and camera behavior
+continue after the fixture loads. This mode neither restores nor writes career
+progress. An optional `--ios-zoom=` sets the initial zoom only. Release builds
+without the developer fixture flag ignore the live-scene argument.
+
+### Weather experiment
+
+Android profile builds accept `--ei bb_rain 0..3`, `--ei bb_fog 0..3`, `--ei bb_lightning 0..2`
+and `--ez bb_weather_flash true`. These set shared session-only weather settings;
+the flash flag starts the fixture at the peak of a test flash. Use frozen mode
+for a repeatable heavy-rain/peak-flash comparison, and live mode to inspect motion.
+Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain, fog and
+lightning controls, plus TEST FLASH and RESET ALL. Weather is currently Montrose-only.

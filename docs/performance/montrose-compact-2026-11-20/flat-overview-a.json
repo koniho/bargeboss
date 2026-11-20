@@ -1,0 +1,47 @@
+{
+  "scene": "montrose-overview",
+  "mode": "freeze",
+  "warmup": 120,
+  "samples": 360,
+  "vulkan": [
+    "1.0"
+  ],
+  "interval_ms": {
+    "mean": 94.44072036666668,
+    "p50": 93.298383,
+    "p95": 104.934972,
+    "max": 114.778202
+  },
+  "draw_ms": {
+    "mean": 93.21404186111114,
+    "p50": 92.107968,
+    "p95": 103.36117,
+    "max": 113.873592
+  },
+  "advance_ms": {
+    "mean": 0.0038555833333333337,
+    "p50": 0.002917,
+    "p95": 0.007448,
+    "max": 0.062135
+  },
+  "decode_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "layer_build_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "fps": 10.58865281964701,
+  "zoom_range": [
+    0.11134044826030731,
+    0.11134044826030731
+  ],
+  "device": "Pixel 11 Pro / Android 17",
+  "first_completed_draw_ms": 7532.361206,
+  "all_frames_vulkan": true
+}

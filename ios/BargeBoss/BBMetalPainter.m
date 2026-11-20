@@ -37,6 +37,9 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
 @property(nonatomic,strong) id<CAMetalDrawable> drawable;
 @property(nonatomic,strong) BBNativePainter *resources,*preparationResources;
 @property(nonatomic,strong) NSMutableSet<NSString *> *pending;
+@property(nonatomic,strong) NSMutableSet<NSString *> *visiblePending,*residentKeys;
+@property(nonatomic,strong) NSMutableSet<NSNumber *> *residentLayerIds;
+@property(nonatomic) NSUInteger residentBytes,residentFallbacks,promotedPreparations;
 @property(nonatomic,strong) dispatch_queue_t preparationQueue;
 @property(nonatomic) NSUInteger directLayerFallbacks;
 @property(nonatomic) BOOL waterShaders;
@@ -62,7 +65,7 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
     dispatch_async(self.preparationQueue, ^{[self.preparationResources lightingWithBBLightingProfile:profile];});
     [self.resources lightingWithBBLightingProfile:profile];
     [self.textures removeAllObjects];[self.textureOrder removeAllObjects];self.textureBytes=0;
-    [self.pending removeAllObjects];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;
+    [self.pending removeAllObjects];[self.visiblePending removeAllObjects];[self.residentKeys removeAllObjects];[self.residentLayerIds removeAllObjects];self.residentBytes=0;[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;
 }
 - (void)prepareSceneWithBBLightingProfile:(BBLightingProfile *)profile withIntArray:(IOSIntArray *)atlases {
     CFTimeInterval started=CACurrentMediaTime();
@@ -75,6 +78,27 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
     self.lightingPreparationMs=(CACurrentMediaTime()-started)*1000;
 }
 
+// The shared stage manifest owns which kernels are required. Keep both native
+// density buckets under a 1 MiB reservation inside (not beyond) the texture budget.
+- (void)prepareResidentLayersWithBBStaticLayerArray:(IOSObjectArray *)layers {
+    [self.residentKeys removeAllObjects];[self.residentLayerIds removeAllObjects];self.residentBytes=0;
+    NSUInteger required=0;
+    for(int i=0;i<layers->size_;i++){
+        BBStaticLayer *layer=IOSObjectArray_Get(layers,i);
+        for(int scale=1;scale<=2;scale++){float d=[BBStaticLayer rasterScaleWithFloat:scale];required+=(NSUInteger)ceil([layer width]*d)*(NSUInteger)ceil([layer height]*d)*4;}
+    }
+    if(required>1024*1024)return;
+    for(int i=0;i<layers->size_;i++){
+        BBStaticLayer *layer=IOSObjectArray_Get(layers,i);[self.residentLayerIds addObject:@([layer key])];
+        for(int scale=1;scale<=2;scale++){
+            NSString *key=[NSString stringWithFormat:@"layer:%@:%d:%g",[self.lightingProfile key],[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
+            [self.residentKeys addObject:key];
+            if(!self.textures[key])[self storeTexture:[self makeTexture:[self.resources imageForLayer:layer scale:scale]] key:key mayEvict:YES];
+            id<MTLTexture> texture=self.textures[key];self.residentBytes+=texture.width*texture.height*4;
+        }
+    }
+}
+
 - (instancetype)init {
     if((self=[super init])) {
         self.lightingProfile=[BBLightingProfile presetWithInt:2];
@@ -85,7 +109,7 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
         self.resources=[[BBNativePainter alloc] init];
         self.preparationResources=[[BBNativePainter alloc] init];
         self.preparationQueue=dispatch_queue_create("com.bargeboss.metal.prepare",dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL,QOS_CLASS_USER_INITIATED,0));
-        self.pending=[NSMutableSet set];
+        self.pending=[NSMutableSet set];self.visiblePending=[NSMutableSet set];self.residentKeys=[NSMutableSet set];self.residentLayerIds=[NSMutableSet set];
         self.textures=[NSMutableDictionary dictionary];self.textureOrder=[NSMutableArray array];
         self.textureBudget=160*1024*1024;self.frameTextureKeys=[NSMutableSet set];
         for(NSString *arg in NSProcessInfo.processInfo.arguments) if([arg hasPrefix:@"--ios-texture-mib="])
@@ -198,7 +222,7 @@ static vector_float4 BBColor(jint argb) {
         self.peakFrameTextureBytes=MAX(self.peakFrameTextureBytes,self.frameTextureBytes);
     }
 }
-- (NSDictionary *)diagnostics {return @{@"lighting_profile":[self.lightingProfile key],@"lighting_preparation_ms":@(self.lightingPreparationMs),@"surface_patches":@(self.surfacePatches),@"material_patches":@(self.materialPatches),@"rope_patches":@(self.ropePatches),@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
+- (NSDictionary *)diagnostics {return @{@"resident_layer_bytes":@(self.residentBytes),@"resident_layer_textures":@(self.residentKeys.count),@"resident_layer_fallbacks":@(self.residentFallbacks),@"promoted_layer_preparations":@(self.promotedPreparations),@"lighting_profile":[self.lightingProfile key],@"lighting_preparation_ms":@(self.lightingPreparationMs),@"surface_patches":@(self.surfacePatches),@"material_patches":@(self.materialPatches),@"rope_patches":@(self.ropePatches),@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
 - (id<MTLTexture>)makeTexture:(UIImage *)image {
     if(!image) return self.white;
     size_t width=CGImageGetWidth(image.CGImage),height=CGImageGetHeight(image.CGImage);
@@ -216,11 +240,13 @@ static vector_float4 BBColor(jint argb) {
     if(self.textures[key] || !texture) return;
     NSUInteger bytes=texture.width*texture.height*4;
     const NSUInteger budget=self.textureBudget;
-    if(!evict && self.textureBytes+bytes>budget)return;
+    if(bytes>budget || (!evict && self.textureBytes+bytes>budget))return;
     self.textureUploads++;
     while(self.textureBytes+bytes>budget && self.textureOrder.count) {
-        NSString *oldKey=self.textureOrder.firstObject;id<MTLTexture> old=self.textures[oldKey];self.textureBytes-=old.width*old.height*4;
-        [self.textures removeObjectForKey:oldKey];[self.textureOrder removeObjectAtIndex:0];
+        NSUInteger index=0;while(index<self.textureOrder.count && [self.residentKeys containsObject:self.textureOrder[index]])index++;
+        if(index==self.textureOrder.count)return;
+        NSString *oldKey=self.textureOrder[index];id<MTLTexture> old=self.textures[oldKey];self.textureBytes-=old.width*old.height*4;
+        [self.textures removeObjectForKey:oldKey];[self.textureOrder removeObjectAtIndex:index];
         self.textureEvictions++;
     }
     if(bytes<=budget) {self.textures[key]=texture;[self.textureOrder addObject:key];self.textureBytes+=bytes;}
@@ -323,7 +349,8 @@ static vector_float4 BBColor(jint argb) {
         {p+a,{1,0},color,8,phase},{p+a+b,{1,1},color,8,phase},{p+b,{0,1},color,8,phase}};
     [self append:v count:6 texture:self.white mode:0];
 }
-- (jboolean)prefersPolygonBatches {return YES;}
+// Metal already coalesces adjacent triangles; shared polygon batches are expanded below.
+- (jboolean)prefersPolygonBatches {return NO;}
 // Java interface defaults are not inherited by handwritten Objective-C hosts.
 - (jboolean)retainedSurfacesWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale {return NO;}
 - (jboolean)preparesLayers {return YES;}
@@ -333,14 +360,24 @@ static vector_float4 BBColor(jint argb) {
 - (void)prepareLayer:(BBStaticLayer *)layer scale:(float)scale visible:(BOOL)visible {
     if(![layer backgroundSafe])return;
     NSString *key=[NSString stringWithFormat:@"layer:%@:%d:%g",[self.lightingProfile key],[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
-    if(self.textures[key] || [self.pending containsObject:key] || self.pending.count>=(visible?12:4))return;
-    [self.pending addObject:key];
+    if(self.textures[key])return;
+    if([self.pending containsObject:key]){
+        if(visible && ![self.visiblePending containsObject:key]){[self.visiblePending addObject:key];self.promotedPreparations++;}
+        return;
+    }
+    if(self.pending.count>=(visible?12:4))return;
+    [self.pending addObject:key];if(visible)[self.visiblePending addObject:key];
     BBLightingProfile *snapshot=self.lightingProfile;NSUInteger generation=self.lightingGeneration;
     dispatch_async(self.preparationQueue, ^{ @autoreleasepool {
         if(self.lightingGeneration!=generation)return;
         [self.preparationResources lightingWithBBLightingProfile:snapshot];
         id<MTLTexture> texture=[self makeTexture:[self.preparationResources imageForLayer:layer scale:scale]];
-        dispatch_async(dispatch_get_main_queue(), ^{if(self.lightingGeneration!=generation)return;[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:visible];});
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if(self.lightingGeneration!=generation)return;
+            BOOL admit=[self.visiblePending containsObject:key];
+            [self.pending removeObject:key];[self.visiblePending removeObject:key];
+            [self storeTexture:texture key:key mayEvict:admit];
+        });
     }});
 }
 - (void)beginFrame {self.surfacePatches=0;self.materialPatches=0;self.waterFoamPatches=0;self.waterReflectionPatches=0;self.smokePatches=0;self.ropePatches=0;[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
@@ -351,6 +388,7 @@ static vector_float4 BBColor(jint argb) {
     id<MTLTexture> texture=[self cached:key];
     if(!texture && [layer backgroundSafe]) {
         [self prepareLayer:layer scale:scale visible:YES];self.directLayerFallbacks++;
+        if([self.residentLayerIds containsObject:@([layer key])])self.residentFallbacks++;
         float width=self.visibleBounds.size.width,height=self.visibleBounds.size.height;
         float left=fmaxf(0,x),right=fminf(width,x+w),top=fmaxf(0,y),bottom=fminf(height,y+h);
         float rectangles[][4]={{0,0,left,height},{right,0,width,height},{left,0,right,top},{left,bottom,right,height}};

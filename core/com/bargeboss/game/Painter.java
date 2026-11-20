@@ -6,6 +6,8 @@ public interface Painter {
     default void lighting(LightingProfile profile) {}
     default LightingProfile lighting(){return LightingProfile.DUSK;}
     /** Hosts call at entry before advancing the stage, never as a continuous time update. */
+    /** Entry-only hints for a bounded set of small, frequently reused immutable layers. */
+    default void prepareResidentLayers(StaticLayer[] layers) {}
     default void prepareScene(LightingProfile profile,int[] atlases){lighting(profile);}
     /** Native cache bookkeeping only; never advances simulation. */
     default void beginFrame() {}

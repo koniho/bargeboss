@@ -387,7 +387,7 @@ public final class Game {
         feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
         if(calumetStage()){CalumetRiverView.prepare();feeders=new Feeder[0];voyage.setup(this);spawnIndex=quota();}
         else if(indianaStage()){feeders=new Feeder[0];IndianaHarbor.setup(this);spawnIndex=quota();}
-        else if(montroseStage()){feeders=new Feeder[0];mission.setup(this);spawnIndex=quota();}
+        else if(montroseStage()){MontroseBeaconArt.prepare();feeders=new Feeder[0];mission.setup(this);spawnIndex=quota();}
         else {feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;}
         nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();

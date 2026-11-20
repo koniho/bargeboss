@@ -1,0 +1,1 @@
+10368000 ripple pixels identical across powers 0/1/3, three directions and two ticks

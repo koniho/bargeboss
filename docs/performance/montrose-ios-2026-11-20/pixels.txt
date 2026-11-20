@@ -1,0 +1,2 @@
+Frozen native screenshots, same iOS 26.5 simulator, dimensions 1206x2622:
+Cached ambient mask vs a61b84d baseline: beacon 0/3162132 changed pixels; overview 3/3162132 changed pixels, mean RGB channel delta 0.000000316.

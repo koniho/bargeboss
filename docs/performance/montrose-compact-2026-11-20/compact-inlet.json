@@ -1,0 +1,47 @@
+{
+  "scene": "montrose-inlet",
+  "mode": "replay",
+  "warmup": 0,
+  "samples": 360,
+  "vulkan": [
+    "1.0"
+  ],
+  "interval_ms": {
+    "mean": 18.691676627777774,
+    "p50": 16.802994,
+    "p95": 24.315796,
+    "max": 515.932701
+  },
+  "draw_ms": {
+    "mean": 8.980694563888893,
+    "p50": 6.652475,
+    "p95": 10.410078,
+    "max": 482.648093
+  },
+  "advance_ms": {
+    "mean": 3.944282480555557,
+    "p50": 3.868656,
+    "p95": 6.239922,
+    "max": 7.332917
+  },
+  "decode_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "layer_build_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "fps": 53.499748573324666,
+  "zoom_range": [
+    2.8649535179138184,
+    2.890145778656006
+  ],
+  "device": "Pixel 11 Pro / Android 17",
+  "first_completed_draw_ms": 482.648093,
+  "all_frames_vulkan": true
+}

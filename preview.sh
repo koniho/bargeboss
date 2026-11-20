@@ -6,6 +6,7 @@ mkdir -p build/preview
 find core desktop -name '*.java' | sort > build/preview/sources.txt
 echo tools/IndianaReview.java >> build/preview/sources.txt
 echo tools/MontroseRescuePreview.java >> build/preview/sources.txt
+echo tools/MontroseBeachReview.java >> build/preview/sources.txt
 echo tools/MontroseReview.java >> build/preview/sources.txt
 echo tools/MontroseShoreReview.java >> build/preview/sources.txt
 echo tools/MontroseBoatHoistReview.java >> build/preview/sources.txt
@@ -125,6 +126,7 @@ fi
 
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseRescuePreview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseReview
+java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseBeachReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseShoreReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseBoatHoistReview
 java -Djava.awt.headless=true -cp build/preview com.bargeboss.game.MontroseEntranceShoreReview

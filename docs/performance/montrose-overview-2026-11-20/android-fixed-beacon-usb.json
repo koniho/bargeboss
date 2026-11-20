@@ -1,0 +1,48 @@
+{
+  "scene": "montrose-beacon",
+  "mode": "freeze",
+  "warmup": 120,
+  "samples": 360,
+  "vulkan": [
+    "1.0"
+  ],
+  "interval_ms": {
+    "mean": 16.681004633333334,
+    "p50": 16.655676,
+    "p95": 19.014036,
+    "max": 25.633644
+  },
+  "draw_ms": {
+    "mean": 6.677804377777777,
+    "p50": 6.854791,
+    "p95": 8.134504,
+    "max": 9.521901
+  },
+  "advance_ms": {
+    "mean": 0.007789913888888886,
+    "p50": 0.005635,
+    "p95": 0.019714,
+    "max": 0.053714
+  },
+  "decode_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "layer_build_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "fps": 59.948427686526685,
+  "zoom_range": [
+    1.3258349895477295,
+    1.3258349895477295
+  ],
+  "device": "Pixel 11 Pro / Android 17",
+  "source": "c9f6eb4 plus cold terrain preparation fix",
+  "first_completed_draw_ms": 602.329039,
+  "all_frames_vulkan": true
+}

@@ -15,6 +15,8 @@ public final class MarinaPedestals {
         protected float[] initialValue(){return new float[8];}
     };
     private static final StaticLayer POOL=new Kernel(false),HALO=new Kernel(true);
+    /** Small immutable kernels required throughout a marina stage. */
+    static StaticLayer[] residentLayers(){return new StaticLayer[]{POOL,HALO};}
     private MarinaPedestals(){}
 
     private static final class Face {

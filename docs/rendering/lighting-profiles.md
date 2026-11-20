@@ -78,3 +78,11 @@ chosen simulator, then use `SIMULATOR_ID=<id> python3 ios/scripts/profile.py <na
 1 daylight, 2 dusk, 3 night. `--coregraphics` and `--water-textures` exercise native
 fallback paths. Screenshots must be inspected for system alerts before treating
 a capture as evidence. See the accompanying performance evidence for limits.
+
+Marina entry manifests also declare two small resident static layers (pool and
+halo). iOS prepares both density buckets before advancing gameplay. Metal pins
+these four textures inside its existing budget (402,688 bytes, with a 1 MiB
+reservation ceiling), replaces the reservation on stage changes, and clears it
+on profile changes. Pending speculative layers are promoted when visible so
+publication can evict unprotected entries. This leaves dynamic position/opacity
+and the original kernel geometry unchanged.

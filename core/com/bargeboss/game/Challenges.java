@@ -31,11 +31,15 @@ public final class Challenges {
                 "20 SWIMMERS / KEEP CLEAR","SLOW DOWN / THROW BUOYS","AVOID HULL AND PROPELLER CONTACT")
     };
     public static final int COUNT=LEVELS.length;
+    // Hot scene queries need only primitive metadata. Object-array reads retain /
+    // autorelease Definitions after J2ObjC translation, even though they are fixed.
+    private static final int[] KINDS=kinds();
+    private static int[] kinds(){int[] out=new int[COUNT];for(int i=0;i<COUNT;i++)out[i]=LEVELS[i].kind;return out;}
     private Challenges() {}
     public static boolean standalone(int id) {return id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
-    public static int kind(int id) { return level(id).kind; }
+    public static int kind(int id) { return KINDS[valid(id)?id:0]; }
     public static String title(int id) { return level(id).title; }
     public static String description(int id) { return level(id).description; }
     public static String summary(int id) { return level(id).summary; }

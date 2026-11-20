@@ -81,6 +81,11 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     for(int i=0;i<atlases->size_;i++)for(int f=0;f<[BBSpriteAtlas countWithInt:IOSIntArray_Get(atlases,i)];f++)[self frame:f atlas:IOSIntArray_Get(atlases,i)];
 }
 
+- (void)prepareResidentLayersWithBBStaticLayerArray:(IOSObjectArray *)layers {
+    for(int i=0;i<layers->size_;i++)for(int scale=1;scale<=2;scale++)
+        [self imageForLayer:IOSObjectArray_Get(layers,i) scale:scale];
+}
+
 - (instancetype)init {
     if((self=[super init])) {
         self.lightingProfile=[BBLightingProfile presetWithInt:2];

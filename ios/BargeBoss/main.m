@@ -34,6 +34,7 @@
 @property(nonatomic) jint savedProgressVersion;
 @property(nonatomic) jint attemptedProgressVersion;
 @property(nonatomic) BOOL profiling;
+@property(nonatomic) BOOL liveScene;
 @property(nonatomic) NSInteger profileDraws;
 @property(nonatomic) CFTimeInterval profileLastDraw;
 @property(nonatomic) double profileLastCost;
@@ -68,6 +69,12 @@
                 if([arg hasPrefix:@"--ios-lighting="]) [self.game selectLightingWithInt:[[arg substringFromIndex:15] intValue]];
                 if([arg hasPrefix:@"--ios-zoom="]) self.profileZoom=[[arg substringFromIndex:11] floatValue];
                 if([arg hasPrefix:@"--ios-scene="]) self.profileScene=[arg substringFromIndex:12];
+#if BB_IOS_PROFILE
+                if([arg hasPrefix:@"--ios-live-scene="]) {
+                    self.liveScene=YES;
+                    self.profileScene=[arg substringFromIndex:17];
+                }
+#endif
                 if([arg hasPrefix:@"--ios-warmup="]) self.profileWarmup=MAX(0,MIN(1800,[[arg substringFromIndex:13] integerValue]));
                 if([arg hasPrefix:@"--ios-frames="]) self.profileSamples=MAX(30,MIN(3600,[[arg substringFromIndex:13] integerValue]));
             }
@@ -77,7 +84,7 @@
             if(self.automation) {
                 [defaults removeObjectForKey:@"captain-progress"]; [defaults synchronize];
             }
-            if(!self.profiling) [self.game restoreProgressWithNSString:[defaults stringForKey:@"captain-progress"]];
+            if(!self.profiling && !self.liveScene) [self.game restoreProgressWithNSString:[defaults stringForKey:@"captain-progress"]];
             NSUInteger fixture=[arguments indexOfObject:@"--progress-fixture-for-ui-tests"];
             if(fixture!=NSNotFound && fixture+1<arguments.count)
                 [self.game restoreProgressWithNSString:arguments[fixture+1]];
@@ -108,7 +115,7 @@
                                         withFloat:(jfloat)(self.bounds.size.height-insets.top-insets.bottom)];
     [self.game configureCanvasWithFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
 #if BB_IOS_PROFILE
-    if(self.profiling && self.profileScene && !self.profileConfigured) {
+    if((self.profiling || self.liveScene) && self.profileScene && !self.profileConfigured) {
         [BBProfileScenario prepareWithBBGame:self.game withNSString:self.profileScene withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
         if(self.profileZoom>0) [BBProfileScenario cameraZoomWithBBGame:self.game withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight] withFloat:self.profileZoom];
         self.profileConfigured=YES;
@@ -123,6 +130,7 @@
     if([self.painter lighting]!=profile || self.preparedPlan!=plan){
         self.preparedPlan=plan;
         [self.painter prepareSceneWithBBLightingProfile:profile withIntArray:[plan preparationAtlases]];
+        [self.painter prepareResidentLayersWithBBStaticLayerArray:[plan residentLayers]];
         self.lastTime=0;
     }
 }
@@ -159,7 +167,7 @@
 - (void)didMoveToWindow {[super didMoveToWindow];if(self.window)[self becomeFirstResponder];}
 - (void)requestRedraw { [self.frames markDirty]; [self setNeedsDisplay]; }
 - (void)saveProgress:(BOOL)flush {
-    if(self.profiling) return;
+    if(self.profiling || self.liveScene) return;
     jint version=[self.game progressVersion];
     if(version==self.savedProgressVersion || (!flush && version==self.attemptedProgressVersion)) return;
     self.attemptedProgressVersion=version;
@@ -191,6 +199,7 @@
                 const double *values=intervals.bytes;
                 for(NSUInteger i=0;i<intervals.length/sizeof(double);i+=3) [csv appendFormat:@"%.4f,%.4f,%.4f\n",values[i],values[i+1],values[i+2]];
                 NSURL *directory=[NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
+                [NSFileManager.defaultManager createDirectoryAtURL:directory withIntermediateDirectories:YES attributes:nil error:nil];
                 [[NSJSONSerialization dataWithJSONObject:diagnostics options:NSJSONWritingPrettyPrinted error:nil] writeToURL:[directory URLByAppendingPathComponent:@"ios-profile-metadata.json"] atomically:YES];
                 [csv writeToURL:[directory URLByAppendingPathComponent:@"ios-profile.csv"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
             });

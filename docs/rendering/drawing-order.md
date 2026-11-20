@@ -691,3 +691,20 @@ lighting then appears over empty water because it uses the real tutorial context
 Do not infer cached geometry's location from the default career selection. Keep
 both recorded material and raster clips, and verify cached wall interiors against
 the direct geometry with lighting disabled (`ShoreOcclusionPixelTest terrain`).
+
+### Montrose fog and beacon reception
+
+Background haze precedes the river merge. Drifting fog, the faint veil and broad
+colored light scattering follow world geometry, vessels and smoke, before all
+HUD/guidance. Airborne fog can cross watercraft and land; it is not a water-plane
+reflection and must not inherit their shore cutout. Existing water reflections
+retain their own clips. Fog scattering uses the lens anchors and flash/visibility
+state, with a maximum of 24 diffuse light patches independent of zoom.
+
+Montrose beacon prepared faces opt into normal-based colored reception from at
+most four nearby sources, including their own lantern and vessel lamps. This is
+per-face Lambert lighting on real geometry; it does not add cast shadow maps.
+Beacon sources also feed the existing directional shade masks for painted moving
+vessels and the colored normal receivers for moored boats. Moving painted hulls
+retain their existing four-direction approximation; they are not migrated to the
+full watercraft material contract by this change.

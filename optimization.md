@@ -4021,3 +4021,274 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Priorities: retain small light kernels; screen-density-appropriate distant
   terrain rasters; conservative water clipping/culling and allocation reduction.
   Evidence: docs/performance/montrose-lighting-bottlenecks-2026-11-20/.
+## Montrose beach expansion — 2026-11-20 (codex/montrose-beach-expansion)
+
+- Shared Java: extended the authoritative coast and play bounds to a crescent beach and hooked beacon breakwater; retained marina coordinates and WaterClip behavior. Northern terrain uses bounded existing 256-world-unit tiles, cached sand/path detail, three fixed low-poly buildings and one reused beacon sprite. No production raster added. Visible props/models remain culled.
+- Evidence: actual renderer overview, beach, beacon, pavilion and inlet inspected in `out/montrose-beach/`. 31 route/geometry/exposure/chart checks and 2,434,414 all-heading shoreline pixel assertions pass. JVM/J2ObjC parity `c84b8cbb:2:1350` passes. Worst WaterIndex synthetic whole-map patch is 141,982 fragments versus prior 139,677; this is a test-only oversized query, not an active draw. WaterClip bounded masks remain unchanged.
+- Added native fixtures `montrose-beach`, `montrose-beacon`, and `montrose-marina` (the previous full-harbor camera anchor) to distinguish scene expansion from same-view performance changes. Native validation pending phone handoff from root's ripple-floor optimization. New ground initialization increases tile metadata; native cache budget remains unchanged. Broad expanded overview can have a larger visible terrain working set and requires measurement.
+- Follow-up before native handoff: a capture of requested terrain rasters exposed 280,123,168 bytes in the expanded overview, 242,464,048 in the old marina camera, and 49,646,672 at the beach (48 MiB native budget). Added three shared distance tiers that render the identical source geometry into smaller local layers; close views are unchanged. Requested terrain is now 4,376,820 / 8,523,975 / 6,981,546 / 1,715,121 bytes for expanded overview / old marina / beach / beacon. All four remain below half the layer budget; 3,966 layer preparation, density, purity and budget assertions pass. These are requested terrain bytes, not measured native process memory or frame times. Actual-renderer overview re-inspected after the change.
+- Final integration rebased onto main `12b881b`, preserving licensed audio, ripple floor and Vulkan clip-range reuse. Full shared/asset/Android checks pass; combined JVM/J2ObjC parity `ee56651d:2:1350`. Existing debug signature reused for checked APK installation. Three new fixtures pass deterministic setup/replay; the broader fixture test's unrelated barge-push zoom tolerance fails identically with unchanged main source.
+- Native Vulkan: new beach final median/mean presentation 16.65/16.65 ms (CPU 7.15 ms); initial beacon 16.66/16.70 ms (CPU 7.17). Original marina anchor repeat: 24.97/21.63 ms (CPU 18.42), versus prior main 16.67/20.17 ms (CPU 17.12). Expanded whole-stage stress view at zoom .25: 33.30/33.26 ms (CPU 30.35). No controlled thermal A/B or old-build reinstall; wide marina and whole-stage costs remain open. See `docs/performance/montrose-beach-2026-11-20/` for evidence and limits.
+- Native sand seams found and corrected by overlapping both material and identical detail across bounded tiles; final phone beach image confirms no sand tile grid. New northern breakwater uses concrete faces. No physical iOS/Canvas validation this round.
+- Final concrete-beacon repeat: median/mean presentation 16.65/16.65 ms, CPU 7.16 ms. Final beach and beacon screenshots visually inspected. Phone left in interactive live beach scene; awake scope closed and previous timeout restored.
+- User follow-up overrides the temporary concrete-only northern face treatment: corrugated hard-bank walls now wrap both sides and the hooked beacon tip, ending at the beach; lowest terrace waterline risers match, upper steps/caps stay concrete. Expanded horn/beach transition tests now62checks; full checks/build pass, JVM/J2ObjC parity `d0f13157:2:1350`. Collision geometry/shore-mask heights unchanged.
+- Final seawall deployment blocked by wireless ADB loss: incremental install reported Success after106s, but launch returned Activity-not-found and `pm path` found no package. Non-incremental retry then failed with closed/offline transport; reconnect/discovery now find no phone. Source/APK are checked, but final seawall native review is pending. No uninstall/data-clear/security changes requested. Awake scope remains saved in this worktree's `out/phone-screen-timeout-before.txt` (original300000ms) and must be restored after reconnect. Earlier expanded-stage/native performance captures above remain valid for their recorded pre-follow-up material state.
+
+## Montrose real beacons and cached planting — 2026-11-20
+
+- Shared Java: replaced three generic lighthouse sprites with photo-referenced static geometry: west/east banded tubular towers and the northern red lattice structure. Corrected the horn to USCG 20130 nominal green/3s, distinct from south Montrose 20105. Dusk surfaces use the existing grade; only small registered lenses/glows emit. Preserved geometry/collision/corrugated-shore masks and tutorial markers. Sources and interpretation limits: `docs/gameplay/montrose-beacons.md`.
+- Geometry is prepared during stage reset, not during active draws. West/east source/drawn faces are 182/183 each; horn 202/329 after removing redundant ring beams that inflated an initial 298-face mesh to 666 BSP fragments. Offscreen models are culled. No new production textures or raster caches.
+- At most 80 eastern dune/scrub candidate clusters, deterministic position/size variation, early per-tile rejection. All planting goes through existing bounded distance-tier terrain preparation; no additional per-frame foliage. Terrain raster requests unchanged: overview 4,376,820 bytes; prior marina 8,523,975; beach 6,981,546; horn 1,715,121. This measures requested raster work, not native residency or FPS.
+- Full shared/asset checks, 11,589 beacon identity/anchor/dusk/draw-budget assertions, 3,966 terrain preparation/budget assertions and 2,434,414 all-heading shore pixels passed. JVM/J2ObjC canonical parity `f6b5cf85:2:1350`. Actual renderer overview/beach/horn/inlet and both flash-off frames reviewed under `out/montrose-beach/`. Fixed structure stays equally dark between flashes; no generic sprite shadows remain.
+- No Android or simulator operation by this agent in this pass; parent coordinates iOS validation and the preexisting whole-overview ripple allocation bottleneck. New-model native performance is still to be measured. Java2D uses plain surface fallbacks, so native corrugation requires native review. Existing lawn diamond seams were traced to 64-unit patch boundaries; source already has 7% inset. Separate alpha/clip coverage is suspected, not proven; leave a controlled compositing comparison for the next pass rather than introducing unmeasured overlap/double-alpha seams.
+
+## 2026-11-20 iOS Simulator Montrose refinement follow-through
+- Platform: iOS26.5 BargeBoss Lighting simulator, Metal. Installed expanded
+  beach/horn plus reference-based beacons and cached dune/scrub detail.
+- Initial Debug wide overview649ms mean: active sampling found ambient ripple
+  polygon clipping/allocation dominating CPU. Reused a bounded2MiB water mask
+  per ambient pass while keeping polygon stroke geometry/density/order. Metal
+  now avoids shared batches it immediately expands. Debug overview168ms mean;
+  native beacon0 differing pixels, overview3/3,162,132 pixels after mask; batching
+  change0 differing pixels. No claim of locked60FPS.
+- Final Release local horn/inlet/beach captures approximately60FPS; expanded
+  overview still133.75ms mean (~7.5FPS). Remaining translated point-containment,
+  allocation and wide-scene cost needs a separate controlled pass. Simulator
+  timings are not real-device validation. Lawn compositing grid remains visible.
+- Added developer-only interactive iOS scene launch without career writes and
+  fixed profiling CSV creation when a fresh install has no Documents directory.
+- Shared/native parity da53558f:2:1350; all-heading Montrose shoreline regression
+  2,434,414 assertions passed. Evidence: docs/performance/montrose-ios-2026-11-20.
+
+## 2026-11-20 full Montrose overview optimization
+- iOS26.5 simulator / Release Metal baseline:133.75ms mean (7.48FPS).
+  Sampled main-thread work identified open-lake point queries falling outside
+  BoxIndex's play grid and scanning every dock. Added an exact overall-geometry
+  bounds rejection before the existing point candidates; broad polygon queries
+  retain their conservative fallback. Full checks passed, native overview pixels
+  unchanged (0/3,162,132); first mean83.75ms, CPU median61.98ms.
+- Next sample shows repeated scene-kind object-array reads creating translated
+  retain/autorelease traffic. Testing primitive catalog kinds, per-call scene
+  flags and conservative offscreen-cell rejection before expensive wave math.
+  No ripple density, lighting, geometry or physics changes intended.
+- Replaced active dock-light map lookups with a prepared bounded grid:63,840
+  reference slots (<=510,720bytes at8-byte references),6,336 occupied cells and
+  7,122 unchanged polygons. Source construction maps are discarded. Sampling had
+  exposed HashMap collision trees invoking generic reflection on translated Long
+  keys. Row/column order and every receiver/lighting equation remain unchanged.
+- Paired orbital samples share phase/cosine calculations; fast smooth retains
+  signed-zero, NaN and endpoint behavior. Existing distance-hidden ripple cells
+  are rejected before any expensive exposure math; visible density is unchanged.
+- Final quiet Release overview repeats mean34.44/33.47ms (~29–30FPS), median33.33ms;
+  CPU medians29.91/29.65ms versus original105.04ms. Beacon remains60FPS. Native
+  overview and beacon comparisons:0/3,162,132 differing pixels each; Java2D sweep
+  10,368,000 pixels identical across wave power/bearing/tick combinations.
+- Full checks pass; JVM/J2ObjC parity unchanged da53558f:2:1350. Cold camera-transition
+  replay still hitches (p95 100ms, maximum726ms); not a locked60FPS or startup-stutter
+  fix. Analytic water and cold preparation remain follow-ups. Evidence retained
+  in docs/performance/montrose-overview-2026-11-20; native captures under out/ios-profile.
+
+## 2026-11-20 Android validation of full Montrose overview
+- Pixel11 Pro / Android17, revision5631953, existing debug signature. Full build
+  and checks passed; APK installed without data removal. Beach/beacon frozen
+  Vulkan captures: about60FPS, CPU medians7.60/6.77ms,120 warmup/360 samples.
+  Native screenshots reviewed; existing lawn seams remain.
+- Full overview FAILED twice on cold launch: missing terrain raster fallback
+  expands beyond32MiB Vulkan vertex budget; host switches to Canvas, then native
+  RenderThread crashes inside PowerVR/HWUI Vulkan pipeline barrier. No complete
+  overview timing capture. Do not treat simulator improvements as Android pass.
+- Cold inlet replay completed, mean18.54ms/p95 23.52ms/max628.29ms; preparation
+  hitch remains. No renderer changes in this validation round. Evidence and next
+  investigation recorded in docs/performance/montrose-overview-2026-11-20/README.md.
+
+## 2026-11-20 Android cold terrain frame preparation
+- Vulkan now requests missing background-safe layer rasters from the existing
+  bounded worker without expanding their source primitives. It traverses remaining
+  requests but does not submit an incomplete frame; the host retains the prior
+  complete surface and retries. Missing group-opacity layers follow the same path.
+  Existing48MiB terrain/32MiB vertex limits and shared artwork remain unchanged.
+- Developer replay advances once per completed-frame attempt, retaining its tick
+  across preparation retries. Native CPU timing includes this waiting interval.
+  Visible Montrose tiles already have screen-bound culling and four raster tiers;
+  this change addresses cold fallback rather than further reducing resolution.
+- Full checked Android build passed and installed with the existing key. All-heading
+  shoreline regression passed2,434,414 assertions. First launch collided with
+  Android's package-update activity and was discarded. Second cold overview reached
+  113 warmup frames, all Vulkan, with no vertex-limit fallback. It was interrupted
+  when the screen went off, then wireless ADB disappeared. No measured sample set
+  or usable screenshot; native visual parity and repeated cold validation pending.
+- Incomplete run CPU median89.98ms, first completed draw7.23s including preparation;
+  these are warmup observations, not a performance claim. Overview speed and initial
+  loading latency remain unresolved. Raw capture:out/android-overview-review/fixed-overview-b.
+- Phone awake scope remains saved in out/phone-screen-timeout-before.txt (300000ms)
+  because disconnect prevents restoration. Restore it after reconnect and finish
+  overview repeats, beach/beacon pixel comparisons and moving-camera regression.
+- USB follow-through: two complete cold overview captures, each120 warmup/360
+  samples, all Vulkan with no fallback/crash. Mean90.44/94.07ms (~11FPS), first
+  completed draw7.62/7.70s including preparation. Crash fixed; loading latency
+  and steady overview CPU cost remain open. No claim that this improves warm FPS.
+- Beach/beacon remain~60FPS, native screenshots each exactly match pre-fix pixels
+  (0/2,602,800 differences). Cold inlet replay all Vulkan,360 identical tick/zoom
+  pairs, p95 19.05ms/max522.47ms. Full overview screenshot reviewed. Detailed
+  summaries in docs/performance/montrose-overview-2026-11-20/android-fixed-*.json.
+- Restored original300000ms screen timeout and relaunched normal play after USB
+  validation. Earlier interrupted-run limitations above are superseded by these
+  complete captures; original failed baseline remains recorded.
+
+## 2026-11-20 Compact Montrose Vulkan geometry
+- Pixel11 Pro / Android17: simpleperf6,033 samples, none lost. WaveView62.7%
+  inclusive process CPU, native draw worker18.4%; old506,727 vertices/frame,
+  32,430,528bytes, GPU~3.8ms. ART method trace stalled and was discarded.
+- Flat polygon vertices now carry24bytes (position/full-precision color), versus
+  64bytes; other geometry keeps original format. Added flat vertex shader and
+  float-offset command addressing with mixed-stride bounds/draw handling. Existing
+  packet/cache limits, geometry, alpha, clipping and draw order preserved.
+- Shared renderer prepares wave constants once per draw, avoids duplicate drift
+  sine work, and uses correctly rounded intrinsic sqrt for render-only strokes.
+  Physics StrictMath unchanged. Vulkan skips redundant shared polygon grouping.
+- Rejected bulk-clear/sparse-write experiment94.44ms; local-cursor experiment89.67ms
+  inconclusive. Final overview repeats69.59/75.16ms (~13–14FPS), versus90.44/94.07ms
+  (~10–11FPS): mean interval~22% lower. Payload17,514,888bytes (-46% copied data,
+  not total memory). GPU~3.17ms; native encoding14–15ms. No packet replacements.
+- Overview/beach/beacon native screenshots each0/2,602,800 differing pixels.
+  Beach/beacon~60FPS. Cold inlet/tutorial replays complete all Vulkan; inlet360
+  tick/zoom pairs unchanged. Cold overview first frame6.20/6.87s; loading and
+  full-overview performance remain unresolved, not a60FPS claim.
+- Full checks/build and shared native parity da53558f:2:1350 pass. Ripple comparison
+  10,368,000 identical pixels;2,434,414 all-heading shore assertions pass. New Android
+  build gate checks2,526,477 original normalized vertex fields/clip markers across
+  growth, mixed formats, frame reuse and retained relocation; nested clip-source
+  mutation and depth-limit checks pass. Evidence:docs/performance/montrose-compact-2026-11-20.
+
+## 2026-11-20 Android thin wave zoom geometry
+- Investigated reported wave disappearance at some zoom levels. Vulkan's float
+  absolute-coordinate winding sum loses precision for tiny projected polygons,
+  sometimes rejecting every ear. Use relative coordinates and double accumulation
+  for winding only; shared geometry, density, clipping and vertex colors unchanged.
+- Regression failed on prior encoder at scale 0.1; all 722 zoom/winding cases pass
+  with the fix. Existing 2,526,477-field encoder golden and clip checks pass, as
+  does full checked APK build. Actual WaveView probe across nine scales previously
+  dropped 31/7/3 quads at 0.1/0.11/0.12; now drops none across all nine scales.
+- Pixel 11 Pro frozen overview: 120 warmup/360 samples all Vulkan, mean76.13ms,
+  p95 84.19ms,13.14FPS. Only41/2,602,800 screenshot pixels change; image reviewed.
+  No performance improvement claimed. Installed final APK. Single-sample subpixel
+  aliasing remains distinct from this confirmed geometry-loss bug; no claim all
+  zoom shimmer is resolved. Evidence: docs/performance/wave-zoom-2026-11-20/.
+
+## 2026-11-20 Android broad wave fronts during camera zoom
+- Follow-up to the user's still-visible disappearance after d2d36d4. Inspected
+  live Pixel 11 Pro Montrose inlet at wave power3.0. Broad foam fronts use
+  SeaWaves.draw, independently of the small ripple triangulation fixed earlier.
+- Continuous camera-dependent segment lengths moved all sampling midpoints,
+  changing broken-front brightness/gaps during zoom; integer crest counts also
+  changed the spacing. A shared512-iteration return could truncate a wave family.
+  Replaced this with nested world grids and smooth opacity blending between
+  adjacent detail levels, selected from continuous view extents. Both wave
+  families complete; view-dependent spacing controls cost. Physics unchanged.
+- New regression fails with the old broad-front code and passes14,857 anchor/
+  opacity checks across nine scales and24 bearings, with a submission guard.
+  Full checked APK and encoder regressions pass. JVM/J2ObjC parity is now
+  38137f35:2:1350 (drawing change); all-heading shoreline regression passes
+  1,461,230 hull/cargo pixels plus32,273 cached-wall pixels.
+- Installed and tested four actual two-finger scene pinches at3x power. Reviewed
+  sampled native transition frames and full-size endpoint: broad fronts persist
+  in the inspected zoom-out/zoom-in sequence. Early map-slider/title captures
+  were excluded from scene-zoom validation. Raw native recording/screenshots:
+  out/wave-zoom-phone-after-live/. Not an exhaustive visual check of all bearings.
+  Evidence: docs/performance/broad-wave-zoom-2026-11-20/.
+- Final overview120/360 capture all Vulkan: mean78.81ms,median74.08ms,p95 101.25ms,
+  12.69FPS. Prior single capture76.13/75.65/84.19ms respectively; median similar,
+  tails worse. Not a thermal-controlled A/B; no speedup or exact cost claim.
+
+## 2026-11-20 Shared rain and lightning experiment
+- Added optional Montrose WeatherView after world/smoke and before guidance/HUD:
+  slanted rain, restrained cool storm tint and single diffuse lightning pulses.
+  Simulation ticks and fixed seed tables only; maximum192 streaks/two rectangles,
+  independent of zoom/world area. No new textures, raster caches, particle state,
+  physics or shadow passes. Clear weather emits no primitives.
+- Expanded shared wave controls with rain OFF/LIGHT/STEADY/HEAVY, lightning
+  OFF/LOW/HIGH, TEST FLASH and RESET ALL. Session-only and clear by default.
+  Panel consumes taps/cancellation without steering. Android developer profile
+  flags bb_rain/bb_lightning/bb_weather_flash permit matched cost comparisons.
+- Full checks/APK and native encoding regressions pass;4,294 weather budget,
+  purity, input and flash checks. JVM/J2ObjC parity remains38137f35:2:1350.
+  Actual shared renderer rain/flash/panel previews reviewed via WeatherReview.
+- APK installed on Pixel11 Pro. Native comparison blocked by locked phone
+  (showing=true/inputRestricted=true); asked user to unlock. Aborted capture
+  produces no performance evidence. Native pixels/motion/FPS remain pending;
+  no keyguard change. Evidence: docs/performance/weather-2026-11-20/.
+
+## 2026-11-20 Zoom-aware rain and independent fog
+- Rain now smoothly increases from192 close-view heavy streaks to a384 cap as
+  zoom decreases. Distant streaks are shorter/narrower/softer; extra identities
+  fade in, preserving existing positions/phases. Beyond the cap a restrained
+  haze replaces more geometry. Fog OFF/LIGHT/MEDIUM/DENSE is independent of rain
+  and shares the haze pass. Max combined weather384 streaks/three rectangles;
+  no new textures/cache/physics. Compact shared panel retains steering clearance.
+-31,014 budget, identity, monotonic density, size, deterministic draw, fog-only,
+  input/cancel/reset assertions pass. Full checked APK/encoder regressions pass;
+  JVM/J2ObjC parity unchanged38137f35:2:1350. Fog-only/wide-rain shared previews
+  reviewed. APK installed and normal launch requested on Pixel11 Pro.
+- Preliminary clear/max-weather/clear inlet captures at player zoom0.65,120/360
+  samples: mean intervals16.667/16.680/16.659ms; CPU draw7.981/8.685/8.589ms.
+  All frames Vulkan, native480 completed per run. No precise cost attribution.
+- Native screenshots black: window policy says unlocked, but a system biometric
+  prompt covers the game. Asked user to complete/dismiss it. Timings measure
+  rendering beneath that overlay; unobstructed presentation/native visual check
+  remains pending. No security changes. Evidence: docs/performance/weather-fog-2026-11-20/.
+
+## 2026-11-20 Three-layer Montrose fog
+- Shared composition now adds eight low drifting soft patches before shore and
+  boats, background scenery haze before the river merge, and a faint foreground
+  veil below HUD. Existing Fog setting controls all layers; clear remains default.
+  Fixed nine material patches/two rectangles for fog; combined weather capped at
+  nine materials/four rectangles/384 strokes. Existing shaders, no new textures,
+  caches, simulation state or zoom-dependent patch count.
+- Full checks/Android APK/native encoder regressions pass; 31,159 weather checks.
+  All-heading shore checks: 1,461,230 hull/cargo and 32,273 wall pixels. JVM/J2ObjC
+  parity unchanged 38137f35:2:1350. Shared and unobstructed native pixels reviewed.
+- Installed on Pixel 11 Pro; matched Vulkan inlet zoom0.65 fog/clear/fog means
+  16.679/16.674/16.680ms, CPU7.893/7.722/7.708ms. No meaningful average slowdown;
+  p95 intervals23.59–24.22ms still exceed16.7ms. Warm stationary fixture only,
+  no iOS native performance claim. Evidence: docs/performance/layered-fog-2026-11-20/.
+
+## 2026-11-20 Illuminated foreground fog and beacon reception
+- Moved wisps over craft/scenery; broad colored scattering follows actual beacon,
+  tug/navigation and pedestal lamp anchors and power. Fixed24 visible scatter
+  patches; maximum weather33 materials/four rectangles/384 lines. No new textures
+  or native APIs. Screen-space atmospheric approximation, not shadowed volumetrics.
+- Added missing beacon contributions to moving-vessel directional reception and
+  moored RGB receivers. Three prepared beacon models opt into four-source normal
+  lighting for their real faces, including self lantern/nearby tug lamps. Removed
+  tug silhouette pulse/idle bloom at user request; actual fixtures remain.
+- Full checks/APK/native encoder tests pass:31,547 weather and22,978 beacon checks.
+  All-heading shore:1,461,230 hull/cargo and32,273 wall pixels. JVM/J2ObjC agreed
+  on95991121:2:1350 before canonical checksum update (tug drawing changed).
+- Installed on Pixel11 Pro and reviewed unobstructed Vulkan clear/fog pixels.
+  Peak beacon inlet zoom0.65 clear/fog/clear means16.670/16.651/16.683ms;
+  CPU8.551/8.762/9.349ms; p95 intervals23.87–24.66ms. No meaningful average
+  slowdown; no exact cost or locked60FPS claim. iOS native testing pending.
+  Evidence: docs/performance/fog-lighting-2026-11-20/.
+
+## 2026-11-20 Resident marina kernels after main merge
+- Merged origin/main d257bcf into codex/issue-17-lighting; preserved upstream
+  beach, weather, wave-mask, face-lighting and Vulkan encoding changes. Newly
+  merged beach/path patches now use the active lighting profile. Main's terrain
+  optimizations supersede the old 207 MiB ground-footprint finding above.
+- Shared entry manifest declares pool/halo kernels. iOS prewarms both density
+  buckets; Metal protects four textures (402,688 bytes) within the unchanged
+  cache budget, with a 1 MiB reservation ceiling. Stage/profile changes replace
+  the reservation. Visible requests promote pending speculative publication.
+- Clean simulator captures: zero resident-kernel fallbacks at 160 MiB and under
+  16 MiB stress with 11,429 evictions; promotion counters positive. Normal
+  overview vertex capacity 256 -> 64 MiB; before/after native dusk pixels match
+  exactly (3,162,132 pixels). Day/night beach captures reviewed, about 60 FPS.
+- Merged overview remains ~67 ms/frame; only modest CPU draw improvement. Do not
+  attribute the earlier 217 -> 67 ms reduction to this patch: main already brought
+  those optimizations. Remaining water/wide-scene work is separate.
+- Evidence: docs/performance/glow-residency-2026-11-20/. JVM/J2ObjC parity verified
+  b0bbe1a2:2:1350 before accepting the merged canonical draw checksum. No phone
+  access or installation; native results are simulator-only.
+- Final full shared/asset checks, signed Android APK and native encoder
+  regressions pass. Montrose all-heading shore: 2,434,414 hull/cargo assertions
+  plus 32,273 walls. Five native metadata assertions pass residency/budget checks.

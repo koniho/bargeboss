@@ -52,6 +52,14 @@ final class LevelAssetsTest {
         check(!includes(tutorial,999),"Callers cannot mutate manifest");
         check(SpriteAtlas.rotationAtlases(SpriteAtlas.TUG,SpriteAtlas.TUG).length==4,"Duplicate sources expand once");
         check(SpriteAtlas.rotationAtlases(new int[0]).length==0,"Empty plan supported");
+        StaticLayer[] resident=LevelAssets.challenge(Challenges.MONTROSE).residentLayers();
+        check(resident.length==2,"Marina declares its pool and halo kernels");
+        long bytes=0;
+        for(StaticLayer layer:resident){check(layer.backgroundSafe(),"Resident kernels are immutable worker inputs");for(int density:new int[]{2,3})bytes+=(long)layer.width()*(long)layer.height()*density*density*4;}
+        check(bytes==402688,"Both kernel density families remain below 400 KiB");
+        resident[0]=null;
+        check(LevelAssets.challenge(Challenges.MONTROSE).residentLayers()[0]!=null,"Resident manifest is defensively copied");
+        check(LevelAssets.tutorial().residentLayers().length==0,"Non-marina stages release marina residency");
         System.out.println(checks+" upcoming-level asset, future cargo, rotation/effect and manifest isolation assertions passed");
     }
 }

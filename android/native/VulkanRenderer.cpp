@@ -22,6 +22,7 @@
 static void check(VkResult r,const char* what){if(r!=VK_SUCCESS)throw std::runtime_error(std::string(what)+": "+std::to_string(r));}
 struct Buffer {VkBuffer handle=VK_NULL_HANDLE;VkDeviceMemory memory=VK_NULL_HANDLE;void* mapped=nullptr;VkDeviceSize size=0;};
 struct Texture {VkImage image=VK_NULL_HANDLE;VkDeviceMemory memory=VK_NULL_HANDLE;VkImageView view=VK_NULL_HANDLE;};
+// first is a float offset; count is vertices. Mode 5 uses six floats, all others sixteen.
 struct Batch {int first,count,a,b,mode;};
 struct Frame {std::vector<float> cachedVertices;std::vector<VkCommandBuffer> cachedCommands;std::vector<bool> validCommands;std::vector<Batch> cachedBatches;size_t cachedBytes=0;uint64_t cacheGeneration=0;float cachedTransform[5]{};bool timed=false;VkCommandBuffer command=VK_NULL_HANDLE;VkFence fence=VK_NULL_HANDLE;VkSemaphore acquired=VK_NULL_HANDLE;Buffer vertices;std::vector<Buffer> uploads;std::vector<VkCommandBuffer> uploadCommands;};
 class Renderer {
@@ -32,13 +33,13 @@ public:
  VkInstance instance=VK_NULL_HANDLE;VkSurfaceKHR surface=VK_NULL_HANDLE;VkPhysicalDevice physical=VK_NULL_HANDLE;VkDevice device=VK_NULL_HANDLE;VkQueue queue=VK_NULL_HANDLE;uint32_t family=0;
  ANativeWindow* window=nullptr;VkSwapchainKHR swapchain=VK_NULL_HANDLE;VkExtent2D extent{};VkFormat format=VK_FORMAT_UNDEFINED;
  VkRenderPass pass=VK_NULL_HANDLE;VkDescriptorSetLayout descriptorLayout=VK_NULL_HANDLE;VkDescriptorPool descriptors=VK_NULL_HANDLE;
- VkPipelineLayout layout=VK_NULL_HANDLE;VkPipeline pipelines[11]{};VkSampler sampler=VK_NULL_HANDLE;VkCommandPool pool=VK_NULL_HANDLE;
+ VkPipelineLayout layout=VK_NULL_HANDLE;VkPipeline pipelines[12]{};VkSampler sampler=VK_NULL_HANDLE;VkCommandPool pool=VK_NULL_HANDLE;
  Texture stencil,colorMsaa;VkSampleCountFlagBits samples=VK_SAMPLE_COUNT_1_BIT;
  size_t pendingUploadBytes=0;std::vector<Buffer> pendingUploads;std::vector<VkCommandBuffer> pendingCommands;
  VkFormat stencilFormat=VK_FORMAT_S8_UINT;
  std::vector<VkImage> images;std::vector<VkImageView> views;std::vector<VkFramebuffer> targets;std::vector<VkSemaphore> presented;
  Frame frames[2];uint32_t frame=0;std::unordered_map<int,Texture> textures;std::unordered_map<uint64_t,VkDescriptorSet> sets;
- std::vector<uint32_t> vertexCode,fragmentCode;
+ std::vector<uint32_t> vertexCode,fragmentCode,flatVertexCode;
  struct Packet {std::vector<float> vertices;std::vector<Batch> batches;float w,h,scale,x,y;int state=0;};
  Packet packets[2];int pending=-1;bool stopping=false;std::string workerError;
  std::mutex packetMutex,renderMutex;std::condition_variable packetReady;std::thread worker;
@@ -58,7 +59,7 @@ public:
   }
  });}
  void enqueue(const void* vertices,size_t bytes,const Batch* batches,int count,float w,float h,float scale,float x,float y){
-  if(bytes>32*1024*1024||bytes%64||count<0||count>65536)throw std::runtime_error("Frame packet exceeds budget");
+  if(bytes>32*1024*1024||bytes%4||count<0||count>65536)throw std::runtime_error("Frame packet exceeds budget");
   std::lock_guard<std::mutex> lock(packetMutex);if(!workerError.empty())throw std::runtime_error(workerError);if(stopping)throw std::runtime_error("Renderer stopped");
   int index=pending;if(index>=0)replaced++;else index=packets[0].state==0?0:1;
   Packet& p=packets[index];if(p.state==2)throw std::runtime_error("No packet slot");
@@ -89,7 +90,7 @@ public:
   VkDescriptorPoolSize ps{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,8192};VkDescriptorPoolCreateInfo dp{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};dp.flags=VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;dp.maxSets=4096;dp.poolSizeCount=1;dp.pPoolSizes=&ps;check(vkCreateDescriptorPool(device,&dp,nullptr,&descriptors),"descriptor pool");
   VkPushConstantRange push{VK_SHADER_STAGE_VERTEX_BIT,0,16};VkPipelineLayoutCreateInfo pl{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};pl.setLayoutCount=1;pl.pSetLayouts=&descriptorLayout;pl.pushConstantRangeCount=1;pl.pPushConstantRanges=&push;check(vkCreatePipelineLayout(device,&pl,nullptr,&layout),"pipeline layout");
   VkSamplerCreateInfo sm{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};sm.magFilter=sm.minFilter=VK_FILTER_LINEAR;sm.mipmapMode=VK_SAMPLER_MIPMAP_MODE_NEAREST;sm.addressModeU=sm.addressModeV=sm.addressModeW=VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;sm.maxLod=0;check(vkCreateSampler(device,&sm,nullptr,&sampler),"sampler");
-  AAssetManager* am=AAssetManager_fromJava(env,assets);vertexCode=code(am,"shaders/scene.vert.spv");fragmentCode=code(am,"shaders/scene.frag.spv");
+  AAssetManager* am=AAssetManager_fromJava(env,assets);vertexCode=code(am,"shaders/scene.vert.spv");fragmentCode=code(am,"shaders/scene.frag.spv");flatVertexCode=code(am,"shaders/flat.vert.spv");
   for(Frame& f:frames){VkCommandBufferAllocateInfo ca{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};ca.commandPool=pool;ca.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY;ca.commandBufferCount=1;check(vkAllocateCommandBuffers(device,&ca,&f.command),"commands");VkFenceCreateInfo fc{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};fc.flags=VK_FENCE_CREATE_SIGNALED_BIT;check(vkCreateFence(device,&fc,nullptr,&f.fence),"fence");VkSemaphoreCreateInfo se{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};check(vkCreateSemaphore(device,&se,nullptr,&f.acquired),"acquire semaphore");}
   VkPhysicalDeviceProperties properties;vkGetPhysicalDeviceProperties(physical,&properties);timestampPeriod=properties.limits.timestampPeriod;
   if(timestampBits){VkQueryPoolCreateInfo qp{VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO};qp.queryType=VK_QUERY_TYPE_TIMESTAMP;qp.queryCount=4;check(vkCreateQueryPool(device,&qp,nullptr,&timingPool),"timing pool");}if((properties.limits.framebufferColorSampleCounts&properties.limits.framebufferDepthSampleCounts&properties.limits.framebufferStencilSampleCounts)&VK_SAMPLE_COUNT_4_BIT)samples=VK_SAMPLE_COUNT_1_BIT;
@@ -118,7 +119,7 @@ public:
   makePipelines();
  }
  void makePipelines(){
-  VkShaderModule modules[2];auto make=[&](const std::vector<uint32_t>& code,VkShaderModule* module){VkShaderModuleCreateInfo c{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};c.codeSize=code.size()*4;c.pCode=code.data();check(vkCreateShaderModule(device,&c,nullptr,module),"shader");};make(vertexCode,&modules[0]);make(fragmentCode,&modules[1]);
+  VkShaderModule modules[3];auto make=[&](const std::vector<uint32_t>& code,VkShaderModule* module){VkShaderModuleCreateInfo c{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};c.codeSize=code.size()*4;c.pCode=code.data();check(vkCreateShaderModule(device,&c,nullptr,module),"shader");};make(vertexCode,&modules[0]);make(fragmentCode,&modules[1]);make(flatVertexCode,&modules[2]);
   VkPipelineShaderStageCreateInfo stages[2]{};for(int i=0;i<2;i++){stages[i].sType=VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;stages[i].stage=i?VK_SHADER_STAGE_FRAGMENT_BIT:VK_SHADER_STAGE_VERTEX_BIT;stages[i].module=modules[i];stages[i].pName="main";}
   VkVertexInputBindingDescription binding{0,64,VK_VERTEX_INPUT_RATE_VERTEX};VkVertexInputAttributeDescription attrs[]={{0,0,VK_FORMAT_R32G32_SFLOAT,0},{1,0,VK_FORMAT_R32G32_SFLOAT,8},{2,0,VK_FORMAT_R32G32B32A32_SFLOAT,16},{3,0,VK_FORMAT_R32G32B32A32_SFLOAT,32},{4,0,VK_FORMAT_R32G32B32A32_SFLOAT,48}};
   VkPipelineVertexInputStateCreateInfo vi{VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};vi.vertexBindingDescriptionCount=1;vi.pVertexBindingDescriptions=&binding;vi.vertexAttributeDescriptionCount=5;vi.pVertexAttributeDescriptions=attrs;VkPipelineInputAssemblyStateCreateInfo ia{VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};ia.topology=VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -127,8 +128,10 @@ public:
   VkPipelineColorBlendAttachmentState blend{};blend.blendEnable=VK_TRUE;blend.srcColorBlendFactor=blend.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;blend.dstColorBlendFactor=blend.dstAlphaBlendFactor=VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;blend.colorBlendOp=blend.alphaBlendOp=VK_BLEND_OP_ADD;
   VkPipelineColorBlendStateCreateInfo cb{VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO};cb.attachmentCount=1;cb.pAttachments=&blend;
   VkDynamicState dynamic[]={VK_DYNAMIC_STATE_VIEWPORT,VK_DYNAMIC_STATE_SCISSOR};VkPipelineDynamicStateCreateInfo dy{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};dy.dynamicStateCount=2;dy.pDynamicStates=dynamic;
-  int families[]={0,2,10,11,14,20,30,32,40,0,0};VkSpecializationMapEntry entry{0,0,sizeof(int)};VkSpecializationInfo specialization{1,&entry,sizeof(int),nullptr};
-  for(int index=0;index<11;index++){int mode=index<9?0:index-8;specialization.pData=&families[index];stages[1].pSpecializationInfo=&specialization;blend.colorWriteMask=mode?0:15;VkPipelineDepthStencilStateCreateInfo ds{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};ds.stencilTestEnable=VK_TRUE;ds.front.compareOp=mode?VK_COMPARE_OP_ALWAYS:VK_COMPARE_OP_EQUAL;ds.front.failOp=ds.front.depthFailOp=VK_STENCIL_OP_KEEP;ds.front.passOp=mode==1?VK_STENCIL_OP_INCREMENT_AND_CLAMP:mode==2?VK_STENCIL_OP_DECREMENT_AND_CLAMP:VK_STENCIL_OP_KEEP;ds.front.compareMask=255;ds.front.writeMask=mode?255:0;ds.back=ds.front;
+  VkVertexInputAttributeDescription flatAttrs[]={{0,0,VK_FORMAT_R32G32_SFLOAT,0},{2,0,VK_FORMAT_R32G32B32A32_SFLOAT,8}};
+  int families[]={0,2,10,11,14,20,30,32,40,0,0,0};VkSpecializationMapEntry entry{0,0,sizeof(int)};VkSpecializationInfo specialization{1,&entry,sizeof(int),nullptr};
+  for(int index=0;index<12;index++){bool flat=index==11;int mode=index<9 || flat?0:index-8;
+   stages[0].module=modules[flat?2:0];binding.stride=flat?24:64;vi.vertexAttributeDescriptionCount=flat?2:5;vi.pVertexAttributeDescriptions=flat?flatAttrs:attrs;specialization.pData=&families[index];stages[1].pSpecializationInfo=&specialization;blend.colorWriteMask=mode?0:15;VkPipelineDepthStencilStateCreateInfo ds{VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};ds.stencilTestEnable=VK_TRUE;ds.front.compareOp=mode?VK_COMPARE_OP_ALWAYS:VK_COMPARE_OP_EQUAL;ds.front.failOp=ds.front.depthFailOp=VK_STENCIL_OP_KEEP;ds.front.passOp=mode==1?VK_STENCIL_OP_INCREMENT_AND_CLAMP:mode==2?VK_STENCIL_OP_DECREMENT_AND_CLAMP:VK_STENCIL_OP_KEEP;ds.front.compareMask=255;ds.front.writeMask=mode?255:0;ds.back=ds.front;
    VkGraphicsPipelineCreateInfo p{VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};p.stageCount=mode?1:2;p.pStages=stages;p.pVertexInputState=&vi;p.pInputAssemblyState=&ia;p.pViewportState=&vp;p.pRasterizationState=&rs;p.pMultisampleState=&ms;p.pDepthStencilState=&ds;p.pColorBlendState=&cb;p.pDynamicState=&dy;p.layout=layout;p.renderPass=pass;check(vkCreateGraphicsPipelines(device,VK_NULL_HANDLE,1,&p,nullptr,&pipelines[index]),"pipeline");}
   for(auto m:modules)vkDestroyShaderModule(device,m,nullptr);
  }
@@ -173,11 +176,11 @@ public:
   std::vector<Bounds> bounds(count);std::vector<int> scopes;
   const float* packed=static_cast<const float*>(vertices);
   for(int i=0;i<count;i++){const Batch& b=batches[i];
-   if(b.first<0||b.count<0||size_t(b.first+b.count)*64>bytes)throw std::runtime_error("Invalid scope geometry");
+   if(b.first<0||b.count<0||(size_t(b.first)+size_t(b.count)*(b.mode==5?6:16))*4>bytes)throw std::runtime_error("Invalid scope geometry");
    if(b.mode==3){scopes.push_back(i);continue;}
    if(b.mode==4){if(scopes.empty())throw std::runtime_error("Scope underflow");scopes.pop_back();continue;}
-   if(b.mode!=0||scopes.empty())continue;
-   Bounds box;for(int j=b.first;j<b.first+b.count;j++){float x=packed[j*16],y=packed[j*16+1];box.x0=std::min(box.x0,x);box.y0=std::min(box.y0,y);box.x1=std::max(box.x1,x);box.y1=std::max(box.y1,y);}
+   if((b.mode!=0 && b.mode!=5)||scopes.empty())continue;
+   Bounds box;for(int j=0;j<b.count;j++){int at=b.first+j*(b.mode==5?6:16);float x=packed[at],y=packed[at+1];box.x0=std::min(box.x0,x);box.y0=std::min(box.y0,y);box.x1=std::max(box.x1,x);box.y1=std::max(box.y1,y);}
    for(int index:scopes){Bounds& out=bounds[index];out.x0=std::min(out.x0,box.x0);out.y0=std::min(out.y0,box.y0);out.x1=std::max(out.x1,box.x1);out.y1=std::max(out.y1,box.y1);}
   }
   if(!scopes.empty())throw std::runtime_error("Unbalanced scope");
@@ -185,7 +188,7 @@ public:
    if(b.mode==3){scopes.push_back(i);continue;}
    if(b.mode==4){scopes.pop_back();continue;}
    VkRect2D drawScissor=scissor;
-   if(b.mode!=0 && !scopes.empty()){
+   if((b.mode==1 || b.mode==2) && !scopes.empty()){
     Bounds box=bounds[scopes.back()];if(box.x1<box.x0||box.y1<box.y0)continue;
     int left=std::max(scissor.offset.x,int(std::floor(box.x0*scale+ox))-1),top=std::max(scissor.offset.y,int(std::floor(box.y0*scale+oy))-1);
     int right=std::min(int(scissor.offset.x+scissor.extent.width),int(std::ceil(box.x1*scale+ox))+1),bottom=std::min(int(scissor.offset.y+scissor.extent.height),int(std::ceil(box.y1*scale+oy))+1);
@@ -193,12 +196,12 @@ public:
     drawScissor={{left,top},{uint32_t(right-left),uint32_t(bottom-top)}};
    }
    if(memcmp(&previousScissor,&drawScissor,sizeof(drawScissor))!=0){vkCmdSetScissor(command,0,1,&drawScissor);previousScissor=drawScissor;}
-if(b.mode<0||b.mode>2||b.first<0||b.count<0||size_t(b.first+b.count)*64>bytes)throw std::runtime_error("Invalid draw command");int kind=int(packed[b.first*16+8]);int selected=b.mode?8+b.mode:kind==40?8:kind>=32?7:kind==30?6:kind>=20?5:kind>=14?4:kind>=11?3:kind==10?2:kind>=2?1:0;if(mode!=selected){mode=selected;vkCmdBindPipeline(command,VK_PIPELINE_BIND_POINT_GRAPHICS,pipelines[mode]);}VkDescriptorSet set=b.mode?bound:descriptor(b.a,b.b);if(set!=bound){vkCmdBindDescriptorSets(command,VK_PIPELINE_BIND_POINT_GRAPHICS,layout,0,1,&set,0,nullptr);bound=set;}vkCmdDraw(command,b.count,1,b.first,0);}
+if(b.mode<0||(b.mode>2 && b.mode!=5)||b.first<0||b.count<0||(size_t(b.first)+size_t(b.count)*(b.mode==5?6:16))*4>bytes)throw std::runtime_error("Invalid draw command");int kind=b.mode==5?0:int(packed[b.first+8]);int selected=b.mode==5?11:b.mode?8+b.mode:kind==40?8:kind>=32?7:kind==30?6:kind>=20?5:kind>=14?4:kind>=11?3:kind==10?2:kind>=2?1:0;if(mode!=selected){mode=selected;vkCmdBindPipeline(command,VK_PIPELINE_BIND_POINT_GRAPHICS,pipelines[mode]);}VkDescriptorSet set=(b.mode==1 || b.mode==2)?bound:descriptor(b.a,b.b);if(set!=bound){vkCmdBindDescriptorSets(command,VK_PIPELINE_BIND_POINT_GRAPHICS,layout,0,1,&set,0,nullptr);bound=set;}VkDeviceSize vertexOffset=VkDeviceSize(b.first)*4;vkCmdBindVertexBuffers(command,0,1,&f.vertices.handle,&vertexOffset);vkCmdDraw(command,b.count,1,0,0);}
   }
   vkCmdEndRenderPass(command);if(timingPool)vkCmdWriteTimestamp(command,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,timingPool,slot*2+1);check(vkEndCommandBuffer(command),"end frame");if(reuseEnabled)f.validCommands[index]=true;
   }
   check(vkResetFences(device,1,&f.fence),"reset fence");VkPipelineStageFlags stage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;VkSubmitInfo submit{VK_STRUCTURE_TYPE_SUBMIT_INFO};submit.waitSemaphoreCount=1;submit.pWaitSemaphores=&f.acquired;submit.pWaitDstStageMask=&stage;submit.commandBufferCount=1;submit.pCommandBuffers=&command;submit.signalSemaphoreCount=1;submit.pSignalSemaphores=&presented[index];check(vkQueueSubmit(queue,1,&submit,f.fence),"submit");f.timed=true;VkPresentInfoKHR pi{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};pi.waitSemaphoreCount=1;pi.pWaitSemaphores=&presented[index];pi.swapchainCount=1;pi.pSwapchains=&swapchain;pi.pImageIndices=&index;double encoded=now(),presentCpu=cpuNow();VkResult result=vkQueuePresentKHR(queue,&pi);if(result==VK_ERROR_OUT_OF_DATE_KHR || (result==VK_SUBOPTIMAL_KHR && surfaceChanged()))createSwapchain();else if(result!=VK_SUBOPTIMAL_KHR)check(result,"present");
-  presentCpuTotal+=cpuNow()-presentCpu;waitTotal+=ready-started;encodeTotal+=encoded-ready;presentTotal+=now()-encoded;if(++measured==120){__android_log_print(ANDROID_LOG_INFO,"BargeBossVulkan","mean native ms wait=%.3f encode=%.3f present=%.3f presentCPU=%.3f gpu=%.3f vertices=%zu batches=%d reuse=%u record=%u flags=%d",waitTotal/measured,encodeTotal/measured,presentTotal/measured,presentCpuTotal/measured,gpuMeasured?gpuTotal/gpuMeasured:0,bytes/64,count,commandHits,commandMisses,experimentFlags);waitTotal=encodeTotal=presentTotal=gpuTotal=presentCpuTotal=0;measured=gpuMeasured=commandHits=commandMisses=0;}
+  presentCpuTotal+=cpuNow()-presentCpu;waitTotal+=ready-started;encodeTotal+=encoded-ready;presentTotal+=now()-encoded;if(++measured==120){__android_log_print(ANDROID_LOG_INFO,"BargeBossVulkan","mean native ms wait=%.3f encode=%.3f present=%.3f presentCPU=%.3f gpu=%.3f vertexBytes=%zu batches=%d reuse=%u record=%u flags=%d",waitTotal/measured,encodeTotal/measured,presentTotal/measured,presentCpuTotal/measured,gpuMeasured?gpuTotal/gpuMeasured:0,bytes,count,commandHits,commandMisses,experimentFlags);waitTotal=encodeTotal=presentTotal=gpuTotal=presentCpuTotal=0;measured=gpuMeasured=commandHits=commandMisses=0;}
  }
  ~Renderer(){stopWorker();if(device){vkDeviceWaitIdle(device);destroySwapchain();for(auto& t:textures)destroy(t.second);for(auto& b:pendingUploads)destroy(b);for(auto& f:frames){for(auto& b:f.uploads)destroy(b);destroy(f.vertices);if(f.fence)vkDestroyFence(device,f.fence,nullptr);if(f.acquired)vkDestroySemaphore(device,f.acquired,nullptr);}if(timingPool)vkDestroyQueryPool(device,timingPool,nullptr);if(sampler)vkDestroySampler(device,sampler,nullptr);if(descriptors)vkDestroyDescriptorPool(device,descriptors,nullptr);if(layout)vkDestroyPipelineLayout(device,layout,nullptr);if(descriptorLayout)vkDestroyDescriptorSetLayout(device,descriptorLayout,nullptr);if(pool)vkDestroyCommandPool(device,pool,nullptr);vkDestroyDevice(device,nullptr);}if(surface)vkDestroySurfaceKHR(instance,surface,nullptr);if(instance)vkDestroyInstance(instance,nullptr);if(window)ANativeWindow_release(window);}
 };

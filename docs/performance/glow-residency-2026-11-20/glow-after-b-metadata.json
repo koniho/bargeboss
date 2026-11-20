@@ -1,0 +1,23 @@
+{
+  "rope_patches" : 0,
+  "resident_layer_textures" : 4,
+  "resident_layer_bytes" : 402688,
+  "promoted_layer_preparations" : 89,
+  "peak_frame_texture_bytes" : 24267408,
+  "texture_budget" : 167772160,
+  "lighting_preparation_ms" : 374.91679168306291,
+  "uploads" : 1826,
+  "surface_patches" : 4304,
+  "lighting_profile" : "industrial-dusk-v1",
+  "water_shaders" : true,
+  "direct_layer_fallbacks" : 3129,
+  "pending_preparations" : 0,
+  "smoke_patches" : 5,
+  "water_reflection_patches" : 3,
+  "resident_layer_fallbacks" : 0,
+  "vertex_capacity_bytes" : 67108864,
+  "texture_bytes" : 146538760,
+  "material_patches" : 25,
+  "water_foam_patches" : 288,
+  "evictions" : 0
+}

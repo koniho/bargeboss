@@ -26,6 +26,7 @@ public final class LandMarkerArt {
     public static float screenX(Game g,float x,float y){return g.layout.camera.screenX(x,y);}
     public static float screenY(Game g,float x,float y){return g.layout.camera.screenY(x,y)-baseRise(g)*g.layout.camera.scale;}
     public static void draw(Game g,Painter p,float wx,float wy,int frame,int color,float power){
+        if(g.montroseStage()){MontroseBeaconArt.draw(g,p,color==NavigationLights.RED?MontroseBeaconArt.EAST:MontroseBeaconArt.WEST);return;}
         float x=screenX(g,wx,wy),y=screenY(g,wx,wy),size=SIZE*g.layout.camera.scale;
         p.sprite(SpriteAtlas.LAND_MARKER,frame,x,y,size,size,0,1);
         float lx=x+(LAMP_X-PIVOT_X)*size,ly=y+(LAMP_Y-PIVOT_Y)*size;
@@ -38,7 +39,8 @@ public final class LandMarkerArt {
         try{
             Painter world=new RiverPainter(ScreenView.offset(p,0,-baseRise(g)*g.layout.camera.scale),g.layout.camera);
             for(int i=4;i>=1;i--)world.circle(wx,wy,6+i*4,SoftCue.alpha(color,power*(5-i)*.012f));
-            ShadowView.scenery(g,p,SpriteAtlas.LAND_MARKER,frame,wx,wy,baseRise(g),SIZE);
+            if(g.montroseStage())MontroseBeaconArt.ground(g,p,color==NavigationLights.RED?MontroseBeaconArt.EAST:MontroseBeaconArt.WEST);
+            else ShadowView.scenery(g,p,SpriteAtlas.LAND_MARKER,frame,wx,wy,baseRise(g),SIZE);
         }finally{p.popClip();}
     }
     /** Water rectangles projected at deck height exclude any off-quay shadow spill. */

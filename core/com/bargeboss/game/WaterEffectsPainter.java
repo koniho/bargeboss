@@ -19,6 +19,9 @@ public final class WaterEffectsPainter implements Painter {
     private final float screenWidth,screenHeight;
     private final float[][] water;
     private final boolean marina,calumet,indiana;
+    private boolean preclipped;
+    /** Preserve polygon stroke geometry when a caller already installed the water mask. */
+    WaterEffectsPainter preclipped(){preclipped=true;return this;}
     public WaterEffectsPainter(Game g,Painter target) {
         this.target=target;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
     }
@@ -70,7 +73,9 @@ public final class WaterEffectsPainter implements Painter {
     }
     public void line(float x,float y,float xx,float yy,float width,int color) {
         if((color>>>24)==0)return;
-        float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);
+        // Both sqrt contracts are correctly rounded; Math.sqrt lets Android use
+        // its intrinsic here. Physics and replay calculations retain StrictMath.
+        float dx=xx-x,dy=yy-y,length=(float)Math.sqrt(dx*dx+dy*dy);
         if(length<.0001f) {circle(x,y,width*.5f,color);return;}
         float nx=-dy/length*width*.5f,ny=dx/length*width*.5f;
         poly(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny},color);
@@ -87,6 +92,7 @@ public final class WaterEffectsPainter implements Painter {
         }
         if(camera!=null && (camera.screenX(maxX,maxY)<-1 || camera.screenX(minX,minY)>screenWidth+1
                 || camera.screenY(minX,maxY)<-1 || camera.screenY(maxX,minY)>screenHeight+1))return;
+        if(preclipped){target.poly(points,color);return;}
         if(calumet){CalumetRiver.paintWater(target,points,color);return;}
         if(indiana){IndianaHarbor.paintWater(target,points,color);return;}
         if(marina){MontroseHarbor.paintWater(target,points,color);return;}

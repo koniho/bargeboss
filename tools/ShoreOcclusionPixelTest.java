@@ -12,7 +12,7 @@ public final class ShoreOcclusionPixelTest {
         cachedWalls();
         if(args.length>0 && args[0].equals("terrain"))return;
         wallCorners();
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].equals("montrose")?Challenges.MONTROSE:args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
         for(int bank=0;bank<4;bank++)for(int kind=0;kind<4;kind++)for(int heading=0;heading<32;heading++) {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
             float y=bank==0?TrainingChannel.BASIN_BOTTOM-16:bank==3?TrainingChannel.BASIN_TOP+16:600;
@@ -21,6 +21,12 @@ public final class ShoreOcclusionPixelTest {
                 int edge=(coast.length/8*bank)/2*2,next=(edge+2)%coast.length;
                 float dx=coast[next]-coast[edge],dy=coast[next+1]-coast[edge+1],len=Physics.length(dx,dy),sign=PolygonWater.area(coast)>0?1:-1;
                 x=(coast[edge]+coast[next])*.5f-dy/len*sign*16;y=(coast[edge+1]+coast[next+1])*.5f+dx/len*sign*16;
+            }
+            if(g.montroseStage()){
+                float[][] endpoints={{1520,-660,1320,-750},{2240,-1150,2290,-1370},{2125,-1470,2095,-1410},{1990,-552,1870,-560}};
+                float[] a=endpoints[bank];float ax=MontroseHarbor.mapX(a[0]),ay=MontroseHarbor.mapY(a[1]),bx=MontroseHarbor.mapX(a[2]),by=MontroseHarbor.mapY(a[3]);
+                float dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;
+                x=(ax+bx)*.5f;y=(ay+by)*.5f;if(!MontroseHarbor.openWater(x+nx*8,y+ny*8)){nx=-nx;ny=-ny;}x+=nx*16;y+=ny*16;
             }
             Body b=new Body(kind==0?0:1,kind-1,x,y,heading*(float)Math.PI/16);b.floatingInitialized=true;b.heave=(heading%3-1)*1.5f;
             b.vx=45*(float)StrictMath.cos(b.angle);b.vy=45*(float)StrictMath.sin(b.angle);
@@ -32,7 +38,7 @@ public final class ShoreOcclusionPixelTest {
             Painter p=new DesktopPainter(graphics);p.beginFrame();VesselView.draw(g,new RiverPainter(p,c),b,kind==0,false);
             // Native clip must be fully restored before subsequent scenery/UI drawing.
             p.rect(2,2,4,4,0xffff00ff);graphics.dispose();check(image.getRGB(3,3)==0xffff00ff,"clip stack restores after a vessel");
-            float rise=GroundArt.LAND_RISE*scale,depth=c.screenY(x,y);
+            float rise=(g.montroseStage()?MontroseHarbor.LAND_RISE:GroundArt.LAND_RISE)*scale,depth=c.screenY(x,y);
             for(int py=20;py<380;py+=3)for(int px=8;px<376;px+=3) {
                 float wx=c.worldX(px+.5f,py+.5f+rise),wy=c.worldY(px+.5f,py+.5f+rise);
                 boolean land=!g.inWater(wx,wy);

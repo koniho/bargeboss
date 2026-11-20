@@ -1,0 +1,48 @@
+{
+  "scene": "montrose-beach",
+  "mode": "freeze",
+  "warmup": 120,
+  "samples": 360,
+  "vulkan": [
+    "1.0"
+  ],
+  "interval_ms": {
+    "mean": 16.68216049444444,
+    "p50": 16.695999,
+    "p95": 24.072333,
+    "max": 25.62224
+  },
+  "draw_ms": {
+    "mean": 7.168651347222221,
+    "p50": 7.181355,
+    "p95": 9.117353,
+    "max": 10.051224
+  },
+  "advance_ms": {
+    "mean": 0.008032086111111112,
+    "p50": 0.005599,
+    "p95": 0.021485,
+    "max": 0.041267
+  },
+  "decode_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "layer_build_ms": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0
+  },
+  "fps": 59.94427402452003,
+  "zoom_range": [
+    0.6629174947738647,
+    0.6629174947738647
+  ],
+  "device": "Pixel 11 Pro / Android 17",
+  "source": "c9f6eb4 plus cold terrain preparation fix",
+  "first_completed_draw_ms": 780.82447,
+  "all_frames_vulkan": true
+}

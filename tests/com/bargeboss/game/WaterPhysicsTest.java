@@ -5,6 +5,7 @@ public final class WaterPhysicsTest {
     private static void check(boolean ok,String message) { checks++; if(!ok) throw new AssertionError(message); }
     private static Game isolated() { Game g=new Game();g.resetPracticeYard();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}g.tug.x=300;g.tug.y=450;return g; }
     public static void run() {
+        orbitalCompatibility();
         Body along=new Body(1,0,300,450,0),sideways=new Body(2,0,300,450,(float)Math.PI/2),reverse=new Body(3,0,300,450,0);
         along.vx=sideways.vx=60;reverse.vx=-60;
         for(int i=0;i<120;i++) { Physics.integrate(along);Physics.integrate(sideways);Physics.integrate(reverse); }
@@ -46,6 +47,29 @@ public final class WaterPhysicsTest {
         for(int i=0;i<30;i++) { g.visualTicks++;trail.step(g); }
         check(trail.x[0]==anchorX && trail.y[0]==anchorY && trail.age[0]==130,"old wake stays in the river and continues after its boat moves away or stops");
         System.out.println(checks+" directional drag, glide, heave and trough-timed wake assertions passed");
+    }
+    private static void orbitalCompatibility(){
+        Game g=new Game();g.challengeId=Challenges.MONTROSE;float[] pair=new float[2];
+        for(int power:new int[]{0,4,12})for(int bearing=0;bearing<24;bearing++){
+            g.settings.resetWaves();g.settings.adjustWaves(power-4);g.settings.turnWaves(bearing);
+            for(int sample=0;sample<20;sample++){
+                float x=MontroseHarbor.mapX(-100+sample*151),y=MontroseHarbor.mapY(-2100+sample*173),tick=sample*41.25f;
+                SeaWaves.Surface surface=new SeaWaves.Surface(g,tick);
+                check(Float.floatToIntBits(surface.height(x,y))==Float.floatToIntBits(SeaWaves.value(g,x,y,tick,0)),"Prepared render height preserves scalar wave field exactly");
+                surface.displacement(x,y,pair);
+                for(int axis=0;axis<2;axis++)check(Float.floatToIntBits(pair[axis])==Float.floatToIntBits(SeaWaves.value(g,x,y,tick,axis+3)),"Paired orbital displacement preserves scalar wave field exactly");
+            }
+        }
+        int seed=0x12345678;
+        for(int i=0;i<100000;i++){
+            seed=seed*1664525+1013904223;float x=Float.intBitsToFloat(seed);
+            seed=seed*1664525+1013904223;float y=Float.intBitsToFloat(seed);
+            check(Float.floatToIntBits((float)Math.sqrt(x*x+y*y))==Float.floatToIntBits(Physics.length(x,y)),"Rendering sqrt preserves strict length including exceptional values");
+        }
+        for(float x:new float[]{Float.NEGATIVE_INFINITY,-100,-1,-0f,0,.01f,.5f,1,2,Float.POSITIVE_INFINITY,Float.NaN}){
+            float t=Physics.clamp(x,0,1),expected=t*t*(3-2*t);
+            check(Float.floatToIntBits(SeaWaves.smooth(0,1,x))==Float.floatToIntBits(expected),"Fast smooth keeps endpoint, NaN and signed-zero behavior");
+        }
     }
     private static final class WaveBounds implements Painter {
         float minY=Float.MAX_VALUE,maxY=-Float.MAX_VALUE;

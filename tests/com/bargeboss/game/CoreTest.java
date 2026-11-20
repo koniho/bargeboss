@@ -121,7 +121,7 @@ public final class CoreTest {
         SurfaceMaterialTest.run();
         FoamBatchTest.run();
         SceneLightingTest.run();LightingProfileTest.run();
-        WaterEnergyBoundsTest.run();WaterClipTest.run();
+        WaterEnergyBoundsTest.run();WaterClipTest.run();SeaWaveZoomTest.run();WeatherTest.run();
         UnionClipTest.run();
         ShorelineMaterialTest.run();
         ShorelineViewTest.run();
@@ -141,6 +141,8 @@ public final class CoreTest {
         MontroseBoatHoistTest.run();
         MontroseEntranceShoreTest.run();
         MontroseWaterIndexTest.run();
+        MontroseBeachTest.run();
+        MontroseBeaconTest.run();
         CalumetMapTest.run();
         IndianaHarborTest.run();
         MarinaArtTest.run();
@@ -177,8 +179,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Unified waves, instructor radio and edge reply layout; JVM/native parity verified.
-        check(Parity.signature().equals("28c1c74c:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Merged wave/weather/lighting composition; JVM/native drawing parity verified.
+        check(Parity.signature().equals("b0bbe1a2:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
