@@ -3566,3 +3566,44 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Raw CSV, fresh CPU hotspots and next targets:
   docs/performance/foam-buffer-2026-11-19/README.md. Remaining candidates include
   plain-color machinery paths and exact lamp occlusion work; no cache expansion.
+
+## 2026-11-20 — Android Vulkan experiment: GPU headroom, no throughput win
+
+- Implemented an opt-in Vulkan 1.0/arm64 Painter with the existing shared Java
+  scene, shader sources, cropped assets and Canvas resource preparation. Normal
+  launches/builds remain Canvas. Unsupported native initialization/drawing falls
+  back; cold translucent groups use Canvas preparation frames to preserve group
+  opacity. iOS unchanged.
+- Added bounded retained surface commands (96 chunks / 8 MiB), deferred texture
+  transfer retirement, conservative per-scope stencil scissors, transient S8
+  stencil, state-bind deduplication and compatible shader-family batching.
+  Bounded stencil improved the exploratory single-sample interval 42.35 ->
+  33.71 ms with zero changed pixels across 2,602,800 native screenshot pixels.
+  4x MSAA and specialization per individual shader kind were rejected for cost.
+  Single-sample edge quality remains an experimental-backend limitation.
+- GPU timestamps exposed only ~4.3–4.6 ms actual GPU work; presentation includes
+  significant driver CPU (~8.6–10 ms), plus waits. A bounded native render thread
+  prevents UI blocking, but replacing queued frames is not an FPS improvement.
+  Added a per-frame Vulkan submission marker and a capture tool that retains
+  compositor timestamps, native CPU/GPU timings and UI CSVs together.
+- Final V/C/C/V sequence (240 warmup + 600 UI samples each): mean displayed
+  intervals Vulkan 22.69 / 27.93 ms; Canvas 22.56 / 22.29 ms. Compositor history
+  contains the final 62 intervals per run. No repeatable Vulkan throughput win;
+  no 60 FPS/headroom claim. UI drawing alone misleadingly reached ~11 ms in
+  Vulkan A. Thermal status LIGHT; second-pass degradation not isolated.
+- No larger cache justified: sampled frame construction counts were zero, with
+  a stable 3.90 MiB background reservation. GPU texture budget is 160 MiB in
+  addition to CPU bitmap ownership, not proof of physical residency.
+- Shared all-heading shoreline regressions and full Android checks/build passed;
+  native scoped-stencil pixels matched and final tutorial frame was inspected.
+  Complete Vulkan-native 32-heading, cache-pressure, all-stage and cross-vendor
+  validation remain outstanding. Keep this backend experimental.
+- Raw evidence, reproducible commands, memory limits, rejected approaches and
+  rollout limitations: docs/performance/vulkan-2026-11-20/README.md.
+- Normal title launch additionally exposed duplicate GPU uploads of a shared sky
+  bitmap under different frame keys. Fixed with bitmap-identity texture sharing,
+  retaining strip UVs and the 160 MiB budget; no cache enlargement. Full checks
+  and Android build passed again after this correction.
+- After sharing the sky texture, normal title launch stayed on Vulkan, and a
+  background/foreground surface recreation passed without fallback. Returned
+  the development phone to normal Canvas launch after validation.

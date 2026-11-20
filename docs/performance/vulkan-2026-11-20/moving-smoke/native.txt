@@ -1,0 +1,3 @@
+--------- beginning of main
+11-20 00:45:43.932 10099 10495 I BargeBossVulkan: mean native ms wait=0.119 encode=2.672 present=18.456 presentCPU=8.178 gpu=4.343 vertices=82398 batches=1186
+11-20 00:45:43.932 10099 10495 I BargeBossVulkan: frames submitted=151 completed=120 replaced=30

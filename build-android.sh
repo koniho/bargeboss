@@ -18,7 +18,12 @@ if [ "${BARGEBOSS_PROFILE:-0}" = 1 ]; then
     sed 's/<application /<application android:debuggable="true" /' AndroidManifest.xml > build/android/profile-manifest.xml
     bargeboss_manifest=build/android/profile-manifest.xml
 fi
-aapt2 link -o build/android/base.apk -I "$SDK_JAR" --manifest "$bargeboss_manifest" -A assets --java build/android/gen --min-sdk-version 24 --target-sdk-version 36 build/android/resources.zip
+bargeboss_gpu_assets=
+if [ "${BARGEBOSS_VULKAN:-0}" = 1 ]; then
+    ./tools/build-vulkan.sh
+    bargeboss_gpu_assets='-A build/android/vulkan/assets'
+fi
+aapt2 link $bargeboss_gpu_assets -o build/android/base.apk -I "$SDK_JAR" --manifest "$bargeboss_manifest" -A assets --java build/android/gen --min-sdk-version 24 --target-sdk-version 36 build/android/resources.zip
 find core android build/android/gen -name '*.java' | sort > build/android/sources.txt
 if [ "${BARGEBOSS_PROFILE:-0}" = 1 ]; then
     find developer/shared developer/android -name '*.java' | sort >> build/android/sources.txt
@@ -28,6 +33,9 @@ javac -Xlint:-options --release 8 -encoding UTF-8 -cp "$SDK_JAR" -d build/androi
 find build/android/classes -name '*.class' | sort > build/android/classes.txt
 d8 --lib "$SDK_JAR" --min-api 24 --output build/android/dex @build/android/classes.txt
 (cd build/android/dex && zip -q -j ../base.apk classes*.dex)
+if [ "${BARGEBOSS_VULKAN:-0}" = 1 ]; then
+    (cd build/android/vulkan && zip -q ../base.apk lib/arm64-v8a/libbargeboss_vulkan.so)
+fi
 if command -v zipalign >/dev/null; then
     zipalign -f -p 4 build/android/base.apk build/android/aligned.apk
 else

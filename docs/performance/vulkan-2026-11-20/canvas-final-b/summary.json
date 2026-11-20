@@ -1,0 +1,18 @@
+{
+  "renderer": "canvas",
+  "samples": 600,
+  "interval_ms": {
+    "median": 22.5439535,
+    "p95": 26.277786
+  },
+  "draw_ms": {
+    "median": 12.842387500000001,
+    "p95": 13.754714
+  },
+  "presentation_ms": {
+    "count": 62,
+    "median": 16.656328,
+    "p95": 33.315207,
+    "mean": 22.292958370967742
+  }
+}

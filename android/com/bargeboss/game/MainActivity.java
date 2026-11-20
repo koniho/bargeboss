@@ -7,6 +7,8 @@ import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
@@ -26,7 +28,16 @@ public final class MainActivity extends Activity {
             }
             view.setPadding(left,top,right,bottom); return insets;
         });
-        gameView=new GameView(); root.addView(gameView,new FrameLayout.LayoutParams(-1,-1)); setContentView(root);
+        gameView=new GameView();
+        if("vulkan".equals(getIntent().getStringExtra("bb_renderer"))) {
+            SurfaceView surface=new SurfaceView(this);root.addView(surface,new FrameLayout.LayoutParams(-1,-1));gameView.gpuSurface=surface;
+            surface.getHolder().addCallback(new SurfaceHolder.Callback(){
+                public void surfaceCreated(SurfaceHolder holder){gameView.openGpu(holder);}
+                public void surfaceChanged(SurfaceHolder holder,int format,int w,int h){gameView.requestRedraw();}
+                public void surfaceDestroyed(SurfaceHolder holder){gameView.closeGpu();}
+            });
+        }
+        root.addView(gameView,new FrameLayout.LayoutParams(-1,-1)); setContentView(root);
         fullscreen(); root.requestApplyInsets();
         if(android.os.Build.VERSION.SDK_INT>=33) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -34,11 +45,11 @@ public final class MainActivity extends Activity {
         }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
-    protected void onDestroy(){if(gameView!=null){gameView.audio.close();gameView.painter.close();}super.onDestroy();}
+    protected void onDestroy(){if(gameView!=null){gameView.audio.close();gameView.closeGpu();gameView.painter.close();}super.onDestroy();}
     protected void onPause() { gameView.stop(); super.onPause(); }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if(hasFocus) fullscreen(); else if(gameView!=null) {gameView.game.background();gameView.audio.stop();}
+        if(hasFocus) fullscreen(); else if(gameView!=null) {if(gameView.developer==null)gameView.game.background();gameView.audio.stop();}
         if(gameView!=null) gameView.requestRedraw();
     }
     private void fullscreen() {
@@ -58,6 +69,17 @@ public final class MainActivity extends Activity {
     @Override public void onBackPressed() { gameView.togglePause(); }
 
     private final class GameView extends View implements Choreographer.FrameCallback {
+        private SurfaceView gpuSurface;
+        private VulkanPainter gpu;
+        private boolean gpuFailed;
+        void openGpu(SurfaceHolder holder){
+            if(gpuFailed)return;
+            try {gpu=new VulkanPainter(holder.getSurface(),getAssets(),painter);android.util.Log.i("BargeBoss","Vulkan renderer active");}
+            catch(RuntimeException|UnsatisfiedLinkError e){fallbackGpu(e);}
+            requestRedraw();
+        }
+        void closeGpu(){if(gpu!=null){gpu.close();gpu=null;}}
+        void fallbackGpu(Throwable error){android.util.Log.e("BargeBoss","Vulkan unavailable; using Canvas",error);gpuFailed=true;closeGpu();if(gpuSurface!=null)gpuSurface.setVisibility(View.GONE);requestRedraw();}
         private final FrameGate frames=new FrameGate();
         private final EngineSound audio=new EngineSound(MainActivity.this);
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
@@ -119,6 +141,11 @@ public final class MainActivity extends Activity {
         protected void onDraw(Canvas canvas) {
             prepareLevelAssets();
             if(developer!=null)developer.beforeDraw();
+            if(gpu!=null){
+                try {gpu.start(viewport.logicalWidth(),viewport.logicalHeight());game.render(gpu);gpu.present(viewport);painter.profileGpuFrame(true);frames.rendered(game);if(developer!=null)developer.afterDraw();return;}
+                catch(VulkanPainter.PreparingLayer waiting){android.util.Log.d("BargeBossVulkan","Canvas frame while preparing group opacity");}
+                catch(RuntimeException error){fallbackGpu(error);}
+            }
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,viewport.logicalWidth(),viewport.logicalHeight()); painter.bind(canvas); game.render(painter); canvas.restore();
             frames.rendered(game);

@@ -155,6 +155,24 @@ public final class CanvasPainter implements Painter {
     Rect profileFactoryBounds(int frame){return new Rect(atlas(SpriteAtlas.FACTORY).factoryOffsets[frame]);}
     Bitmap profileFrameImage(int id,int frame){return frameImage(atlas(id),frame);}
 
+    // Shared decoded/prepared resources for the direct GPU host. No scene selection here.
+    Rect gpuSource(int id,int frame){Atlas a=atlas(id);frameImage(a,frame);return new Rect(a.source(frame,true));}
+    float[] gpuCrop(int id,int frame){Atlas a=atlas(id);if(id!=SpriteAtlas.FACTORY)return new float[]{0,0,1,1};Rect r=a.factoryOffsets[frame],b=a.authoredFrames[frame];return new float[]{(r.left-b.left)/(float)b.width(),(r.top-b.top)/(float)b.height(),r.width()/(float)b.width(),r.height()/(float)b.height()};}
+    private boolean gpuFrame;
+    void profileGpuFrame(boolean value){gpuFrame=value;}
+    boolean profileGpuFrame(){return gpuFrame;}
+    Bitmap gpuLayer(StaticLayer layer,float scale){
+        float density=StaticLayer.rasterScale(scale);long key=layerKey(layer,density);Bitmap image=layers.get(key);
+        if(image==null && terrain!=null){image=terrain.take(key);if(image!=null){roomForLayer(image.getAllocationByteCount());layers.put(key,image);layerBytes+=image.getAllocationByteCount();}}
+        if(image==null && layer.backgroundSafe()){requestLayer(layer,density,key,true);return null;}
+        if(image==null && layerBuilds<StaticLayer.maxBuildsPerFrame()){
+            long bytes=4L*(long)StrictMath.ceil(layer.width()*density)*(long)StrictMath.ceil(layer.height()*density);
+            if(bytes<=0 || bytes>StaticLayer.cacheBudgetBytes() || !roomForLayer(bytes))return null;
+            layerBuilds++;image=rasterLayer(layer,density);layers.put(key,image);layerBytes+=image.getAllocationByteCount();
+        }
+        return image;
+    }
+
     public boolean preparesLayers(){return asyncLayers && !paintingLayer;}
     public void prepareLayer(StaticLayer layer,float scale) {
         if(!preparesLayers() || !layer.backgroundSafe() || !(scale>0) || !Float.isFinite(scale))return;
@@ -256,7 +274,7 @@ public final class CanvasPainter implements Painter {
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
     public void popClip(){flushSurfaceMesh();flushFoam();canvas.restore();}
-    public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
+    public void beginFrame() {if(!paintingLayer) {gpuFrame=false;layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) { flushSurfaceMesh();
         float width=layer.width()*scale,height=layer.height()*scale;
         if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;

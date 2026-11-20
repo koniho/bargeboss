@@ -23,7 +23,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final boolean trace,systemTrace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
-    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height,rotation_frames,rotation_ready,rotation_prepare_ms,tug_heading,tug_speed,barge_heading,barge_speed,tow_count,tow_tension,tug_x,tug_y,exclusion,surface_command_mib,live_surface_mesh,bulk_foam\n";
+    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height,rotation_frames,rotation_ready,rotation_prepare_ms,tug_heading,tug_speed,barge_heading,barge_speed,tow_count,tow_tension,tug_x,tug_y,exclusion,surface_command_mib,live_surface_mesh,bulk_foam,vulkan\n";
     private int frame;
     private boolean configured,finished,tracing,reviewStarted,reviewDone;
     private final Activity activity;
@@ -71,7 +71,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         asyncLayers=intent.getBooleanExtra("bb_async_layers",true);painter.profileAsyncLayers(asyncLayers);
         directory=new File(activity.getExternalFilesDir(null),"profiles");
         if(!directory.isDirectory() && !directory.mkdirs())throw new IllegalStateException("Cannot create profile directory");
-        rows=new double[warmup+samples][51];
+        rows=new double[warmup+samples][52];
     }
     public Game game(){return root;}
     public void configure(float width,float height) {
@@ -152,7 +152,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         Body barge=g.tow.primary();
         r[39]=g.tug.angle;r[40]=g.tug.speed();r[41]=barge==null?Double.NaN:barge.angle;
         r[42]=barge==null?Double.NaN:barge.speed();r[43]=g.tow.count();
-        r[44]=g.tow.tension;r[45]=g.tug.x;r[46]=g.tug.y;r[47]=activeExclusion;r[48]=painter.profileSurfaceBytes()/1048576.0;r[49]=painter.profileLiveSurfaceMeshes()?1:0;r[50]=painter.profileBulkFoam()?1:0;
+        r[44]=g.tow.tension;r[45]=g.tug.x;r[46]=g.tug.y;r[47]=activeExclusion;r[48]=painter.profileSurfaceBytes()/1048576.0;r[49]=painter.profileLiveSurfaceMeshes()?1:0;r[50]=painter.profileBulkFoam()?1:0;r[51]=painter.profileGpuFrame()?1:0;
         advanceNs=0;frame++;
         if(frame==warmup)Log.i("BargeBossProfile","SAMPLING "+scene+" "+mode);
         if(frame>=warmup+samples)finish("complete");

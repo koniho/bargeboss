@@ -1,0 +1,106 @@
+{
+  "vk-specialized-all-frames": {
+    "interval_ms": {
+      "median": 109.945584,
+      "p95": 128.114036
+    },
+    "draw_ms": {
+      "median": 108.628814,
+      "p95": 124.377577
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-retained-frames": {
+    "interval_ms": {
+      "median": 114.407689,
+      "p95": 132.367915
+    },
+    "draw_ms": {
+      "median": 113.3305975,
+      "p95": 130.663071
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-msaa-baseline-frames": {
+    "interval_ms": {
+      "median": 141.452277,
+      "p95": 157.188696
+    },
+    "draw_ms": {
+      "median": 139.861374,
+      "p95": 155.578992
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-early-frames": {
+    "interval_ms": {
+      "median": 87.554777,
+      "p95": 97.070338
+    },
+    "draw_ms": {
+      "median": 86.4339775,
+      "p95": 95.088827
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-specialized-frames": {
+    "interval_ms": {
+      "median": 84.66678250000001,
+      "p95": 118.894217
+    },
+    "draw_ms": {
+      "median": 83.7162495,
+      "p95": 117.576899
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "canvas-current-frames": {
+    "interval_ms": {
+      "median": 27.2395575,
+      "p95": 28.989453
+    },
+    "draw_ms": {
+      "median": 13.95651,
+      "p95": 15.484297
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-bounded-stencil-frames": {
+    "interval_ms": {
+      "median": 33.712903,
+      "p95": 38.607734
+    },
+    "draw_ms": {
+      "median": 32.910703,
+      "p95": 37.591145
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  },
+  "vk-single-sample-frames": {
+    "interval_ms": {
+      "median": 42.3498175,
+      "p95": 61.512525
+    },
+    "draw_ms": {
+      "median": 41.471509999999995,
+      "p95": 59.773765
+    },
+    "samples": 300,
+    "zoom": "0.7834479212760925",
+    "tick": "8509.0"
+  }
+}
