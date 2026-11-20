@@ -174,8 +174,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Continuous helm/figure-eight/slip/chart and observer/sound trace reviewed; delivery totals retained.
-        check(Parity.signature().equals("266553ab:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Circular navigation lenses retained; removed square housings change drawing trace only.
+        check(Parity.signature().equals("b0c81ead:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

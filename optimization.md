@@ -3546,3 +3546,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Raw evidence and limitations: docs/performance/ipad-tutorial-2026-11-19/README.md.
   No fresh native screenshot comparison; no claims about older iPhones or long
   thermal runs. App returned to normal gameplay after capture.
+
+
+## 2026-11-19 — Android foam bulk staging; circular vessel lamps
+
+- Fresh ART trace after live-surface batching ranked FoamMesh.add at ~7.8%
+  inclusive sampled CPU. Replaced per-component native buffer stores with a
+  single bulk copy per flush; bounded extra 72 KiB heap staging. No foam visual,
+  animation, clipping or batch-capacity changes. Native screenshots are identical
+  across 2,602,800 pixels between old/new buffer paths.
+- Same-process 8-block ABBA at minimum tutorial zoom: median frame interval
+  23.09 -> 22.19 ms, p95 28.26 -> 26.00; CPU drawing 14.47 -> 13.09 ms,
+  p95 16.24 -> 14.08. Modest measured improvement, still not 60 FPS. Separate
+  enabled run 21.36 ms interval. Discarded an incomplete 116-frame warmup capture.
+- Removed square housings behind all shared watercraft navigation lights at user
+  request; circular lenses/glow/colors/sectors remain. All-heading renderer
+  review and registration passed. Full check/build and JVM/J2ObjC parity passed;
+  intentional drawing-trace baseline now b0c81ead:2:1350. Installed on Android.
+- Raw CSV, fresh CPU hotspots and next targets:
+  docs/performance/foam-buffer-2026-11-19/README.md. Remaining candidates include
+  plain-color machinery paths and exact lamp occlusion work; no cache expansion.

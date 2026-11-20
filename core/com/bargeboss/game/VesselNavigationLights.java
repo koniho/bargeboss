@@ -116,8 +116,6 @@ public final class VesselNavigationLights {
             float x=river?c.screenX(wx,wy):wx,y=river?c.screenY(wx,wy)-(height(b,fixture)*.81649658f+bob)*scale:wy-height(fixture)-bob;
             if(powered && fixture==MAST && river){x=screenX(b,fixture,true,c);y=screenY(b,fixture,true,c,bob);}
             if(b.cruiser && fixture==ANCHOR)canvas.line(x,y,x,y+2.3f*.81649658f*scale,.65f*scale,0xff647476);
-            // Newly modeled housings are distinct from painted warm work lamps.
-            if(fixture!=MAST)canvas.rect(x-1.8f*scale,y-1.6f*scale,3.6f*scale,3.8f*scale,alpha(0xff101e28,visible,220));
             glow(canvas,x,y,scale,visible,color(fixture),g.visualTicks,fixture);
         }
     }

@@ -36,6 +36,8 @@ public final class CanvasPainter implements Painter {
     private WaterFoamShader waterFoamShader;
     private FoamMesh foamMesh;
     private boolean meshFoam=true,inFoamBatch;
+    public boolean profileBulkFoam(){return foamMesh!=null && foamMesh.bulk;}
+    public void profileBulkFoam(boolean enabled){if(foamMesh!=null){flushFoam();foamMesh.bulk=enabled;}}
     public void profileMeshFoam(boolean enabled){meshFoam=enabled;}
     public void beginWaterFoamBatch(){inFoamBatch=meshFoam && foamMesh!=null && canvas.isHardwareAccelerated();}
     public void endWaterFoamBatch(){flushFoam();inFoamBatch=false;}
