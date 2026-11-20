@@ -3702,3 +3702,7 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   docs/performance/vulkan-command-reuse-2026-11-20/README.md.
 - Normal opt-in Vulkan title launch and Home/resume passed: fresh renderer on
   surface recreation, then 120 completed frames per ~2 seconds, no fallback.
+- Rebased onto concurrent finite-tutorial change `c50f07e`, preserving its notes.
+  Combined full Android build/checks and signed install passed; 240-warmup/180-sample
+  smoke capture: 11.29 ms mean displayed interval, 16.67 ms p95, no fallback. Earlier
+  A/B captures predate that scenery revision.

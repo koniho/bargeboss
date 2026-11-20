@@ -1,0 +1,8 @@
+--------- beginning of main
+11-20 01:36:32.958 24328 24328 I BargeBossVulkan: swapchain build=1 transform=2 extent=2238x1080
+11-20 01:36:36.943 24328 24391 I BargeBossVulkan: mean native ms wait=0.109 encode=4.252 present=0.487 presentCPU=0.447 gpu=3.450 vertices=78552 batches=1116 reuse=0 record=120 flags=0
+11-20 01:36:36.944 24328 24391 I BargeBossVulkan: frames submitted=120 completed=120 replaced=0
+11-20 01:36:38.373 24328 24391 I BargeBossVulkan: mean native ms wait=0.075 encode=4.181 present=0.481 presentCPU=0.424 gpu=3.529 vertices=78552 batches=1116 reuse=0 record=120 flags=0
+11-20 01:36:38.373 24328 24391 I BargeBossVulkan: frames submitted=240 completed=240 replaced=0
+11-20 01:36:39.710 24328 24391 I BargeBossVulkan: mean native ms wait=0.069 encode=4.433 present=0.453 presentCPU=0.418 gpu=3.552 vertices=78552 batches=1116 reuse=0 record=120 flags=0
+11-20 01:36:39.710 24328 24391 I BargeBossVulkan: frames submitted=360 completed=360 replaced=0

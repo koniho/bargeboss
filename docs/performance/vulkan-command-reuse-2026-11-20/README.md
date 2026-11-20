@@ -3,6 +3,8 @@
 Device: connected Android grizzly, PowerVR C-Series; landscape 2410x1080 screen,
 2238x1080 game surface. Thermal status sampled as LIGHT (1); no override.
 Branch: `perf/android-vulkan-command-reuse`. Canvas remains the production default.
+The comparison captures precede the final rebase onto `c50f07e` (finite tutorial
+scenery/camera). Do not attribute those scenery changes to this A/B comparison.
 
 ## Finding
 
@@ -83,3 +85,8 @@ add `--scene tow-tight-circle --mode replay`. The controls require a developer
 session. Keep the phone awake through `tools/phone-awake.sh` and restore afterward.
 Raw CSV, presentation timestamps, launch arguments and native logs are retained
 in each capture directory.
+
+Final integration check after rebasing onto `c50f07e`: full Android checks/build
+passed, APK installed with the existing key, then a shorter 240-warmup/180-sample
+frozen capture completed without fallback: 11.29 ms mean displayed interval,
+16.67 ms p95. This is a smoke test of the combined changes, not a same-scene A/B.
