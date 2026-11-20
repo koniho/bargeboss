@@ -3326,3 +3326,6 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   both endpoints in native delivery/tutorial tests. Miss coverage stays explicit.
 - Local preview completed successfully after the fixture repairs; unchanged
   rendering replay signature 9b37d15a:2:1350 confirms fallback extraction parity.
+- Final local Android checks/build passed and the APK was installed/launched.
+  Native Back automation starts at the physical window edge: river-stage's
+  accessibility frame excludes safe-area insets and is not a valid edge origin.

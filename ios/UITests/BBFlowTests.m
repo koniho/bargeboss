@@ -72,9 +72,10 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     [[self point:stage x:x+size.width-960 y:y+(size.height-600)/2] tap];
 }
 - (void)tapPause:(XCUIElement *)stage {
-    CGSize size=[self logicalSize:stage];
-    [[self point:stage x:1 y:size.height*.5] pressForDuration:0.05
-        thenDragToCoordinate:[self point:stage x:120 y:size.height*.5]];
+    // river-stage excludes the safe-area inset; Back starts at the window edge.
+    XCUIElement *window=[[XCUIApplication alloc] init].windows.firstMatch;
+    [[window coordinateWithNormalizedOffset:CGVectorMake(0.001,0.5)] pressForDuration:0.05
+        thenDragToCoordinate:[window coordinateWithNormalizedOffset:CGVectorMake(0.2,0.5)]];
 }
 - (void)riverDrag:(XCUIElement *)stage x:(double)x y:(double)y toX:(double)xx toY:(double)yy hold:(double)hold {
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
