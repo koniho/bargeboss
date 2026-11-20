@@ -6,6 +6,7 @@ public final class TutorialView {
     private TutorialView() {}
     static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
+        if(t.arrival!=null && t.arrival.warningTicks>0)return t.arrival.warning();
         if(t.lesson==Tutorial.DONE)return null;
         if(t.entering)return t.arrival.content();
         if(t.lesson==Tutorial.CHANNEL){

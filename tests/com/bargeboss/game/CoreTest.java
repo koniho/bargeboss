@@ -88,6 +88,7 @@ public final class CoreTest {
         JoystickReverseTest.run();
         ReverseTutorialTest.run();
         TutorialEntranceTest.run();
+        TutorialEscortTest.run();
         BuoyOrbitTest.run();
         BuoyArtTest.run();
         BuoyPhysicsTest.run();
@@ -171,7 +172,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Dockside radio/green teacher trace reviewed; bounded deliveries and score retained.
-        check(Parity.signature().equals("79e259b2:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("6fdde206:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

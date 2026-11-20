@@ -6,6 +6,8 @@ public final class RadioAudio {
     private int sequence,cue,age=1000;
     public void transmit(int cue){if(cue<0 || cue>=COUNT)throw new IllegalArgumentException("Unknown radio cue");this.cue=cue;sequence++;age=0;}
     public void step(){if(age<1000)age++;}
+    public float progress(){return Physics.clamp(age/(cue==TEACHER?54f:30f),0,1);}
+    public boolean transmitting(Game g,Body boat){return progress()<1 && sequence>0 && boat==(cue==TEACHER?g.teacherBoat():g.tug);}
     public static int sequence(Game root){return root.activeGame().radio.sequence;}
     public static int cue(Game root){return root.activeGame().radio.cue;}
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.radio.age<30;}

@@ -19,6 +19,7 @@ public final class Bridge {
     private boolean near(Game g,float distance) {
         for(int i=0;i<Towline.CAPACITY;i++){Towline l=g.tow.link(i);if(l!=null && l.cargo!=null && crosses(l.leader.x,l.leader.y,l.cargo.x,l.cargo.y))return true;}
         if(near(g.tug,distance)) return true;
+        if(g.teacherBoat()!=null && near(g.teacherBoat(),distance))return true;
         for(Body b:g.cargo) if(b!=null && near(b,distance)) return true;
         return false;
     }

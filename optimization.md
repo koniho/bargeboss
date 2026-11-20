@@ -3386,3 +3386,12 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   launched successfully on the development phone. Actual shared-renderer frames
   reviewed for question/acknowledgement/approach/handoff and four-choice layout;
   native interaction/audio listening and iOS parity remain unverified this round.
+- Escort follow-up: a 1,024-point bounded breadcrumb route keeps about 155 units
+  behind the player, plus 85 per tow load. Water-clear shortcuts only, proximity
+  stops and bridge waiting preserve canal corners and prevent crowding. Actual
+  full tutorial replay reaches the working harbor and follows through the bridge.
+- Real player-to-teacher contact triggers a three-second nonmodal instruction
+  warning with a seven-second cooldown. Teacher/player radio arcs use registered
+  mast anchors inside vessel depth/shore clipping and expire with shared ticks.
+  Expanded escort/contact/lifecycle tests, full Android checks/build and reviewed
+  radio renders passed; parity baseline 6fdde206:2:1350 retains delivery totals.

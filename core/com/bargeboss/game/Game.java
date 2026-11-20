@@ -915,7 +915,11 @@ public final class Game {
                 for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null) damage(Physics.collide(a,cargo[j],splashes));
             }
         }
-        if(teacherBoat()!=null)feederContact(teacherBoat());
+        if(teacherBoat()!=null){
+            Body teacher=teacherBoat();float dx=teacher.x-tug.x,dy=teacher.y-tug.y,d=Math.max(1,Physics.length(dx,dy));
+            if((tug.vx*dx+tug.vy*dy)/d>5 && Physics.touching(tug,teacher,0))tutorial.arrival.warn(this);
+            feederContact(teacher);
+        }
         if(tutorial==null) for(Feeder f:feeders) if(f.phase!=Feeder.IDLE) {
             feederContact(f.boat);
             if(f.load!=null) feederContact(f.load);
