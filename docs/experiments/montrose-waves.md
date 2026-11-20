@@ -94,3 +94,57 @@ specific entrance behavior rather than adding a full fluid simulation.
   No claim of sustained 60 FPS, iOS-device parity, or improved rendering speed.
 - The phone APK was built and checked before concurrent instructor-radio tutorial
   edits appeared in the working tree; those edits are outside this increment.
+
+### Combined tutorial integration
+
+At the user's request, the final normal APK also includes the current instructor
+radio/skip flow, physical instructor contact, edge-aligned reply buttons and
+synthesized splash/fender audio. The radio replay helper now taps the already
+positioned choice center directly, fixing its missed response at 960×720.
+
+Full checks passed on this combined source, including 189 instructor-radio
+assertions and the continuous tutorial at all three tested canvas sizes.
+Isolated JVM/J2ObjC parity matched `faf08a7e:2:1350`; all core files were checked
+against that validation snapshot before installation. The normal signed Android
+APK was installed and launched on the phone. The earlier wave performance
+captures precede this integration and are not measurements of the final tutorial.
+
+### Live wave controls and surface response
+
+The Android developer build (`BARGEBOSS_PROFILE=1`) exposes **WAVES** in Montrose.
+Open it to change power from 0 to 3× in 0.25 steps and propagation bearing in
+15-degree steps. Reset restores 1× / 0 degrees. These experiment settings last
+for the session and do not alter saved career progress. Normal release builds
+hide the panel. The shared Java implementation owns its rendering and input.
+
+Crests are now bent and broken into shorter sections. Power increases their
+height, width and contrast, plus ambient ripple density and hull-ring spread,
+count and contrast. Hull rings and expanding wake strokes follow the local
+surface height and tilt. Ambient detail moves with analytic orbital displacement.
+Wake packet centers themselves are still fixed at emission positions; horizontal
+advection of wake positions and their force field is not implemented.
+
+Free hulls sample wave flow at bow, stern and both sides. Broadside resistance
+exceeds longitudinal resistance; unequal forces produce yaw torque. The existing
+bounded force integrator now consumes the adjusted direction/intensity and bent
+surface normal. Secured gameplay boats remain secured. Ambient heave uses spatial
+averaging without the old temporal lag; arriving local wakes remain damped.
+
+Shared checks cover orientation-dependent push, nonzero turning, calm force,
+rotated flow, strong-wave height/phase, ripple growth, control cancellation and
+bearing wrap. Final JVM/J2ObjC signature is `906722f:2:1350`. Full Android build
+checks and 1,461,230 all-heading shoreline pixel assertions passed. The developer
+APK was installed; live power/direction taps were exercised on the phone.
+No physical iOS-device validation was performed.
+
+### Sheltered harbor and first optimization
+
+Sheltered Montrose water now has zero ambient swell, including at maximum power.
+Waves build near the entrance and retain their existing appearance in open water.
+Boat-generated wakes and quiet hull ripples remain. The Montrose overview is
+rotated 90 degrees clockwise with its targets, cargo and player markers; its
+zoom slider and main-world camera are unchanged.
+
+A sampled trace identified repeated disjoint shoreline-mask construction as the
+main wide-view cost. The water-effects layer now retains one bounded static mask
+and transforms it with the camera. See the [performance comparison](../performance/montrose-mask-cache-2026-11-20/README.md).

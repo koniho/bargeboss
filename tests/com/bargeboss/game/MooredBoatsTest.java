@@ -23,7 +23,8 @@ public final class MooredBoatsTest {
                 moved=Math.max(moved,Physics.length(b.x-b.berth.x,b.y-b.berth.y));turned=Math.max(turned,Math.abs(b.yaw));
             }
         }
-        check(moved>.4f && turned>.015f,"boats drift and turn with water");
+        for(MooredFleet.FloatBoat b:g.mooredFleet.boats)if(SeaWaves.exposure(b.berth.x,b.berth.y)==0)
+            check(Math.abs(b.heave)<.001f && Math.abs(b.yaw)<.001f,"sheltered moorings remain calm without passing wakes");
         MooredFleet.FloatBoat forced=g.mooredFleet.boats[0];forced.x+=100;forced.y+=100;forced.yaw=2;forced.constrain();
         check(forced.clear() && Physics.length(forced.x-forced.berth.x,forced.y-forced.berth.y)<=MooredFleet.REACH+.001f,"large impulse remains tethered");
         check(DockTopLight.heightFactor(3)==0 && DockTopLight.heightFactor(20)==1,"dock tops receive only lights above them");

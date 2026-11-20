@@ -55,6 +55,14 @@ public final class VesselWaterlineTest {
         FoamTrace berth=new FoamTrace();VesselRipples.draw(g,berth,0,300,400,0,40,16,0,true);
         check(berth.alpha<idle.alpha,"moored vessels retain subdued ripples");
 
+        Game sea=new Game();sea.selectChallenge(Challenges.MONTROSE);sea.reset();sea.visualTicks=45;
+        float seaX=MontroseHarbor.mapX(900),seaY=MontroseHarbor.mapY(1500);
+        sea.settings.adjustWaves(-4);FoamTrace calm=new FoamTrace();
+        VesselRipples.draw(sea,calm,0,seaX,seaY,0,80,30,0,false);
+        sea.settings.adjustWaves(12);FoamTrace rough=new FoamTrace();
+        VesselRipples.draw(sea,rough,0,seaX,seaY,0,80,30,0,false);
+        check(rough.rings>calm.rings && rough.alpha>calm.alpha && rough.maxWidth>calm.maxWidth,"larger waves increase ripple count, contrast and spread");
+
         VesselFoam foam=new VesselFoam();g.visualTicks=0;foam.emit(g,tug);
         check(foam.emitted==0,"idle hull creates no continuous whitewater");
         tug.engineLoad=1;foam.emit(g,tug);

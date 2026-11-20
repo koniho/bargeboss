@@ -3834,3 +3834,95 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   speaker mix and native timing remain unmeasured. No claim of new frame-rate
   improvement or of recorded boat impacts. Local audition reel is untracked at
   out/audio-review/licensed-cues-v1.wav.
+
+### 2026-11-20 — Combined wave/tutorial Android integration
+
+- User requested ongoing integration of tutorial changes. Final normal APK
+  includes the wave experiment, instructor radio/skips, movable instructor,
+  edge reply layout and synthesized water/fender cues.
+- Fixed the replay helper's double layout transform for instructor replies:
+  choice boxes already contain canvas coordinates. The combined continuous
+  tutorial now passes at 960×600, 1333×600 and 960×720.
+- Full build/checks passed, including 189 instructor-radio assertions. Isolated
+  JVM/J2ObjC state/drawing parity: `faf08a7e:2:1350`. Verified core source still
+  matched the parity snapshot before installing the normal signed APK.
+- Normal Android APK installed and launched on the development phone. Updated
+  radio replies reviewed with the actual shared renderer at 960×720. Wave native
+  timing/pixel evidence above predates this combined tutorial/audio build; no new
+  iOS-device, Canvas, or subjective phone-speaker validation claimed.
+
+### 2026-11-20 — Live wave controls, phase and ripple response
+
+- Shared Java: session controls for 0–3× power and 15-degree propagation steps;
+  bent/broken crests with intensity-scaled width; locally raised/tilted ripple
+  and wake stamps; increased rough-water ripple density/spread/contrast.
+  Ambient heave uses spatial averaging without temporal phase lag. Existing
+  four-point anisotropic force/torque consumes the same adjusted wave field.
+- No new textures or unbounded caches. Crests retain a 512-patch ceiling and
+  adapt their segment size to the visible area. Reused bearing sine/cosine in
+  settings and skipped normal calculations for height-only sampling after the
+  first phone run exposed extra CPU work.
+- Android Vulkan inlet, replay, zoom 1.5, 120 warmup / 180 samples: before reuse,
+  presentation median 24.98 ms / p95 33.33; final median 16.66 / p95 24.99,
+  mean 20.24. Final UI draw median 13.34 ms. These are separate captures,
+  not a controlled thermal benchmark or a sustained-60-FPS claim.
+- Wide Montrose replay, zoom .65: presentation median 91.61 / p95 99.94 ms.
+  The previously recorded wide-view bottleneck remains unresolved. Summaries:
+  docs/performance/montrose-waves-2026-11-20/controls/; raw local captures:
+  out/profiles/waves-controls-{inlet,inlet-final,wide-final}/.
+- Full build/checks passed; 1,112 wave behavior and 32,839 waterline/ripple checks;
+  all-heading shoreline pixel regression passed 1,461,230 assertions. Final
+  JVM/J2ObjC signature 906722f:2:1350. Actual renderer reviewed at 1× and 3×,
+  including rotated waves. Developer APK installed; real phone power/bearing
+  taps passed. Existing tutorial commits remain integrated; fetch found no newer
+  completed tutorial commit. No real-iOS or Canvas timing validation this round.
+- Wake packet centers remain fixed at emission positions. Surface lift/tilt is
+  implemented; horizontal wake advection is a separate outstanding experiment.
+
+### 2026-11-20 — Montrose shoreline-mask investigation
+
+- User reports poor performance and requests nearly calm sheltered water plus a
+  clockwise 90-degree Montrose overview rotation.
+- Separate Android Vulkan sampled trace, wide Montrose replay, .65 zoom,
+  120 warmup / 90 sampled frames: no overflow or unmatched transitions.
+  Approximate inclusive main-thread CPU: shoreline region 75.1%, disjoint union
+  conversion 73.5%, WaterSurface.draw 71.8%; wave sampling 3.7%. Sampling adds
+  substantial overhead, so these percentages identify hotspots, not frame times.
+  Raw trace: out/profiles/montrose-opt-trace/methods.trace.
+- Vulkan requests disjoint clip triangles. Rebuilding the full-view water mask
+  dominates this fixture; GPU slowness and historical Vulkan regressions are not
+  established by this trace. The previous pre-wave baseline used the same Vulkan
+  host, so it cannot isolate changes made during earlier Vulkan optimization.
+- Added one per-water-surface static shore mask with a 96-world-unit guard band,
+  independent of the 32-entry per-thread shore cache that per-vessel requests
+  churn. Camera changes transform retained unit-projection geometry; no geometry
+  or drawing-order simplification. Source plus projected float payload capped at
+  2 MiB; oversized masks fall back. First construction / leaving the guard band
+  still builds synchronously and remains a possible cold/panning spike.
+- Harbor ambient exposure now reaches zero, including at 3× intensity; entrance
+  exposure builds near the mouth. Calm ambient detail is sparse; emitted boat
+  wakes remain visible. Open-water wave appearance is retained.
+- Initial checks: 12,648 cached/direct shoreline coverage probes across scales
+  and both union/disjoint modes; 1,113 wave behavior assertions passed. Native
+  timing and full validation pending below.
+- Final validation: full build/checks, overview pixel/input tests, all-heading
+  shoreline pixels (1,461,230), and JVM/J2ObjC c71edb61:2:1350 passed.
+  Native screenshots confirm calm harbor and clockwise overview with markers.
+- Untraced phone comparison (wide, .65 zoom, 120+180 frames): Vulkan before
+  median/mean presentation 83.28/87.00 ms, Canvas before 16.66/22.92 ms,
+  Vulkan after 16.66/19.82 ms (p95 24.99); CPU draw 81.77 -> 16.42 ms.
+  Old-build repeat after optimized run returned to 83.29/87.28 ms. Inlet after:
+  median/mean 16.65/16.70 ms, CPU draw median 8.90 ms. These compare the combined
+  cache/calm-water/map increment; no cache-only switch or historical bisect.
+- Evidence: docs/performance/montrose-mask-cache-2026-11-20/. Wide throughput is
+  about 50 FPS on average, not locked 60. Synchronous cache misses still need
+  work. No real-iOS validation; Canvas comparison is the before build only.
+
+### 2026-11-20 — Licensed audio merged with current main
+
+- Preserved the wave controls, calm Montrose water, cached shoreline masks and
+  rotated overview from main while merging the licensed audio branch.
+- Resolved only the appended evidence log and canonical replay baseline. Full
+  check.sh and Android debug APK build passed on the combined tree; JVM/J2ObjC
+  gameplay/drawing parity verified 7280861c:2:1350. Existing debug key reused.
+- No device installation or phone operation; prior listening limitations remain.

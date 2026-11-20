@@ -14,6 +14,7 @@ public final class Body implements Watercraft {
     public float engineLoad;
     float smokeCredit;
     public float heave,heaveVelocity;
+    float wakeHeave;
     public int wakeKickTicks,wakeCooldown,wakeTrailTicks;
     public boolean floatingInitialized;
     public float tiedX,tiedY,tiedAngle;

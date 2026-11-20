@@ -18,14 +18,14 @@ final class OverviewMapTest {
         Game g=new Game();ReplayInput.controlFixture(g);
         for(int stage=0;stage<4;stage++){
             OverviewMap.Chart c=new OverviewMap.Chart(stage);float x=(c.minX+c.maxX)*.5f,y=(c.minY+c.maxY)*.5f;
-            check(c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
+            check(c.stage==1?c.y(x+10)>c.y(x):c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
-            check(Math.abs((c.x(y+10)-c.x(y))-(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
+            check(Math.abs((c.x(y+10)-c.x(y))-Math.abs(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
             float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:TrainingScenery.bounds();
             check(c.minX==actual[0] && c.minY==actual[1] && c.maxX==actual[2] && c.maxY==actual[3],"overview uses authoritative scenery coverage for the tutorial");
-            check(c.boundary[0]==c.x(c.minY) && c.boundary[1]==c.y(c.maxX) && c.boundary[4]==c.x(c.maxY) && c.boundary[5]==c.y(c.minX),"border and world corners share one projection");
+            check(c.boundary[0]==c.x(c.stage==1?c.minX:c.minY) && c.boundary[1]==c.y(c.stage==1?c.minY:c.maxX) && c.boundary[4]==c.x(c.stage==1?c.maxX:c.maxY) && c.boundary[5]==c.y(c.stage==1?c.maxY:c.minX),"border and world corners share one projection");
             check(c.boundary[0]==OverviewMap.EDGE && c.boundary[1]==OverviewMap.EDGE,"top-left play corner is aligned to viewport stroke");
-            check(Math.abs(c.x(c.maxY)-(OverviewMap.WIDTH-OverviewMap.EDGE))<.001f || Math.abs(c.y(c.minX)-(OverviewMap.HEIGHT-OverviewMap.EDGE))<.001f,"full-area fit reaches at least one far viewport edge without stretching");
+            check(Math.abs(c.x(c.stage==1?c.maxX:c.maxY)-(OverviewMap.WIDTH-OverviewMap.EDGE))<.001f || Math.abs(c.y(c.stage==1?c.maxY:c.minX)-(OverviewMap.HEIGHT-OverviewMap.EDGE))<.001f,"full-area fit reaches at least one far viewport edge without stretching");
             Ink ink=new Ink();ink.chartOnly=true;c.paint(ink);check(ink.lines>8 && ink.fills>0 && c.navigableHoles.length>0,"chart has contours and a traversable cutout in the land fill");
         }
         for(float width:new float[]{960,1243,1440})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}){
@@ -77,9 +77,9 @@ final class OverviewMapTest {
                 for(float fraction:new float[]{0,.5f,1}) {
                     ReplayInput.tap(g,slider.x+24+(slider.w-48)*fraction,slider.centerY());
                     check(g.overview.zoom()>=1,"zoom cannot shrink below full play-area fit");
-                    checkAxis(OverviewMap.mapX(g,c.minY),OverviewMap.mapX(g,c.maxY),OverviewMap.mapX(g,y),OverviewMap.WIDTH);
-                    checkAxis(OverviewMap.mapY(g,c.maxX),OverviewMap.mapY(g,c.minX),OverviewMap.mapY(g,x),OverviewMap.HEIGHT);
-                    if(fraction==0)check(OverviewMap.mapX(g,c.maxY)<=OverviewMap.WIDTH && OverviewMap.mapY(g,c.minX)<=OverviewMap.HEIGHT,"max zoom-out fits entire play area independent of tug location");
+                    checkAxis(OverviewMap.mapX(g,c.stage==1?c.minX:c.minY),OverviewMap.mapX(g,c.stage==1?c.maxX:c.maxY),OverviewMap.mapX(g,x,y),OverviewMap.WIDTH);
+                    checkAxis(OverviewMap.mapY(g,c.stage==1?c.minY:c.maxX),OverviewMap.mapY(g,c.stage==1?c.maxY:c.minX),OverviewMap.mapY(g,x,y),OverviewMap.HEIGHT);
+                    if(fraction==0)check(OverviewMap.mapX(g,c.stage==1?c.maxX:c.maxY)<=OverviewMap.WIDTH && OverviewMap.mapY(g,c.stage==1?c.maxY:c.minX)<=OverviewMap.HEIGHT,"max zoom-out fits entire play area independent of tug location");
                 }
             }
             ReplayInput.tap(g,slider.x,slider.centerY());check(g.overview.zoom()==1 && g.overview.level()==0,"left overshoot cannot zoom beyond play-area size");

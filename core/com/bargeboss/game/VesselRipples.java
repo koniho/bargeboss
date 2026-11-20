@@ -12,11 +12,14 @@ public final class VesselRipples {
         float foam=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED)/10,0,1);
         float moving=moored?0:Physics.clamp((speed-1)/7,0,1);
         float cruise=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED*.4f)/(WaterFoam.SHED_SPEED*.6f),0,1);
-        for(int i=0;i<2;i++){
-            float age=Math.floorMod(g.visualTicks+seed*37+i*90,180)/180f;
+        float rough=g.montroseStage()?g.settings.waveIntensity()*SeaWaves.exposure(x,y):0;
+        spread+=rough*5;
+        int cycles=rough>1.4f?3:2;
+        for(int i=0;i<cycles;i++){
+            float age=Math.floorMod(g.visualTicks+seed*37+i*(180/cycles),180)/180f;
             float fade=(float)StrictMath.sin(age*StrictMath.PI);
             float alpha=fade*fade*(moored?.09f:.16f+motion*.18f);
-            alpha*=opacity;
+            alpha*=opacity*(1+rough*.3f);
             if(!moored && i==1)alpha*=SceneDetail.fade(length*g.layout.camera.scale,36,80);
             if(alpha<.003f)continue;
             // The transparent center starts inside the footprint and expands outwards.
@@ -36,14 +39,14 @@ public final class VesselRipples {
                     float dx=xx+c*cut+s*reach,dy=yy+s*cut-c*reach;
                     p.pushClipOutside(new float[]{ax,ay,bx,by,dx,dy,bx,by,cx,cy,dx,dy});
                 }
-                try{p.spriteAffine(SpriteAtlas.RIPPLES,Math.floorMod(seed+i,4),xx,yy,c*a,s*a,-s*b,c*b,alpha*(1-foam));}
+                try{WavePatch.sprite(g,p,SpriteAtlas.RIPPLES,Math.floorMod(seed+i,4),xx,yy,c*a,s*a,-s*b,c*b,alpha*(1-foam));}
                 finally{if(clipped)p.popClip();}
             }
             if(foam>0){
                 // Broad, porous foam islands billow beyond the hull footprint instead
                 // of drawing a clean concentric line. Keep two staggered soft cycles.
                 float fluffyLength=length*1.5f+age*spread,fluffyWidth=width*1.8f+age*spread;
-                p.spriteAffine(SpriteAtlas.FOAM,2+Math.floorMod(seed+i,2),x,y,
+                WavePatch.sprite(g,p,SpriteAtlas.FOAM,2+Math.floorMod(seed+i,2),x,y,
                     c*fluffyLength,s*fluffyLength,-s*fluffyWidth,c*fluffyWidth,alpha*foam);
             }
         }
