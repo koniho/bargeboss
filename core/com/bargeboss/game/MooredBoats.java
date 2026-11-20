@@ -54,7 +54,7 @@ public final class MooredBoats {
         if(x+size*.5f<0||x-size*.5f>g.layout.width||y+size*.3f<0||y-size*.7f>g.layout.height)return;
         float detail=SceneDetail.boat(g,b.length,wx,wy);
         // Fade yaw detail toward the nearest authored resting pose. At distance
-        // this becomes one cached dusk sprite, while position/heave remain live.
+        // this becomes one cached time-graded sprite, while position/heave remain live.
         float rest=b.frame%ORIENTATIONS,full=angle*ORIENTATIONS/(2*(float)Math.PI);
         float delta=full-rest;delta-=ORIENTATIONS*(float)StrictMath.floor((delta+ORIENTATIONS*.5f)/ORIENTATIONS);
         float heading=rest+delta*detail,whole=(float)StrictMath.floor(heading),mix=heading-whole;

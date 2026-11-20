@@ -98,7 +98,7 @@ public final class WaveView {
                 float xx=x+4,yy=y-4;
                 if(montrose){float h=surface.height(xx,yy);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
                 p.line(xx-arm*RiverCamera.Q,yy-arm*RiverCamera.Q,xx+arm*RiverCamera.Q,yy+arm*RiverCamera.Q,
-                        .8f,((int)((life-.58f)*175*detail)<<24)|0xb3d5cb);
+                        .8f,((int)((life-.58f)*175*detail)<<24)|(g.lighting()==LightingProfile.DAYLIGHT?g.lighting().glint&0xffffff:0xb3d5cb));
             }
         }
         if(batch!=null)batch.flush();

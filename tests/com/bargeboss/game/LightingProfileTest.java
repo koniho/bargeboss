@@ -30,6 +30,32 @@ public final class LightingProfileTest {
             menu.pointerDown(4,b.centerX(),b.centerY());menu.pointerUp(4,b.centerX(),b.centerY());
             check(menu.selectedLighting()==id,"title selection uses real screen taps on wide canvas");
         }
+        int duskBoat=0xff2d3131;
+        for(int id=0;id<4;id++){
+            LightingProfile profile=LightingProfile.preset(id);
+            int[] base={duskBoat};SpriteGrade.applyArgbRow(SpriteAtlas.MOORED_BOATS,base,profile,0,4);
+            if(id==1)check(((base[0]>>16)&255)>=170,"daylight boat base loses baked dusk darkness");
+            if(id==2)check(base[0]==duskBoat,"accepted dusk boat pixels remain identical");
+            for(int band=1;band<4;band++){
+                int[] receiver={0x7fc00000,0xff00c000,0xff0000c0};int[] before=receiver.clone();
+                SpriteGrade.applyArgbRow(SpriteAtlas.MOORED_BOATS,receiver,profile,band,4);
+                check(java.util.Arrays.equals(before,receiver),"RGB receiver bands are data, not graded albedo");
+            }
+            for(int alpha:new int[]{0,32,128,255}){
+                byte[] rgba=new byte[16];
+                for(int band=0;band<4;band++){
+                    rgba[band*4]=(byte)SpriteGrade.premultiplied(45,alpha);
+                    rgba[band*4+1]=(byte)SpriteGrade.premultiplied(49,alpha);
+                    rgba[band*4+2]=(byte)SpriteGrade.premultiplied(49,alpha);rgba[band*4+3]=(byte)alpha;
+                }
+                byte[] expected=rgba.clone();byte[] first=java.util.Arrays.copyOf(rgba,4);
+                SpriteGrade.applyPremultipliedRgba(SpriteAtlas.MOORED_BOATS,first,profile);
+                System.arraycopy(first,0,expected,0,4);
+                SpriteGrade.applySourcePremultipliedRgba(SpriteAtlas.MOORED_BOATS,rgba,profile);
+                check(java.util.Arrays.equals(expected,rgba),"native premultiplied source grades base only and preserves coverage");
+            }
+            if(id!=2)check(!SpriteGrade.cacheKey(SpriteAtlas.MOORED_BOATS,"boats.png",profile).equals(SpriteGrade.cacheKey(SpriteAtlas.MOORED_BOATS,"boats.png",LightingProfile.DUSK)),"moored source cache tracks time selection");
+        }
         check(snapshot==LightingProfile.DAYLIGHT,"retired worker snapshot remains unchanged");
         Game live=new Game();live.selectChallenge(Challenges.MONTROSE);live.reset();live.settings.developerWaves=true;
         live.pointerDown(9,30,90);live.pointerUp(9,30,90);

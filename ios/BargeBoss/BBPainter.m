@@ -210,7 +210,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     if(!decode) {CGColorSpaceRelease(space);[NSException raise:@"SpriteGradeDecode" format:@"Cannot decode scenery RGBA buffer"];}
     CGContextSetBlendMode(decode,kCGBlendModeCopy);CGContextDrawImage(decode,CGRectMake(0,0,width,height),image.CGImage);
     CGContextRelease(decode);
-    [BBSpriteGrade applyPremultipliedRgbaWithInt:atlas withByteArray:pixels withBBLightingProfile:self.lightingProfile];
+    [BBSpriteGrade applySourcePremultipliedRgbaWithInt:atlas withByteArray:pixels withBBLightingProfile:self.lightingProfile];
     // Retain this one graded buffer for CGImage; do not copy a second full-size raster.
     void *owner=(__bridge_retained void *)pixels;
     CGDataProviderRef provider=CGDataProviderCreateWithData(owner,pixels->buffer_,bytes,BBReleaseGradePixels);

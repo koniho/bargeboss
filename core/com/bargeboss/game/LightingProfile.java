@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Immutable stage-entry lighting. Values are shared by renderers and preparation workers. */
 public final class LightingProfile {
     public static final LightingProfile DAWN=new LightingProfile(0,"DAWN",180,155,154,0xff304b59,0xffacc1bb,.38f,.65f,.35f,.55f,0xffffd3ab,.65f,.5f,.55f,0x06d6aaa0,0x53606a);
-    public static final LightingProfile DAYLIGHT=new LightingProfile(1,"DAYLIGHT",242,246,244,0xff345d6b,0xffbdd9d7,.17f,-.35f,-.25f,.9f,0xfffff2d9,.85f,.08f,.12f,0x03c1d9dc,0x64717a);
+    public static final LightingProfile DAYLIGHT=new LightingProfile(1,"DAYLIGHT",242,246,244,0xff163f50,0xff79afb8,.17f,-.35f,-.25f,.9f,0xfffff2d9,.85f,.08f,.12f,0x03c1d9dc,0x64717a);
     public static final LightingProfile DUSK=new LightingProfile(2,"DUSK",92,108,138,0xff081c27,0xff83b3b4,.68f,-.35f,-.25f,.9f,0xffffffff,1,1,1,0x04c89972,0x1c201b);
     public static final LightingProfile NIGHT=new LightingProfile(3,"NIGHT",55,72,104,0xff040c19,0xff638797,.76f,-.25f,-.4f,.65f,0xffb9cdeb,.8f,1.12f,1.08f,0x032f4968,0x101a2a);
     public final int id,red,green,blue,water,glint,sunColor,haze,smoke;

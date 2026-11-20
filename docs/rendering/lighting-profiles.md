@@ -93,3 +93,11 @@ reservation ceiling), replaces the reservation on stage changes, and clears it
 on profile changes. Pending speculative layers are promoted when visible so
 publication can evict unprotected entries. This leaves dynamic position/opacity
 and the original kernel geometry unchanged.
+
+Moored harbor boats use legacy dusk-baked base pixels. Source preparation grades
+only the first quarter of their atlas for dawn/daylight/night (dusk remains exact).
+The other three quarters are RGB receiving data and remain unchanged, as do the
+separate normal/height maps. Android/desktop pass source row position into the
+shared grade; iOS passes the full premultiplied source. No draw-time pixel work or
+extra texture family is required. Daylight water uses a deeper blue-green base
+and restrained ambient crest highlights; night water retains its prior palette.

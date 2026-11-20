@@ -409,7 +409,7 @@ public final class CanvasPainter implements Painter {
                     if(SpriteGrade.applies(atlas)) {
                         int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
                         for(int y=0;y<h;y++) {
-                            image.getPixels(row,0,w,0,y,w,1);SpriteGrade.applyArgb(atlas,row,owner.lightingProfile);
+                            image.getPixels(row,0,w,0,y,w,1);SpriteGrade.applyArgbRow(atlas,row,owner.lightingProfile,y,h);
                             image.setPixels(row,0,w,0,y,w,1);
                         }
                     }

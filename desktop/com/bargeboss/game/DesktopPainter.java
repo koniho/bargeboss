@@ -170,7 +170,7 @@ public final class DesktopPainter implements Painter {
                     int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
                     BufferedImage graded=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
                     for(int y=0;y<h;y++) {
-                        image.getRGB(0,y,w,1,row,0,w);SpriteGrade.applyArgb(id,row,lightingProfile);graded.setRGB(0,y,w,1,row,0,w);
+                        image.getRGB(0,y,w,1,row,0,w);SpriteGrade.applyArgbRow(id,row,lightingProfile,y,h);graded.setRGB(0,y,w,1,row,0,w);
                     }
                     image=graded;
                 }

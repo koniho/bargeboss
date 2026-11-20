@@ -4309,3 +4309,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   water, vessels and cached piers update; controls remain clear of steering.
 - Native validation is iOS simulator only; no new frame-time benchmark or physical
   device claim. Connected phone left untouched per user instruction.
+
+## 2026-11-20 Daylight moored boats and water correction
+- Moored boat base pixels were dusk-baked and excluded from SpriteGrade. Added
+  profile grading at source preparation, with row/band boundaries shared across
+  Android, desktop and iOS. Dusk base pixels, RGB receiving bands and separate
+  normal/height data remain unchanged. Existing profile cache invalidation handles
+  live switching; no new atlas family or per-frame pixel processing.
+- Daylight water now uses a deeper blue-green base and less pale ambient glints.
+  Night water is unchanged, following the user's correction.
+- Full checks and signed Android build pass; 1,243 lighting assertions include
+  receiver-band preservation, alpha, premultiplied grading and profile identities.
+  Montrose shore regression passes 2,434,414 hull/cargo assertions across 32
+  headings plus 32,273 cached wall assertions.
+- iOS Metal simulator build passes. Reviewed Montrose docks in daylight, switched
+  live to dusk and back: moored hulls brighten/revert with the profile and the
+  daytime water has stronger color. Native validation is simulator-only; no new
+  frame-time benchmark. Connected phone untouched.
+- Separate observation: mission yacht still has its existing silhouette-wide
+  pulsing target bloom after surface shading, making it appear lit at night.
+  That guidance treatment is unchanged by this fix.
