@@ -14,6 +14,10 @@ final class MontroseBeach {
     private MontroseBeach(){}
     private static float[] world(float[] p){float[] q=p.clone();for(int i=0;i<q.length;i+=2){q[i]=MontroseHarbor.mapX(q[i]);q[i+1]=MontroseHarbor.mapY(q[i+1]);}return q;}
     static boolean sandy(float x,float y){return PolygonWater.contains(SAND,x,y);}
+    /** The crescent's land side is south of its ordered shoreline; the horn is outside sand. */
+    static boolean beachEdge(float ax,float ay,float bx,float by){
+        return sandy(MontroseHarbor.planX((ax+bx)*.5f),MontroseHarbor.planY((ay+by)*.5f)+2);
+    }
     static boolean buildingArea(float x,float y){for(float[] a:PLACES)if(Math.abs(x-a[0])<150 && Math.abs(y-a[1])<110)return true;return false;}
     private static void patch(Painter p,float[] q,int color,float l,float t,float r,float b){q=PolygonWater.rectangle(q,l,t,r,b);if(q.length>=6)p.poly(q,SceneLighting.sceneryColor(color));}
     private static void strip(Painter p,float ax,float ay,float bx,float by,float width,int color,float l,float t,float r,float b){
@@ -23,7 +27,9 @@ final class MontroseBeach {
     /** Called only while preparing bounded ground tiles, never per active frame. */
     static void ground(Painter p,float l,float t,float r,float b){
         if(t>MontroseHarbor.mapY(100))return;
-        patch(p,SAND_WORLD,0xff8b8270,l-.6f,t-.6f,r+.6f,b+.6f);
+        // Neighboring cache tiles paint the same overlapping detail, avoiding filtered seams.
+        l-=4;t-=4;r+=4;b+=4;
+        patch(p,SAND_WORLD,0xff8b8270,l,t,r,b);
         // Fine wind-shaped sand streaks are baked into each bounded tile.
         int firstX=(int)StrictMath.floor(MontroseHarbor.planX(l)/18),lastX=(int)StrictMath.ceil(MontroseHarbor.planX(r)/18);
         int firstY=(int)StrictMath.floor(MontroseHarbor.planY(t)/18),lastY=(int)StrictMath.ceil(MontroseHarbor.planY(b)/18);

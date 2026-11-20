@@ -139,7 +139,9 @@ public final class MontroseShoreArt {
     static void terraces(Game g,Painter p){RiverCamera c=g.layout.camera;
         // Ground depth order: farther upper bands first, then the lower foreground risers.
         for(int i=STEPS.length-1;i>=0;i--){float[] s=STEPS[i],q=STEP_FOOTPRINTS[i];if(!visible(g,q,MontroseHarbor.LAND_RISE))continue;
-            wall(p,c,s[0],s[1],s[2],s[3],s[8]-STEP_RISE,s[8],SurfaceMaterial.CONCRETE,0xff777b70,s[8]<=STEP_RISE?.65f:.12f);
+            // The lowest waterline riser continues the hard shore sheet-pile termination.
+            boolean waterline=s[8]<=STEP_RISE;
+            wall(p,c,s[0],s[1],s[2],s[3],s[8]-STEP_RISE,s[8],waterline?SurfaceMaterial.CORRUGATED:SurfaceMaterial.CONCRETE,waterline?0xff59605e:0xff777b70,waterline?.35f:.12f);
             surface(p,c,q,s[8],SurfaceMaterial.CONCRETE,0xffa3a394,s[8]<=STEP_RISE?.3f:0);
         }
     }

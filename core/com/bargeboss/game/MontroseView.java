@@ -137,7 +137,8 @@ public final class MontroseView {
                 if(Math.abs(v)<.001f){if(o<min || o>=max){end=-1;break;}}else{float aa=(min-o)/v,bb=(max-o)/v;start=Math.max(start,Math.min(aa,bb));end=Math.min(end,Math.max(aa,bb));}}
             if(end<=start)continue;
             if(MontroseShoreArt.terraced((ax+bx)*.5f-nx*2,(ay+by)*.5f-ny*2))continue;
-            MontroseShoreArt.wall(p,c,ax+dx*start,ay+dy*start,ax+dx*end,ay+dy*end,0,MontroseHarbor.LAND_RISE,SurfaceMaterial.CORRUGATED,0xff59605e,.35f);
+            boolean beach=MontroseBeach.beachEdge(ax,ay,bx,by);
+            MontroseShoreArt.wall(p,c,ax+dx*start,ay+dy*start,ax+dx*end,ay+dy*end,0,MontroseHarbor.LAND_RISE,beach?SurfaceMaterial.CONCRETE:SurfaceMaterial.CORRUGATED,beach?0xff777163:0xff59605e,beach?.08f:.35f);
 
         }
     }
