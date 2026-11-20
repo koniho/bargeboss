@@ -16,12 +16,27 @@ public final class TutorialEscortTest {
         }
         check(g.tutorial.lesson==Tutorial.DONE,"escort cannot block the complete public tutorial: lesson "+g.tutorial.lesson);
         check(inCanal && inHarbor && travel>2500,"teacher follows from basin through canal into working harbor: "+teacher.x+","+teacher.y+" travel "+travel);
+        // While the student maneuvers, the observer remains at its station and faces them.
+        root=new Game();root.startTutorial();g=root.activeGame();
+        for(int i=0;i<600 && g.tutorial.entering;i++){ReplayInput.tutorial(root);root.step();}
+        g.tutorial.lesson=Tutorial.FIGURE_EIGHT;g.tug.x=HelmPractice.MEET_X;g.tug.y=HelmPractice.MEET_Y;
+        for(int i=0;i<500;i++)g.step();teacher=g.teacherBoat();float stationX=teacher.x,stationY=teacher.y;
+        g.tug.x=-1460;g.tug.y=400;g.tug.vx=g.tug.vy=0;
+        for(int i=0;i<150;i++)g.step();
+        check(Physics.length(teacher.x-stationX,teacher.y-stationY)<1,"teacher does not follow local maneuvers");
+        float facing=(float)StrictMath.atan2(g.tug.y-teacher.y,g.tug.x-teacher.x);
+        check(Math.abs(Physics.angle(facing-teacher.angle))<.04f,"stationary teacher faces the player");
+        g.tug.x=-2150;g.tug.y=650;g.tug.vx=g.tug.vy=0;
+        for(int i=0;i<2;i++)g.step();
+        check(TutorialView.instructionContent(g).title.equals("COME BACK, CAPTAIN!"),"straying triggers a return call");
         // Actual closing player contact, not a scripted warning call.
         root=new Game();root.startTutorial();g=root.activeGame();
         for(int i=0;i<600 && g.tutorial.entering;i++){ReplayInput.tutorial(root);root.step();}
         teacher=g.teacherBoat();teacher.x=-1550;teacher.y=500;teacher.vx=teacher.vy=0;
         g.tug.x=teacher.x-45;g.tug.y=teacher.y;g.tug.angle=0;g.tug.vx=70;g.tug.vy=0;
         int sequence=RadioAudio.sequence(g);g.step();
+        check(g.tutorial.arrival.warningTicks==0 && RadioAudio.sequence(g)==sequence,"teacher takes time to react");
+        for(int i=0;i<31;i++)g.step();
         check(g.tutorial.arrival.warningTicks>0 && RadioAudio.sequence(g)==sequence+1,"real player collision radios warning once");
         check(!g.dialogue.active && !g.conversation(),"collision warning leaves driving controls available");
         check(TutorialView.instructionContent(g).title.equals("EASY, CAPTAIN!"),"warning uses instruction panel");

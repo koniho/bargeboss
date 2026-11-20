@@ -9,6 +9,7 @@ public final class CollisionSplashes {
     final float[] x=new float[CAPACITY*STAMPS],y=new float[CAPACITY*STAMPS],z=new float[CAPACITY*STAMPS],
             vx=new float[CAPACITY*STAMPS],vy=new float[CAPACITY*STAMPS],vz=new float[CAPACITY*STAMPS];
     private int cursor;
+    private float peakImpact;
     public int emitted;
     public CollisionSplashes(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     /** Contact velocities include angular motion and are captured BEFORE the collision impulse.
@@ -21,6 +22,7 @@ public final class CollisionSplashes {
         float dx=reverse?bx-ax:ax-bx,dy=reverse?by-ay:ay-by,len=Physics.length(dx,dy);
         if(len<.001f || !Float.isFinite(len))return;
         int i=cursor;cursor=(cursor+1)%CAPACITY;first[i]=a;second[i]=b;age[i]=0;emitted++;
+        peakImpact=Math.max(peakImpact,closing);
         originX[i]=px;originY[i]=py;direction[i]=(float)StrictMath.atan2(dy,dx);
         power[i]=Physics.clamp(closing/70,.12f,1);
         float spread=.16f+.48f*Physics.clamp(closing/len,0,1);
@@ -32,8 +34,12 @@ public final class CollisionSplashes {
             vz[j]=(23+power[i]*48)*(.65f+.35f*((k*5+2)%7)/6f);
         }
     }
+    float impactOn(Watercraft craft){
+        float peak=0;for(int i=0;i<CAPACITY;i++)if(age[i]==0 && (first[i]==craft || second[i]==craft))peak=Math.max(peak,power[i]*70);return peak;
+    }
     /** Age at 60 real ticks, independent of the two motion/collision substeps and visibility. */
     public void step(Game g){
+        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact);peakImpact=0;
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE){
             age[i]++;
             if(age[i]>=LIFE){first[i]=second[i]=null;continue;}

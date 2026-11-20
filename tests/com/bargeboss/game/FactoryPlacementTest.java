@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Packed industrial blocks leave only roads and required shoreline aprons empty. */
+/** Sparse compact workshops preserve open tutorial sightlines. */
 public final class FactoryPlacementTest {
     private static int checks;
     private static void check(boolean ok,String message) {checks++;if(!ok) throw new AssertionError(message);}
@@ -20,7 +20,7 @@ public final class FactoryPlacementTest {
         int columns=maxCol-minCol,rows=maxRow-minRow;
         int[][] owner=new int[rows][columns];
         for(int row=0;row<rows;row++) for(int col=0;col<columns;col++)owner[row][col]=-1;
-        check(TrainingChannelView.FACTORY_PLACEMENTS>FactoryArt.COUNT*4,"factory rows densely populate the full industrial district");
+        check(TrainingChannelView.FACTORY_PLACEMENTS>10 && TrainingChannelView.FACTORY_PLACEMENTS<100,"sparse compact workshops leave tutorial sightlines open");
         check(TrainingChannelView.FACTORY_PLACEMENTS<=rows*columns,"placement count is bounded by ground-cell capacity");
         int seen=0;float minHeight=Float.MAX_VALUE,maxHeight=0;
         boolean low=false,middle=false,high=false;float previousDepth=-Float.MAX_VALUE;
@@ -47,8 +47,8 @@ public final class FactoryPlacementTest {
             low|=height<=75;middle|=height>75 && height<150;high|=height>=150;
             if(height>=150) check(setback>=128,"towering factory structures have the larger shoreline setback");
         }
-        check(seen==(1<<FactoryArt.COUNT)-1,"the connected scene places all sixteen different factory modules");
-        check(low && middle && high && maxHeight>=2*minHeight,"authored factory heights span low, medium and tall silhouettes");
+        check(seen==(15<<12),"the tutorial uses four compact workshop modules");
+        check(low && middle && !high && maxHeight<100,"tutorial keeps low and medium silhouettes without tall factories");
         int occupied=0,roads=0,apron=0;
         for(int row=minRow;row<maxRow;row++) for(int col=minCol;col<maxCol;col++) {
             boolean road=IndustrialRoadView.isRoadCell(col,row);
@@ -61,12 +61,11 @@ public final class FactoryPlacementTest {
             if(clearRoad)roads++;
             boolean navigation=TrainingChannelView.navigationApron(col,row);
             if(navigation)check(slot<0,"train-exit beacon retains its reserved foreground sightline");
-            if(!road && distance>=72 && !navigation && CalumetArt.clearFactory(col*64,row*64,64,64))check(slot>=0,"no unexplained empty ground cells between factories and roads");
-            if(!road && slot<0){check(distance<72 || navigation || !CalumetArt.clearFactory(col*64,row*64,64,64),"unfilled factory cells reserve shore, navigation or steelworks footprints");apron++;}
+            if(!road && slot<0){apron++;}
         }
-        check(occupied>roads,"industrial land remains factory-dense rather than mostly road");
+        check(occupied<roads,"workshops leave most dry land open");
         check(roads>0 && apron>0,"continuous roads and navigable shoreline aprons remain represented");
-        System.out.println(checks+" dense factory-grid assertions passed; "+TrainingChannelView.FACTORY_PLACEMENTS+" modules, "+occupied+" occupied cells, "+roads+" road tiles, "+apron+" shore/water cells");
+        System.out.println(checks+" sparse workshop-grid assertions passed; "+TrainingChannelView.FACTORY_PLACEMENTS+" modules, "+occupied+" occupied cells, "+roads+" road tiles, "+apron+" shore/water cells");
     }
     public static void main(String[] args) {run();}
 }

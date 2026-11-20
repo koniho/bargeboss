@@ -17,7 +17,7 @@ public final class TrainReview {
         Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
         g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);boolean aim=false,pull=false,release=false,bridge=false;
         int trainTicks=0;
-        for(int tick=0;tick<10000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
+        for(int tick=0;tick<16000 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
             if(g.tutorial.lesson==Tutorial.LINK && !aim && g.ropePhase==0 && g.tow.incoming(g.cargo[2])==null) {
                 Body b=g.cargo[2],parent=g.cargo[0];ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,parent.x,parent.y);
                 capture(root,"train-link-aim");ReplayInput.up(root,parent.x,parent.y);aim=true;

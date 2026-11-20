@@ -4,11 +4,12 @@ package com.bargeboss.game;
 public final class BuoyOrbitTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
-    private static Game practice(){Game g=new Game();ReplayInput.startPractice(g);return g.activeGame();}
+    private static Game practice(){Game g=new Game();ReplayInput.startPractice(g);g=g.activeGame();g.tutorial.lesson=Tutorial.FIGURE_EIGHT;g.tutorial.setup(g);return g;}
     private static void point(Game g,int buoy,float radius,double angle){
+        float previousX=g.tug.x,previousY=g.tug.y;
         g.tug.x=Tutorial.DRIVE_X[buoy]+radius*(float)StrictMath.cos(angle);
         g.tug.y=Tutorial.DRIVE_Y[buoy]+radius*(float)StrictMath.sin(angle);
-        g.navigating=true;g.tutorial.update(g);
+        g.tug.angle=(float)StrictMath.atan2(g.tug.y-previousY,g.tug.x-previousX);g.navigating=true;g.tutorial.update(g);
     }
     private static void circle(Game g,int buoy,int direction){for(int i=0;i<=132;i++)point(g,buoy,90,direction*i*StrictMath.PI/64);}
     public static void run(){
@@ -25,15 +26,15 @@ public final class BuoyOrbitTest {
         for(int i=0;i<6;i++){point(g,0,90,0);point(g,0,90,StrictMath.PI);}
         check(g.tutorial.driveMarker==0 && g.tutorial.orbitProgress()==0,"large jumps cannot forge angular travel");
         g=practice();for(int i=0;i<=64;i++)point(g,0,90,i*StrictMath.PI/64);
-        point(g,0,200,StrictMath.PI);point(g,0,90,StrictMath.PI);
+        for(int i=0;i<32;i++)point(g,0,200,StrictMath.PI);point(g,0,90,StrictMath.PI);
         check(g.tutorial.orbitProgress()==0,"leaving the buoy area restarts an incomplete lap");
-        point(g,0,20,StrictMath.PI);check(!g.tutorial.orbitArmed,"cutting inside the buoy exclusion area disarms lap");
+        for(int i=0;i<32;i++)point(g,0,20,StrictMath.PI);check(!g.tutorial.orbitArmed,"cutting inside the buoy exclusion area disarms lap");
         for(int direction:new int[]{-1,1}) {
             g=practice();circle(g,0,direction);
-            check(g.tutorial.driveMarker==1 && g.tutorial.lesson==Tutorial.MOVE,"full winding advances only the first buoy in either direction");
+            check(g.tutorial.driveMarker==1 && g.tutorial.lesson==Tutorial.FIGURE_EIGHT,"full winding advances only the first buoy in either direction");
             check(g.tutorial.buoyClearTicks[0]>0,"first completed buoy starts feedback while next buoy is active");
-            circle(g,1,-direction);check(g.tutorial.driveMarker==2 && g.tutorial.lesson==Tutorial.COAST,"opposite winding around second buoy advances into coasting");
-            check(g.tutorial.buoyClearTicks[1]>0,"last buoy feedback survives transition to coasting");
+            circle(g,1,-direction);check(g.tutorial.driveMarker==0 && g.tutorial.lesson==Tutorial.REVERSE,"opposite winding around second buoy advances into reverse figure eight");
+            check(g.tutorial.buoyClearTicks[1]>0,"last buoy feedback survives transition to reverse figure eight");
             int remaining=g.tutorial.buoyClearTicks[1];TutorialView.buoyFeedback(g,new Parity());
             check(g.tutorial.buoyClearTicks[1]==remaining,"drawing completion feedback does not age it");
             for(int tick=0;tick<Tutorial.BUOY_CLEAR_LIFE;tick++)g.tutorial.update(g);

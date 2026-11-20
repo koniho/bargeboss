@@ -20,6 +20,7 @@ public final class CoreTest {
         RenderExclusionsTest.run();
         PinchZoomTest.run();
         EngineAudioTest.run();
+        SoundEffectsTest.run();
         DockCraneTest.run();
         CargoTransferTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
@@ -86,7 +87,9 @@ public final class CoreTest {
         JoystickTest.run();
         DriveDirectionTest.run();
         JoystickReverseTest.run();
+        HelmPracticeTest.run();
         ReverseTutorialTest.run();
+        NavigationPracticeTest.run();
         TutorialEntranceTest.run();
         TutorialEscortTest.run();
         BuoyOrbitTest.run();
@@ -171,8 +174,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Dockside radio/green teacher trace reviewed; bounded deliveries and score retained.
-        check(Parity.signature().equals("6fdde206:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Continuous helm/figure-eight/slip/chart and observer/sound trace reviewed; delivery totals retained.
+        check(Parity.signature().equals("266553ab:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

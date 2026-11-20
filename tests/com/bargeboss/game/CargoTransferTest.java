@@ -12,6 +12,15 @@ public final class CargoTransferTest {
             if(location==2){root.startTutorial();g=root.activeGame();}
             for(int dock=0;dock<g.dockCranes.length;dock++)if(g.calumetStage() || g.berthDisplayEnabled(dock)){
                 DockView.Crane c=g.dockCranes[dock];
+                if(location==2){
+                    for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+                    float first=new CargoTransfer.Pose(g,c,dock).phase,previous=first;
+                    for(int tick=0;tick<120;tick++){
+                        g.visualTicks++;float current=new CargoTransfer.Pose(g,c,dock).phase;
+                        check(Math.abs(current-previous)<.002f,"unloaded tutorial crane moves continuously");previous=current;
+                    }
+                    check(Math.abs(previous-first)>.005f,"near-shore tutorial crane remains active without unloading");
+                }
                 for(int kind=0;kind<3;kind++){
                     for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
                     Body b=new Body(1000+kind,kind,c.pickX,c.pickY,g.calumetStage()?g.voyage.heading(dock):g.indianaStage()?(float)StrictMath.atan2(IndianaHarbor.DOCK_NX,-IndianaHarbor.DOCK_NY):(float)Math.PI/2);

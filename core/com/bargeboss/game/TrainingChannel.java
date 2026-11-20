@@ -16,7 +16,7 @@ public final class TrainingChannel {
     public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
     private static float[][] waterRectangles() {
-        float[][] water=new float[RECTANGLES.length+7][];
+        float[][] water=new float[RECTANGLES.length+8][];
         System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
         water[RECTANGLES.length]=new float[]{Physics.LEFT,TOW_BASIN_TOP,Physics.RIGHT,Physics.BOTTOM};
         water[RECTANGLES.length+1]=new float[]{BASIN_LEFT,BASIN_TOP,MIN,BASIN_BOTTOM};
@@ -25,11 +25,12 @@ public final class TrainingChannel {
         water[RECTANGLES.length+4]=new float[]{Physics.RIGHT,570,628,Physics.BOTTOM};
         water[RECTANGLES.length+5]=new float[]{570,148,628,570};
         water[RECTANGLES.length+6]=new float[]{ENTRY_LEFT,ENTRY_TOP,BASIN_LEFT,ENTRY_BOTTOM};
+        water[RECTANGLES.length+7]=new float[]{-2000,250,BASIN_LEFT,350};
         return water;
     }
     private static float[] waterBoundary() {
         // Open both canal ends into permanent basins; neither mouth has a wall.
-        float[] result=new float[LOW.length+HIGH.length+48];int n=0;
+        float[] result=new float[LOW.length+HIGH.length+56];int n=0;
         result[n++]=BASIN_LEFT;result[n++]=BASIN_TOP;
         result[n++]=MIN;result[n++]=BASIN_TOP;
         for(float v:LOW) result[n++]=v;
@@ -55,7 +56,11 @@ public final class TrainingChannel {
         result[n++]=BASIN_LEFT;result[n++]=ENTRY_BOTTOM;
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_BOTTOM;
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_TOP;
-        result[n++]=BASIN_LEFT;result[n]=ENTRY_TOP;
+        result[n++]=BASIN_LEFT;result[n++]=ENTRY_TOP;
+        result[n++]=BASIN_LEFT;result[n++]=350;
+        result[n++]=-2000;result[n++]=350;
+        result[n++]=-2000;result[n++]=250;
+        result[n++]=BASIN_LEFT;result[n]=250;
         return result;
     }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */

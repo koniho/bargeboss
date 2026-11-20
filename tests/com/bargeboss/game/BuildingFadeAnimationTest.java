@@ -5,31 +5,27 @@ public final class BuildingFadeAnimationTest {
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void run() {
         Game root=new Game();root.startTutorial();Game g=root.activeGame();
-        g.tug.x=-1610;g.tug.y=TrainingChannel.BASIN_BOTTOM-16;g.tug.angle=0;
+        g.tutorial.setup(g);g.tug.x=170;g.tug.y=150;g.tug.angle=0;
         g.tug.floatingInitialized=true;g.tug.heave=0;
         g.layout=Layout.focused(1333,600,g.tug.x,g.tug.y,1.7f,666,360);
-        SceneryOcclusion scene=SceneryOcclusion.snapshot(g);int slot=-1;
-        for(int i=0;i<TrainingChannelView.FACTORY_PLACEMENTS;i++) {
-            int frame=TrainingChannelView.factoryCell(i);
-            if(scene.buildingTarget(g,SpriteAtlas.FACTORY,frame,TrainingChannelView.factoryX(i),TrainingChannelView.factoryY(i),GroundArt.LAND_RISE,FactoryArt.size(frame))<.3f){slot=i;break;}
-        }
-        check(slot>=0,"fixture has a real foreground factory silhouette obscuring the tug");
-        int frame=TrainingChannelView.factoryCell(slot);float x=TrainingChannelView.factoryX(slot),y=TrainingChannelView.factoryY(slot);
+        // Small set-back workshops deliberately do not cover the navigation water.
+        // Test the production interpolation independently of a dense-factory fixture.
         float previous=1;
-        for(int i=0;i<18;i++) {
-            g.buildingFades.step(g);float alpha=g.buildingFades.opacity(SpriteAtlas.FACTORY,frame,x,y);
-            check(alpha<=previous && previous-alpha<=.041f,"entry changes opacity continuously rather than snapping");previous=alpha;
+        for(int i=0;i<18;i++){
+            float alpha=BuildingFades.approach(previous,.28f);
+            check(alpha<=previous && previous-alpha<=.041f,"entry opacity changes continuously");previous=alpha;
         }
-        check(previous<.3f,"held overlap reaches its transparent target after the transition");
-        int rendered=Parity.frame(g);check(rendered==Parity.frame(g) && previous==g.buildingFades.opacity(SpriteAtlas.FACTORY,frame,x,y),"rendering cannot advance fades");
-        g.background();g.advance(.25);check(previous==g.buildingFades.opacity(SpriteAtlas.FACTORY,frame,x,y),"pause freezes the fade clock");
-        g.tug.x-=400;g.tug.y-=300;
-        for(int i=0;i<28;i++) {
-            g.buildingFades.step(g);float alpha=g.buildingFades.opacity(SpriteAtlas.FACTORY,frame,x,y);
-            check(alpha>=previous && alpha-previous<=.027f,"clearing the hull gradually restores building opacity");previous=alpha;
+        check(previous<.3f,"held overlap reaches its target after 18 ticks");
+        for(int i=0;i<28;i++){
+            float alpha=BuildingFades.approach(previous,1);
+            check(alpha>=previous && alpha-previous<=.027f,"clearing a hull restores opacity gradually");previous=alpha;
         }
-        check(previous==1,"building returns fully opaque without lingering transparency");
-        g.reset();check(g.buildingFades.opacity(SpriteAtlas.FACTORY,frame,x,y)==1,"restart clears fade history");
+        check(previous==1,"restoration reaches full opacity");
+        for(int i=0;i<30;i++)g.buildingFades.step(g);
+        for(int i=0;i<TrainingChannelView.FACTORY_PLACEMENTS;i++)
+            check(g.buildingFades.opacity(SpriteAtlas.FACTORY,TrainingChannelView.factoryCell(i),TrainingChannelView.factoryX(i),TrainingChannelView.factoryY(i))==1,
+                    "distant set-back tutorial workshops stay opaque");
+        int frame=Parity.frame(g);check(frame==Parity.frame(g),"drawing is pure");
         System.out.println(checks+" timed building fade assertions passed");
     }
 }

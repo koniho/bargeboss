@@ -5,7 +5,7 @@ public final class JoystickTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static void steps(Game g,int n){for(int i=0;i<n;i++)g.step();}
-    private static Game playing(){Game g=new Game();ReplayInput.startPractice(g);return g.activeGame();}
+    private static Game playing(){Game g=new Game();ReplayInput.startPractice(g);g=g.activeGame();g.tutorial.lesson=Tutorial.FIGURE_EIGHT;g.tutorial.setup(g);return g;}
     private static void hold(Game g,float x,float y){float cx=Joystick.centerX(g),cy=Joystick.centerY(g);g.pointerDown(3,cx,cy);g.pointerMove(3,cx+x,cy+y);}
     private static void release(Game g){g.pointerUp(3,Joystick.centerX(g)+g.joystick.x*42,Joystick.centerY(g)+g.joystick.y*42);}
     private static float loadedSpeed(int count) {
@@ -33,7 +33,7 @@ public final class JoystickTest {
         ReplayInput.startPractice(g);Game practice=g.activeGame();String career=g.career.save();v=g.progressVersion();
         practice.openSettings();ReplayInput.tap(g,Layout.JOYSTICK_OFF);
         check(g.settings.joystickSide()==GameSettings.OFF && g.progressVersion()>v && g.career.save().equals(career),"practice preferences persist without changing career");
-        ReplayInput.tap(g,Layout.SETTINGS_BACK);check(practice.mode==Game.PLAY && !Joystick.visible(practice),"off hides joystick and resumes practice");
+        ReplayInput.tap(g,Layout.SETTINGS_BACK);check(practice.mode==Game.PLAY && Joystick.visible(practice),"helm lesson temporarily demonstrates throttle without changing saved preference");
         ReplayInput.down(g,practice.tug.x,practice.tug.y);ReplayInput.move(g,practice.downX+90,practice.downY);steps(g,15);
         check(practice.navigating && !practice.joystick.active,"original tug drag remains functional with joystick disabled");g.cancelInputs();
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}){
@@ -64,12 +64,12 @@ public final class JoystickTest {
             check(Math.abs(sx*direction[1]-sy*direction[0])<Math.abs(sx*direction[0]+sy*direction[1])*.12f,"projected direction follows thumb despite water drift: "+sx+","+sy);
         }
         g=playing();int moves=0;
-        for(;moves<2000 && g.tutorial.lesson==Tutorial.MOVE;moves++){
+        for(;moves<3000 && g.tutorial.lesson==Tutorial.FIGURE_EIGHT;moves++){
             RiverCamera c=g.layout.camera;float dx=c.screenX(g.tutorial.driveTargetX(),g.tutorial.driveTargetY())-c.screenX(g.tug.x,g.tug.y),dy=c.screenY(g.tutorial.driveTargetX(),g.tutorial.driveTargetY())-c.screenY(g.tug.x,g.tug.y),len=Math.max(1,Physics.length(dx,dy));
             if(!g.pointer)hold(g,0,0);g.pointerMove(3,Joystick.centerX(g)+42*dx/len,Joystick.centerY(g)+42*dy/len);g.step();
         }
-        check(g.tutorial.lesson==Tutorial.COAST && g.tutorial.driveMarker==2,"joystick alone completes both real driving goals");
-        release(g);steps(g,60);check(g.tutorial.lesson==Tutorial.REVERSE,"lifting joystick completes coast and starts backing practice");
+        check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.driveMarker==0,"joystick alone completes both real driving goals");
+        release(g);steps(g,60);check(g.tutorial.lesson==Tutorial.REVERSE,"lifting keeps the reverse exercise pending");
         float empty=loadedSpeed(0),one=loadedSpeed(1),two=loadedSpeed(2);
         check(empty>one*1.08f && one>two*1.08f,"joystick speed falls with actual linked load: "+empty+","+one+","+two);
         Game low=playing(),high=playing();hold(low,42,0);hold(high,42,0);

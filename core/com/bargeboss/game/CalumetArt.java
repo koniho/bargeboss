@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /** Registered industrial shore props on permanent dry footprints; all missions share placements. */
 public final class CalumetArt {
-    private static final float[][] FACTORIES={{-48,-80},{530,-90},{770,360}};
+    private static final float[][] FACTORIES={};
     private static final float[][] ITEMS=items();
     private static final float[] LOADING_PX={398/768f,375/768f,397/768f,370/768f},LOADING_PY={354/512f,352/512f,340/512f,336/512f};
     private CalumetArt(){}

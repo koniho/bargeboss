@@ -5,7 +5,8 @@ final class TutorialArrival {
     static final float DOCK_X=-1600,DOCK_Y=810,TEACHER_Y=752;
     static final int APPROACH=240;
     Body teacher;
-    private int replyTicks,warningCooldown,warningSerial;
+    private int replyTicks,warningCooldown,warningSerial,reactionTicks,returnCooldown;
+    private boolean returnWarning;
     int warningTicks;
     private final TeacherFollow follow=new TeacherFollow();
     private String reply="";
@@ -16,6 +17,10 @@ final class TutorialArrival {
     void step(Game g){
         if(teacher==null)return;
         if(warningTicks>0)warningTicks--;if(warningCooldown>0)warningCooldown--;
+        if(returnCooldown>0)returnCooldown--;
+        if(reactionTicks>0 && --reactionTicks==0){
+            warningTicks=180;warningSerial++;returnWarning=false;g.radio.transmit(RadioAudio.TEACHER);
+        }
         Tutorial t=g.tutorial;
         if(t.entering){
             t.entranceTicks++;
@@ -34,19 +39,36 @@ final class TutorialArrival {
                 }
                 if(replyTicks>=180){t.entering=false;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);}
             }
-        } else follow.step(g,teacher);
+        } else {
+            follow.step(g,teacher);
+            if(strayed(g)
+                    && returnCooldown==0 && warningTicks==0 && reactionTicks==0){
+                returnWarning=true;warningTicks=240;returnCooldown=900;warningSerial++;g.radio.transmit(RadioAudio.TEACHER);
+            }
+        }
+    }
+    private boolean strayed(Game g){
+        Tutorial t=g.tutorial;float x=HelmPractice.MEET_X,y=HelmPractice.MEET_Y,limit=490;
+        if(t.lesson==Tutorial.SLIP || t.lesson==Tutorial.MAP){x=t.navigation.targetX(g);y=t.navigation.targetY(g);limit=700;}
+        else if(t.lesson==Tutorial.CHANNEL){int gate=Math.min(t.channelGate,TrainingChannel.X.length-1);x=TrainingChannel.X[gate];y=TrainingChannel.Y[gate];limit=700;}
+        else if(t.lesson>=Tutorial.HOLD){
+            if(t.lesson==Tutorial.DONE)return false;
+            Body b=t.lesson==Tutorial.DOUBLE || t.lesson==Tutorial.LINK?g.cargo[2]:g.cargo[0];
+            if(b==null)return false;x=b.x;y=b.y;limit=700;
+        }
+        return Physics.length(g.tug.x-x,g.tug.y-y)>limit;
     }
     void warn(Game g){
         if(g.tutorial.entering || g.dialogue.active || warningCooldown>0)return;
-        warningTicks=180;warningCooldown=420;warningSerial++;g.radio.transmit(RadioAudio.TEACHER);
+        reactionTicks=30;warningCooldown=420;
     }
     InstructionPanel.Content warning(){
-        return new InstructionPanel.Content("teacher-warning-"+warningSerial,"EASY, CAPTAIN!","GIVE MY TUG A LITTLE MORE ROOM.",
-                "I'M FOLLOWING YOU. KEEP SOME CLEARANCE.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO / RX");
+        return new InstructionPanel.Content("teacher-warning-"+warningSerial,returnWarning?"COME BACK, CAPTAIN!":"EASY, CAPTAIN!",returnWarning?"RETURN TO THE MARKED PRACTICE AREA.":"GIVE MY TUG A LITTLE MORE ROOM.",
+                "I'LL WATCH FROM THE SIDE.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO / RX");
     }
 
     InstructionPanel.Content content(){
         return new InstructionPanel.Content("teacher-"+reply,"INCOMING / CHANNEL 08",reply.isEmpty()?"INSTRUCTOR COMING ALONGSIDE.":reply,
-                reply.isEmpty()?"STAND BY AT THE SEAWALL DOCK.":"CAST OFF AND CIRCLE THE TWO LIT BUOYS.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO");
+                reply.isEmpty()?"STAND BY AT THE SEAWALL DOCK.":"LET'S PRACTICE THE THROTTLE FIRST.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO");
     }
 }

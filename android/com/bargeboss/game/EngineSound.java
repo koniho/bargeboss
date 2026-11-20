@@ -12,7 +12,7 @@ import android.os.Build;
 final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
     private final SoundPool pool;
     private final AudioManager manager;
-    private final int[] sounds=new int[EngineAudio.LAYERS+RadioAudio.COUNT],streams=new int[EngineAudio.LAYERS];
+    private final int[] sounds=new int[EngineAudio.LAYERS+SoundEffects.COUNT],streams=new int[EngineAudio.LAYERS];
     private int loaded,radioSequence,radioStream;
     private Game radioGame;
     private boolean requested,focused,closed;
@@ -23,14 +23,14 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
         pool=new SoundPool.Builder().setMaxStreams(EngineAudio.LAYERS+1).setAudioAttributes(attributes).build();
         if(Build.VERSION.SDK_INT>=26)request=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attributes).setOnAudioFocusChangeListener(this).build();
         pool.setOnLoadCompleteListener((p,id,status)->{if(status==0)loaded++;else android.util.Log.w("BargeBoss","Engine loop failed to load: "+id);});
-        for(int i=0;i<sounds.length;i++)try(AssetFileDescriptor file=context.getAssets().openFd(i<EngineAudio.LAYERS?EngineAudio.asset(i):RadioAudio.asset(i-EngineAudio.LAYERS))){sounds[i]=pool.load(file,1);}
+        for(int i=0;i<sounds.length;i++)try(AssetFileDescriptor file=context.getAssets().openFd(i<EngineAudio.LAYERS?EngineAudio.asset(i):SoundEffects.asset(i-EngineAudio.LAYERS))){sounds[i]=pool.load(file,1);}
         catch(java.io.IOException e){android.util.Log.w("BargeBoss","Engine audio unavailable",e);}
     }
     void update(Game game){
         if(closed)return;
         Game active=game.activeGame();
         if(radioGame!=active){radioGame=active;radioSequence=0;}
-        if(!EngineAudio.audible(game)){radioSequence=RadioAudio.sequence(game);stop();return;}
+        if(!EngineAudio.audible(game)){radioSequence=SoundEffects.sequence(game);stop();return;}
         if(loaded!=sounds.length)return;
         if(!requested){requested=true;focused=(Build.VERSION.SDK_INT>=26?manager.requestAudioFocus(request):manager.requestAudioFocus(this,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN))==AudioManager.AUDIOFOCUS_REQUEST_GRANTED;}
         if(!focused)return;
@@ -39,10 +39,10 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
             if(streams[i]==0)streams[i]=pool.play(sounds[i],gain,gain,1,-1,rate);
             else{pool.setVolume(streams[i],gain,gain);pool.setRate(streams[i],rate);}
         }
-        int sequence=RadioAudio.sequence(game);
-        if(sequence!=radioSequence){radioSequence=sequence;if(RadioAudio.audible(game)){
+        int sequence=SoundEffects.sequence(game);
+        if(sequence!=radioSequence){radioSequence=sequence;if(SoundEffects.audible(game)){
             if(radioStream!=0)pool.stop(radioStream);
-            radioStream=pool.play(sounds[EngineAudio.LAYERS+RadioAudio.cue(game)],.85f,.85f,2,0,1);
+            radioStream=pool.play(sounds[EngineAudio.LAYERS+SoundEffects.cue(game)],.85f,.85f,2,0,1);
         }}
     }
     private void silence(){if(radioStream!=0)pool.stop(radioStream);radioStream=0;for(int i=0;i<streams.length;i++){if(streams[i]!=0)pool.stop(streams[i]);streams[i]=0;}}

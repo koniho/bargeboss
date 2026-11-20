@@ -2,7 +2,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "com/bargeboss/game/EngineAudio.h"
 #import "com/bargeboss/game/Game.h"
-#import "com/bargeboss/game/RadioAudio.h"
+#import "com/bargeboss/game/SoundEffects.h"
 
 @implementation BBEngineSound {
     AVAudioEngine *_engine;
@@ -34,8 +34,8 @@
             [players addObject:player];[rates addObject:rate];[buffers addObject:buffer];
         }
         NSMutableArray *radio=[NSMutableArray array];
-        for(int cue=0;cue<2;cue++){
-            NSURL *url=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBRadioAudio assetWithInt:cue]]];
+        for(int cue=0;cue<5;cue++){
+            NSURL *url=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBSoundEffects assetWithInt:cue]]];
             AVAudioPlayer *clip=[[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
             if(clip){clip.volume=.85f;[clip prepareToPlay];[radio addObject:clip];}
         }
@@ -52,7 +52,7 @@
 - (void)update:(BBGame *)game {
     BBGame *active=[game activeGame];
     if(active!=_radioGame){_radioGame=active;_radioSequence=0;}
-    if(![BBEngineAudio audibleWithBBGame:game]){_radioSequence=[BBRadioAudio sequenceWithBBGame:game];[self stop];_interrupted=NO;return;}
+    if(![BBEngineAudio audibleWithBBGame:game]){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];[self stop];_interrupted=NO;return;}
     if(_failed || _interrupted)return;
     if(!_playing){
         NSError *error=nil;
@@ -66,12 +66,12 @@
         }
         _playing=YES;
     }
-    jint sequence=[BBRadioAudio sequenceWithBBGame:game];
+    jint sequence=[BBSoundEffects sequenceWithBBGame:game];
     if(sequence!=_radioSequence){
         _radioSequence=sequence;
-        if(_radio.count==2 && [BBRadioAudio audibleWithBBGame:game]){
+        if(_radio.count==5 && [BBSoundEffects audibleWithBBGame:game]){
             for(AVAudioPlayer *clip in _radio)[clip stop];
-            AVAudioPlayer *clip=_radio[[BBRadioAudio cueWithBBGame:game]];clip.currentTime=0;[clip play];
+            AVAudioPlayer *clip=_radio[[BBSoundEffects cueWithBBGame:game]];clip.currentTime=0;[clip play];
         }
     }
     for(int i=0;i<2;i++){_players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];_rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];}

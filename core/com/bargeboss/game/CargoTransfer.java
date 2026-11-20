@@ -22,7 +22,7 @@ final class CargoTransfer {
         final Body load;final int tick;final float phase,tipX,tipY,tipZ,x,y,z,hookZ,angle,minDepth,maxDepth;
         Pose(Game g,DockView.Crane crane,int dock){
             load=load(g,dock);tick=load==null?0:load.deliveryRecorded?Game.UNLOAD_TICKS:Math.min(Game.UNLOAD_TICKS,load.unloadingTicks);
-            phase=phase(tick);float pitch=phase*LUFF,c=(float)StrictMath.cos(crane.heading),s=(float)StrictMath.sin(crane.heading);
+            phase=load==null && g.tutorial!=null?.65f+.12f*(float)StrictMath.sin(g.visualTicks*.008+dock*2):phase(tick);float pitch=phase*LUFF,c=(float)StrictMath.cos(crane.heading),s=(float)StrictMath.sin(crane.heading);
             tipX=crane.x+c*(crane.reach*(float)StrictMath.cos(pitch)-4*(float)StrictMath.sin(pitch));tipY=crane.y+s*(crane.reach*(float)StrictMath.cos(pitch)-4*(float)StrictMath.sin(pitch));
             tipZ=landZ()+PIVOT+crane.reach*(float)StrictMath.sin(pitch)+4*(float)StrictMath.cos(pitch);
             angle=load==null?crane.heading+(float)Math.PI/2:load.deliveryRecorded?load.tiedAngle:load.angle;

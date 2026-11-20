@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class DriveDirectionTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
-    private static Game fixture(int side){Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.settings.setJoystickSide(side);return g;}
+    private static Game fixture(int side){Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.settings.setJoystickSide(side);g.tutorial.lesson=Tutorial.FIGURE_EIGHT;g.tutorial.setup(g);return g;}
     private static void down(Game g,int side){if(side==GameSettings.OFF)ReplayInput.down(g,g.tug.x,g.tug.y);else g.pointerDown(21,Joystick.centerX(g),Joystick.centerY(g));}
     private static void move(Game g,int side,float angle,boolean neutral){
         if(side==GameSettings.OFF){ReplayInput.move(g,g.downX+(neutral?0:85*(float)StrictMath.cos(angle)),g.downY+(neutral?0:85*(float)StrictMath.sin(angle)));return;}

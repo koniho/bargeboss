@@ -3,10 +3,10 @@
 
 // One local mirror of Tutorial.java. Keep native flow code named when lessons are inserted.
 typedef NS_ENUM(NSInteger, BBTutorialLesson) {
-    BBLessonMove=0, BBLessonCoast=1, BBLessonReverse=2, BBLessonChannel=3,
-    BBLessonHold=4, BBLessonSteer=5, BBLessonDock=6, BBLessonTie=7,
-    BBLessonConnect=8, BBLessonPull=9, BBLessonDouble=10, BBLessonBridge=11,
-    BBLessonLink=12, BBLessonTrain=13, BBLessonRelease=14, BBLessonDone=15
+    BBLessonMove=0, BBLessonFigureEight=1, BBLessonReverse=2, BBLessonSlip=3, BBLessonMap=4, BBLessonChannel=5,
+    BBLessonHold=6, BBLessonSteer=7, BBLessonDock=8, BBLessonTie=9,
+    BBLessonConnect=10, BBLessonPull=11, BBLessonDouble=12, BBLessonBridge=13,
+    BBLessonLink=14, BBLessonTrain=15, BBLessonRelease=16, BBLessonDone=17
 };
 static NSString *BBLessonToken(BBTutorialLesson lesson) {
     return [NSString stringWithFormat:@"lesson %ld;",(long)lesson];
@@ -186,7 +186,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     CGSize size=[self logicalSize:stage];
     NSInteger side=[self integerInStatus:status tag:@"joystick side"];
     XCTAssertTrue(side==1 || side==2,@"Native joystick must be enabled on LEFT or RIGHT: %@",status);
-    double x=side==2?size.width-86:86,y=size.height-118;
+    double x=side==2?size.width-113:113,y=size.height-171;
     double travel=fmax(minimum,distance<20?0:distance<60?30:42);
     [[self point:stage x:x y:y] pressForDuration:0.05
         thenDragToCoordinate:[self point:stage x:x+sx/length*travel y:y+sy/length*travel]
@@ -228,70 +228,36 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     XCTAssertEqual(seen & required,required,@"Native gestures visit berth, double tow, bridge, reconfiguration, channel and release lessons");
 }
 - (void)driveOpenWaterPractice:(XCUIElement *)stage {
-    NSInteger previousMarker=0;NSUInteger seenMarkers=0;
-    for(int attempt=0;attempt<100;attempt++) {
-        NSString *status=(NSString *)stage.value;
-        NSInteger marker=[self integerInStatus:status tag:@"drive marker"];
-        XCTAssertTrue(marker>=previousMarker && marker<=2,@"Driving markers must remain ordered: %@",status);
-        previousMarker=marker;
-        if(![status containsString:BBLessonToken(BBLessonMove)]) break;
-        XCTAssertLessThan(marker,2,@"Both completed buoy laps should advance into the coast lesson: %@",status);
-        seenMarkers|=(1u<<marker);
-        CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
-        CGPoint target=[self worldPositionInStatus:status tag:@"drive target"];
-        double distance=hypot(target.x-boat.x,target.y-boat.y);
-        // Ease thrust near a ring, then inspect real progress before deciding
-        // the next gesture. No sleep assumes that a fixed drag reached a goal.
-        // Each new press must cross the shared 42-unit steering-engage threshold.
-        double thrust=fmax(55,fmin(85,distance*.4));
-        NSLog(@"Open-water attempt %d, marker %ld, distance %.1f: %@",attempt,(long)marker,distance,status);
-        [self drivePracticeTug:stage toX:target.x toY:target.y status:status thrust:thrust];
-    }
-    NSString *status=(NSString *)stage.value;
-    XCTAssertEqual(seenMarkers,(NSUInteger)3,@"Both buoy orbits must be exercised: %@",status);
-    XCTAssertEqual([self integerInStatus:status tag:@"drive marker"],2,@"Opening must circle both buoys: %@",status);
-    // Every synthesized drag releases its finger. Stop sending steering once
-    // the second goal is reached and wait for the actual coast completion gate.
-    // A slow accessibility snapshot may already show REVERSE, so do not require
-    // observing the transient COAST card before accepting that completion.
-    [self waitFor:BBLessonToken(BBLessonReverse) on:stage];
-    [self driveReversePractice:stage];
-    XCTAssertEqual([self integerInStatus:(NSString *)stage.value tag:@"gate"],1,@"Open-water practice cannot award a canal gate");
-}
-- (void)driveReversePractice:(XCUIElement *)stage {
-    BOOL began=NO;CGPoint start=CGPointZero,direction=CGPointZero;
-    for(int attempt=0;attempt<100;attempt++) {
+    NSUInteger seen=0,helm=0;
+    for(int attempt=0;attempt<650;attempt++) {
         NSString *status=(NSString *)stage.value;
         NSInteger lesson=[self integerInStatus:status tag:@"lesson"];
         if(lesson==BBLessonChannel)break;
-        XCTAssertEqual(lesson,BBLessonReverse,@"Reverse practice must precede canal navigation: %@",status);
-        CGPoint tug=[self worldPositionInStatus:status tag:@"tug"];
-        CGPoint target=[self worldPositionInStatus:status tag:@"reverse target"];
-        double progress=[self numberInStatus:status tag:@"reverse progress"];
-        double distance=hypot(target.x-tug.x,target.y-tug.y);
-        XCTAssertTrue(isfinite(progress) && progress>=0 && progress<=1,@"Published reverse progress is bounded: %@",status);
-        if([self integerInStatus:status tag:@"reverse armed"]==0) {
-            // No reachable stern ring was armed yet. Drive into the same open
-            // basin used by the shared replay, then let gameplay choose the ring.
-            [self joystickDrive:stage to:CGPointMake(-1430,500) status:status];continue;
+        XCTAssertTrue(lesson>=BBLessonMove && lesson<=BBLessonMap,@"Opening lesson: %@",status);
+        seen|=BBLessonMask((BBTutorialLesson)lesson);
+        NSInteger phase=[self integerInStatus:status tag:@"helm phase"];
+        if(lesson==BBLessonMove)helm|=(1u<<phase);
+        CGPoint tug=[self worldPositionInStatus:status tag:@"tug"],target=[self worldPositionInStatus:status tag:@"drive target"];
+        if(lesson==BBLessonSlip || lesson==BBLessonMap)target=[self worldPositionInStatus:status tag:@"navigation target"];
+        if(lesson==BBLessonMap && [self integerInStatus:status tag:@"map phase"]==2){
+            CGSize size=[self logicalSize:stage];NSInteger side=[self integerInStatus:status tag:@"joystick side"];
+            double left=side==2?18:size.width-202;
+            [[self point:stage x:left+160 y:size.height-26] pressForDuration:.05 thenDragToCoordinate:[self point:stage x:left+24 y:size.height-26]];continue;
         }
-        if(!began) {
-            XCTAssertLessThan(progress,1,@"Reverse cannot already be credited before its driving gestures");
-            XCTAssertGreaterThan(distance,20,@"Reverse starts with a reachable ring behind the tug");
-            start=tug;direction=CGPointMake((target.x-tug.x)/distance,(target.y-tug.y)/distance);began=YES;
-        }
-        // Keep applying astern thrust until the physical gate completes. The
-        // ordinary tow driver stops within20units, too early for a short ring.
-        // Extending the aim slightly avoids turning toward the bow at the ring.
-        if(distance<12 && progress<1)target=CGPointMake(target.x+direction.x*12,target.y+direction.y*12);
-        NSLog(@"Reverse attempt %d, progress %.3f, distance %.1f: %@",attempt,progress,distance,status);
-        [self joystickDrive:stage to:target status:status minimumTravel:26 hold:0.35];
+        double heading=[self numberInStatus:status tag:@"heading"];
+        BOOL reverse=lesson==BBLessonReverse || (lesson==BBLessonMove && phase==3) || (lesson==BBLessonSlip && [self integerInStatus:status tag:@"slip phase"]==2 && [self integerInStatus:status tag:@"slip retry"]==0);
+        double base=heading+(reverse?M_PI:0),desired=atan2(target.y-tug.y,target.x-tug.x);
+        double error=atan2(sin(desired-base),cos(desired-base));
+        // A fresh straight gesture selects gear from the current bow/stern.
+        // Turn toward distant targets without accidentally selecting the other gear.
+        double angle=base+fmax(-1.0,fmin(1.0,error));
+        CGPoint aim=CGPointMake(tug.x+100*cos(angle),tug.y+100*sin(angle));
+        [self joystickDrive:stage to:aim status:status minimumTravel:42 hold:.45];
     }
     [self waitFor:BBLessonToken(BBLessonChannel) on:stage];
-    NSString *status=(NSString *)stage.value;CGPoint tug=[self worldPositionInStatus:status tag:@"tug"];
-    XCTAssertTrue(began,@"The native test must actually drive the reverse exercise");
-    XCTAssertGreaterThanOrEqual([self numberInStatus:status tag:@"reverse progress"],1,@"Physical reverse travel must complete before the canal opens");
-    XCTAssertGreaterThan(hypot(tug.x-start.x,tug.y-start.y),30,@"Reverse credit requires real displacement, not only holding a control");
+    XCTAssertEqual(seen,(NSUInteger)31,@"Helm and both figure eights must be exercised");
+    XCTAssertEqual(helm,(NSUInteger)31,@"Forward, left, right, reverse and rendezvous must be exercised");
+    XCTAssertEqual([self integerInStatus:(NSString *)stage.value tag:@"gate"],1,@"Opening cannot skip the canal");
 }
 - (void)driveTrainingChannel:(XCUIElement *)stage {
     const double xs[]={-1180,-1000,-820,-640,-460,-280,-100,80};

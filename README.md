@@ -24,7 +24,7 @@ transitional art. Reusable art workflows are maintained in
 ## Play
 
 Choose **Learn to Drive** for fourteen hands-on lessons without a timer, traffic or
-hull damage: circling two lit buoys, coasting, a scrolling rectilinear industrial canal, drag-to-push,
+hull damage: helm practice, forward/reverse figure eights, clean slip backing, overview-map navigation, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
 line, towing to a berth, double towing under a bridge, reconfiguring a train,
 narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;

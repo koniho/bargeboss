@@ -153,6 +153,15 @@ public final class ReplayInput {
         if(len<25) move(g,g.downX,g.downY);
         else move(g,g.downX+dx/len*90,g.downY+dy/len*90);
     }
+    public static void helmDrive(Game g,float x,float y,boolean reverse){
+        if(!g.pointer){
+            down(g,g.tug.x,g.tug.y);
+            float sign=reverse?-1:1;
+            move(g,g.downX+sign*65*(float)StrictMath.cos(g.tug.angle),g.downY+sign*65*(float)StrictMath.sin(g.tug.angle));
+        }
+        float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+        move(g,g.downX+dx/len*60,g.downY+dy/len*60);
+    }
     public static void channel(Game root) {
         Game g=root.activeGame();
         float[] target=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,g.tutorial.channelGate,target);
@@ -181,17 +190,15 @@ public final class ReplayInput {
         }
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
-                drive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY());break;
-            case Tutorial.COAST:
-                if(g.pointer) up(root,g.pointerX,g.pointerY);
-                break;
+                helmDrive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY(),g.tutorial.helm.phase==HelmPractice.REVERSE);break;
+            case Tutorial.FIGURE_EIGHT:
             case Tutorial.REVERSE:
-                if(g.tutorial.reverseArmed){
-                    float dx=g.tutorial.reverseTargetX-g.tug.x,dy=g.tutorial.reverseTargetY-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
-                    if(!g.pointer)down(root,g.tug.x,g.tug.y);move(root,g.downX+dx/len*65,g.downY+dy/len*65);
-                }
-                else drive(g,TrainingChannel.MIN-170,500);
-                break;
+                helmDrive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY(),g.tutorial.lesson==Tutorial.REVERSE);break;
+            case Tutorial.SLIP:
+                helmDrive(g,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),!g.tutorial.navigation.retry && g.tutorial.navigation.slipPhase==2);break;
+            case Tutorial.MAP:
+                if(g.tutorial.navigation.mapPhase==2){if(g.pointer)up(root,g.pointerX,g.pointerY);Layout.Box slider=OverviewMap.sliderBounds(g);tap(root,slider.x+24,slider.centerY());}
+                else helmDrive(g,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),false);break;
             case Tutorial.CHANNEL:
                 channel(root);break;
             case Tutorial.HOLD:

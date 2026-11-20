@@ -1,17 +1,25 @@
 # Continuous practice harbor
 
-Practice uses one connected world for all fifteen lessons. The tug starts at
-(-1740, 650) in an open basin spanning x=-1856..-1260, y=192..832. The player
-circles two ordered buoys at (-1570, 650) and (-1450, 440), learning both
-thrust and turning, then releases to feel the boat coast and backs into an astern target. The basin connects
-directly to the canal at x=-1260, y=442..558. An entry cue aligns the boat
-with that opening before the seven existing rectilinear canal gates. It enters the
-harbor through the opening at x=170, y=442..558. The harbor occupies
-x=170..430, y=215..817. The last gate is at (80, 500), before the mouth,
-so the arrival instruction guides the player into the basin.
+Practice uses one connected world for seventeen lessons. The tug starts beside
+its seawall dock at (-1600,810). A green instructor approaches and radios a
+question, then moves aside to observe. See [radio and navigation rules](gameplay/radio-dialogue.md).
+The opening teaches forward, left, right and reverse throttle inputs, then sends
+the player to (-1510,545). Forward and reverse figure eights use buoys at
+(-1570,650) and (-1450,440), with opposite winding directions for each half.
+
+Next is a recessed slip at x=-2000..-1856, y=250..350. The player points the bow
+out and backs in; a significant collision requires pulling the whole hull clear
+before retrying. After leaving the slip, the player reaches open water at
+(-1740,650). The chart starts zoomed in; a real zoom-out gesture reveals the
+amber target at (-1320,260). Reaching it unlocks canal navigation.
+
+The basin connects directly to the canal at x=-1260, y=442..558. Seven
+rectilinear gates lead to the work harbor through x=170, y=442..558. The last
+gate is at (80,500), before the mouth; the next instruction guides the player
+into the harbor for barge handling and towing.
 
 Both teaching barges exist at the beginning: the pushing load at (292, 700)
-and the towing load at (350, 440). After pushing to (240, 600), assisted
+and the towing load at (350, 490). After pushing to (240, 600), assisted
 steering continues with the same barge to the berth at (230, 700). The
 unloaded barge remains empty and tied alongside; the next instruction directs
 the player to the second barge. A failed or released tow retries in place.
@@ -19,39 +27,35 @@ the player to the second barge. A failed or released tow retries in place.
 Lesson progression changes instructions and completion gates. It does not
 rebuild the world, replace vessels, move a hull to its next exercise, clear
 the water, or snap the camera. The explicit Reset control may restart the
-current exercise. Camera follow eases into a basin view by position rather
-than lesson number, and lasso aiming/flight freezes projection as in a shift.
-Local work targets 1.5× zoom, rising toward 1.75× for docking while fitting the
-working hulls and raised bollard. Open-water driving uses 1.9×; the canal uses
-1.4× with a spatial blend at its entrance. Zoom then blends toward the working
-view on entering the harbor. The view follows the tug and nearby teaching barge rather than holding
-the entire harbor in frame.
+current exercise. Camera focus and zoom ease between the close 2.4x helm/slip
+views, wider 1.4x figure-eight view, 1.65x canal and 2.15x work / 2.5x docking.
+Working hulls and raised bollards remain in view. Lasso aiming/flight freezes
+projection as in a shift. Neither the main camera nor physics changes when the
+overview chart slider is used.
 
 `TrainingChannel.WATER_RECTANGLES` and `WATER_BOUNDARY` define the complete
 connected waterway. Collision, surface effects, scenery clearance and the
 ground drawing use that geometry throughout practice. The canal mouth has
 no hidden end wall. Ordered gates span the waterway's full width and retain
-credit even if the player keeps driving before following the coast prompt.
+credit for genuine crossings without bypassing the earlier navigation lessons.
 
-The `deliveryRecorded` flag records each delivery once. Normal shifts still
-retire a delivered load; practice retains its body as a visible, solid,
-moored empty barge. Its unloading crew returns to idle. Cargo slots switch
+The `deliveryRecorded` flag records each delivery once. Delivered loads remain visible, solid, moored empty barges. Its unloading crew returns to idle. Cargo slots switch
 which existing barge the tutorial teaches without changing vessel identity.
 
 The replay suite exercises real gestures through every lesson on phone and
 tablet layouts, checks hull and camera continuity at every simulation tick,
 and verifies both basin/canal and canal/harbor mouths in both directions at sixteen hull headings.
-Separate checks cover late coasting, full-width gates, tow retry, pause/reset,
+Separate checks cover slip retry, chart slider interaction, full-width gates, tow retry, pause/reset,
 single scoring, water clipping and the retained empty barge.
 
 Factory placements use a 64-unit planning grid with whole-cell footprints.
 Footprint edges, rather than arbitrary bitmap centers, align to the grid.
-Four-by-four-cell industrial blocks are packed with the sixteen approved modules;
-one-cell road lanes divide the rows. Every eligible non-road cell outside the
-shore apron is occupied; the open practice basin leaves 613 modules in the bounded tutorial yard. Placement
-and depth order are generated once; actual art/effect bounds cull offscreen work.
-Building height varies independently of footprint, and large/tall structures
-stand farther inland to leave the quays and working apron readable. Source
+One-cell road lanes divide a sparse set of 83 compact pump houses, substations,
+compressor houses and gatehouses. No large factory or steelworks sprite appears
+in this tutorial yard. Placements and depth order are generated once; art/effect
+bounds cull offscreen work. Small building heights vary while retaining dry
+setbacks. Road haulers run near shore and unloaded shore cranes move slowly using
+the existing continuous rigid model. Source
 perspective must match the shared 45-degree yaw / 35.264-degree elevation:
 each visible ground axis has a 30-degree screen slope. Moving a sprite's
 pivot cannot correct an incorrect angle baked into its artwork.

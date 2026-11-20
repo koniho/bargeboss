@@ -3395,3 +3395,43 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   mast anchors inside vessel depth/shore clipping and expire with shared ticks.
   Expanded escort/contact/lifecycle tests, full Android checks/build and reviewed
   radio renders passed; parity baseline 6fdde206:2:1350 retains delivery totals.
+
+
+### 2026-11-19 — Continuous navigation lessons and observer teacher (shared / Android)
+
+- Replaced maneuver-following with an off-course observer station. Teacher faces
+  the player, relocates only beyond the standoff band, and radios when the player
+  strays from the current exercise. Contact warning waits 30 fixed ticks.
+- Opening now teaches forward/left/right/reverse, rendezvous, powered forward and
+  reverse figure eights, a clean stern-first slip entry, and overview-map zoom /
+  target navigation before canal and cargo work. Camera focus eases across the
+  close helm and wider buoy course without jumps. Existing hulls remain in scene.
+- Added one recessed slip to the authoritative water boundary/rectangles, shared
+  by collision, static ground/shore caches and chart. No per-frame terrain rebuild.
+- Tutorial factory placement is sparse and limited to compact pump/substation/
+  compressor/gatehouse modules. Removed the old large steelworks props; road
+  hauler routes are restricted to within 190 world units of water. Existing rigid
+  crane rigs have slow continuous unloaded motion; delivery choreography is intact.
+- Shared sound bus routes two radio and three severity-selected collision WAVs;
+  every host predecodes the same files. Fixed-tick cooldown and radio priority
+  avoid chatter; impacts never trigger vessel radio arcs. No audio synthesis in play.
+- Initial public replay completed all 17 lessons in about 11,050 ticks, preserving
+  vessels through the slip/map and existing barge curriculum. Focused real wall
+  collision / clear-and-retry / slider interaction checks pass. Full suite and
+  Android install results recorded below after validation.
+- Validation completed: full `check.sh` (gameplay, static terrain, chart/shore
+  pixels, cargo/shadow/lighting contracts) and Android packaging passed. Desktop
+  packaging and progress persistence tests passed. Reviewed actual shared-renderer
+  forward/reverse figure eight, slip and map frames. Parity baseline is
+  `266553ab:2:1350`, including new lesson phases and shared sound events.
+- Sparse yard has 83 compact modules. The nine deterministic rendering-budget
+  scenes peaked at 5,200 submitted operations, below existing width-specific
+  budgets; this is submission evidence, not a measured 60 FPS claim. Removed
+  unused steelworks from the scenery preparation manifest. Bounded observer
+  breadcrumbs evict their oldest sample during long practice sessions; focused
+  teacher route/contact/observer checks passed after that adjustment.
+- Collision PCM is 22,050 Hz mono: .22/.38/.60 seconds, peaks .349/.539/.561.
+  iOS adapter and smoke-test lesson IDs/gestures are updated, but native iOS
+  compilation, touch playback and audio listening were not run on this host.
+- Android APK installed successfully through the authorized Shizuku path and
+  MainActivity launched. Native interaction/audio listening still needs a playtest.

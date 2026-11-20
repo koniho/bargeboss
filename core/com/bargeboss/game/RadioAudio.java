@@ -3,8 +3,10 @@ package com.bargeboss.game;
 /** Fixed-step one-shot events; hosts play identical predecoded CB clips. */
 public final class RadioAudio {
     public static final int TEACHER=0,REPLY=1,COUNT=2;
+    private final SoundEffects sounds;
+    RadioAudio(SoundEffects sounds){this.sounds=sounds;}
     private int sequence,cue,age=1000;
-    public void transmit(int cue){if(cue<0 || cue>=COUNT)throw new IllegalArgumentException("Unknown radio cue");this.cue=cue;sequence++;age=0;}
+    public void transmit(int cue){if(cue<0 || cue>=COUNT)throw new IllegalArgumentException("Unknown radio cue");this.cue=cue;sequence++;age=0;sounds.emit(cue);}
     public void step(){if(age<1000)age++;}
     public float progress(){return Physics.clamp(age/(cue==TEACHER?54f:30f),0,1);}
     public boolean transmitting(Game g,Body boat){return progress()<1 && sequence>0 && boat==(cue==TEACHER?g.teacherBoat():g.tug);}

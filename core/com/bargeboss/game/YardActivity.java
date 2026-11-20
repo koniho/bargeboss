@@ -26,7 +26,7 @@ public final class YardActivity {
     /** Remove occupied cells before assembling runs, so vehicles stop and reverse
      * continuously on their remaining lane instead of disappearing near parked trucks. */
     private static boolean routeCell(int col,int row){
-        if(!IndustrialRoadView.roadClear(col,row))return false;
+        if(!IndustrialRoadView.roadClear(col,row) || IndustrialRoadView.clearance(col*64,row*64,64,64,190))return false;
         float l=col*64,t=row*64,r=l+64,b=t+64;
         for(int i=0;i<CalumetArt.count();i++){
             float[] v=CalumetArt.item(i);if((int)v[0]!=SpriteAtlas.SHORE_TRUCKS)continue;

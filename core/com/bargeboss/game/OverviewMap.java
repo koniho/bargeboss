@@ -11,6 +11,8 @@ public final class OverviewMap {
     private float level,zoom=1;
     private int pointerId=-1;
     boolean active;
+    int edits;
+    void lessonZoomIn(){level=1;zoom=MAX_ZOOM;cancelTouch();}
     OverviewMap(){}
     float level(){return level;}
     float zoom(){return zoom;}
@@ -19,7 +21,7 @@ public final class OverviewMap {
     void begin(Game g,int id,float x){pointerId=id;active=true;setFromX(g,x);}
     void cancelTouch(){pointerId=-1;active=false;}
     void setFromX(Game g,float x){
-        Layout.Box b=sliderBounds(g);level=Physics.clamp((x-b.x-24)/(b.w-48),0,1);
+        edits++;Layout.Box b=sliderBounds(g);level=Physics.clamp((x-b.x-24)/(b.w-48),0,1);
         zoom=MIN_ZOOM*(float)StrictMath.pow(MAX_ZOOM/MIN_ZOOM,level);
     }
     static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
@@ -80,7 +82,9 @@ public final class OverviewMap {
             float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
         if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.channelGate;target(g,local,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
-        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(g,local,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
+        if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.FIGURE_EIGHT || g.tutorial.lesson==Tutorial.REVERSE) && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(g,local,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==HelmPractice.RENDEZVOUS)target(g,local,HelmPractice.MEET_X,HelmPractice.MEET_Y,TARGET);
+        if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.SLIP || g.tutorial.lesson==Tutorial.MAP))target(g,local,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),TARGET);
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
         if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.y[i]),mapY(g,g.rescue.x[i]),1.7f,TARGET);

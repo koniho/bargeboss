@@ -68,7 +68,8 @@ public final class Game {
     public float guideX, guideY, pushX=-1, pushY;
     public Tutorial tutorial;
     public final Dialogue dialogue=new Dialogue();
-    public final RadioAudio radio=new RadioAudio();
+    public final SoundEffects sounds=new SoundEffects();
+    public final RadioAudio radio=new RadioAudio(sounds);
     public Body teacherBoat(){return tutorial==null || tutorial.arrival==null?null:tutorial.arrival.teacher;}
     public boolean conversation(){return dialogue.active || tutorial!=null && tutorial.entering;}
     public static final int HAPTIC_TICK=1, HAPTIC_CONTACT=2, HAPTIC_IMPACT=3, HAPTIC_SUCCESS=4;
@@ -189,17 +190,10 @@ public final class Game {
     /** Travel gets context; close work gets a larger hull without changing the physics. */
     private Layout tutorialCamera() {
         if(tutorial.entering)return Layout.focused(layout.width,layout.height,TutorialArrival.DOCK_X,780,2.4f,layout.width*.36f,layout.height*.57f);
-        if(tutorial.lesson==Tutorial.MOVE) {
-            int buoy=Math.min(tutorial.driveMarker,Tutorial.DRIVE_X.length-1);
-            float dx=Tutorial.DRIVE_X[buoy]-tug.x,dy=Tutorial.DRIVE_Y[buoy]-tug.y;
-            // Keep the tug touchable while crossing between the two orbits.
-            float lead=Math.min(.65f,95/Math.max(1,Physics.length(dx,dy)));
-            return Layout.focused(layout.width,layout.height,tug.x+dx*lead,tug.y+dy*lead,
-                    PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.57f);
-        }
-        if(tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
-                tutorial.reverseArmed?(tug.x+tutorial.reverseTargetX)*.5f:tug.x,tutorial.reverseArmed?(tug.y+tutorial.reverseTargetY)*.5f:tug.y,
-                PRACTICE_DRIVE_ZOOM,layout.width*.5f,layout.height*.59f);
+        if(tutorial.lesson==Tutorial.MOVE)return Layout.focused(layout.width,layout.height,tug.x,tug.y,
+                PRACTICE_DRIVE_ZOOM,layout.width*.52f,layout.height*.55f);
+        if(tutorial.lesson==Tutorial.FIGURE_EIGHT || tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
+                HelmPractice.MEET_X,HelmPractice.MEET_Y,1.4f,layout.width*.60f,layout.height*.52f);
         if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.5f,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
@@ -291,7 +285,7 @@ public final class Game {
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
         float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
         float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
-        float ease=tutorial!=null && tutorial.lesson!=Tutorial.MOVE && tug.x<=80?.12f:.055f;
+        float ease=tutorial!=null && tutorial.lesson<=Tutorial.CHANNEL?.045f:.055f;
         Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
         if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
                 && Math.abs(zoom-c.zoom)<.000001f) return;
@@ -314,7 +308,7 @@ public final class Game {
         Body load=null;for(Body b:cargo) if(b!=null && b.active) { load=b;break; }
         Body spare=cargo[2];Towline lead=tow.incoming(load),spareLead=tow.incoming(spare);
         return status()+"; dialogue "+(dialogue.active?dialogue.count():0)+"; arrival "+(tutorial!=null && tutorial.entering?1:0)+"; cargo "+(load==null?"none":load.x+","+load.y)+"; tug "+tug.x+","+tug.y+"; gate "+(tutorial==null?0:tutorial.channelGate)
-                +(tutorial==null?"":"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
+                +(tutorial==null?"":"; slip phase "+tutorial.navigation.slipPhase+"; slip retry "+(tutorial.navigation.retry?1:0)+"; map phase "+tutorial.navigation.mapPhase+"; navigation target "+tutorial.navigation.targetX(this)+","+tutorial.navigation.targetY(this)+"; helm phase "+tutorial.helm.phase+"; heading "+tug.angle+"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
                 +(tutorial==null?"":"; reverse target "+tutorial.reverseTargetX+","+tutorial.reverseTargetY+"; reverse progress "+tutorial.reverseProgress()+"; reverse armed "+(tutorial.reverseArmed?1:0))
                 +"; bollard "+(load==null?"none":bollardX(load)+","+bollardY(load))
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
@@ -762,7 +756,7 @@ public final class Game {
     public void step() {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
-        radio.step();dialogue.step();visualTicks++;joystick.step(this);splashes.step(this);
+        sounds.step();radio.step();dialogue.step();visualTicks++;joystick.step(this);splashes.step(this);
         if(tutorial!=null)tutorial.instructionPanel.step(TutorialView.instructionContent(this));
         if(tutorial!=null && tutorial.entering){
             tutorial.update(this);buoys.step(this);water.step(this);smoke.step(this);buildingFades.step(this);updateCamera();return;

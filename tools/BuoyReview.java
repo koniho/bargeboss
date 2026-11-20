@@ -14,11 +14,11 @@ public final class BuoyReview {
     public static void main(String[] args)throws Exception {
         Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
         capture(root,"buoy-opening");boolean[] shown=new boolean[2];
-        for(int tick=0;tick<2400 && g.tutorial.lesson==Tutorial.MOVE;tick++){
+        for(int tick=0;tick<5000 && g.tutorial.lesson<Tutorial.REVERSE;tick++){
             ReplayInput.tutorial(root);root.step();int buoy=g.tutorial.driveMarker;
-            if(buoy<2 && g.tutorial.orbitProgress()>.4f && !shown[buoy]){capture(root,"buoy-orbit-"+(buoy+1));shown[buoy]=true;}
+            if(g.tutorial.lesson==Tutorial.FIGURE_EIGHT && buoy<2 && g.tutorial.orbitProgress()>.4f && !shown[buoy]){capture(root,"buoy-orbit-"+(buoy+1));shown[buoy]=true;}
         }
-        if(g.tutorial.lesson!=Tutorial.COAST || !shown[0] || !shown[1])throw new AssertionError("Buoy review did not circle both markers");
+        if(g.tutorial.lesson!=Tutorial.REVERSE || !shown[0] || !shown[1])throw new AssertionError("Buoy review did not circle both markers");
         capture(root,"buoy-laps-complete");System.out.println("Two lit buoy orbits exported to out/");
     }
 }

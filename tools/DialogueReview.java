@@ -18,8 +18,8 @@ public final class DialogueReview {
         for(int i=0;i<8;i++)root.step();capture(root,"dialogue-player-transmitting");
         for(int i=8;i<120;i++)root.step();capture(root,"dialogue-acknowledgement");
         for(int i=0;i<90;i++)root.step();capture(root,"dialogue-driving-handoff");
-        for(int i=0;i<5000 && g.tutorial.lesson<Tutorial.HOLD;i++){ReplayInput.tutorial(root);root.step();}
-        capture(root,"teacher-following-canal");
+        for(int i=0;i<9000 && g.tutorial.lesson<Tutorial.HOLD;i++){ReplayInput.tutorial(root);root.step();}
+        capture(root,"teacher-observing-canal");
         g.tug.x=-1595;g.tug.y=500;g.tug.angle=0;g.tug.vx=70;g.tug.vy=0;
         g.teacherBoat().x=-1550;g.teacherBoat().y=500;g.teacherBoat().vx=g.teacherBoat().vy=0;g.cancelInputs();
         root.step();for(int i=0;i<65;i++)root.step();capture(root,"teacher-contact-warning");

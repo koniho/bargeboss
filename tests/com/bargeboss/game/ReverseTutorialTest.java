@@ -10,22 +10,22 @@ public final class ReverseTutorialTest {
     public static void run(){
         for(int side:new int[]{GameSettings.OFF,GameSettings.LEFT,GameSettings.RIGHT}){
             Game g=fixture(side);Body tug=g.tug;check(g.tutorial.reverseArmed,"Clear initial basin latches a reachable reverse target");float x=tug.x,y=tug.y;
-            check(Math.abs(Physics.length(g.tutorial.reverseTargetX-x,g.tutorial.reverseTargetY-y)-Tutorial.REVERSE_DISTANCE)<.01f,"Normal reverse target is sixty world units astern");
-            for(int tick=0;tick<180;tick++)g.step();check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.reverseTravel==0,"Waiting and initial coast momentum cannot complete reverse");
-            boolean reversing=false;for(int tick=0;tick<600 && g.tutorial.lesson==Tutorial.REVERSE;tick++){
-                if(side==GameSettings.OFF)ReplayInput.tutorial(g);else stick(g,g.tutorial.reverseTargetX-tug.x,g.tutorial.reverseTargetY-tug.y);
-                g.step();reversing|=g.reversing;check(g.tug==tug && g.inWater(tug.x,tug.y),"Reverse training preserves the same physical tug in water");
+            for(int tick=0;tick<180;tick++)g.step();check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.orbitProgress()==0,"waiting cannot complete reverse");
+            boolean reversing=false;
+            for(int tick=0;tick<5000 && g.tutorial.lesson==Tutorial.REVERSE;tick++){
+                float dx=g.tutorial.driveTargetX()-tug.x,dy=g.tutorial.driveTargetY()-tug.y;
+                if(side==GameSettings.OFF)ReplayInput.tutorial(g);
+                else {
+                    if(!g.joystick.active)stick(g,-(float)StrictMath.cos(tug.angle),-(float)StrictMath.sin(tug.angle));
+                    stick(g,dx,dy);
+                }
+                g.step();reversing|=g.reversing;
+                check(g.tug==tug && g.inWater(tug.x,tug.y),"reverse keeps the original hull in water");
             }
-            check(g.tutorial.lesson==Tutorial.CHANNEL && reversing && g.tutorial.reverseTravel>=Tutorial.REVERSE_REQUIRED,"Public tug drag/left/right joystick completes genuine backward travel: side="+side);
-            check(Physics.length(tug.x-g.tutorial.reverseTargetX,tug.y-g.tutorial.reverseTargetY)<=Tutorial.REVERSE_RADIUS+1,"Actual tug reaches its soft reverse target");
+            check(g.tutorial.lesson==Tutorial.SLIP && reversing,"reverse figure eight completes with control side "+side);
         }
-        Game g=fixture(GameSettings.OFF);Tutorial t=g.tutorial;
-        // Negative fixture: moving astern with no commanded thrust must not earn progress.
-        g.tug.vx=-50;g.tug.vy=0;for(int i=0;i<120;i++)g.step();check(t.lesson==Tutorial.REVERSE && t.reverseTravel==0,"Backward momentum by itself earns no reverse progress");
-        g=fixture(GameSettings.OFF);t=g.tutorial;float tx=t.reverseTargetX,ty=t.reverseTargetY;
-        g.tug.angle=(float)StrictMath.atan2(ty-g.tug.y,tx-g.tug.x);
-        for(int tick=0;tick<200;tick++){ReplayInput.tutorial(g);g.step();if(Physics.length(g.tug.x-tx,g.tug.y-ty)<15)break;}
-        check(t.lesson==Tutorial.REVERSE && t.reverseTravel==0,"Turning around and driving bow-first to the ring cannot skip reverse instruction");
+        Game g=fixture(GameSettings.OFF);g.tug.vx=-50;for(int i=0;i<120;i++)g.step();
+        check(g.tutorial.lesson==Tutorial.REVERSE && g.tutorial.orbitProgress()==0,"unpowered momentum earns no reverse progress");
         System.out.println(checks+" reverse tutorial thrust, momentum rejection, target and public-control assertions passed");
     }
     public static void main(String[]args){run();}

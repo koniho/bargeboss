@@ -22,7 +22,7 @@ public final class RenderBudgetTest {
     }
     public static void run() {
         int[] widths={960,1333,1920},callBudget={11800,13900,16200},circleBudget={1700,2500,3700};
-        int[] minimumEntryFactories={40,55,85},minimumCloseFactories={10,15,30};
+        int[] maximumFactories={20,30,50};
         int maximumCalls=0;
         for(int viewport=0;viewport<widths.length;viewport++)for(int scene=0;scene<3;scene++) {
             Game g=fixture(widths[viewport],scene);Counts p=new Counts(g.layout.width,g.layout.height);
@@ -32,9 +32,8 @@ public final class RenderBudgetTest {
             check(p.circles<=circleBudget[viewport],"wide scenery plume/glow submission budget");
             check(p.offscreenCircles<=32,"only conservative antialias-edge circles may remain outside the viewport");
             check(p.terrainLayers>0 && p.terrainLayers<=48,"static terrain submits a bounded set of visible chunks");
-            if(scene==0)check(p.factories>=minimumEntryFactories[viewport],"performance gain retains the dense factory district");
-            if(scene==2)check(p.factories>=minimumCloseFactories[viewport],"close view retains surrounding industrial structures");
-            check(p.terrainLayers>0 && p.circles+p.smokePuffs>100,"terrain and organic effects remain rendered: circles="+p.circles+" smoke="+p.smokePuffs);
+            check(p.factories<=maximumFactories[viewport],"tutorial keeps a sparse compact workshop silhouette");
+            check(p.terrainLayers>0 && p.circles+p.smokePuffs>20,"terrain and organic effects remain rendered: circles="+p.circles+" smoke="+p.smokePuffs);
             check(g.ticks==ticks && g.visualTicks==visualTicks && g.tug.x==x && g.tug.y==y,"render optimization never advances or changes simulation");
         }
         System.out.println(checks+" dense-scene rendering budget assertions passed; maximum submissions "+maximumCalls);
@@ -51,7 +50,7 @@ public final class RenderBudgetTest {
         public void line(float x,float y,float xx,float yy,float w,int color){calls++;}
         public void poly(float[] xy,int color){calls++;}
         public void circle(float x,float y,float r,int color){calls++;circles++;if(x+r<=0 || y+r<=0 || x-r>=width || y-r>=height)offscreenCircles++;}
-        public void sprite(int atlas,int frame,float x,float y,float w,float h,float r,float alpha){calls++;if(atlas==SpriteAtlas.FACTORY)factories++;if(atlas==SpriteAtlas.GROUND)groundSprites++;}
+        public void sprite(int atlas,int frame,float x,float y,float w,float h,float r,float alpha){calls++;if(atlas==SpriteAtlas.FACTORY){factories++;check(frame>=12,"tutorial excludes large factory modules");}if(atlas==SpriteAtlas.GROUND)groundSprites++;}
         public void spriteBlend(int atlas,int a,int b,float x,float y,float w,float h,float r,float blend,float alpha){calls++;}
     }
 }

@@ -23,6 +23,7 @@ public final class BuildingFades {
         HashMap<Long,Fade> map=values[bucket];if(map==null)values[bucket]=map=new HashMap<Long,Fade>();
         Fade f=map.get(key);if(f==null){f=new Fade(bucket,key);map.put(key,f);active.add(f);}f.target=target;
     }
+    static float approach(float current,float target){return current+Physics.clamp(target-current,-OUT_STEP,IN_STEP);}
     public void step(Game g) {
         if(g.montroseStage() || g.calumetStage() || g.indianaStage())return; // Set-back marina vegetation never overlaps water; no building queries.
         for(Fade f:active)f.target=1;
@@ -45,8 +46,7 @@ public final class BuildingFades {
             target((int)v[0],0,v[2],v[3],scene.buildingTarget(g,(int)v[0],0,v[2],v[3],GroundArt.LAND_RISE,v[4]));
         }
         for(int i=active.size()-1;i>=0;i--) {
-            Fade f=active.get(i);float delta=f.target-f.alpha;
-            f.alpha+=Physics.clamp(delta,-OUT_STEP,IN_STEP);
+            Fade f=active.get(i);f.alpha=approach(f.alpha,f.target);
             if(f.target==1 && f.alpha>=.9999f){values[f.bucket].remove(f.key);active.remove(i);}
         }
     }
