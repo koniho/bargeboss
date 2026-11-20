@@ -68,7 +68,9 @@ jobs:
           path: build/bargeboss-debug.apk
   ios:
     runs-on: macos-15
-    timeout-minutes: 40
+    # Full gesture tutorial can take 28 minutes on slower hosted simulators;
+    # leave time for both native builds and xcresult artifact uploads.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5

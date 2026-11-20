@@ -3329,3 +3329,12 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Final local Android checks/build passed and the APK was installed/launched.
   Native Back automation starts at the physical window edge: river-stage's
   accessibility frame excludes safe-area insets and is not a valid edge origin.
+
+- Remote validation at c51eb9c: Android and all three desktops passed, including
+  the complete Linux preview export. iOS release run 44645575618 passed all four
+  native UI tests, parity, signed archive and IPA export (TestFlight disabled).
+- Main iOS run 44645495055 also passed all four UI tests and both simulator/device
+  builds; the tutorial took 1,640 seconds versus 511 on the release runner. Its
+  40-minute job budget expired during xcresult upload, after all checks passed.
+  Increased the main iOS budget to 60 minutes, matching release, to accommodate
+  measured hosted-simulator variation and preserve diagnostic artifact uploads.
