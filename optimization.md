@@ -4179,3 +4179,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   prompt covers the game. Asked user to complete/dismiss it. Timings measure
   rendering beneath that overlay; unobstructed presentation/native visual check
   remains pending. No security changes. Evidence: docs/performance/weather-fog-2026-11-20/.
+
+## 2026-11-20 Three-layer Montrose fog
+- Shared composition now adds eight low drifting soft patches before shore and
+  boats, background scenery haze before the river merge, and a faint foreground
+  veil below HUD. Existing Fog setting controls all layers; clear remains default.
+  Fixed nine material patches/two rectangles for fog; combined weather capped at
+  nine materials/four rectangles/384 strokes. Existing shaders, no new textures,
+  caches, simulation state or zoom-dependent patch count.
+- Full checks/Android APK/native encoder regressions pass; 31,159 weather checks.
+  All-heading shore checks: 1,461,230 hull/cargo and 32,273 wall pixels. JVM/J2ObjC
+  parity unchanged 38137f35:2:1350. Shared and unobstructed native pixels reviewed.
+- Installed on Pixel 11 Pro; matched Vulkan inlet zoom0.65 fog/clear/fog means
+  16.679/16.674/16.680ms, CPU7.893/7.722/7.708ms. No meaningful average slowdown;
+  p95 intervals23.59–24.22ms still exceed16.7ms. Warm stationary fixture only,
+  no iOS native performance claim. Evidence: docs/performance/layered-fog-2026-11-20/.

@@ -178,7 +178,7 @@ public final class MontroseView {
             };
         }return out;
     }
-    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);
+    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);WeatherView.lowFog(g,canvas);
         RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);
         MontroseShoreArt.docks(g,canvas);MontroseEntranceShore.pier(g,canvas);
         float[] terraceCut=MontroseShoreArt.terraceCut(land),rockCut=MontroseEntranceShore.wholeTerrainCut(land);
@@ -208,6 +208,7 @@ public final class MontroseView {
             MarinaArt.drawAnimated(g,canvas,land,(int)a[0],a[1],a[2],a[3],(int)(a[1]*19+a[2]*37));}
         NavigationLights.landShadows(g,canvas);
         MarinaPedestals.drawPools(g,canvas);
+        WeatherView.backgroundFog(g,canvas);
         Renderer.river(g,world);
     }
     public static void slip(Game g,Painter p){if(MontroseRescue.active(g)){MontroseRescueView.water(g,p);return;}int color=SoftCue.animated(g,g.mission.settledTicks>0?0xdd4fffc0:0xddffe69c);float c=(float)StrictMath.cos(MontroseHarbor.SLIP_ANGLE),s=(float)StrictMath.sin(MontroseHarbor.SLIP_ANGLE);
