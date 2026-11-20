@@ -82,13 +82,18 @@ public final class OverviewMap {
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
-        if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.channelGate;target(g,local,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
+        if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.canal.guideGate(g);target(g,local,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
         if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.FIGURE_EIGHT || g.tutorial.lesson==Tutorial.REVERSE) && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(g,local,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
         if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==HelmPractice.RENDEZVOUS)target(g,local,HelmPractice.MEET_X,HelmPractice.MEET_Y,TARGET);
         if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.SLIP || g.tutorial.lesson==Tutorial.MAP))target(g,local,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),TARGET);
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
         if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.y[i]),mapY(g,g.rescue.x[i]),1.7f,TARGET);
+        if(g.tutorial!=null){
+            int ink=g.passages.bridges.length>0 && g.passages.passable(0)?0x9995d7d1:0xbbffc170;
+            local.line(mapX(g,TutorialCanalBridge.Y-TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),
+                    mapX(g,TutorialCanalBridge.Y+TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),1,ink);
+        }
         float x=mapX(g,g.tug.y),y=mapY(g,g.tug.x),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));
         SoftCue.ring(local,x,y,4+2*pulse,1,SoftCue.alpha(PLAYER,.4f+.35f*pulse),1);

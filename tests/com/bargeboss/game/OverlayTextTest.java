@@ -5,9 +5,9 @@ public final class OverlayTextTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Count implements Painter {
-        int text;StaticLayer last;float alpha;
+        int text,circles,starInk;StaticLayer last;float alpha;
         public void layer(StaticLayer l,float x,float y,float s,float a){if((l.key()&0xf0000000)==0x60000000){text++;last=l;alpha=a;}}
-        public void poly(float[] q,int c){}public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){}
+        public void poly(float[] q,int c){}public void rect(float x,float y,float w,float h,int c){}public void circle(float x,float y,float r,int c){circles++;starInk=c;}
         public void line(float x,float y,float xx,float yy,float w,int c){}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
@@ -55,6 +55,15 @@ public final class OverlayTextTest {
         for(int i=0;i<InstructionPanel.CLOSE_TICKS;i++)panel.step(null);
         check(panel.hidden() && panel.open()==0,"completion shuts instruction panel down");
         panel.reset();check(!panel.hidden() && panel.open()==0,"reset restarts CRT reveal");
+        Game waitingGame=new Game();InstructionPanel waitingPanel=new InstructionPanel();
+        InstructionPanel.Content waiting=new InstructionPanel.Content("waiting","RADIO CHECK","COPY?","SELECT A REPLY.",-1,0,"BRIDGE","RADIO",true);
+        for(int i=0;i<100;i++)waitingPanel.step(waiting);
+        Count star=new Count();waitingPanel.draw(waitingGame,star);check(star.circles==2,"waiting star remains after opening shimmer expires");
+        int starInk=star.starInk;for(int i=0;i<15;i++)waitingPanel.step(waiting);
+        star=new Count();waitingPanel.draw(waitingGame,star);check(star.starInk!=starInk,"pending response star pulses on fixed simulation ticks");
+        waitingPanel.step(new InstructionPanel.Content("waiting","RADIO CHECK","COPY?","REPLY SENT.",-1,0,"YOU","RADIO",false));
+        star=new Count();waitingPanel.draw(waitingGame,star);check(star.circles==0,"reply stops the waiting star without restarting the text wipe");
+        check(old.header.startsWith("INSTRUCTOR"),"ordinary lesson instructions identify their transmitter");
         Count p=new Count();Lettering.draw(p,"READY",10,20,14,0xffabcdef);StaticLayer first=p.last;
         Lettering.draw(p,"READY",40,70,14,0x44abcdef);
         check(p.last==first && Math.abs(p.alpha-68/255f)<.00001f,"pulse and location reuse immutable text raster");

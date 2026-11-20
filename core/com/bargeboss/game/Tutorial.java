@@ -7,6 +7,7 @@ public final class Tutorial {
     public static final float BRIDGE_CLEAR_Y=Bridge.Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
     public final HelmPractice helm=new HelmPractice();
     public final NavigationPractice navigation=new NavigationPractice();
+    public final TutorialCanalBridge canal=new TutorialCanalBridge();
     private int firstOrbitDirection,outsideTicks;
     public boolean reverseArmed;
     public float reverseTargetX,reverseTargetY;
@@ -41,6 +42,8 @@ public final class Tutorial {
     public void setup(Game g) {
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
+        canal.reset(lesson>CHANNEL);g.passages=new BridgePassage(g);LocationBridges.prepare(g.passages.bridges);
+        if(lesson>CHANNEL)g.passages.position[0]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
         clearedGate=gateClearTicks=driveMarker=bridgeCrossed=trainCrossed=0;channelGate=1;
         orbitArmed=false;orbitSweep=0;orbitAngle=(float)StrictMath.PI;firstOrbitDirection=outsideTicks=0;reverseArmed=lesson==REVERSE;
@@ -57,7 +60,10 @@ public final class Tutorial {
             g.tug.angle=.52f;
         }
         if(lesson==SLIP || lesson==MAP)g.tug=new Body(0,-1,NavigationPractice.APPROACH_X,NavigationPractice.SLIP_Y,0);
-        if(lesson==CHANNEL) g.tug=new Body(0,-1,TrainingChannel.X[0],TrainingChannel.Y[0],0);
+        if(lesson==CHANNEL){
+            g.tug=new Body(0,-1,TrainingChannel.MIN-160,TrainingChannel.Y[0],0);
+            arrival=new TutorialArrival();arrival.observe();
+        }
         // Reset can restart the current exercise; normal progression preserves
         // the original bodies, positions, momentum, water and camera instead.
         if(lesson>=HOLD) g.tug=new Body(0,-1,376,700,(float)Math.PI);
@@ -104,6 +110,7 @@ public final class Tutorial {
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
     public void update(Game g) {
+        canal.step(g);
         if(arrival!=null)arrival.step(g);
         if(entering)return;
         if(gateClearTicks>0) gateClearTicks--;
@@ -125,7 +132,7 @@ public final class Tutorial {
         } else if(lesson==MAP) {
             if(navigation.map(g)){lesson=CHANNEL;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
         } else if(lesson==CHANNEL) {
-            if(channelGate==TrainingChannel.X.length) {
+            if(channelGate==TrainingChannel.X.length && canal.authorized && g.passages.passable(0)) {
                 lesson=HOLD;actionTicks=0;g.haptic(Game.HAPTIC_SUCCESS);
             }
         } else if(lesson==HOLD) {

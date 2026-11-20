@@ -262,10 +262,27 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
 - (void)driveTrainingChannel:(XCUIElement *)stage {
     const double xs[]={-1180,-1000,-820,-640,-460,-280,-100,80};
     const double ys[]={500,390,620,390,620,390,600,500};
-    for(int attempt=0;attempt<180;attempt++) {
+    for(int attempt=0;attempt<240;attempt++) {
         NSString *status=(NSString *)stage.value;
         if(![status containsString:BBLessonToken(BBLessonChannel)]) break;
+        if([self integerInStatus:status tag:@"dialogue"]>0) {
+            CGSize size=[self logicalSize:stage];
+            [[self point:stage x:size.width*.5-fmin(440,(size.width-64)/2)*.5-8 y:size.height-69] tap];
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
+        if([self integerInStatus:status tag:@"canal contact"]==1) {
+            CGPoint house=[self worldPositionInStatus:status tag:@"bridge house"];
+            [[self point:stage x:house.x y:house.y] tap];
+            [NSThread sleepForTimeInterval:1.2];continue;
+        }
         CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
+        if([self integerInStatus:status tag:@"canal ready"]==0 && boat.x>-1500) {
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
+        CGPoint teacher=[self worldPositionInStatus:status tag:@"teacher"];
+        if([self integerInStatus:status tag:@"canal ready"]==1 && (teacher.x<-1200 || hypot(teacher.x-boat.x,teacher.y-boat.y)<60)) {
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
         NSInteger gate=[self integerInStatus:status tag:@"gate"];
         if(gate>7) break;
         XCTAssertTrue(gate>=1 && gate<=7);

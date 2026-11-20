@@ -22,13 +22,13 @@ public final class ChannelTest {
             int seen=0;boolean scrolled=false;
             for(int i=0;i<6500 && g.trainingChannel();i++) {
                 if(i%20==0) ReplayInput.channel(root);
-                RiverCamera c=g.layout.camera;
+                boolean touching=g.pointer;RiverCamera c=g.layout.camera;
                 float px=c.screenX(g.pointerX,g.pointerY),py=c.screenY(g.pointerX,g.pointerY);
                 float ax=c.screenX(g.downX,g.downY),ay=c.screenY(g.downX,g.downY);
                 seen|=1<<g.tutorial.channelGate;root.step();
                 if(g.trainingChannel()) {
                     check(g.inWater(g.tug.x,g.tug.y),"tug remains within the winding waterway");
-                    check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-ax)<.002f
+                    check(!touching || !g.pointer || Math.abs(g.layout.camera.screenX(g.downX,g.downY)-ax)<.002f
                             && Math.abs(g.layout.camera.screenY(g.downX,g.downY)-ay)<.002f
                             && Math.abs(g.layout.camera.screenX(g.pointerX,g.pointerY)-px)<.002f
                             && Math.abs(g.layout.camera.screenY(g.pointerX,g.pointerY)-py)<.002f,"scroll preserves physical touch anchors");
@@ -64,7 +64,7 @@ public final class ChannelTest {
         root.background();float x=g.tug.x;int ticks=g.ticks;root.advance(1);
         check(g.tug.x==x && g.ticks==ticks,"course pauses on background");
         root.configureCanvas(1333,600);g.pause();ReplayInput.tap(root,Layout.HELP);
-        check(g.trainingChannel() && g.tutorial.channelGate==1 && g.tug.x==TrainingChannel.X[0],"reset restarts channel and responsive camera");
+        check(g.trainingChannel() && g.tutorial.channelGate==1 && g.tug.x==TrainingChannel.MIN-160,"reset restarts channel and responsive camera");
         check(Parity.frame(root)==Parity.frame(root),"channel rendering has no side effects");
         Game low=course(960,600),high=course(960,600);
         for(int second=0;second<12;second++) {
@@ -83,6 +83,7 @@ public final class ChannelTest {
         // 23-unit center circle leaves the HUD waiting forever at gate one.
         for(int side:new int[]{-1,1}) {
             Game root=course(1333,600),g=root.activeGame();
+            g.tutorial.canal.authorized=true;g.passages.position[0]=BridgePassage.OPEN_TICKS;
             for(int gate=1;gate<TrainingChannel.X.length;gate++) {
                 float x=TrainingChannel.X[gate],y=TrainingChannel.Y[gate]+side*36;
                 g.cancelInputs();g.tug.x=x-30;g.tug.y=y;g.tug.angle=0;

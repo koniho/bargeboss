@@ -8,19 +8,23 @@ final class InstructionPanel {
     private float closeFrom=1;
     private Content content,pending;
     static final class Content {
-        final String key,title,first,second,header,badge;final int lesson;final float progress;
+        final String key,title,first,second,header,badge;final int lesson;final float progress;final boolean waiting;
         Content(String key,String title,String first,String second,int lesson,float progress){
-            this(key,title,first,second,lesson,progress,"PRACTICE",null);
+            this(key,title,first,second,lesson,progress,"INSTRUCTOR / CHANNEL 08",null);
         }
         Content(String key,String title,String first,String second,int lesson,float progress,String header,String badge){
+            this(key,title,first,second,lesson,progress,header,badge,false);
+        }
+        Content(String key,String title,String first,String second,int lesson,float progress,String header,String badge,boolean waiting){
+            this.waiting=waiting;
             this.header=header;this.badge=badge;this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
         }
         void draw(Painter p){
             p.line(18,7,414,7,.8f,0x9de7bc73);
-            Lettering.draw(p,header,18,18,10,PilotGlass.AMBER);
+            Lettering.draw(p,"FROM: "+header,18,18,9,PilotGlass.AMBER);
             String count=badge!=null?badge:lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
             Lettering.draw(p,count,414-Lettering.width(count,10),18,10,PilotGlass.MUTED);
-            Lettering.draw(p,title,18,39,Math.min(19,19*396/Math.max(1,Lettering.width(title,19))),PilotGlass.TEXT);
+            Lettering.draw(p,title,18,39,Math.min(19,19*(waiting?382:396)/Math.max(1,Lettering.width(title,19))),PilotGlass.TEXT);
             Lettering.draw(p,first,18,70,12,PilotGlass.TEXT);
             Lettering.draw(p,second,18,89,11,PilotGlass.MUTED);
             if(lesson==Tutorial.CHANNEL){p.rect(18,112,400,4,PilotGlass.TRACK);p.rect(18,112,400*progress,4,ControlView.GREEN);}
@@ -88,9 +92,9 @@ final class InstructionPanel {
         float glint=(.5f+.5f*(float)StrictMath.sin(ticks*.55f))*height;
         p.line(xx,Math.max(top,top+glint-5),xx,Math.min(bottom,top+glint+5),1,0x99edf8ea);
     }
-    private void sparkle(Painter p,float x,float y){
+    private void sparkle(Painter p,float x,float y,boolean waiting){
         boolean moving=phase==CLEAR || phase==DROP || phase==RETURN || phase==RISE || phase==REVEAL;
-        float fade=moving?1:shimmerTicks>SHIMMER_TICKS-6?(shimmerTicks-(SHIMMER_TICKS-6))/6f:0;
+        float fade=waiting && phase==STEADY?.55f+.35f*(float)StrictMath.sin(ticks*.075f):moving?1:shimmerTicks>SHIMMER_TICKS-6?(shimmerTicks-(SHIMMER_TICKS-6))/6f:0;
         if(fade<=0)return;
         float radius=4+.65f*(float)StrictMath.sin(ticks*.65f);
         float angle=.18f*(float)StrictMath.sin(ticks*.4f),cx=x+starX(),cy=y+starY();
@@ -128,7 +132,7 @@ final class InstructionPanel {
         finally{if(wipe)p.popClip();}
         wipeLine(p,x,y);
         shimmer(p,x,y);
-        sparkle(p,x,y);
+        sparkle(p,x,y,shown.waiting);
     }
     void paint(Painter p,float x,float y){
         if(hidden())return;

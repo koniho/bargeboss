@@ -10,6 +10,7 @@ final class TutorialArrival {
     int warningTicks;
     private final TeacherFollow follow=new TeacherFollow();
     private String reply="";
+    void observe(){teacher=new Body(0,-1,TrainingChannel.MIN-280,TrainingChannel.Y[0]-90,0);}
     void start(Game g){
         teacher=new Body(0,-1,-1820,TEACHER_Y,0);replyTicks=0;reply="";
         g.tug.x=DOCK_X;g.tug.y=DOCK_Y;g.tug.angle=0;g.tug.vx=g.tug.vy=g.tug.spin=0;

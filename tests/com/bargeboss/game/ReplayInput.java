@@ -164,6 +164,23 @@ public final class ReplayInput {
     }
     public static void channel(Game root) {
         Game g=root.activeGame();
+        TutorialCanalBridge bridge=g.tutorial.canal;
+        if(g.dialogue.active){
+            if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}
+            return;
+        }
+        if(!bridge.authorized && bridge.contactable(g)){
+            if(g.pointer)up(root,g.pointerX,g.pointerY);
+            tap(root,bridge.houseX(g),bridge.houseY(g));return;
+        }
+        if(bridge.phase!=TutorialCanalBridge.IDLE && !g.passages.passable(0)){
+            if(g.pointer)up(root,g.pointerX,g.pointerY);return;
+        }
+        Body teacher=g.teacherBoat();
+        if(bridge.authorized && teacher!=null && (!bridge.escort.leading || teacher.x<TrainingChannel.MIN+60
+                || Physics.length(teacher.x-g.tug.x,teacher.y-g.tug.y)<60)){
+            if(g.pointer)up(root,g.pointerX,g.pointerY);return;
+        }
         float[] target=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,g.tutorial.channelGate,target);
         float dx=target[0]-g.tug.x,dy=target[1]-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
         if(!g.pointer) down(root,g.tug.x,g.tug.y);

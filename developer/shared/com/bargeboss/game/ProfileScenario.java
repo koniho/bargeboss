@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -88,6 +88,22 @@ public final class ProfileScenario {
         }
         root.startTutorial();Game g=root.activeGame();
         if(name.equals("tutorial-entrance"))return;
+        if(name.equals("canal-radio") || name.equals("canal-operator") || name.equals("canal-opening") || name.equals("canal-follow") || name.equals("canal-milestone")){
+            g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.setup(g);
+            for(int i=0;i<90;i++)root.step();
+            if(name.equals("canal-radio"))return;
+            TutorialCanalBridge b=g.tutorial.canal;ReplayInput.tap(root,b.houseX(g),b.houseY(g));
+            for(int i=0;i<140;i++)root.step();
+            if(name.equals("canal-operator"))return;
+            Layout.Box choice=g.dialogue.choiceBox(g,0);ReplayInput.tap(root,choice.centerX(),choice.centerY());
+            for(int i=0;i<1400;i++){
+                root.step();
+                if(name.equals("canal-opening") && g.passages.position[0]==150)return;
+                if(name.equals("canal-follow") && b.escort.leading && b.escort.radioTicks==150)return;
+                if(name.equals("canal-milestone") && b.escort.waiting){for(int j=0;j<90;j++)root.step();return;}
+            }
+            throw new IllegalStateException("Canal radio fixture not reached: "+name);
+        }
         if(name.equals("seawall-corner")){
             g.tutorial.entering=false;g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.channelGate=1;
             g.tug.x=-1118;g.tug.y=437;g.tug.angle=0;

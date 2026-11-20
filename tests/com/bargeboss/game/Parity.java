@@ -160,6 +160,8 @@ public final class Parity implements Painter {
             }
             if(g.cargo[0]!=null) { p.value(g.cargo[0].x);p.value(g.cargo[0].y);p.value(g.cargo[0].angle); }
             p.add(g.tutorial.lesson);p.add(g.tutorial.helm.phase);p.add(g.tutorial.navigation.slipPhase);p.add(g.tutorial.navigation.retry?1:0);p.add(g.tutorial.navigation.mapPhase);p.add(SoundEffects.sequence(g));p.add(SoundEffects.cue(g));p.add(g.tutorial.channelGate);p.value(g.layout.camera.worldRight); p.add(g.control); p.add(root.pollHaptic());
+            p.add(g.tutorial.canal.phase);p.add(g.tutorial.canal.authorized?1:0);p.add(g.passages.position[0]);
+            p.add(g.tutorial.canal.escort.gate);p.add(g.tutorial.canal.escort.waiting?1:0);p.add(g.radio.transmitter());
             p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.add(g.water.emitted); p.add(g.ropeDragging?1:0); p.add(g.ropePhase); p.add(g.ropeTicks);
             if(i%30==0) Renderer.draw(root,p);
         }

@@ -3725,3 +3725,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Device evidence: docs/performance/vulkan-default-2026-11-20/. Cross-vendor and
   sustained gameplay remain unvalidated; iOS unchanged. Existing single-sample
   rasterization limitations remain. No claim of sustained headroom.
+
+### 2026-11-20 — Tutorial mouth bridge radio and leading instructor
+
+- Shared Java owns radio authorization, house hit testing, transmitter identity,
+  response-star timing, bridge collision and eight instructor milestone waits.
+  Reuses the bounded bridge topology/continuous rigid pose machinery, with a
+  model-derived house anchor. No platform gameplay or new raster asset caches.
+- Gate sits at the canal mouth, with complete footings on the banks; nearby
+  factory scenery is reserved away from it. Shared camera frames house, player
+  and leading instructor. Overview includes live closed/open bridge signal.
+- JVM/J2ObjC traces match `1bb85bd0:2:1350`. Three-width tests exercise radio
+  cancellation, standby, pause, opening every tick and all eight waits. Actual
+  shared renderer previews cover closed, opening and open states.
+- iPhone 17/iOS 26.5 simulator native operator and milestone frames reviewed.
+  Cold moving-scene capture (120 frames, concurrent build): mean interval
+  57.72 ms, p95 65.03 ms, max 866.81 ms; mean CPU draw 48.19 ms. Cold preparation
+  and simulator/build contention are unresolved contributors, not proof of
+  device performance. Peak frame textures 57.7 MB, retained 65.9 MB, no evictions.
+- Connected Android phone deliberately untouched at user's request. Android APK
+  built locally; real-device frame intervals, touch and lifecycle remain untested
+  for this increment. Native gesture walkthrough updated but not rerun.

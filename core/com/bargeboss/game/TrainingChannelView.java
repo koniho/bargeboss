@@ -12,6 +12,7 @@ public final class TrainingChannelView {
         if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0)WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
         NavigationLights.reflections(g,canvas);
+        LocationBridges.shadows(g,canvas);
         LockView.water(g,g.lock,canvas);
         FeederView.draw(g,p);
         // Ground is cached; solid lower-bank caps also join the world depth
@@ -20,9 +21,9 @@ public final class TrainingChannelView {
         VesselShoreLight.draw(g,canvas);
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
-        int gate=g.tutorial==null?0:g.tutorial.channelGate;
+        int gate=g.tutorial==null?0:g.tutorial.canal.guideGate(g);
         // One transient lesson cue; physical markers belong only at region mouths.
-        if(g.trainingChannel() && gate<TrainingChannel.X.length) {
+        if(g.trainingChannel() && g.tutorial.canal.escort.leading && gate<TrainingChannel.X.length) {
             float x=TrainingChannel.X[gate],y=TrainingChannel.Y[gate];
             for(int j=-4;j<=4;j++)SoftCue.line(p,x,y+j*10-3,x,y+j*10+3,1,SoftCue.animated(g,0x88ffc52f));
             SoftCue.caption(p,gate==TrainingChannel.X.length-1?"HARBOR":"NEXT TURN",x+20,y,9,VisualStyle.GOLD);
@@ -34,10 +35,11 @@ public final class TrainingChannelView {
         factoriesAndVessels(g,canvas);
         BridgeView.draw(g,canvas);
         gateIndicator(g,canvas);
+        if(g.tutorial!=null)g.tutorial.canal.cue(g,canvas);
     }
     static void gateIndicator(Game g,Painter canvas){RiverCamera c=g.layout.camera;
-        if(g.trainingChannel()) {
-            int next=Math.min(g.tutorial==null?0:g.tutorial.channelGate,TrainingChannel.X.length-1);
+        if(g.trainingChannel() && g.tutorial.canal.escort.leading) {
+            int next=Math.min(g.tutorial==null?0:g.tutorial.canal.guideGate(g),TrainingChannel.X.length-1);
             float gx=TrainingChannel.X[next],gy=TrainingChannel.Y[next];
             float sy=c.screenY(gx,gy);
             if(sy<82) {

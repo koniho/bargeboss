@@ -13,17 +13,18 @@ final class LandmarkBridge {
     private ArticulatedModel.Motion motion;
     final Lamp[] lamps;
     final int[] leaves;
+    final float[] radioPoint;
     private static final int STEEL=0xff777d80,RUST=0xff896c59,STONE=0xffa39786;
     static final class Lamp {
         final String id;final boolean moving;final int node;final float x,y,z,nx=0,ny=0,nz=1,radius;final boolean signal;
         Lamp(String id,boolean moving,int node,float x,float y,float z,float radius,boolean signal){this.id=id;this.moving=moving;this.node=node;this.x=x;this.y=y;this.z=z;this.radius=radius;this.signal=signal;}
     }
     LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,boolean indiana){
+        this(id,name,x,y,yaw,type,style,width,bank(indiana,x,y,yaw,-1),bank(indiana,x,y,yaw,1));
+    }
+    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,float l,float r){
         this.id=id;this.name=name;this.x=x;this.y=y;this.yaw=yaw;this.type=type;this.style=style;this.width=width;
         dx=(float)StrictMath.cos(yaw);dy=(float)StrictMath.sin(yaw);
-        float l=0,r=0;
-        while(l<1000 && water(indiana,x-dx*l,y-dy*l))l+=3;
-        while(r<1000 && water(indiana,x+dx*r,y+dy*r))r+=3;
         left=l;right=r;height=type==SKYWAY?230:type==FIXED?180:type==LIFT?170:18;
         if(l+r<25)throw new IllegalArgumentException("Bridge center outside channel: "+id);
         ArticulatedModel.Builder a=new ArticulatedModel.Builder(),b=new ArticulatedModel.Builder();
@@ -80,7 +81,15 @@ final class LandmarkBridge {
             }
         }
         fixed=a.build();fixedPose=fixed.pose(0);moving=b.build();
+        // Same foundation transform and house dimensions used by the visible right-bank house.
+        float houseHeight=style==2?72:style==3?48:34;
+        radioPoint=fixedPose.point(root,right+29,-width*.5f-18,houseHeight*.65f);
         lamps=lights.toArray(new Lamp[lights.size()]);leaves=new int[leafIds.size()];for(int i=0;i<leaves.length;i++)leaves[i]=leafIds.get(i);
+    }
+    private static float bank(boolean indiana,float x,float y,float yaw,int side){
+        float distance=0,dx=(float)StrictMath.cos(yaw)*side,dy=(float)StrictMath.sin(yaw)*side;
+        while(distance<1000 && water(indiana,x+dx*distance,y+dy*distance))distance+=3;
+        return distance;
     }
     private static boolean water(boolean indiana,float x,float y){return indiana?IndianaHarbor.contains(x,y):CalumetRiver.contains(x,y);}
     private static void truss(ArticulatedModel.Builder b,int n,float length,float width,float h,int color,boolean roof,boolean below){

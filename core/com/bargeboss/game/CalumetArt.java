@@ -60,6 +60,8 @@ public final class CalumetArt {
     static float depth(Game g,int i){return g.layout.camera.screenY(ITEMS[i][2],ITEMS[i][3]);}
     static boolean clearFactory(float x,float y,float width,float height){
         if(!clearSteelworks(x,y,width,height))return false;
+        if(x<TutorialCanalBridge.X+65 && x+width>TutorialCanalBridge.X-65
+                && y<TutorialCanalBridge.Y+140 && y+height>TutorialCanalBridge.Y-140)return false;
         // Clearance includes body overhang and a narrow access apron, not just its anchor.
         for(float[] v:ITEMS)if((int)v[0]==SpriteAtlas.SHORE_TRUCKS && x<v[2]+82 && x+width>v[2]-82 && y<v[3]+46 && y+height>v[3]-46)return false;
         return true;

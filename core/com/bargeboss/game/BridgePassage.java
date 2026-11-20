@@ -27,7 +27,7 @@ final class BridgePassage {
     }
     void step(Game g){for(int i=0;i<bridges.length;i++){
         if(!bridges[i].movable())continue;
-        boolean request=requested(g,i);
+        boolean request=g.tutorial!=null?g.tutorial.canal.authorized:requested(g,i);
         if(request){hold[i]=HOLD_TICKS;if(position[i]>0 || ++wait[i]>=WAIT_TICKS)position[i]=Math.min(OPEN_TICKS,position[i]+1);}
         else if(hold[i]>0)hold[i]--;
         else if(position[i]>0)position[i]--;

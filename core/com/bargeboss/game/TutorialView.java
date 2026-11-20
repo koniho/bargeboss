@@ -6,6 +6,7 @@ public final class TutorialView {
     private TutorialView() {}
     static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
+        if(t.lesson==Tutorial.CHANNEL && !t.entering)return t.canal.content(g);
         if(t.arrival!=null && t.arrival.warningTicks>0)return t.arrival.warning();
         if(t.lesson==Tutorial.DONE)return null;
         if(t.entering)return t.arrival.content();
@@ -72,6 +73,7 @@ public final class TutorialView {
         }
         t.instructionPanel.draw(g,p);
         if(t.lesson==Tutorial.CHANNEL) {
+            if(!t.canal.authorized || !g.passages.passable(0))return;
             if(g.tug.x<TrainingChannel.X[0]) {
                 float[] entry=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,t.channelGate,entry);
                 driveArrow(g,new RiverPainter(p,g.layout.camera),entry[0],entry[1],"CANAL ENTRANCE");

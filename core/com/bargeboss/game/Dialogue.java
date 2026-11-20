@@ -8,18 +8,21 @@ public final class Dialogue {
     private int pointer=-1,pressed=-1,result=-1,revision,ticks;
     public boolean active;
     public void show(Game g,String speaker,String prompt,String detail,String... answers){
+        showFrom(g,RadioAudio.TEACHER,speaker,prompt,detail,answers);
+    }
+    public void showFrom(Game g,int transmitter,String speaker,String prompt,String detail,String... answers){
         if(answers==null || answers.length<1 || answers.length>4)throw new IllegalArgumentException("Dialogue needs 1 to 4 choices");
         for(String answer:answers)if(answer==null || answer.trim().isEmpty())throw new IllegalArgumentException("Empty choice");
         g.cancelInputs();active=true;this.speaker=speaker;title=prompt;first=detail;second="SELECT A REPLY TO TRANSMIT.";
         choices=answers.clone();result=-1;ticks=0;revision++;cancel();panel.reset();
-        panel.step(content());g.radio.transmit(RadioAudio.TEACHER);
+        panel.step(content());if(transmitter==RadioAudio.BRIDGE)g.radio.receiveBridge();else g.radio.transmit(RadioAudio.TEACHER);
     }
     public void close(Game g){active=false;cancel();g.cancelInputs();}
     public void cancel(){pointer=pressed=-1;}
     public int count(){return choices.length;}
     public int result(){return result;}
     public boolean ready(){return active && result<0 && ticks>=InstructionPanel.OPEN_TICKS;}
-    private InstructionPanel.Content content(){return new InstructionPanel.Content("radio-"+revision,title,first,second,-1,0,speaker,"RADIO / RX");}
+    InstructionPanel.Content content(){return new InstructionPanel.Content("radio-"+revision,title,first,second,-1,0,speaker,"RADIO / RX",active && result<0);}
     public void step(){if(!active)return;ticks++;panel.step(content());}
     public Layout.Box choiceBox(Game g,int i){
         float width=Math.min(440,(g.layout.width-64)/2),left=g.layout.width*.5f-width-8;

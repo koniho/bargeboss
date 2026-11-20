@@ -6,9 +6,11 @@ final class TeacherFollow {
     static final float GAP=300;
     private final float[] x=new float[CAPACITY],y=new float[CAPACITY];
     private int head,count,frames;
-    private boolean relocating;
+    private boolean relocating,ledCanal;
     private float observerX=-1770,observerY=510;
     void step(Game g,Body boat){
+        if(g.tutorial.lesson==Tutorial.CHANNEL){ledCanal=true;g.tutorial.canal.escort.step(g,boat);return;}
+        if(ledCanal){head=count=frames=0;relocating=ledCanal=false;}
         int last=(head+count-1+CAPACITY)%CAPACITY;
         if(count==0 || Physics.length(g.tug.x-x[last],g.tug.y-y[last])>=8){
             if(count==CAPACITY){head=(head+1)%CAPACITY;count--;}
@@ -60,7 +62,7 @@ final class TeacherFollow {
         float ease=speed==0?.4f:.14f;
         boat.vx+=(dx/d*speed-boat.vx)*ease;boat.vy+=(dy/d*speed-boat.vy)*ease;
         boat.engineLoad+=(Math.min(.85f,speed/220)-boat.engineLoad)*.08f;
-        Physics.integrate(boat);CalumetMap.collide(boat,g.splashes);g.bridge.collide(boat,g.splashes);facePlayer(g,boat);
+        Physics.integrate(boat);CalumetMap.collide(boat,g.splashes);g.bridge.collide(boat,g.splashes);g.passages.collide(boat,g.splashes);facePlayer(g,boat);
     }
     private static void facePlayer(Game g,Body boat){
         float wanted=(float)StrictMath.atan2(g.tug.y-boat.y,g.tug.x-boat.x);
