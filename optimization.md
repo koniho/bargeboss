@@ -3313,3 +3313,7 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Local preview replay now passes the previously failing bounded goal, full
   tutorial and bridge traversal. Remaining render exports are still running;
   Android's normal full checks/build are also being validated.
+- Full native protocol audit also found Core Graphics missing normalSprite.
+  Exposed the existing Java reference calculation as VesselShoreLight's shared
+  fallback and wired the native adapter to it; Metal keeps its normal-map shader.
+  This preserves shared reference math instead of duplicating it in Objective-C.

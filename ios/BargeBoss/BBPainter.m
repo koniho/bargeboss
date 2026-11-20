@@ -1,6 +1,7 @@
 #import "com/bargeboss/game/ShorelineMaterial.h"
 #import "BBPainter.h"
 #import "com/bargeboss/game/SceneLighting.h"
+#import "com/bargeboss/game/VesselShoreLight.h"
 #import "IOSPrimitiveArray.h"
 #import "IOSObjectArray.h"
 #import "com/bargeboss/game/SpriteAtlas.h"
@@ -305,6 +306,9 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 - (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
     [BBEffectMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withInt:kind withFloat:detail withFloat:amount withInt:argb];
+}
+- (void)normalSpriteWithInt:(jint)frame withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)w withFloat:(jfloat)h withFloat:(jfloat)nx withFloat:(jfloat)ny withFloat:(jfloat)nz withFloat:(jfloat)radius withInt:(jint)argb withFloat:(jfloat)alpha {
+    [BBVesselShoreLight normalSpriteFallbackWithBBPainter:self withInt:frame withFloat:x withFloat:y withFloat:w withFloat:h withFloat:nx withFloat:ny withFloat:nz withFloat:radius withInt:argb withFloat:alpha];
 }
 - (void)smokePuffWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withFloat:(jfloat)phase withInt:(jint)argb {
     [BBSmokePuff fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:radius withInt:argb];

@@ -1,6 +1,12 @@
 package com.bargeboss.game;
 /** Colored, local shore receivers. No NPC mooring lights; never paints across water or hulls. */
 public final class VesselShoreLight {
+    /** Shared reference path, also called by handwritten native protocol adapters. */
+    public static void normalSpriteFallback(Painter p,int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha) {
+        float power=alpha*VesselShoreLight.falloff(nx*nx+ny*ny+nz*nz,radius);
+        for(int ch=0;ch<3;ch++){float strength=((color>>(16-ch*8))&255)/255f*power;
+            if(strength>.001f)p.sprite(SpriteAtlas.MOORED_BOATS,(ch+1)*MooredBoats.BASE_FRAMES+frame,x,y,w,h,0,strength);}
+    }
     private VesselShoreLight(){}
     static float falloff(float distanceSquared,float radius){float v=Math.max(0,1-distanceSquared/(radius*radius));return v*v;}
     public static void draw(Game g,Painter p){

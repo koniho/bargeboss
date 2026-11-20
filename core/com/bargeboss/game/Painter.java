@@ -71,9 +71,7 @@ public interface Painter {
      * the lamp position relative to the boat origin, radius is in world units.
      * Shared callers select lights; native hosts evaluate local surface response. */
     default void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha) {
-        float power=alpha*VesselShoreLight.falloff(nx*nx+ny*ny+nz*nz,radius);
-        for(int ch=0;ch<3;ch++){float strength=((color>>(16-ch*8))&255)/255f*power;
-            if(strength>.001f)sprite(SpriteAtlas.MOORED_BOATS,(ch+1)*MooredBoats.BASE_FRAMES+frame,x,y,w,h,0,strength);}
+        VesselShoreLight.normalSpriteFallback(this,frame,x,y,w,h,nx,ny,nz,radius,color,alpha);
     }
     /** Draw one shared atlas cell around its normalized hull pivot, then rotate in radians. */
     void sprite(int atlas, int frame, float cx, float cy, float width, float height, float rotation, float alpha);
