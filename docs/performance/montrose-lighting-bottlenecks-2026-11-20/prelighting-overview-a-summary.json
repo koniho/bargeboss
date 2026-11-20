@@ -1,0 +1,20 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=montrose-overview",
+    "--ios-warmup=45",
+    "--ios-frames=30"
+  ],
+  "frames": 30,
+  "mean_ms": 222.22323000000003,
+  "median_ms": 216.694,
+  "p95_ms": 233.4127,
+  "max_ms": 249.817,
+  "fps": 4.499979592592547,
+  "draw_median_ms": 183.9933,
+  "draw_p95_ms": 197.7622,
+  "draw_max_ms": 199.1058,
+  "gpu_median_ms": 0.6734,
+  "gpu_p95_ms": 1.3758
+}

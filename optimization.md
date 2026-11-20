@@ -4006,3 +4006,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   smooth-frame check; causality/regression needs an isolated baseline comparison.
 - Evidence and follow-ups: docs/performance/lighting-presets-2026-11-20/montrose-shore.md.
   No phone access, install, artwork change or runtime fix was performed.
+
+### 2026-11-20 — Montrose overview baseline and bottleneck isolation
+
+- Pre-preset 12b881b and lighting cb15b0b, same iOS simulator/scene/warmup: both
+  ~216.7 ms median intervals; CPU draw ~182–184 ms, GPU ~0.6 ms. Slow overview
+  predates presets. Baseline retains old dusk grading and lamps (not lights-off).
+- Separate warm stack sample: ~42% water drawing/clipping, ~37% repeated marina
+  pedestal/pool kernel polygon fallbacks, ~7% ground-layer fallback. Earlier
+  startup sample overlapping a build discarded. No runtime fixes in this round.
+- Representative 1333x600 overview requires 207.19 MiB for 195 visible ground
+  rasters because minimum density is 2 at camera scale ~0.215, exceeding shared
+  160 MiB texture cache before sprites. 192 MiB diagnostic improves only modestly.
+- Priorities: retain small light kernels; screen-density-appropriate distant
+  terrain rasters; conservative water clipping/culling and allocation reduction.
+  Evidence: docs/performance/montrose-lighting-bottlenecks-2026-11-20/.
