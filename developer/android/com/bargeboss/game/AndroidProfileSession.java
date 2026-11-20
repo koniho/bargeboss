@@ -23,11 +23,11 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
     private final boolean trace,systemTrace,compoundPaths,frameTextures,asyncLayers;
     private final File directory;
     private final double[][] rows;
-    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height,rotation_frames,rotation_ready,rotation_prepare_ms,tug_heading,tug_speed,barge_heading,barge_speed,tow_count,tow_tension,tug_x,tug_y,exclusion,surface_command_mib\n";
+    private static final String HEADER="frame,phase,lesson,tick,zoom,advance_ms,draw_ms,interval_ms,layer_build_ms,decode_ms,cache_hits,cache_builds,cache_fallbacks,cache_evictions,cache_mib,sprites,blends,affines,circles,polys,lines,clips,draw_start_ns,draw_end_ns,texture_mib,source_mib,frame_mib,frame_build_ms,frame_builds,frame_evictions,pending_mib,worker_source_mib,background_build_ms,background_builds,async_misses,layer_key,layer_width,layer_height,rotation_frames,rotation_ready,rotation_prepare_ms,tug_heading,tug_speed,barge_heading,barge_speed,tow_count,tow_tension,tug_x,tug_y,exclusion,surface_command_mib,live_surface_mesh\n";
     private int frame;
     private boolean configured,finished,tracing,reviewStarted,reviewDone;
     private final Activity activity;
-    private final boolean pixelReview,terrainReview,waterReview,waterGrouping,rotationReview,surfaceReview,factoryReview;
+    private final boolean pixelReview,terrainReview,waterReview,waterGrouping,rotationReview,surfaceReview,factoryReview,liveSurfaceSweep;
     private long drawStart,previousDraw,advanceNs;
     public AndroidProfileSession(Activity activity,CanvasPainter painter) {
         this.activity=activity;Intent intent=activity.getIntent();this.painter=painter;stats=painter.enableProfile();
@@ -42,6 +42,9 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         surfaceSweep=intent.getBooleanExtra("bb_surface_sweep",false);
         contributors=intent.getBooleanExtra("bb_contributors",false);
         exclusion=intent.getIntExtra("bb_exclude",0);
+        liveSurfaceSweep=intent.getBooleanExtra("bb_live_surface_sweep",false);
+        if(liveSurfaceSweep && !mode.equals("freeze"))throw new IllegalArgumentException("Live surface comparison needs freeze mode");
+        painter.profileLiveSurfaceMeshes(liveSurfaceSweep || intent.getBooleanExtra("bb_live_surface_mesh",painter.profileLiveSurfaceMeshes()));
         painter.profileSurfaceMeshes(intent.getBooleanExtra("bb_surface_mesh",true));
         painter.profileKeepFactoryOriginals(factorySweep || (exclusion&256)!=0);
         if((contributors || surfaceSweep || factorySweep) && !mode.equals("freeze"))throw new IllegalArgumentException("Contributor sweep requires freeze mode");
@@ -66,7 +69,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         asyncLayers=intent.getBooleanExtra("bb_async_layers",true);painter.profileAsyncLayers(asyncLayers);
         directory=new File(activity.getExternalFilesDir(null),"profiles");
         if(!directory.isDirectory() && !directory.mkdirs())throw new IllegalStateException("Cannot create profile directory");
-        rows=new double[warmup+samples][49];
+        rows=new double[warmup+samples][50];
     }
     public Game game(){return root;}
     public void configure(float width,float height) {
@@ -109,6 +112,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         if(mode.equals("replay")){long start=System.nanoTime();ProfileScenario.replayTick(root);advanceNs+=System.nanoTime()-start;}
         // Hold only the projection: live physics, bobbing, foam and lamp clocks still advance.
         if(reviewLayout!=null)root.activeGame().layout=reviewLayout;
+        if(liveSurfaceSweep){int block=Math.max(0,frame-warmup)/60;painter.profileLiveSurfaceMeshes(frame>=warmup && (block%4==1 || block%4==2));}
         activeExclusion=exclusion;
         if(contributors){
             int block=Math.max(0,frame-warmup)/45;
@@ -145,7 +149,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         Body barge=g.tow.primary();
         r[39]=g.tug.angle;r[40]=g.tug.speed();r[41]=barge==null?Double.NaN:barge.angle;
         r[42]=barge==null?Double.NaN:barge.speed();r[43]=g.tow.count();
-        r[44]=g.tow.tension;r[45]=g.tug.x;r[46]=g.tug.y;r[47]=activeExclusion;r[48]=painter.profileSurfaceBytes()/1048576.0;
+        r[44]=g.tow.tension;r[45]=g.tug.x;r[46]=g.tug.y;r[47]=activeExclusion;r[48]=painter.profileSurfaceBytes()/1048576.0;r[49]=painter.profileLiveSurfaceMeshes()?1:0;
         advanceNs=0;frame++;
         if(frame==warmup)Log.i("BargeBossProfile","SAMPLING "+scene+" "+mode);
         if(frame>=warmup+samples)finish("complete");

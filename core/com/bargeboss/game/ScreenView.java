@@ -299,6 +299,8 @@ public final class ScreenView {
             if(shear==0)p.layer(layer,x+xx*scale,y+yy*scale,size*scale,alpha);
             else layer.draw(this,xx,yy,size,alpha);
         }
+        public void beginSurfaceBatch(){p.beginSurfaceBatch();}
+        public void endSurfaceBatch(){p.endSurfaceBatch();}
         public void beginWaterFoamBatch(){p.beginWaterFoamBatch();}
         public void endWaterFoamBatch(){p.endWaterFoamBatch();}
         public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){p.waterFoam(tx(xx,yy),ty(yy),(ax+shear*ay)*scale,ay*scale,(bx+shear*by)*scale,by*scale,phase,kind,alpha);}

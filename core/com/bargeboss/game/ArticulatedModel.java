@@ -256,7 +256,10 @@ public final class ArticulatedModel {
         if(stats.visibleFaces==0)return stats;
         prepare(pose);
         stats.fragments=pose.fragments;
-        for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node]);stats.drawnFaces++;}}}
+        p.beginSurfaceBatch();
+        try {
+            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node]);stats.drawnFaces++;}}}
+        } finally {p.endSurfaceBatch();}
         return stats;
     }
     private static final class Poly {

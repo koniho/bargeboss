@@ -192,14 +192,27 @@ public final class CanvasPainter implements Painter {
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
     private RetainedSurfaces retainedSurfaces;
     private boolean retainSurfaces=true,surfaceMeshes,recordingSurfaceMesh;
-    private SurfaceMesh surfaceMesh;
+    private SurfaceMesh surfaceMesh,liveSurfaceMesh;
+    private boolean liveSurfaceMeshes;private int liveSurfaceDepth;
+    public boolean profileLiveSurfaceMeshes(){return liveSurfaceMeshes;}
+    public void profileLiveSurfaceMeshes(boolean enabled){
+        liveSurfaceMeshes=enabled;
+        if(enabled && liveSurfaceMesh==null && android.os.Build.VERSION.SDK_INT>=34)liveSurfaceMesh=new SurfaceMesh(assets);
+    }
+    public void beginSurfaceBatch(){
+        flushFoam();
+        if(liveSurfaceMeshes && liveSurfaceMesh!=null && canvas.isHardwareAccelerated()){
+            if(liveSurfaceDepth++==0)liveSurfaceMesh.begin();
+        }
+    }
+    public void endSurfaceBatch(){if(liveSurfaceDepth>0){flushSurfaceMesh();liveSurfaceDepth--;}}
     public void profileSurfaceMeshes(boolean enabled){
         if(surfaceMeshes==enabled)return;
         surfaceMeshes=enabled;
         if(retainedSurfaces!=null)retainedSurfaces.clear();
         if(enabled && surfaceMesh==null && android.os.Build.VERSION.SDK_INT>=34)surfaceMesh=new SurfaceMesh(assets);
     }
-    private void flushSurfaceMesh(){if(recordingSurfaceMesh)surfaceMesh.flush(canvas);}
+    private void flushSurfaceMesh(){if(recordingSurfaceMesh)surfaceMesh.flush(canvas);if(liveSurfaceDepth>0)liveSurfaceMesh.flush(canvas);}
     public void profileRetainedSurfaces(boolean enabled){retainSurfaces=enabled;}
     public long profileSurfaceBytes(){return retainedSurfaces==null?0:retainedSurfaces.bytes();}
     public boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){
@@ -242,7 +255,7 @@ public final class CanvasPainter implements Painter {
     }
     public void popClip(){flushSurfaceMesh();flushFoam();canvas.restore();}
     public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
-    public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
+    public void layer(StaticLayer layer,float x,float y,float scale,float alpha) { flushSurfaceMesh();
         float width=layer.width()*scale,height=layer.height()*scale;
         if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;
         if(canvas.quickReject(x,y,x+width,y+height,Canvas.EdgeType.AA)) return;
@@ -324,6 +337,8 @@ public final class CanvasPainter implements Painter {
                 if(android.os.Build.VERSION.SDK_INT>=34 && waterFoamShader!=null){
                     try {surfaceMesh=new SurfaceMesh(assets);surfaceMeshes=true;}
                     catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Surface mesh unavailable; retaining path renderer",ex);}
+                    try {liveSurfaceMesh=new SurfaceMesh(assets);liveSurfaceMeshes=true;}
+                    catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Live surface mesh unavailable; retaining path renderer",ex);}
                     try {foamMesh=new FoamMesh(assets);}
                     catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Foam mesh unavailable; retaining patch renderer",ex);}
                 }
@@ -440,7 +455,7 @@ public final class CanvasPainter implements Painter {
         return image;
     }
 
-    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){
+    public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){ flushSurfaceMesh();
         if(alpha<=.001f)return;
         if(normalSpriteShader==null || !canvas.isHardwareAccelerated() || !frameTextures){Painter.super.normalSprite(frame,x,y,w,h,nx,ny,nz,radius,color,alpha);return;}
         normalSpriteShader.draw(canvas,frameImage(atlas(SpriteAtlas.MOORED_NORMALS),frame),x-w*.5f,y-h*.7f,w,h,nx,ny,nz,radius,color,alpha);
@@ -460,7 +475,7 @@ public final class CanvasPainter implements Painter {
         }
         canvas.drawBitmap(frameImage(atlas,frame),atlas.source(frame,frameTextures),destination,paint);
     }
-    public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
+    public void sprite(int id,int frame,float cx,float cy,float width,float height,float rotation,float alpha) { flushSurfaceMesh();
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid sprite frame: "+frame);
         if(profile!=null)profile.sprites++;
         width*=SpriteAtlas.widthScale(id,frame); height*=SpriteAtlas.heightScale(id,frame);
@@ -472,7 +487,7 @@ public final class CanvasPainter implements Painter {
         canvas.restore();
     }
     /** Map the complete cropped source cell onto supplied axes without another size correction. */
-    public void spriteAffine(int id,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) {
+    public void spriteAffine(int id,int frame,float x,float y,float ax,float ay,float bx,float by,float alpha) { flushSurfaceMesh();
         if(frame<0 || frame>=SpriteAtlas.count(id)) throw new IllegalArgumentException("Invalid affine sprite frame: "+frame);
         if(!(alpha>0) || ax*by-ay*bx==0) return;
         if(profile!=null)profile.affines++;
@@ -486,7 +501,7 @@ public final class CanvasPainter implements Painter {
         finally {canvas.restoreToCount(saved);}
     }
     public void spriteBlend(int id,int frameA,int frameB,float cx,float cy,float width,float height,
-                            float rotation,float blend,float alpha) {
+                            float rotation,float blend,float alpha) { flushSurfaceMesh();
         int count=SpriteAtlas.count(id);
         if(frameA<0 || frameA>=count || frameB<0 || frameB>=count)
             throw new IllegalArgumentException("Invalid sprite blend frames");
@@ -508,7 +523,7 @@ public final class CanvasPainter implements Painter {
         drawSpriteImage(atlas,frameB,new RectF(bx,by,bx+bw,by+bh),spritePaint);
         spritePaint.setXfermode(null); canvas.restore(); canvas.restore();
     }
-    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color) {
+    public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color) { flushSurfaceMesh();
         if((color>>>24)==0)return;
         if(waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.shoreline(canvas,xy,uv,phase,energy,kind,color))
             Painter.super.shoreline(xy,uv,phase,energy,kind,color);
@@ -517,34 +532,37 @@ public final class CanvasPainter implements Painter {
         if(recordingSurfaceMesh && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
             surfaceMesh.add(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness);return;
         }
+        if(liveSurfaceDepth>0 && !profileFlatSurfaces && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
+            liveSurfaceMesh.add(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness);return;
+        }
         flushSurfaceMesh();
         if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
         if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))
             Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
-    public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) {
+    public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) { flushSurfaceMesh();
         if((color>>>24)==0 || amount<=0)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())waterFoamShader.material(canvas,x,y,ax,ay,bx,by,kind,detail,amount,color);
         else Painter.super.material(x,y,ax,ay,bx,by,kind,detail,amount,color);
     }
-    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) {
+    public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color) { flushSurfaceMesh();
         if((color>>>24)==0)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
             waterFoamShader.draw(canvas,x,y,ax,ay,bx,by,phase,6,(color>>>24)/255f,color);
         else Painter.super.waterReflection(x,y,ax,ay,bx,by,phase,color);
     }
-    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color) {
+    public void ropeSegment(float x,float y,float xx,float yy,float width,float from,float to,int color) { flushSurfaceMesh();
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())waterFoamShader.rope(canvas,x,y,xx,yy,width,from,to,color);
         else Painter.super.ropeSegment(x,y,xx,yy,width,from,to,color);
     }
-    public void smokePuff(float x,float y,float radius,float phase,int color) {
+    public void smokePuff(float x,float y,float radius,float phase,int color) { flushSurfaceMesh();
         if(radius<=0 || (color>>>24)==0)return;
         if(waterFoamShader!=null && canvas.isHardwareAccelerated())
             waterFoamShader.draw(canvas,x,y,radius*2,0,0,radius*2,phase,7,(color>>>24)/255f,color);
         else Painter.super.smokePuff(x,y,radius,phase,color);
     }
-    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) { flushSurfaceMesh();
         if(profileSkipFoam || alpha<=.005f)return;
         if(inFoamBatch && kind==5){foamMesh.add(canvas,x,y,ax,ay,bx,by,phase,alpha);return;}
         if(inFoamBatch)flushFoam();
@@ -553,14 +571,14 @@ public final class CanvasPainter implements Painter {
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }
-    public void rect(float x,float y,float w,float h,int c) { paint.setColor(c); canvas.drawRect(x,y,x+w,y+h,paint); }
-    public void circle(float x,float y,float r,int c) { if(profile!=null)profile.circles++;paint.setColor(c); canvas.drawCircle(x,y,r,paint); }
-    public void poly(float[] xy,int c) {
+    public void rect(float x,float y,float w,float h,int c) { flushSurfaceMesh(); paint.setColor(c); canvas.drawRect(x,y,x+w,y+h,paint); }
+    public void circle(float x,float y,float r,int c) { flushSurfaceMesh(); if(profile!=null)profile.circles++;paint.setColor(c); canvas.drawCircle(x,y,r,paint); }
+    public void poly(float[] xy,int c) { flushSurfaceMesh();
         if(profile!=null)profile.polys++;
         paint.setColor(c); path.reset(); path.moveTo(xy[0],xy[1]);
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.close(); canvas.drawPath(path,paint);
     }
-    public void polygons(float[][] xy,int count,int c) {
+    public void polygons(float[][] xy,int count,int c) { flushSurfaceMesh();
         if(!compoundPaths){for(int i=0;i<count;i++)poly(xy[i],c);return;}
         if(profile!=null)profile.polys++;
         paint.setColor(c);path.reset();
@@ -570,7 +588,7 @@ public final class CanvasPainter implements Painter {
         }
         canvas.drawPath(path,paint);
     }
-    public void line(float x,float y,float xx,float yy,float width,int c) {
+    public void line(float x,float y,float xx,float yy,float width,int c) { flushSurfaceMesh();
         if(profile!=null)profile.lines++;
         paint.setColor(c); paint.setStrokeWidth(width); paint.setStrokeCap(Paint.Cap.ROUND);
         canvas.drawLine(x,y,xx,yy,paint);

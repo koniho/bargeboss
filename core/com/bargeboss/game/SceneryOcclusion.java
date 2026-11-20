@@ -22,6 +22,8 @@ public final class SceneryOcclusion implements Painter {
     }
     public void popClip(){recordingClip=clipStack.remove(clipStack.size()-1);target.popClip();}
     public SceneryOcclusion(Painter target) {this.target=target;}
+    public void beginSurfaceBatch(){target.beginSurfaceBatch();}
+    public void endSurfaceBatch(){target.endSurfaceBatch();}
     public void beginWaterFoamBatch(){target.beginWaterFoamBatch();}
     public void endWaterFoamBatch(){target.endWaterFoamBatch();}
     public void waterFoam(float xx,float yy,float ax,float ay,float bx,float by,float phase,int kind,float alpha){target.waterFoam(xx,yy,ax,ay,bx,by,phase,kind,alpha);}

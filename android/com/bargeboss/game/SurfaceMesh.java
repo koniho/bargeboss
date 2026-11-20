@@ -5,11 +5,12 @@ import android.graphics.*;
 import java.io.*;
 import java.nio.*;
 
-/** Immutable terrain triangles recorded once per retained chunk. No per-frame mesh upload. */
+/** Ordered material triangles. Static chunks retain the mesh; live models use bounded staging. */
 @android.annotation.TargetApi(34)
 final class SurfaceMesh {
     private static final int VERTICES=16380,FLOATS=10;
     private final FloatBuffer vertices=ByteBuffer.allocateDirect(VERTICES*FLOATS*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    private final float[] staging=new float[VERTICES*FLOATS];
     private final MeshSpecification spec;
     private final Paint paint=new Paint();
     private int count;private float left,top,right,bottom;private long recordedBytes;
@@ -40,12 +41,15 @@ final class SurfaceMesh {
         }
     }
     private void vertex(float[] xy,float[] uv,int i,int material,int color,float wetness){
-        vertices.put(xy[i]).put(xy[i+1]).put(uv[i]).put(uv[i+1]).put(material).put(wetness)
-            .put(((color>>16)&255)/255f).put(((color>>8)&255)/255f).put((color&255)/255f).put((color>>>24)/255f);
+        int at=count*FLOATS;
+        staging[at++]=xy[i];staging[at++]=xy[i+1];staging[at++]=uv[i];staging[at++]=uv[i+1];staging[at++]=material;staging[at++]=wetness;
+        staging[at++]=((color>>16)&255)/255f;staging[at++]=((color>>8)&255)/255f;staging[at++]=(color&255)/255f;staging[at]=(color>>>24)/255f;
         count++;left=Math.min(left,xy[i]);right=Math.max(right,xy[i]);top=Math.min(top,xy[i+1]);bottom=Math.max(bottom,xy[i+1]);
     }
     void flush(Canvas canvas){
-        if(count==0)return;vertices.flip();
+        if(count==0)return;
+        // One bulk copy avoids a JNI/direct-buffer store for every vertex component.
+        vertices.put(staging,0,count*FLOATS);vertices.flip();
         Mesh mesh=new Mesh(spec,Mesh.TRIANGLES,vertices,count,new RectF(left,top,right,bottom));
         canvas.drawMesh(mesh,BlendMode.MODULATE,paint);recordedBytes+=(long)count*FLOATS*4;reset();
     }

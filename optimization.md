@@ -3506,3 +3506,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   frozen samples); normal game relaunched afterward and original 300,000 ms
   screen timeout restored. Moving-camera and iOS-native comparisons remain
   separate validation work; no claim of universal 60 FPS is made.
+
+
+## 2026-11-19 — Android live machinery surface batches
+
+- Replaced per-face shader/path setup for opaque articulated surfaces with ordered
+  API 34+ triangle batches. Shared draw ranges, geometry, UVs and depth remain
+  unchanged; clips, other primitives and scope exit flush. Fades retain paths.
+- Same-process ABBA at tutorial pinch minimum .65: median draw interval
+  32.04 -> 24.00 ms, p95 36.17 -> 33.79 ms; CPU draw 25.30 -> 17.27 ms.
+  Eight 60-frame blocks after 120 warmup, first eight/block discarded. This is
+  still short of 60 FPS. Separate starts varied substantially with device state.
+- Bulk-copy vertex staging removes per-component direct-buffer writes. Two
+  bounded helpers now retain about 2.5 MiB total staging, versus .625 MiB before;
+  no pose cache. Existing retained static surface storage/bound is unchanged.
+- Native screenshot delta: .684% changed, .215% >8/255, .007% >32/255, mean
+  max-channel error .051/255. Reviewed geometry/materials/shore cuts; edge AA
+  differs. Full check/build, wrapper/exception scope tests and J2ObjC parity passed.
+  Final build installed; normal-zoom freeze and moving wide replay completed.
+- iOS Metal already batches material triangles; new scope hooks are no-ops.
+  No iOS performance gain claimed. Connected iPad currently needs Developer Mode
+  before native testing. Evidence: docs/performance/live-surfaces-2026-11-19/README.md.

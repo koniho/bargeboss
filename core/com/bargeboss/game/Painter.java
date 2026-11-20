@@ -29,6 +29,10 @@ public interface Painter {
         for(int i=0;i<4;i++){float u=corners[i]%2-px,v=corners[i]/2-py;q[i*2]=x+ax*u+bx*v;q[i*2+1]=y+ay*u+by*v;}
         poly(q,((int)(255*alpha)<<24)|0x020913);
     }
+    /** Ordered surface scope. Hosts may batch opaque faces; flush before other
+     * primitives, clipping changes and scope exit. No geometry/order change. */
+    default void beginSurfaceBatch() {}
+    default void endSurfaceBatch() {}
     /** Optional ordered batching scope: contains only foam patches; no visual semantic change. */
     default void beginWaterFoamBatch() {}
     default void endWaterFoamBatch() {}

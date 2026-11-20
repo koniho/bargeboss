@@ -16,6 +16,8 @@ public final class OpacityPainter implements Painter {
     public boolean preparesLayers(){return p.preparesLayers();}
     public void prepareLayer(StaticLayer layer,float scale){p.prepareLayer(layer,scale);}
     public void layer(StaticLayer layer,float x,float y,float scale,float opacity){p.layer(layer,x,y,scale,opacity*alpha);}
+    public void beginSurfaceBatch(){p.beginSurfaceBatch();}
+    public void endSurfaceBatch(){p.endSurfaceBatch();}
     public void beginWaterFoamBatch(){p.beginWaterFoamBatch();}
     public void endWaterFoamBatch(){p.endWaterFoamBatch();}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {

@@ -77,6 +77,8 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     return self;
 }
 - (jboolean)supportsUnionClips {return NO;}
+- (void)beginSurfaceBatch {}
+- (void)endSurfaceBatch {}
 - (void)beginWaterFoamBatch {}
 - (void)endWaterFoamBatch {}
 - (void)pushClipOutsideWithFloatArray:(IOSFloatArray *)triangles {

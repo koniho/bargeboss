@@ -55,6 +55,8 @@ public final class ViewportPainter implements Painter {
             minX=Math.min(minX,sx);maxX=Math.max(maxX,sx);minY=Math.min(minY,sy);maxY=Math.max(maxY,sy);}
         return visible(minX,minY,maxX,maxY);
     }
+    public void beginSurfaceBatch(){target.beginSurfaceBatch();}
+    public void endSurfaceBatch(){target.endSurfaceBatch();}
     public void beginWaterFoamBatch(){target.beginWaterFoamBatch();}
     public void endWaterFoamBatch(){target.endWaterFoamBatch();}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha) {

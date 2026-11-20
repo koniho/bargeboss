@@ -8,9 +8,12 @@ public final class SurfaceMaterialTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     private static final class Capture implements Painter {
-        int faces,vertices,color;float firstX,firstY,wetness,maxError;float[] lastUV;
+        int faces,vertices,color,begins,ends,depth;boolean fail;
+        public void beginSurfaceBatch(){begins++;depth++;}
+        public void endSurfaceBatch(){ends++;depth--;check(depth>=0,"balanced surface scope");}float firstX,firstY,wetness,maxError;float[] lastUV;
         final HashSet<String> uvFaces=new HashSet<String>();
         public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
+            if(fail)throw new IllegalStateException("Synthetic drawing failure");
             check(xy.length==uv.length && xy.length>=6 && xy.length%2==0,"surface vertices pair with UVs");
             check(material>=SurfaceMaterial.RUST && material<=SurfaceMaterial.CORRUGATED,"known shared material");
             check(Float.isFinite(wetness) && wetness>=0 && wetness<=1,"bounded shared wetness");
@@ -46,7 +49,8 @@ public final class SurfaceMaterialTest {
         float[] xy={1,2,11,2,11,12,1,12},uv={10,20,20,20,20,30,10,30};
         Capture forwarded=new Capture();
         Painter wrappers=ScreenView.scaled(new SceneryOcclusion(new OpacityPainter(new ViewportPainter(forwarded,1000,1000),.5f)),20,30,2);
-        wrappers.surfacePolygon(xy,uv,SurfaceMaterial.RUST,0xc0a06040,.65f);
+        wrappers.beginSurfaceBatch();wrappers.surfacePolygon(xy,uv,SurfaceMaterial.RUST,0xc0a06040,.65f);wrappers.endSurfaceBatch();
+        check(forwarded.begins==1 && forwarded.ends==1 && forwarded.depth==0,"surface scopes survive wrapper chain");
         check(forwarded.faces==1 && forwarded.color==0x60a06040,"surface alpha and RGB survive actual wrapper chain");
         check(forwarded.firstX==22 && forwarded.firstY==34 && forwarded.wetness==.65f,"screen transform preserves material parameters");
         check(Arrays.equals(uv,forwarded.lastUV),"screen transform does not rescale material UVs");
@@ -65,10 +69,14 @@ public final class SurfaceMaterialTest {
         for(float opening:new float[]{0,.5f,1}){
             Capture c=new Capture();model.draw(g,c,model.pose(opening));
             check(c.faces>=2,"moving rigid part exposes material faces");
+            check(c.begins==1 && c.ends==1 && c.depth==0,"each model range closes its surface scope");
             if(common==null)common=new HashSet<String>(c.uvFaces);else common.retainAll(c.uvFaces);
             if(Float.isFinite(previousX))check(c.firstX!=previousX,"rigid opening moves geometry while preserving material coordinates");
             previousX=c.firstX;
         }
+        Capture broken=new Capture();broken.fail=true;boolean failed=false;
+        try{model.draw(g,new SceneryOcclusion(new ViewportPainter(broken,1800,1200)),model.pose(0));}catch(IllegalStateException expected){failed=true;}
+        check(failed && broken.begins==1 && broken.ends==1 && broken.depth==0,"drawing failure still closes surface batch");
         check(common.size()>=2,"same part-local face UVs survive all opening states");
 
         Capture fragments=new Capture();Painter p=new SceneryOcclusion(new OpacityPainter(new ViewportPainter(fragments,1800,1200),.75f));
