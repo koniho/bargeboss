@@ -8,8 +8,8 @@ public final class MontroseBeachReview {
     public static void main(String[] args)throws Exception{
         new File("out/montrose-beach").mkdirs();Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.configureCanvas(1440,900);g.visualTicks=20;
         g.layout=MontroseHarbor.overview(1440,900);capture(g,"overview");
-        String[] names={"beach","beacon","pavilion","inlet"};float[][] places={{1600,-600,.55f},{2200,-1380,1.1f},{1080,-600,1.1f},{453,1300,2}};
-        for(int i=0;i<places.length;i++){float[] a=places[i];g.tug.x=MontroseHarbor.mapX(a[0]+100);g.tug.y=MontroseHarbor.mapY(a[1]-100);g.layout=Layout.focused(1440,900,MontroseHarbor.mapX(a[0]),MontroseHarbor.mapY(a[1]),a[2],720,450);capture(g,names[i]);}
+        String[] names={"beach","beacon","pavilion","inlet"};float[][] places={{1600,-600,.55f},{2200,-1380,1.1f},{1080,-600,1.1f},{453,1274,1.15f}};
+        for(int i=0;i<places.length;i++){float[] a=places[i];g.tug.x=MontroseHarbor.mapX(a[0]+100);g.tug.y=MontroseHarbor.mapY(a[1]-100);g.layout=Layout.focused(1440,900,MontroseHarbor.mapX(a[0]),MontroseHarbor.mapY(a[1]),a[2],720,450);capture(g,names[i]);if(i==1 || i==3){g.visualTicks=100;capture(g,names[i]+"-off");g.visualTicks=20;}}
         System.out.println("Actual Montrose beach renderer: out/montrose-beach");
     }
 }

@@ -40,7 +40,7 @@ public final class NavigationLights {
     public static Entrance[] entrances(Game g){return g.calumetStage()?RiverMarks.ENTRANCES:g.indianaStage()?IndianaMarks.ENTRANCES:g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
     /** One single flash every two seconds; long dark interval preserves the marine rhythm. */
     public static float flash(int ticks,int phase){return flash(ticks,phase,120);}
-    private static float flash(int ticks,int phase,int period){
+    static float flash(int ticks,int phase,int period){
         int t=Math.floorMod(ticks+phase,period);
         if(t<7)return t/7f;
         if(t<25)return 1;
@@ -74,6 +74,7 @@ public final class NavigationLights {
     }
     /** Water effects stay below all hulls and are clipped against actual waterways. */
     public static void reflections(Game g,Painter canvas){
+        if(g.montroseStage())MontroseBeaconArt.reflection(g,canvas);
         Painter world=new RiverPainter(canvas,g.layout.camera);
         Painter water=new WaterEffectsPainter(g,world);
         for(int i=0;i<count(g);i++)if(visible(g,i) && (!land(g,i) || g.montroseStage())){
@@ -88,6 +89,7 @@ public final class NavigationLights {
     }
     /** Raised-deck shadows and light spill, after cached ground and before depth-sorted objects. */
     public static void landShadows(Game g,Painter canvas){
+        if(g.montroseStage() && MontroseBeaconArt.visible(g,MontroseBeaconArt.HORN))MontroseBeaconArt.ground(g,canvas,MontroseBeaconArt.HORN);
         for(int i=0;i<count(g);i++)if(land(g,i) && visible(g,i))
             LandMarkerArt.ground(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));
     }

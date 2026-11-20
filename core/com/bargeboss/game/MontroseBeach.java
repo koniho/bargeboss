@@ -46,6 +46,7 @@ final class MontroseBeach {
             patch(p,world(new float[]{x-28,y,x-12,y-12,x+22,y-9,x+39,y+5,x+12,y+17,x-20,y+12}),seed<2?0xff656b55:0xff85816b,l,t,r,b);
             for(int k=0;k<4;k++)strip(p,x-15+k*9,y+3,x-13+k*9,y-1,.28f,0xff555e49,l,t,r,b);
         }
+        planting(p,l,t,r,b);
         for(int i=0;i<WALK.length-2;i+=2)strip(p,WALK[i],WALK[i+1],WALK[i+2],WALK[i+3],8,0xff525d60,l,t,r,b);
         strip(p,800,0,1080,-650,10,0xff596163,l,t,r,b);
         strip(p,400,-600,620,-1000,8,0xff596163,l,t,r,b);
@@ -55,6 +56,26 @@ final class MontroseBeach {
         float[] coast=MontroseHarbor.COAST;
         for(int i=0;i<coast.length-2;i+=2){float ax=MontroseHarbor.planX(coast[i]),ay=MontroseHarbor.planY(coast[i+1]),bx=MontroseHarbor.planX(coast[i+2]),by=MontroseHarbor.planY(coast[i+3]);
             if(ax>2090 && bx>2090 && ay<-600 && by<-600)strip(p,ax,ay,bx,by,17,0xff6c7470,l,t,r,b);}
+    }
+    /** Eastern dune grasses and low scrub in stable clusters, baked into the terrain tiers.
+     * Keep the open early-successional sand and the public beach predominantly bare. */
+    private static void planting(Painter p,float l,float t,float r,float b){
+        for(int row=0;row<5;row++)for(int col=0;col<16;col++){
+            int seed=Math.floorMod(row*29+col*13,17);
+            float x=1360+col*45+Math.floorMod(col*37+row*29,43)-21,y=-510+row*42+Math.floorMod(col*31+row*17,39)-19;
+            float wx=MontroseHarbor.mapX(x),wy=MontroseHarbor.mapY(y);
+            if(wx+48<l || wx-48>r || wy+42<t || wy-42>b || buildingArea(x,y))continue;
+            boolean dune=sandy(x,y) && sandy(x,y-24);
+            if(!dune && (sandy(x,y) || MontroseHarbor.openWater(wx,wy)))continue;
+            if(seed>11 || (!dune && row<2))continue;
+            float a=(dune?8:15)+seed*.65f;
+            patch(p,world(new float[]{x-a,y-2,x-a*.5f,y-a*.55f,x+a*.45f,y-a*.5f,x+a,y+2,x+a*.3f,y+a*.5f,x-a*.6f,y+a*.45f}),dune?0xff7a7d61:0xff344e3c,l,t,r,b);
+            // Silvery straw tips within sparse marram clumps; olive scrub has larger rounded leaves.
+            for(int k=0;k<5;k++){
+                float xx=x-10+k*5,yy=y+Math.floorMod(seed+k*7,9)-4;
+                strip(p,xx,yy,xx+(k%2==0?-2:3),yy-(dune?5:3),dune?.4f:1.2f,dune?0xff929078:0xff48664d,l,t,r,b);
+            }
+        }
     }
     private static ArticulatedModel building(int id,float width,float depth,float height){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();float[] at=PLACES[id];
@@ -74,11 +95,6 @@ final class MontroseBeach {
         RiverCamera c=g.layout.camera;float wx=MontroseHarbor.mapX(PLACES[id][0]),wy=MontroseHarbor.mapY(PLACES[id][1]),x=c.screenX(wx,wy),y=c.screenY(wx,wy)-MontroseHarbor.LAND_RISE*c.scale,pad=220*c.scale;
         if(x+pad<0 || x-pad>g.layout.width || y+pad<0 || y-pad>g.layout.height)return;
         if(id<3){BUILDINGS[id].draw(g,p,POSES[id]);return;}
-        float size=78*c.scale;
-        p.sprite(SpriteAtlas.LAND_MARKER,0,x,y,size,size,0,1);
-        float lx=x+(LandMarkerArt.LAMP_X-LandMarkerArt.PIVOT_X)*size,ly=y+(LandMarkerArt.LAMP_Y-LandMarkerArt.PIVOT_Y)*size;
-        float power=NavigationLights.flash(g.visualTicks,0);
-        SceneryEffects.glow(p,lx,ly,10*c.scale,NavigationLights.RED,power,g.visualTicks,0);
-        if(power>0)p.circle(lx,ly,1.5f*c.scale,SoftCue.alpha(0xffffb9a2,power));
+        MontroseBeaconArt.draw(g,p,MontroseBeaconArt.HORN);
     }
 }

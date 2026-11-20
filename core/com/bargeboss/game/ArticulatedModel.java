@@ -118,6 +118,19 @@ public final class ArticulatedModel {
             }
             prism(node,color,material,p);
         }
+        /** Fixed upright tapered round section; topology is authored once, never during draw. */
+        public void cylinder(int node,float z,float height,float radius,float topRadius,int sides,int color) {
+            if(sides<3 || sides>16 || height<=0 || radius<=0 || topRadius<=0)throw new IllegalArgumentException("Invalid round section");
+            float[] top=new float[sides*3],bottom=new float[sides*3];
+            for(int i=0;i<sides;i++){
+                double a=2*StrictMath.PI*i/sides,aa=2*StrictMath.PI*(i+1)/sides;
+                float x=(float)StrictMath.cos(a),y=(float)StrictMath.sin(a),xx=(float)StrictMath.cos(aa),yy=(float)StrictMath.sin(aa);
+                faces.add(new Face(node,color,-1,new float[]{x*radius,y*radius,z,xx*radius,yy*radius,z,xx*topRadius,yy*topRadius,z+height,x*topRadius,y*topRadius,z+height}));
+                top[i*3]=x*topRadius;top[i*3+1]=y*topRadius;top[i*3+2]=z+height;
+                int j=sides-1-i;bottom[j*3]=x*radius;bottom[j*3+1]=y*radius;bottom[j*3+2]=z;
+            }
+            faces.add(new Face(node,color,-1,top));faces.add(new Face(node,color,-1,bottom));
+        }
         private void prism(int node,int color,int material,float[][] p) {
             // Outward winding for both boxes and beam frames.
             int[][] indices={{3,2,1,0},{4,5,6,7},{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7}};
