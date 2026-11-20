@@ -10,8 +10,21 @@ public final class BakeMooredBoats {
     static final int CELL=128;
     static class Face {float[] xyz;int color;float depth;Face(float[] p,int c){xyz=p;color=c;}}
     static ArrayList<Face> faces;static float angle;
+    private static boolean materialExport;
+    /** Export rigid geometry; flatten the legacy top/side palette into unlit materials. */
+    public static void materialModel(int kind,java.util.function.BiConsumer<double[][],Integer> sink){
+        ArrayList<Face> oldFaces=faces;float oldAngle=angle;boolean oldExport=materialExport;
+        try{
+            angle=0;faces=new ArrayList<Face>();materialExport=true;model(kind);
+            for(Face face:faces){double[][] vertices=new double[face.xyz.length/3][3];
+                for(int i=0;i<vertices.length;i++)for(int j=0;j<3;j++)vertices[i][j]=face.xyz[i*3+j];
+                sink.accept(vertices,face.color&0xffffff);
+            }
+        }finally{faces=oldFaces;angle=oldAngle;materialExport=oldExport;}
+    }
     static void face(int color,float... p){Face f=new Face(p,color);for(int i=0;i<p.length;i+=3){float x=p[i],y=p[i+1];p[i]=x*(float)Math.cos(angle)-y*(float)Math.sin(angle);p[i+1]=x*(float)Math.sin(angle)+y*(float)Math.cos(angle);f.depth+=p[i+1]-p[i]+p[i+2]*.9f;}f.depth/=p.length/3;faces.add(f);}
     static void box(float x,float y,float z,float l,float w,float h,int top,int side){
+        if(materialExport)side=top;
         face(side,x,y,z,x+l,y,z,x+l,y,z+h,x,y,z+h);face(side,x+l,y,z,x+l,y+w,z,x+l,y+w,z+h,x+l,y,z+h);
         face(side,x+l,y+w,z,x,y+w,z,x,y+w,z+h,x+l,y+w,z+h);face(side,x,y+w,z,x,y,z,x,y,z+h,x,y+w,z+h);
         face(top,x,y,z+h,x+l,y,z+h,x+l,y+w,z+h,x,y+w,z+h);

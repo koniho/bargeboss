@@ -21,6 +21,7 @@ public final class TugPoseGuide {
     }
     private final ArrayList<Face> faces=new ArrayList<Face>();
     private final ArrayList<Anchor> anchors=new ArrayList<Anchor>();
+    private java.util.function.BiConsumer<double[][],Integer> materialMesh;
     private final int frame;
     private final boolean concept;
     private final double angle,cx,cy,scale;
@@ -37,6 +38,7 @@ public final class TugPoseGuide {
         cy=(frame/columns+.72)*CELL; scale=CELL*.78/100;
     }
     private void face(double[][] vertices,int rgb) {
+        if(materialMesh!=null)materialMesh.accept(vertices,rgb);
         Face face=new Face(vertices.length,rgb);
         for(int i=0;i<vertices.length;i++) {
             double[] v=vertices[i];
@@ -172,6 +174,11 @@ public final class TugPoseGuide {
             double z=wa*f.z[a]+wb*f.z[b]+wc*f.z[c];int at=y*image.getWidth()+x;
             if(z>depth[at]) { depth[at]=z;image.setRGB(x,y,f.color); }
         }
+    }
+    /** Export the same rigid authoring model before rotation/projection. */
+    public static void materialModel(java.util.function.BiConsumer<double[][],Integer> sink){
+        TugPoseGuide guide=new TugPoseGuide(0,true);guide.materialMesh=sink;
+        guide.conceptGeometry();
     }
     public static void main(String[] args) throws Exception {
         headingCount=32;headingOffset=0;poseCount=32;columns=8;

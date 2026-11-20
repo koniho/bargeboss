@@ -19,6 +19,7 @@ public final class YachtPoseGuide {
     }
     private final ArrayList<Face> faces=new ArrayList<Face>();
     private final ArrayList<Anchor> anchors=new ArrayList<Anchor>();
+    private java.util.function.BiConsumer<double[][],Integer> materialMesh;
     private final int frame;
     private final boolean concept;
     private final double angle,cx,cy,scale;
@@ -35,6 +36,7 @@ public final class YachtPoseGuide {
         cy=(frame/8+.72)*CELL; scale=CELL*.78/100;
     }
     private void face(double[][] vertices,int rgb) {
+        if(materialMesh!=null)materialMesh.accept(vertices,rgb);
         Face face=new Face(vertices.length,rgb);
         for(int i=0;i<vertices.length;i++) {
             double[] v=vertices[i];
@@ -152,6 +154,11 @@ public final class YachtPoseGuide {
             double z=wa*f.z[a]+wb*f.z[b]+wc*f.z[c];int at=y*image.getWidth()+x;
             if(z>depth[at]) { depth[at]=z;image.setRGB(x,y,f.color); }
         }
+    }
+    /** Export the same rigid authoring model before rotation/projection. */
+    public static void materialModel(java.util.function.BiConsumer<double[][],Integer> sink){
+        YachtPoseGuide guide=new YachtPoseGuide(0,true);guide.materialMesh=sink;
+        guide.yachtGeometry();
     }
     public static void main(String[] args)throws Exception {
         BufferedImage guide=new BufferedImage(CELL*8,CELL*4,BufferedImage.TYPE_INT_ARGB);

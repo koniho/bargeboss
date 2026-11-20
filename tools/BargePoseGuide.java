@@ -21,6 +21,7 @@ public final class BargePoseGuide {
     }
     private final ArrayList<Face> faces=new ArrayList<Face>();
     private final ArrayList<Anchor> anchors=new ArrayList<Anchor>();
+    private java.util.function.BiConsumer<double[][],Integer> materialMesh;
     private final int frame;
     private final boolean bulk;
     private int cargoKind=2;
@@ -38,6 +39,7 @@ public final class BargePoseGuide {
         cy=(frame/columns+.72)*CELL; scale=CELL*.78/77.5;
     }
     private void face(double[][] vertices,int rgb) {
+        if(materialMesh!=null)materialMesh.accept(vertices,rgb);
         Face face=new Face(vertices.length,rgb);
         for(int i=0;i<vertices.length;i++) {
             double[] v=vertices[i];
@@ -203,6 +205,11 @@ public final class BargePoseGuide {
             double z=wa*f.z[a]+wb*f.z[b]+wc*f.z[c];int at=y*image.getWidth()+x;
             if(z>depth[at]) { depth[at]=z;image.setRGB(x,y,f.color); }
         }
+    }
+    /** Export the same rigid authoring model before rotation/projection. */
+    public static void materialModel(java.util.function.BiConsumer<double[][],Integer> sink){
+        BargePoseGuide guide=new BargePoseGuide(0,false);guide.materialMesh=sink;
+        guide.geometry();
     }
     public static void main(String[] args) throws Exception {
         headingCount=32;headingOffset=0;poseCount=32;columns=8;

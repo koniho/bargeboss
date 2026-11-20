@@ -3435,3 +3435,36 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   compilation, touch playback and audio listening were not run on this host.
 - Android APK installed successfully through the authorized Shizuku path and
   MainActivity launched. Native interaction/audio listening still needs a playtest.
+
+### 2026-11-19 — Watercraft material authoring prototype (issue 13)
+
+- Scope: all vessel families, including player/teacher/feeder tug variants,
+  barges, yacht, rescue cruisers and moored motor/sailboats. This increment is
+  offline authoring and format validation; production rendering is unchanged.
+- Added deterministic geometry exports for nine models, each with 32 registered
+  albedo, octahedral world-normal/height and roughness/emission poses. Tug has
+  a dedicated 5,343-face model; barge/yacht and six NPC forms reuse rigid guides.
+  Added frame-sized 256x768 three-band packs; full sheets are review artifacts.
+- Corrected the prototype height encoding to retain submerged surfaces (-8 to
+  +88 units). Geometry regressions check upward normals, world-space registration,
+  opposite-face rejection and negative heights. Asset checks verify coverage,
+  unclipped borders, distinct headings and exact packing for all nine models.
+- Budget evidence: a complete 256-pixel, three-map rotation is 24 MiB decoded;
+  two neighboring poses are 1.5 MiB, before driver/source copies. This is not a
+  measured runtime budget. Small NPC resolution and migration cache policy still
+  need measurement. No claim of FPS improvement or native GPU parity is made.
+- Art review: tug is more developed than the guide, but still differs from the
+  accepted painted artwork; barge/yacht remain guide-quality. Palette-derived
+  material classification is temporary. Production authoring must supply explicit
+  materials, emission groups, anchors and shadow/cargo registration. Native
+  Android/Metal integration and desktop GPU backend work remain outstanding.
+- Added the fleet-wide material contract and linked it from AGENTS.md so future
+  watercraft inherit these requirements. Canonical geometry/tools and one review
+  proof are tracked; reproducible intermediate frame packs stay under build/.
+- Validation: all nine 32-heading material checks passed; full check.sh and signed
+  Android packaging passed with unchanged replay signature 266553ab:2:1350.
+  Proof copied to phone Downloads as BargeBoss-watercraft-material-v1-proof.png.
+  Native material lighting/performance and iOS validation have not been performed.
+- Signed APK installed successfully on Pixel 11 Pro over wireless ADB and cold
+  launch returned Status: ok. Restored the prior 300,000 ms display timeout.
+  The installed game still uses its existing production lighting/artwork.

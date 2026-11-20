@@ -28,6 +28,10 @@ the same `Painter`. Do not add a second game implementation for any platform.
   A cap stroke is not a land surface: production hull/cargo pixels must not show
   through foreground ground. Maintain clip support on all three native painters
   and coordinate wrappers; run the all-heading shoreline pixel regression.
+- Follow [the watercraft material contract](docs/art-studies/watercraft-material-contract.md)
+  for every new or revised watercraft, including NPCs and livery variants. Geometry,
+  registered material maps and anchors are required; preserve accepted art quality
+  and validate native lighting/performance before replacing production artwork.
 - Follow [the cargo authoring contract](docs/art-studies/cargo-authoring-contract.md)
   for every cargo addition or revision: shared hold geometry/perspective, 32 real
   poses, registered whole-load layers, foreground-coaming occlusion, explicit
