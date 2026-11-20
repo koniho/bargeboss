@@ -71,8 +71,10 @@ the same `Painter`. Do not add a second game implementation for any platform.
   Objective-C untracked. Production PNG atlases in `assets/sprites/` are source
   assets; track them with their generation prompts in `docs/art-prompts/`.
 - When creating concept images or sprite sheets for user review on the development
-  phone, also copy them to `/storage/emulated/0/Download` with descriptive versioned
-  names (for example `BargeBoss-tug-v5-design.png`). Keep the canonical source in
+  phone, also copy them to `/storage/emulated/0/Pictures/BargeBoss` with descriptive versioned
+  names (for example `BargeBoss-tug-v5-design.png`) and register them with Android
+  MediaStore (media scan) so Google Photos can find the BargeBoss device folder.
+  Verify the MediaStore entry; do not enable cloud backup without user instruction. Keep the canonical source in
   the repository; do not leave the only copy in Downloads or the imagegen cache.
 - Preserve unrelated work. Do not modify the sibling DDDumpling repository.
 - When the user refers to a screenshot, check the phone's photos directory first:
