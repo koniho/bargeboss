@@ -13,7 +13,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private static final long TEXTURE_BUDGET=160L*1024*1024;
     private static boolean loaded;
     static final class PreparingLayer extends RuntimeException {
-        PreparingLayer(){super("Preparing translucent layer",null,false,false);}
+        PreparingLayer(){super("Preparing raster layer",null,false,false);}
     }
     private long nativeHandle;
     private final CanvasPainter resources;
@@ -23,6 +23,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private ByteBuffer commandBuffer=ByteBuffer.allocateDirect(commands.length*4).order(ByteOrder.nativeOrder());
     private final int[] clipFirst=new int[64],clipCount=new int[64];
     private int clipDepth;
+    private boolean preparingLayers;
     private final LinkedHashMap<Long,Image> images=new LinkedHashMap<Long,Image>(64,.75f,true);
     private final IdentityHashMap<Bitmap,Image> bitmapImages=new IdentityHashMap<Bitmap,Image>();
     private final HashSet<Integer> referenced=new HashSet<Integer>();
@@ -45,9 +46,12 @@ final class VulkanPainter implements Painter,AutoCloseable {
         synchronized(VulkanPainter.class){if(!loaded){System.loadLibrary("bargeboss_vulkan");loaded=true;}}
         nativeHandle=create(surface,assets,experimentFlags);
     }
-    void start(float w,float h){width=w;height=h;used=commandUsed=0;clipDepth=0;referenced.clear();}
+    void start(float w,float h){width=w;height=h;used=commandUsed=0;clipDepth=0;preparingLayers=false;referenced.clear();}
     public void beginFrame(){resources.beginFrame();}
     void present(Viewport v){
+        // Never publish an incomplete shore frame. Continue traversing layer requests
+        // first so the bounded worker can prepare every visible tile.
+        if(preparingLayers)throw new PreparingLayer();
         if(clipDepth!=0)throw new IllegalStateException("Unbalanced Vulkan clipping");
         vertexBuffer.clear();vertexBuffer.asFloatBuffer().put(vertices,0,used);
         commandBuffer.clear();commandBuffer.asIntBuffer().put(commands,0,commandUsed);
@@ -171,9 +175,10 @@ final class VulkanPainter implements Painter,AutoCloseable {
         if(alpha<=0||!visible(x,y,layer.width()*scale,0,0,layer.height()*scale))return;
         Bitmap bitmap=resources.gpuLayer(layer,scale);
         if(bitmap==null){
-            // Group opacity cannot be replaced by per-primitive opacity. Until an
-            // offscreen GPU group is available, preserve semantics through Canvas.
-            if(alpha<1)throw new PreparingLayer();
+            // Cold terrain must not expand into hundreds of thousands of primitives.
+            // Keep the last complete frame while the existing bounded worker prepares it.
+            // This also preserves group opacity without a hardware Canvas fallback.
+            if(layer.backgroundSafe() || alpha<1){preparingLayers=true;return;}
             float left=Math.max(0,Math.min(width,x)),right=Math.max(left,Math.min(width,x+layer.width()*scale));
             float top=Math.max(0,Math.min(height,y)),bottom=Math.max(top,Math.min(height,y+layer.height()*scale));
             float[] outside=new float[48];int at=0;

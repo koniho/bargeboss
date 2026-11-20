@@ -4043,3 +4043,37 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Cold inlet replay completed, mean18.54ms/p95 23.52ms/max628.29ms; preparation
   hitch remains. No renderer changes in this validation round. Evidence and next
   investigation recorded in docs/performance/montrose-overview-2026-11-20/README.md.
+
+## 2026-11-20 Android cold terrain frame preparation
+- Vulkan now requests missing background-safe layer rasters from the existing
+  bounded worker without expanding their source primitives. It traverses remaining
+  requests but does not submit an incomplete frame; the host retains the prior
+  complete surface and retries. Missing group-opacity layers follow the same path.
+  Existing48MiB terrain/32MiB vertex limits and shared artwork remain unchanged.
+- Developer replay advances once per completed-frame attempt, retaining its tick
+  across preparation retries. Native CPU timing includes this waiting interval.
+  Visible Montrose tiles already have screen-bound culling and four raster tiers;
+  this change addresses cold fallback rather than further reducing resolution.
+- Full checked Android build passed and installed with the existing key. All-heading
+  shoreline regression passed2,434,414 assertions. First launch collided with
+  Android's package-update activity and was discarded. Second cold overview reached
+  113 warmup frames, all Vulkan, with no vertex-limit fallback. It was interrupted
+  when the screen went off, then wireless ADB disappeared. No measured sample set
+  or usable screenshot; native visual parity and repeated cold validation pending.
+- Incomplete run CPU median89.98ms, first completed draw7.23s including preparation;
+  these are warmup observations, not a performance claim. Overview speed and initial
+  loading latency remain unresolved. Raw capture:out/android-overview-review/fixed-overview-b.
+- Phone awake scope remains saved in out/phone-screen-timeout-before.txt (300000ms)
+  because disconnect prevents restoration. Restore it after reconnect and finish
+  overview repeats, beach/beacon pixel comparisons and moving-camera regression.
+- USB follow-through: two complete cold overview captures, each120 warmup/360
+  samples, all Vulkan with no fallback/crash. Mean90.44/94.07ms (~11FPS), first
+  completed draw7.62/7.70s including preparation. Crash fixed; loading latency
+  and steady overview CPU cost remain open. No claim that this improves warm FPS.
+- Beach/beacon remain~60FPS, native screenshots each exactly match pre-fix pixels
+  (0/2,602,800 differences). Cold inlet replay all Vulkan,360 identical tick/zoom
+  pairs, p95 19.05ms/max522.47ms. Full overview screenshot reviewed. Detailed
+  summaries in docs/performance/montrose-overview-2026-11-20/android-fixed-*.json.
+- Restored original300000ms screen timeout and relaunched normal play after USB
+  validation. Earlier interrupted-run limitations above are superseded by these
+  complete captures; original failed baseline remains recorded.

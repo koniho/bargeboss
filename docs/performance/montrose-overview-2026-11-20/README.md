@@ -85,3 +85,28 @@ p95 23.52ms, maximum628.29ms. CPU draw maximum476.92ms. This includes startup
 and temporary Canvas draws; replay advances one simulation tick per draw and is
 not a live gameplay FPS guarantee. Raw captures, screenshots and failure logs
 remain in `out/android-overview-review/`; compact summaries are tracked here.
+
+## Android cold preparation fix, USB validation
+
+Missing background-safe terrain rasters now remain on the existing bounded
+worker. Vulkan traverses the remaining layer requests but submits only a complete
+frame; the previous complete surface remains displayed during preparation.
+Missing group-opacity rasters use this path too. Developer retries retain the
+same replay tick. No resolution, artwork, geometry or cache budgets changed.
+Montrose already culls offscreen tiles and chooses four distance raster tiers.
+
+Two fresh full-overview launches completed120 warmup plus360 samples each, all
+Vulkan, with no vertex-limit fallback or crash. Mean intervals90.44/94.07ms
+(11.06/10.63FPS), p95 96.87/104.72ms. First completed draw took7.62/7.70seconds,
+including deferred preparation. This fixes the reproduced cold-launch failure;
+it does not fix loading latency or steady overview performance. Native overview
+image reviewed; terrain is present. No pre-fix full-overview native image exists
+for exact pixel comparison because both original launches crashed.
+
+Beach and beacon each remain about59.94FPS. Both full screenshots match the
+pre-fix captures exactly:0 differing pixels of2,602,800 per image. Cold inlet
+replay completed360 frames, all Vulkan; every tick/zoom pair matches the original
+replay. Mean interval18.62ms, p95 19.05ms, maximum522.47ms. Initial preparation
+still hitches. These are instrumented phone results, not a locked60FPS claim.
+Full checked APK build and2,434,414 all-heading shoreline assertions passed.
+Phone relaunched normally and original300000ms display timeout restored.

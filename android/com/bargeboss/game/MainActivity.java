@@ -140,15 +140,17 @@ public final class MainActivity extends Activity {
             if(developer!=null)developer.configure(viewport.logicalWidth(),viewport.logicalHeight());
             requestRedraw();
         }
+        private boolean retryingPreparedFrame;
         protected void onDraw(Canvas canvas) {
             if(gpu!=null && !gpuPacer.allow(System.nanoTime()))return;
             prepareLevelAssets();
-            if(developer!=null)developer.beforeDraw();
+            if(developer!=null && !retryingPreparedFrame)developer.beforeDraw();
             if(gpu!=null){
-                try {gpu.start(viewport.logicalWidth(),viewport.logicalHeight());game.render(gpu);gpu.present(viewport);painter.profileGpuFrame(true);frames.rendered(game);if(developer!=null)developer.afterDraw();return;}
-                catch(VulkanPainter.PreparingLayer waiting){android.util.Log.d("BargeBossVulkan","Canvas frame while preparing group opacity");}
+                try {gpu.start(viewport.logicalWidth(),viewport.logicalHeight());game.render(gpu);gpu.present(viewport);retryingPreparedFrame=false;painter.profileGpuFrame(true);frames.rendered(game);if(developer!=null)developer.afterDraw();return;}
+                catch(VulkanPainter.PreparingLayer waiting){retryingPreparedFrame=true;requestRedraw();return;}
                 catch(RuntimeException error){fallbackGpu(error);}
             }
+            retryingPreparedFrame=false;
             canvas.drawColor(0xff101e25); canvas.save(); canvas.translate(viewport.x,viewport.y); canvas.scale(viewport.scale,viewport.scale);
             canvas.clipRect(0,0,viewport.logicalWidth(),viewport.logicalHeight()); painter.bind(canvas); game.render(painter); canvas.restore();
             frames.rendered(game);
