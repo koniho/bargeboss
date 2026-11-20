@@ -42,6 +42,7 @@ public final class SurfaceLighting {
         if(g.tutorial!=null)FactorySources.sample(g,weights,x,y);
         if(g.montroseStage())MarinaPedestals.sample(g,weights,x,y);
         vessel(g,weights,x,y,g.tug,receiver);
+        if(g.teacherBoat()!=null)vessel(g,weights,x,y,g.teacherBoat(),receiver);
         for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)vessel(g,weights,x,y,f.boat,receiver);
         for(Body b:g.cargo)if(b!=null && b.active)vessel(g,weights,x,y,b,receiver);
         if(g.lockStage())for(int side=0;side<2;side++)for(int gate=0;gate<2;gate++)

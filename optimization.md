@@ -3358,3 +3358,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Local Android full checks/build passed; installed and launched successfully.
   YAML structure, representative changed-path routing, manual-only expensive
   steps and the unchanged signed-release validation gate were verified locally.
+
+## 2026-11-20 — Shared radio dialogue and dockside instructor
+
+- Added shared 1–4 choice modal dialogue using the existing animated instruction
+  panel and responsive Pilot Glass chevrons in the map/throttle area. Pointer
+  ownership, release selection and lifecycle cancellation stay in core Java.
+- Tutorial starts with the player alongside the basin seawall; the teacher
+  approaches, asks about driving, acknowledges the answer and restores controls
+  without replacing any bodies or resetting the scene. Teacher uses green livery
+  on all 32 existing poses, reusing pivots, shadows, lighting/smoke anchors and
+  shore depth/clipping. Extra graded frames are prefetched only for practice.
+- No new texture assets, shaders or Painter methods. Livery grading occurs once in
+  native image caches; small radio WAVs are predecoded. Shared events drive the
+  same receive/reply assets on Android, iOS and desktop. Generator is checked in.
+- Reviewed actual desktop renders at 1333x600 and 960x600. Removed legacy Reset/
+  Exit buttons beneath choices during conversations. Test fixtures that require
+  immediate driving explicitly start their lesson; end-to-end replay answers
+  the new radio prompt through public pointer events.
+- Shared rule suite passed through all gameplay/visual assertions; extended the
+  native/JVM parity trace with teacher approach, reply ownership/audio sequence,
+  handoff frames and green palette samples. Reviewed baseline is now
+  79e259b2:2:1350; bounded delivery and score totals remain 2 / 1350.
+- Radio PCM validation: 22,050 Hz mono receive/reply durations .72/.34 seconds,
+  peaks .403/.467 of full scale. No clipping or recorded third-party audio.
+- Full check.sh, Android packaging and desktop build passed. APK installed and
+  launched successfully on the development phone. Actual shared-renderer frames
+  reviewed for question/acknowledgement/approach/handoff and four-choice layout;
+  native interaction/audio listening and iOS parity remain unverified this round.

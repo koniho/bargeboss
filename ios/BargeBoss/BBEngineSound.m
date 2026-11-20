@@ -2,12 +2,16 @@
 #import <AVFoundation/AVFoundation.h>
 #import "com/bargeboss/game/EngineAudio.h"
 #import "com/bargeboss/game/Game.h"
+#import "com/bargeboss/game/RadioAudio.h"
 
 @implementation BBEngineSound {
     AVAudioEngine *_engine;
     NSArray<AVAudioPlayerNode *> *_players;
     NSArray<AVAudioUnitVarispeed *> *_rates;
     NSArray<AVAudioPCMBuffer *> *_buffers;
+    NSArray<AVAudioPlayer *> *_radio;
+    BBGame *_radioGame;
+    jint _radioSequence;
     BOOL _playing,_interrupted,_failed;
 }
 - (instancetype)init {
@@ -29,6 +33,13 @@
             [_engine connect:rate to:_engine.mainMixerNode format:buffer.format];
             [players addObject:player];[rates addObject:rate];[buffers addObject:buffer];
         }
+        NSMutableArray *radio=[NSMutableArray array];
+        for(int cue=0;cue<2;cue++){
+            NSURL *url=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBRadioAudio assetWithInt:cue]]];
+            AVAudioPlayer *clip=[[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
+            if(clip){clip.volume=.85f;[clip prepareToPlay];[radio addObject:clip];}
+        }
+        _radio=radio;
         _players=players;_rates=rates;_buffers=buffers;[_engine prepare];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(interruption:) name:AVAudioSessionInterruptionNotification object:nil];
     }
@@ -39,7 +50,9 @@
     else _interrupted=([notification.userInfo[AVAudioSessionInterruptionOptionKey] unsignedIntegerValue]&AVAudioSessionInterruptionOptionShouldResume)==0;
 }
 - (void)update:(BBGame *)game {
-    if(![BBEngineAudio audibleWithBBGame:game]){[self stop];_interrupted=NO;return;}
+    BBGame *active=[game activeGame];
+    if(active!=_radioGame){_radioGame=active;_radioSequence=0;}
+    if(![BBEngineAudio audibleWithBBGame:game]){_radioSequence=[BBRadioAudio sequenceWithBBGame:game];[self stop];_interrupted=NO;return;}
     if(_failed || _interrupted)return;
     if(!_playing){
         NSError *error=nil;
@@ -53,9 +66,18 @@
         }
         _playing=YES;
     }
+    jint sequence=[BBRadioAudio sequenceWithBBGame:game];
+    if(sequence!=_radioSequence){
+        _radioSequence=sequence;
+        if(_radio.count==2 && [BBRadioAudio audibleWithBBGame:game]){
+            for(AVAudioPlayer *clip in _radio)[clip stop];
+            AVAudioPlayer *clip=_radio[[BBRadioAudio cueWithBBGame:game]];clip.currentTime=0;[clip play];
+        }
+    }
     for(int i=0;i<2;i++){_players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];_rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];}
 }
 - (void)stop {
+    for(AVAudioPlayer *clip in _radio)[clip stop];
     if(!_playing)return;
     for(AVAudioPlayerNode *player in _players)[player stop];
     [_engine pause];_playing=NO;

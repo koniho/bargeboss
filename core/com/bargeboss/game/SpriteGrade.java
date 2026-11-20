@@ -1,10 +1,10 @@
 package com.bargeboss.game;
 
-/** One-time scenery image grading. Hosts cache the result; vessels keep their source colors. */
+/** One-time scenery grading and teacher livery. Hosts cache the result per palette. */
 public final class SpriteGrade {
     private SpriteGrade() {}
     public static boolean applies(int atlas) {
-        return atlas==SpriteAtlas.MARINA || atlas==SpriteAtlas.NORTH_QUAY || atlas==SpriteAtlas.SOUTH_QUAY
+        return atlas==SpriteAtlas.TEACHER_TUG || atlas==SpriteAtlas.MARINA || atlas==SpriteAtlas.NORTH_QUAY || atlas==SpriteAtlas.SOUTH_QUAY
                 || atlas==SpriteAtlas.SCENERY || atlas==SpriteAtlas.PIERS || atlas==SpriteAtlas.BRIDGE
                 || atlas==SpriteAtlas.TITLE_HARBOR || atlas==SpriteAtlas.TITLE_LAND
                 || atlas==SpriteAtlas.STATIC_HARBOR || atlas==SpriteAtlas.TUTORIAL_SCENERY
@@ -13,12 +13,16 @@ public final class SpriteGrade {
                 || atlas==SpriteAtlas.SHORE_TILES || atlas==SpriteAtlas.STEELWORKS;
     }
     /** The same PNG can be used by differently graded atlas regions. */
-    public static String cacheKey(int atlas,String path) {return path+(applies(atlas)?"#"+SceneLighting.VERSION+(windows(atlas)?"-windows":atlas==SpriteAtlas.PIERS?"-dock":"-solid"):"#source");}
+    public static String cacheKey(int atlas,String path) {return path+(atlas==SpriteAtlas.TEACHER_TUG?"#teacher-green-v1":applies(atlas)?"#"+SceneLighting.VERSION+(windows(atlas)?"-windows":atlas==SpriteAtlas.PIERS?"-dock":"-solid"):"#source");}
     public static int argb(int atlas,int pixel) {return applies(atlas)?grade(atlas,pixel):pixel;}
     private static boolean windows(int atlas){return atlas==SpriteAtlas.FACTORY || atlas==SpriteAtlas.STEELWORKS;}
     private static int grade(int atlas,int pixel) {
         if((pixel>>>24)==0) return pixel;
         int r=(pixel>>>16)&255,g=(pixel>>>8)&255,b=pixel&255;
+        if(atlas==SpriteAtlas.TEACHER_TUG){
+            if(r>b+18 && r>g+8){int warmth=r-b;return (pixel&0xff000000)|(Math.max(0,r-warmth)<<16)|(Math.min(255,g+warmth)<<8)|Math.min(255,b+warmth/4);}
+            return pixel;
+        }
         // Retain bright warm windows, not the darker rusty brick around them.
         int warm=windows(atlas)?Math.min(ramp(r-160,80),Math.min(ramp(g-b-20,65),ramp(r-b-45,95))):0;
         int base=atlas==SpriteAtlas.PIERS?SceneLighting.surfaceColor(pixel,SurfaceMaterial.WOOD):SceneLighting.sceneryColor(pixel);

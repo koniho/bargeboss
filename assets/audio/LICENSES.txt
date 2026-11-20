@@ -18,3 +18,8 @@ DC removal and loop crossfade.
 
 Source previews, processing scripts and provenance are retained in the repository
 under docs/audio and tools. These are edited recordings, not pristine originals.
+
+cb-receive-v1.wav / cb-reply-v1.wav
+Original procedural CB radio squelch/static for Barge Boss.
+Reproducible with tools/generate-radio-audio.py; no third-party samples.
+Distributed under the repository license.

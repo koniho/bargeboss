@@ -21,13 +21,13 @@ public final class Renderer {
         HarborView.objective(g,p);
         FeederView.callouts(g,p);
         ScreenView.hud(g,p);
-        AssistView.draw(g,p);
+        if(!g.conversation())AssistView.draw(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);
-        else if(g.tutorial!=null) TutorialView.draw(g,p);
-        Joystick.draw(g,p);
-        OverviewMap.draw(g,p);
+        else if(g.tutorial!=null && !g.dialogue.active) TutorialView.draw(g,p);
+        if(!g.conversation()){Joystick.draw(g,p);OverviewMap.draw(g,p);}
+        if(g.mode==Game.PLAY)g.dialogue.draw(g,p);
         } finally {WorldArrows.end();}
     }
     static void river(Game g,Painter p) {

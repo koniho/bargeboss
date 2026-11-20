@@ -151,6 +151,7 @@ public final class SceneryOcclusion implements Painter {
     static SceneryOcclusion snapshot(Game g) {
         SceneryOcclusion scene=new SceneryOcclusion(SINK);
         scene.register(g,g.tug);
+        if(g.teacherBoat()!=null)scene.register(g,g.teacherBoat());
         for(Body b:g.cargo)if(b!=null && b.active)scene.register(g,b);
         if(g.tutorial==null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){scene.register(g,f.boat);if(f.load!=null)scene.register(g,f.load);}
         if(g.trafficActive())scene.register(g,g.trafficBoat);

@@ -7,6 +7,7 @@ import javax.swing.*;
 /** Desktop events and display timing only; all behavior stays in core/. */
 public final class Desktop extends JPanel {
     private final Game game=new Game();
+    private final RadioSound radio=new RadioSound();
     private final FrameGate frames=new FrameGate();
     private long last=System.nanoTime();
     private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
@@ -29,7 +30,7 @@ public final class Desktop extends JPanel {
         addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { updateViewport();requestRedraw(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
         getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.back();requestRedraw(); } });
-        new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
+        new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); radio.update(game); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
     }
     private void requestRedraw() { frames.markDirty();repaint(); }
     private void saveProgress(boolean flush) {
@@ -62,10 +63,10 @@ public final class Desktop extends JPanel {
             if(scale<1) frame.setSize((int)(frame.getWidth()*scale),(int)(frame.getHeight()*scale));
             frame.setLocationRelativeTo(null);
             frame.addWindowFocusListener(new WindowAdapter() {
-                public void windowLostFocus(WindowEvent e) { panel.game.background(); panel.saveProgress(true); panel.last=System.nanoTime();panel.requestRedraw(); }
+                public void windowLostFocus(WindowEvent e) { panel.game.background();panel.radio.stop(); panel.saveProgress(true); panel.last=System.nanoTime();panel.requestRedraw(); }
                 public void windowGainedFocus(WindowEvent e) {panel.last=System.nanoTime();panel.requestRedraw();}
             });
-            frame.addWindowListener(new WindowAdapter() { public void windowClosing(WindowEvent e) { panel.saveProgress(true); } });
+            frame.addWindowListener(new WindowAdapter() { public void windowClosing(WindowEvent e) { panel.saveProgress(true);panel.radio.close(); } });
             frame.setVisible(true);
         });
     }

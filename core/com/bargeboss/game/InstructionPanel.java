@@ -8,16 +8,19 @@ final class InstructionPanel {
     private float closeFrom=1;
     private Content content,pending;
     static final class Content {
-        final String key,title,first,second;final int lesson;final float progress;
+        final String key,title,first,second,header,badge;final int lesson;final float progress;
         Content(String key,String title,String first,String second,int lesson,float progress){
-            this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
+            this(key,title,first,second,lesson,progress,"PRACTICE",null);
+        }
+        Content(String key,String title,String first,String second,int lesson,float progress,String header,String badge){
+            this.header=header;this.badge=badge;this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
         }
         void draw(Painter p){
             p.line(18,7,414,7,.8f,0x9de7bc73);
-            Lettering.draw(p,"PRACTICE",18,18,10,PilotGlass.AMBER);
-            String count=lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
+            Lettering.draw(p,header,18,18,10,PilotGlass.AMBER);
+            String count=badge!=null?badge:lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
             Lettering.draw(p,count,414-Lettering.width(count,10),18,10,PilotGlass.MUTED);
-            Lettering.draw(p,title,18,39,19,PilotGlass.TEXT);
+            Lettering.draw(p,title,18,39,Math.min(19,19*396/Math.max(1,Lettering.width(title,19))),PilotGlass.TEXT);
             Lettering.draw(p,first,18,70,12,PilotGlass.TEXT);
             Lettering.draw(p,second,18,89,11,PilotGlass.MUTED);
             if(lesson==Tutorial.CHANNEL){p.rect(18,112,400,4,PilotGlass.TRACK);p.rect(18,112,400*progress,4,ControlView.GREEN);}

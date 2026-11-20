@@ -278,6 +278,13 @@ explicit reset restarts an exercise.
 Use a top-down sketch and the [level-design brief and template](docs/level-design.md).
 A shared level-file format and visual editor are still an authoring gap.
 
+## Radio conversations
+
+The tutorial opens with a green instructor tug at the seawall dock. Radio prompts
+use the instruction panel and one to four Pilot Glass reply chevrons. See the
+[shared dialogue contract](docs/gameplay/radio-dialogue.md) for adding conversations,
+reply branches, palette variants and transmission sounds.
+
 ## Build and run
 
 Use JDK 21 for building. No Gradle, npm, game engine or third-party gameplay library

@@ -89,7 +89,7 @@ final class OverviewMapTest {
             check(!g.overview.active && !g.pointer,"touch cancel releases slider");
             g.reset();check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
         }
-        Game root=new Game();root.startTutorial();Game practice=root.activeGame();Layout.Box slider=OverviewMap.sliderBounds(practice);
+        Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);Layout.Box slider=OverviewMap.sliderBounds(practice);
         ReplayInput.tap(root,slider.x+slider.w-24,slider.centerY());
         check(practice.overview.zoom()==OverviewMap.MAX_ZOOM && root.overview.zoom()==1,"practice routes slider to its active game");
     }

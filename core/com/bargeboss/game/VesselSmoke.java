@@ -12,6 +12,7 @@ public final class VesselSmoke {
     public VesselSmoke(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     public void step(Game g) {
         drift();emit(g,g.tug);
+        if(g.teacherBoat()!=null)emit(g,g.teacherBoat());
         if(g.tutorial==null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)emit(g,f.boat);
         if(g.trafficActive())emit(g,g.trafficBoat);
     }

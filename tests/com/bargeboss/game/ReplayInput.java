@@ -175,7 +175,10 @@ public final class ReplayInput {
     public static void startPractice(Game root){root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);}
     public static void tutorial(Game root) {
         Game g=root.activeGame();
-        if(g.tutorial.entering)return;
+        if(g.tutorial.entering){
+            if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);root.pointerDown(991,b.centerX(),b.centerY());root.pointerUp(991,b.centerX(),b.centerY());}
+            return;
+        }
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
                 drive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY());break;

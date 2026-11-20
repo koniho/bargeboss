@@ -40,7 +40,7 @@ public final class VesselView {
                 p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
                         2*b.radius+1,0xffffedc0);
             }
-            SpriteAtlas.draw(p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
+            SpriteAtlas.draw(p,b==g.teacherBoat()?SpriteAtlas.TEACHER_TUG:b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
             SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);
             RopeAttachment.fittings(g,p,b);
             if(tug) {

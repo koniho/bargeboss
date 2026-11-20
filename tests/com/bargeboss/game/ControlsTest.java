@@ -112,7 +112,7 @@ public final class ControlsTest {
         check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1,"all fourteen lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
         ReplayInput.tap(root,Layout.START); check(root.activeGame()==root && root.mode==Game.PLAY && root.ticks==0,"completed tutorial starts shift");
         root=game(); root.score=321; steps(root,12); int ticks=root.ticks; x=root.tug.x; y=root.tug.y;
-        ReplayInput.tap(root,Layout.PRACTICE); steps(root,300); ReplayInput.tap(root,Layout.PRACTICE);
+        ReplayInput.tap(root,Layout.PRACTICE); for(int i=0;i<600 && root.activeGame().tutorial.entering;i++){ReplayInput.tutorial(root);root.step();} ReplayInput.tap(root,Layout.PRACTICE);
         check(root.activeGame()==root && root.mode==Game.PLAY && root.score==321 && root.ticks==ticks && root.tug.x==x && root.tug.y==y,"practice preserves suspended shift");
         root=new Game(); ReplayInput.tap(root,Layout.LEARN); g=root.activeGame();
         g.tutorial.lesson=Tutorial.TIE; g.tutorial.setup(g); Body oldCargo=g.cargo[0];
@@ -123,7 +123,7 @@ public final class ControlsTest {
         check(!g.cargo[0].lineAttached && !oldCargo.lineAttached && g.delivered==0,"reset throw cannot attach an obsolete body or score later");
         root=new Game(); ReplayInput.tap(root,Layout.LEARN); root.background();
         check(root.activeGame().mode==Game.PAUSE,"practice pauses on background");
-        ReplayInput.tap(root,Layout.RESUME); ReplayInput.tap(root,Layout.PRACTICE);
+        ReplayInput.tap(root,Layout.TITLE_SCREEN);
         check(root.activeGame()==root && root.mode==Game.TITLE,"early practice exit returns to title");
         for(int context=0;context<3;context++) {
             root=context==1?new Game():game();

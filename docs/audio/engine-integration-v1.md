@@ -3,7 +3,9 @@
 `EngineAudio` in shared Java selects two loop paths, gains, playback rates and
 play-state muting. Android SoundPool and iOS AVAudioEngine/Varispeed execute those
 parameters. There are no native throttle, gear, tow or load heuristics. Desktop
-playback is not implemented in this initial mobile integration.
+engine playback is not implemented in this initial mobile integration. The later
+[radio dialogue system](../gameplay/radio-dialogue.md) adds shared one-shot CB
+cues on Android, iOS and desktop, alongside these mobile engine loops.
 
 - Idle: marine diesel loop at gain .42 and rate .72.
 - Load rises: marine rate approaches .92; its gain reduces toward .28.

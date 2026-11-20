@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class BuoyPhysicsTest {
     private static int checks;
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
-    private static Game practice(){Game root=new Game();root.startTutorial();return root.activeGame();}
+    private static Game practice(){Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);return g;}
     private static Buoys.Buoy first(Game g){return g.buoys.get(g,NavigationLights.count(g)-2);}
     private static float distance(Buoys.Buoy b){return Physics.length(b.x-b.anchorX,b.y-b.anchorY);}
     private static void approach(Body hull,Buoys.Buoy b,float angle){

@@ -355,6 +355,11 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self tapTitle:stage x:770 y:362]; [self waitFor:BBLessonToken(BBLessonMove) on:stage];
+    [self waitFor:@"; dialogue 3;" on:stage after:0.5];
+    CGSize radioSize=[self logicalSize:stage];
+    double choiceWidth=fmin(440,(radioSize.width-64)/2);
+    [[self point:stage x:radioSize.width/2-choiceWidth/2-8 y:radioSize.height-131] tap];
+    [self waitFor:@"; arrival 0;" on:stage];
     [self driveOpenWaterPractice:stage];
     [self driveTrainingChannel:stage];
     [self pushPracticeLoad:stage];

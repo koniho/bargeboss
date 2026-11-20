@@ -6,7 +6,7 @@ public final class TrainingGroundTest {
     private static void check(boolean ok,String why) {checks++;if(!ok) throw new AssertionError(why);}
     public static void run() {
         for(float width:new float[]{960,1333}) for(float[] focus:new float[][]{{-1180,500},{-640,390},{170,500},{300,650}}) {
-            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
+            Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);
             g.tug.x=focus[0];g.tug.y=focus[1];g.fitTutorialCamera();
             float x=g.tug.x,y=g.tug.y;int tick=g.ticks;float[] boundary=TrainingChannel.WATER_BOUNDARY.clone();
             Capture capture=new Capture(g);TrainingGroundView.walls(g,capture);TrainingGroundView.ground(g,capture);TrainingGroundView.caps(g,capture);TrainingGroundView.foreground(g,capture);

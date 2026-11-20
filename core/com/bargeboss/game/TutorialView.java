@@ -7,7 +7,7 @@ public final class TutorialView {
     static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
         if(t.lesson==Tutorial.DONE)return null;
-        if(t.entering)return new InstructionPanel.Content("arrival","BRINGING HER IN...","INDUSTRIAL PRACTICE HARBOR","TAKE THE HELM ONCE INSIDE.",-1,0);
+        if(t.entering)return t.arrival.content();
         if(t.lesson==Tutorial.CHANNEL){
             boolean entering=g.tug.x<TrainingChannel.X[0];
             return new InstructionPanel.Content("channel-"+entering,entering?"ENTER THE CANAL":"NAVIGATE THE CANAL",
@@ -56,7 +56,7 @@ public final class TutorialView {
     }
     public static void draw(Game g,Painter p) {
         Tutorial t=g.tutorial;
-        if(t.entering){t.instructionPanel.draw(g,p);return;}
+        if(t.entering){if(!g.dialogue.active)t.instructionPanel.draw(g,p);return;}
         gateFeedback(g,p);
         buoyFeedback(g,p);
         if(t.lesson==Tutorial.DONE) {

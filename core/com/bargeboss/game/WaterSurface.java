@@ -56,6 +56,7 @@ public final class WaterSurface {
         foam.step();
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) age[i]++;
         floatBoat(g,g.tug);
+        if(g.teacherBoat()!=null)floatBoat(g,g.teacherBoat());
         for(Body b:g.cargo) if(b!=null && b.active) floatBoat(g,b);
         if(g.tutorial==null) for(Feeder f:g.feeders) if(f.phase!=Feeder.IDLE) {
             floatBoat(g,f.boat);if(f.load!=null) floatBoat(g,f.load);

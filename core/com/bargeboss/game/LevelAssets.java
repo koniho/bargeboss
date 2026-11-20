@@ -15,7 +15,7 @@ public final class LevelAssets {
         public int rotationFrames(){int count=0;for(int atlas:rotations)count+=SpriteAtlas.count(atlas);return count;}
     }
     // The continuous tutorial uses coal loads throughout, including its later tow-train steps.
-    private static final Plan TUTORIAL=new Plan(SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);
+    private static final Plan TUTORIAL=new Plan(SpriteAtlas.TEACHER_TUG,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);
     private static final Plan[] CHALLENGES=new Plan[Challenges.COUNT];
     static {
         for(int id=0;id<CHALLENGES.length;id++) {

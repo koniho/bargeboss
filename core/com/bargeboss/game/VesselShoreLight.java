@@ -19,6 +19,7 @@ public final class VesselShoreLight {
     }
     private static void draw(Game g,Painter p,boolean walls){
         vessel(g,p,g.tug,walls);
+        if(g.teacherBoat()!=null)vessel(g,p,g.teacherBoat(),walls);
         for(Body b:g.cargo)if(b!=null && b.active)vessel(g,p,b,walls);
         for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE)vessel(g,p,f.boat,walls);
         if(g.trafficActive())vessel(g,p,g.trafficBoat,walls);

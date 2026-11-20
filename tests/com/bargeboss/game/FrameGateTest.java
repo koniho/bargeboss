@@ -40,7 +40,7 @@ public final class FrameGateTest {
         root.advance(1.0/120);check(gate.needsFrame(root),"practice visual clock triggers redraw although root clock is unchanged");gate.rendered(root);
         root.background();check(gate.needsFrame(root),"practice background observes delegated mode");gate.rendered(root);
         root.advance(.2);check(!gate.needsFrame(root),"paused practice remains idle");
-        root.pause();gate.rendered(root);ReplayInput.tap(root,Layout.PRACTICE);
+        gate.rendered(root);ReplayInput.tap(root,Layout.TITLE_SCREEN);
         check(root.activeGame()==root && gate.needsFrame(root),"exiting practice redraws restored game even without fixed step");gate.rendered(root);
         root.mode=Game.HELP;check(gate.needsFrame(root),"help state invalidates paused/static frame");gate.rendered(root);
         root.advance(.2);check(!gate.needsFrame(root),"static help does not redraw repeatedly");

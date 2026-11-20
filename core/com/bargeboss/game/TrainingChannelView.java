@@ -120,6 +120,7 @@ public final class TrainingChannelView {
         RiverCamera c=g.layout.camera;
         Body[] bodies=new Body[g.cargo.length+6];int count=0;
         bodies[count++]=g.tug;
+        if(g.teacherBoat()!=null)bodies[count++]=g.teacherBoat();
         for(Body b:g.cargo) if(b!=null && b.active) bodies[count++]=b;
         if(g.tutorial==null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){bodies[count++]=f.boat;if(f.load!=null)bodies[count++]=f.load;}
         if(g.trafficActive())bodies[count++]=g.trafficBoat;

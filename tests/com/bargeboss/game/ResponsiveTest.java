@@ -83,7 +83,7 @@ public final class ResponsiveTest {
     private static void practiceAndResize(Game game) {
         float originalX=game.tug.x,originalY=game.tug.y;
         tap(game,Layout.PRACTICE); Game practice=game.activeGame();
-        for(int i=0;i<480 && practice.tutorial.entering;i++)game.step();
+        for(int i=0;i<600 && practice.tutorial.entering;i++){ReplayInput.tutorial(game);game.step();}
         int practiceTicks=practice.ticks;
         check(practice!=game && practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"practice inherits the exact current layout");
         ReplayInput.down(game,practice.tug.x,practice.tug.y);
@@ -102,7 +102,7 @@ public final class ResponsiveTest {
         check(game.activeGame()==game && game.mode==Game.PLAY,"practice exit returns to resized live shift");
         game.mode=Game.TITLE; tap(game,Layout.LEARN);
         check(game.activeGame()!=game && game.activeGame().layout.width==game.layout.width && game.activeGame().layout.height==game.layout.height,"title learn target inherits responsive layout");
-        tap(game,Layout.PRACTICE); check(game.activeGame()==game && game.mode==Game.TITLE,"leaving title practice returns to title");
+        game.back();tap(game,Layout.TITLE_SCREEN); check(game.activeGame()==game && game.mode==Game.TITLE,"leaving title practice returns to title");
     }
     private static void checkPracticeLayout(Game g) {
         Layout layout=g.layout;RiverCamera camera=layout.camera;

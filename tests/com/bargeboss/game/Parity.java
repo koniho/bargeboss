@@ -77,6 +77,7 @@ public final class Parity implements Painter {
         }
         Renderer.draw(g,p);
         for(int i=0;i<60;i++) { g.advance(1.0/60); if(i%20==0) Renderer.draw(g,p); }
+        radio(p);
         tutorial(p);
         responsive(p);
         progression(p);
@@ -85,6 +86,17 @@ public final class Parity implements Painter {
         rescue(p);
         joystick(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    /** Native parity includes arrival motion, livery, modal reply and audio event ordering. */
+    private static void radio(Parity p){
+        Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
+        for(int tick=0;tick<460;tick++){
+            if(tick==280){Layout.Box box=g.dialogue.choiceBox(g,1);root.pointerDown(77,box.centerX(),box.centerY());root.pointerUp(77,box.centerX(),box.centerY());}
+            root.step();p.value(g.tug.x);p.value(g.teacherBoat().x);p.value(g.teacherBoat().vx);
+            p.add(RadioAudio.sequence(root));p.add(RadioAudio.cue(root));p.add(g.dialogue.result());
+            if(tick==100 || tick==270 || tick==281 || tick==400 || tick==459)Renderer.draw(root,p);
+        }
+        for(int color:new int[]{0xffa95d32,0xffb9b5ad,0x608e4228,0x00112233})p.add(SpriteGrade.argb(SpriteAtlas.TEACHER_TUG,color));
     }
     private static void joystick(Parity p) {
         Game g=new Game();g.configureCanvas(1333.3334f,600);ReplayInput.startPractice(g);
