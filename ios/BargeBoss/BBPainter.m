@@ -90,6 +90,8 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 - (void)popClip {CGContextRestoreGState(self.context);}
 - (jboolean)prefersPolygonBatches {return YES;}
+// Java interface defaults are not inherited by handwritten Objective-C hosts.
+- (jboolean)retainedSurfacesWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale {return NO;}
 - (jboolean)preparesLayers {return NO;}
 - (void)prepareLayerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)scale {(void)layer;(void)scale;}
 - (void)beginFrame {

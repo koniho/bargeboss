@@ -15,7 +15,7 @@ settings:
     LIBRARY_SEARCH_PATHS[sdk=iphoneos*]: $(J2OBJC_HOME)/lib/iphone
     CODE_SIGN_STYLE: Automatic
     SUPPORTS_MACCATALYST: NO
-    OTHER_CFLAGS: ['$(inherited)', '-ffp-contract=off']
+    OTHER_CFLAGS: ['$(inherited)', '-ffp-contract=off', '-Werror=protocol']
 targets:
   BargeBoss:
     type: application

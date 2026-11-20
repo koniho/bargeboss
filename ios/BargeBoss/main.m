@@ -76,6 +76,10 @@
             if(fixture!=NSNotFound && fixture+1<arguments.count)
                 [self.game restoreProgressWithNSString:arguments[fixture+1]];
         } @catch(NSException *exception) { NSLog(@"Could not read captain progress: %@",exception); }
+        // Explicit smoke-test fixture: native gestures still exercise shared gameplay.
+        // Surveyed location entry no longer spawns practice-yard feeder traffic.
+        if(self.automation && [NSProcessInfo.processInfo.arguments containsObject:@"--practice-yard-for-ui-tests"])
+            [self.game resetPracticeYard];
         self.savedProgressVersion=self.attemptedProgressVersion=[self.game progressVersion];
         self.touches=[NSMutableArray array]; self.touchIDs=[NSMutableArray array];
         UIScreenEdgePanGestureRecognizer *back=[[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(edgeBack:)];

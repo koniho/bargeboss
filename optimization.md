@@ -3287,3 +3287,20 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Full check.sh and Android build passed. Installed/launched on the development
   phone. Visual phase review used desktop rendering; no native animation capture,
   frame-time profile or iOS validation was performed this round.
+
+## 2026-11-20 — CI failure audit and native protocol fix
+
+- Latest main CI (44640514710) passed shared rules on all desktop OSes, Android,
+  native JVM parity and the iOS simulator build. Failures were Linux Preview's
+  obsolete Two Banks completion replay and four native UI flows.
+- Extracted simulator application logs from the failed xcresult: tutorial entry
+  throws an unrecognized retainedSurfacesWithBBStaticLayer selector on Metal.
+  Added the shared false fallback to both handwritten native painters. Java
+  interface defaults do not automatically implement Objective-C protocol methods.
+  Enabled -Werror=protocol so future omissions fail compilation before shipping.
+- Native menu assertions still expected locked standalone jobs; updated them to
+  selectable location IDs (Indiana 5 / Montrose 4). Feeder/lasso tests now explicitly
+  launch the existing shared practice yard; real location entry has no feeders.
+  Native pause coverage now uses the left-edge Back gesture, not a removed button.
+- Native validation requires GitHub's macOS runner; the next CI run will verify
+  these changes, including the complete tutorial and device build.

@@ -296,6 +296,8 @@ static vector_float4 BBColor(jint argb) {
     [self append:v count:6 texture:self.white mode:0];
 }
 - (jboolean)prefersPolygonBatches {return YES;}
+// Java interface defaults are not inherited by handwritten Objective-C hosts.
+- (jboolean)retainedSurfacesWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale {return NO;}
 - (jboolean)preparesLayers {return YES;}
 - (void)prepareLayerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)scale {
     [self prepareLayer:layer scale:scale visible:NO];

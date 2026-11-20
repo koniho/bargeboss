@@ -73,7 +73,8 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
 }
 - (void)tapPause:(XCUIElement *)stage {
     CGSize size=[self logicalSize:stage];
-    [[self point:stage x:size.width-32 y:24] tap];
+    [[self point:stage x:1 y:size.height*.5] pressForDuration:0.05
+        thenDragToCoordinate:[self point:stage x:120 y:size.height*.5]];
 }
 - (void)riverDrag:(XCUIElement *)stage x:(double)x y:(double)y toX:(double)xx toY:(double)yy hold:(double)hold {
     [[self river:stage x:x y:y] pressForDuration:0.35 thenDragToCoordinate:[self river:stage x:xx y:yy]
@@ -87,11 +88,11 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
             withVelocity:300 thenHoldForDuration:0.1];
 }
 - (XCUIElement *)startAndDockFirstLoad:(XCUIApplication *)app {
-    app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests",@"--practice-yard-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     XCTAssertGreaterThan(stage.frame.size.width,stage.frame.size.height);
-    [self tapTitle:stage x:770 y:446];
+    [self waitFor:@"Working;" on:stage];
     // Accessibility snapshots can arrive after more than one feeder drop.
     // Wait for an available load, not a transient exact counter value.
     NSPredicate *loaded=[NSPredicate predicateWithBlock:^BOOL(id object,NSDictionary *bindings) {
@@ -399,15 +400,15 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
     [self tapTitle:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
-    // Third challenge remains locked; the board must preserve the prior selection.
+    // Locations are all selectable; old job IDs remain only for career rewards.
     [self tapMenu:stage x:790 y:302];
-    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 0;"]);
-    [self tapMenu:stage x:490 y:302]; [self waitFor:@"challenge 1;" on:stage];
+    [self waitFor:@"challenge 5;" on:stage];
+    [self tapMenu:stage x:490 y:302]; [self waitFor:@"challenge 4;" on:stage];
     // The frame publishes status only after the native version-change save has run.
     [app terminate]; app.launchArguments=@[]; [app launch];
     stage=app.otherElements[@"river-stage"]; XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
     [self waitFor:@"Ready;" on:stage];
-    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 1;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 4;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"rank WAKE WRANGLER;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"career stars 3;"]);
     XCTAssertTrue([(NSString *)stage.value containsString:@"stripes 2"]);
@@ -417,6 +418,6 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     [self tapMenu:stage x:150 y:544]; [self waitFor:@"Ready;" on:stage];
     [self tapTitle:stage x:770 y:513]; [self waitFor:@"Challenges;" on:stage];
     [self tapMenu:stage x:790 y:544]; [self waitFor:@"Working;" on:stage];
-    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 1;"]);
+    XCTAssertTrue([(NSString *)stage.value containsString:@"challenge 4;"]);
 }
 @end
