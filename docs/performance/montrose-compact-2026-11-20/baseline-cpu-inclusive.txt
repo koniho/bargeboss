@@ -1,0 +1,87 @@
+Cmdline: /data/user/0/com.bargeboss.game/simpleperf record --app com.bargeboss.game --add-meta-info app_type=debuggable --in-app --tracepoint-events /data/local/tmp/tracepoint_events --out-fd 3 --stop-signal-fd 4 -e task-clock:u -f 500 -g --duration 10 --add-meta-info app_versioncode=1
+Arch: arm64
+Event: task-clock:u (type 1, config 1)
+Samples: 6033
+Event count: 12066000000
+
+Children  Self    Symbol
+80.97%    0.78%   art_quick_generic_jni_trampoline
+80.89%    0.43%   void art::interpreter::ExecuteSwitchImplCpp<false>(art::interpreter::SwitchImplContext*)
+80.89%    0.40%   bool art::interpreter::DoCall<false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)
+80.89%    0.22%   artQuickToInterpreterBridge
+80.89%    0.00%   ExecuteSwitchImplAsm
+80.89%    0.00%   art_quick_invoke_stub
+80.89%    0.00%   art_quick_to_interpreter_bridge
+80.47%    0.07%   art_quick_invoke_static_stub
+80.47%    0.00%   _JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)
+80.47%    0.00%   __libc_init
+80.47%    0.00%   _jobject* art::InvokeMethod<(art::PointerSize)8>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned long)
+80.47%    0.00%   android.app.ActivityThread.main
+80.47%    0.00%   android.os.Looper.loop
+80.47%    0.00%   android.os.Looper.loopOnce
+80.47%    0.00%   android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)
+80.47%    0.00%   art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, std::__va_list)
+80.47%    0.00%   art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, std::__va_list)
+80.47%    0.00%   art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*) (.__uniq.165753521025965369065708152063621506277)
+80.47%    0.00%   com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run
+80.47%    0.00%   com.android.internal.os.ZygoteInit.main
+80.47%    0.00%   main
+80.37%    0.03%   android.view.Choreographer.doFrame
+80.37%    0.00%   android.os.Handler.dispatchMessage
+80.37%    0.00%   android.os.Handler.dispatchMessageImpl
+80.37%    0.00%   android.os.Handler.handleCallback
+80.37%    0.00%   android.view.Choreographer$FrameDisplayEventReceiver.run
+80.29%    0.00%   android.view.Choreographer.doCallbacks
+80.28%    0.00%   android.view.Choreographer$CallbackRecord.run
+80.19%    0.02%   android.view.ViewRootImpl$TraversalCallback.onVsync
+80.18%    0.02%   android.view.ViewRootImpl.doTraversal
+80.16%    0.02%   android.view.ViewRootImpl.performTraversals
+80.09%    0.00%   android.view.ViewRootImpl.draw
+80.09%    0.00%   android.view.ViewRootImpl.performDraw
+80.04%    0.00%   android.view.ThreadedRenderer.draw
+80.01%    0.02%   android.view.ThreadedRenderer.updateRootDisplayList
+79.99%    0.00%   android.view.ThreadedRenderer.updateViewTreeDisplayList
+79.99%    0.00%   android.view.View.updateDisplayListIfDirty
+79.99%    0.00%   android.view.ViewGroup.dispatchGetDisplayList
+79.99%    0.00%   android.view.ViewGroup.recreateChildDisplayList
+79.98%    0.00%   android.view.View.draw
+79.98%    0.00%   com.bargeboss.game.MainActivity$GameView.onDraw
+75.77%    0.00%   com.bargeboss.game.Game.render
+75.77%    0.00%   com.bargeboss.game.Renderer.draw
+75.48%    0.03%   com.bargeboss.game.MontroseView.draw
+62.72%    1.46%   com.bargeboss.game.WaveView.surface
+62.72%    0.00%   com.bargeboss.game.WaveView.draw
+31.76%    0.15%   com.bargeboss.game.WaterEffectsPainter.line
+23.14%    0.88%   com.bargeboss.game.WaterEffectsPainter.poly
+21.85%    0.33%   com.bargeboss.game.RiverPainter.poly
+20.74%    1.24%   com.bargeboss.game.WaterBatchPainter.poly
+19.44%    0.00%   __pthread_start(void*) (.__uniq.67847048707805468364044055584648682506)
+19.44%    0.00%   __start_thread
+18.38%    0.02%   Renderer::startWorker()::'lambda'()::operator()() const
+18.38%    0.00%   void* std::__ndk1::__thread_proxy[abi:ne180000]<std::__ndk1::tuple<std::__ndk1::unique_ptr<std::__ndk1::__thread_struct, std::__ndk1::default_delete<std::__ndk1::__thread_struct>>, Renderer::startWorker()::'lambda'()>>(void*)
+18.35%    11.17%  Renderer::draw(void const*, unsigned long, Batch const*, int, float, float, float, float, float)
+18.13%    0.28%   com.bargeboss.game.WaterBatchPainter.flush
+18.00%    1.52%   com.bargeboss.game.VulkanPainter.poly
+16.51%    0.90%   com.bargeboss.game.SeaWaves.value
+15.03%    0.48%   com.bargeboss.game.VulkanPainter.triangle
+14.37%    13.61%  com.bargeboss.game.VulkanPainter.vertex
+11.97%    0.07%   com.bargeboss.game.SceneryOcclusion.poly
+11.90%    0.22%   com.bargeboss.game.ViewportPainter.poly
+10.54%    0.38%   com.bargeboss.game.SeaWaves.bend
+10.51%    6.30%   art_jni_trampoline
+8.62%     0.05%   com.bargeboss.game.Physics.length
+8.52%     8.52%   __memmove_aarch64_simd
+8.40%     2.29%   ieee_sin
+8.20%     7.01%   artQuickGenericJniTrampoline
+6.91%     0.00%   art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)
+6.81%     0.13%   bool art::interpreter::DoCall<true>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, bool, art::JValue*)
+6.63%     0.33%   com.bargeboss.game.SeaWaves.exposure
+6.50%     0.02%   com.bargeboss.game.SceneryOcclusion.polygons
+6.48%     6.48%   __ieee754_sqrt
+6.48%     0.08%   com.bargeboss.game.Painter.polygons
+6.48%     0.00%   com.bargeboss.game.ViewportPainter.polygons
+5.54%     0.02%   com.bargeboss.game.Renderer.river
+5.02%     0.13%   java.lang.Math.abs
+4.54%     0.60%   com.bargeboss.game.VulkanPainter.batch
+4.43%     0.08%   com.bargeboss.game.SeaWaves.montroseDisplacement
+4.04%     0.00%   com.bargeboss.game.VulkanPainter.present

@@ -32,6 +32,35 @@ public final class SeaWaves {
         }
         result[0]=sx;result[1]=sy;
     }
+    /** Per-draw constants; samples retain scalar physics arithmetic and StrictMath. */
+    static final class Surface {
+        final float intensity;
+        final float[] dx=new float[2],dy=new float[2],time=new float[2];
+        Surface(Game g,float tick){
+            intensity=g.settings.waveIntensity();
+            for(int i=0;i<2;i++){dx[i]=directionX(g,i);dy[i]=directionY(g,i);time[i]=OMEGA[i]*tick*Physics.DT;}
+        }
+        float height(float x,float y){
+            float e=exposure(x,y)*intensity;if(e==0)return 0;
+            float sum=0;
+            for(int i=0;i<2;i++){
+                float v=-dy[i]*x+dx[i]*y;
+                float phase=K[i]*(dx[i]*x+dy[i]*y-bend(v,i))-time[i];
+                sum+=AMPLITUDE[i]*e*(float)StrictMath.sin(phase);
+            }
+            return sum;
+        }
+        void displacement(float x,float y,float[] result){
+            float e=exposure(x,y)*intensity,sx=0,sy=0;
+            if(e!=0)for(int i=0;i<2;i++){
+                float v=-dy[i]*x+dx[i]*y;
+                float phase=K[i]*(dx[i]*x+dy[i]*y-bend(v,i))-time[i];
+                float d=AMPLITUDE[i]*e*(float)StrictMath.cos(phase);
+                sx+=d*dx[i];sy+=d*dy[i];
+            }
+            result[0]=sx;result[1]=sy;
+        }
+    }
     static float value(Game g,float x,float y,float tick,int component){
         boolean montrose=g.montroseStage();
         float exposure=montrose?exposure(x,y)*g.settings.waveIntensity():1;

@@ -71,7 +71,9 @@ public final class WaterEffectsPainter implements Painter {
     }
     public void line(float x,float y,float xx,float yy,float width,int color) {
         if((color>>>24)==0)return;
-        float dx=xx-x,dy=yy-y,length=Physics.length(dx,dy);
+        // Both sqrt contracts are correctly rounded; Math.sqrt lets Android use
+        // its intrinsic here. Physics and replay calculations retain StrictMath.
+        float dx=xx-x,dy=yy-y,length=(float)Math.sqrt(dx*dx+dy*dy);
         if(length<.0001f) {circle(x,y,width*.5f,color);return;}
         float nx=-dy/length*width*.5f,ny=dx/length*width*.5f;
         poly(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny},color);

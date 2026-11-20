@@ -30,6 +30,11 @@ if [ "${BARGEBOSS_PROFILE:-0}" = 1 ]; then
     echo tests/com/bargeboss/game/ReplayInput.java >> build/android/sources.txt
 fi
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp "$SDK_JAR" -d build/android/classes @build/android/sources.txt
+# Host-only transport regression; never packaged into the Android game.
+mkdir -p build/android/encoding-check
+javac -Xlint:-options --release 8 -cp "build/android/classes:$SDK_JAR" -d build/android/encoding-check tools/VulkanEncodingTest.java tools/VulkanClipEncodingTest.java
+java -cp "build/android/encoding-check:build/android/classes:$SDK_JAR" com.bargeboss.game.VulkanEncodingTest
+java -cp "build/android/encoding-check:build/android/classes:$SDK_JAR" com.bargeboss.game.VulkanClipEncodingTest
 find build/android/classes -name '*.class' | sort > build/android/classes.txt
 d8 --lib "$SDK_JAR" --min-api 24 --output build/android/dex @build/android/classes.txt
 (cd build/android/dex && zip -q -j ../base.apk classes*.dex)

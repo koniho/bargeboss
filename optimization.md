@@ -4077,3 +4077,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Restored original300000ms screen timeout and relaunched normal play after USB
   validation. Earlier interrupted-run limitations above are superseded by these
   complete captures; original failed baseline remains recorded.
+
+## 2026-11-20 Compact Montrose Vulkan geometry
+- Pixel11 Pro / Android17: simpleperf6,033 samples, none lost. WaveView62.7%
+  inclusive process CPU, native draw worker18.4%; old506,727 vertices/frame,
+  32,430,528bytes, GPU~3.8ms. ART method trace stalled and was discarded.
+- Flat polygon vertices now carry24bytes (position/full-precision color), versus
+  64bytes; other geometry keeps original format. Added flat vertex shader and
+  float-offset command addressing with mixed-stride bounds/draw handling. Existing
+  packet/cache limits, geometry, alpha, clipping and draw order preserved.
+- Shared renderer prepares wave constants once per draw, avoids duplicate drift
+  sine work, and uses correctly rounded intrinsic sqrt for render-only strokes.
+  Physics StrictMath unchanged. Vulkan skips redundant shared polygon grouping.
+- Rejected bulk-clear/sparse-write experiment94.44ms; local-cursor experiment89.67ms
+  inconclusive. Final overview repeats69.59/75.16ms (~13–14FPS), versus90.44/94.07ms
+  (~10–11FPS): mean interval~22% lower. Payload17,514,888bytes (-46% copied data,
+  not total memory). GPU~3.17ms; native encoding14–15ms. No packet replacements.
+- Overview/beach/beacon native screenshots each0/2,602,800 differing pixels.
+  Beach/beacon~60FPS. Cold inlet/tutorial replays complete all Vulkan; inlet360
+  tick/zoom pairs unchanged. Cold overview first frame6.20/6.87s; loading and
+  full-overview performance remain unresolved, not a60FPS claim.
+- Full checks/build and shared native parity da53558f:2:1350 pass. Ripple comparison
+  10,368,000 identical pixels;2,434,414 all-heading shore assertions pass. New Android
+  build gate checks2,526,477 original normalized vertex fields/clip markers across
+  growth, mixed formats, frame reuse and retained relocation; nested clip-source
+  mutation and depth-limit checks pass. Evidence:docs/performance/montrose-compact-2026-11-20.

@@ -54,9 +54,17 @@ public final class WaterPhysicsTest {
             g.settings.resetWaves();g.settings.adjustWaves(power-4);g.settings.turnWaves(bearing);
             for(int sample=0;sample<20;sample++){
                 float x=MontroseHarbor.mapX(-100+sample*151),y=MontroseHarbor.mapY(-2100+sample*173),tick=sample*41.25f;
-                SeaWaves.montroseDisplacement(g,x,y,tick,pair);
+                SeaWaves.Surface surface=new SeaWaves.Surface(g,tick);
+                check(Float.floatToIntBits(surface.height(x,y))==Float.floatToIntBits(SeaWaves.value(g,x,y,tick,0)),"Prepared render height preserves scalar wave field exactly");
+                surface.displacement(x,y,pair);
                 for(int axis=0;axis<2;axis++)check(Float.floatToIntBits(pair[axis])==Float.floatToIntBits(SeaWaves.value(g,x,y,tick,axis+3)),"Paired orbital displacement preserves scalar wave field exactly");
             }
+        }
+        int seed=0x12345678;
+        for(int i=0;i<100000;i++){
+            seed=seed*1664525+1013904223;float x=Float.intBitsToFloat(seed);
+            seed=seed*1664525+1013904223;float y=Float.intBitsToFloat(seed);
+            check(Float.floatToIntBits((float)Math.sqrt(x*x+y*y))==Float.floatToIntBits(Physics.length(x,y)),"Rendering sqrt preserves strict length including exceptional values");
         }
         for(float x:new float[]{Float.NEGATIVE_INFINITY,-100,-1,-0f,0,.01f,.5f,1,2,Float.POSITIVE_INFINITY,Float.NaN}){
             float t=Physics.clamp(x,0,1),expected=t*t*(3-2*t);

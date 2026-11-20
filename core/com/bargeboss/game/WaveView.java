@@ -35,6 +35,7 @@ public final class WaveView {
         try {
         int tick=g.visualTicks;
         float[] displacement=montrose?new float[2]:null;
+        SeaWaves.Surface surface=montrose?new SeaWaves.Surface(g,tick):null;
         float distantDetail=SceneDetail.fade(c.scale,1.25f,2.25f);
         // Cell identities stay in world space. Slow oscillation gives currents
         // motion without a periodic tile jump when the camera crosses a cell.
@@ -53,13 +54,16 @@ public final class WaveView {
             // with the vessel wakes. Never base this on time or camera position.
             float rough=montrose?g.settings.waveIntensity()*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
             if(noise(seed+41)<(montrose?Math.max(.1f,.45f-rough*.12f):.45f))continue;
-            float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
-            float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
+            float x=0,y=0;
+            if(!montrose){
+                x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
+                y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
+            }
             if(montrose){
                 float calm=1-Physics.clamp(rough,0,1);
                 x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4*calm;
                 y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3*calm;
-                SeaWaves.montroseDisplacement(g,x,y,tick,displacement);x+=displacement[0];y+=displacement[1];
+                surface.displacement(x,y,displacement);x+=displacement[0];y+=displacement[1];
             }
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
             if(sx<-45*c.scale || sx>g.layout.width+45*c.scale || sy<-25*c.scale || sy>g.layout.height+25*c.scale) continue;
@@ -68,7 +72,7 @@ public final class WaveView {
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             if(montrose){
                 rough=g.settings.waveIntensity()*SeaWaves.exposure(x,y);
-                float waveLife=.5f+.5f*Physics.clamp(SeaWaves.value(g,x,y,tick,0)/Math.max(.1f,3.2f*rough),-1,1);
+                float waveLife=.5f+.5f*Physics.clamp(surface.height(x,y)/Math.max(.1f,3.2f*rough),-1,1);
                 life+=(waveLife-life)*Physics.clamp(rough,0,1);
                 fade=life*life;detail*=1+rough*.25f;
             }
@@ -81,7 +85,7 @@ public final class WaveView {
                 float t=part/(float)CREST_SEGMENTS,along=(t-.5f)*span;
                 float bend=BEND[part]*(rise+.3f*(float)StrictMath.sin(t*9+phase));
                 float xx=x+(along-bend)*RiverCamera.Q,yy=y+(along+bend)*RiverCamera.Q;
-                if(montrose){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
+                if(montrose){float h=surface.height(xx,yy);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
                 if(part>0) {
                     p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,SoftCue.alpha(0x16102028,detail));
                     int alpha=(int)((12+fade*68)*EDGE[part]*detail);
@@ -92,7 +96,7 @@ public final class WaveView {
             if(life>.58f && noise(seed+31)>.35f) {
                 float arm=2+noise(seed+37)*6;
                 float xx=x+4,yy=y-4;
-                if(montrose){float h=SeaWaves.value(g,xx,yy,tick,0);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
+                if(montrose){float h=surface.height(xx,yy);xx+=RiverCamera.riseX(h);yy+=RiverCamera.riseY(h);}
                 p.line(xx-arm*RiverCamera.Q,yy-arm*RiverCamera.Q,xx+arm*RiverCamera.Q,yy+arm*RiverCamera.Q,
                         .8f,((int)((life-.58f)*175*detail)<<24)|0xb3d5cb);
             }

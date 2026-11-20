@@ -18,7 +18,7 @@ public final class VulkanClipEncodingTest {
         int[] commands=(int[])field(p,"commands");float[] vertices=(float[])field(p,"vertices");
         int count=(Integer)field(p,"commandUsed"),depth=0,restores=0;int[] first=new int[64],sizes=new int[64];
         for(int i=0;i<count;i+=5){int mode=commands[i+4];
-            if(mode==1){first[depth]=commands[i];sizes[depth++]=commands[i+1];if(vertices[commands[i]*16]==999)throw new AssertionError("caller changed captured mask");}
+            if(mode==1){first[depth]=commands[i];sizes[depth++]=commands[i+1];if(vertices[commands[i]]==999)throw new AssertionError("caller changed captured mask");}
             if(mode==2){--depth;if(commands[i]!=first[depth] || commands[i+1]!=sizes[depth])throw new AssertionError("nested restore used another mask");restores++;}
         }
         if(depth!=0 || restores!=2)throw new AssertionError("unbalanced nested masks");
