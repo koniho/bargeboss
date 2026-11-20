@@ -91,6 +91,12 @@ public final class Game {
 
     public Layout layout=Layout.DEFAULT;
     public final Career career=new Career();
+    private LightingProfile stageLighting=LightingProfile.DUSK;
+    private int nextLighting=2;
+    public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES?LightingProfile.DUSK:stageLighting;}
+    public int selectedLighting(){return nextLighting;}
+    /** Selection only affects the next entry, never the live stage or a sibling practice. */
+    public void selectLighting(int id){LightingProfile.preset(id);nextLighting=id;}
     public GameSettings settings=new GameSettings();
     public final WaveControls waveControls=new WaveControls();
     public final Joystick joystick=new Joystick();
@@ -334,7 +340,7 @@ public final class Game {
     public void startTutorial() {
         cancelInputs(); accumulator=0; visualAccumulator=0;
         returnToShift=mode!=TITLE && mode!=FINISH && mode!=CHALLENGES;
-        practice=new Game(); practice.reset(); practice.tutorial=new Tutorial();practice.bridge=new Bridge();practice.lock.passive=true;
+        practice=new Game(); practice.selectLighting(nextLighting);practice.reset(); practice.tutorial=new Tutorial();practice.bridge=new Bridge();practice.lock.passive=true;
         practice.restoreProgress(saveProgress());
         practice.settings=settings;
         practice.layout=layout.camera.zoom==1 && layout.camera.worldTop==148?layout:new Layout(layout.width,layout.height);
@@ -361,6 +367,7 @@ public final class Game {
      * Never a location-menu entry or persisted career ID. Geographic tests use reset(). */
     void resetPracticeYard(){reset(true);}
     private void reset(boolean practiceYard) {
+        stageLighting=LightingProfile.preset(nextLighting);
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         dialogue.close(this);practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
@@ -710,6 +717,7 @@ public final class Game {
             }
             cancel();return;
         }
+        if(tap && LightingChoices.tap(this,x,y)){cancel();return;}
         if(mode==TITLE && tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
         if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
             if(tap && tapped(Layout.START,x,y)) tutorial.exitRequested=true;

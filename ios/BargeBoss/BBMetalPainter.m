@@ -1,4 +1,5 @@
 #import "BBMetalPainter.h"
+#import "com/bargeboss/game/LightingProfile.h"
 #import "com/bargeboss/game/SceneLighting.h"
 #import "com/bargeboss/game/SurfaceMaterial.h"
 #import "BBPainter.h"
@@ -25,6 +26,9 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
     id<MTLBuffer> _buffers[3];
     dispatch_semaphore_t _available;
 }
+@property(nonatomic,strong) BBLightingProfile *lightingProfile;
+@property(atomic) NSUInteger lightingGeneration;
+@property(nonatomic) double lightingPreparationMs;
 @property(nonatomic,strong) id<MTLDevice> device;
 @property(nonatomic,strong) id<MTLCommandQueue> queue;
 @property(nonatomic,strong) id<MTLRenderPipelineState> pipeline,maskPipeline;
@@ -51,8 +55,29 @@ typedef struct { vector_float2 position,uv; vector_float4 color; uint32_t kind; 
 @end
 
 @implementation BBMetalPainter
+- (BBLightingProfile *)lighting {return self.lightingProfile;}
+- (void)lightingWithBBLightingProfile:(BBLightingProfile *)profile {
+    if(self.lightingProfile==profile)return;
+    self.lightingProfile=profile;self.lightingGeneration++;
+    dispatch_async(self.preparationQueue, ^{[self.preparationResources lightingWithBBLightingProfile:profile];});
+    [self.resources lightingWithBBLightingProfile:profile];
+    [self.textures removeAllObjects];[self.textureOrder removeAllObjects];self.textureBytes=0;
+    [self.pending removeAllObjects];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;
+}
+- (void)prepareSceneWithBBLightingProfile:(BBLightingProfile *)profile withIntArray:(IOSIntArray *)atlases {
+    CFTimeInterval started=CACurrentMediaTime();
+    [self lightingWithBBLightingProfile:profile];
+    for(int i=0;i<atlases->size_;i++)for(int f=0;f<[BBSpriteAtlas countWithInt:IOSIntArray_Get(atlases,i)];f++){
+        int atlas=IOSIntArray_Get(atlases,i);
+        NSString *key=[NSString stringWithFormat:@"sprite:%@:%d:%d",[profile key],atlas,f];
+        [self storeTexture:[self makeTexture:[self.resources frame:f atlas:atlas]] key:key mayEvict:YES];
+    }
+    self.lightingPreparationMs=(CACurrentMediaTime()-started)*1000;
+}
+
 - (instancetype)init {
     if((self=[super init])) {
+        self.lightingProfile=[BBLightingProfile presetWithInt:2];
         self.device=MTLCreateSystemDefaultDevice();
         if(!self.device) return nil;
         self.queue=[self.device newCommandQueue];
@@ -173,7 +198,7 @@ static vector_float4 BBColor(jint argb) {
         self.peakFrameTextureBytes=MAX(self.peakFrameTextureBytes,self.frameTextureBytes);
     }
 }
-- (NSDictionary *)diagnostics {return @{@"surface_patches":@(self.surfacePatches),@"material_patches":@(self.materialPatches),@"rope_patches":@(self.ropePatches),@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
+- (NSDictionary *)diagnostics {return @{@"lighting_profile":[self.lightingProfile key],@"lighting_preparation_ms":@(self.lightingPreparationMs),@"surface_patches":@(self.surfacePatches),@"material_patches":@(self.materialPatches),@"rope_patches":@(self.ropePatches),@"smoke_patches":@(self.smokePatches),@"water_foam_patches":@(self.waterFoamPatches),@"water_reflection_patches":@(self.waterReflectionPatches),@"water_shaders":@(self.waterShaders),@"texture_bytes":@(self.textureBytes),@"texture_budget":@(self.textureBudget),@"uploads":@(self.textureUploads),@"evictions":@(self.textureEvictions),@"peak_frame_texture_bytes":@(self.peakFrameTextureBytes),@"vertex_capacity_bytes":@(_capacity*sizeof(BBVertex)),@"direct_layer_fallbacks":@(self.directLayerFallbacks),@"pending_preparations":@(self.pending.count)};}
 - (id<MTLTexture>)makeTexture:(UIImage *)image {
     if(!image) return self.white;
     size_t width=CGImageGetWidth(image.CGImage),height=CGImageGetHeight(image.CGImage);
@@ -205,17 +230,20 @@ static vector_float4 BBColor(jint argb) {
     [self reference:key texture:texture];return texture;
 }
 - (void)prefetchAtlas:(jint)atlas frame:(jint)frame {
-    NSString *key=[NSString stringWithFormat:@"sprite:%d:%d",atlas,frame];
+    NSString *key=[NSString stringWithFormat:@"sprite:%@:%d:%d",[self.lightingProfile key],atlas,frame];
     if(self.textures[key] || [self.pending containsObject:key] || self.pending.count>=8
             || self.textureBytes+4*1024*1024>self.textureBudget)return;
     [self.pending addObject:key];
+    BBLightingProfile *snapshot=self.lightingProfile;NSUInteger generation=self.lightingGeneration;
     dispatch_async(self.preparationQueue, ^{ @autoreleasepool {
+        if(self.lightingGeneration!=generation)return;
+        [self.preparationResources lightingWithBBLightingProfile:snapshot];
         id<MTLTexture> texture=[self makeTexture:[self.preparationResources frame:frame atlas:atlas]];
-        dispatch_async(dispatch_get_main_queue(), ^{[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:NO];});
+        dispatch_async(dispatch_get_main_queue(), ^{if(self.lightingGeneration!=generation)return;[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:NO];});
     }});
 }
 - (id<MTLTexture>)texture:(jint)atlas frame:(jint)frame {
-    NSString *key=[NSString stringWithFormat:@"sprite:%d:%d",atlas,frame];
+    NSString *key=[NSString stringWithFormat:@"sprite:%@:%d:%d",[self.lightingProfile key],atlas,frame];
     id<MTLTexture> texture=[self cached:key]?:[self upload:[self.resources frame:frame atlas:atlas] key:key];
     int count=[BBSpriteAtlas countWithInt:atlas];
     if(count==32) {[self prefetchAtlas:atlas frame:(frame+1)%count];[self prefetchAtlas:atlas frame:(frame+count-1)%count];}
@@ -246,7 +274,7 @@ static vector_float4 BBColor(jint argb) {
 }
 - (void)surfacePolygonWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withInt:(jint)material withInt:(jint)argb withFloat:(jfloat)wetness {
     if(material==BBSurfaceMaterial_EMISSIVE){[self polyWithFloatArray:xy withInt:argb];return;}
-    int n=xy->size_/2;vector_float4 color=BBColor([BBSceneLighting surfaceColorWithInt:argb withInt:material]);
+    int n=xy->size_/2;vector_float4 color=BBColor([self.lightingProfile surfaceWithInt:argb withInt:material]);
     if(n<3 || xy->size_!=uv->size_ || color.w<=0)return;self.surfacePatches++;
     uint32_t kind=14+material;
     // BSP fragments and shore faces are convex, with matching stable UV vertices.
@@ -304,19 +332,22 @@ static vector_float4 BBColor(jint argb) {
 }
 - (void)prepareLayer:(BBStaticLayer *)layer scale:(float)scale visible:(BOOL)visible {
     if(![layer backgroundSafe])return;
-    NSString *key=[NSString stringWithFormat:@"layer:%d:%g",[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
+    NSString *key=[NSString stringWithFormat:@"layer:%@:%d:%g",[self.lightingProfile key],[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
     if(self.textures[key] || [self.pending containsObject:key] || self.pending.count>=(visible?12:4))return;
     [self.pending addObject:key];
+    BBLightingProfile *snapshot=self.lightingProfile;NSUInteger generation=self.lightingGeneration;
     dispatch_async(self.preparationQueue, ^{ @autoreleasepool {
+        if(self.lightingGeneration!=generation)return;
+        [self.preparationResources lightingWithBBLightingProfile:snapshot];
         id<MTLTexture> texture=[self makeTexture:[self.preparationResources imageForLayer:layer scale:scale]];
-        dispatch_async(dispatch_get_main_queue(), ^{[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:visible];});
+        dispatch_async(dispatch_get_main_queue(), ^{if(self.lightingGeneration!=generation)return;[self.pending removeObject:key];[self storeTexture:texture key:key mayEvict:visible];});
     }});
 }
 - (void)beginFrame {self.surfacePatches=0;self.materialPatches=0;self.waterFoamPatches=0;self.waterReflectionPatches=0;self.smokePatches=0;self.ropePatches=0;[self.resources beginFrame];[self.frameTextureKeys removeAllObjects];self.frameTextureBytes=0;}
 - (void)layerWithBBStaticLayer:(BBStaticLayer *)layer withFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)scale withFloat:(jfloat)alpha {
     float w=[layer width]*scale,h=[layer height]*scale;
     if(alpha<=0 || !CGRectIntersectsRect(self.visibleBounds,CGRectMake(x,y,w,h)))return;
-    NSString *key=[NSString stringWithFormat:@"layer:%d:%g",[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
+    NSString *key=[NSString stringWithFormat:@"layer:%@:%d:%g",[self.lightingProfile key],[layer key],[BBStaticLayer rasterScaleWithFloat:scale]];
     id<MTLTexture> texture=[self cached:key];
     if(!texture && [layer backgroundSafe]) {
         [self prepareLayer:layer scale:scale visible:YES];self.directLayerFallbacks++;

@@ -44,7 +44,7 @@ public final class HarborAtmosphere {
                     ellipse[point*2]=x+drift+rx*(float)StrictMath.cos(a);
                     ellipse[point*2+1]=y+ry*(float)StrictMath.sin(a);
                 }
-                canvas.poly(ellipse,0x04c89972);
+                canvas.poly(ellipse,g.lighting().haze);
             }
         }
     }

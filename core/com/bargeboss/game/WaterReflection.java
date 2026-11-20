@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class WaterReflection {
     private WaterReflection() {}
     public static void draw(Game g,Painter world,float x,float y,float width,float length,int color,int seed) {
+        color=SoftCue.alpha(color,g.lighting().reflections);
         if((color>>>24)==0)return;
         float cx=x-length*.5f,cy=y+length*.5f;
         RiverPainter river=world instanceof RiverPainter?(RiverPainter)world:null;

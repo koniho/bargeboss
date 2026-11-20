@@ -12,6 +12,7 @@ public final class Desktop extends JPanel {
     private long last=System.nanoTime();
     private Viewport viewport=new Viewport(Layout.WIDTH,Layout.HEIGHT);
     private int canvasWidth=-1,canvasHeight=-1;
+    private LevelAssets.Plan preparedPlan;private LightingProfile preparedLighting;
     private DesktopProgress progress;
     private int savedVersion,attemptedVersion;
     private Desktop() {
@@ -30,7 +31,15 @@ public final class Desktop extends JPanel {
         addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { updateViewport();requestRedraw(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
         getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.back();requestRedraw(); } });
-        new Timer(8,e->{ long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); radio.update(game); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
+        new Timer(8,e->{ prepareLighting();long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); radio.update(game); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
+    }
+    private void prepareLighting(){
+        LevelAssets.Plan plan=LevelAssets.upcoming(game);LightingProfile profile=game.activeGame().lighting();
+        if(plan==preparedPlan && profile==preparedLighting)return;
+        java.awt.image.BufferedImage scratch=new java.awt.image.BufferedImage(1,1,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics=scratch.createGraphics();
+        try{new DesktopPainter(graphics).prepareScene(profile,plan.preparationAtlases());}finally{graphics.dispose();}
+        preparedPlan=plan;preparedLighting=profile;last=System.nanoTime();
     }
     private void requestRedraw() { frames.markDirty();repaint(); }
     private void saveProgress(boolean flush) {

@@ -6,6 +6,8 @@ import java.util.Arrays;
  * Entry/exit ends of the main river remain open water beyond the navigation bounds.
  * All clipping is shared Java; native hosts receive ordinary primitives. */
 public final class WaterEffectsPainter implements Painter {
+    public LightingProfile lighting(){return target.lighting();}
+    public void lighting(LightingProfile profile){target.lighting(profile);}
     private static final float LIMIT=100000;
     private static final float[][] RIVER={{Physics.LEFT,-LIMIT,Physics.RIGHT,LIMIT}};
     private static final float[][] CHANNEL=partition(TrainingChannel.WATER_RECTANGLES,null);

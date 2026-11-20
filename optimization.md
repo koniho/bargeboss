@@ -3964,3 +3964,32 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   versus first restored-floor capture 34.75 ms CPU / mean 39.54 ms presentation.
   No claim of locked 60 FPS or controlled thermal attribution. Evidence summaries:
   docs/performance/ripple-floor-2026-11-20/; raw captures under out/profiles/.
+
+### 2026-11-20 — Issue 17 stage-entry lighting (in progress, isolated worktree)
+
+- Owns immutable shared LightingProfile presets and next-entry selection; shared
+  grading/effect parameters; profile invalidation across Canvas/Vulkan, Java2D,
+  Core Graphics/Metal; stage-entry asset preparation and immutable worker snapshots.
+- Worktree /private/tmp/bargeboss-issue-17, branch codex/issue-17-lighting, based on
+  origin/main 12b881b. Connected phone reserved for other work; using iPhone 17 Pro
+  iOS 26.5 simulator. Existing wave and Montrose evidence above is preserved.
+- Desktop four-scene/four-preset review and round-trip cache checks passed 2,304,000
+  exact pixels before the final smoke/manifest follow-up. Native simulator daylight
+  inspected; final profiling, checks and visual review are ongoing.
+- Final validation: full shared checks and signed Android APK build passed (no
+  phone installation); iOS simulator build and JVM/J2ObjC parity passed. Final
+  desktop round trips matched 2,304,000 pixels; all-heading shoreline regression
+  passed 1,461,230 hull/cargo pixels. Main checkout remains untouched.
+- Reviewed 16 Metal scene/preset captures plus Core Graphics and water-texture
+  fallback captures on a clean iPhone 17 Pro iOS 26.5 simulator. Real menu input
+  verified daylight -> title -> night without restarting. Earlier account-alert
+  captures were discarded. Evidence: docs/performance/lighting-presets-2026-11-20/.
+- Metal texture residency stayed <=160 MiB. Entry preparation measured 195–1028
+  ms (water-texture fallback 1154 ms); tutorial manifest preparation evicts assets.
+  Most Metal median intervals were 16.7 ms; Indiana night reached 33.3 ms. Core
+  Graphics median was 66.7 ms. These short frozen-scene simulator samples do not
+  establish physical-device performance or attribute the pacing differences.
+- Remaining: asynchronous loading presentation, native Android visual/device
+  validation, continuous transitions, and targeted diffuse/emissive art layers.
+  Core Graphics retains its simpler flat material fallback; daylight makes baked
+  factory illumination visible. Neither is claimed as full physical relighting.

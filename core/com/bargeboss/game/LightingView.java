@@ -13,7 +13,7 @@ public final class LightingView {
             float phase=lamp*1.31f+side*.77f;
             float pulse=SceneryEffects.intensity(g.visualTicks,phase);
             // Cached feathered haze and a wide diffuse pool replace the hard triangle.
-            DiffuseLight.lamp(p,x,foot,s,pulse);
+            DiffuseLight.lamp(p,x,foot,s,pulse*g.lighting().lamps);
             p.line(x,foot,x,y,2.4f*s,0xff18252d);
             p.line(x+.7f*s,foot,x+.7f*s,y,0.65f*s,0xff8f7654);
             SceneryEffects.glow(p,x,y,3.3f*s,0xffffb354,1,g.visualTicks,phase);

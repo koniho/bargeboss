@@ -66,7 +66,7 @@ public final class DockWorkers {
                     z=15+dx*sine*face.arm+dz*cosine;}
                 xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(GroundArt.LAND_RISE+z)*c.scale;
             }
-            if(face.material<0)p.poly(xy,SceneLighting.sceneryColor(face.color));else p.surfacePolygon(xy,face.uv,face.material,face.color,0);
+            if(face.material<0)p.poly(xy,p.lighting().scenery(face.color));else p.surfacePolygon(xy,face.uv,face.material,face.color,0);
         }
     }
     private static final class Face {

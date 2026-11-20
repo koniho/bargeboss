@@ -2,6 +2,8 @@ package com.bargeboss.game;
 
 /** Screen-space water polygon batching. Never reorder intersecting translucent coverage. */
 public final class WaterBatchPainter implements Painter {
+    public LightingProfile lighting(){return target.lighting();}
+    public void lighting(LightingProfile profile){target.lighting(profile);}
     private static final int CAPACITY=256,LOOKBACK=48;
     private final Painter target;
     private final float width,height;

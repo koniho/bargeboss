@@ -1,0 +1,21 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=indiana-bridges",
+    "--ios-lighting=2",
+    "--ios-warmup=30",
+    "--ios-frames=60"
+  ],
+  "frames": 60,
+  "mean_ms": 19.587586666666667,
+  "median_ms": 19.2959,
+  "p95_ms": 21.1152,
+  "max_ms": 21.528,
+  "fps": 51.05274156625727,
+  "draw_median_ms": 16.0624,
+  "draw_p95_ms": 17.2119,
+  "draw_max_ms": 18.052,
+  "gpu_median_ms": 0.0822,
+  "gpu_p95_ms": 0.1012
+}

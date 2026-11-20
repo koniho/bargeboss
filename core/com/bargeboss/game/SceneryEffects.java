@@ -30,6 +30,7 @@ public final class SceneryEffects {
     }
     /** Explicit energy lets navigation signals bypass ambient variation. */
     public static void glow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase,float power) {
+        opacity*=p.lighting().lamps;
         if(opacity<=0 || radius<=0) return;
         float energy=2.4f*power,breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
         float driftX=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
@@ -45,6 +46,7 @@ public final class SceneryEffects {
     }
     /** Small distant fixtures need fewer overlapping layers than a close landmark. */
     public static void compactGlow(Painter p,float x,float y,float radius,int color,float opacity,int ticks,float phase) {
+        opacity*=p.lighting().lamps;
         if(opacity<=0 || radius<=0)return;
         float energy=2.4f*intensity(ticks,phase),breath=1+.05f*(float)StrictMath.sin(ticks*.016+phase*1.13);
         float dx=radius*.16f*(float)StrictMath.sin(ticks*.009+phase);
@@ -69,8 +71,8 @@ public final class SceneryEffects {
             float r=radius*(1+age*4.4f)*(1+.1f*(float)StrictMath.sin(age*12+phase+i));
             float alpha=opacity*fade*(compact?145:175);
             // Dirty olive-brown soot, with rolling detail inside the same bounded puff.
-            p.smokePuff(px,py,r*1.2f,WaterFoam.phase(ticks,i+(int)(phase*29)),tint(SmokePuff.INDUSTRIAL,alpha));
+            p.smokePuff(px,py,r*1.2f,WaterFoam.phase(ticks,i+(int)(phase*29)),tint(p.lighting()==LightingProfile.DUSK?SmokePuff.INDUSTRIAL:p.lighting().smoke,alpha));
         }
-        p.circle(x,y,radius*.8f,tint(SmokePuff.SOOT,opacity*100));
+        p.circle(x,y,radius*.8f,tint(p.lighting().smoke,opacity*100));
     }
 }

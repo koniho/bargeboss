@@ -18,7 +18,7 @@ final class CalumetRiverTiles {
     }
     private static void surface(Game g,Painter p,float[] world,int kind){float[] projected=new float[world.length];RiverCamera c=g.layout.camera;
         for(int i=0;i<world.length;i+=2){projected[i]=c.screenX(world[i],world[i+1]);projected[i+1]=c.screenY(world[i],world[i+1])-GroundArt.LAND_RISE*c.scale;}
-        if(kind==0 || kind==4 || kind==5)p.poly(projected,SceneLighting.sceneryColor(COLOR[kind]));
+        if(kind==0 || kind==4 || kind==5)p.poly(projected,p.lighting().scenery(COLOR[kind]));
         else p.surfacePolygon(projected,world,kind==3?SurfaceMaterial.RUST:SurfaceMaterial.CONCRETE,COLOR[kind],.14f);
     }
     private static void roads(Game g,Painter p,float[] bounds){for(int n=0;n<CalumetSurveyData.ROADS.length;n++){

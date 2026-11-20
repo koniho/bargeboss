@@ -2,6 +2,11 @@ package com.bargeboss.game;
 
 /** The entire native drawing boundary. Coordinates are in the shared landscape stage. */
 public interface Painter {
+    /** Select an immutable profile before preparation/drawing; terminal hosts invalidate caches. */
+    default void lighting(LightingProfile profile) {}
+    default LightingProfile lighting(){return LightingProfile.DUSK;}
+    /** Hosts call at entry before advancing the stage, never as a continuous time update. */
+    default void prepareScene(LightingProfile profile,int[] atlases){lighting(profile);}
     /** Native cache bookkeeping only; never advances simulation. */
     default void beginFrame() {}
     /** Save the current clip and exclude screen-space triangles (six floats each).
@@ -60,7 +65,7 @@ public interface Painter {
     /** Convex planar face; xy and uv are paired arrays in matching vertex order.
      * UVs are stable model units, never screen pixels. Wetness is shared state in [0,1]. */
     default void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
-        poly(xy,SceneLighting.surfaceColor(color,material));
+        poly(xy,lighting().surface(color,material));
     }
     /** Convex shoreline quad; UV is world-distance along shore and across water/up wall.
      * Kinds: 0 foam, 1 wet wall. Phase is simulation seconds; energy is shared wake strength. */

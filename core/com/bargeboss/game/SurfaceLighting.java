@@ -11,7 +11,7 @@ public final class SurfaceLighting {
         float reach=light[face]*3f+.65f*(light[(face+1)%4]+light[(face+3)%4])+.15f*total;
         return MAX_SHADE*(1-Physics.clamp(reach,0,1));
     }
-    private static float ambience(Game g){return g.mode==Game.TITLE?.45f:1;}
+    private static float ambience(Game g){return g.mode==Game.TITLE?.45f:g.lighting().ambientShade/MAX_SHADE;}
 
     /** Order: right, down, left, up in the upright sprite's coordinate system. */
     static void add(float[] weights,float x,float y,float lx,float ly,float height,float radius,float energy){

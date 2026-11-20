@@ -47,6 +47,7 @@ public final class ScreenView {
         center(menu,Challenges.locationTitle(g.challengeId),770,230,20,PAPER);
         String summary=goalSummary(g.challengeId);
         center(menu,summary,770,274,Math.min(12,288/Math.max(1,Lettering.width(summary,1))),GOLD);
+        LightingChoices.draw(g,p);
         button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
         button(g,menu,Layout.START,"SAIL LOCATION",true);
         button(g,menu,Layout.CHALLENGES,"LOCATIONS",false);
@@ -212,7 +213,7 @@ public final class ScreenView {
         }
         boolean selectionHere=Challenges.pageFor(g.challengeId)==page;
         center(p,selectionHere?Challenges.locationDescription(g.challengeId):"EARN BRONZE TO OPEN THE NEXT HARBOR JOB.",480,444,13,PAPER);
-        center(p,"BRONZE: GOAL / SILVER: NO LOST LOADS OR 80% HULL / GOLD: BOTH",480,475,10,MUTED);
+        LightingChoices.draw(g,screen);
         button(g,p,Layout.BACK,"BACK",false);
         button(g,p,Layout.CHALLENGE_START,selectionHere?"SAIL LOCATION":"SELECT LOCATION",selectionHere);
         if(Challenges.pageCount()>1){
@@ -275,6 +276,7 @@ public final class ScreenView {
     }
     /** Scale/shear for vector lettering; atlas sprites retain an unskewed projection. */
     private static final class Transform implements Painter {
+        public LightingProfile lighting(){return p.lighting();}
         private final Painter p; private final float x,y,scale,shear;
         Transform(Painter p,float x,float y,float scale,float shear) { this.p=p; this.x=x; this.y=y; this.scale=scale; this.shear=shear; }
         private float tx(float xx,float yy) { return x+(xx+shear*yy)*scale; }

@@ -69,7 +69,7 @@ public final class IndianaView {
         }
     }
     public static void draw(Game g,Painter p){
-        p.rect(0,0,g.layout.width,g.layout.height,0xff151b25);
+        p.rect(0,0,g.layout.width,g.layout.height,g.lighting()==LightingProfile.DUSK?0xff151b25:g.lighting().water);
         WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
         ShorelineView.water(g,p);LocationBridges.shadows(g,p);
         IndianaShoreTiles.walls(g,p);IndianaShoreTiles.ground(g,p);

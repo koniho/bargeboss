@@ -1,7 +1,7 @@
 package com.bargeboss.game;
 
-/** Permanent near-night industrial ambience. Only nonemissive scenery enters these
- * transforms; vessels, UI, foam, navigation lamps and warm windows keep their light. */
+/** Reference dusk grade retained for compatibility; stage profiles own other ambience.
+ * Generic UI and emissive primitives never enter these transforms. */
 public final class SceneLighting {
     public static final String VERSION="industrial-dusk-v1";
     private SceneLighting(){}
@@ -15,7 +15,7 @@ public final class SceneLighting {
         if(material==SurfaceMaterial.SAFETY)return scale(argb,116,118,125);
         return sceneryColor(argb);
     }
-    private static int scale(int argb,int red,int green,int blue){
+    static int scale(int argb,int red,int green,int blue){
         if((argb>>>24)==0)return argb;
         int r=(((argb>>>16)&255)*red+127)/255,g=(((argb>>>8)&255)*green+127)/255,b=((argb&255)*blue+127)/255;
         return (argb&0xff000000)|(r<<16)|(g<<8)|b;

@@ -58,7 +58,7 @@ public final class VesselSmoke {
             float scale=radius*c.scale/17;
             float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i])-rise[i]*c.scale;
             if(alpha<.008f || sx+20*scale<0 || sx-20*scale>width || sy+20*scale<0 || sy-20*scale>height)continue;
-            p.smokePuff(sx,sy,20*scale,WaterFoam.phase(age[i],i),(Math.round(alpha*225)<<24)|SmokePuff.SOOT);
+            p.smokePuff(sx,sy,20*scale,WaterFoam.phase(age[i],i),(Math.round(alpha*225)<<24)|p.lighting().smoke);
         }
     }
 }

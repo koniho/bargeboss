@@ -8,6 +8,8 @@ import java.util.HashMap;
  * smoke, wake, rope or objective participates. BuildingFades separately animates
  * the overlap target at fixed steps; these mask queries are stateless. */
 public final class SceneryOcclusion implements Painter {
+    public LightingProfile lighting(){return target.lighting();}
+    public void lighting(LightingProfile profile){target.lighting(profile);}
     private final Painter target;
     private final ArrayList<Sprite> vessels=new ArrayList<Sprite>();
     private int nonVesselDepth;
@@ -196,6 +198,8 @@ public final class SceneryOcclusion implements Painter {
     /** Code-drawn foreground pieces test their actual polygons/strokes, not a group rectangle. */
     public static Painter obstacles(Painter p) {SceneryOcclusion scene=context(p);return scene==null || scene.vessels.isEmpty()?p:new Obstacles(p,scene);}
     private static final class Obstacles implements Painter {
+    public LightingProfile lighting(){return p.lighting();}
+    public void lighting(LightingProfile profile){p.lighting(profile);}
         final Painter p;final SceneryOcclusion scene;Obstacles(Painter p,SceneryOcclusion scene){this.p=p;this.scene=scene;}
         private int color(int color,Shape shape){if((color>>>24)<160)return color;return (((int)((color>>>24)*scene.opacity(shape)))<<24)|(color&0xffffff);}
         public void pushClipOutside(float[] triangles){p.pushClipOutside(triangles);}

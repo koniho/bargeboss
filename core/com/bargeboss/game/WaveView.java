@@ -14,7 +14,7 @@ public final class WaveView {
     }
     /** World-anchored detail moves with the river during camera follow and zoom. */
     public static void draw(Game g,Painter canvas) {
-        canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
+        canvas.rect(0,0,g.layout.width,g.layout.height,canvas.lighting().water);
         surface(g,canvas);
     }
     /** Wave detail without clearing a scene that has already drawn its land/water mask. */
@@ -75,7 +75,7 @@ public final class WaveView {
                 if(part>0) {
                     p.line(lastX+1,lastY-1,xx+1,yy-1,2.4f,SoftCue.alpha(0x16102028,detail));
                     int alpha=(int)((12+fade*68)*EDGE[part]*detail);
-                    if(part!=2 || noise(seed+29)>.35f) p.line(lastX,lastY,xx,yy,(.9f+fade*.5f)*stroke,(alpha<<24)|0x83b3b4);
+                    if(part!=2 || noise(seed+29)>.35f) p.line(lastX,lastY,xx,yy,(.9f+fade*.5f)*stroke,(alpha<<24)|(g.lighting().glint&0xffffff));
                 }
                 lastX=xx;lastY=yy;
             }
@@ -91,7 +91,7 @@ public final class WaveView {
     }
 
     public static void draw(Painter p,int tick,float left,float top,float width,float height,float scale,float origin) {
-        p.rect(left,top,width,height,HarborAtmosphere.WATER_BASE);
+        p.rect(left,top,width,height,p.lighting().water);
         if(height<=0 || width<=0) return;
         // Broad low-contrast facets give the surface depth without covering vessels in fog.
         float broad=160*scale;

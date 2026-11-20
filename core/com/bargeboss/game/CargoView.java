@@ -32,12 +32,12 @@ public final class CargoView {
     private static void carrier(Game g,Painter p,float x,float y,float z,float angle,boolean front){
         float co=(float)StrictMath.cos(angle),si=(float)StrictMath.sin(angle);RiverCamera c=g.layout.camera;
         float[][] corners={{-31,-12},{31,-12},{31,12},{-31,12}};
-        if(!front){float[] q=new float[8];for(int i=0;i<4;i++){float a=corners[i][0],b=corners[i][1],wx=x+co*a-si*b,wy=y+si*a+co*b;q[i*2]=c.screenX(wx,wy);q[i*2+1]=c.screenY(wx,wy)-(z+2)*ArticulatedModel.Z_SCALE*c.scale;}p.poly(q,SceneLighting.sceneryColor(0xff525d5c));return;}
+        if(!front){float[] q=new float[8];for(int i=0;i<4;i++){float a=corners[i][0],b=corners[i][1],wx=x+co*a-si*b,wy=y+si*a+co*b;q[i*2]=c.screenX(wx,wy);q[i*2+1]=c.screenY(wx,wy)-(z+2)*ArticulatedModel.Z_SCALE*c.scale;}p.poly(q,p.lighting().scenery(0xff525d5c));return;}
         for(int i=0;i<4;i++){int j=(i+1)%4;float ax=corners[i][0],ay=corners[i][1],bx=corners[j][0],by=corners[j][1];
             float nx=by-ay,ny=ax-bx,wx=co*nx-si*ny,wy=si*nx+co*ny;if(-wx+wy<=0)continue;
             float x1=x+co*ax-si*ay,y1=y+si*ax+co*ay,x2=x+co*bx-si*by,y2=y+si*bx+co*by;
             float sx=c.screenX(x1,y1),sy=c.screenY(x1,y1),tx=c.screenX(x2,y2),ty=c.screenY(x2,y2),lo=z*ArticulatedModel.Z_SCALE*c.scale,hi=(z+4)*ArticulatedModel.Z_SCALE*c.scale;
-            p.poly(new float[]{sx,sy-lo,tx,ty-lo,tx,ty-hi,sx,sy-hi},SceneLighting.sceneryColor(0xff777b66));
+            p.poly(new float[]{sx,sy-lo,tx,ty-lo,tx,ty-hi,sx,sy-hi},p.lighting().scenery(0xff777b66));
         }
     }
     public static void draw(Game g,Painter p,Body b,float x,float y,float size){

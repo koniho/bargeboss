@@ -24,6 +24,22 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class CanvasPainter implements Painter {
+    private LightingProfile lightingProfile=LightingProfile.DUSK;
+    public LightingProfile lighting(){return lightingProfile;}
+    /** Stage-entry barrier: retired jobs finish against their old immutable palette. */
+    public void lighting(LightingProfile next){
+        if(next==lightingProfile)return;
+        synchronized(frameLock){rotationGeneration++;closed=true;}
+        Thread old=rotationWorker;
+        if(old!=null && old!=Thread.currentThread())try{old.join();}catch(InterruptedException e){Thread.currentThread().interrupt();throw new IllegalStateException("Lighting preparation interrupted",e);}
+        if(terrain!=null){terrain.close();terrain=null;}
+        synchronized(frameLock){
+            atlases.clear();sourceImages.clear();frameImages.clear();frameBytes=0;
+            rotationPlan=null;pinnedAtlases.clear();rotationStarted=rotationWorking=rotationsReady=false;closed=false;lightingProfile=next;
+        }
+        layers.clear();layerBytes=0;
+        if(retainedSurfaces!=null)retainedSurfaces.clear();
+    }
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path=new Path();
     private final Paint spritePaint=new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -184,7 +200,7 @@ public final class CanvasPainter implements Painter {
         double size=StrictMath.ceil(layer.width()*density)*StrictMath.ceil(layer.height()*density)*4;
         if(!(size>0) || size>StaticLayer.cacheBudgetBytes() || !Double.isFinite(size))return false;
         long bytes=(long)size;
-        if(terrain==null)terrain=new TerrainRasterizer(assets);
+        if(terrain==null)terrain=new TerrainRasterizer(assets,lightingProfile);
         if(terrain.request(key,layer,density,bytes,StaticLayer.cacheBudgetBytes()-layerBytes,visible))return true;
         // Visible misses must still progress when the retained cache is full.
         // Speculation never evicts visible cache entries to make room for itself.
@@ -381,7 +397,7 @@ public final class CanvasPainter implements Painter {
             for(int f=0;f<count;f++) {
                 if(!owner.currentPlan(generation))throw new java.util.concurrent.CancellationException("Preparation superseded or painter closed");
                 String path="sprites/"+SpriteAtlas.file(atlas,f);
-                String key=SpriteGrade.cacheKey(atlas,path);
+                String key=SpriteGrade.cacheKey(atlas,path,owner.lightingProfile);
                 Bitmap image=atlas==SpriteAtlas.FACTORY?null:sources.get(key);
                 if(image==null) {
                     try(InputStream input=assets.open(path)) {
@@ -393,7 +409,7 @@ public final class CanvasPainter implements Painter {
                     if(SpriteGrade.applies(atlas)) {
                         int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
                         for(int y=0;y<h;y++) {
-                            image.getPixels(row,0,w,0,y,w,1);SpriteGrade.applyArgb(atlas,row);
+                            image.getPixels(row,0,w,0,y,w,1);SpriteGrade.applyArgb(atlas,row,owner.lightingProfile);
                             image.setPixels(row,0,w,0,y,w,1);
                         }
                     }
@@ -550,15 +566,15 @@ public final class CanvasPainter implements Painter {
     }
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
         if(recordingSurfaceMesh && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
-            surfaceMesh.add(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness);return;
+            surfaceMesh.add(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness);return;
         }
         if(liveSurfaceDepth>0 && !profileFlatSurfaces && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
-            liveSurfaceMesh.add(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness);return;
+            liveSurfaceMesh.add(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness);return;
         }
         flushSurfaceMesh();
         if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
-        if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))
+        if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness))
             Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) { flushSurfaceMesh();

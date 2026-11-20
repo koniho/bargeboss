@@ -2,6 +2,8 @@ package com.bargeboss.game;
 
 /** Project the ground plane; upright sprites and labels keep their source perspective. */
 public final class RiverPainter implements Painter {
+    public LightingProfile lighting(){return painter.lighting();}
+    public void lighting(LightingProfile profile){painter.lighting(profile);}
     public static final float SCALE=RiverCamera.DEFAULT.scale, LEFT=RiverCamera.DEFAULT.left, TOP=RiverCamera.DEFAULT.top;
     public static final float WORLD_LEFT=140, WORLD_RIGHT=460, WORLD_TOP=148, WORLD_BOTTOM=836;
     private final Painter painter;

@@ -14,11 +14,13 @@ final class TerrainRasterizer implements AutoCloseable {
         Job(long key,StaticLayer layer,float density,long bytes,boolean visible){this.key=key;this.layer=layer;this.density=density;this.bytes=bytes;this.visible=visible;this.demanded=visible;}
     }
     private final AssetManager assets;
+    private final LightingProfile lighting;
     private final LinkedHashMap<Long,Job> jobs=new LinkedHashMap<Long,Job>(8,.75f,true);
     private Thread thread;private boolean closed;private int frame;
     private long reserved,completedNs;private int completed;
     private volatile long sourceBytes;
-    TerrainRasterizer(AssetManager assets){this.assets=assets;}
+    TerrainRasterizer(AssetManager assets){this(assets,LightingProfile.DUSK);}
+    TerrainRasterizer(AssetManager assets,LightingProfile lighting){this.assets=assets;this.lighting=lighting;}
     synchronized void beginFrame(){frame++;for(Job job:jobs.values())job.visible=false;}
     synchronized void trimTo(long allowance) {
         Iterator<Job> entries=jobs.values().iterator();
@@ -63,7 +65,7 @@ final class TerrainRasterizer implements AutoCloseable {
     }
     private void work() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        CanvasPainter painter=new CanvasPainter(assets,false);
+        CanvasPainter painter=new CanvasPainter(assets,false);painter.lighting(lighting);
         try {
             while(true) {
                 Job job;

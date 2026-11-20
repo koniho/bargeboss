@@ -1,0 +1,22 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-water-textures",
+    "--ios-scene=tutorial-yard",
+    "--ios-lighting=1",
+    "--ios-warmup=30",
+    "--ios-frames=60"
+  ],
+  "frames": 60,
+  "mean_ms": 24.26028166666668,
+  "median_ms": 20.0631,
+  "p95_ms": 33.3457,
+  "max_ms": 35.8987,
+  "fps": 41.219636842633506,
+  "draw_median_ms": 15.2551,
+  "draw_p95_ms": 16.0183,
+  "draw_max_ms": 18.3124,
+  "gpu_median_ms": 0.0945,
+  "gpu_p95_ms": 0.1057
+}

@@ -2,6 +2,8 @@ package com.bargeboss.game;
 
 /** Uniform opacity for one scene object, including its animated parts. */
 public final class OpacityPainter implements Painter {
+    public LightingProfile lighting(){return p.lighting();}
+    public void lighting(LightingProfile profile){p.lighting(profile);}
     private final Painter p; private final float alpha;
     public OpacityPainter(Painter p,float alpha) { this.p=p; this.alpha=Physics.clamp(alpha,0,1); }
     private int color(int c) { return (Math.round((c>>>24)*alpha)<<24)|(c&0xffffff); }

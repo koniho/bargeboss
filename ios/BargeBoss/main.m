@@ -7,6 +7,8 @@
 #import "com/bargeboss/game/ProfileScenario.h"
 #endif
 #import "com/bargeboss/game/Game.h"
+#import "com/bargeboss/game/LevelAssets.h"
+#import "com/bargeboss/game/LightingProfile.h"
 #import "com/bargeboss/game/FrameGate.h"
 #import "com/bargeboss/game/Viewport.h"
 #import "IOSClass.h"
@@ -14,6 +16,7 @@
 
 @interface BBGameView : UIView
 @property(nonatomic,strong) BBGame *game;
+@property(nonatomic,strong) BBLevelAssets_Plan *preparedPlan;
 @property(nonatomic,strong) BBEngineSound *audio;
 @property(nonatomic,strong) BBFrameGate *frames;
 @property(nonatomic,strong) BBViewport *viewport;
@@ -62,6 +65,7 @@
             self.profileWarmup=30;self.profileSamples=120;
             self.profileReplay=[arguments containsObject:@"--ios-replay"];
             for(NSString *arg in arguments) {
+                if([arg hasPrefix:@"--ios-lighting="]) [self.game selectLightingWithInt:[[arg substringFromIndex:15] intValue]];
                 if([arg hasPrefix:@"--ios-zoom="]) self.profileZoom=[[arg substringFromIndex:11] floatValue];
                 if([arg hasPrefix:@"--ios-scene="]) self.profileScene=[arg substringFromIndex:12];
                 if([arg hasPrefix:@"--ios-warmup="]) self.profileWarmup=MAX(0,MIN(1800,[[arg substringFromIndex:13] integerValue]));
@@ -113,7 +117,17 @@
     [self.game cancelInputs]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects];
     [self requestRedraw];
 }
+- (void)prepareLighting {
+    BBLightingProfile *profile=[[self.game activeGame] lighting];
+    BBLevelAssets_Plan *plan=[BBLevelAssets upcomingWithBBGame:self.game];
+    if([self.painter lighting]!=profile || self.preparedPlan!=plan){
+        self.preparedPlan=plan;
+        [self.painter prepareSceneWithBBLightingProfile:profile withIntArray:[plan preparationAtlases]];
+        self.lastTime=0;
+    }
+}
 - (void)frame:(CADisplayLink *)link {
+    [self prepareLighting];
     // Opt-in frozen-scene measurement: no saved progress, simulation or input.
     // Draw-start intervals include deferred Core Graphics playback after drawRect.
     if(self.profiling) {[self setNeedsDisplay];return;}
@@ -126,7 +140,7 @@
         case 4: [self.delivery notificationOccurred:UINotificationFeedbackTypeSuccess]; break;
         default: break;
     }
-    [self saveProgress:NO]; self.lastTime=link.timestamp;
+    [self saveProgress:NO]; self.lastTime=self.lastTime>0?link.timestamp:CACurrentMediaTime();
     if([self.frames needsFrameWithBBGame:self.game]) [self setNeedsDisplay];
 }
 // iOS has no system Back button; the standard left-edge gesture transports
@@ -191,6 +205,7 @@
     }
 }
 - (void)drawRect:(CGRect)rect {
+    [self prepareLighting];
     CFTimeInterval renderStart=self.profiling?CACurrentMediaTime():0;
     [self recordProfileFrame];
     CGContextRef ctx=UIGraphicsGetCurrentContext(); if(!ctx) return;
@@ -273,6 +288,7 @@
     BBMetalPainter *painter=(BBMetalPainter *)self.painter;
     UIEdgeInsets insets=self.safeAreaInsets;CGFloat density=self.contentScaleFactor;
     CGPoint offset=CGPointMake((insets.left+[self.viewport offsetX])*density,(insets.top+[self.viewport offsetY])*density);
+    [self prepareLighting];
     CFTimeInterval start=self.profiling?CACurrentMediaTime():0;
     if(![painter startLayer:(CAMetalLayer *)layer scale:[self.viewport zoomFactor]*density offset:offset
                       bounds:CGSizeMake([self.viewport logicalWidth],[self.viewport logicalHeight])]) return;

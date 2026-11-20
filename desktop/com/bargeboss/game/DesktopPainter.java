@@ -25,8 +25,21 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
 public final class DesktopPainter implements Painter {
-    private static final Map<Integer,BufferedImage[]> ATLASES=new HashMap<Integer,BufferedImage[]>();
-    private static final Map<String,BufferedImage> SOURCE_IMAGES=new HashMap<String,BufferedImage>();
+    private static final class Images {
+        LightingProfile profile=LightingProfile.DUSK;
+        final Map<Integer,BufferedImage[]> atlases=new HashMap<Integer,BufferedImage[]>();
+        final Map<String,BufferedImage> sources=new HashMap<String,BufferedImage>();
+    }
+    private static final ThreadLocal<Images> IMAGES=new ThreadLocal<Images>(){protected Images initialValue(){return new Images();}};
+    private LightingProfile lightingProfile=LightingProfile.DUSK;
+    public LightingProfile lighting(){return lightingProfile;}
+    public void prepareScene(LightingProfile profile,int[] atlases){lighting(profile);for(int id:atlases)atlas(id);}
+    public void lighting(LightingProfile profile){
+        lightingProfile=profile;Images images=IMAGES.get();
+        if(images.profile==profile)return;
+        images.atlases.clear();images.sources.clear();images.profile=profile;
+        LAYERS.get().images.clear();LAYERS.get().bytes=0;
+    }
     private static final ThreadLocal<BufferedImage> BLEND_BUFFER=new ThreadLocal<BufferedImage>();
     private static final ThreadLocal<BufferedImage> LAYER_SCRATCH=new ThreadLocal<BufferedImage>();
     private static final ThreadLocal<LayerCache> LAYERS=new ThreadLocal<LayerCache>() {
@@ -54,8 +67,9 @@ public final class DesktopPainter implements Painter {
         visible.subtract(new java.awt.geom.Area(holes));g.setClip(visible);
     }
     public void popClip(){g.setClip(clipStack.remove(clipStack.size()-1));}
-    public DesktopPainter(Graphics2D g) {this(g,false);}
-    private DesktopPainter(Graphics2D g,boolean paintingLayer) {this.g=g;this.paintingLayer=paintingLayer;}
+    public DesktopPainter(Graphics2D g) {this(g,false,IMAGES.get().profile);}
+    private DesktopPainter(Graphics2D g,boolean paintingLayer) {this(g,paintingLayer,LightingProfile.DUSK);}
+    private DesktopPainter(Graphics2D g,boolean paintingLayer,LightingProfile profile){this.g=g;this.paintingLayer=paintingLayer;lighting(profile);}
     public void beginFrame() {if(!paintingLayer) LAYERS.get().builds=0;}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
@@ -76,7 +90,7 @@ public final class DesktopPainter implements Painter {
             try {
                 offscreen.setRenderingHints(g.getRenderingHints());offscreen.scale(density,density);
                 offscreen.clip(new Rectangle2D.Float(0,0,layer.width(),layer.height()));
-                layer.paint(new DesktopPainter(offscreen,true));
+                layer.paint(new DesktopPainter(offscreen,true,lightingProfile));
             } finally {offscreen.dispose();}
             cache.images.put(key,image);cache.bytes+=bytes;
         }
@@ -94,7 +108,7 @@ public final class DesktopPainter implements Painter {
             Graphics2D target=(Graphics2D)g.create();
             try {
                 target.clip(new Rectangle2D.Float(x,y,layer.width()*scale,layer.height()*scale));
-                target.translate(x,y);target.scale(scale,scale);layer.paint(new DesktopPainter(target,true));
+                target.translate(x,y);target.scale(scale,scale);layer.paint(new DesktopPainter(target,true,lightingProfile));
             } finally {target.dispose();}
             return;
         }
@@ -127,7 +141,7 @@ public final class DesktopPainter implements Painter {
                 offscreen.setComposite(AlphaComposite.SrcOver);offscreen.setRenderingHints(g.getRenderingHints());
                 offscreen.translate(1-tx,1-ty);offscreen.scale(density,density);
                 offscreen.clip(new Rectangle2D.Float(0,0,layer.width(),layer.height()));
-                layer.paint(new DesktopPainter(offscreen,true));
+                layer.paint(new DesktopPainter(offscreen,true,lightingProfile));
             } finally {offscreen.dispose();}
             Graphics2D target=(Graphics2D)g.create();
             try {
@@ -139,13 +153,13 @@ public final class DesktopPainter implements Painter {
             } finally {target.dispose();}
         }
     }
-    private static synchronized BufferedImage[] atlas(int id) {
-        BufferedImage[] frames=ATLASES.get(id); if(frames!=null) return frames;
-        Map<String,BufferedImage> sources=SOURCE_IMAGES;
+    private BufferedImage[] atlas(int id) {
+        BufferedImage[] frames=IMAGES.get().atlases.get(id); if(frames!=null) return frames;
+        Map<String,BufferedImage> sources=IMAGES.get().sources;
         frames=new BufferedImage[SpriteAtlas.count(id)];
         for(int f=0;f<frames.length;f++) {
             String path="assets/sprites/"+SpriteAtlas.file(id,f);
-            String key=SpriteGrade.cacheKey(id,path);
+            String key=SpriteGrade.cacheKey(id,path,lightingProfile);
             BufferedImage image=sources.get(key);
             if(image==null) {
                 try(InputStream input=DesktopPainter.class.getResourceAsStream("/"+path)) {
@@ -156,7 +170,7 @@ public final class DesktopPainter implements Painter {
                     int w=image.getWidth(),h=image.getHeight();int[] row=new int[w];
                     BufferedImage graded=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
                     for(int y=0;y<h;y++) {
-                        image.getRGB(0,y,w,1,row,0,w);SpriteGrade.applyArgb(id,row);graded.setRGB(0,y,w,1,row,0,w);
+                        image.getRGB(0,y,w,1,row,0,w);SpriteGrade.applyArgb(id,row,lightingProfile);graded.setRGB(0,y,w,1,row,0,w);
                     }
                     image=graded;
                 }
@@ -166,7 +180,7 @@ public final class DesktopPainter implements Painter {
             int right=Math.round(image.getWidth()*SpriteAtlas.sourceRight(id,f)),bottom=Math.round(image.getHeight()*SpriteAtlas.sourceBottom(id,f));
             frames[f]=image.getSubimage(x,y,right-x,bottom-y);
         }
-        ATLASES.put(id,frames); return frames;
+        IMAGES.get().atlases.put(id,frames); return frames;
     }
     public void normalSprite(int frame,float x,float y,float w,float h,float nx,float ny,float nz,float radius,int color,float alpha){
         BufferedImage source=atlas(SpriteAtlas.MOORED_NORMALS)[frame],lit=new BufferedImage(source.getWidth(),source.getHeight(),BufferedImage.TYPE_INT_ARGB);

@@ -1,5 +1,6 @@
 #import "com/bargeboss/game/ShorelineMaterial.h"
 #import "BBPainter.h"
+#import "com/bargeboss/game/LightingProfile.h"
 #import "com/bargeboss/game/SceneLighting.h"
 #import "com/bargeboss/game/VesselShoreLight.h"
 #import "IOSPrimitiveArray.h"
@@ -50,6 +51,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 
 @interface BBNativePainter ()
+@property(nonatomic,strong) BBLightingProfile *lightingProfile;
 @property(nonatomic,strong) NSMutableDictionary<NSNumber *,NSArray<UIImage *> *> *spriteAtlases;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *spriteSources;
 @property(nonatomic,strong) NSMutableDictionary<NSString *,UIImage *> *staticLayers;
@@ -66,8 +68,22 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 @end
 
 @implementation BBNativePainter
+- (BBLightingProfile *)lighting {return self.lightingProfile;}
+- (void)lightingWithBBLightingProfile:(BBLightingProfile *)profile {
+    if(self.lightingProfile==profile)return;
+    self.lightingProfile=profile;
+    [self.spriteAtlases removeAllObjects];[self.spriteSources removeAllObjects];
+    [self.decodedFrames removeAllObjects];[self.decodedFrameOrder removeAllObjects];self.decodedFrameBytes=0;
+    [self.staticLayers removeAllObjects];[self.staticLayerOrder removeAllObjects];self.staticLayerBytes=0;
+}
+- (void)prepareSceneWithBBLightingProfile:(BBLightingProfile *)profile withIntArray:(IOSIntArray *)atlases {
+    [self lightingWithBBLightingProfile:profile];
+    for(int i=0;i<atlases->size_;i++)for(int f=0;f<[BBSpriteAtlas countWithInt:IOSIntArray_Get(atlases,i)];f++)[self frame:f atlas:IOSIntArray_Get(atlases,i)];
+}
+
 - (instancetype)init {
     if((self=[super init])) {
+        self.lightingProfile=[BBLightingProfile presetWithInt:2];
         self.spriteAtlases=[NSMutableDictionary dictionary]; self.spriteSources=[NSMutableDictionary dictionary];
         self.staticLayers=[NSMutableDictionary dictionary];self.staticLayerOrder=[NSMutableArray array];
         self.decodedFrames=[NSMutableDictionary dictionary];self.decodedFrameOrder=[NSMutableArray array];
@@ -189,7 +205,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     if(!decode) {CGColorSpaceRelease(space);[NSException raise:@"SpriteGradeDecode" format:@"Cannot decode scenery RGBA buffer"];}
     CGContextSetBlendMode(decode,kCGBlendModeCopy);CGContextDrawImage(decode,CGRectMake(0,0,width,height),image.CGImage);
     CGContextRelease(decode);
-    [BBSpriteGrade applyPremultipliedRgbaWithInt:atlas withByteArray:pixels];
+    [BBSpriteGrade applyPremultipliedRgbaWithInt:atlas withByteArray:pixels withBBLightingProfile:self.lightingProfile];
     // Retain this one graded buffer for CGImage; do not copy a second full-size raster.
     void *owner=(__bridge_retained void *)pixels;
     CGDataProviderRef provider=CGDataProviderCreateWithData(owner,pixels->buffer_,bytes,BBReleaseGradePixels);
@@ -207,7 +223,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     NSMutableDictionary<NSString *,UIImage *> *sources=self.spriteSources;
     for(int f=0;f<count;f++) {
         NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:f];
-        NSString *key=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file];
+        NSString *key=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file withBBLightingProfile:self.lightingProfile];
         UIImage *image=sources[key];
         if(!image) {
             @autoreleasepool {
@@ -241,7 +257,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     }
     if(![BBSpriteGrade appliesWithInt:atlas]) {
         NSString *file=[BBSpriteAtlas fileWithInt:atlas withInt:frame];
-        NSString *sourceKey=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file];
+        NSString *sourceKey=[BBSpriteGrade cacheKeyWithInt:atlas withNSString:file withBBLightingProfile:self.lightingProfile];
         UIImage *sheet=BBDecodedSource(self.spriteSources[sourceKey],sourceKey);
         float sw=CGImageGetWidth(sheet.CGImage),sh=CGImageGetHeight(sheet.CGImage);
         float x=roundf(sw*[BBSpriteAtlas sourceLeftWithInt:atlas withInt:frame]),y=roundf(sh*[BBSpriteAtlas sourceTopWithInt:atlas withInt:frame]);
@@ -304,7 +320,7 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
     [BBShorelineMaterial fallbackWithBBPainter:self withFloatArray:xy withFloatArray:uv withFloat:phase withFloat:energy withInt:kind withInt:argb];
 }
 - (void)surfacePolygonWithFloatArray:(IOSFloatArray *)xy withFloatArray:(IOSFloatArray *)uv withInt:(jint)material withInt:(jint)argb withFloat:(jfloat)wetness {
-    [self polyWithFloatArray:xy withInt:[BBSceneLighting surfaceColorWithInt:argb withInt:material]];
+    [self polyWithFloatArray:xy withInt:[self.lightingProfile surfaceWithInt:argb withInt:material]];
 }
 - (void)materialWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)kind withFloat:(jfloat)detail withFloat:(jfloat)amount withInt:(jint)argb {
     [BBEffectMaterial fallbackWithBBPainter:self withFloat:x withFloat:y withFloat:ax withFloat:ay withFloat:bx withFloat:by withInt:kind withFloat:detail withFloat:amount withInt:argb];

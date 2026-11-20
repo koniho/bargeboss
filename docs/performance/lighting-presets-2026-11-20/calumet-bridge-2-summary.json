@@ -1,0 +1,21 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=calumet-bridge",
+    "--ios-lighting=2",
+    "--ios-warmup=30",
+    "--ios-frames=60"
+  ],
+  "frames": 60,
+  "mean_ms": 16.668865000000004,
+  "median_ms": 16.6652,
+  "p95_ms": 16.7587,
+  "max_ms": 18.0687,
+  "fps": 59.99208704371892,
+  "draw_median_ms": 8.6745,
+  "draw_p95_ms": 8.9643,
+  "draw_max_ms": 10.014,
+  "gpu_median_ms": 0.0714,
+  "gpu_p95_ms": 0.0987
+}

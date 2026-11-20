@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class SmokePuff {
     public static final int SOOT=0x1c201b,INDUSTRIAL=0x363326;
     private static final StaticLayer SOOT_KERNEL=kernel(SOOT,0x43000000),DIRTY_KERNEL=kernel(INDUSTRIAL,0x43000001);
+    private static final StaticLayer[] PROFILE_KERNELS={kernel(LightingProfile.DAWN.smoke,0x43000002),kernel(LightingProfile.DAYLIGHT.smoke,0x43000003),SOOT_KERNEL,kernel(LightingProfile.NIGHT.smoke,0x43000004)};
     private SmokePuff() {}
     private static StaticLayer kernel(final int rgb,final int id) {
         return new StaticLayer() {
@@ -23,6 +24,6 @@ public final class SmokePuff {
     public static void fallback(Painter p,float x,float y,float radius,int argb) {
         if(radius<=0 || (argb>>>24)==0)return;
         float scale=radius/20;
-        p.layer((argb&0xffffff)==SOOT?SOOT_KERNEL:DIRTY_KERNEL,x-radius,y-radius,scale,(argb>>>24)/255f);
+        p.layer(p.lighting()!=LightingProfile.DUSK?PROFILE_KERNELS[p.lighting().id]:(argb&0xffffff)==SOOT?SOOT_KERNEL:DIRTY_KERNEL,x-radius,y-radius,scale,(argb>>>24)/255f);
     }
 }

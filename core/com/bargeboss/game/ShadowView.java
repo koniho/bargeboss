@@ -6,6 +6,7 @@ public final class ShadowView {
     /** Smoothly combine nearby lamps; no nearest-lamp switch can snap a shadow. */
     static void light(Game g,float wx,float wy,float[] out) {
         float dx=.48f,dy=.72f,energy=0;
+        if(g.lighting()!=LightingProfile.DUSK){dx=-g.lighting().sunX;dy=-g.lighting().sunY;}
         for(int side=0;!g.montroseStage() && side<2;side++)for(int lamp=HarborAtmosphere.firstLamp(g);lamp<=5;lamp++) {
             float lx=HarborAtmosphere.lampBank(side),ly=HarborAtmosphere.lampY(lamp);
             if(g.tutorial!=null && TrainingChannel.contains(lx,ly))continue;
@@ -22,7 +23,7 @@ public final class ShadowView {
     private static void mask(Painter p,int source,int frame,float x,float y,float size,float dx,float dy,float flatten,float alpha,boolean soft) {
         int atlas=ShadowArt.forSource(source),f=frame+(soft?SpriteAtlas.count(source):0);
         float w=size*SpriteAtlas.widthScale(atlas,f),h=size*SpriteAtlas.heightScale(atlas,f);
-        p.spriteAffine(atlas,f,x,y,w,0,-dx*h,(flatten-dy)*h,alpha);
+        p.spriteAffine(atlas,f,x,y,w,0,-dx*h,(flatten-dy)*h,alpha*p.lighting().shadowStrength);
     }
     static void scenery(Game g,Painter p,int source,int frame,float wx,float wy,float rise,float size) {
         RiverCamera c=g.layout.camera;float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-rise*c.scale,s=size*c.scale;

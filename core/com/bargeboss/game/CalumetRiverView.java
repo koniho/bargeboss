@@ -8,7 +8,7 @@ public final class CalumetRiverView {
     static float depth(Game g,int i){LandmarkBridge b=LocationBridges.calumet()[i];return g.layout.camera.screenY(b.x,b.y);}
     static void landmark(Game g,Painter p,int i){LocationBridges.calumet()[i].draw(g,p,g.passages.amount(i),g.passages.passable(i));}
     public static void draw(Game g,Painter p){
-        p.rect(0,0,g.layout.width,g.layout.height,0xff151b25);
+        p.rect(0,0,g.layout.width,g.layout.height,g.lighting()==LightingProfile.DUSK?0xff151b25:g.lighting().water);
         WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
         ShorelineView.water(g,p);LocationBridges.shadows(g,p);CalumetRiverTiles.walls(g,p);CalumetRiverTiles.ground(g,p);ShorelineView.walls(g,p);
         VesselShoreLight.draw(g,p);

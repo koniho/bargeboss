@@ -272,10 +272,11 @@ public final class ArticulatedModel {
         Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;}
         void paint(Painter p,RiverCamera c,float alpha) {
             float[] xy=new float[xyz.length/3*2];for(int i=0,j=0;i<xyz.length;i+=3,j+=2){xy[j]=c.screenX(xyz[i],xyz[i+1]);xy[j+1]=c.screenY(xyz[i],xyz[i+1])-xyz[i+2]*Z_SCALE*c.scale;}
-            float light=.62f+.38f*Math.max(0,-nx*.35f-ny*.25f+nz*.9f);
+            float light=p.lighting().face(nx,ny,nz);
             int r=(int)((color>>16&255)*light),g=(int)((color>>8&255)*light),b=(int)((color&255)*light);
             int shaded=((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b;
-            if(material<0)p.poly(xy,material==SurfaceMaterial.EMISSIVE?shaded:SceneLighting.sceneryColor(shaded));
+            if(material!=SurfaceMaterial.EMISSIVE)shaded=SceneLighting.scale(shaded,p.lighting().sunColor>>16&255,p.lighting().sunColor>>8&255,p.lighting().sunColor&255);
+            if(material<0)p.poly(xy,material==SurfaceMaterial.EMISSIVE?shaded:p.lighting().scenery(shaded));
             else p.surfacePolygon(xy,uv,material,shaded,material==SurfaceMaterial.CONCRETE?.12f:.04f);
         }
     }

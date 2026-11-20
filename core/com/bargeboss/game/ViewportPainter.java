@@ -3,6 +3,8 @@ package com.bargeboss.game;
 /** Reject invisible submissions before crossing the native drawing boundary.
  * Keeps intersecting primitives intact: hosts still do their usual edge clipping. */
 public final class ViewportPainter implements Painter {
+    public LightingProfile lighting(){return target.lighting();}
+    public void lighting(LightingProfile profile){target.lighting(profile);}
     private final Painter target;
     private final float width,height;
     public ViewportPainter(Painter target,float width,float height) {this.target=target;this.width=width;this.height=height;}

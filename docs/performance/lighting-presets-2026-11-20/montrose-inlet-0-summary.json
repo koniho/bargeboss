@@ -1,0 +1,21 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=montrose-inlet",
+    "--ios-lighting=0",
+    "--ios-warmup=30",
+    "--ios-frames=60"
+  ],
+  "frames": 60,
+  "mean_ms": 16.666256666666666,
+  "median_ms": 16.6658,
+  "p95_ms": 17.2269,
+  "max_ms": 17.4362,
+  "fps": 60.00147603631049,
+  "draw_median_ms": 12.8699,
+  "draw_p95_ms": 13.3276,
+  "draw_max_ms": 13.9013,
+  "gpu_median_ms": 0.0699,
+  "gpu_p95_ms": 0.1178
+}

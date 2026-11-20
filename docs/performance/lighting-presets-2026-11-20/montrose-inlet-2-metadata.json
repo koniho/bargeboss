@@ -1,0 +1,19 @@
+{
+  "material_patches" : 18,
+  "water_foam_patches" : 44,
+  "direct_layer_fallbacks" : 5,
+  "rope_patches" : 0,
+  "surface_patches" : 4,
+  "smoke_patches" : 5,
+  "lighting_preparation_ms" : 408.33583334460855,
+  "peak_frame_texture_bytes" : 19573372,
+  "texture_bytes" : 147732816,
+  "lighting_profile" : "industrial-dusk-v1",
+  "water_reflection_patches" : 3,
+  "evictions" : 0,
+  "vertex_capacity_bytes" : 16777216,
+  "pending_preparations" : 0,
+  "uploads" : 1552,
+  "water_shaders" : true,
+  "texture_budget" : 167772160
+}

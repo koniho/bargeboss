@@ -92,6 +92,7 @@ public final class MainActivity extends Activity {
         private android.content.SharedPreferences progress;
         private int savedVersion,attemptedVersion;
         private LevelAssets.Plan preparedPlan;
+        private LightingProfile preparedLighting;
         GameView() {
             super(MainActivity.this);
             game.settings.developerWaves=(getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0;
@@ -105,7 +106,13 @@ public final class MainActivity extends Activity {
         }
         private void prepareLevelAssets() {
             LevelAssets.Plan plan=LevelAssets.upcoming(game);
-            if(plan!=preparedPlan){preparedPlan=plan;painter.prepareRotations(plan.preparationAtlases());}
+            LightingProfile lighting=game.activeGame().lighting();
+            if(plan!=preparedPlan || lighting!=preparedLighting){
+                boolean changed=lighting!=painter.lighting();preparedPlan=plan;preparedLighting=lighting;
+                painter.lighting(lighting);painter.prepareRotations(plan.preparationAtlases());
+                if(changed)try{painter.profileAwaitRotations(0);last=0;}catch(InterruptedException e){Thread.currentThread().interrupt();}
+            }
+            if(game.activeGame().mode==Game.PLAY && !painter.profileRotationsReady())try{painter.profileAwaitRotations(0);last=0;}catch(InterruptedException e){Thread.currentThread().interrupt();}
         }
         void saveProgress(boolean flush) {
             if(developer!=null)return;
@@ -123,6 +130,8 @@ public final class MainActivity extends Activity {
         void stop() { audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
             if(!running) return;
+            prepareLevelAssets();
+            if(last==0)now=System.nanoTime();
             if(last!=0) {if(developer==null)game.advance((now-last)/1e9);else developer.advance((now-last)/1e9);} last=now;
             audio.update(game);
             int event=game.pollHaptic();

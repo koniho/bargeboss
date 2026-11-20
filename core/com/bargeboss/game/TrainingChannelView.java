@@ -8,7 +8,7 @@ public final class TrainingChannelView {
     private TrainingChannelView() {}
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;Painter p=new RiverPainter(canvas,c);
-        canvas.rect(0,0,g.layout.width,g.layout.height,HarborAtmosphere.WATER_BASE);
+        canvas.rect(0,0,g.layout.width,g.layout.height,g.lighting().water);
         if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0)WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
         NavigationLights.reflections(g,canvas);
