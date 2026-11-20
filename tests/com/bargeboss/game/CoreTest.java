@@ -141,6 +141,7 @@ public final class CoreTest {
         MontroseBoatHoistTest.run();
         MontroseEntranceShoreTest.run();
         MontroseWaterIndexTest.run();
+        MontroseBeachTest.run();
         CalumetMapTest.run();
         IndianaHarborTest.run();
         MarinaArtTest.run();

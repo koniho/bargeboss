@@ -77,15 +77,16 @@ public final class MontroseShoreArt {
             float ax=x-coast[prev],ay=y-coast[prev+1],bx=coast[next]-x,by=coast[next+1]-y;if(k==0){ax=bx;ay=by;}if(k==n-1){bx=ax;by=ay;}
             float al=Physics.length(ax,ay),bl=Physics.length(bx,by),nx=-ay/al-by/bl,ny=ax/al+bx/bl,len=Physics.length(nx,ny);nx/=len;ny/=len;
             if(MontroseHarbor.openWater(x+nx*8,y+ny*8)){nx=-nx;ny=-ny;}float gain=1/Math.max(.65f,Math.abs(nx*(-by/bl)+ny*bx/bl));nx*=gain;ny*=gain;
+            // Keep the original survey transition (vertex 38) independent of northern coast length.
             // The lakeside promenade runs above the broad terrace, not across its steps.
-            boolean lake=MontroseHarbor.planX(x)>=546 && MontroseHarbor.planY(y)>=1100 || MontroseHarbor.planX(x)>=1256 && MontroseHarbor.planY(y)>=700 && k>coast.length/4;
+            boolean lake=MontroseHarbor.planX(x)>=546 && MontroseHarbor.planY(y)>=1100 || MontroseHarbor.planX(x)>=1256 && MontroseHarbor.planY(y)>=700 && k>38;
             float offset=lake?STEP_COUNT*TREAD+12:15;
             offset+=MontroseEntranceShore.walkwayInset(MontroseHarbor.planX(x),MontroseHarbor.planY(y));
             vertices[k]=new float[]{x+nx*(offset-9),y+ny*(offset-9),x+nx*(offset+9),y+ny*(offset+9)};
         }
         float[][] out=new float[n-1][];for(int k=0;k<n-1;k++){float[] a=vertices[k],b=vertices[k+1];out[k]=new float[]{a[0],a[1],b[0],b[1],b[2],b[3],a[2],a[3]};}return out;
     }
-    static void promenade(Game g,Painter p){for(float[] q:PROMENADE)if(visible(g,q,MontroseHarbor.LAND_RISE))surface(p,g.layout.camera,q,MontroseHarbor.LAND_RISE,SurfaceMaterial.CONCRETE,0xff92958b,0);}
+    static void promenade(Game g,Painter p){for(float[] q:PROMENADE)if(!MontroseBeach.sandy(MontroseHarbor.planX(q[0]),MontroseHarbor.planY(q[1])) && visible(g,q,MontroseHarbor.LAND_RISE))surface(p,g.layout.camera,q,MontroseHarbor.LAND_RISE,SurfaceMaterial.CONCRETE,0xff92958b,0);}
     static void docks(Game g,Painter p){RiverCamera c=g.layout.camera;
         for(float[] e:DOCK_EDGES){if(visible(g,e,MontroseHarbor.DOCK_RISE))wall(p,c,e[0],e[1],e[2],e[3],0,MontroseHarbor.DOCK_RISE,SurfaceMaterial.CORRUGATED,0xff414747,.42f);}
         for(int dock=0;dock<MontroseHarbor.DOCKS.length;dock++){float[] q=MontroseHarbor.DOCKS[dock];if(!visible(g,q,MontroseHarbor.DOCK_RISE))continue;float[] xy=new float[8];for(int i=0;i<8;i+=2){xy[i]=c.screenX(q[i],q[i+1]);xy[i+1]=c.screenY(q[i],q[i+1])-MontroseHarbor.DOCK_RISE*c.scale;}

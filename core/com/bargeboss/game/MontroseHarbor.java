@@ -11,8 +11,8 @@ public final class MontroseHarbor {
     public static float planY(float y){return (y+1300)/MAP_SCALE;}
     public static final float SLIP_X=mapX(1015),SLIP_Y=mapY(422),SLIP_ANGLE=-1.726f;
     // Ordered survey-image landmarks, traced from the official 1824x1368 dock map.
-    // The two bottom/right extensions are open lake, outside the reference crop.
-    private static final float[] COAST_MAP={210,1600,225,1368,242,1210,257,1050,255,980,238,932,205,891,155,843,111,769,84,691,76,620,83,551,108,479,146,410,194,359,255,323,332,296,455,277,650,248,820,220,1000,188,1185,153,1350,130,1440,125,1515,137,1585,165,1645,203,1695,252,1725,308,1736,365,1726,424,1703,479,1664,543,1623,599,1563,663,1494,730,1423,794,1348,851,1264,907,1176,949,1090,970,1005,977,930,973,853,955,779,928,716,894,653,853,596,811,554,783,527,777,498,783,469,800,441,824,419,855,405,894,401,935,409,981,426,1023,452,1064,491,1100,546,1128,634,1151,763,1180,910,1208,1049,1230,1150,1234,1256,1210,1360,1166,1468,1101,1567,1023,1665,925,1747,824,1824,700,1935,530,2050,370,2200,220};
+    // Harbor trace retained; northern beach/breakwater is a representative Maps reference extension.
+    private static final float[] COAST_MAP={210,1600,225,1368,242,1210,257,1050,255,980,238,932,205,891,155,843,111,769,84,691,76,620,83,551,108,479,146,410,194,359,255,323,332,296,455,277,650,248,820,220,1000,188,1185,153,1350,130,1440,125,1515,137,1585,165,1645,203,1695,252,1725,308,1736,365,1726,424,1703,479,1664,543,1623,599,1563,663,1494,730,1423,794,1348,851,1264,907,1176,949,1090,970,1005,977,930,973,853,955,779,928,716,894,653,853,596,811,554,783,527,777,498,783,469,800,441,824,419,855,405,894,401,935,409,981,426,1023,452,1064,491,1100,546,1128,634,1151,763,1180,910,1208,1049,1230,1150,1234,1256,1210,1360,1166,1468,1101,1567,1023,1665,925,1747,824,1824,700,1935,530,2050,370,2180,160,2185,-80,2155,-330,2140,-580,2180,-860,2240,-1150,2290,-1370,2285,-1440,2240,-1490,2180,-1500,2125,-1470,2095,-1410,2115,-1350,2133,-1360,2118,-1410,2140,-1450,2183,-1472,2228,-1465,2260,-1428,2263,-1375,2210,-1160,2150,-870,2107,-610,2070,-570,1990,-552,1870,-560,1710,-595,1520,-660,1320,-750,1100,-860,860,-1000,620,-1160,370,-1350,100,-1590,-200,-1900};
     public static final float[] COAST=world(COAST_MAP),WATER_POLYGON=water(),LAND_POLYGON=land();
     private static final RayIndex WATER_RAYS=new RayIndex(WATER_POLYGON);
     public static final float[][] WATER_TRIANGLES=PolygonWater.triangles(WATER_POLYGON),LAND_TRIANGLES=PolygonWater.triangles(LAND_POLYGON);
@@ -36,10 +36,10 @@ public final class MontroseHarbor {
     private static final float[][] WATER_BOUNDS=bounds(WATER_TRIANGLES),DOCK_BOUNDS=bounds(DOCKS),LAND_BOUNDS=bounds(LAND_TRIANGLES);
     public static final float[][] MOORINGS=moorings();
     private static float[] world(float[] p){float[] out=p.clone();for(int i=0;i<p.length;i+=2){out[i]=mapX(p[i]);out[i+1]=mapY(p[i+1]);}return out;}
-    private static float[] water(){return append(COAST,new float[]{10000,220,10000,10000,-10000,10000,-10000,1600});}
-    private static float[] land(){return append(COAST,new float[]{10000,220,10000,-10000,-10000,-10000,-10000,1600});}
+    private static float[] water(){return append(COAST,new float[]{-200,-10000,10000,-10000,10000,10000,-10000,10000,-10000,1600});}
+    private static float[] land(){return append(COAST,new float[]{-10000,-1900,-10000,1600});}
     private static float[] append(float[] first,float[] map){float[] tail=world(map),p=new float[first.length+tail.length];System.arraycopy(first,0,p,0,first.length);System.arraycopy(tail,0,p,first.length,tail.length);return p;}
-    static final float[] PLAY_BOUNDS=world(new float[]{-200,-200,2200,-200,2200,1600,-200,1600});
+    static final float[] PLAY_BOUNDS=world(new float[]{-200,-2100,2750,-2100,2750,1600,-200,1600});
     private static final BoxIndex DOCK_INDEX=new BoxIndex(DOCK_BOUNDS),WATER_INDEX=new BoxIndex(WATER_BOUNDS);
     /** Fixed survey geometry, indexed once. Candidate IDs retain original clipping order. */
     private static final class BoxIndex {
@@ -340,9 +340,10 @@ public final class MontroseHarbor {
         }
     }
     /** Fit the complete footprint; gameplay retains its close, following camera. */
-    public static Layout overview(float width,float height){
+    public static Layout overview(float width,float height){return overview(width,height,true);}
+    static Layout overview(float width,float height,boolean beach){
         RiverCamera c=RiverCamera.DEFAULT;float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
-        for(float[] a:new float[][]{{0,90,1824,1460}})for(int k=0;k<4;k++){
+        for(float[] a:new float[][]{beach?new float[]{-100,-2000,2600,1460}:new float[]{0,90,1824,1460}})for(int k=0;k<4;k++){
             float wx=mapX(a[k%2==0?0:2]),wy=mapY(a[k/2==0?1:3]);
             float x=c.screenX(wx,wy)/c.scale,y=c.screenY(wx,wy)/c.scale;
             l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);

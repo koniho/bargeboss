@@ -22,7 +22,7 @@ public final class MarinaLayerPreparationTest {
             if(layer.backgroundSafe()){
                 if(prepare){Integer requested=densities.get(layer.key());int bit=StaticLayer.rasterScale(scale)==2?1:2;
                     check(requested!=null && (requested&bit)!=0,"Actual display density prepared before layer draw: "+layer.key()+" scale "+scale);preparedDraws++;}
-                if(layer.key()>=830000 && layer.key()<832000){
+                if(layer.key()>=830000 && layer.key()<838000){
                     terrainDraws++;float density=StaticLayer.rasterScale(scale);
                     terrainBytes+=(long)(layer.width()*layer.height()*density*density*4);
                     check(layer.width()>0 && layer.height()>0 && layer.width()<=400 && layer.height()<=310,"Only nonempty bounded terrain chunks submitted");
@@ -50,6 +50,13 @@ public final class MarinaLayerPreparationTest {
             check(hints.terrainBytes<StaticLayer.cacheBudgetBytes(),"Local docking terrain working set fits the native layer budget");
             check(hints.hash==plain.hash,"Preparation hints cannot alter visible drawing commands");
             check(ticks==g.ticks && g.visualTicks==tick && x==g.tug.x && y==g.tug.y,"Preparation/rendering never mutates gameplay");
+        }
+        for(int view=0;view<4;view++){
+            g.layout=view==0?MontroseHarbor.overview(1333,600):view==1?MontroseHarbor.overview(1333,600,false):Layout.focused(1333,600,MontroseHarbor.mapX(view==2?1600:2200),MontroseHarbor.mapY(view==2?-600:-1380),view==2?.55f:1.1f,666,312);
+            Capture hints=new Capture(true),plain=new Capture(false);MontroseView.draw(g,hints);MontroseView.draw(g,plain);
+            check(hints.hash==plain.hash,"Distance-tier preparation preserves draw commands");
+            check(hints.terrainBytes<StaticLayer.cacheBudgetBytes()/2,"Expanded shoreline terrain leaves cache headroom for other layers");
+            System.out.println("Montrose view "+view+": "+hints.terrainDraws+" terrain tiles / "+hints.terrainBytes+" raster bytes");
         }
         System.out.println(checks+" marina layer preparation density, threshold, halo breathing and draw-purity assertions passed");
     }

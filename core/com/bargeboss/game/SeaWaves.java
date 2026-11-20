@@ -13,7 +13,9 @@ public final class SeaWaves {
         float mx=MontroseHarbor.planX(x),my=MontroseHarbor.planY(y);
         float lake=Math.max(smooth(1100,1420,my),smooth(1650,2050,mx));
         float entrance=smooth(1080,1350,my)*(1-smooth(120,300,Math.abs(mx-350)));
-        return Math.max(lake,entrance);
+        // The beach opens northward; retain calm marina south of the park.
+        float north=(1-smooth(-650,-200,my))*(.45f+.55f*smooth(2050,2350,mx));
+        return Math.max(north,Math.max(lake,entrance));
     }
     static float directionX(Game g,int wave){return (float)(DX[wave]*g.settings.waveCos-DY[wave]*g.settings.waveSin);}
     static float directionY(Game g,int wave){return (float)(DX[wave]*g.settings.waveSin+DY[wave]*g.settings.waveCos);}

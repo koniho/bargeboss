@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -82,7 +82,12 @@ public final class ProfileScenario {
                     ReplayInput.work(root);root.step();
                 }
             }else for(int tick=0;tick<120;tick++)root.step();
-            if(name.equals("montrose-overview"))root.layout=MontroseHarbor.overview(width,height);
+            if(name.equals("montrose-beach") || name.equals("montrose-beacon")){
+                boolean beacon=name.equals("montrose-beacon");float mx=beacon?2200:1600,my=beacon?-1380:-600;
+                root.tug.x=MontroseHarbor.mapX(beacon?2400:1700);root.tug.y=MontroseHarbor.mapY(beacon?-1400:-850);
+                root.layout=Layout.focused(width,height,MontroseHarbor.mapX(mx),MontroseHarbor.mapY(my),beacon?1.1f:.55f,width*.5f,height*.52f);return;
+            }
+            if(name.equals("montrose-overview") || name.equals("montrose-marina"))root.layout=MontroseHarbor.overview(width,height,!name.equals("montrose-marina"));
             if(name.equals("montrose-green-shore"))root.layout=Layout.focused(width,height,MontroseHarbor.mapX(275),MontroseHarbor.mapY(1250),2.4f,width*.5f,height*.53f);
             return;
         }
