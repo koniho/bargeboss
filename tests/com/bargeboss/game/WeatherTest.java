@@ -60,10 +60,10 @@ public final class WeatherTest {
         lamps.visualTicks=100;Trace dark=new Trace();FogLighting.draw(lamps,dark);check(dark.beaconGlows==0,"beacon haze follows true dark interval");
         lamps.settings.resetWeather();Trace off=new Trace();FogLighting.draw(lamps,off);check(off.materials==0,"no scattering without fog");
         g.settings.resetWeather();g.settings.developerWaves=true;tap(g,30,90);
-        tap(g,250,210);check(g.settings.rainLevel()==1,"rain control");
-        tap(g,250,248);check(g.settings.lightningLevel()==1,"lightning control");
-        g.pointerDown(93,250,210);g.pointerCancel(93);g.pointerUp(93,250,210);check(g.settings.rainLevel()==1,"cancel weather tap");
-        tap(g,250,286);check(g.settings.fogLevel()==1,"fog control");
+        tap(g,250,196);check(g.settings.rainLevel()==1,"rain control");
+        tap(g,250,228);check(g.settings.lightningLevel()==1,"lightning control");
+        g.pointerDown(93,250,196);g.pointerCancel(93);g.pointerUp(93,250,196);check(g.settings.rainLevel()==1,"cancel weather tap");
+        tap(g,250,260);check(g.settings.fogLevel()==1,"fog control");
         tap(g,60,330);g.visualTicks+=4;check(WeatherView.flash(g)==1,"test flash peaks after four ticks");
         check(!g.pointer,"weather taps never steer");tap(g,200,330);
         check(g.settings.fogLevel()==0 && g.settings.rainLevel()==0 && g.settings.lightningLevel()==0 && draw(g).lines==0 && WeatherView.flash(g)==0,"reset all returns clear");

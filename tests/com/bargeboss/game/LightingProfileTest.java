@@ -31,6 +31,24 @@ public final class LightingProfileTest {
             check(menu.selectedLighting()==id,"title selection uses real screen taps on wide canvas");
         }
         check(snapshot==LightingProfile.DAYLIGHT,"retired worker snapshot remains unchanged");
+        Game live=new Game();live.selectChallenge(Challenges.MONTROSE);live.reset();live.settings.developerWaves=true;
+        live.pointerDown(9,30,90);live.pointerUp(9,30,90);
+        int ticks=live.ticks;Body tug=live.tug;float x=tug.x,y=tug.y;Layout layout=live.layout;
+        FrameGate gate=new FrameGate();gate.rendered(live);
+        live.pointerDown(9,250,292);live.pointerUp(9,250,292);
+        check(live.lighting()==LightingProfile.NIGHT,"weather panel changes the current stage");
+        check(gate.needsFrame(live),"profile replacement redraws without advancing ticks");
+        check(live.ticks==ticks && live.tug==tug && tug.x==x && tug.y==y && live.layout==layout,"time selection preserves voyage and camera");
+        live.pointerDown(9,250,292);live.pointerCancel(9);live.pointerUp(9,250,292);
+        check(live.lighting()==LightingProfile.NIGHT,"cancelled time tap does not switch");
+        live.pointerDown(9,250,292);live.pointerUp(9,250,292);
+        check(live.lighting()==LightingProfile.DAWN,"next wraps from night to dawn");
+        live.pointerDown(9,30,292);live.pointerUp(9,30,292);
+        check(live.lighting()==LightingProfile.NIGHT,"previous wraps from dawn to night");
+        live.pointerDown(9,200,330);live.pointerUp(9,200,330);
+        check(live.lighting()==LightingProfile.DUSK && live.selectedLighting()==2,"reset all restores dusk");
+        live.startTutorial();Game practice=live.activeGame();practice.changeLighting(1);
+        check(practice.lighting()==LightingProfile.DAYLIGHT && live.lighting()==LightingProfile.DUSK,"live practice changes leave parent untouched");
         System.out.println(checks+" lighting profile ownership, grading, identity and input assertions passed");
     }
 }

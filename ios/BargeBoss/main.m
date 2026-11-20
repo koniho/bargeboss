@@ -7,6 +7,7 @@
 #import "com/bargeboss/game/ProfileScenario.h"
 #endif
 #import "com/bargeboss/game/Game.h"
+#import "com/bargeboss/game/GameSettings.h"
 #import "com/bargeboss/game/LevelAssets.h"
 #import "com/bargeboss/game/LightingProfile.h"
 #import "com/bargeboss/game/FrameGate.h"
@@ -58,6 +59,9 @@
         self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
         self.accessibilityLabel=@"Barge Boss river game";
         self.audio=[[BBEngineSound alloc] init]; self.game=[[BBGame alloc] init]; self.frames=[[BBFrameGate alloc] init]; self.painter=[self createPainter];
+        #if BB_IOS_PROFILE
+        self.game->settings_->developerWaves_=YES;
+        #endif
         @try {
             NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;
             // CI isolation only; normal launches never remove saved progress.

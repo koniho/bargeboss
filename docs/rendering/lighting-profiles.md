@@ -2,9 +2,14 @@
 
 Issue #17 first phase: dawn, daylight, dusk and night. Dusk remains the default.
 Choose a preset on the title or location screen before sailing or starting the
-practice tutorial. The selection is session-local and applies on the next entry;
-a live voyage retains its immutable snapshot. Practice owns its own snapshot and
-does not recolor its parent voyage. The painted title composition stays dusk.
+practice tutorial. Menu selection is session-local and applies on the next entry.
+The Montrose development weather panel also has a TIME row for explicit live
+changes: minus/plus cycles dawn, daylight, dusk and night; RESET ALL restores
+dusk along with clear weather and default waves. Each change replaces this
+stage's immutable snapshot without resetting the voyage, camera or tutorial.
+Practice owns its snapshot and does not recolor its parent voyage. The painted
+title composition stays dusk. Android debug builds and iOS profiling/development
+builds expose the panel.
 
 `LightingProfile` is immutable shared Java data: scenery/material RGB grade,
 water and glint colors, ambient shade, sun vector/color, cast-shadow strength,
@@ -37,7 +42,9 @@ lighting engine or a claim that baked sprite shadows follow the sun.
   inherit the parent snapshot. Source/frame/static-raster round trips are checked
   through actual shared-renderer pixels, not just key comparisons.
 
-Hosts prepare the upcoming level manifest at entry before advancing gameplay.
+Hosts prepare the upcoming level manifest at entry and after explicit live
+profile changes, before advancing gameplay. A short synchronous preparation
+pause can occur on selection; simulation clocks exclude this loading work.
 Preparation is an explicit loading boundary, not work repeated for each time
 step. Native clocks exclude that boundary from the first simulation delta.
 Current loading is synchronous at entry; simulator preparation time is recorded

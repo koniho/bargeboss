@@ -61,8 +61,8 @@ public final class WaterEnergyBoundsTest {
         check(peak>6,"strong waves are not flattened by a hidden height clamp");
         g.settings.developerWaves=true;g.pointerDown(93,30,90);g.pointerUp(93,30,90);
         g.pointerDown(93,30,140);g.pointerUp(93,30,140);check(g.settings.waveIntensity()==2.75f,"live wave control changes intensity");
-        g.pointerDown(93,250,180);g.pointerUp(93,250,180);check(g.settings.waveBearing()==15,"live wave control changes bearing");
-        g.pointerDown(93,250,180);g.pointerCancel(93);g.pointerUp(93,250,180);check(g.settings.waveBearing()==15,"cancelled wave tap does not change bearing");
+        g.pointerDown(93,250,164);g.pointerUp(93,250,164);check(g.settings.waveBearing()==15,"live wave control changes bearing");
+        g.pointerDown(93,250,164);g.pointerCancel(93);g.pointerUp(93,250,164);check(g.settings.waveBearing()==15,"cancelled wave tap does not change bearing");
         check(!g.pointer,"wave panel input never starts driving");
         g.settings.turnWaves(-2);check(g.settings.waveBearing()==345,"bearing wraps through north");
         head.lineAttached=true;w.affect(g,head);check(head.vx==0 && head.vy==0 && head.spin==0,"moored gameplay hull stays secured");

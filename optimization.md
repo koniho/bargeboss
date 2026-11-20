@@ -4292,3 +4292,20 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Final full shared/asset checks, signed Android APK and native encoder
   regressions pass. Montrose all-heading shore: 2,434,414 hull/cargo assertions
   plus 32,273 walls. Five native metadata assertions pass residency/budget checks.
+
+## 2026-11-20 Live time-of-day development control
+- Added TIME minus/plus to Montrose's shared weather panel: dawn, daylight, dusk,
+  night; RESET ALL restores dusk. Retained the original panel footprint to avoid
+  covering the steering control. iOS profiling builds expose the shared panel.
+- Explicit live selection replaces the stage lighting snapshot without resetting
+  voyage, camera or physics. FrameGate detects the replacement before another tick.
+  Existing native profile preparation invalidates/rebuilds graded sources, frame
+  atlases, retained surfaces and resident kernels before advancing/rendering; no
+  new cache or per-frame raster work was introduced. Preparation may briefly pause.
+- Full shared/asset checks and signed Android APK pass, including 1,210 lighting
+  assertions for live pointer input, cancellation, wrap/reset, redraw and practice
+  isolation. iOS profiling simulator build passes. Reviewed actual Montrose dock
+  scene switching dusk -> daylight -> dawn -> night -> reset/dusk in one voyage:
+  water, vessels and cached piers update; controls remain clear of steering.
+- Native validation is iOS simulator only; no new frame-time benchmark or physical
+  device claim. Connected phone left untouched per user instruction.

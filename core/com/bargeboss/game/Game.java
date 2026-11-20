@@ -95,6 +95,8 @@ public final class Game {
     private int nextLighting=2;
     public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES?LightingProfile.DUSK:stageLighting;}
     public int selectedLighting(){return nextLighting;}
+    /** Explicit live control replaces only this stage snapshot; hosts rebuild before advancing. */
+    public void changeLighting(int id){stageLighting=LightingProfile.preset(id);nextLighting=id;}
     /** Selection only affects the next entry, never the live stage or a sibling practice. */
     public void selectLighting(int id){LightingProfile.preset(id);nextLighting=id;}
     public GameSettings settings=new GameSettings();
