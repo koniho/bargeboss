@@ -25,7 +25,19 @@ public class VulkanEncodingTest {
   StaticLayer layer=new StaticLayer(){public int key(){return 123;}public float width(){return 40;}public float height(){return 40;}public void paint(Painter q){q.pushClipOutside(new float[]{0,0,2,0,0,2});q.poly(new float[]{0,0,20,0,20,20,0,20},0x89338172);q.popClip();}};
   p.retainedSurfaces(layer,30+frame,40,2);p.rect(2,3,4,5,0xff987654);
  }
+ static void thinPolygons()throws Exception{
+  Painter painter=make(VulkanPainter.class);int checked=0;
+  for(int direction:new int[]{-1,1})for(int step=40;step<=400;step++){
+   float scale=step*.0025f,x=850.125f,y=520.375f;
+   float[] q={x,y,x+20*scale,y+2*scale,x+20*scale,y+(2+direction*.12f)*scale,x,y+direction*.12f*scale};
+   start(painter);painter.poly(q,0x5083b3b4);
+   if((Integer)read(painter,"used")!=36)throw new AssertionError("Thin ripple lost triangles at scale "+scale+" winding "+direction);
+   checked++;
+  }
+  System.out.println(checked+" thin ripple zoom/winding cases retain both triangles");
+ }
  public static void main(String[] args)throws Exception{
+  thinPolygons();
   String[] expected={"daacc2aa3615cefaec1fc3b98118e8e00be33629cc243ab31be1b46f8a4dc2ea",
    "0e7092c8057cd60ff2f1dfcca91800fdfef50a57f3e843b34ba7b89497a67857",
    "06c5caf79fd850d4d1ae7db836be455780c0676f0c8aa98ec3d839e47eee0276"};

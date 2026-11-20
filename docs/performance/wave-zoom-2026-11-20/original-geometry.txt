@@ -1,0 +1,9 @@
+0.1: 31 lost / 40089 actual ripple quads
+0.11: 7 lost / 31957 actual ripple quads
+0.12: 3 lost / 25912 actual ripple quads
+0.2: 0 lost / 8948 actual ripple quads
+0.3: 0 lost / 4032 actual ripple quads
+0.5: 0 lost / 1416 actual ripple quads
+1.0: 0 lost / 422 actual ripple quads
+1.5: 0 lost / 1020 actual ripple quads
+2.0: 0 lost / 636 actual ripple quads

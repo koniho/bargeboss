@@ -116,8 +116,12 @@ final class VulkanPainter implements Painter,AutoCloseable {
         vertex(xy[c*2],xy[c*2+1],0,0,color,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);
     }
     public void poly(float[] xy,int color){
-        int n=xy.length/2;if(n<3||(color>>>24)==0)return;int[] index=new int[n];float area=0;
-        for(int i=0;i<n;i++){index[i]=i;int j=(i+1)%n;area+=xy[i*2]*xy[j*2+1]-xy[j*2]*xy[i*2+1];}float sign=area<0?-1:1;int remaining=n,guard=n*n;
+        int n=xy.length/2;if(n<3||(color>>>24)==0)return;int[] index=new int[n];double area=0;
+        // Measure winding relative to the first vertex. Absolute screen products
+        // cancel for thin distant ripples, changing their winding as zoom moves.
+        for(int i=0;i<n;i++){index[i]=i;int j=(i+1)%n;
+            area+=((double)xy[i*2]-xy[0])*((double)xy[j*2+1]-xy[1])
+                    -((double)xy[j*2]-xy[0])*((double)xy[i*2+1]-xy[1]);}float sign=area<0?-1:1;int remaining=n,guard=n*n;
         while(remaining>=3 && guard-->0){boolean found=false;for(int i=0;i<remaining;i++){int a=index[(i+remaining-1)%remaining],b=index[i],c=index[(i+1)%remaining];if(cross(xy,a,b,c)*sign<=0)continue;boolean inside=false;for(int j=0;j<remaining;j++){int k=index[j];if(k!=a&&k!=b&&k!=c&&cross(xy,a,b,k)*sign>=0&&cross(xy,b,c,k)*sign>=0&&cross(xy,c,a,k)*sign>=0){inside=true;break;}}if(inside)continue;triangle(xy,a,b,c,color,0);System.arraycopy(index,i+1,index,i,remaining-i-1);remaining--;found=true;break;}if(!found)break;}
     }
     private static float cross(float[] p,int a,int b,int c){return (p[b*2]-p[a*2])*(p[c*2+1]-p[a*2+1])-(p[b*2+1]-p[a*2+1])*(p[c*2]-p[a*2]);}

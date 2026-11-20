@@ -4102,3 +4102,18 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   build gate checks2,526,477 original normalized vertex fields/clip markers across
   growth, mixed formats, frame reuse and retained relocation; nested clip-source
   mutation and depth-limit checks pass. Evidence:docs/performance/montrose-compact-2026-11-20.
+
+## 2026-11-20 Android thin wave zoom geometry
+- Investigated reported wave disappearance at some zoom levels. Vulkan's float
+  absolute-coordinate winding sum loses precision for tiny projected polygons,
+  sometimes rejecting every ear. Use relative coordinates and double accumulation
+  for winding only; shared geometry, density, clipping and vertex colors unchanged.
+- Regression failed on prior encoder at scale 0.1; all 722 zoom/winding cases pass
+  with the fix. Existing 2,526,477-field encoder golden and clip checks pass, as
+  does full checked APK build. Actual WaveView probe across nine scales previously
+  dropped 31/7/3 quads at 0.1/0.11/0.12; now drops none across all nine scales.
+- Pixel 11 Pro frozen overview: 120 warmup/360 samples all Vulkan, mean76.13ms,
+  p95 84.19ms,13.14FPS. Only41/2,602,800 screenshot pixels change; image reviewed.
+  No performance improvement claimed. Installed final APK. Single-sample subpixel
+  aliasing remains distinct from this confirmed geometry-loss bug; no claim all
+  zoom shimmer is resolved. Evidence: docs/performance/wave-zoom-2026-11-20/.
