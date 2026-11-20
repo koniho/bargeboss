@@ -8,8 +8,12 @@ public final class HelmPracticeTest {
     }
     public static void run(){
         for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}){
-            Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.settings.setJoystickSide(side);int seen=0;
+            Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.settings.setJoystickSide(side);int seen=0,completions=0,lastSequence=0;g.hapticsEnabled=false;
             for(int tick=0;tick<2000 && g.tutorial.lesson==Tutorial.MOVE;tick++){
+                if(SoundEffects.sequence(g)!=lastSequence){
+                    lastSequence=SoundEffects.sequence(g);
+                    if(SoundEffects.cue(g)==SoundEffects.COMPLETE)completions++;
+                }
                 if(g.tutorial.instructorRadio.teach || g.tutorial.instructorRadio.phase!=0){ReplayInput.tutorial(root);g.step();continue;}
                 HelmPractice h=g.tutorial.helm;seen|=1<<h.phase;
                 if(!g.joystick.active){
@@ -18,6 +22,7 @@ public final class HelmPracticeTest {
                 }
                 move(g,h.targetX-g.tug.x,h.targetY-g.tug.y);g.step();
             }
+            check(completions>=3,"uninterrupted helm milestones sound with haptics disabled");
             check(seen==31 && g.tutorial.lesson==Tutorial.FIGURE_EIGHT,"joystick on either side teaches all four helm actions then rendezvous");
         }
         Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();g.tug.vx=80;

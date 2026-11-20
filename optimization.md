@@ -3813,3 +3813,24 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Three original synthesized PCM clips have deterministic source generation,
   zero endpoints and peak headroom. Listening on actual device speakers remains
   unvalidated; no claim that synthesis is indistinguishable from recordings.
+
+### 2026-11-20 — Licensed harbor audio palette (isolated instructor branch)
+
+- Replaced radio cues with edited CC0 Midland G7 recordings by Joseph SARDIN /
+  BigSoundBank, contact cues with Kenney soft impacts, and added a softened Kenney
+  confirmation for earned tutorial milestones. Exact sources, hashes, licenses and
+  processing are in docs/audio/licensed-cues-v1.md. Originals stay outside runtime
+  assets; five mono PCM derivatives total approximately 156 KiB on disk.
+- Shared fixed-step completion queue coalesces simultaneous events, gives radio
+  priority and expires stale rewards during extended exchanges. Native adapters
+  continue preloading the shared bounded manifest; no decode work added to frames.
+  Skips do not emit a completion reward. Real helm-input tests verify cues with
+  haptics disabled; bus tests cover priority, coalescing, expiry and contact limits.
+- Full check.sh (via build-android.sh), Android debug APK using the existing key,
+  and iOS simulator build passed. Native/JVM replay and drawing parity verified
+  56b74ca3:2:1350 before updating the canonical baseline. PCM format, nonclipping
+  peaks, zero endpoints and identical local regeneration hashes passed.
+- No phone or simulator installation or device operation. Subjective audition,
+  speaker mix and native timing remain unmeasured. No claim of new frame-rate
+  improvement or of recorded boat impacts. Local audition reel is untracked at
+  out/audio-review/licensed-cues-v1.wav.

@@ -119,6 +119,7 @@ public final class Tutorial {
         b.vx=b.vy=b.spin=0;b.awaitingPickup=true;
         b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
     }
+    private static void success(Game g){g.sounds.complete();g.haptic(Game.HAPTIC_SUCCESS);}
     public void update(Game g) {
         if(instructorRadio.step(g))return;
         canal.step(g);
@@ -130,7 +131,7 @@ public final class Tutorial {
         if(lesson<=CHANNEL) {
             if(channelGate<TrainingChannel.X.length && TrainingChannel.reachedGate(channelGate,
                     channelPreviousX,channelPreviousY,g.tug.x,g.tug.y)) {
-                clearedGate=channelGate++;gateClearTicks=90;g.haptic(Game.HAPTIC_SUCCESS);
+                clearedGate=channelGate++;gateClearTicks=90;success(g);
             }
             channelPreviousX=g.tug.x;channelPreviousY=g.tug.y;
         }
@@ -138,66 +139,66 @@ public final class Tutorial {
             int previous=helm.phase;
             boolean complete=helm.step(g);
             if(previous==HelmPractice.FORWARD && helm.phase==HelmPractice.LEFT)instructorRadio.introduce(g);
-            if(complete){lesson=FIGURE_EIGHT;driveMarker=0;orbitArmed=false;orbitSweep=0;firstOrbitDirection=0;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+            if(complete){lesson=FIGURE_EIGHT;driveMarker=0;orbitArmed=false;orbitSweep=0;firstOrbitDirection=0;g.cancelInputs();success(g);}
         } else if(lesson==FIGURE_EIGHT || lesson==REVERSE) {
             updateOrbit(g);reverseTargetX=driveTargetX();reverseTargetY=driveTargetY();
         } else if(lesson==SLIP) {
-            if(navigation.slip(g)){lesson=MAP;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+            if(navigation.slip(g)){lesson=MAP;g.cancelInputs();success(g);}
         } else if(lesson==MAP) {
-            if(navigation.map(g)){lesson=CHANNEL;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+            if(navigation.map(g)){lesson=CHANNEL;g.cancelInputs();success(g);}
         } else if(lesson==CHANNEL) {
             if(channelGate==TrainingChannel.X.length && canal.authorized && g.passages.passable(0)) {
-                lesson=HOLD;actionTicks=0;g.haptic(Game.HAPTIC_SUCCESS);
+                lesson=HOLD;actionTicks=0;success(g);
             }
         } else if(lesson==HOLD) {
             Body b=g.cargo[0];
             if(g.pushing && g.manualSteering && g.heldCargo()==b && Physics.touching(g.tug,b,5)) actionTicks++;
             if(actionTicks>=6 && Physics.length(b.x-PUSH_X,b.y-PUSH_Y)<=PUSH_RADIUS) {
                 lesson=STEER;actionTicks=0;startX=b.x;startY=b.y;
-                g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+                g.cancelInputs();success(g);
             }
         } else if(lesson==STEER) {
             Body b=g.cargo[0];
             if(g.pushing && !g.manualSteering && g.heldCargo()==b && Physics.touching(g.tug,b,5)) actionTicks++; else actionTicks=0;
             if(actionTicks>=12 && Physics.length(b.x-startX,b.y-startY)>3) {
-                lesson=DOCK;actionTicks=0;g.haptic(Game.HAPTIC_SUCCESS);
+                lesson=DOCK;actionTicks=0;success(g);
             }
         } else if(lesson==DOCK && g.inTieArea(g.cargo[0])) {
-            lesson=TIE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+            lesson=TIE;g.cancelInputs();success(g);
         } else if(lesson==TIE && g.delivered>0) {
             // The unloaded barge stays alongside. The next job uses the second
             // hull that has been waiting in the same harbor since the start.
             Body finished=g.cargo[0];g.cargo[0]=g.cargo[1];g.cargo[1]=finished;
             lesson=CONNECT;actionTicks=0;g.selected=-1;g.cancelInputs();
-            g.haptic(Game.HAPTIC_SUCCESS);
+            success(g);
         }
         else if(lesson==CONNECT && direct(g,g.cargo[0])) {
-            lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+            lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();success(g);
         } else if(lesson==PULL) {
             Body b=g.cargo[0];if(g.navigating)actionTicks++;
             if(!g.tow.connected(b,g.tug) && g.ropePhase==0){lesson=CONNECT;g.cancelInputs();}
             else if(actionTicks>=6 && Physics.length(b.x-TOW_BERTH_X,b.y-TOW_BERTH_Y)<=TOW_BERTH_RADIUS) {
-                lesson=DOUBLE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+                lesson=DOUBLE;g.cancelInputs();success(g);
             }
         } else if(lesson==DOUBLE && doubleTow(g)) {
-            lesson=BRIDGE;rememberTow(g);g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+            lesson=BRIDGE;rememberTow(g);g.cancelInputs();success(g);
         } else if(lesson==BRIDGE) {
             if(doubleTow(g)) {
                 bridgeCrossed=crossed(g,BRIDGE_CLEAR_Y,bridgeCrossed);
                 if(bridgeCrossed==3 && allClear(g,BRIDGE_CLEAR_Y)) {
-                    lesson=LINK;reconfigureRelease=g.towReleases;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+                    lesson=LINK;reconfigureRelease=g.towReleases;g.cancelInputs();success(g);
                 }
             } else if(g.ropePhase==0){lesson=DOUBLE;g.cancelInputs();}
         } else if(lesson==LINK && chain(g) && g.towReleases>reconfigureRelease) {
-            lesson=TRAIN;rememberTow(g);g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+            lesson=TRAIN;rememberTow(g);g.cancelInputs();success(g);
         } else if(lesson==TRAIN) {
             if(chain(g)) {
                 trainCrossed=crossed(g,TRAIN_CLEAR_Y,trainCrossed);
                 if(trainCrossed==3 && allClear(g,TRAIN_CLEAR_Y)) {
-                    lesson=RELEASE;actionTicks=g.towReleases;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+                    lesson=RELEASE;actionTicks=g.towReleases;g.cancelInputs();success(g);
                 }
             } else if(g.ropePhase==0){lesson=LINK;g.cancelInputs();}
-        } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=DONE;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);}
+        } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=DONE;g.cancelInputs();success(g);}
         else if(lesson==RELEASE && g.tow.count()==0 && g.ropePhase==0){lesson=LINK;g.cancelInputs();}
     }
     public float reverseProgress(){return Physics.clamp((driveMarker+orbitProgress())/2,0,1);}
@@ -249,11 +250,11 @@ public final class Tutorial {
         if(winding>=ORBIT_TURN){
             if(driveMarker==0)firstOrbitDirection=orbitSweep<0?-1:1;
             buoyClearTicks[driveMarker]=BUOY_CLEAR_LIFE;driveMarker++;orbitArmed=false;orbitSweep=0;
-            g.haptic(Game.HAPTIC_SUCCESS);
+            success(g);
             if(driveMarker==2){
                 if(lesson==FIGURE_EIGHT){lesson=REVERSE;driveMarker=0;firstOrbitDirection=0;reverseArmed=true;}
                 else {lesson=SLIP;reverseArmed=false;navigation.reset(g);}
-                actionTicks=0;g.cancelInputs();g.haptic(Game.HAPTIC_SUCCESS);
+                actionTicks=0;g.cancelInputs();success(g);
             }
         }
     }

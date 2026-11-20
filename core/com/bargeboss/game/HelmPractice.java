@@ -25,7 +25,7 @@ public final class HelmPractice {
         if(phase<RENDEZVOUS && progress>=needed){
             phase++;progress=0;phaseHeading=b.angle;
             if(phase>=REVERSE)g.cancelInputs();
-            g.haptic(Game.HAPTIC_TICK);
+            g.sounds.complete();g.haptic(Game.HAPTIC_TICK);
         }
         target(g);
         return phase==RENDEZVOUS && Physics.length(b.x-MEET_X,b.y-MEET_Y)<=MEET_RADIUS;

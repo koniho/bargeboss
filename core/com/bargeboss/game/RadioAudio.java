@@ -15,5 +15,5 @@ public final class RadioAudio {
     public static int sequence(Game root){return root.activeGame().radio.sequence;}
     public static int cue(Game root){return root.activeGame().radio.cue;}
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.radio.age<30;}
-    public static String asset(int cue){return cue==TEACHER?"audio/cb-receive-v1.wav":"audio/cb-reply-v1.wav";}
+    public static String asset(int cue){return SoundEffects.asset(cue);}
 }

@@ -8,7 +8,7 @@ public final class SoundEffectsTest {
         check(SoundEffects.sequence(g)==0,"resting and invalid contacts remain quiet");
         float[] speeds={10,40,90};
         for(int i=0;i<3;i++){
-            g.sounds.impact(speeds[i]);check(SoundEffects.cue(g)==i+2,"severity selects original collision clip");
+            g.sounds.impact(speeds[i]);check(SoundEffects.cue(g)==i+2,"severity selects collision cue");
             int sequence=SoundEffects.sequence(g);g.sounds.impact(200);
             check(SoundEffects.sequence(g)==sequence,"contact chatter is bounded");
             check(!g.radio.transmitting(g,g.tug),"collision never triggers radio animation");
@@ -26,6 +26,24 @@ public final class SoundEffectsTest {
         check(SoundEffects.cue(g)==SoundEffects.SPLASH_LARGE,"heavy spray return uses full splash");
         g.radio.transmit(RadioAudio.TEACHER);sequence=SoundEffects.sequence(g);g.sounds.splash(1);
         check(SoundEffects.sequence(g)==sequence,"water Foley cannot interrupt the instructor");
+        g.sounds.complete();g.sounds.complete();
+        for(int i=0;i<53;i++)g.sounds.step();
+        check(SoundEffects.sequence(g)==sequence,"completion waits for radio grace period");
+        g.sounds.step();
+        check(SoundEffects.cue(g)==SoundEffects.COMPLETE && SoundEffects.sequence(g)==sequence+1,"simultaneous milestones produce one completion cue");
+        sequence=SoundEffects.sequence(g);g.sounds.impact(100);
+        check(SoundEffects.sequence(g)==sequence,"completion is protected from contact chatter");
+        g.radio.transmit(RadioAudio.REPLY);sequence=SoundEffects.sequence(g);
+        for(int i=0;i<54;i++)g.sounds.step();
+        check(SoundEffects.sequence(g)==sequence+1 && SoundEffects.cue(g)==SoundEffects.COMPLETE,"same-tick radio takes priority without losing completion");
+        sequence=SoundEffects.sequence(g);
+        for(int i=0;i<180;i++)g.sounds.step();
+        check(SoundEffects.sequence(g)==sequence,"completion never repeats without a milestone");
+        g.sounds.complete();
+        for(int i=0;i<150;i++){if(i%30==0)g.radio.transmit(RadioAudio.TEACHER);g.sounds.step();}
+        sequence=SoundEffects.sequence(g);
+        for(int i=0;i<60;i++)g.sounds.step();
+        check(SoundEffects.sequence(g)==sequence,"long radio exchange expires old milestone instead of playing a stale reward");
         g.mode=Game.PAUSE;check(!SoundEffects.audible(g),"paused host cannot play cues");
         System.out.println("Collision sound severity, priority, cooldown and stale-event checks passed");
     }
