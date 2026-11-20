@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
+    public static final String[] NAMES={"instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-docks","montrose-overview","montrose-green-shore"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -87,6 +87,14 @@ public final class ProfileScenario {
             return;
         }
         root.startTutorial();Game g=root.activeGame();
+        if(name.startsWith("instructor-")){
+            for(int i=0;i<3000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}
+            if(!g.tutorial.instructorRadio.teach)throw new IllegalStateException("Radio teaching not reached");
+            for(int i=0;i<90;i++)root.step();
+            if(name.equals("instructor-teach"))return;
+            InstructorRadio radio=g.tutorial.instructorRadio;ReplayInput.tap(root,radio.x(g),radio.y(g));
+            for(int i=0;i<(name.equals("instructor-call")?35:100);i++)root.step();return;
+        }
         if(name.equals("tutorial-yard")){
             g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);g.visualTicks=180;
             g.layout=Layout.focused(width,height,-800,160,1.4f,width*.5f,height*.65f);return;

@@ -34,7 +34,7 @@
             [players addObject:player];[rates addObject:rate];[buffers addObject:buffer];
         }
         NSMutableArray *radio=[NSMutableArray array];
-        for(int cue=0;cue<5;cue++){
+        for(int cue=0;cue<BBSoundEffects_COUNT;cue++){
             NSURL *url=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBSoundEffects assetWithInt:cue]]];
             AVAudioPlayer *clip=[[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
             if(clip){clip.volume=.85f;[clip prepareToPlay];[radio addObject:clip];}
@@ -69,7 +69,7 @@
     jint sequence=[BBSoundEffects sequenceWithBBGame:game];
     if(sequence!=_radioSequence){
         _radioSequence=sequence;
-        if(_radio.count==5 && [BBSoundEffects audibleWithBBGame:game]){
+        if(_radio.count==BBSoundEffects_COUNT && [BBSoundEffects audibleWithBBGame:game]){
             for(AVAudioPlayer *clip in _radio)[clip stop];
             AVAudioPlayer *clip=_radio[[BBSoundEffects cueWithBBGame:game]];clip.currentTime=0;[clip play];
         }

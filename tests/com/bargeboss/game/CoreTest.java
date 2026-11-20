@@ -22,6 +22,7 @@ public final class CoreTest {
         CameraCoverageTest.run();
         EngineAudioTest.run();
         SoundEffectsTest.run();
+        InstructorRadioTest.run();
         DockCraneTest.run();
         CargoTransferTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
@@ -176,8 +177,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Unified wave phase, orbital response and sampled waterlines; JVM/native parity verified.
-        check(Parity.signature().equals("be7ee63a:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Unified waves, instructor radio and edge reply layout; JVM/native parity verified.
+        check(Parity.signature().equals("faf08a7e:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

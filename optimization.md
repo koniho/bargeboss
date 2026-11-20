@@ -3788,3 +3788,28 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Reproduction, raw counters and native/compositor evidence:
   docs/performance/montrose-waves-2026-11-20/. Concurrent tutorial changes are being
   integrated separately at the user's request; these timings precede them.
+
+### 2026-11-20 — Instructor radio, movable contact and water Foley (validation in progress)
+
+- Instructor agent owns InstructorRadio, tutorial teaching/skip integration,
+  physical instructor bump response, SoundEffects/CollisionSplashes audio events,
+  native audio manifest iteration and tools/generate-water-audio.py. Phone is
+  explicitly reserved for the other agent: no installation or phone interaction.
+- User requested immediate push: 82f8e2c is a WIP checkpoint. A shared-index race
+  included the wave agent's already-staged work in that commit; no edits reverted.
+  Remaining work moved to isolated worktree b5a7 on branch
+  `codex/instructor-radio-foley`; transferred files were verified before removal
+  from the shared checkout. Concurrent replay/baseline edits were preserved.
+- Targeted radio checks currently pass: 189 assertions for real taps, cancellation,
+  first-throttle teaching, every skip transition, pause and physical displacement.
+  Full parity/native/build validation and synthesized Foley checks are ongoing.
+
+- Final follow-up: inward-pointing reply chevrons reach each screen edge with no
+  rear outline. Shared production captures reviewed at 960 and 1333 widths.
+  Full shared checks passed before canonical update; native/JVM parity verified
+  `faf08a7e:2:1350`. Native iOS build passed with the expanded shared audio manifest.
+  Final complete checks/Android APK build passed in the isolated worktree, reusing
+  the existing debug signing key. No native installation or phone operation.
+- Three original synthesized PCM clips have deterministic source generation,
+  zero endpoints and peak headroom. Listening on actual device speakers remains
+  unvalidated; no claim that synthesis is indistinguishable from recordings.

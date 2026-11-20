@@ -10,6 +10,8 @@ public final class CollisionSplashes {
             vx=new float[CAPACITY*STAMPS],vy=new float[CAPACITY*STAMPS],vz=new float[CAPACITY*STAMPS];
     private int cursor;
     private float peakImpact;
+    private boolean peakTugs;
+    private final boolean[] landed=new boolean[CAPACITY];
     public int emitted;
     public CollisionSplashes(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     /** Contact velocities include angular motion and are captured BEFORE the collision impulse.
@@ -22,7 +24,8 @@ public final class CollisionSplashes {
         float dx=reverse?bx-ax:ax-bx,dy=reverse?by-ay:ay-by,len=Physics.length(dx,dy);
         if(len<.001f || !Float.isFinite(len))return;
         int i=cursor;cursor=(cursor+1)%CAPACITY;first[i]=a;second[i]=b;age[i]=0;emitted++;
-        peakImpact=Math.max(peakImpact,closing);
+        landed[i]=false;
+        if(closing>peakImpact){peakImpact=closing;peakTugs=tug(a) && tug(b);}
         originX[i]=px;originY[i]=py;direction[i]=(float)StrictMath.atan2(dy,dx);
         power[i]=Physics.clamp(closing/70,.12f,1);
         float spread=.16f+.48f*Physics.clamp(closing/len,0,1);
@@ -34,12 +37,14 @@ public final class CollisionSplashes {
             vz[j]=(23+power[i]*48)*(.65f+.35f*((k*5+2)%7)/6f);
         }
     }
+    private static boolean tug(Watercraft craft){return craft instanceof Body && ((Body)craft).berth<0 && !((Body)craft).yacht && !((Body)craft).cruiser;}
     float impactOn(Watercraft craft){
         float peak=0;for(int i=0;i<CAPACITY;i++)if(age[i]==0 && (first[i]==craft || second[i]==craft))peak=Math.max(peak,power[i]*70);return peak;
     }
     /** Age at 60 real ticks, independent of the two motion/collision substeps and visibility. */
     public void step(Game g){
-        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact);peakImpact=0;
+        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact,peakTugs);peakImpact=0;peakTugs=false;
+        float landing=0;
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE){
             age[i]++;
             if(age[i]>=LIFE){first[i]=second[i]=null;continue;}
@@ -49,8 +54,10 @@ public final class CollisionSplashes {
                 if(WaterEffectsPainter.contains(g,xx,yy)){x[j]=xx;y[j]=yy;}
                 else {vx[j]*=.35f;vy[j]*=.35f;}
                 vz[j]-=85*Physics.DT;z[j]+=vz[j]*Physics.DT;vx[j]*=.985f;vy[j]*=.985f;
+                if(z[j]<=0 && !landed[i]){landed[i]=true;landing=Math.max(landing,power[i]);}
             }
         }
+        if(g.mode==Game.PLAY)g.sounds.splash(landing);
     }
     /** Low spreading foam stays on the water underneath all hulls. Irregular expanding splash residue. */
     public void water(Game g,Painter p){

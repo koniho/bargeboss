@@ -18,6 +18,14 @@ public final class SoundEffectsTest {
         check(SoundEffects.sequence(g)==sequence && SoundEffects.cue(g)==0,"radio takes priority over collisions");
         for(int i=0;i<30;i++)g.sounds.step();g.sounds.impact(100);
         check(SoundEffects.cue(g)==4,"collision can play after radio grace period");
+        for(int i=0;i<30;i++)g.sounds.step();g.sounds.impact(100,true);
+        check(SoundEffects.cue(g)==SoundEffects.TUG_THUD,"even a hard tug-to-tug hit uses the muffled fender thud");
+        for(int i=0;i<30;i++)g.sounds.step();g.sounds.splash(.3f);
+        check(SoundEffects.cue(g)==SoundEffects.SPLASH_SMALL,"small spray return uses light splash");
+        for(int i=0;i<30;i++)g.sounds.step();g.sounds.splash(.9f);
+        check(SoundEffects.cue(g)==SoundEffects.SPLASH_LARGE,"heavy spray return uses full splash");
+        g.radio.transmit(RadioAudio.TEACHER);sequence=SoundEffects.sequence(g);g.sounds.splash(1);
+        check(SoundEffects.sequence(g)==sequence,"water Foley cannot interrupt the instructor");
         g.mode=Game.PAUSE;check(!SoundEffects.audible(g),"paused host cannot play cues");
         System.out.println("Collision sound severity, priority, cooldown and stale-event checks passed");
     }

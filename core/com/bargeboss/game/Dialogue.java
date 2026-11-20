@@ -25,7 +25,7 @@ public final class Dialogue {
     InstructionPanel.Content content(){return new InstructionPanel.Content("radio-"+revision,title,first,second,-1,0,speaker,"RADIO / RX",active && result<0);}
     public void step(){if(!active)return;ticks++;panel.step(content());}
     public Layout.Box choiceBox(Game g,int i){
-        float width=Math.min(440,(g.layout.width-64)/2),left=g.layout.width*.5f-width-8;
+        float width=g.layout.width*.5f-8,left=0;
         int rows=(count()+1)/2;
         return new Layout.Box(left+(i%2)*(width+16),g.layout.height-32-rows*62+(i/2)*62,width,50);
     }
@@ -34,7 +34,7 @@ public final class Dialogue {
             Layout.Box b=choiceBox(g,i);
             if(b.contains(x,y)){
                 float edge=14*Math.abs((y-b.y-b.h/2)/(b.h/2));
-                if(x>=b.x+14-edge && x<=b.x+b.w-edge)return i;
+                if(i%2==0?x<=b.x+b.w-edge:x>=b.x+edge)return i;
             }
         }return -1;
     }
@@ -52,9 +52,11 @@ public final class Dialogue {
         for(int i=0;i<count();i++){
             Layout.Box b=choiceBox(g,i);boolean selected=result==i || pressed==i;
             Painter glass=new OpacityPainter(p,alpha*(result>=0 && result!=i?.35f:1));
-            float[] q={b.x,b.y,b.x+b.w-14,b.y,b.x+b.w,b.y+b.h/2,b.x+b.w-14,b.y+b.h,b.x,b.y+b.h,b.x+14,b.y+b.h/2};
+            boolean left=i%2==0;
+            float rear=left?b.x:b.x+b.w,tip=left?b.x+b.w:b.x,shoulder=tip+(left?-14:14);
+            float[] q={rear,b.y,shoulder,b.y,tip,b.y+b.h/2,shoulder,b.y+b.h,rear,b.y+b.h};
             glass.poly(q,selected?0xe324424a:PilotGlass.FILL);
-            for(int k=0;k<q.length;k+=2){int j=(k+2)%q.length;glass.line(q[k],q[k+1],q[j],q[j+1],.8f,selected?PilotGlass.AMBER:PilotGlass.LINE);}
+            for(int k=0;k<q.length-2;k+=2){int j=k+2;glass.line(q[k],q[k+1],q[j],q[j+1],.8f,selected?PilotGlass.AMBER:PilotGlass.LINE);}
             glass.line(b.x+25,b.y+5,b.x+65,b.y+5,1,PilotGlass.AMBER);
             Lettering.draw(glass,"0"+(i+1),b.x+26,b.y+18,11,PilotGlass.AMBER);
             float size=Math.min(14,14*(b.w-92)/Math.max(1,Lettering.width(choices[i],14)));
