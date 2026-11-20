@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 /** Actual shared collision/rendering paths, captured without synthetic splash injection. */
 public final class CollisionSplashReview {
     private static Game fixture(int kind){
-        Game g=new Game();g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
+        Game g=new Game();g.resetPracticeYard();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
         if(kind==1){g.startTutorial();g=g.activeGame();}
         for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
         if(kind==0){g.tug.x=270;g.tug.y=500;g.tug.angle=0;g.tug.vx=65;g.addCargo(0,330,500);g.cargo[0].angle=0;}

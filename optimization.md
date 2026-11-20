@@ -3304,3 +3304,12 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Native pause coverage now uses the left-edge Back gesture, not a removed button.
 - Native validation requires GitHub's macOS runner; the next CI run will verify
   these changes, including the complete tutorial and device build.
+- Preview migration: isolated feeder, berth, collision and lasso captures now use
+  resetPracticeYard, preserving real gestures/collision assertions. Location-goal
+  captures now show current location entries and four contiguous Calumet jobs;
+  the removed standalone lock is no longer treated as a playable location.
+  Dedicated LockTest/LockDoorReview coverage remains. Montrose rescue captures
+  use the existing explicit later-job fixture instead of resetting to yacht entry.
+- Local preview replay now passes the previously failing bounded goal, full
+  tutorial and bridge traversal. Remaining render exports are still running;
+  Android's normal full checks/build are also being validated.

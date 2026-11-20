@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
 
-/** Actual shared title, objective HUD, lock deadlines and goal-result review. */
+/** Shared renderer captures of current location entry, objective HUD and staged result states. */
 public final class GoalLevelReview {
     private static Game fixture(int id){
         Game g=new Game();g.configureCanvas(1333,600);g.challengeId=id;g.reset();
@@ -22,41 +22,24 @@ public final class GoalLevelReview {
         new File("out").mkdirs();
         Game g=fixture(0);g.mode=Game.TITLE;capture(g,"goal-level-title");
         g.restoreProgress("BB1|0|3,7000|3,8000|3,9000");g.mode=Game.CHALLENGES;capture(g,"goal-level-selection");
-        for(int id=0;id<2;id++){
-            g=fixture(id);g.visualTicks=15;capture(g,"goal-level-"+(id+1)+"-start");
-            g.delivered=1;capture(g,"goal-level-"+(id+1)+"-progress");
+        // Location entries replaced the old independently selectable lock/order stages.
+        for(int id:new int[]{Challenges.TWO_BANKS,Challenges.MONTROSE,Challenges.INDIANA}){
+            g=fixture(id);g.visualTicks=15;capture(g,"goal-location-"+id+"-start");
+            Body load=g.cargo[0];
+            if(load!=null){load.deliveryRecorded=true;g.delivered=1;capture(g,"goal-location-"+id+"-progress");}
         }
-        for(int width:new int[]{960,1333})for(int fill:new int[]{0,50,100}){
-            g=fixture(2);g.tug.x=280;g.tug.y=95;
-            int slot=0;for(Body load:g.cargo)if(load!=null){load.x=245+slot++*105;load.y=200;load.awaitingPickup=false;}
-            g.layout=Layout.focused(width,600,300,165,1.2f,650,340);
-            for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.shoutTicks=0;}
-            g.noticeTicks=0;
-            g.lock.phase=fill==100?Lock.OPENING:Lock.FILLING;g.lock.ticks=fill==100?0:Lock.CYCLE_TICKS*fill/100;
-            g.ticks=240+g.lock.ticks;
-            capture(g,"goal-lock-water-"+fill+"-"+width);
+        for(int job=0;job<4;job++){
+            g=fixture(Challenges.TWO_BANKS);g.voyage.job=job;
+            for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+            g.voyage.setup(g);
+            float x=job==2?g.voyage.gateX():g.voyage.dockX(g.voyage.destination(2));
+            float y=job==2?g.voyage.gateY():g.voyage.dockY(g.voyage.destination(2));
+            g.layout=Layout.focused(1333,600,x,y,Game.TRANSIT_ZOOM,666,320);
+            capture(g,"goal-calumet-job-"+job);
         }
-        g=fixture(2);g.tug.x=300;g.tug.y=440;
-        g.layout=Layout.focused(1333,600,300,200,1.2f,660,340);
-        g.lock.step(g);
-        g.lock.phase=Lock.ENTRY;g.lock.ticks=Lock.ENTRY_TICKS-12*60;capture(g,"goal-lock-entry");
-        g.tug.y=270;int slot=0;
-        for(Body b:g.cargo)if(b!=null && b.active){b.x=260+slot*90;b.y=160;b.angle=-(float)Math.PI/2;slot++;}
-        g.lock.phase=Lock.FILLING;g.lock.ticks=Lock.CYCLE_TICKS/2;capture(g,"goal-lock-filling");
-        g.tug.y=-100;slot=0;
-        for(Body b:g.cargo)if(b!=null && b.active){b.y=slot++==0?-90:85;}
-        g.lock.phase=Lock.EXIT;g.lock.ticks=Lock.EXIT_TICKS-8*60;capture(g,"goal-lock-exit");
-        for(Body b:g.cargo)if(b!=null && b.active)b.y=-120;
-        g.lock.phase=Lock.COMPLETE;g.delivered=g.quota();g.earnedStars=3;g.mode=Game.FINISH;capture(g,"goal-lock-complete");
-        for(boolean exit:new boolean[]{false,true}) {
-            g=fixture(2);g.tug.x=300;g.tug.y=440;g.lock.step(g);
-            g.lock.phase=exit?Lock.EXIT:Lock.ENTRY;
-            g.lock.ticks=(exit?Lock.EXIT_TICKS:Lock.ENTRY_TICKS)-1;
-            g.step();
-            if(!g.lock.failed() || g.mode!=Game.FINISH || g.earnedStars!=0)
-                throw new AssertionError("A missed lock deadline must show failure without rewarding completion");
-            capture(g,exit?"goal-lock-exit-failed":"goal-lock-entry-failed");
-        }
-        System.out.println("Goal-based title, selection, delivery progression and lock phases exported to out/");
+        // Explicit result-screen fixture. Rule-driven handoffs are checked in LocationVoyageTest.
+        g=fixture(Challenges.TWO_BANKS);g.voyage.job=3;g.voyage.complete=true;
+        g.earnedStars=3;g.mode=Game.FINISH;capture(g,"goal-calumet-complete");
+        System.out.println("Current location entries, contiguous river jobs and location results exported to out/");
     }
 }

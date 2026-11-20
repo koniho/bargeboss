@@ -17,13 +17,13 @@ public final class Preview {
         Game g=new Game(); capture(g,"title");
         g.mode=Game.CHALLENGES; capture(g,"challenges-locked"); g.mode=Game.TITLE;
         for(int i=0;i<90;i++) g.advance(1.0/60); capture(g,"title-animated");
-        g.reset(); capture(g,"stage");
+        g.resetPracticeYard(); capture(g,"stage");
         steps(g,120); capture(g,"feeder-inbound");
         steps(g,45); capture(g,"feeder-dropoff");
         steps(g,65); capture(g,"feeder-return");
-        g.reset(); g.tug.x=260; g.tug.y=760; steps(g,180); capture(g,"feeder-blocked");
+        g.resetPracticeYard(); g.tug.x=260; g.tug.y=760; steps(g,180); capture(g,"feeder-blocked");
         sheet("feeder-phases",new String[]{"feeder-inbound","feeder-dropoff","feeder-return","feeder-blocked"});
-        g.reset();
+        g.resetPracticeYard();
         ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
         steps(g,4); capture(g,"coasting");
@@ -54,9 +54,9 @@ public final class Preview {
         g.tug.x=Physics.RIGHT-15; g.tug.vx=100; g.step(); capture(g,"impact");
         g.challengeId=1;g.reset(); g.ticks=1000; capture(g,"traffic-warning");
         g.ticks=1200; capture(g,"traffic");
-        g.challengeId=0;g.reset();
+        g.resetPracticeYard();
         for(int i=0;i<Game.SHIFT_TICKS && g.mode==Game.PLAY;i++) { ReplayInput.work(g); g.step(); }
-        if(!g.goalComplete())throw new IllegalStateException("Goal preview did not finish Two Banks");
+        if(!g.goalComplete())throw new IllegalStateException("Practice-yard preview did not finish its two deliveries");
         capture(g,"level-complete");
         for(int i=0;i<60;i++) g.advance(1.0/60); capture(g,"results-animated");
         g.mode=Game.CHALLENGES; capture(g,"challenges-unlocked");
@@ -92,7 +92,7 @@ public final class Preview {
         steps(g,60);capture(g,"tow-pulling");
         ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.releaseTow(g);steps(g,5);capture(g,"tow-release");
         sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-9"});
-        g=new Game();g.reset();steps(g,180);capture(g,"two-banks-overview");
+        g=new Game();g.resetPracticeYard();steps(g,180);capture(g,"two-banks-overview");
         ReplayInput.down(g,260,730);for(int i=0;i<1800 && !g.canTie(g.cargo[0]);i++) g.step();steps(g,180);capture(g,"docking-zoom");
         g=new Game();g.challengeId=1;g.reset();capture(g,"ordered-level-start");
         g=new Game();g.startTutorial();Game bridge=g.activeGame();
@@ -106,7 +106,7 @@ public final class Preview {
             if(bridge.tutorial.lesson>Tutorial.BRIDGE) { capture(g,"bridge-cleared");cleared=true; }
         }
         if(!wait || !opening || !open || !cleared) throw new IllegalStateException("Tutorial bridge preview did not complete passage");
-        g=new Game();g.reset();for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
+        g=new Game();g.resetPracticeYard();for(Feeder feeder:g.feeders){feeder.phase=Feeder.IDLE;feeder.load=null;}
         b=new Body(1,2,Physics.LEFT+17.5f,g.dockY(2),(float)Math.PI/2);g.cargo[0]=b;
         g.tug.x=300;g.tug.y=b.y+120;g.layout=new Layout(960,600,148,380,1.25f);
         capture(g,"shore-ready-to-tie");ReplayInput.lasso(g,b);steps(g,Game.ROPE_FLIGHT_TICKS+5);

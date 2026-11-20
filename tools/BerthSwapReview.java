@@ -20,7 +20,7 @@ public final class BerthSwapReview {
             capture(g,"catalog-locked-page-2-"+width);
             g.restoreProgress("BB1|2|3,1000|3,2000|3,3000");g.selectChallenge(3);g.mode=Game.CHALLENGES;
             capture(g,"catalog-page-2-"+width);
-            g=new Game();g.configureCanvas(width,600);g.challengeId=1;g.reset();
+            g=new Game();g.configureCanvas(width,600);g.resetPracticeYard();
             for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
             Body empty=new Body(1,2,g.dockX(2),g.dockY(2),(float)Math.PI/2);g.cargo[0]=empty;
             Mooring.attach(empty);empty.mooringTicks=Mooring.ALIGN_TICKS;empty.unloadingTicks=Game.UNLOAD_TICKS-1;
