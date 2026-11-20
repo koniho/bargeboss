@@ -87,6 +87,11 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
             thenDragToCoordinate:[self river:stage x:x y:y status:status]
             withVelocity:300 thenHoldForDuration:0.1];
 }
+- (void)throwLineToBollard:(XCUIElement *)stage {
+    NSString *status=(NSString *)stage.value;
+    [self castFrom:[self worldPositionInStatus:status tag:@"cargo"]
+                to:[self worldPositionInStatus:status tag:@"bollard"] stage:stage status:status];
+}
 - (XCUIElement *)startAndDockFirstLoad:(XCUIApplication *)app {
     app.launchArguments=@[@"--reset-progress-for-ui-tests",@"--practice-yard-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
@@ -120,7 +125,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     // Each outcome gets its own real feeder/push sequence. A previous miss must
     // not leave this test aiming at stale coordinates as unmoored cargo coasts.
     XCUIElement *stage=[self startAndDockFirstLoad:app];
-    [self throwLine:stage toX:120 toY:290];
+    [self throwLineToBollard:stage];
     [self waitFor:@"unloading" on:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-crew-unloading"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];
@@ -361,11 +366,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         [self holdCargo:stage duration:0.8];
     }
     [self waitFor:BBLessonToken(BBLessonTie) on:stage];
-    b=[self worldPosition:stage tag:@"cargo"];
-    // The tutorial quay is 18 world units above the water. Project its bollard
-    // at that same height; both screen coordinates still use the shared camera.
-    double quayRise=18/(2*0.70710678*0.57735027);
-    [self riverDrag:stage x:b.x y:b.y toX:120+quayRise toY:700-quayRise hold:0.2];
+    [self throwLineToBollard:stage];
     [self waitFor:BBLessonToken(BBLessonConnect) on:stage];
     // Sail to the waiting second barge; neither it nor the tug is respawned.
     // Approach on its upstream side so the next lesson pulls it into open water.
@@ -375,14 +376,18 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if(hypot(tug.x-load.x,tug.y-load.y)<=150 && tug.y<=load.y-55) break;
         [self drivePracticeTug:stage toX:load.x-95 toY:load.y-85];
     }
-    // Derive both endpoints and the camera from one current status snapshot.
-    NSString *towStatus=(NSString *)stage.value;
-    b=[self worldPositionInStatus:towStatus tag:@"cargo"];
-    CGPoint boat=[self worldPositionInStatus:towStatus tag:@"tug"];
-    NSLog(@"Connecting tow: %@",towStatus);
-    [[self river:stage x:b.x y:b.y status:towStatus] pressForDuration:0.05
-            thenDragToCoordinate:[self river:stage x:boat.x y:boat.y status:towStatus]
-            withVelocity:300 thenHoldForDuration:0.1];
+    // A released drive can still move the hull/camera before XCTest injects a
+    // gesture. Retry a missed cast from a fresh shared snapshot, never teleport.
+    for(int attempt=0;attempt<6;attempt++) {
+        NSString *towStatus=(NSString *)stage.value;
+        if([self integerInStatus:towStatus tag:@"lesson"]!=BBLessonConnect)break;
+        if([self integerInStatus:towStatus tag:@"cast phase"]==0){
+            b=[self worldPositionInStatus:towStatus tag:@"cargo"];
+            CGPoint boat=[self worldPositionInStatus:towStatus tag:@"tug"];
+            [self castFrom:b to:boat stage:stage status:towStatus];
+        }
+        [self waitFor:@"; cast phase 0;" on:stage after:0.5];
+    }
     [self waitFor:BBLessonToken(BBLessonPull) on:stage];
     [self finishTowCourse:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];

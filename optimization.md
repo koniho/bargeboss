@@ -3317,3 +3317,12 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   Exposed the existing Java reference calculation as VesselShoreLight's shared
   fallback and wired the native adapter to it; Metal keeps its normal-map shader.
   This preserves shared reference math instead of duplicating it in Objective-C.
+- Older iOS release run 43816081918 failed the same native test suite, including
+  a single missed tow gesture during camera easing. The tow test now retries up
+  to six real casts using fresh shared snapshots; completion remains required.
+- Success casts also still aimed at the old water-plane bollard coordinate,
+  outside the current 30-unit catch radius after shore elevation. Published the
+  actual shared bollard anchor in automationStatus and use that same snapshot for
+  both endpoints in native delivery/tutorial tests. Miss coverage stays explicit.
+- Local preview completed successfully after the fixture repairs; unchanged
+  rendering replay signature 9b37d15a:2:1350 confirms fallback extraction parity.
