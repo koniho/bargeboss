@@ -5,14 +5,17 @@ public final class SceneCueTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void run() {
+        int workshops=0;
         for(int width:new int[]{960,1333,1920}) {
             Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();
             for(int lesson:new int[]{Tutorial.MOVE,Tutorial.CHANNEL,Tutorial.HOLD}) {
                 g.tutorial.lesson=lesson;g.tutorial.setup(g);
                 Order painter=new Order(g);TrainingChannelView.draw(g,painter);
-                check(painter.factories>0 && painter.caps>0 && painter.vessels>0,"regression scene includes shoreline caps and factory sprites");
+                workshops+=painter.factories;
+                check(painter.caps>0 && painter.vessels>0,"regression scene includes shoreline caps and vessels");
             }
         }
+        check(workshops>0,"shoreline depth fixtures include retained margin workshops");
         for(int bank=0;bank<2;bank++) {
             Game root=new Game();root.startTutorial();Game scene=root.activeGame();
             scene.tug.x=bank==0?-1610:TrainingChannel.BASIN_LEFT+16;

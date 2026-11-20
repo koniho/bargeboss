@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Shared 64-unit road tiles separating the tutorial's packed industrial blocks. */
 public final class IndustrialRoadView {
-    static final int MIN_COL=-32,MAX_COL=24,MIN_ROW=-12,MAX_ROW=28;
+    static final int MIN_COL=TrainingScenery.MIN_COL,MAX_COL=TrainingScenery.MAX_COL,MIN_ROW=TrainingScenery.MIN_ROW,MAX_ROW=TrainingScenery.MAX_ROW;
     private static final byte[] ROADS=makeRoads();
     private static final RoadTile[] TILES=makeTiles();
     private IndustrialRoadView() {}
@@ -28,7 +28,7 @@ public final class IndustrialRoadView {
         int width=MAX_COL-MIN_COL,height=MAX_ROW-MIN_ROW;
         byte[] roads=new byte[width*height];
         for(int row=MIN_ROW;row<MAX_ROW;row++) for(int col=MIN_COL;col<MAX_COL;col++)
-            if(isRoadCell(col,row) && clearance(col*64,row*64,64,64,48)) roads[(row-MIN_ROW)*width+col-MIN_COL]=1;
+            if(isRoadCell(col,row) && TrainingScenery.nearWater(col*64,row*64,64,64) && clearance(col*64,row*64,64,64,48)) roads[(row-MIN_ROW)*width+col-MIN_COL]=1;
         for(int row=0;row<height;row++) for(int col=0;col<width;col++) {
             int at=row*width+col;if(roads[at]==0) continue;
             if(col>0 && roads[at-1]!=0) roads[at]|=2;

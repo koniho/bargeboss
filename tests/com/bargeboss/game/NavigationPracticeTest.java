@@ -16,7 +16,7 @@ public final class NavigationPracticeTest {
         check(g.tutorial.lesson==Tutorial.MAP && n.attempts==1,"pulling completely out permits a fresh clean reverse attempt");
         g=fixture(Tutorial.MAP);n=g.tutorial.navigation;
         g.tug.x=NavigationPractice.OPEN_X;g.tug.y=NavigationPractice.OPEN_Y;n.mapPhase=1;g.step();
-        check(n.mapPhase==2 && g.overview.zoom()==OverviewMap.MAX_ZOOM,"chart lesson starts zoomed in in open water");
+        check(n.mapPhase==2 && g.overview.zoom()==OverviewMap.maxZoom(g),"chart lesson starts zoomed in in open water");
         float targetX=OverviewMap.mapX(g,NavigationPractice.TARGET_Y),targetY=OverviewMap.mapY(g,NavigationPractice.TARGET_X);
         check(targetX<0 || targetX>OverviewMap.WIDTH || targetY<0 || targetY>OverviewMap.HEIGHT,"initial zoom hides distant target");
         g.tug.x=NavigationPractice.TARGET_X;g.tug.y=NavigationPractice.TARGET_Y;g.step();

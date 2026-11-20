@@ -1,18 +1,19 @@
 package com.bargeboss.game;
 
-/** Player-following overhead navigation, clamped to the play bounds. */
+/** Player-following overhead navigation, clamped to the chart coverage. */
 public final class OverviewMap {
     static final float WIDTH=184,HEIGHT=184,EDGE=.5f;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
     private static final Chart[] CHARTS={new Chart(0),new Chart(1),new Chart(2),new Chart(3)};
-    // Never shrink below the full play-area fit; preserve the world's aspect ratio.
+    // Never shrink below the full chart fit; preserve the world's aspect ratio.
     static final float MIN_ZOOM=1,MAX_ZOOM=4;
     private static final float[] OUTSIDE=outside();
     private float level,zoom=1;
     private int pointerId=-1;
     boolean active;
     int edits;
-    void lessonZoomIn(){level=1;zoom=MAX_ZOOM;cancelTouch();}
+    void lessonZoomIn(Game g){level=1;zoom=maxZoom(g);cancelTouch();}
+    static float maxZoom(Game g){return chart(g).stage==0?5:MAX_ZOOM;}
     OverviewMap(){}
     float level(){return level;}
     float zoom(){return zoom;}
@@ -22,7 +23,7 @@ public final class OverviewMap {
     void cancelTouch(){pointerId=-1;active=false;}
     void setFromX(Game g,float x){
         edits++;Layout.Box b=sliderBounds(g);level=Physics.clamp((x-b.x-24)/(b.w-48),0,1);
-        zoom=MIN_ZOOM*(float)StrictMath.pow(MAX_ZOOM/MIN_ZOOM,level);
+        zoom=MIN_ZOOM*(float)StrictMath.pow(maxZoom(g)/MIN_ZOOM,level);
     }
     static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
     static boolean sliderHit(Game g,float x,float y){return visible(g) && sliderBounds(g).contains(x,y);}
@@ -103,11 +104,11 @@ public final class OverviewMap {
         Chart(int stage){
             this.stage=stage;
             float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:stage==2?new float[][]{IndianaHarbor.COAST}:stage==3?new float[][]{CalumetRiver.COAST}:new float[][]{TrainingChannel.WATER_BOUNDARY};
-            // Frame the level's world bounds, not an arbitrary padded shoreline crop.
+            // The tutorial includes its authored scenery margin; geographic levels retain play bounds.
             float[] bounds=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):
                     stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:
                     stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:
-                    PolygonWater.bounds(TrainingChannel.WATER_BOUNDARY);
+                    TrainingScenery.bounds();
             minX=bounds[0];minY=bounds[1];maxX=bounds[2];maxY=bounds[3];
             scale=Math.min((WIDTH-2*EDGE)/(maxY-minY),(HEIGHT-2*EDGE)/(maxX-minX));
             boundary=new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
@@ -151,17 +152,30 @@ public final class OverviewMap {
             }
             return triangles;
         }
-        public int key(){return 0x6d000800+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        public int key(){return 0x6d000900+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
             // Dark, faint water backing; the stronger cyan overlay distinguishes land/docks.
             p.poly(boundary,0x30061119);
             p.pushClipOutside(navigableHoles);
             try{p.poly(boundary,0x5096c5ce);}
             finally{p.popClip();}
+            if(stage==0)scenery(p);
             // Opaque strokes share one final layer fade, keeping joins even.
             outline(p,boundary,true,0xff96c5ce,1);
             for(float[] a:water)outline(p,a,stage!=1,0xff96c5ce,1.15f);
             for(float[] a:docks)outline(p,a,true,0xff7eaab5,.7f);
+        }
+        private void scenery(Painter p){
+            for(int row=IndustrialRoadView.MIN_ROW;row<IndustrialRoadView.MAX_ROW;row++)
+                for(int col=IndustrialRoadView.MIN_COL;col<IndustrialRoadView.MAX_COL;col++)
+                    if(IndustrialRoadView.roadClear(col,row))
+                        p.rect(x(row*64),y((col+1)*64),64*scale,64*scale,0x50708083);
+            for(int i=0;i<TrainingChannelView.FACTORY_PLACEMENTS;i++){
+                int cell=TrainingChannelView.factoryCell(i);
+                float wx=TrainingChannelView.factoryX(i),wy=TrainingChannelView.factoryY(i);
+                float hx=FactoryArt.footprintX(cell),hy=FactoryArt.footprintY(cell);
+                p.rect(x(wy-hy),y(wx+hx),2*hy*scale,2*hx*scale,0xaa9bb2b5);
+            }
         }
         private static void outline(Painter p,float[] a,boolean closed,int color,float width){
             for(int i=2;i<a.length;i+=2)p.line(a[i-2],a[i-1],a[i],a[i+1],width,color);

@@ -3607,3 +3607,46 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - After sharing the sky texture, normal title launch stayed on Vulkan, and a
   background/foreground surface recreation passed without fallback. Returned
   the development phone to normal Canvas launch after validation.
+
+## 2026-11-20 — Finite tutorial scenery and bounded camera
+
+- Platform/scope: shared Java; tutorial and its overhead chart. Other geographic
+  levels retain their existing camera policies. Android phone reserved for another
+  agent at the user's request; no phone settings, installation or launch performed.
+- Evidence: tutorial ground previously extended to every inverse-view tile, with
+  roads/workshops across a fixed 56x40-cell district. Terrain now ends at the water
+  bounding rectangle plus 256 world units (rounded outward to 64-unit cells):
+  x=-2496..896, y=-1280..1088. Roads and compact workshops are restricted to the
+  shoreline district; 26 retained workshops, 197 road tiles. Quiet interior ground
+  remains solid; no ground exists beyond the finite outer margin.
+- Camera changes: shared inverse-viewport coverage, raised-land allowance, smallest
+  legal translation, and aspect-dependent minimum zoom. A convex translation
+  constraint keeps the tug inside the usable view. If panning cannot satisfy both
+  coverage and tug visibility, increase zoom just enough. This replaces an initial
+  recentering approach that the continuous tutorial regression caught jumping.
+  Lasso freeze and screen drag anchors remain in the existing shared path.
+- Overview: same padded bounds, actual road/workshop footprints, and a tutorial-only
+  5x close view to preserve the map-learning exercise. No new raster cache or native
+  primitive; scenery stays in existing terrain chunks and the cached chart layer.
+- Validation: full checks through `build-android.sh` passed; signed debug APK built
+  with the existing key. 2,841 finite-coverage assertions (including very wide
+  screens and raised corners), continuous tutorial, navigation exercise, pinch and
+  drag invariants passed. All-heading shoreline regression: 1,461,230 production
+  hull/cargo pixel assertions plus 32,273 cached wall pixels. JVM/J2ObjC gameplay
+  and drawing trace agree at `cddaf6b:2:1350`; canonical baseline updated afterward.
+- Visual review: actual shared renderer at 960x600 and 1333x600, entrance/canal/
+  bridge at automatic and widest views; enlarged overhead chart. iOS Debug profile
+  build installed and launched on booted iPhone 17 simulator (iOS 26.5,
+  aktest-workspace-1). Inspected native Metal entrance and canal screenshots with
+  requested .65 zoom, which is constrained at the entrance to retain the tug.
+- Simulator-only stationary canal capture: 30-frame warmup, 120 measured frames,
+  median interval 16.664 ms, p95 17.231 ms; median draw 5.207 ms, p95 5.692 ms.
+  No evictions, 69,703,140 referenced texture bytes, zero pending preparations at
+  capture end. This is a sanity check, not an A/B speedup or physical-device FPS
+  claim; concurrent local builds and simulator GPU timing limit interpretation.
+  Android native touch/frame timing, physical iOS behavior, and moving cache
+  pressure remain unmeasured in this round.
+- Reproduce visuals: compile `tools/TutorialCoverageReview.java` with shared,
+  desktop, ReplayInput and ProfileScenario sources, then run
+  `com.bargeboss.game.TutorialCoverageReview`. Local untracked PNGs, simulator
+  captures and timing CSV/metadata are in `out/tutorial-coverage/`.

@@ -30,6 +30,7 @@ final class PinchZoom {
             manualZoom=Physics.clamp(startZoom*Physics.length(bx-ax,by-ay)/startDistance,MIN,MAX);
             remaining=HOLD_TICKS+RETURN_TICKS;
             g.changeCamera(Layout.focused(g.layout.width,g.layout.height,worldX,worldY,manualZoom,(ax+bx)*.5f,(ay+by)*.5f));
+            manualZoom=g.layout.camera.zoom;
         }
         return true;
     }

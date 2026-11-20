@@ -73,9 +73,11 @@ public final class StaticTerrainTest {
         check(hinted.calls.keySet().equals(visibleOnly.calls.keySet()),"preparation never adds visible layer draws");
         for(Call call:hinted.calls.values()){Call old=visibleOnly.calls.get(call.layer.key());check(old.hash==call.hash && old.x==call.x && old.y==call.y,"preparation preserves visible commands and anchors");}
         check(g.ticks==ticks && g.visualTicks==visual && g.layout==layout && g.tug.x==x && g.tug.y==y,"preparation leaves live game and camera untouched");
-        // Far dry ground contains shader faces only, so neither visible nor nearby
+        // Quiet dry ground inside the finite coverage contains shader faces only, so neither visible nor nearby
         // chunks should consume raster-cache entries or background preparation slots.
-        Game sparse=new Game();int col=20,row=20;
+        Trace removed=new Trace();StaticTerrain.tile(20,20,false).surfaces(removed);
+        check(removed.surfaces==0,"removed outer filler has no ground surfaces");
+        Game sparse=new Game();int col=-5,row=0;
         sparse.layout=Layout.renderTile(64,64,new RiverCamera(RiverCamera.Q*288-col*StaticTerrain.CHUNK-64,
                 -RiverCamera.Q*RiverCamera.DEPTH*312-row*StaticTerrain.CHUNK-64,1));
         StaticTerrain.Tile surfaceOnly=StaticTerrain.tile(col,row,false);Trace faces=new Trace();surfaceOnly.surfaces(faces);

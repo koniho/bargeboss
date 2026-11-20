@@ -29,7 +29,7 @@ public final class NavigationPractice {
     boolean map(Game g){
         if(mapPhase==0 && g.tug.x>TrainingChannel.BASIN_LEFT+50){mapPhase=1;g.cancelInputs();}
         if(mapPhase==1 && Physics.length(g.tug.x-OPEN_X,g.tug.y-OPEN_Y)<45){
-            mapPhase=2;g.cancelInputs();g.overview.lessonZoomIn();mapEdits=g.overview.edits;
+            mapPhase=2;g.cancelInputs();g.overview.lessonZoomIn(g);mapEdits=g.overview.edits;
         }
         if(mapPhase==2 && g.overview.edits>mapEdits && g.overview.zoom()<1.7f){mapPhase=3;g.haptic(Game.HAPTIC_TICK);}
         return mapPhase==3 && Physics.length(g.tug.x-TARGET_X,g.tug.y-TARGET_Y)<40;

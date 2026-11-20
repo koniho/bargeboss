@@ -84,6 +84,7 @@ public final class TrainingChannelView {
                 for(int attempt=0;attempt<4;attempt++) {
                     int cell=12+(seed-12+attempt)%4;
                     int wide=(int)FactoryArt.footprintX(cell)/32,tall=(int)FactoryArt.footprintY(cell)/32;
+                    if(!TrainingScenery.nearWater(col*64,row*64,wide*64,tall*64)) continue;
                     if(col+wide>IndustrialRoadView.MAX_COL || row+tall>IndustrialRoadView.MAX_ROW) continue;
                     if(!CalumetArt.clearFactory(col*64,row*64,wide*64,tall*64) || !IndustrialRoadView.clearance(col*64,row*64,wide*64,tall*64,setback(cell))) continue;
                     boolean fits=true;

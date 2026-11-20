@@ -433,6 +433,23 @@ See [the continuous tutorial contract](continuous-tutorial.md).
 `TrainingGroundView` subtracts the actual water geometry from the raised yard,
 then renders corrugated steel retaining faces and caps. Source ground texture is
 used only on wholly dry cells; partial shore cells use matching concrete.
+`TrainingScenery` defines a finite rectangle around the complete tutorial water
+bounds with a 256-unit margin, rounded outward to the 64-unit ground grid.
+Ground ends at that rectangle; roads and compact workshops remain within 256
+units of water. The quiet interior land remains solid, without distant industrial
+filler. The overhead chart fits these same padded bounds and depicts actual road
+and workshop footprints. Its tutorial close zoom reaches 5x so the chart lesson
+still requires zooming out to discover the destination (other charts retain 4x).
+
+`CameraCoverage` constrains the inverse-projected viewport, including raised land,
+to the scenery rectangle. It pans by the smallest legal world translation and
+limits zoom-out when the viewport cannot fit. A second convex constraint keeps
+the tug clear of the top/bottom HUD; if no pan can satisfy both, zoom increases
+only enough to fit. Tutorial setup, follow and pinch use this shared constraint.
+Lasso projection freeze and screen-space drag anchors retain their existing rules.
+Other locations retain their existing camera policies until they have authored
+finite scenery bounds.
+
 `GroundArt.LAND_RISE` lifts yard, factory bases, lamps and dock foundations.
 Bollard projection is exposed through `Game.bollardX/Y` to keep input, aiming
 and rope rendering attached to the same raised fitting.

@@ -7,7 +7,7 @@ final class OverviewMapTest {
         boolean chartOnly;int lines,fills;float x,y,xx,yy;
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){}
-        public void rect(float x,float y,float w,float h,int c){if(chartOnly)throw new AssertionError("chart has no filled panel or terrain");}
+        public void rect(float x,float y,float w,float h,int c){if(chartOnly){check(w>0 && h>0 && (c>>>24)<255,"scenery footprints are finite translucent vectors");fills++;}}
         public void circle(float x,float y,float r,int c){}
         public void poly(float[] xy,int c){if(chartOnly){check((c>>>24)>0 && (c>>>24)<255,"non-traversable fill is more translucent than chart contours");fills++;}}
         public void material(float x,float y,float ax,float ay,float bx,float by,int k,float d,float v,int c){}
@@ -21,8 +21,8 @@ final class OverviewMapTest {
             check(c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
             check(Math.abs((c.x(y+10)-c.x(y))-(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
-            float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:PolygonWater.bounds(TrainingChannel.WATER_BOUNDARY);
-            check(c.minX==actual[0] && c.minY==actual[1] && c.maxX==actual[2] && c.maxY==actual[3],"overview uses authoritative play extents without extra margin");
+            float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:TrainingScenery.bounds();
+            check(c.minX==actual[0] && c.minY==actual[1] && c.maxX==actual[2] && c.maxY==actual[3],"overview uses authoritative scenery coverage for the tutorial");
             check(c.boundary[0]==c.x(c.minY) && c.boundary[1]==c.y(c.maxX) && c.boundary[4]==c.x(c.maxY) && c.boundary[5]==c.y(c.minX),"border and world corners share one projection");
             check(c.boundary[0]==OverviewMap.EDGE && c.boundary[1]==OverviewMap.EDGE,"top-left play corner is aligned to viewport stroke");
             check(Math.abs(c.x(c.maxY)-(OverviewMap.WIDTH-OverviewMap.EDGE))<.001f || Math.abs(c.y(c.minX)-(OverviewMap.HEIGHT-OverviewMap.EDGE))<.001f,"full-area fit reaches at least one far viewport edge without stretching");
@@ -66,10 +66,10 @@ final class OverviewMapTest {
             g.pointerMove(8,slider.x+slider.w-24,0);
             check(g.overview.zoom()==OverviewMap.MIN_ZOOM && !g.pinchZoom.active(),"second pointer cannot steal slider or pinch world");
             g.pointerMove(7,slider.x+slider.w+80,slider.centerY()-200);
-            check(g.overview.zoom()==OverviewMap.MAX_ZOOM,"drag outside slider remains captured and clamps to max");
+            check(g.overview.zoom()==OverviewMap.maxZoom(g),"drag outside slider remains captured and clamps to max");
             g.pointerUp(7,slider.x+slider.w+80,slider.centerY()-200);
             check(!g.pointer && !g.overview.active && !g.navigating && !g.joystick.active && g.ropePhase==0,"release cannot drive or throw lasso");
-            check(g.overview.level()==1 && g.overview.zoom()==OverviewMap.MAX_ZOOM,"relative indicator retains current zoom after release");
+            check(g.overview.level()==1 && g.overview.zoom()==OverviewMap.maxZoom(g),"relative indicator retains current zoom after release");
             check(g.layout.camera==camera && g.tug.x==tugX && g.tug.y==tugY,"overview zoom leaves main camera and vessel unchanged");
             for(float fx:new float[]{0,.1f,.5f,.9f,1})for(float fy:new float[]{0,.1f,.5f,.9f,1}) {
                 float x=c.minX+fx*(c.maxX-c.minX),y=c.minY+fy*(c.maxY-c.minY);
@@ -91,7 +91,7 @@ final class OverviewMapTest {
         }
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);Layout.Box slider=OverviewMap.sliderBounds(practice);
         ReplayInput.tap(root,slider.x+slider.w-24,slider.centerY());
-        check(practice.overview.zoom()==OverviewMap.MAX_ZOOM && root.overview.zoom()==1,"practice routes slider to its active game");
+        check(practice.overview.zoom()==OverviewMap.maxZoom(practice) && root.overview.zoom()==1,"practice routes slider to its active game");
     }
     private static void checkAxis(float low,float high,float player,float size){
         float edge=OverviewMap.EDGE;
@@ -116,7 +116,7 @@ final class OverviewMapTest {
             check(g.pointer && g.overview.active && (joystick?g.joystick.active:g.holdingTug()),"zoom and drive both own their touch in either start order");
             float startX=g.tug.x,startY=g.tug.y;
             for(int i=0;i<24;i++) {g.pointerMove(7,slider.x+24+(slider.w-48)*i/23,slider.centerY());g.step();}
-            check(g.overview.zoom()==OverviewMap.MAX_ZOOM && !g.pinchZoom.active(),"zoom moves while drive remains held without main camera pinch");
+            check(g.overview.zoom()==OverviewMap.maxZoom(g) && !g.pinchZoom.active(),"zoom moves while drive remains held without main camera pinch");
             check(Physics.length(g.tug.x-startX,g.tug.y-startY)>1 && (joystick?g.joystick.active:g.holdingTug()),"tug keeps moving during map zoom");
             if(releaseZoomFirst) {
                 if(zoomFirst)g.pointerCancel(7);else g.pointerUp(7,slider.x+slider.w-24,slider.centerY());

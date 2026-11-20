@@ -203,7 +203,7 @@ public final class Game {
         if(blend==0) return Layout.focused(layout.width,layout.height,tug.x,tug.y,travelZoom,layout.width*.5f,layout.height*.62f);
         return workCamera(travelZoom+(WORK_ZOOM-travelZoom)*blend,blend,true);
     }
-    void fitTutorialCamera() { layout=tutorialCamera(); }
+    void fitTutorialCamera() { layout=TrainingScenery.constrain(tutorialCamera(),tug.x,tug.y); }
     private Body cameraLoad() {
         Body held=workingCargo();
         if(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE) && held==null)return cargo[2];
@@ -295,7 +295,7 @@ public final class Game {
         RiverCamera c=layout.camera;
         float px=c.screenX(pointerX,pointerY),py=c.screenY(pointerX,pointerY);
         float dx=c.screenX(downX,downY),dy=c.screenY(downX,downY);
-        layout=nextLayout;
+        layout=tutorial!=null?TrainingScenery.constrain(nextLayout,tug.x,tug.y):nextLayout;
         if(pointer && mapInRiver) {
             RiverCamera next=layout.camera;
             pointerX=next.worldX(px,py);pointerY=next.worldY(px,py);

@@ -54,7 +54,7 @@ public final class FactoryPlacementTest {
             boolean road=IndustrialRoadView.isRoadCell(col,row);
             check(road==(Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4),"one-cell roads separate consistent four-by-four industrial blocks, including negative coordinates");
             float distance=waterDistance(col*64,row*64,64,64);
-            boolean clearRoad=road && distance>=48;
+            boolean clearRoad=road && distance>=48 && distance<TrainingScenery.MARGIN;
             check(IndustrialRoadView.roadClear(col,row)==clearRoad,"road tiles preserve the full raised shoreline apron");
             int slot=owner[row-minRow][col-minCol];
             if(slot>=0)occupied++;

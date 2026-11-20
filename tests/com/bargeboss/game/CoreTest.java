@@ -19,6 +19,7 @@ public final class CoreTest {
         SceneDetailTest.run();
         RenderExclusionsTest.run();
         PinchZoomTest.run();
+        CameraCoverageTest.run();
         EngineAudioTest.run();
         SoundEffectsTest.run();
         DockCraneTest.run();
@@ -174,8 +175,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Circular navigation lenses retained; removed square housings change drawing trace only.
-        check(Parity.signature().equals("b0c81ead:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Finite tutorial scenery, boundary-aware framing and padded overview; JVM/native parity verified.
+        check(Parity.signature().equals("cddaf6b:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

@@ -42,8 +42,8 @@ public final class TrainingGroundView {
             float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
-        int firstX=(int)StrictMath.floor(minX/64)-1,lastX=(int)StrictMath.ceil(maxX/64)+1;
-        int firstY=(int)StrictMath.floor(minY/64)-1,lastY=(int)StrictMath.ceil(maxY/64)+1;
+        int firstX=Math.max(TrainingScenery.MIN_COL,(int)StrictMath.floor(minX/64)-1),lastX=Math.min(TrainingScenery.MAX_COL,(int)StrictMath.ceil(maxX/64)+1);
+        int firstY=Math.max(TrainingScenery.MIN_ROW,(int)StrictMath.floor(minY/64)-1),lastY=Math.min(TrainingScenery.MAX_ROW,(int)StrictMath.ceil(maxY/64)+1);
         for(int row=firstY;row<lastY;row++) for(int col=firstX;col<lastX;col++) {
             if(!tileVisible(g,col,row,true)) continue;
             float x=col*64,y=row*64;
