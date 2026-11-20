@@ -311,3 +311,9 @@ cycle. Use 60 warmup / 240 replay samples (optionally a fixed camera zoom) to
 include the lift, transfer, landing and return. The completed hull and shore
 load remain present. Record timed samples with builds/tests stopped and the
 phone unlocked; replay frame intervals are not equivalent to a live FPS claim.
+
+`--ez bb_surface_mesh false` compares the retained-path reference against the
+API 34+ static shore mesh default. Meshes retain each chunk's shader, geometry,
+UVs and clipping order; `surface_command_mib` includes estimated vertex storage.
+Use fixed zoom and a frozen fixture for A/B, then check moving-camera behavior.
+See [wide tutorial measurements](tutorial-wide-2026-11-19/README.md).

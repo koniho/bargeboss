@@ -3468,3 +3468,41 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Signed APK installed successfully on Pixel 11 Pro over wireless ADB and cold
   launch returned Status: ok. Restored the prior 300,000 ms display timeout.
   The installed game still uses its existing production lighting/artwork.
+
+### 2026-11-19 — Sparse tutorial at maximum player zoom-out: static shore mesh
+
+- Reproduced the report on Pixel 11 Pro / Skia Vulkan at pinch minimum zoom .65
+  (device camera scale .7834479), frozen barge-push tutorial tick 8509. The close
+  view was near 16.65 ms intervals. Two wide-view contributor sweeps measured
+  normal intervals near 68 ms; omitting all factory art/effects only reached
+  62–63 ms, whereas omitting shore geometry reached 31–34 ms. Warm cache builds,
+  misses and evictions were zero. More raster-cache capacity is not the fix here.
+- CPU sampling separately found substantial BridgeView / articulated-surface
+  drawing, RuntimeShader uniform updates, affine setup and path submission.
+  The old dense-factory diagnosis does not explain this sparse tutorial.
+- Android API 34+ now records opaque static shore surfaces as immutable triangle
+  meshes inside the existing retained, independently sorted chunks. Shared
+  geometry, UVs, material shader and clip scopes are preserved. Paths remain the
+  compatibility fallback, and `bb_surface_mesh=false` permits controlled A/B.
+  No iOS/core gameplay changes. Live bridge/machinery geometry is not yet batched.
+- Conservative paired comparison (120 warmup + 300 samples each): median interval
+  50.16 -> 31.27 ms, p95 59.67 -> 36.53 ms; drawing submission 22.55 -> 21.82 ms.
+  Final enabled-build repeat: median 32.36 ms, p95 39.61 ms. This remains around
+  30 FPS, not the 60 FPS with headroom target. Initial sweep baseline was slower
+  than the later paired baseline; do not advertise an unconditional 2x gain.
+- Retained surface storage .453 -> 1.008 MiB, with vertex estimates charged to
+  the existing 8 MiB/96-entry bound. One bounded ~.625 MiB staging buffer supports
+  recording; active draws reuse retained meshes. Added oversized-mesh eviction
+  checks without invalidating commands already referenced by the frame.
+- Native screenshot comparison: 3.219% pixels changed at all, .070% exceeded
+  8/255 channel difference, none exceeded 32/255; mean maximum-channel error
+  .096/255. Reviewed water/shore cuts and material scale. Edge antialiasing differs
+  slightly; this is not pixel-identical. No artistic simplification was applied.
+- Full check.sh and signed Android build passed, replay 266553ab:2:1350. The
+  enabled build installed successfully; native cache-lifecycle review and the
+  repeated wide fixture completed. Compressed CSV evidence, CPU hotspots and
+  caveats: docs/performance/tutorial-wide-2026-11-19/README.md.
+- Close-view enabled-build check: median interval 16.65 ms, p95 18.26 ms (300
+  frozen samples); normal game relaunched afterward and original 300,000 ms
+  screen timeout restored. Moving-camera and iOS-native comparisons remain
+  separate validation work; no claim of universal 60 FPS is made.

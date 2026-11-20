@@ -42,6 +42,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         surfaceSweep=intent.getBooleanExtra("bb_surface_sweep",false);
         contributors=intent.getBooleanExtra("bb_contributors",false);
         exclusion=intent.getIntExtra("bb_exclude",0);
+        painter.profileSurfaceMeshes(intent.getBooleanExtra("bb_surface_mesh",true));
         painter.profileKeepFactoryOriginals(factorySweep || (exclusion&256)!=0);
         if((contributors || surfaceSweep || factorySweep) && !mode.equals("freeze"))throw new IllegalArgumentException("Contributor sweep requires freeze mode");
         warmup=Math.max(0,Math.min(1800,intent.getIntExtra("bb_warmup",120)));

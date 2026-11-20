@@ -191,7 +191,15 @@ public final class CanvasPainter implements Painter {
     /** Developer-only effect isolation; default production appearance is unchanged. */
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
     private RetainedSurfaces retainedSurfaces;
-    private boolean retainSurfaces=true;
+    private boolean retainSurfaces=true,surfaceMeshes,recordingSurfaceMesh;
+    private SurfaceMesh surfaceMesh;
+    public void profileSurfaceMeshes(boolean enabled){
+        if(surfaceMeshes==enabled)return;
+        surfaceMeshes=enabled;
+        if(retainedSurfaces!=null)retainedSurfaces.clear();
+        if(enabled && surfaceMesh==null && android.os.Build.VERSION.SDK_INT>=34)surfaceMesh=new SurfaceMesh(assets);
+    }
+    private void flushSurfaceMesh(){if(recordingSurfaceMesh)surfaceMesh.flush(canvas);}
     public void profileRetainedSurfaces(boolean enabled){retainSurfaces=enabled;}
     public long profileSurfaceBytes(){return retainedSurfaces==null?0:retainedSurfaces.bytes();}
     public boolean retainedSurfaces(StaticLayer layer,float x,float y,float scale){
@@ -201,8 +209,12 @@ public final class CanvasPainter implements Painter {
         if(node==null){
             node=new android.graphics.RenderNode("shore-surfaces");node.setPosition(0,0,(int)layer.width(),(int)layer.height());node.setClipToBounds(false);
             Canvas previous=canvas;canvas=node.beginRecording();
-            try{layer.paint(this);}finally{canvas=previous;node.endRecording();}
-            retainedSurfaces.put(layer.key(),node);
+            recordingSurfaceMesh=surfaceMeshes && surfaceMesh!=null;
+            if(recordingSurfaceMesh)surfaceMesh.begin();
+            long meshBytes;
+            try{layer.paint(this);flushSurfaceMesh();meshBytes=recordingSurfaceMesh?surfaceMesh.recordedBytes():0;}
+            finally{recordingSurfaceMesh=false;canvas=previous;node.endRecording();}
+            retainedSurfaces.put(layer.key(),node,meshBytes);
         }
         int save=canvas.save();try{canvas.translate(x,y);canvas.scale(scale,scale);canvas.drawRenderNode(node);}finally{canvas.restoreToCount(save);}
         return true;
@@ -221,13 +233,14 @@ public final class CanvasPainter implements Painter {
 
     public boolean supportsUnionClips(){return true;}
     public void pushClipOutside(float[] triangles) {
+        flushSurfaceMesh();
         flushFoam();
         if(profile!=null)profile.clips++;
         canvas.save();path.reset();path.setFillType(Path.FillType.WINDING);
         for(int i=0;i<triangles.length;i+=6){path.moveTo(triangles[i],triangles[i+1]);path.lineTo(triangles[i+2],triangles[i+3]);path.lineTo(triangles[i+4],triangles[i+5]);path.close();}
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
-    public void popClip(){flushFoam();canvas.restore();}
+    public void popClip(){flushSurfaceMesh();flushFoam();canvas.restore();}
     public void beginFrame() {if(!paintingLayer) {layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) {
         float width=layer.width()*scale,height=layer.height()*scale;
@@ -309,6 +322,8 @@ public final class CanvasPainter implements Painter {
                 try {waterFoamShader=new WaterFoamShader(assets);normalSpriteShader=new NormalSpriteShader(assets);}
                 catch(IllegalArgumentException ex) {android.util.Log.w("BargeBoss","Water shader unavailable; using textured fallback",ex);}
                 if(android.os.Build.VERSION.SDK_INT>=34 && waterFoamShader!=null){
+                    try {surfaceMesh=new SurfaceMesh(assets);surfaceMeshes=true;}
+                    catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Surface mesh unavailable; retaining path renderer",ex);}
                     try {foamMesh=new FoamMesh(assets);}
                     catch(IllegalArgumentException ex){android.util.Log.w("BargeBoss","Foam mesh unavailable; retaining patch renderer",ex);}
                 }
@@ -499,6 +514,10 @@ public final class CanvasPainter implements Painter {
             Painter.super.shoreline(xy,uv,phase,energy,kind,color);
     }
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
+        if(recordingSurfaceMesh && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
+            surfaceMesh.add(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness);return;
+        }
+        flushSurfaceMesh();
         if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
         if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,SceneLighting.surfaceColor(color,material),wetness))

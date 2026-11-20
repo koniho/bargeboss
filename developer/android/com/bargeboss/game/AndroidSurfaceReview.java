@@ -17,6 +17,11 @@ final class AndroidSurfaceReview {
         if(cache.get(119)!=null)throw new AssertionError("Discarded command list was reused");
         cache.put(0,first);if(cache.get(0)!=first)throw new AssertionError("Evicted chunk failed to reload");
         cache.clear();if(cache.bytes()!=0 || first.hasDisplayList())throw new AssertionError("Command cache failed to close");
+        RenderNode oversized=new RenderNode("mesh-budget-review");oversized.setPosition(0,0,8,8);
+        oversized.beginRecording().drawColor(0xff123456);oversized.endRecording();
+        cache.put(500,oversized,9L*1024*1024);
+        if(cache.get(500)!=null || cache.bytes()!=0 || !oversized.hasDisplayList())throw new AssertionError("Mesh storage was not bounded safely");
+        oversized.discardDisplayList();
         android.util.Log.i("BargeBossProfile","SURFACE_REVIEW bounds/eviction/reload/invalidation/close passed");
     }
 }
