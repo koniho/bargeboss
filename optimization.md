@@ -4142,3 +4142,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Final overview120/360 capture all Vulkan: mean78.81ms,median74.08ms,p95 101.25ms,
   12.69FPS. Prior single capture76.13/75.65/84.19ms respectively; median similar,
   tails worse. Not a thermal-controlled A/B; no speedup or exact cost claim.
+
+## 2026-11-20 Shared rain and lightning experiment
+- Added optional Montrose WeatherView after world/smoke and before guidance/HUD:
+  slanted rain, restrained cool storm tint and single diffuse lightning pulses.
+  Simulation ticks and fixed seed tables only; maximum192 streaks/two rectangles,
+  independent of zoom/world area. No new textures, raster caches, particle state,
+  physics or shadow passes. Clear weather emits no primitives.
+- Expanded shared wave controls with rain OFF/LIGHT/STEADY/HEAVY, lightning
+  OFF/LOW/HIGH, TEST FLASH and RESET ALL. Session-only and clear by default.
+  Panel consumes taps/cancellation without steering. Android developer profile
+  flags bb_rain/bb_lightning/bb_weather_flash permit matched cost comparisons.
+- Full checks/APK and native encoding regressions pass;4,294 weather budget,
+  purity, input and flash checks. JVM/J2ObjC parity remains38137f35:2:1350.
+  Actual shared renderer rain/flash/panel previews reviewed via WeatherReview.
+- APK installed on Pixel11 Pro. Native comparison blocked by locked phone
+  (showing=true/inputRestricted=true); asked user to unlock. Aborted capture
+  produces no performance evidence. Native pixels/motion/FPS remain pending;
+  no keyguard change. Evidence: docs/performance/weather-2026-11-20/.

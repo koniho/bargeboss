@@ -16,6 +16,7 @@ public final class Renderer {
         else if(g.montroseStage())MontroseView.draw(g,p);
         else TrainingChannelView.draw(g,p);
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);
+        WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
         HarborView.objective(g,p);

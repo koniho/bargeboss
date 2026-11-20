@@ -121,7 +121,7 @@ public final class CoreTest {
         SurfaceMaterialTest.run();
         FoamBatchTest.run();
         SceneLightingTest.run();
-        WaterEnergyBoundsTest.run();WaterClipTest.run();SeaWaveZoomTest.run();
+        WaterEnergyBoundsTest.run();WaterClipTest.run();SeaWaveZoomTest.run();WeatherTest.run();
         UnionClipTest.run();
         ShorelineMaterialTest.run();
         ShorelineViewTest.run();

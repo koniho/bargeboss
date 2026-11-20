@@ -1,0 +1,38 @@
+package com.bargeboss.game;
+
+/** Weather stays bounded, deterministic, optional and routed away from steering. */
+public final class WeatherTest {
+    private static int checks;
+    private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
+    private static final class Trace implements Painter {
+        int lines,rects;long hash;
+        public void line(float x,float y,float xx,float yy,float w,int c){lines++;hash=hash*31+Float.floatToIntBits(x);hash=hash*31+Float.floatToIntBits(y);check(Float.isFinite(x+y+xx+yy+w),"finite rain");}
+        public void rect(float x,float y,float w,float h,int c){rects++;check((c>>>24)<=34,"weather wash keeps boats readable");}
+        public void poly(float[] p,int c){throw new AssertionError("no weather mesh builds");}
+        public void circle(float x,float y,float r,int c){}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){throw new AssertionError("no weather textures");}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new AssertionError("no weather textures");}
+    }
+    private static Trace draw(Game g){Trace t=new Trace();WeatherView.draw(g,t);return t;}
+    private static void tap(Game g,float x,float y){g.pointerDown(93,x,y);g.pointerUp(93,x,y);}
+    public static void run(){
+        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();
+        Trace clear=draw(g);check(clear.lines+clear.rects==0,"clear weather costs no primitives");
+        g.settings.adjustRain(99);g.settings.adjustLightning(99);
+        for(int tick:new int[]{0,120,124,130,143,144,539,540,544,35999,36000}){
+            g.visualTicks=tick;float x=g.tug.x,y=g.tug.y;Trace a=draw(g),b=draw(g);
+            check(a.lines==WeatherView.MAX_STREAKS && a.rects<=2,"fixed heavy weather submission cap");
+            check(a.hash==b.hash && a.lines==b.lines,"draw time does not advance rain");
+            check(g.visualTicks==tick && g.tug.x==x && g.tug.y==y,"weather rendering cannot mutate gameplay");
+        }
+        g.settings.resetWeather();g.settings.developerWaves=true;tap(g,30,90);
+        tap(g,250,232);check(g.settings.rainLevel()==1,"rain control");
+        tap(g,250,278);check(g.settings.lightningLevel()==1,"lightning control");
+        g.pointerDown(93,250,232);g.pointerCancel(93);g.pointerUp(93,250,232);check(g.settings.rainLevel()==1,"cancel weather tap");
+        tap(g,60,330);g.visualTicks+=4;check(WeatherView.flash(g)==1,"test flash peaks after four ticks");
+        check(!g.pointer,"weather taps never steer");tap(g,200,330);
+        check(g.settings.rainLevel()==0 && g.settings.lightningLevel()==0 && draw(g).lines==0 && WeatherView.flash(g)==0,"reset all returns clear");
+        System.out.println(checks+" weather budget, determinism, flash and input assertions passed");
+    }
+    public static void main(String[] args){run();}
+}

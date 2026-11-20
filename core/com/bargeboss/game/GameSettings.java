@@ -12,6 +12,13 @@ public final class GameSettings {
     public void adjustWaves(int change){waveLevel=Math.max(0,Math.min(12,waveLevel+change));}
     public void turnWaves(int steps){waveDirection=Math.floorMod(waveDirection+steps,24);double a=waveBearing()*StrictMath.PI/180;waveCos=StrictMath.cos(a);waveSin=StrictMath.sin(a);}
     public void resetWaves(){waveLevel=4;waveDirection=0;waveCos=1;waveSin=0;}
+    private int rainLevel,lightningLevel;
+    int weatherFlashTick=-1000000;
+    public int rainLevel(){return rainLevel;}
+    public int lightningLevel(){return lightningLevel;}
+    public void adjustRain(int change){rainLevel=Math.max(0,Math.min(3,rainLevel+change));}
+    public void adjustLightning(int change){lightningLevel=Math.max(0,Math.min(2,lightningLevel+change));}
+    public void resetWeather(){rainLevel=lightningLevel=0;weatherFlashTick=-1000000;}
     public int joystickSide(){return side;}
     public int version(){return version;}
     public void setJoystickSide(int next){if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}
