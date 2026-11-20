@@ -1,0 +1,14 @@
+--------- beginning of main
+11-20 01:28:17.281 19839 19839 I BargeBossVulkan: swapchain build=1 transform=2 extent=2238x1080
+11-20 01:28:21.277 19839 19934 I BargeBossVulkan: mean native ms wait=0.065 encode=2.547 present=0.273 presentCPU=0.257 gpu=4.372 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:21.277 19839 19934 I BargeBossVulkan: frames submitted=120 completed=120 replaced=0
+11-20 01:28:22.806 19839 19934 I BargeBossVulkan: mean native ms wait=0.058 encode=2.542 present=0.302 presentCPU=0.251 gpu=4.454 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:22.806 19839 19934 I BargeBossVulkan: frames submitted=240 completed=240 replaced=0
+11-20 01:28:24.276 19839 19934 I BargeBossVulkan: mean native ms wait=0.054 encode=2.355 present=0.229 presentCPU=0.214 gpu=4.542 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:24.276 19839 19934 I BargeBossVulkan: frames submitted=360 completed=360 replaced=0
+11-20 01:28:25.721 19839 19934 I BargeBossVulkan: mean native ms wait=0.055 encode=2.607 present=0.251 presentCPU=0.232 gpu=4.533 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:25.721 19839 19934 I BargeBossVulkan: frames submitted=480 completed=480 replaced=0
+11-20 01:28:27.167 19839 19934 I BargeBossVulkan: mean native ms wait=0.057 encode=2.379 present=0.231 presentCPU=0.217 gpu=4.568 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:27.167 19839 19934 I BargeBossVulkan: frames submitted=600 completed=600 replaced=0
+11-20 01:28:28.608 19839 19934 I BargeBossVulkan: mean native ms wait=0.062 encode=2.827 present=0.262 presentCPU=0.252 gpu=4.534 vertices=83679 batches=1223 reuse=0 record=120 flags=0
+11-20 01:28:28.608 19839 19934 I BargeBossVulkan: frames submitted=720 completed=720 replaced=0

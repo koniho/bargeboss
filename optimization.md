@@ -3669,3 +3669,36 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Prior presentation elapsed time includes driver CPU and synchronization; it
   does not establish a fixed display limit. Factory removal alone does not isolate
   shoreline processing, effects, packet construction or presentation overhead.
+
+### 2026-11-20 — Vulkan device test: repeated swapchain recreation fixed
+
+- Android worktree branch `perf/android-vulkan-command-reuse`: command reuse tests
+  exposed zero hits because every SUBOPTIMAL presentation destroyed/rebuilt the
+  swapchain and pipelines. The landscape surface reports ROTATE_90 while the host
+  requests IDENTITY; recreating unchanged properties repeats the same condition.
+- Keep a successfully presented suboptimal swapchain when extent/transform have
+  not changed; retain OUT_OF_DATE and actual surface-change rebuilds. Log builds.
+  This corrects earlier interpretation: the measured presentation span included
+  application-triggered resource teardown/recreation, not just driver/display waits.
+  It does not establish the same defect in Canvas/HWUI.
+- Full frozen tutorial: 23.01 ms mean displayed interval before; 12.16, 16.50,
+  18.91 ms afterward across sequential repeats. Presentation CPU fell from about
+  9 ms to 0.2–0.6 ms; GPU remains about 4.5 ms. Late Java drawing rose to 18 ms:
+  CPU scheduling/thermal behavior remains unresolved, despite sampled LIGHT status.
+- Animated tight-circle tow (reuse OFF): 12.57 ms mean displayed interval, 16.68 ms
+  p95. These are compositor intervals, not asynchronous UI production FPS.
+- Reuse now reaches 120/120 steady hits, 11.82/13.16 ms mean displayed intervals.
+  Exact comparisons must use CPU-owned memory: mapped GPU-memory reads caused a
+  rejected 138 ms regression. The optional snapshot adds ~10.2 MiB in this fixture,
+  bounded to 32 MiB per two frame slots. Reuse remains developer-only, OFF normally.
+- Clear-only control retains shared Java composition; before fix 15.68 ms, late
+  fixed run 19.85 ms with Java draw median 18.52 ms. Do not interpret these differing
+  CPU conditions as a negative GPU result. No stable 60 FPS/headroom claim yet.
+- Full Android checks/build passed; final native compile/sign/install passed using
+  existing debug key. Swapchain fix and command reuse both preserve all 2,602,800
+  screenshot pixels in the frozen fixture. Cross-vendor/all-stage native checks
+  remain outstanding. Canvas remains the default; Vulkan stays opt-in.
+- Raw captures, rejected results, reproduction commands and limits:
+  docs/performance/vulkan-command-reuse-2026-11-20/README.md.
+- Normal opt-in Vulkan title launch and Home/resume passed: fresh renderer on
+  surface recreation, then 120 completed frames per ~2 seconds, no fallback.

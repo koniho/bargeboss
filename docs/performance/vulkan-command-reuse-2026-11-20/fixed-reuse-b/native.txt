@@ -1,0 +1,2 @@
+--------- beginning of main
+11-20 01:28:48.613 20213 20213 I BargeBossVulkan: swapchain build=1 transform=2 extent=2238x1080
