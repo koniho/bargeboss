@@ -283,6 +283,30 @@ A shared level-file format and visual editor are still an authoring gap.
 Use JDK 21 for building. No Gradle, npm, game engine or third-party gameplay library
 is required. Build outputs stay under `build/` and `ios/build/`.
 
+### Development CI cadence
+
+Every push and pull request runs shared checks, desktop builds/previews and the
+Android build. During active development, iOS compatibility checks run only for
+changes to `ios/`, the shared Painter adapters, Viewport/Layout, static layers,
+sprite atlas or shared native lighting fallback. The exact path filters live in
+[Verify iOS compatibility](.github/workflows/ios-verify.yml).
+
+These automatic iOS checks compile the simulator app and compare JVM/native
+traces. Full native gesture tests and the unsigned device build are manual:
+
+```sh
+gh workflow run ios-verify.yml --ref main -f full_validation=true
+# Compile/parity only, even when the change did not match an automatic path:
+gh workflow run ios-verify.yml --ref main -f full_validation=false
+```
+
+Run full validation at milestones or roughly weekly, and before TestFlight.
+Manually request compatibility checks when changing other Java APIs consumed by
+native hosts (for example Game input/lifecycle methods); path filters cannot
+infer method-level dependencies. Android validation does not replace native
+rendering, touch or lifecycle checks. Signed archives remain manual through
+`ios-release.yml`, which retains the full validation gate before signing.
+
 ### Desktop
 
 ```sh

@@ -3338,3 +3338,23 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   40-minute job budget expired during xcresult upload, after all checks passed.
   Increased the main iOS budget to 60 minutes, matching release, to accommodate
   measured hosted-simulator variation and preserve diagnostic artifact uploads.
+
+## 2026-11-20 — Development iOS CI cadence
+
+- Split iOS verification from routine Android/desktop CI at the user's request.
+  Automatic native adapter/renderer-contract changes still compile the simulator
+  and compare translated/JVM traces. Native gestures and unsigned device builds
+  now require manual full_validation; signed release remains manual and retains
+  all native tests. README documents milestone/weekly use and manual checks for
+  native-facing Java API changes outside the path filter.
+- Workflow-only change: no gameplay, renderer, assets or local build commands
+  changed. Validation: parsed workflow structure, checked dispatch/path guards
+  and preserved release gates; Android build/install validation follows.
+- Follow-up full iOS run 44650963496 failed tutorial TIE -> CONNECT (lesson 7
+  remained after its cast), followed by an app-termination failure. Earlier
+  release and main test suites passed. This native gesture instability remains
+  unresolved; changing cadence does not claim it fixed. Full manual verification
+  must revisit it before TestFlight. Android and all desktops passed that run.
+- Local Android full checks/build passed; installed and launched successfully.
+  YAML structure, representative changed-path routing, manual-only expensive
+  steps and the unchanged signed-release validation gate were verified locally.
