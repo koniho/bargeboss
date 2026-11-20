@@ -1,0 +1,21 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=montrose-green-shore",
+    "--ios-lighting=0",
+    "--ios-warmup=45",
+    "--ios-frames=30"
+  ],
+  "frames": 30,
+  "mean_ms": 16.66701,
+  "median_ms": 16.6704,
+  "p95_ms": 17.2423,
+  "max_ms": 17.2533,
+  "fps": 59.99876402546107,
+  "draw_median_ms": 8.7209,
+  "draw_p95_ms": 9.2006,
+  "draw_max_ms": 10.19,
+  "gpu_median_ms": 0.0926,
+  "gpu_p95_ms": 0.109
+}

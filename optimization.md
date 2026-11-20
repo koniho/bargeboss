@@ -3993,3 +3993,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   validation, continuous transitions, and targeted diffuse/emissive art layers.
   Core Graphics retains its simpler flat material fallback; daylight makes baked
   factory illumination visible. Neither is claimed as full physical relighting.
+
+### 2026-11-20 — Issue 17 Montrose grass/shore validation
+
+- Tested cb15b0b without runtime changes, using the isolated iOS simulator: green
+  shore and full overview at all four profiles, 45 warmup/30 measured draws each.
+- Palette responds correctly on lawn, limestone and concrete. Daylight exposes
+  conspicuous repeating lawn tile seams; wide views show texture repetition. No
+  separate sand-beach material exists in this branch, so sand remains unverified.
+- Close shore median intervals 16.66–16.67 ms; overview 216.66–233.32 ms with 27,024
+  cumulative direct-layer fallbacks and 159.3 MiB textures. Overview is a failed
+  smooth-frame check; causality/regression needs an isolated baseline comparison.
+- Evidence and follow-ups: docs/performance/lighting-presets-2026-11-20/montrose-shore.md.
+  No phone access, install, artwork change or runtime fix was performed.
