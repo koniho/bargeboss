@@ -12,18 +12,20 @@ public final class SeaWaves {
     public static float exposure(float x,float y){
         float mx=MontroseHarbor.planX(x),my=MontroseHarbor.planY(y);
         float lake=Math.max(smooth(1100,1420,my),smooth(1650,2050,mx));
-        float entrance=smooth(700,1250,my)*(1-smooth(180,450,Math.abs(mx-350)));
-        return .12f+.88f*Math.max(lake,entrance);
+        float entrance=smooth(1080,1350,my)*(1-smooth(120,300,Math.abs(mx-350)));
+        return Math.max(lake,entrance);
     }
     static float directionX(Game g,int wave){return (float)(DX[wave]*g.settings.waveCos-DY[wave]*g.settings.waveSin);}
     static float directionY(Game g,int wave){return (float)(DX[wave]*g.settings.waveSin+DY[wave]*g.settings.waveCos);}
     static float bend(float v,int wave){return 10*(float)StrictMath.sin(v*.012+wave*1.7)+5*(float)StrictMath.sin(v*.027+wave);}
     static float bendSlope(float v,int wave){return .12f*(float)StrictMath.cos(v*.012+wave*1.7)+.135f*(float)StrictMath.cos(v*.027+wave);}
     static float value(Game g,float x,float y,float tick,int component){
+        float exposure=g.montroseStage()?exposure(x,y)*g.settings.waveIntensity():1;
+        if(exposure==0)return 0;
         float sum=0;
         for(int i=0;i<2;i++){
             float dx,dy,k,omega,amplitude;
-            if(g.montroseStage()){dx=directionX(g,i);dy=directionY(g,i);k=K[i];omega=OMEGA[i];amplitude=AMPLITUDE[i]*exposure(x,y)*g.settings.waveIntensity();}
+            if(g.montroseStage()){dx=directionX(g,i);dy=directionY(g,i);k=K[i];omega=OMEGA[i];amplitude=AMPLITUDE[i]*exposure;}
             else {
                 float kx=i==0?.017f:-.013f,ky=i==0?.009f:.021f;
                 k=Physics.length(kx,ky);dx=-kx/k;dy=-ky/k;omega=(i==0?.048f:.031f)/Physics.DT;amplitude=i==0?.65f:.22f;
@@ -66,7 +68,8 @@ public final class SeaWaves {
                     float mid=v+segment*.5f,at=u+bend(mid,wave);
                     float x=dx*at-dy*mid,y=dy*at+dx*mid;
                     if(!MontroseHarbor.contains(x,y))continue;
-                    float e=exposure(x,y),broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
+                    float e=exposure(x,y);if(e==0)continue;
+                    float broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
                     if(broken<.03f)continue;
                     float curve=bend(v+segment,wave)-bend(v,wave);
                     float width=4+3*g.settings.waveIntensity();

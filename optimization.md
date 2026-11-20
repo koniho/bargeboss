@@ -3857,3 +3857,42 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   completed tutorial commit. No real-iOS or Canvas timing validation this round.
 - Wake packet centers remain fixed at emission positions. Surface lift/tilt is
   implemented; horizontal wake advection is a separate outstanding experiment.
+
+### 2026-11-20 — Montrose shoreline-mask investigation
+
+- User reports poor performance and requests nearly calm sheltered water plus a
+  clockwise 90-degree Montrose overview rotation.
+- Separate Android Vulkan sampled trace, wide Montrose replay, .65 zoom,
+  120 warmup / 90 sampled frames: no overflow or unmatched transitions.
+  Approximate inclusive main-thread CPU: shoreline region 75.1%, disjoint union
+  conversion 73.5%, WaterSurface.draw 71.8%; wave sampling 3.7%. Sampling adds
+  substantial overhead, so these percentages identify hotspots, not frame times.
+  Raw trace: out/profiles/montrose-opt-trace/methods.trace.
+- Vulkan requests disjoint clip triangles. Rebuilding the full-view water mask
+  dominates this fixture; GPU slowness and historical Vulkan regressions are not
+  established by this trace. The previous pre-wave baseline used the same Vulkan
+  host, so it cannot isolate changes made during earlier Vulkan optimization.
+- Added one per-water-surface static shore mask with a 96-world-unit guard band,
+  independent of the 32-entry per-thread shore cache that per-vessel requests
+  churn. Camera changes transform retained unit-projection geometry; no geometry
+  or drawing-order simplification. Source plus projected float payload capped at
+  2 MiB; oversized masks fall back. First construction / leaving the guard band
+  still builds synchronously and remains a possible cold/panning spike.
+- Harbor ambient exposure now reaches zero, including at 3× intensity; entrance
+  exposure builds near the mouth. Calm ambient detail is sparse; emitted boat
+  wakes remain visible. Open-water wave appearance is retained.
+- Initial checks: 12,648 cached/direct shoreline coverage probes across scales
+  and both union/disjoint modes; 1,113 wave behavior assertions passed. Native
+  timing and full validation pending below.
+- Final validation: full build/checks, overview pixel/input tests, all-heading
+  shoreline pixels (1,461,230), and JVM/J2ObjC c71edb61:2:1350 passed.
+  Native screenshots confirm calm harbor and clockwise overview with markers.
+- Untraced phone comparison (wide, .65 zoom, 120+180 frames): Vulkan before
+  median/mean presentation 83.28/87.00 ms, Canvas before 16.66/22.92 ms,
+  Vulkan after 16.66/19.82 ms (p95 24.99); CPU draw 81.77 -> 16.42 ms.
+  Old-build repeat after optimized run returned to 83.29/87.28 ms. Inlet after:
+  median/mean 16.65/16.70 ms, CPU draw median 8.90 ms. These compare the combined
+  cache/calm-water/map increment; no cache-only switch or historical bisect.
+- Evidence: docs/performance/montrose-mask-cache-2026-11-20/. Wide throughput is
+  about 50 FPS on average, not locked 60. Synchronous cache misses still need
+  work. No real-iOS validation; Canvas comparison is the before build only.

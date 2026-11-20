@@ -136,3 +136,15 @@ bearing wrap. Final JVM/J2ObjC signature is `906722f:2:1350`. Full Android build
 checks and 1,461,230 all-heading shoreline pixel assertions passed. The developer
 APK was installed; live power/direction taps were exercised on the phone.
 No physical iOS-device validation was performed.
+
+### Sheltered harbor and first optimization
+
+Sheltered Montrose water now has zero ambient swell, including at maximum power.
+Waves build near the entrance and retain their existing appearance in open water.
+Boat-generated wakes and quiet hull ripples remain. The Montrose overview is
+rotated 90 degrees clockwise with its targets, cargo and player markers; its
+zoom slider and main-world camera are unchanged.
+
+A sampled trace identified repeated disjoint shoreline-mask construction as the
+main wide-view cost. The water-effects layer now retains one bounded static mask
+and transforms it with the camera. See the [performance comparison](../performance/montrose-mask-cache-2026-11-20/README.md).

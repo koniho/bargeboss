@@ -8,6 +8,7 @@ public final class WaterSurface {
     private final Body[] source=new Body[CAPACITY];
     public final VesselFoam foam=new VesselFoam();
     private int cursor;
+    private final WaterClip surfaceClip=new WaterClip();
     public int emitted,pulses;
     public WaterSurface() { for(int i=0;i<CAPACITY;i++) age[i]=LIFE; }
     static final float WAKE_SPEED=.55f, WAKE_WIDTH=26;
@@ -145,7 +146,8 @@ public final class WaterSurface {
                 float wx=c.worldX(sx,sy),wy=c.worldY(sx,sy);
                 l=Math.min(l,wx);right=Math.max(right,wx);top=Math.min(top,wy);bottom=Math.max(bottom,wy);
             }
-            clip=ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
+            clip=g.montroseStage()?surfaceClip.get(g,c,l-8,top-8,right+8,bottom+8,canvas.supportsUnionClips())
+                    :ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
         } else p=new WaterEffectsPainter(g,p);
         if(clip.length>0)canvas.pushClipOutside(clip);
         p.beginWaterFoamBatch();

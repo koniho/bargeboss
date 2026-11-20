@@ -33,10 +33,12 @@ public final class OverviewMap {
         if(span<=view+.001f)return 0;
         return Physics.clamp(view*.5f-player,view-span,0);
     }
-    static float offsetX(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((g.tug.y-c.minY)*scale,(c.maxY-c.minY)*scale,WIDTH-2*EDGE);}
-    static float offsetY(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.maxX-g.tug.x)*scale,(c.maxX-c.minX)*scale,HEIGHT-2*EDGE);}
-    static float mapX(Game g,float worldY){Chart c=chart(g);return EDGE+(worldY-c.minY)*c.scale*g.overview.zoom()+offsetX(g);}
-    static float mapY(Game g,float worldX){Chart c=chart(g);return EDGE+(c.maxX-worldX)*c.scale*g.overview.zoom()+offsetY(g);}
+    static float offsetX(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.stage==1?g.tug.x-c.minX:g.tug.y-c.minY)*scale,(c.stage==1?c.maxX-c.minX:c.maxY-c.minY)*scale,WIDTH-2*EDGE);}
+    static float offsetY(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.stage==1?g.tug.y-c.minY:c.maxX-g.tug.x)*scale,(c.stage==1?c.maxY-c.minY:c.maxX-c.minX)*scale,HEIGHT-2*EDGE);}
+    static float mapX(Game g,float axis){Chart c=chart(g);return EDGE+(axis-(c.stage==1?c.minX:c.minY))*c.scale*g.overview.zoom()+offsetX(g);}
+    static float mapY(Game g,float axis){Chart c=chart(g);return EDGE+(c.stage==1?axis-c.minY:c.maxX-axis)*c.scale*g.overview.zoom()+offsetY(g);}
+    static float mapX(Game g,float wx,float wy){return mapX(g,g.montroseStage()?wx:wy);}
+    static float mapY(Game g,float wx,float wy){return mapY(g,g.montroseStage()?wy:wx);}
     // Four disjoint rectangles, with consistent triangle winding, work on every
     // host's existing exclusion clip (including Metal's stencil implementation).
     private static float[] outside(){
@@ -80,7 +82,7 @@ public final class OverviewMap {
         local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
         for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
-            float x=mapX(g,b.y),y=mapY(g,b.x);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
+            float x=mapX(g,b.x,b.y),y=mapY(g,b.x,b.y);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
         if(g.trainingChannel() && g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate<TrainingChannel.X.length){int i=g.tutorial.canal.guideGate(g);target(g,local,TrainingChannel.X[i],TrainingChannel.Y[i],TARGET);}
         if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.FIGURE_EIGHT || g.tutorial.lesson==Tutorial.REVERSE) && g.tutorial.driveMarker<Tutorial.DRIVE_X.length){int i=g.tutorial.driveMarker;target(g,local,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],TARGET);}
@@ -88,20 +90,20 @@ public final class OverviewMap {
         if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.SLIP || g.tutorial.lesson==Tutorial.MAP))target(g,local,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),TARGET);
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
-        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.y[i]),mapY(g,g.rescue.x[i]),1.7f,TARGET);
+        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.x[i],g.rescue.y[i]),mapY(g,g.rescue.x[i],g.rescue.y[i]),1.7f,TARGET);
         if(g.tutorial!=null){
             int ink=g.passages.bridges.length>0 && g.passages.passable(0)?0x9995d7d1:0xbbffc170;
             local.line(mapX(g,TutorialCanalBridge.Y-TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),
                     mapX(g,TutorialCanalBridge.Y+TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),1,ink);
         }
-        float x=mapX(g,g.tug.y),y=mapY(g,g.tug.x),pulse=pulse(g.visualTicks);
+        float x=mapX(g,g.tug.x,g.tug.y),y=mapY(g,g.tug.x,g.tug.y),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));
         SoftCue.ring(local,x,y,4+2*pulse,1,SoftCue.alpha(PLAYER,.4f+.35f*pulse),1);
         local.circle(x,y,2.7f,PLAYER);
         } finally {local.popClip();}
         slider(g,p);
     }
-    private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wy),y=mapY(g,wx);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
+    private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wx,wy),y=mapY(g,wx,wy);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
         final int stage;final float minX,maxX,minY,maxY,scale;
         final float[][] water,docks;
@@ -116,16 +118,17 @@ public final class OverviewMap {
                     TrainingScenery.bounds();
             minX=bounds[0];minY=bounds[1];maxX=bounds[2];maxY=bounds[3];
             scale=Math.min((WIDTH-2*EDGE)/(maxY-minY),(HEIGHT-2*EDGE)/(maxX-minX));
-            boundary=new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
+            boundary=stage==1?new float[]{x(minX),y(minY),x(maxX),y(minY),x(maxX),y(maxY),x(minX),y(maxY)}
+                    :new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
             water=project(stage==1?new float[][]{MontroseHarbor.COAST}:extent);
             docks=project(stage==1?MontroseHarbor.DOCKS:new float[0][]);
             navigableHoles=navigableClip();
         }
-        float x(float worldY){return EDGE+(worldY-minY)*scale;}
-        float y(float worldX){return EDGE+(maxX-worldX)*scale;}
+        float x(float worldY){return EDGE+(worldY-(stage==1?minX:minY))*scale;}
+        float y(float worldX){return EDGE+(stage==1?worldX-minY:maxX-worldX)*scale;}
         private float[][] project(float[][] shapes){float[][] result=new float[shapes.length][];
             float[] clip=boundary;
-            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+1]);b[i+1]=y(a[i]);}result[j]=PolygonWater.clip(b,clip);}
+            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+(stage==1?0:1)]);b[i+1]=y(a[i+(stage==1?1:0)]);}result[j]=PolygonWater.clip(b,clip);}
             return result;
         }
         /** Collect convex navigable pieces once, including the marina's dock cutouts. */
@@ -151,13 +154,13 @@ public final class OverviewMap {
             int count=0;for(float[] q:pieces)count+=(q.length/2-2)*6;
             float[] triangles=new float[count];int at=0;
             for(float[] q:pieces)for(int i=2;i<q.length-2;i+=2){
-                triangles[at++]=x(q[1]);triangles[at++]=y(q[0]);
-                triangles[at++]=x(q[i+1]);triangles[at++]=y(q[i]);
-                triangles[at++]=x(q[i+3]);triangles[at++]=y(q[i+2]);
+                triangles[at++]=x(q[stage==1?0:1]);triangles[at++]=y(q[stage==1?1:0]);
+                triangles[at++]=x(q[i+(stage==1?0:1)]);triangles[at++]=y(q[i+(stage==1?1:0)]);
+                triangles[at++]=x(q[i+(stage==1?2:3)]);triangles[at++]=y(q[i+(stage==1?3:2)]);
             }
             return triangles;
         }
-        public int key(){return 0x6d000900+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        public int key(){return 0x6d000a00+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
         public void paint(Painter p){
             // Dark, faint water backing; the stronger cyan overlay distinguishes land/docks.
             p.poly(boundary,0x30061119);

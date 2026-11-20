@@ -39,7 +39,8 @@ public final class WaveView {
             int seed=col*1973+row*9277+19037;
             // Stable spatial thinning keeps ambient water lively without competing
             // with the vessel wakes. Never base this on time or camera position.
-            if(noise(seed+41)<(g.montroseStage()?Math.max(.1f,.7f-g.settings.waveIntensity()*.2f):.45f))continue;
+            float rough=g.montroseStage()?g.settings.waveIntensity()*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
+            if(noise(seed+41)<(g.montroseStage()?Math.max(.1f,.9f-rough*.27f):.45f))continue;
             float detail=(seed&3)==0?1:distantDetail;
             if(detail<.025f)continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
@@ -54,7 +55,7 @@ public final class WaveView {
             float phase=tick*(.016f+noise(seed+11)*.009f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             if(g.montroseStage()){
-                float rough=g.settings.waveIntensity()*SeaWaves.exposure(x,y);
+                rough=g.settings.waveIntensity()*SeaWaves.exposure(x,y);
                 life=.5f+.5f*Physics.clamp(SeaWaves.value(g,x,y,tick,0)/Math.max(.1f,3.2f*rough),-1,1);
                 fade=life*life;detail*=.35f+rough*.4f;
             }

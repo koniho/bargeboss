@@ -24,11 +24,14 @@ public final class WaterEnergyBoundsTest {
         check(w.energy(g,w.x[0]-WaterSurface.wakeRadius(200),w.y[0],null)==0,"shore blocks packet height and force together");
         w.age[0]=WaterSurface.LIFE;
         float innerX=MontroseHarbor.SLIP_X,innerY=MontroseHarbor.SLIP_Y;
-        check(SeaWaves.exposure(x,y)>.99f && SeaWaves.exposure(innerX,innerY)<.15f,"lake and slip have distinct exposure");
+        check(SeaWaves.exposure(x,y)>.99f && SeaWaves.exposure(innerX,innerY)==0,"lake and slip have distinct exposure");
+        g.settings.adjustWaves(8);
+        check(SeaWaves.value(g,innerX,innerY,47,0)==0 && SeaWaves.value(g,innerX,innerY,47,1)==0,"sheltered harbor remains calm even at maximum power");
+        g.settings.resetWaves();
         float previous=SeaWaves.exposure(MontroseHarbor.mapX(350),MontroseHarbor.mapY(650));
         for(int my=651;my<=1500;my++){
             float next=SeaWaves.exposure(MontroseHarbor.mapX(350),MontroseHarbor.mapY(my));
-            check(next>=previous && next-previous<.005f,"entrance shelter changes continuously");previous=next;
+            check(next>=previous && next-previous<.006f,"entrance shelter changes continuously");previous=next;
         }
         Body head=new Body(0,-1,x,y,-(float)StrictMath.PI/2),beam=new Body(0,-1,x,y,0);
         float headMotion=0,beamMotion=0,turning=0;
