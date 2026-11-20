@@ -37,6 +37,9 @@ public final class FactoryPlacementTest {
                     "whole factory footprint preserves its water setback, including concave canal corners");
             int fromCol=Math.round(bounds[0]/64),toCol=Math.round(bounds[2]/64);
             int fromRow=Math.round(bounds[1]/64),toRow=Math.round(bounds[3]/64);
+            check(Math.floorMod(fromCol,2)==0 && Math.floorMod(fromRow,2)==0,"workshops occupy regular plots with intervening service yards");
+            check(IndustrialRoadView.roadClear(fromCol-1,fromRow) || IndustrialRoadView.roadClear(toCol,fromRow)
+                    || IndustrialRoadView.roadClear(fromCol,fromRow-1) || IndustrialRoadView.roadClear(fromCol,toRow),"each workshop fronts a connected road");
             check(fromCol>=minCol && toCol<=maxCol && fromRow>=minRow && toRow<=maxRow,"factory remains within the bounded industrial district");
             for(int row=fromRow;row<toRow;row++) for(int col=fromCol;col<toCol;col++) {
                 check(!IndustrialRoadView.isRoadCell(col,row),"multi-cell factories never straddle a road lane");
@@ -52,10 +55,10 @@ public final class FactoryPlacementTest {
         int occupied=0,roads=0,apron=0;
         for(int row=minRow;row<maxRow;row++) for(int col=minCol;col<maxCol;col++) {
             boolean road=IndustrialRoadView.isRoadCell(col,row);
-            check(road==(Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4),"one-cell roads separate consistent four-by-four industrial blocks, including negative coordinates");
+
             float distance=waterDistance(col*64,row*64,64,64);
             boolean clearRoad=road && distance>=48 && distance<TrainingScenery.MARGIN;
-            check(IndustrialRoadView.roadClear(col,row)==clearRoad,"road tiles preserve the full raised shoreline apron");
+            check(!road || clearRoad,"connected roads preserve the full raised shoreline apron and finite margin");
             int slot=owner[row-minRow][col-minCol];
             if(slot>=0)occupied++;
             if(clearRoad)roads++;

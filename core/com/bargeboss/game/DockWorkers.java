@@ -29,13 +29,13 @@ public final class DockWorkers {
         }
         throw new IllegalStateException("No dry dock apron");
     }
-    static void position(Game g,int id,float[] out){shoreAnchor(g,id/2,id%2==0?-60:60,7,out);}
+    static void position(Game g,int id,float[] out){if(id>=6)TrainingYardCrew.position(id-6,out);else shoreAnchor(g,id/2,id%2==0?-60:60,7,out);}
     static float depth(Game g,int id){float[] at=new float[2];position(g,id,at);return g.layout.camera.screenY(at[0],at[1]);}
     static float footY(Game g,int id){return depth(g,id)-GroundArt.LAND_RISE*g.layout.camera.scale;}
     static int[] ordered(Game g) {
-        int[] ids=new int[6];int count=0;if(g.montroseStage())return new int[0];
+        int total=6+(g.tutorial!=null?TrainingYardCrew.count():0);int[] ids=new int[total];int count=0;if(g.montroseStage())return new int[0];
         float[] at=new float[2];RiverCamera c=g.layout.camera;
-        for(int id=0;id<6;id++)if(g.berthDisplayEnabled(id/2)) {
+        for(int id=0;id<total;id++)if(id>=6 || g.berthDisplayEnabled(id/2)) {
             position(g,id,at);float x=c.screenX(at[0],at[1]),y=footY(g,id);
             if(x< -20*c.scale || x>g.layout.width+20*c.scale || y< -8*c.scale || y>g.layout.height+35*c.scale)continue;
             int j=count;while(j>0 && depth(g,ids[j-1])>depth(g,id)){ids[j]=ids[j-1];j--;}
@@ -50,7 +50,11 @@ public final class DockWorkers {
         return .04f*(float)StrictMath.sin(g.visualTicks*.025+id);
     }
     static void draw(Game g,Painter p,int id) {
-        float[] at=new float[2];position(g,id,at);RiverCamera c=g.layout.camera;float motion=gesture(g,id/2,id);
+        if(id>=6){TrainingYardCrew.draw(g,p,id-6);return;}
+        float[] at=new float[2];position(g,id,at);drawAt(g,p,at[0],at[1],gesture(g,id/2,id));
+    }
+    static void drawAt(Game g,Painter p,float wx,float wy,float motion){
+        RiverCamera c=g.layout.camera;
         float cosine=(float)StrictMath.cos(motion),sine=(float)StrictMath.sin(motion);
         // Continuous shoulder rotation; boot vertices never depend on animation time.
         for(Face face:FACES) {
@@ -60,7 +64,7 @@ public final class DockWorkers {
                 if(face.arm!=0){float dx=x-face.arm*3.1f,dz=z-15;
                     x=face.arm*3.1f+dx*cosine-dz*sine*face.arm;
                     z=15+dx*sine*face.arm+dz*cosine;}
-                xy[j]=c.screenX(at[0]+x,at[1]+y);xy[j+1]=c.screenY(at[0]+x,at[1]+y)-(GroundArt.LAND_RISE+z)*c.scale;
+                xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(GroundArt.LAND_RISE+z)*c.scale;
             }
             if(face.material<0)p.poly(xy,SceneLighting.sceneryColor(face.color));else p.surfacePolygon(xy,face.uv,face.material,face.color,0);
         }

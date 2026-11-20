@@ -3746,3 +3746,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Connected Android phone deliberately untouched at user's request. Android APK
   built locally; real-device frame intervals, touch and lifecycle remain untested
   for this increment. Native gesture walkthrough updated but not rerun.
+
+### 2026-11-20 — Connected tutorial streets and working yard crews
+
+- Joined clipped avenues into one dry, finite 241-tile network. Added ordered
+  road-frontage workshop plots (67), 63 short horizontal/vertical equipment routes
+  (eight visible maximum), and 22 dry pallet/maintenance work sites. Existing
+  workers/world-depth merge and fixed visual ticks own task animation. Geometry
+  stays bounded and prepared once; no new raster assets or texture cache.
+- Full shared/asset/pixel checks and Android APK build passed. Connectivity,
+  frontage, pavement clearance and deterministic motion tested. All-heading
+  shoreline: 1,461,230 assertions. Native/JVM parity: `fcdc7a6f:2:1350`.
+- Actual renderer site plan and regional views reviewed; iPhone 17/iOS 26.5 Metal
+  simulator build/launch and native yard visuals reviewed. Warm harbor replay:
+  120 samples, mean interval 16.667 ms, p95 17.235 ms; median draw 6.923 ms,
+  p95 8.447 ms. Peak frame textures 80.5 MB, retained 139.4 MB, zero evictions.
+- No baseline comparison or real-device claim. The user's connected phone remains
+  reserved for another agent and untouched. Evidence and limits:
+  `docs/performance/tutorial-yard-2026-11-20/README.md`.

@@ -81,8 +81,11 @@ public final class TrainingChannelView {
         for(int row=IndustrialRoadView.MIN_ROW;row<IndustrialRoadView.MAX_ROW;row++)
             for(int col=IndustrialRoadView.MIN_COL;col<IndustrialRoadView.MAX_COL;col++) {
                 if(used[row-IndustrialRoadView.MIN_ROW][col-IndustrialRoadView.MIN_COL] || IndustrialRoadView.isRoadCell(col,row)) continue;
-                if(Math.floorMod(col*7+row*11,13)!=0)continue;
-                int seed=12+Math.floorMod(col+row,4);
+                // Regular workshop plots: a building, then a clear service yard.
+                if(Math.floorMod(col,2)!=0 || Math.floorMod(row,2)!=0)continue;
+                if(!(IndustrialRoadView.roadClear(col-1,row) || IndustrialRoadView.roadClear(col+1,row)
+                        || IndustrialRoadView.roadClear(col,row-1) || IndustrialRoadView.roadClear(col,row+1)))continue;
+                int seed=12+Math.floorMod(Math.floorDiv(col,5)+Math.floorDiv(row,5),4);
                 for(int attempt=0;attempt<4;attempt++) {
                     int cell=12+(seed-12+attempt)%4;
                     int wide=(int)FactoryArt.footprintX(cell)/32,tall=(int)FactoryArt.footprintY(cell)/32;

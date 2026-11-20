@@ -28,11 +28,11 @@ public final class ShadowActivityTest {
         for(int i=0;i<3;i++)check(a[i]==b[i],"camera changes do not move the light source");
         check(YardActivity.count()>0,"industrial yard has usable road routes");
         for(int route=0;route<YardActivity.count();route++) {
-            float first=Float.NaN;boolean moved=false,stopped=false;
+            float first=Float.NaN,firstY=Float.NaN;boolean moved=false,stopped=false;
             for(int tick=0;tick<3000;tick+=13) {
                 YardActivity.position(route,tick,a);YardActivity.position(route,tick,b);
                 check(a[0]==b[0] && a[1]==b[1] && a[2]==b[2],"yard movement has no wall-clock or random state");
-                if(Float.isNaN(first))first=a[0];moved|=Math.abs(first-a[0])>20;stopped|=a[2]==0;
+                if(Float.isNaN(first)){first=a[0];firstY=a[1];}moved|=Physics.length(first-a[0],firstY-a[1])>20;stopped|=a[2]==0;
                 for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2) {
                     float x=a[0]+end*18,y=a[1]+side*8;
                     check(!TrainingChannel.contains(x,y),"whole hauler remains outside playable water");

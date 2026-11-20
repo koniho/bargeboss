@@ -7,7 +7,7 @@ public final class IndustrialRoadView {
     private static final RoadTile[] TILES=makeTiles();
     private IndustrialRoadView() {}
     static boolean isRoadCell(int col,int row) {
-        return Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4;
+        return roadClear(col,row);
     }
     static boolean clearance(float x,float y,float width,float height,float distance) {
         for(float[] water:TrainingChannel.WATER_RECTANGLES) {
@@ -27,8 +27,35 @@ public final class IndustrialRoadView {
     private static byte[] makeRoads() {
         int width=MAX_COL-MIN_COL,height=MAX_ROW-MIN_ROW;
         byte[] roads=new byte[width*height];
-        for(int row=MIN_ROW;row<MAX_ROW;row++) for(int col=MIN_COL;col<MAX_COL;col++)
-            if(isRoadCell(col,row) && TrainingScenery.nearWater(col*64,row*64,64,64) && clearance(col*64,row*64,64,64,48)) roads[(row-MIN_ROW)*width+col-MIN_COL]=1;
+        boolean[] dry=new boolean[roads.length];
+        for(int row=MIN_ROW;row<MAX_ROW;row++)for(int col=MIN_COL;col<MAX_COL;col++){
+            int at=(row-MIN_ROW)*width+col-MIN_COL;
+            dry[at]=TrainingScenery.nearWater(col*64,row*64,64,64) && clearance(col*64,row*64,64,64,48);
+            if(dry[at] && (Math.floorMod(col,5)==4 || Math.floorMod(row,5)==4))roads[at]=1;
+        }
+        // Join the clipped avenues with shortest dry service-road links. Multi-source
+        // flood fill starts on the connected network; no water crossing or filler land.
+        int root=0;while(root<roads.length && roads[root]==0)root++;
+        boolean[] connected=new boolean[roads.length];
+        int[] queue=new int[roads.length],parent=new int[roads.length];
+        if(root<roads.length)connected[root]=true;
+        while(root<roads.length){
+            java.util.Arrays.fill(parent,-1);int head=0,tail=0;
+            for(int i=0;i<roads.length;i++)if(connected[i]){queue[tail++]=i;parent[i]=i;}
+            int target=-1;
+            while(head<tail && target<0){
+                int at=queue[head++];
+                if(roads[at]!=0 && !connected[at]){target=at;break;}
+                for(int dir=0;dir<4;dir++){
+                    int next=dir==0?at-1:dir==1?at+1:dir==2?at-width:at+width;
+                    if(next<0 || next>=roads.length || (dir<2 && next/width!=at/width) || !dry[next] || parent[next]>=0)continue;
+                    parent[next]=at;queue[tail++]=next;
+                }
+            }
+            if(target<0)break;
+            while(!connected[target]){connected[target]=true;roads[target]=1;target=parent[target];}
+        }
+        for(int i=0;i<roads.length;i++)if(!connected[i])roads[i]=0;
         for(int row=0;row<height;row++) for(int col=0;col<width;col++) {
             int at=row*width+col;if(roads[at]==0) continue;
             if(col>0 && roads[at-1]!=0) roads[at]|=2;
