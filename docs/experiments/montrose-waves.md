@@ -94,3 +94,17 @@ specific entrance behavior rather than adding a full fluid simulation.
   No claim of sustained 60 FPS, iOS-device parity, or improved rendering speed.
 - The phone APK was built and checked before concurrent instructor-radio tutorial
   edits appeared in the working tree; those edits are outside this increment.
+
+### Combined tutorial integration
+
+At the user's request, the final normal APK also includes the current instructor
+radio/skip flow, physical instructor contact, edge-aligned reply buttons and
+synthesized splash/fender audio. The radio replay helper now taps the already
+positioned choice center directly, fixing its missed response at 960×720.
+
+Full checks passed on this combined source, including 189 instructor-radio
+assertions and the continuous tutorial at all three tested canvas sizes.
+Isolated JVM/J2ObjC parity matched `faf08a7e:2:1350`; all core files were checked
+against that validation snapshot before installation. The normal signed Android
+APK was installed and launched on the phone. The earlier wave performance
+captures precede this integration and are not measurements of the final tutorial.

@@ -3813,3 +3813,19 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Three original synthesized PCM clips have deterministic source generation,
   zero endpoints and peak headroom. Listening on actual device speakers remains
   unvalidated; no claim that synthesis is indistinguishable from recordings.
+
+### 2026-11-20 — Combined wave/tutorial Android integration
+
+- User requested ongoing integration of tutorial changes. Final normal APK
+  includes the wave experiment, instructor radio/skips, movable instructor,
+  edge reply layout and synthesized water/fender cues.
+- Fixed the replay helper's double layout transform for instructor replies:
+  choice boxes already contain canvas coordinates. The combined continuous
+  tutorial now passes at 960×600, 1333×600 and 960×720.
+- Full build/checks passed, including 189 instructor-radio assertions. Isolated
+  JVM/J2ObjC state/drawing parity: `faf08a7e:2:1350`. Verified core source still
+  matched the parity snapshot before installing the normal signed APK.
+- Normal Android APK installed and launched on the development phone. Updated
+  radio replies reviewed with the actual shared renderer at 960×720. Wave native
+  timing/pixel evidence above predates this combined tutorial/audio build; no new
+  iOS-device, Canvas, or subjective phone-speaker validation claimed.
