@@ -9,7 +9,6 @@ public final class VesselHighlight {
     public static int source(int atlas) {return atlas==SpriteAtlas.YACHT_GOLD || atlas==SpriteAtlas.YACHT_MINT?SpriteAtlas.YACHT:atlas==SpriteAtlas.TUG_GOLD?SpriteAtlas.TUG:SpriteAtlas.BARGE;}
     public static float scale(int atlas) {return (source(atlas)==SpriteAtlas.YACHT?YachtArt.SCALE:source(atlas)==SpriteAtlas.TUG?TugArt.SCALE:BargeArt.HULL_SCALE)*CELL/INNER;}
     static int style(Game g,Body b) {
-        if(b==g.tug && b.active && (g.navigating || g.pushing || g.tutorial!=null && g.tutorial.lesson<=Tutorial.CHANNEL))return SpriteAtlas.TUG_GOLD;
         if(b.id<=0 || b.berth<0 || !b.active || b.lineAttached || b.deliveryRecorded)return -1;
         if(g.canTie(b) && !g.ropeDragging)return SpriteAtlas.BARGE_MINT;
         Tutorial t=g.tutorial;
@@ -22,7 +21,7 @@ public final class VesselHighlight {
         return .24f+.30f*pulse;
     }
     public static void draw(Game g,Painter p,Body b,boolean tug,float x,float y,float size) {
-        if(!b.active)return;
+        if(!b.active || tug)return;
         int atlas=b.yacht?(g.mission.settledTicks>0?SpriteAtlas.YACHT_MINT:SpriteAtlas.YACHT_GOLD):style(g,b);
         float alpha=atlas>=0?opacity(g.visualTicks):.12f+.035f*SceneryEffects.intensity(g.visualTicks,b.id*.73f);
         if(atlas<0)atlas=tug?SpriteAtlas.TUG_GOLD:SpriteAtlas.BARGE_GOLD;

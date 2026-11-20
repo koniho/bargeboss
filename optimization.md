@@ -4194,3 +4194,21 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   16.679/16.674/16.680ms, CPU7.893/7.722/7.708ms. No meaningful average slowdown;
   p95 intervals23.59–24.22ms still exceed16.7ms. Warm stationary fixture only,
   no iOS native performance claim. Evidence: docs/performance/layered-fog-2026-11-20/.
+
+## 2026-11-20 Illuminated foreground fog and beacon reception
+- Moved wisps over craft/scenery; broad colored scattering follows actual beacon,
+  tug/navigation and pedestal lamp anchors and power. Fixed24 visible scatter
+  patches; maximum weather33 materials/four rectangles/384 lines. No new textures
+  or native APIs. Screen-space atmospheric approximation, not shadowed volumetrics.
+- Added missing beacon contributions to moving-vessel directional reception and
+  moored RGB receivers. Three prepared beacon models opt into four-source normal
+  lighting for their real faces, including self lantern/nearby tug lamps. Removed
+  tug silhouette pulse/idle bloom at user request; actual fixtures remain.
+- Full checks/APK/native encoder tests pass:31,547 weather and22,978 beacon checks.
+  All-heading shore:1,461,230 hull/cargo and32,273 wall pixels. JVM/J2ObjC agreed
+  on95991121:2:1350 before canonical checksum update (tug drawing changed).
+- Installed on Pixel11 Pro and reviewed unobstructed Vulkan clear/fog pixels.
+  Peak beacon inlet zoom0.65 clear/fog/clear means16.670/16.651/16.683ms;
+  CPU8.551/8.762/9.349ms; p95 intervals23.87–24.66ms. No meaningful average
+  slowdown; no exact cost or locked60FPS claim. iOS native testing pending.
+  Evidence: docs/performance/fog-lighting-2026-11-20/.

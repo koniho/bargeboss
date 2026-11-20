@@ -30,7 +30,7 @@ public final class VesselHighlightTest {
         b.lineAttached=true;check(VesselHighlight.style(g,b)<0,"successful catch removes readiness glow immediately");
         b.lineAttached=false;b.deliveryRecorded=true;check(VesselHighlight.style(g,b)<0,"delivered hull cannot keep glowing");
         check(VesselHighlight.style(g,g.tug)<0,"idle tug does not receive a barge objective pulse");
-        g.navigating=true;check(VesselHighlight.style(g,g.tug)==SpriteAtlas.TUG_GOLD,"actively driven tug receives its own silhouette pulse");
+        g.navigating=true;check(VesselHighlight.style(g,g.tug)<0,"actively driven tug has no silhouette pulse");
         System.out.println(checks+" sprite glow registration, pulse and gameplay-state assertions passed");
     }
     public static void main(String[] args){run();}

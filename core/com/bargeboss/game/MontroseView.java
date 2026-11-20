@@ -178,7 +178,7 @@ public final class MontroseView {
             };
         }return out;
     }
-    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);WeatherView.lowFog(g,canvas);
+    public static void draw(Game g,Painter canvas){RiverCamera c=g.layout.camera;WaveView.draw(g,canvas);Painter world=new RiverPainter(canvas,c);ArcadeView.water(g,world);
         RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);
         MontroseShoreArt.docks(g,canvas);MontroseEntranceShore.pier(g,canvas);
         float[] terraceCut=MontroseShoreArt.terraceCut(land),rockCut=MontroseEntranceShore.wholeTerrainCut(land);

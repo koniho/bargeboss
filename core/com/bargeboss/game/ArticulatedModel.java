@@ -259,9 +259,13 @@ public final class ArticulatedModel {
         // back faces and original polygons replaced by fragments. Same painter order/UVs.
         pose.polygons=ordered.toArray(new Poly[ordered.size()]);pose.polygonCount=pose.polygons.length;pose.fragments=build.fragments;pose.prepared=true;
     }
+    /** Opt-in material response for rigid scenery, evaluated on the prepared face geometry. */
+    public interface FaceLighting {int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz);}
+    public Stats drawLit(Game g,Painter p,Pose pose,FaceLighting lighting){return drawRange(g,p,pose,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY,lighting);}
     public Stats draw(Game g,Painter p,Pose pose) {return drawRange(g,p,pose,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);}
     /** Clip rigid faces to a ground-depth interval before merging billboard craft/ropes. */
-    public Stats drawRange(Game g,Painter p,Pose pose,float min,float max) {
+    public Stats drawRange(Game g,Painter p,Pose pose,float min,float max) {return drawRange(g,p,pose,min,max,null);}
+    private Stats drawRange(Game g,Painter p,Pose pose,float min,float max,FaceLighting lighting) {
         Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
             if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
@@ -271,7 +275,7 @@ public final class ArticulatedModel {
         stats.fragments=pose.fragments;
         p.beginSurfaceBatch();
         try {
-            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node]);stats.drawnFaces++;}}}
+            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node],lighting);stats.drawnFaces++;}}}
         } finally {p.endSurfaceBatch();}
         return stats;
     }
@@ -283,12 +287,20 @@ public final class ArticulatedModel {
             nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];
         }
         Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;}
-        void paint(Painter p,RiverCamera c,float alpha) {
+        void paint(Painter p,RiverCamera c,float alpha,FaceLighting lighting) {
             float[] xy=new float[xyz.length/3*2];for(int i=0,j=0;i<xyz.length;i+=3,j+=2){xy[j]=c.screenX(xyz[i],xyz[i+1]);xy[j+1]=c.screenY(xyz[i],xyz[i+1])-xyz[i+2]*Z_SCALE*c.scale;}
             float light=.62f+.38f*Math.max(0,-nx*.35f-ny*.25f+nz*.9f);
             int r=(int)((color>>16&255)*light),g=(int)((color>>8&255)*light),b=(int)((color&255)*light);
             int shaded=((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b;
-            if(material<0)p.poly(xy,material==SurfaceMaterial.EMISSIVE?shaded:SceneLighting.sceneryColor(shaded));
+            if(material<0){
+                int ambient=material==SurfaceMaterial.EMISSIVE?shaded:SceneLighting.sceneryColor(shaded);
+                if(lighting!=null && material!=SurfaceMaterial.EMISSIVE){
+                    float x=0,y=0,z=0;int count=xyz.length/3;
+                    for(int i=0;i<xyz.length;i+=3){x+=xyz[i];y+=xyz[i+1];z+=xyz[i+2];}
+                    ambient=lighting.shade(ambient,color,x/count,y/count,z/count,nx,ny,nz);
+                }
+                p.poly(xy,ambient);
+            }
             else p.surfacePolygon(xy,uv,material,shaded,material==SurfaceMaterial.CONCRETE?.12f:.04f);
         }
     }

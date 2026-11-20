@@ -125,3 +125,9 @@ leads the new snapshot reveal left-to-right over
 crosses the panel after opening or revealing text, then stops entirely. Numeric progress/countdown updates stay live without replaying the wipe.
 Transition state advances only in simulation steps and freezes on pause. Clip
 only content, never the frame or world; balance native clip scopes in all cases.
+
+## Tug hull glow removal (2026-11-20)
+
+The tug no longer uses the gold silhouette pulse while navigating/pushing, or
+the faint idle hull bloom. Keep its actual work/navigation lamps and their fog
+scattering. Cargo targeting highlights remain unchanged.

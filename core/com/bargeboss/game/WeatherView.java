@@ -16,7 +16,7 @@ public final class WeatherView {
         float automatic=level==0?0:pulse(Math.floorMod(g.visualTicks,level==1?720:420)-120)*(level==1?.7f:1);
         return Math.max(automatic,pulse(g.visualTicks-g.settings.weatherFlashTick));
     }
-    /** Low airborne mist precedes opaque shore artwork and every vessel. Fixed screen
+    /** Airborne mist overlays the world, including vessels. Fixed screen
      * coverage avoids multiplying patches at overview zoom; phases never wrap visibly. */
     public static void lowFog(Game g,Painter p){
         int fog=g.settings.fogLevel();if(!g.montroseStage() || fog==0)return;
@@ -42,6 +42,7 @@ public final class WeatherView {
         if(!g.montroseStage())return;
         int rain=g.settings.rainLevel();float flash=flash(g);
         if(rain==0 && flash==0 && g.settings.fogLevel()==0)return;
+        lowFog(g,p);
         float width=g.layout.width,height=g.layout.height;
         float scale=g.layout.camera.scale;
         float distant=1-SeaWaves.smooth(.6f,1.6f,scale);
@@ -51,6 +52,7 @@ public final class WeatherView {
         // Restrained storm tint and diffuse cloud illumination, below every HUD/control.
         if(rain>0)p.rect(0,0,width,height,((rain*5)<<24)|0x142032);
         if(haze>0)p.rect(0,0,width,height,(haze<<24)|0x82949a);
+        FogLighting.draw(g,p);
         if(flash>0)p.rect(0,0,width,height,(Math.round(flash*34)<<24)|0xc5d9ed);
         for(int i=0;i<Math.min(MAX_STREAKS,(int)StrictMath.ceil(desired));i++){
             // Stable streak identities and staggered opacity avoid a density pop.

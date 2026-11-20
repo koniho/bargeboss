@@ -25,6 +25,10 @@ public final class WeatherReview {
         g.settings.adjustFog(1);capture(g,"dense-fog");
         g.visualTicks+=600;capture(g,"dense-fog-drift");
         g.settings.adjustRain(3);g.layout=Layout.focused(1244,600,g.tug.x,g.tug.y,.65f,622,300);capture(g,"wide-rain-fog");
+        g.settings.resetWeather();g.visualTicks=15;g.tug.x=MontroseHarbor.mapX(500);g.tug.y=MontroseHarbor.mapY(1320);
+        g.layout=Layout.focused(1244,600,MontroseHarbor.mapX(458),MontroseHarbor.mapY(1274),1.4f,622,312);
+        capture(g,"beacons-clear");g.settings.adjustFog(3);capture(g,"beacons-lit-fog");
+        g.visualTicks=100;capture(g,"beacons-dark-fog");
         System.out.println("Actual shared weather/panel and peak-lightning frames exported");
     }
 }

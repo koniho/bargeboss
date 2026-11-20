@@ -5,6 +5,7 @@ package com.bargeboss.game;
 final class MontroseBeaconArt {
     static final int WEST=0,EAST=1,HORN=2;
     private static final float HEIGHT=76;
+    static final float LIGHT_RADIUS=220, LIGHT_ENERGY=.85f;
     private static final float[][] MAP={{369,1258},{548,1290},{2264,-1410}};
     private static final ArticulatedModel[] MODELS=new ArticulatedModel[3];
     private static final ArticulatedModel.Pose[] POSES=new ArticulatedModel.Pose[3];
@@ -23,6 +24,11 @@ final class MontroseBeaconArt {
     static float rise(int id){return id==HORN?MontroseHarbor.LAND_RISE:MontroseHarbor.DOCK_RISE;}
     static int color(int id){return id==EAST?NavigationLights.RED:NavigationLights.GREEN;}
     static float power(int ticks){return NavigationLights.flash(ticks,0,180);}
+    static float lampZ(int id){return LAMPS[id][2];}
+    static void sample(Game g,float[] weights,float x,float y){
+        float energy=power(g.visualTicks)*LIGHT_ENERGY;if(energy<=0)return;
+        for(int id=0;id<3;id++)SurfaceLighting.add(weights,x,y,x(id),y(id),lampZ(id)*ArticulatedModel.Z_SCALE,LIGHT_RADIUS,energy);
+    }
     static float[] lamp(int id){return LAMPS[id].clone();}
     static int faces(int id){return MODELS[id].sourceFaceCount();}
     static boolean visible(Game g,int id){RiverCamera c=g.layout.camera;float px=c.screenX(x(id),y(id)),py=c.screenY(x(id),y(id)),pad=110*c.scale;
@@ -73,10 +79,29 @@ final class MontroseBeaconArt {
     }
     static void draw(Game g,Painter p,int id){
         if(!visible(g,id))return;
-        MODELS[id].draw(g,p,POSES[id]);RiverCamera c=g.layout.camera;float[] a=LAMPS[id];
+        MooredBoatLight.Lights sources=MooredBoatLight.lights(g,x(id),y(id),0);
+        MODELS[id].drawLit(g,p,POSES[id],new Receiver(sources,x(id),y(id)));RiverCamera c=g.layout.camera;float[] a=LAMPS[id];
         float lx=c.screenX(a[0],a[1]),ly=c.screenY(a[0],a[1])-a[2]*ArticulatedModel.Z_SCALE*c.scale,power=power(g.visualTicks);
         SceneryEffects.glow(p,lx,ly,3*c.scale,color(id),power,g.visualTicks,id,1);
         if(power>0){p.circle(lx,ly,1.1f*c.scale,SoftCue.alpha(color(id),power));p.circle(lx,ly,.45f*c.scale,SoftCue.alpha(0xffe4f4e6,power));}
+    }
+    /** True face normals receive colored incoming light, including the lantern's own
+     * upward-facing gallery. The mast's back faces are not brightened by a halo. */
+    private static final class Receiver implements ArticulatedModel.FaceLighting {
+        final MooredBoatLight.Lights lights;final float originX,originY;
+        Receiver(MooredBoatLight.Lights lights,float x,float y){this.lights=lights;originX=x;originY=y;}
+        public int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz){
+            float red=0,green=0,blue=0;
+            for(int i=0;i<lights.count;i++){
+                float dx=originX+lights.x[i]-x,dy=originY+lights.y[i]-y,dz=lights.z[i]-z,d2=dx*dx+dy*dy+dz*dz;
+                float diffuse=Math.max(0,(nx*dx+ny*dy+nz*dz)/(float)StrictMath.sqrt(Math.max(.001f,d2)));
+                float e=lights.energy[i]*VesselShoreLight.falloff(d2,lights.radius[i])*diffuse;
+                red+=e*((lights.color[i]>>16)&255)/255;green+=e*((lights.color[i]>>8)&255)/255;blue+=e*(lights.color[i]&255)/255;
+            }
+            return (ambient&0xff000000)|(Math.min(255,((ambient>>16)&255)+Math.round(((albedo>>16)&255)*red))<<16)
+                |(Math.min(255,((ambient>>8)&255)+Math.round(((albedo>>8)&255)*green))<<8)
+                |Math.min(255,(ambient&255)+Math.round((albedo&255)*blue));
+        }
     }
     /** Contact is actual foundation geometry, not a shadow of the old decorative lighthouse. */
     static void ground(Game g,Painter p,int id){

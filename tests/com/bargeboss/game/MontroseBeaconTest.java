@@ -30,9 +30,18 @@ public final class MontroseBeaconTest {
             int ticks=g.ticks;Capture a=new Capture();MontroseBeaconArt.draw(g,a,id);g.visualTicks=100;Capture b=new Capture();MontroseBeaconArt.draw(g,b,id);
             System.out.println("Beacon "+id+": source="+MontroseBeaconArt.faces(id)+", drawn="+a.polygons+" / dark="+b.polygons);
             check(a.polygons>0 && a.polygons<450 && b.polygons==a.polygons,"Bounded solid model persists between flashes");
-            check(a.hash==b.hash && a.sprites==0 && b.sprites==0,"Matte structure stays dark and unchanged; no generic lighthouse sprite");
-            check(a.circles>b.circles,"Only lamp emission disappears between flashes");
+            check(a.hash!=b.hash && a.sprites==0 && b.sprites==0,"Lantern lights its real gallery faces; no generic lighthouse sprite");
+            check(a.circles>b.circles,"Lamp core emission disappears between flashes");
             check(g.ticks==ticks,"Rendering never advances gameplay");
+            float tx=g.tug.x,ty=g.tug.y;g.visualTicks=100;
+            g.tug.x=x-20;g.tug.y=y+20;Capture nearBoat=new Capture();MontroseBeaconArt.draw(g,nearBoat,id);
+            g.tug.x=x+1000;g.tug.y=y+1000;Capture farBoat=new Capture();MontroseBeaconArt.draw(g,farBoat,id);
+            check(nearBoat.hash!=farBoat.hash,"Pole geometry receives nearby vessel work/navigation light");g.tug.x=tx;g.tug.y=ty;
+            float[] lit=new float[4],dark=new float[4];g.visualTicks=15;
+            MontroseBeaconArt.sample(g,lit,x+30,y+30);g.visualTicks=100;MontroseBeaconArt.sample(g,dark,x+30,y+30);
+            check(lit[0]+lit[1]+lit[2]+lit[3]>.1f && dark[0]+dark[1]+dark[2]+dark[3]==0,"Beacon reaches nearby vessel receiver only during flash");
+            float[] farLight=new float[4];g.visualTicks=15;MontroseBeaconArt.sample(g,farLight,x+1000,y+1000);
+            check(farLight[0]+farLight[1]+farLight[2]+farLight[3]==0,"Beacon falloff bounded in world space");
             g.layout=Layout.focused(960,600,10000,10000,1,480,300);Capture far=new Capture();MontroseBeaconArt.draw(g,far,id);
             check(far.polygons==0 && far.circles==0,"Offscreen beacon culled before model/light work");
         }
