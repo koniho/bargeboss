@@ -39,10 +39,10 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private VulkanPainter(CanvasPainter resources){this.resources=resources;recording=true;}
 
     private static final class Image {int id;long key,bytes;Bitmap bitmap;Image(long key,int id,Bitmap b){this.key=key;this.id=id;bitmap=b;bytes=(long)b.getWidth()*b.getHeight()*4;}}
-    VulkanPainter(Surface surface,AssetManager assets,CanvasPainter resources){
+    VulkanPainter(Surface surface,AssetManager assets,CanvasPainter resources,int experimentFlags){
         this.resources=resources;
         synchronized(VulkanPainter.class){if(!loaded){System.loadLibrary("bargeboss_vulkan");loaded=true;}}
-        nativeHandle=create(surface,assets);
+        nativeHandle=create(surface,assets,experimentFlags);
     }
     void start(float w,float h){width=w;height=h;used=commandUsed=0;clips.clear();referenced.clear();}
     public void beginFrame(){resources.beginFrame();}
@@ -175,7 +175,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private static int clipRect(float[] q,int at,float x,float y,float xx,float yy){
         float[] v={x,y,xx,y,x,yy,xx,y,xx,yy,x,yy};System.arraycopy(v,0,q,at,12);return at+12;
     }
-    private static native long create(Surface surface,AssetManager assets);
+    private static native long create(Surface surface,AssetManager assets,int experimentFlags);
     private static native void destroy(long handle);
     private static native void upload(long handle,int id,Bitmap bitmap);
     private static native void remove(long handle,int id);

@@ -74,7 +74,7 @@ public final class MainActivity extends Activity {
         private boolean gpuFailed;
         void openGpu(SurfaceHolder holder){
             if(gpuFailed)return;
-            try {gpu=new VulkanPainter(holder.getSurface(),getAssets(),painter);android.util.Log.i("BargeBoss","Vulkan renderer active");}
+            try {gpu=new VulkanPainter(holder.getSurface(),getAssets(),painter,developer==null?0:(getIntent().getBooleanExtra("bb_vk_reuse_commands",false)?1:0)|(getIntent().getBooleanExtra("bb_vk_minimal",false)?2:0));android.util.Log.i("BargeBoss","Vulkan renderer active");}
             catch(RuntimeException|UnsatisfiedLinkError e){fallbackGpu(e);}
             requestRedraw();
         }

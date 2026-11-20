@@ -3650,3 +3650,22 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   desktop, ReplayInput and ProfileScenario sources, then run
   `com.bargeboss.game.TutorialCoverageReview`. Local untracked PNGs, simulator
   captures and timing CSV/metadata are in `out/tutorial-coverage/`.
+
+### 2026-11-20 — Android command-reuse diagnostic checkpoint
+
+- Isolated ongoing Vulkan experiments on `perf/android-vulkan-command-reuse`
+  in `.worktrees/android-vulkan-command-reuse`; production remains Canvas.
+- Added developer-session-only command reuse and clear-only render controls.
+  Reuse requires identical vertex bytes, batches, viewport and resource generation;
+  cached primary commands are bounded per frame slot and swapchain image.
+  Clear-only still runs shared scene composition and packet transport, so it is
+  a native-render control rather than an empty-game CPU benchmark.
+- Extended the capture tool to sample compositor history throughout the measured
+  window, with matching sample timestamps and explicit exclusion/control flags.
+- Validation: full Android checks and signed Vulkan-enabled APK build passed;
+  installed on the development phone using the existing debug key and launched
+  the reuse experiment. Comparative device results and native pixel equivalence
+  remain pending. No performance improvement is claimed by this checkpoint.
+- Prior presentation elapsed time includes driver CPU and synchronization; it
+  does not establish a fixed display limit. Factory removal alone does not isolate
+  shoreline processing, effects, packet construction or presentation overhead.
