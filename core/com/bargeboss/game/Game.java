@@ -92,6 +92,7 @@ public final class Game {
     public Layout layout=Layout.DEFAULT;
     public final Career career=new Career();
     public GameSettings settings=new GameSettings();
+    public final WaveControls waveControls=new WaveControls();
     public final Joystick joystick=new Joystick();
     public final OverviewMap overview=new OverviewMap();
     private int settingsReturnMode=TITLE;
@@ -405,7 +406,7 @@ public final class Game {
         int event=hapticPending; hapticPending=0; return event;
     }
     public void cancelInputs() {
-        rescue.aiming=-1;
+        rescue.aiming=-1;waveControls.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
         if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.instructorRadio.cancelTouch();}
@@ -414,6 +415,7 @@ public final class Game {
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
+        if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
         if(OverviewMap.sliderHit(this,x,y)) {
             // A second finger may zoom while the existing drive touch remains held.
@@ -441,6 +443,7 @@ public final class Game {
     }
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
+        if(waveControls.owns(id))return;
         if(mode==PLAY && conversation()){dialogue.move(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.move(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.move(this,id,x,y))return;
@@ -452,6 +455,7 @@ public final class Game {
     }
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
+        if(waveControls.up(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.up(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.up(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.up(this,id,x,y))return;
@@ -469,6 +473,7 @@ public final class Game {
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
         if(practice!=null) { practice.pointerCancel(id); return; }
+        if(waveControls.owns(id)){waveControls.cancel();return;}
         dialogue.cancel(id);
         if(tutorial!=null){tutorial.canal.cancel(id);tutorial.instructorRadio.cancel(id);}
         if(overview.owns(id)){overview.cancelTouch();return;}

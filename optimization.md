@@ -3829,3 +3829,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   radio replies reviewed with the actual shared renderer at 960×720. Wave native
   timing/pixel evidence above predates this combined tutorial/audio build; no new
   iOS-device, Canvas, or subjective phone-speaker validation claimed.
+
+### 2026-11-20 — Live wave controls, phase and ripple response
+
+- Shared Java: session controls for 0–3× power and 15-degree propagation steps;
+  bent/broken crests with intensity-scaled width; locally raised/tilted ripple
+  and wake stamps; increased rough-water ripple density/spread/contrast.
+  Ambient heave uses spatial averaging without temporal phase lag. Existing
+  four-point anisotropic force/torque consumes the same adjusted wave field.
+- No new textures or unbounded caches. Crests retain a 512-patch ceiling and
+  adapt their segment size to the visible area. Reused bearing sine/cosine in
+  settings and skipped normal calculations for height-only sampling after the
+  first phone run exposed extra CPU work.
+- Android Vulkan inlet, replay, zoom 1.5, 120 warmup / 180 samples: before reuse,
+  presentation median 24.98 ms / p95 33.33; final median 16.66 / p95 24.99,
+  mean 20.24. Final UI draw median 13.34 ms. These are separate captures,
+  not a controlled thermal benchmark or a sustained-60-FPS claim.
+- Wide Montrose replay, zoom .65: presentation median 91.61 / p95 99.94 ms.
+  The previously recorded wide-view bottleneck remains unresolved. Summaries:
+  docs/performance/montrose-waves-2026-11-20/controls/; raw local captures:
+  out/profiles/waves-controls-{inlet,inlet-final,wide-final}/.
+- Full build/checks passed; 1,112 wave behavior and 32,839 waterline/ripple checks;
+  all-heading shoreline pixel regression passed 1,461,230 assertions. Final
+  JVM/J2ObjC signature 906722f:2:1350. Actual renderer reviewed at 1× and 3×,
+  including rotated waves. Developer APK installed; real phone power/bearing
+  taps passed. Existing tutorial commits remain integrated; fetch found no newer
+  completed tutorial commit. No real-iOS or Canvas timing validation this round.
+- Wake packet centers remain fixed at emission positions. Surface lift/tilt is
+  implemented; horizontal wake advection is a separate outstanding experiment.

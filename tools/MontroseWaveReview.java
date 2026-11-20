@@ -9,11 +9,13 @@ import javax.imageio.ImageIO;
 /** Actual renderer captures across lake, entrance and shelter, with one identical tow. */
 public final class MontroseWaveReview {
     public static void main(String[] args)throws Exception{
-        File out=new File("out/montrose-waves");out.mkdirs();
+        File out=new File("out/montrose-waves"+(args.length>0?"-"+args[0]:""));out.mkdirs();
         String[] names={"lake-head","lake-beam","entrance","shelter"};
         float[] mx={900,900,350,1000},my={1500,1500,1180,600};
         for(int scene=0;scene<names.length;scene++){
             Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.configureCanvas(960,600);
+            if(args.length>0)g.settings.adjustWaves(Integer.parseInt(args[0])-4);
+            if(args.length>1)g.settings.turnWaves(Integer.parseInt(args[1]));
             for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
             g.tug.x=MontroseHarbor.mapX(mx[scene]);g.tug.y=MontroseHarbor.mapY(my[scene]);
             g.tug.angle=scene==1?0:-(float)StrictMath.PI/2;

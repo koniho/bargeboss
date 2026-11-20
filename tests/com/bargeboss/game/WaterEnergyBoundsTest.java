@@ -31,13 +31,37 @@ public final class WaterEnergyBoundsTest {
             check(next>=previous && next-previous<.005f,"entrance shelter changes continuously");previous=next;
         }
         Body head=new Body(0,-1,x,y,-(float)StrictMath.PI/2),beam=new Body(0,-1,x,y,0);
-        float headMotion=0,beamMotion=0;
+        float headMotion=0,beamMotion=0,turning=0;
         for(int tick=0;tick<600;tick++){
             g.visualTicks=tick;w.affect(g,head);w.affect(g,beam);
+            turning+=Math.abs(head.spin)+Math.abs(beam.spin);
             headMotion+=Math.abs(head.vy);beamMotion+=Math.abs(beam.vy);
             head.vx=head.vy=head.spin=beam.vx=beam.vy=beam.spin=0;
         }
         check(beamMotion>headMotion*2,"beam seas exert more lateral response than head seas");
+        check(turning>.001f,"spatially different hull forces impart turning torque");
+        g.settings.adjustWaves(-4);head.vx=head.vy=head.spin=0;w.affect(g,head);
+        check(head.vx==0 && head.vy==0 && head.spin==0,"calm water supplies no ambient push or torque");
+        g.settings.resetWaves();g.settings.turnWaves(6);
+        float east=0,north=0;
+        for(int tick=0;tick<240;tick++){g.visualTicks=tick;east+=Math.abs(SeaWaves.value(g,x,y,tick,1));north+=Math.abs(SeaWaves.value(g,x,y,tick,2));}
+        check(east>north*2,"direction control rotates orbital force toward east");
+        g.settings.resetWaves();g.settings.adjustWaves(8);
+        g.tug.x=x;g.tug.y=y;g.tug.angle=0;
+        float peak=0;
+        for(int tick=0;tick<240;tick++){
+            g.visualTicks=tick;w.floatBoats(g);
+            float target=(w.height(g,x+g.tug.half,y,tick,g.tug)+w.height(g,x-g.tug.half,y,tick,g.tug)
+                    +w.height(g,x,y+g.tug.radius,tick,g.tug)+w.height(g,x,y-g.tug.radius,tick,g.tug))*.25f;
+            check(Math.abs(target-g.tug.heave)<.0001f,"strong-wave boat height follows current surface without temporal lag");peak=Math.max(peak,Math.abs(g.tug.heave));
+        }
+        check(peak>6,"strong waves are not flattened by a hidden height clamp");
+        g.settings.developerWaves=true;g.pointerDown(93,30,90);g.pointerUp(93,30,90);
+        g.pointerDown(93,30,140);g.pointerUp(93,30,140);check(g.settings.waveIntensity()==2.75f,"live wave control changes intensity");
+        g.pointerDown(93,250,180);g.pointerUp(93,250,180);check(g.settings.waveBearing()==15,"live wave control changes bearing");
+        g.pointerDown(93,250,180);g.pointerCancel(93);g.pointerUp(93,250,180);check(g.settings.waveBearing()==15,"cancelled wave tap does not change bearing");
+        check(!g.pointer,"wave panel input never starts driving");
+        g.settings.turnWaves(-2);check(g.settings.waveBearing()==345,"bearing wraps through north");
         head.lineAttached=true;w.affect(g,head);check(head.vx==0 && head.vy==0 && head.spin==0,"moored gameplay hull stays secured");
         Game a=new Game(),b=new Game();a.selectChallenge(Challenges.MONTROSE);b.selectChallenge(Challenges.MONTROSE);a.reset();b.reset();
         for(int t=0;t<180;t++){a.advance(1.0/60);b.advance(1.0/120);b.advance(1.0/120);}

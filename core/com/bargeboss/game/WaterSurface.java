@@ -38,14 +38,15 @@ public final class WaterSurface {
     }
     /** Height in sprite-rise units; orbital flow in world units/second. */
     public float value(Game g,float wx,float wy,float tick,Body ignore,int component){
-        float total=SeaWaves.value(g,wx,wy,tick,component);
+        float sea=SeaWaves.value(g,wx,wy,tick,component),total=g.montroseStage()?0:sea;
         for(int i=0;i<CAPACITY;i++){
             float h=wake(g,i,wx,wy,ignore)*1.2f;if(h==0)continue;
             if(component==0)total+=h;
             else {float dx=wx-x[i],dy=wy-y[i],d=Physics.length(dx,dy);
                 total+=h*(WAKE_SPEED/Physics.DT)*(float)StrictMath.PI/WAKE_WIDTH*(component==1?dx:dy)/d;}
         }
-        return Physics.clamp(total,component==0?-6:-12,component==0?6:12);
+        return g.montroseStage()?sea+Physics.clamp(total,component==0?-3:-8,component==0?3:8)
+                :Physics.clamp(total,component==0?-6:-12,component==0?6:12);
     }
     public float height(Game g,float wx,float wy,float tick,Body ignore){return value(g,wx,wy,tick,ignore,0);}
     public void buoyForce(Game g,float wx,float wy,float[] out){
@@ -90,12 +91,25 @@ public final class WaterSurface {
         float response=b.berth>=0?.76f:1;
         if(b.lineAttached || b.awaitingPickup) response*=.45f;
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
-        float value=(height(g,b.x+c*b.half,b.y+s*b.half,g.visualTicks,b)
-                +height(g,b.x-c*b.half,b.y-s*b.half,g.visualTicks,b)
-                +height(g,b.x-s*b.radius,b.y+c*b.radius,g.visualTicks,b)
-                +height(g,b.x+s*b.radius,b.y-c*b.radius,g.visualTicks,b))*.25f*response;
-        // Hull response is filtered, so nearby wakes cannot make the sprite snap vertically.
-        b.heave+= (value-b.heave)*(b.cruiser?.18f:b.berth>=0?.075f:.12f);
+        if(g.montroseStage()){
+            float ambient=0,wakes=0;
+            for(int i=0;i<4;i++){
+                float along=i<2?(i==0?b.half:-b.half):0,across=i<2?0:(i==2?b.radius:-b.radius);
+                float x=b.x+c*along-s*across,y=b.y+s*along+c*across;
+                float sea=SeaWaves.value(g,x,y,g.visualTicks,0);
+                ambient+=sea*.25f;wakes+=(height(g,x,y,g.visualTicks,b)-sea)*.25f;
+            }
+            // Spatial averaging smooths ambient waves without delaying their phase.
+            // Only arriving local wake disturbances retain a damped response.
+            b.wakeHeave+=(wakes*response-b.wakeHeave)*(b.cruiser?.18f:b.berth>=0?.075f:.12f);
+            b.heave=ambient+b.wakeHeave;
+        }else {
+            float value=(height(g,b.x+c*b.half,b.y+s*b.half,g.visualTicks,b)
+                    +height(g,b.x-c*b.half,b.y-s*b.half,g.visualTicks,b)
+                    +height(g,b.x-s*b.radius,b.y+c*b.radius,g.visualTicks,b)
+                    +height(g,b.x+s*b.radius,b.y-c*b.radius,g.visualTicks,b))*.25f*response;
+            b.heave+=(value-b.heave)*(b.cruiser?.18f:b.berth>=0?.075f:.12f);
+        }
         b.heaveVelocity=(b.heave-old)/Physics.DT;
         if(b.wakeKickTicks>0) b.wakeKickTicks--;
         if(b.wakeCooldown>0) b.wakeCooldown--;
@@ -156,7 +170,7 @@ public final class WaterSurface {
                 if(crest<.17f && age[i]>45) continue;
                 float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=10+strength[i]*8;
                 if(len<.01f)continue;
-                p.waterFoam((xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
+                WavePatch.foam(g,p,(xx+bx)*.5f,(yy+by)*.5f,dx,dy,-dy/len*width,dx/len*width,
                         WaterFoam.phase(g.visualTicks,i)+j*.7f,5,alpha*crest/255f);
             }
         }
