@@ -40,13 +40,15 @@ public final class WaveView {
             // Stable spatial thinning keeps ambient water lively without competing
             // with the vessel wakes. Never base this on time or camera position.
             float rough=g.montroseStage()?g.settings.waveIntensity()*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
-            if(noise(seed+41)<(g.montroseStage()?Math.max(.1f,.9f-rough*.27f):.45f))continue;
+            if(noise(seed+41)<(g.montroseStage()?Math.max(.1f,.45f-rough*.12f):.45f))continue;
             float detail=(seed&3)==0?1:distantDetail;
             if(detail<.025f)continue;
             float x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
             float y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3;
             if(g.montroseStage()){
-                x=(col+.15f+noise(seed+2)*.7f)*38;y=(row+.15f+noise(seed+5)*.7f)*30;
+                float calm=1-Physics.clamp(rough,0,1);
+                x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4*calm;
+                y=(row+.15f+noise(seed+5)*.7f)*30+(float)StrictMath.sin(tick*.006+seed*.7)*3*calm;
                 float baseX=x,baseY=y;x+=SeaWaves.value(g,baseX,baseY,tick,3);y+=SeaWaves.value(g,baseX,baseY,tick,4);
             }
             float sx=c.screenX(x,y),sy=c.screenY(x,y);
@@ -56,13 +58,14 @@ public final class WaveView {
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             if(g.montroseStage()){
                 rough=g.settings.waveIntensity()*SeaWaves.exposure(x,y);
-                life=.5f+.5f*Physics.clamp(SeaWaves.value(g,x,y,tick,0)/Math.max(.1f,3.2f*rough),-1,1);
-                fade=life*life;detail*=.35f+rough*.4f;
+                float waveLife=.5f+.5f*Physics.clamp(SeaWaves.value(g,x,y,tick,0)/Math.max(.1f,3.2f*rough),-1,1);
+                life+=(waveLife-life)*Physics.clamp(rough,0,1);
+                fade=life*life;detail*=1+rough*.25f;
             }
             float span=10+noise(seed+7)*23,rise=.8f+noise(seed+13)*2.3f;
             // Broad dark trough and a discontinuous highlight, each with a
             // slightly different phase. No evenly spaced full-width bands.
-            float stroke=g.montroseStage()?.65f+.35f*g.settings.waveIntensity():1;
+            float stroke=g.montroseStage()?Math.max(1,.65f+.35f*rough):1;
             float lastX=0,lastY=0;
             for(int part=0;part<=CREST_SEGMENTS;part++) {
                 float t=part/(float)CREST_SEGMENTS,along=(t-.5f)*span;

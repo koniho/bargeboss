@@ -3926,3 +3926,41 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   check.sh and Android debug APK build passed on the combined tree; JVM/J2ObjC
   gameplay/drawing parity verified 7280861c:2:1350. Existing debug key reused.
 - No device installation or phone operation; prior listening limitations remain.
+
+### 2026-11-20 — Restore calm-water ripple floor
+
+- User requested the pre-wave ripple minimum even at power 0. Restored the
+  original 55% candidate-cell density floor, original contrast/stroke width,
+  and idle phase/motion. Higher local wave energy increases density and contrast;
+  sheltered water still has zero ambient swell/force. Existing two-cycle hull
+  rings remain unchanged.
+- Compared actual Java2D surface pixels at power 0 with the earlier WaveView
+  from 67f1f43 at ticks 0, 45 and 90: 1,728,000 exact matches. Local comparison
+  fixture and frames remain under out/RippleFloorReview.java / out/ripple-floor-*.
+- JVM/J2ObjC state/drawing parity passed b3f2a908:2:1350. Full build and phone
+  validation follow below; no new geometry/cache or native implementation.
+- Full Android build/checks and 1,461,230 all-heading shoreline pixel assertions
+  passed. Existing debug key reused; developer APK installed. Native/JVM parity
+  is shared behavior/drawing validation, not physical iOS raster validation.
+- Rebased onto origin/main 1e8f20a, preserving licensed harbor audio and both
+  evidence logs. Revalidated combined JVM/J2ObjC signature 3c9b8743:2:1350.
+- The first restored-floor wide replay capture had CPU draw median 34.75 ms and
+  presentation mean 39.54 ms. A separate sampled trace attributed about 50% of
+  main CPU to array cloning under VulkanPainter.pushClipOutside, mostly through
+  moored-boat ripple clips; WaveView itself was about 5.6%. This capture exposes
+  a remaining encoder cost; it is not a controlled density-only attribution.
+- Vulkan clip scopes now retain the first/count of their append-only captured
+  vertices and reuse that range on pop. No caller arrays are retained or cloned;
+  restoring a clip adds no duplicate vertices. Nested scopes and retained-mesh
+  relocation preserve command order. No shader/stencil-rule changes.
+- Host-only VulkanClipEncodingTest passed captured-source mutation, nested
+  restore range, zero-vertex-copy restore, underflow, empty clips and 64-depth
+  limit checks. It compiles against built Android classes and the SDK android.jar,
+  but executes no Android runtime or native driver calls. Full Android build and
+  shared checks passed after rebase; final native pixel/timing results below.
+- Final native frozen Montrose comparison: 0 differing pixels across 2,602,800
+  screenshot pixels before/after clip reuse (same fixed scene). Final wide replay
+  CPU draw median 17.12 ms, presentation median 16.67 / p95 25.00 / mean 20.17 ms,
+  versus first restored-floor capture 34.75 ms CPU / mean 39.54 ms presentation.
+  No claim of locked 60 FPS or controlled thermal attribution. Evidence summaries:
+  docs/performance/ripple-floor-2026-11-20/; raw captures under out/profiles/.

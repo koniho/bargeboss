@@ -148,3 +148,14 @@ zoom slider and main-world camera are unchanged.
 A sampled trace identified repeated disjoint shoreline-mask construction as the
 main wide-view cost. The water-effects layer now retains one bounded static mask
 and transforms it with the camera. See the [performance comparison](../performance/montrose-mask-cache-2026-11-20/README.md).
+
+### Calm-water ripple floor
+
+Power 0 and sheltered water now retain the original ambient ripple density,
+contrast, stroke width and idle motion. Wave power adds activity above that
+floor; it no longer thins or freezes the baseline detail. This does not restore
+ambient swell or wave force inside the protected harbor. Hull ripple rings
+already retained their two-cycle calm-water floor.
+
+A host-only comparison against the earlier WaveView checked 1,728,000 actual
+surface pixels at power 0 across three animation phases with exact equality.

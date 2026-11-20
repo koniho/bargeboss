@@ -21,7 +21,8 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private int[] commands=new int[4096];private int commandUsed;
     private ByteBuffer vertexBuffer=ByteBuffer.allocateDirect(vertices.length*4).order(ByteOrder.nativeOrder());
     private ByteBuffer commandBuffer=ByteBuffer.allocateDirect(commands.length*4).order(ByteOrder.nativeOrder());
-    private final ArrayDeque<float[]> clips=new ArrayDeque<float[]>();
+    private final int[] clipFirst=new int[64],clipCount=new int[64];
+    private int clipDepth;
     private final LinkedHashMap<Long,Image> images=new LinkedHashMap<Long,Image>(64,.75f,true);
     private final IdentityHashMap<Bitmap,Image> bitmapImages=new IdentityHashMap<Bitmap,Image>();
     private final HashSet<Integer> referenced=new HashSet<Integer>();
@@ -44,10 +45,10 @@ final class VulkanPainter implements Painter,AutoCloseable {
         synchronized(VulkanPainter.class){if(!loaded){System.loadLibrary("bargeboss_vulkan");loaded=true;}}
         nativeHandle=create(surface,assets,experimentFlags);
     }
-    void start(float w,float h){width=w;height=h;used=commandUsed=0;clips.clear();referenced.clear();}
+    void start(float w,float h){width=w;height=h;used=commandUsed=0;clipDepth=0;referenced.clear();}
     public void beginFrame(){resources.beginFrame();}
     void present(Viewport v){
-        if(!clips.isEmpty())throw new IllegalStateException("Unbalanced Vulkan clipping");
+        if(clipDepth!=0)throw new IllegalStateException("Unbalanced Vulkan clipping");
         vertexBuffer.clear();vertexBuffer.asFloatBuffer().put(vertices,0,used);
         commandBuffer.clear();commandBuffer.asIntBuffer().put(commands,0,commandUsed);
         submit(nativeHandle,vertexBuffer,used*4,commandBuffer,commandUsed/5,width,height,v.scale,v.x,v.y);
@@ -101,8 +102,19 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private static float cross(float[] p,int a,int b,int c){return (p[b*2]-p[a*2])*(p[c*2+1]-p[a*2+1])-(p[b*2+1]-p[a*2+1])*(p[c*2]-p[a*2]);}
     public boolean supportsUnionClips(){return false;}
     private void mask(float[] triangles,int mode){for(int i=0;i+5<triangles.length;i+=6){int first=used/STRIDE;for(int j=0;j<6;j+=2)vertex(triangles[i+j],triangles[i+j+1],0,0,0xffffffff,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);}}
-    public void pushClipOutside(float[] triangles){if(clips.size()>=64)throw new IllegalStateException("Clip nesting limit");float[] copy=triangles.clone();clips.push(copy);batch(used/STRIDE,0,0,0,3);mask(copy,1);}
-    public void popClip(){if(clips.isEmpty())throw new IllegalStateException("Clip underflow");mask(clips.pop(),2);batch(used/STRIDE,0,0,0,4);}
+    public void pushClipOutside(float[] triangles){
+        if(clipDepth>=clipFirst.length)throw new IllegalStateException("Clip nesting limit");
+        int first=used/STRIDE;batch(first,0,0,0,3);mask(triangles,1);
+        clipFirst[clipDepth]=first;clipCount[clipDepth++]=used/STRIDE-first;
+    }
+    public void popClip(){
+        if(clipDepth==0)throw new IllegalStateException("Clip underflow");
+        // Vertex storage is append-only until present: replay the captured mask,
+        // even if the caller has since changed its source array. Nested scopes
+        // retain distinct ranges; retained meshes relocate both references.
+        --clipDepth;batch(clipFirst[clipDepth],clipCount[clipDepth],0,0,2);
+        batch(used/STRIDE,0,0,0,4);
+    }
     private void patch(float x,float y,float ax,float ay,float bx,float by,int color,float alpha,int kind,float phase,float detail){quad(x-(ax+bx)*.5f,y-(ay+by)*.5f,ax,ay,bx,by,color,alpha,0,kind,phase,detail,0,0,1,1,0,0,0,0);}
     public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){patch(x,y,ax,ay,bx,by,0xffe5fcf7,alpha,kind>=8?kind+24:kind+2,phase,0);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){patch(x,y,ax,ay,bx,by,color,1,8,phase,0);}
@@ -137,7 +149,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
             if(recorder==null)recorder=new VulkanPainter(resources);
             recorder.start(layer.width(),layer.height());
             layer.paint(recorder);
-            if(!recorder.clips.isEmpty())throw new IllegalStateException("Unbalanced retained clipping");
+            if(recorder.clipDepth!=0)throw new IllegalStateException("Unbalanced retained clipping");
             mesh=new Mesh(recorder);
             for(int i=0;i<mesh.commands.length;i+=5)
                 if(mesh.commands[i+2]!=0 || mesh.commands[i+3]!=0)throw new IllegalStateException("Retained surfaces must be texture-free");
