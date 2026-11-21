@@ -14,7 +14,7 @@ public final class OverlayTextTest {
     }
     public static void run(){
         check(Lettering.width("WWW",14)>Lettering.width("III",14),"technical font uses proportional metrics");
-        check(Lettering.width("ready",14)==Lettering.width("READY",14),"uppercase normalization has matching metrics");
+        check(Lettering.headingWidth("ready",14)==Lettering.headingWidth("READY",14),"display uppercase normalization has matching metrics");
         check(Lettering.width("",14)==0,"empty text has zero width");
         InstructionPanel panel=new InstructionPanel();
         InstructionPanel.Content old=new InstructionPanel.Content("old","OLD","FIRST","SECOND",0,0);
@@ -66,6 +66,7 @@ public final class OverlayTextTest {
         Count p=new Count();Lettering.draw(p,"READY",10,20,14,0xffabcdef);StaticLayer first=p.last;
         Lettering.draw(p,"READY",40,70,14,0x44abcdef);
         check(p.last==first && Math.abs(p.alpha-68/255f)<.00001f,"pulse and location reuse immutable text raster");
+        Lettering.heading(p,"READY",40,70,14,0xffabcdef);check(p.last!=first,"font role gets a distinct glyph raster");
         Lettering.draw(p,"READY",40,70,14,0xff112233);check(p.last!=first,"color change gets distinct glyph raster");
         Lettering.draw(p,"WAIT",40,70,14,0xffabcdef);check(p.last!=first,"content change gets distinct glyph raster");
         for(int i=0;i<160;i++)Lettering.draw(p,"VALUE "+i,0,0,14,0xffabcdef);

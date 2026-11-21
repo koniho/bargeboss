@@ -4743,3 +4743,33 @@ minimumHz50.0/maximumHz170.75 (out/low-rumble-native.log), proving public capabi
 and envelope construction path succeeded. This diagnostic did not log gameplay
 band playback/scene READY, so it does not establish physical playback or feel.
 Returned to normal cold launch Status:ok; restored timeout. iOS not built here.
+
+## 2026-11-21 — Arcade heading + readable body typography
+
+User requested title-style heading lettering and readable body. Added offline
+OFL font exports: Barge Display (Russo One with22% shear/88% width), Barlow Semi
+Condensed Medium body incl lowercase. Heading selection explicit at semantic
+call sites; no font inference by platform/size. Existing128string shared cache
+retained, key now includes role. No per-frame font parsing/raster prep introduced;
+source shape arrays immutable. Increased text-cache padding for italic bearings,
+parentheses and descenders; glyph bounds regression caught this before build.
+No FPS claim. Existing title bitmap, layouts, hit regions and tutorial animation
+remain. Body/instruction fit measured with own metrics. Preview/debug tools and
+source/OFL provenance retained. See docs/art-direction/industrial-ui.md.
+
+State-only A/B of previous/current compiled core with the same render-free replay:
+285ba210:2:1350 on both. Canonical draw trace nowab21678e:2:1350 after new glyphs
+and padding; updated only after A/B and visual review. Typography glyph bounds,
+1316title/input/layout checks passed; independent map pixel review passed924386.
+
+Full suite caught an obsolete uppercase-normalization assumption. Moved that
+assertion to heading metrics; body intentionally preserves authored mixed case.
+Added cache-role separation assertion. All76 overlay/cache/CRT/world-text checks
+pass, retaining cache alpha reuse/eviction protections. Specimen and menu review
+copies in Downloads/Pictures/BargeBoss, MediaStore17943–17948 verified.
+
+Full Android checks/build passed (out/ui-type-v3-build.log), canonicalab21678e:
+2:1350. Installed and normal cold launch Status:ok; restored timeout. Desktop
+visual review covered title at960/1333, harbor/settings/help/results, gameplay
+instructions and selected radio choices. No native screenshot/iOS build this
+round; shared tests do not establish identical device antialiasing or performance.

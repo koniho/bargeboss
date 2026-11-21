@@ -8,7 +8,8 @@ cream, gold and red palette.
 - Navy #101c30 is the panel/button surface. Keep enough opacity to read text over
   busy scenery, while leaving the central navigation area open.
 - Cream #fff0ce is primary text. Muted warm gray #b9b5a8 is supporting text.
-  Keep the approved Rajdhani UI font; custom title lettering is for the wordmark.
+  Use title-inspired Barge Display for headings and upright Barlow Semi Condensed
+  Medium for body copy. The approved painted title wordmark remains unchanged.
 - Gold #ffc52f marks primary actions and selected choices. Gold-filled controls
   use navy labels/icons, never gold or cream labels that lose contrast.
 - Brick red #a92d37 is restrained structural edging, not a flashing alarm.
@@ -71,3 +72,22 @@ in the same shared Layout/Dialogue/LightingChoices definitions. Tests cover safe
 bounds, nonoverlapping title actions, choosing a harbor then sailing, settings
 rows, and pause navigation. Instruction-panel position and CRT/wipe choreography
 remain fixed; world-space highlight and marine-light rules remain separate.
+
+## Typography roles (2026-11-21)
+
+User requested the title character in headings and a more readable body variant.
+Use `Lettering.heading` / `headingWidth` / `centerHeading` for screen/mission titles,
+harbor names, instruction titles and main action labels. Barge Display is an
+OFL-derived Russo One face with22% forward shear and88% horizontal scale. Keep
+short cream/gold headings; do not put outlines, shadows or heavy slant on body copy.
+
+Use `Lettering.draw` / `width` / `center` for instructions, radio answers, subtitles,
+settings values and fine labels. Barlow Semi Condensed Medium is upright and has
+mixed-case glyphs. Measure the actual role for fitting; never fit a heading using
+body metrics. Instruction lines fit within396px and retain their existing baselines
+and wipe choreography. Lettering cache keys include the role;128string limit remains.
+Cache padding includes italic sidebearings, parentheses and lowercase descenders.
+
+Regeneration/license instructions live beside each retained source font in
+assets/fonts. `tools/TypographyReview.java` exports the shared-renderer specimen;
+`tools/UiStyleReview.java` exports menu/gameplay review frames to out/ui-type-v3.

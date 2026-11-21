@@ -7,6 +7,8 @@ public final class ScreenView {
     private ScreenView() {}
     private static void text(Painter p,String s,float x,float y,float size,int c) { Lettering.draw(p,s,x,y,size,c); }
     private static void center(Painter p,String s,float x,float y,float size,int c) { Lettering.center(p,s,x,y,size,c); }
+    private static void heading(Painter p,String s,float x,float y,float size,float width,int c){Lettering.heading(p,s,x,y,Math.min(size,width/Math.max(1,Lettering.headingWidth(s,1))),c);}
+    private static void headingCenter(Painter p,String s,float x,float y,float size,float width,int c){Lettering.centerHeading(p,s,x,y,Math.min(size,width/Math.max(1,Lettering.headingWidth(s,1))),c);}
     public static void hud(Game g,Painter p) {
         float width=Math.min(720,g.layout.width-32),x=(g.layout.width-width)*.5f;
         String title=g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
@@ -22,7 +24,7 @@ public final class ScreenView {
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
         if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
         PilotGlass.ribbon(p,x,8,width,48);
-        center(p,title,g.layout.width*.5f,14,Math.min(16,(width-24)/Math.max(1,Lettering.width(title,1))),PAPER);
+        headingCenter(p,title,g.layout.width*.5f,14,16,width-24,PAPER);
         center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
@@ -33,7 +35,7 @@ public final class ScreenView {
     private static void titleAction(Painter p,Layout.Box b,String label,String detail,boolean primary){
         PilotGlass.button(p,b.x,b.y,b.w,b.h,primary);
         int ink=PilotGlass.buttonText(primary);
-        text(p,label,b.x+20,b.y+17,22,ink);
+        heading(p,label,b.x+20,b.y+17,22,b.w-58,ink);
         text(p,detail,b.x+20,b.y+48,10,primary?NAVY:MUTED);
         PilotGlass.chevron(p,b.x+b.w-22,b.centerY(),1,ink);
     }
@@ -44,7 +46,7 @@ public final class ScreenView {
         PilotGlass.panel(p,x,y,328,350,0xe8101c30);
         text(p,"YOUR VOYAGE",x+24,y+21,10,GOLD);
         String harbor=Challenges.locationTitle(g.challengeId);
-        text(p,harbor,x+24,y+49,Math.min(24,284/Math.max(1,Lettering.width(harbor,1))),PAPER);
+        heading(p,harbor,x+24,y+49,24,284,PAPER);
         text(p,goalSummary(g.challengeId),x+24,y+80,Math.min(10,284/Math.max(1,Lettering.width(goalSummary(g.challengeId),1))),MUTED);
         Layout.Box choose=g.controlBox(Layout.CHALLENGES);
         PilotGlass.button(p,choose.x,choose.y,choose.w,choose.h,false);
@@ -101,7 +103,7 @@ public final class ScreenView {
     public static void help(Game g,Painter p) {
         p=menu(g,p);
         overlay(p,105,411);
-        center(p,"CAPTAIN'S FIELD GUIDE",480,133,24,GOLD);
+        headingCenter(p,"CAPTAIN'S FIELD GUIDE",480,133,24,820,GOLD);
         instruction(p,1,185,"USE THE THROTTLE","Pull farther for thrust. Release to coast.");
         instruction(p,2,251,"DRAG THE CARGO","Press, drag and hold. Center for assist.");
         instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
@@ -114,14 +116,14 @@ public final class ScreenView {
     }
     private static void instruction(Painter p,int index,float y,String title,String detail) {
         p.circle(126,y+15,19,0xff26334a);center(p,""+index,126,y+6,20,GOLD);
-        text(p,title,159,y,16,PAPER); text(p,detail,159,y+28,10,MUTED);
+        heading(p,title,159,y,16,440,PAPER); text(p,detail,159,y+28,10,MUTED);
     }
     public static void settings(Game g,Painter p) {
         p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);
         PilotGlass.panel(p,180,96,600,436,0xf0101c30);
-        text(p,"YOUR CONTROLS",212,124,28,PAPER);
+        heading(p,"YOUR CONTROLS",212,124,28,524,PAPER);
         text(p,"MAKE THE HELM COMFORTABLE",212,162,10,MUTED);
-        text(p,"THROTTLE SIDE",212,202,17,PAPER);
+        heading(p,"THROTTLE SIDE",212,202,17,265,PAPER);
         text(p,"CHOOSE YOUR DRIVING HAND",212,228,10,MUTED);
         boolean left=g.settings.joystickSide()==GameSettings.LEFT;
         Layout.Box[] sides={Layout.JOYSTICK_LEFT,Layout.JOYSTICK_RIGHT};
@@ -131,7 +133,7 @@ public final class ScreenView {
             center(p,i==0?"LEFT":"RIGHT",b.centerX()+5,b.y+20,14,selected?GOLD:PAPER);
         }
         p.line(212,264,736,264,1,PilotGlass.TRACK);
-        text(p,"HAPTIC FEEDBACK",212,292,17,PAPER);
+        heading(p,"HAPTIC FEEDBACK",212,292,17,390,PAPER);
         text(p,"FEEL CONTACTS AND CONTROL CUES",212,319,10,MUTED);
         PilotGlass.toggle(p,672,292,g.hapticsEnabled);
         text(p,g.hapticsEnabled?"ON":"OFF",631,301,11,g.hapticsEnabled?GOLD:MUTED);
@@ -142,7 +144,7 @@ public final class ScreenView {
         p=menu(g,p);
         PilotGlass.panel(p,216,126,528,300,0xf0101c30);
         p.rect(244,155,6,25,GOLD);p.rect(256,155,6,25,GOLD);
-        text(p,"VOYAGE PAUSED",280,153,26,PAPER);
+        heading(p,"VOYAGE PAUSED",280,153,26,436,PAPER);
         text(p,g.challengeTitle(),244,204,12,MUTED);
         button(g,p,Layout.RESUME,"RESUME VOYAGE",true);
         button(g,p,Layout.RESTART,"RESTART",false);
@@ -151,10 +153,10 @@ public final class ScreenView {
     public static void finish(Game g,Painter p) {
         p=menu(g,p);overlay(p,82,454);
         boolean complete=g.goalComplete() && g.hull>0;
-        text(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,PAPER);
+        heading(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,840,PAPER);
         text(p,g.challengeTitle(),60,151,12,MUTED);
         captainBadge(p,190,250,1.2f,g.career.stripes());
-        center(p,g.career.rankTitle(),190,328,17,GOLD);
+        headingCenter(p,g.career.rankTitle(),190,328,17,260,GOLD);
         center(p,g.rankPromoted?"NEW CAPTAIN STRIPES!":"CAPTAIN'S RANK",190,355,10,MUTED);
         for(int i=0;i<3;i++)star(p,410+i*72,213,24,g.earnedStars>i?GOLD:0xff465366);
         text(p,g.earnedStars==3?"GOLD STRIPES":g.earnedStars==2?"SILVER STRIPES":g.earnedStars==1?"BRONZE STRIPES":"KEEP PRACTICING",340,250,11,GOLD);
@@ -180,7 +182,7 @@ public final class ScreenView {
     public static void challenges(Game g,Painter p) {
         harbor(g,p);p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
         Painter screen=p;p=centered(g,p);
-        text(p,"CHOOSE YOUR HARBOR",60,40,30,PAPER);
+        heading(p,"CHOOSE YOUR HARBOR",60,40,30,840,PAPER);
         text(p,"ONE PLACE. CONNECTED JOBS. SAIL AT YOUR OWN PACE.",60,84,11,MUTED);
         for(int slot=0;slot<Layout.CHALLENGE_CARDS.length;slot++){
             int id=Challenges.menuId(g.challengePage*Challenges.PAGE_SIZE+slot);if(!Challenges.valid(id))continue;
@@ -189,7 +191,7 @@ public final class ScreenView {
             if(selected)p.rect(b.x+18,b.y,70,3,GOLD);
             text(p,slot==0?"RIVER WORK":slot==1?"MARINA RESCUE":"INDUSTRIAL CANAL",b.x+20,b.y+22,10,GOLD);
             String name=Challenges.locationTitle(id);
-            text(p,name,b.x+20,b.y+49,Math.min(23,220/Math.max(1,Lettering.width(name,1))),PAPER);
+            heading(p,name,b.x+20,b.y+49,23,220,PAPER);
             int[] jobs=Challenges.locationJobs(id);int completed=0;for(int job:jobs)if(g.career.bestStars(job)>0)completed++;
             text(p,""+jobs.length,b.x+20,b.y+93,40,open?GOLD:MUTED);
             text(p,jobs.length==1?"CONNECTED JOB":"CONNECTED JOBS",b.x+62,b.y+105,12,PAPER);
@@ -252,8 +254,8 @@ public final class ScreenView {
     public static void button(Game g,Painter p,Layout.Box box,String label,boolean primary) { button(g,p,box.x,box.y,box.w,box.h,label,primary); }
     public static void button(Game g,Painter p,float x,float y,float w,float h,String label,boolean primary) {
         PilotGlass.button(p,x,y,w,h,primary);
-        float size=Math.min(label.length()>18?13:16,(w-58)/Math.max(1,Lettering.width(label,1)));
-        center(p,label,x+w/2-(primary && w>=220?8:0),y+(h-size)/2,size,PilotGlass.buttonText(primary));
+        float size=Math.min(label.length()>18?13:16,(w-58)/Math.max(1,Lettering.headingWidth(label,1)));
+        Lettering.centerHeading(p,label,x+w/2-(primary && w>=220?8:0),y+(h-size)/2,size,PilotGlass.buttonText(primary));
         if(primary && w>=220)PilotGlass.chevron(p,x+w-24,y+h*.5f,1,NAVY);
     }
 
