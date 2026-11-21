@@ -5,6 +5,8 @@ public final class Dialogue {
     private final InstructionPanel panel=new InstructionPanel();
     private String speaker,title,first,second;
     private String[] choices=new String[0];
+    private int speakerKind=RadioAudio.TEACHER;
+    boolean instructorConversation(){return active && speakerKind==RadioAudio.TEACHER;}
     private int pointer=-1,pressed=-1,result=-1,revision,ticks;
     public boolean active;
     public void show(Game g,String speaker,String prompt,String detail,String... answers){
@@ -13,7 +15,7 @@ public final class Dialogue {
     public void showFrom(Game g,int transmitter,String speaker,String prompt,String detail,String... answers){
         if(answers==null || answers.length<1 || answers.length>4)throw new IllegalArgumentException("Dialogue needs 1 to 4 choices");
         for(String answer:answers)if(answer==null || answer.trim().isEmpty())throw new IllegalArgumentException("Empty choice");
-        g.cancelInputs();active=true;this.speaker=speaker;title=prompt;first=detail;second="SELECT A REPLY TO TRANSMIT.";
+        g.cancelInputs();active=true;speakerKind=transmitter;this.speaker=speaker;title=prompt;first=detail;second="SELECT A REPLY TO TRANSMIT.";
         choices=answers.clone();result=-1;ticks=0;revision++;cancel();panel.reset();
         panel.step(content());if(transmitter==RadioAudio.BRIDGE)g.radio.receiveBridge();else g.radio.transmit(RadioAudio.TEACHER);
     }

@@ -118,9 +118,12 @@ final class InstructionPanel {
                     x+Physics.clamp(center+half-16,9,423),y+114,x+Physics.clamp(center-half-16,9,423),y+114},SoftCue.alpha(0x07ffc52f,alpha));
         }
     }
+    /** Keep bridge radio callouts below the fixed expanded instruction plate. */
+    static float radioY(Game g,float x,float y){return x>=g.layout.width-590 && y>=0 && y<228?228:y;}
     void draw(Game g,Painter p){
-        float x=g.layout.width-450,y=68;
-        paint(p,x,y);
+        float width=g.tutorial!=null?544:432;
+        float x=g.layout.width-width-18,y=68;
+        paint(p,x,y,width);
         Content shown=content==null?TutorialView.instructionContent(g):content;
         if(shown==null || hidden())return;
         boolean wipe=phase==CLEAR || phase==REVEAL;
@@ -135,17 +138,17 @@ final class InstructionPanel {
         wipeLine(p,x,y);
         shimmer(p,x,y);
         sparkle(p,x,y,shown.waiting);
-        SpeakerPortrait.draw(g,p,x,y,open());
+        SpeakerPortrait.draw(g,p,x,y,open(),shown.header);
     }
-    void paint(Painter p,float x,float y){
+    void paint(Painter p,float x,float y,float width){
         if(hidden())return;
         float amount=open(),h=Math.max(1,124*amount),cy=y+62;
-        PilotGlass.panel(p,x,cy-h*.5f,432,h,PilotGlass.FILL);
+        PilotGlass.panel(p,x,cy-h*.5f,width,h,PilotGlass.FILL);
         if(amount<1){
             float light=1-amount,beamY=phase==CLOSE?cy:cy-h*.5f+h*amount;
-            p.line(x+9,beamY,x+423,beamY,7,SoftCue.alpha(0x20ffc52f,light));
-            p.line(x+9,beamY,x+423,beamY,3,SoftCue.alpha(0x55ffc52f,light));
-            p.line(x+9,beamY,x+423,beamY,.8f,SoftCue.alpha(0xc0fff0ce,light));
+            p.line(x+9,beamY,x+width-9,beamY,7,SoftCue.alpha(0x20ffc52f,light));
+            p.line(x+9,beamY,x+width-9,beamY,3,SoftCue.alpha(0x55ffc52f,light));
+            p.line(x+9,beamY,x+width-9,beamY,.8f,SoftCue.alpha(0xc0fff0ce,light));
         }
     }
 }

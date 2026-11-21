@@ -17,7 +17,7 @@ final class InstructorRadio {
         if(g.teacherBoat()==null || x<0 || x>g.layout.width || y<64 || y>=g.layout.height-64
                 || OverviewMap.visible(g) && OverviewMap.bounds(g).contains(x,y) || Joystick.hit(g,x,y)
                 || g.layout.box(Layout.HELP).contains(x,y) || g.layout.box(Layout.PRACTICE).contains(x,y)
-                || (x>g.layout.width-450 && y<192))return false;
+                || (x>g.layout.width-562 && y<192))return false;
         float dx=(x-x(g))/Math.max(30,37*g.layout.camera.scale),dy=(y-y(g))/Math.max(24,28*g.layout.camera.scale);
         return dx*dx+dy*dy<=1;
     }

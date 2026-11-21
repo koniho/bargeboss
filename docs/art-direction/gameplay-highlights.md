@@ -110,8 +110,10 @@ for fitting, never fixed pixel-font character counts. The original Barge Boss
 logo deliberately retains `LogoLettering`. Font provenance and regeneration
 instructions are in [the font README](../../assets/fonts/rajdhani/README.md).
 
-Tutorial instructions occupy one fixed upper-right screen-space slot (432x124,
-18 units from the right edge, y=68). Arrival, driving, canal, pushing and towing
+Tutorial instructions occupy one fixed upper-right screen-space slot (544x124,
+18 units from the right edge, y=68). The rightmost 112 units reserve the inward-facing instructor portrait; text
+retains its 432-unit area. Keep the face visible throughout instructor conversations,
+resting between transmissions. Arrival, driving, canal, pushing and towing
 share its title/body baselines. Change copy/progress within the slot; never flip
 sides based on lesson, vessel position or camera. Completion uses the separate
 results screen. Keep the slot clear when framing future tutorial objectives.

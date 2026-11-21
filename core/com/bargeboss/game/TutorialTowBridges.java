@@ -21,12 +21,12 @@ final class TutorialTowBridges {
         return index==EXIT && g.tutorial.firstTowParked && Tutorial.doubleTow(g);
     }
     float houseX(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;return g.layout.camera.screenX(p[0],p[1]);}
-    float houseY(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;return Math.max(100,g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale);}
+    float houseY(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;float y=Math.max(100,g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale);return InstructionPanel.radioY(g,houseX(g,i),y);}
     boolean contactable(Game g){
         int i=current(g);if(i==0 || authorized[i] || phase!=0 || !eligible(g,i) || g.dialogue.active || g.mode!=Game.PLAY)return false;
         LandmarkBridge b=g.passages.bridges[i];float x=houseX(g,i),y=houseY(g,i);
         return Physics.length(g.tug.x-b.x,g.tug.y-b.y)<330 && x>=28 && x<=g.layout.width-28 && y>=80 && y<=g.layout.height-80
-                && !(x>=g.layout.width-450 && y<=192) && !OverviewMap.bounds(g).contains(x,y) && !Joystick.hit(g,x,y);
+                && !(x>=g.layout.width-562 && y<=192) && !OverviewMap.bounds(g).contains(x,y) && !Joystick.hit(g,x,y);
     }
     private boolean hit(Game g,int i,float x,float y){return i>0 && Math.abs(x-houseX(g,i))<=Math.max(24,22*g.layout.camera.scale) && Math.abs(y-houseY(g,i))<=Math.max(28,27*g.layout.camera.scale);}
     boolean down(Game g,int id,float x,float y){
@@ -63,5 +63,5 @@ final class TutorialTowBridges {
                 phase==1?"YOU / CHANNEL 08":"BRIDGE CONTROL / CHANNEL 08","RADIO / CH 08",phase==1);
     }
     void cue(Game g,Painter p){if(!contactable(g))return;int i=current(g);float x=houseX(g,i),y=houseY(g,i),r=Math.max(22,23*g.layout.camera.scale);
-        SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0x9995d7d1),1);SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);}
+        ArcadeIcons.draw(p,ArcadeIcons.RADIO,x,y,.85f,PilotGlass.AMBER);SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0x9995d7d1),1);SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);}
 }

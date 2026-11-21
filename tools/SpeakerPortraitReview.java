@@ -14,11 +14,14 @@ public final class SpeakerPortraitReview {
             Graphics2D graphics=im.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             Renderer.draw(root,new DesktopPainter(graphics));graphics.dispose();
             ImageIO.write(im,"png",new File(dir,"instructor-"+width+".png"));
-            if(!SpeakerPortrait.visible(g))throw new AssertionError("Teacher portrait missing");
+            if(!SpeakerPortrait.visible(g,"INSTRUCTOR / CHANNEL 08"))throw new AssertionError("Teacher portrait missing");
+            g.dialogue.show(g,"INSTRUCTOR","READY?","TAKE YOUR TIME.","YES");
+            for(int i=0;i<120;i++)g.radio.step();
+            if(!SpeakerPortrait.visible(g,"INSTRUCTOR"))throw new AssertionError("Portrait lost between transmissions");
             g.radio.transmit(RadioAudio.REPLY);
-            if(SpeakerPortrait.visible(g))throw new AssertionError("Player uses teacher face");
-            g.radio.receiveBridge();
-            if(SpeakerPortrait.visible(g))throw new AssertionError("Bridge uses teacher face");
+            if(!SpeakerPortrait.visible(g,"INSTRUCTOR"))throw new AssertionError("Portrait lost during reply");
+            g.dialogue.showFrom(g,RadioAudio.BRIDGE,"BRIDGE","READY?","WAIT.","YES");
+            if(SpeakerPortrait.visible(g,"INSTRUCTOR / CHANNEL 08"))throw new AssertionError("Bridge uses teacher face");
         }
         if(SpeakerPortrait.facing(700,960)!=-1 || SpeakerPortrait.facing(200,960)!=1)throw new AssertionError("Must face center");
         int[] ticks={0,14,21,30,38,49};

@@ -4830,3 +4830,28 @@ checks pass. Canonical drawing trace updated to 55db364f:2:1350 after review.
 Full Android checks/build passed (out/instructor-edge-build.log). Installed and
 cold launched Status:ok, restored display timeout. Preview registered as
 MediaStore 17962. Desktop visual review only; iOS not built this round.
+
+## 2026-11-21 — persistent in-panel speaker
+Widened tutorial instruction plate to544 while preserving432-unit text/wipe
+region. Right112 is a transparent inward-facing portrait. Visibility follows
+the conversation speaker/content, not short radio sound duration; mouth and
+meter still animate only on instructor transmissions. Dialogue retains explicit
+speaker kind during replies, so bridge conversations never borrow instructor
+art. Updated teacher/bridge touch exclusions for enlarged panel.
+Built-in imagegen removed white matte; runtime remains six192px frames with
+alpha (same dimensions/cache footprint), no live background processing.
+Speaker review tests cover pauses between transmissions and reply persistence.
+Reviewed960/1333 layouts; draw replay now2f791c5d:2:1350.
+First full check caught tow-bridge call target covered by wider panel at1333.
+Moved bridge radio callouts below the panel when overlapping; drawing and input
+share the same adjusted anchor. Added a radio glyph to the tow callout. Mouth
+and tow-bridge checks pass after correction. Final draw trace2405ba3c:2:1350.
+Render-disabled replay changed285ba210 tobf5d3e90 after the bridge callout fix;
+it is not state-identical to the old build. This change also affects when a
+previously UI-obscured radio target becomes contactable, so tutorial timing can
+change. Full tutorial completion/tow/bridge tests pass and bounded-play outcome
+remains2 deliveries/1350. Do not describe this round as a purely visual replay.
+Final full Android checks/build passed (out/instructor-panel-build.log). Installed
+and cold launched Status:ok; restored timeout. Review/art copies in Downloads
+and Photos, MediaStore17964/17966 verified. Desktop visual review only; no native
+pixel capture/frame-time profile or iOS build this round.

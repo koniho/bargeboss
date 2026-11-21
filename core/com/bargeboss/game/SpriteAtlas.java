@@ -78,7 +78,7 @@ public final class SpriteAtlas {
     public static boolean framePack(int atlas){return BargeEquipment.family(atlas);}
     public static String packedFile(int atlas,int frame){String name=file(atlas);return "frames/"+name.substring(0,name.length()-4)+"/"+frame+".png";}
     private static boolean singleSheet(int atlas) { return CargoArt.atlas(atlas) || atlas==YACHT || atlas==TUG || atlas==BARGE || atlas==BULK || VesselHighlight.atlas(atlas); }
-    public static String file(int atlas) { if(atlas==INSTRUCTOR_PORTRAIT)return "instructor-portrait-v1.png"; if(atlas==TITLE_LOGO)return "title-logo-v1.png"; if(BargeEquipment.family(atlas))return BargeEquipment.file(atlas); if(atlas==TEACHER_TUG)atlas=TUG;
+    public static String file(int atlas) { if(atlas==INSTRUCTOR_PORTRAIT)return "instructor-portrait-v2.png"; if(atlas==TITLE_LOGO)return "title-logo-v1.png"; if(BargeEquipment.family(atlas))return BargeEquipment.file(atlas); if(atlas==TEACHER_TUG)atlas=TUG;
         if(atlas==SWIMMERS)return "swimmers-rescue-v1.png"; if(atlas==RIPPLES)return "vessel-ripples-v1.png"; if(atlas==TITLE_STEEL)return "title-steel-side-v1.png"; if(atlas==TITLE_ROCKS)return "title-rocks-lighthouse-v1.png"; if(atlas==SPLASH)return "collision-splash-stamps-v1.png"; if(atlas==MOORED_NORMALS)return "montrose-moored-normals-v1.png"; if(atlas==MOORED_BOATS)return "montrose-moored-boats-v1.png";
         if(atlas>=SHORE_BOLLARDS && atlas<=STEELWORKS)return new String[]{"shore-bollards-v1.png","shore-loading-v1.png","shore-trucks-v1.png","shore-tiles-v1.png","steelworks-factory-v1.png"}[atlas-SHORE_BOLLARDS];
         if(atlas==YACHT)return "yacht-80ft-v1-32.png";

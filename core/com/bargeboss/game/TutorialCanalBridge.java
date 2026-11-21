@@ -23,10 +23,10 @@ public final class TutorialCanalBridge {
     private boolean houseVisible(Game g){
         float x=houseX(g),y=houseY(g);
         return x>=28 && x<=g.layout.width-28 && y>=80 && y<=g.layout.height-80
-                && !(x>=g.layout.width-450 && y<=192) && !OverviewMap.bounds(g).contains(x,y);
+                && !(x>=g.layout.width-562 && y<=192) && !OverviewMap.bounds(g).contains(x,y);
     }
     float houseX(Game g){float[] p=bridges()[0].radioPoint;return g.layout.camera.screenX(p[0],p[1]);}
-    float houseY(Game g){float[] p=bridges()[0].radioPoint;return g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale;}
+    float houseY(Game g){float[] p=bridges()[0].radioPoint;float y=g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale;return InstructionPanel.radioY(g,houseX(g),y);}
     boolean hit(Game g,float x,float y){
         return Math.abs(x-houseX(g))<=Math.max(24,22*g.layout.camera.scale)
                 && Math.abs(y-houseY(g))<=Math.max(28,27*g.layout.camera.scale);
