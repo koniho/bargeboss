@@ -8,7 +8,7 @@ public final class SceneryOcclusionTest {
         return SceneryOcclusion.polygonOpacity(p,new float[]{l,t,r,t,r,b,l,b});
     }
     public static void run() {
-        for(int atlas=0;atlas<=4;atlas++)for(int frame=0;frame<SpriteAtlas.count(atlas);frame++) {
+        for(int atlas=0;atlas<=4;atlas++)for(int frame=0;frame<32;frame++) {
             SceneryOcclusion p=new SceneryOcclusion(new Parity());
             check(rectangle(p,0,0,1000,1000)==1,"scenery painted before vessels stays opaque");
             float w=120*SpriteAtlas.widthScale(atlas,frame),h=120*SpriteAtlas.heightScale(atlas,frame);

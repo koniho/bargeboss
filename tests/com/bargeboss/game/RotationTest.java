@@ -6,31 +6,31 @@ public final class RotationTest {
     private static void check(boolean ok,String message) { assertions++; if(!ok) throw new AssertionError(message); }
     private static boolean near(float a,float b) { return Math.abs(a-b)<.0002f; }
     public static void run() {
-        final float fullTurn=(float)(2*Math.PI);
+        final float fullTurn=(float)(2*Math.PI),step=fullTurn/32,epsilon=.000005f;
         int[] assets={SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.CONTAINER,SpriteAtlas.BULK};
         for(int atlas:assets) {
-            int poses=SpriteAtlas.headings(atlas);float step=fullTurn/poses,epsilon=.000005f*32/poses;long seen=0;
-            check(SpriteAtlas.count(atlas)==poses,"each turning asset exposes all authored headings");
+            long seen=0;
+            check(SpriteAtlas.count(atlas)==32,"each turning asset exposes 32 logical headings");
             for(int i=0;i<=720;i++) {
                 float angle=i*fullTurn/720-fullTurn;
                 Capture p=sample(atlas,angle,.37f);
                 check(p.count==1,"one native blend operation per asset draw");
                 Draw d=p.draws[0];
-                check(d.frameA>=0 && d.frameA<poses && d.frameB>=0 && d.frameB<poses,"rotation always addresses a valid source cell");
+                check(d.frameA>=0 && d.frameA<32 && d.frameB>=0 && d.frameB<32,"rotation always addresses a valid 32-frame cell");
                 check(d.cx==250.25f && d.cy==400.75f,"every heading preserves the requested footprint center");
                 check(d.width==128 && d.height==144 && d.rotation==0,"turning swaps directional art without rotating or resizing the sprite rectangle");
                 check(d.blend>=0 && d.blend<=1 && near(d.alpha,.37f),"blend keeps its supplied opacity, including semitransparent rendering");
-                check((d.frameB-d.frameA+poses)%poses<=1,"blend only combines neighboring headings including the last-to-first wrap");
+                check((d.frameB-d.frameA+32)%32<=1,"blend only combines neighboring headings including the 31-to-0 wrap");
                 seen|=1L<<d.frameA; seen|=1L<<d.frameB;
             }
-            check(seen==(poses==64?-1L:0xffffffffL),"full turn uses all headings for atlas "+atlas);
-            for(int boundary=0;boundary<=poses;boundary++) {
+            check(seen==0xffffffffL,"full turn uses all 32 headings for atlas "+atlas);
+            for(int boundary=0;boundary<=32;boundary++) {
                 Capture before=sample(atlas,boundary*step-epsilon,1),after=sample(atlas,boundary*step+epsilon,1);
                 check(weightDifference(before,after)<.001f,"no frame contribution jump at sector boundary "+boundary+" atlas "+atlas);
             }
             // Short crossfades hold crisp views outside the center of a sector.
             // Check the hold-to-blend edges as well as the steepest midpoint.
-            for(int sector=0;sector<poses;sector++) for(float fraction:new float[]{.4f,.5f,.6f}) {
+            for(int sector=0;sector<32;sector++) for(float fraction:new float[]{.4f,.5f,.6f}) {
                 float angle=(sector+fraction)*step;
                 check(weightDifference(sample(atlas,angle-epsilon,1),sample(atlas,angle+epsilon,1))<.001f,
                         "short blend stays continuous at "+fraction+" of sector "+sector+" atlas "+atlas);
@@ -42,7 +42,7 @@ public final class RotationTest {
             Capture direct=new Capture(); SpriteAtlas.draw(direct,atlas,.27f,300,550,128,144,1);
             Draw river=nativeCalls.draws[0],world=direct.draws[0];
             check(near(river.cx,RiverPainter.screenX(300,550)) && near(river.cy,RiverPainter.screenY(300,550)),"camera rotation preserves one mapped footprint center");
-            check(river.frameA==(world.frameA+28*(poses/32))%poses && river.frameB==(world.frameB+28*(poses/32))%poses,"isometric camera shifts both blend frames by minus 45 degrees");
+            check(river.frameA==(world.frameA+28)%32 && river.frameB==(world.frameB+28)%32,"isometric camera shifts both blend frames by minus 45 degrees");
             check(near(river.width,128*RiverPainter.SCALE) && near(river.height,144*RiverPainter.SCALE)
                     && near(river.blend,world.blend),"camera scales dimensions without changing blend progress");
         }
@@ -94,10 +94,10 @@ public final class RotationTest {
     }
     private static float weightDifference(Capture a,Capture b) {
         float[] left=weights(a),right=weights(b); float difference=0;
-        for(int i=0;i<64;i++) difference+=Math.abs(left[i]-right[i]); return difference;
+        for(int i=0;i<32;i++) difference+=Math.abs(left[i]-right[i]); return difference;
     }
     private static float[] weights(Capture p) {
-        float[] result=new float[64];
+        float[] result=new float[32];
         for(int i=0;i<p.count;i++) {
             Draw d=p.draws[i]; result[d.frameA]+=d.alpha*(1-d.blend); result[d.frameB]+=d.alpha*d.blend;
         }

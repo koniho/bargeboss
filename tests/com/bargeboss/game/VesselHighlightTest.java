@@ -6,15 +6,15 @@ public final class VesselHighlightTest {
     public static void run() {
         for(int atlas:new int[]{SpriteAtlas.BARGE_GOLD,SpriteAtlas.BARGE_MINT,SpriteAtlas.TUG_GOLD}) {
             int source=VesselHighlight.source(atlas);
-            check(SpriteAtlas.count(atlas)==SpriteAtlas.count(source) && SpriteAtlas.columns(atlas)==8 && SpriteAtlas.rows(atlas)==SpriteAtlas.count(source)/8,"glow preserves every hull heading");
+            check(SpriteAtlas.count(atlas)==32 && SpriteAtlas.columns(atlas)==8 && SpriteAtlas.rows(atlas)==4,"glow preserves every hull heading");
             check(!SpriteGrade.applies(atlas),"gameplay glow retains saturated colors");
-            for(int frame=0;frame<SpriteAtlas.count(source);frame++)for(float uv:new float[]{0,.25f,.5f,1}) {
+            for(int frame=0;frame<32;frame++)for(float uv:new float[]{0,.25f,.5f,1}) {
                 float mapped=(VesselHighlight.PAD+uv*VesselHighlight.INNER)/VesselHighlight.CELL;
                 float hx=(uv-SpriteAtlas.pivotX(source,frame))*SpriteAtlas.widthScale(source,frame);
                 float hy=(uv-SpriteAtlas.pivotY(source,frame))*SpriteAtlas.heightScale(source,frame);
                 check(Math.abs(hx-(mapped-SpriteAtlas.pivotX(atlas,frame))*SpriteAtlas.widthScale(atlas,frame))<.000001f,"glow X matches actual hull despite padding");
                 check(Math.abs(hy-(mapped-SpriteAtlas.pivotY(atlas,frame))*SpriteAtlas.heightScale(atlas,frame))<.000001f,"glow Y matches actual hull despite padding");
-                check(SpriteAtlas.sourceLeft(atlas,frame)==SpriteAtlas.sourceLeft(source,frame) && SpriteAtlas.sourceBottom(atlas,frame)==SpriteAtlas.sourceBottom(source,frame),"directional cells remain registered");
+                check(SpriteAtlas.sourceLeft(atlas,frame)==SpriteAtlas.sourceLeft(SpriteAtlas.BARGE,frame) && SpriteAtlas.sourceBottom(atlas,frame)==SpriteAtlas.sourceBottom(SpriteAtlas.BARGE,frame),"directional cells remain registered");
             }
         }
         check(VesselHighlight.opacity(0)>=.2f && VesselHighlight.opacity(45)>.5f && VesselHighlight.opacity(45)<.6f,"recognizable glow remains translucent even at its peak");

@@ -7,7 +7,7 @@ final class LevelAssetsTest {
     private static boolean includes(LevelAssets.Plan plan,int atlas){for(int id:plan.rotationAtlases())if(id==atlas)return true;return false;}
     static void run() {
         LevelAssets.Plan tutorial=LevelAssets.tutorial();
-        check(tutorial.rotationFrames()==2080 && includes(tutorial,SpriteAtlas.TEACHER_TUG),"Tutorial prepares cargo, teacher livery and both complete equipment families");
+        check(tutorial.rotationFrames()==1632 && includes(tutorial,SpriteAtlas.TEACHER_TUG),"Tutorial prepares cargo, teacher livery and both complete equipment families");
         check(!includes(tutorial,SpriteAtlas.STEEL) && !includes(tutorial,SpriteAtlas.CONTAINER),"Tutorial excludes unused cargo");
         check(!includes(tutorial,SurfaceLightArt.forSource(SpriteAtlas.STEEL)),"Unused cargo effects excluded too");
         for(int id=0;id<Challenges.COUNT;id++) {
@@ -46,8 +46,8 @@ final class LevelAssetsTest {
             game.activeGame().tutorial.lesson=Tutorial.TRAIN;
             check(LevelAssets.upcoming(game)==tutorial,"Later train lesson retains the complete tutorial manifest");
         }
-        check(LevelAssets.challenge(0).rotationFrames()==1792 && LevelAssets.challenge(2).rotationFrames()==1792,"Calumet prepares cargo for every contiguous job");
-        check(LevelAssets.challenge(1).rotationFrames()==1792 && LevelAssets.challenge(3).rotationFrames()==1792,"Ordering levels include all three cargo kinds");
+        check(LevelAssets.challenge(0).rotationFrames()==1024 && LevelAssets.challenge(2).rotationFrames()==1024,"Calumet prepares cargo for every contiguous job");
+        check(LevelAssets.challenge(1).rotationFrames()==1024 && LevelAssets.challenge(3).rotationFrames()==1024,"Ordering levels include all three cargo kinds");
         int[] copy=tutorial.rotationAtlases();copy[0]=999;
         check(!includes(tutorial,999),"Callers cannot mutate manifest");
         check(SpriteAtlas.rotationAtlases(SpriteAtlas.TUG,SpriteAtlas.TUG).length==4,"Duplicate sources expand once");

@@ -4495,3 +4495,51 @@ log reported approximately3.72 ms GPU/3.84 ms encode during its120-frame window.
 Thus there is ample crop-cache headroom now, but substantial CPU work remains;
 do not claim a frame-rate fix. Captured pixels show both specialized barges,
 registered new hulls, lighting, bridge/shore overlap and spray/fireworks.
+
+### Art rollback and bridge CPU finding
+
+User rejected the model-rendered hull/cargo replacement as primitive, especially
+on the title screen. Restored the accepted painted 32-pose hull and all ordinary
+cargo, including original registration, masks, shading and glow. The 64-pose
+ordinary-fleet upgrade is NOT complete. Do not promote geometry guides as final
+painted artwork. Candidate work is retained in commit6669f71 for further art
+work; it is not an accepted visual direction. Keep only the accepted specialized
+equipment frame packs and Android old-level source retirement from this attempt.
+
+Sampling capture `20261121-034410-barge-abilities-freeze` had no trace overflow
+and identified ArticulatedModel.drawRange at78.69% inclusive CPU, Branch.slice
+at53.90%, with repeated Math.min/max dominant. BridgeLayers interleaves every
+particle depth, rescanning every face's vertex depth bounds in each interval.
+Cache exact face bounds when geometry changes and reject whole-pose empty
+intervals before traversal. Motion still uses continuous transforms; slicing,
+UV interpolation, order and lighting remain unchanged. Validation in progress.
+
+Cached bridge depth bounds matched the previous implementation bit-for-bit
+across4715 depth intervals and185215 painter calls, covering tutorial, Calumet
+and Indiana bridges at five phases: exact trace d530063e868e3f60 on both sides.
+`tools/BridgeDepthReview.java` records raw float bits, material UVs, colors and
+primitive order. Comparison used separately compiled before/after model classes.
+This verifies the optimization's drawing output independently of FPS measurements.
+
+The canonical replay with restored art and equipment frame packs is
+68ec3e6b:2:1350 on BOTH the before and after bridge implementations. The changed
+baseline versus2a3bfb9a is equipment file/crop metadata in the render trace, not
+simulation or bridge appearance. Title preview at1243×600 confirms restoration
+of the accepted rounded hulls, fenders and painted cargo.
+
+Final restored-art/native capture:
+`out/profiles/20261121-035429-barge-abilities-freeze` completed90 warmup plus120
+measured frames on Vulkan. Median draw21.46 ms, interval22.51 ms; p95 interval
+24.17 ms, max29.95 ms. This is approximately44 FPS, not60. Earlier same-scene
+capture with the rejected hull art was77.61 ms median interval; geometry trace
+comparison isolates the bridge optimization's unchanged drawing behavior, but
+the native captures also differ in hull artwork and are not a pure one-variable
+A/B. No concurrent builds/tests ran during either timing capture.
+
+All1674 preparation frames ready, no warm frame builds/evictions, no cold decode
+or raster fallbacks. Source248.71 MiB + crop89.76 MiB =338.47 MiB; source/crop
+storage remains below the pre-change interrupted reading429.69 MiB, while that
+old reading is not a valid timing baseline. The CPU crop budget remains160 MiB.
+Restored original art confirmed in native equipment screenshot and desktop title
+review. Full check.sh, derivative/pack freshness checks and Android build passed;
+installed and relaunched on the development phone. iOS was not built or tested.

@@ -15,7 +15,6 @@ public final class BakeWatercraftMaterials {
     static final double PIVOT_X=.5,PIVOT_Y=.72;
     static final double MIN_HEIGHT=-8,HEIGHT_RANGE=96;
     static final class Frame {
-        boolean authoredPalette;
         final int[][] pixels={new int[SIZE*SIZE],new int[SIZE*SIZE],new int[SIZE*SIZE]};
         final double[] depth=new double[SIZE*SIZE];
         Frame(){Arrays.fill(depth,Double.NEGATIVE_INFINITY);}
@@ -53,7 +52,7 @@ public final class BakeWatercraftMaterials {
         int minX=Math.max(0,(int)StrictMath.floor(Math.min(sx[0],Math.min(sx[1],sx[2])))),maxX=Math.min(SIZE-1,(int)StrictMath.ceil(Math.max(sx[0],Math.max(sx[1],sx[2]))));
         int minY=Math.max(0,(int)StrictMath.floor(Math.min(sy[0],Math.min(sy[1],sy[2])))),maxY=Math.min(SIZE-1,(int)StrictMath.ceil(Math.max(sy[0],Math.max(sy[1],sy[2]))));
         double den=(sy[1]-sy[2])*(sx[0]-sx[2])+(sx[2]-sx[1])*(sy[0]-sy[2]);if(StrictMath.abs(den)<1e-9)return;
-        boolean emission=color==0xffdd7d;int albedo=f.authoredPalette?color:material(color);
+        boolean emission=color==0xffdd7d;int albedo=material(color);
         double roughness=emission?.25:albedo==0x203641?.22:albedo==0x292f32?.85:.67;
         for(int y=minY;y<=maxY;y++)for(int x=minX;x<=maxX;x++){
             double a=((sy[1]-sy[2])*(x+.5-sx[2])+(sx[2]-sx[1])*(y+.5-sy[2]))/den;
@@ -63,7 +62,7 @@ public final class BakeWatercraftMaterials {
             // Local-space paint wear stays attached through every heading. No directional lighting.
             double grain=noise(StrictMath.floor(px*3),StrictMath.floor(py*3),StrictMath.floor(pz*3));
             double coarse=noise(StrictMath.floor(px*.65),StrictMath.floor(py*.65),StrictMath.floor(pz*.65));
-            double variation=emission?1:f.authoredPalette?.96+.025*grain+.035*coarse:.84+.13*grain+.10*coarse;
+            double variation=emission?1:.84+.13*grain+.10*coarse;
             int r=clamp(((albedo>>16)&255)*variation),g=clamp(((albedo>>8)&255)*variation),bb=clamp((albedo&255)*variation);
             f.pixels[0][at]=0xff000000|(r<<16)|(g<<8)|bb;
             f.pixels[1][at]=normal|clamp((pz-MIN_HEIGHT)*255/HEIGHT_RANGE);
@@ -71,15 +70,7 @@ public final class BakeWatercraftMaterials {
         }
     }
     static BufferedImage[] bake(WatercraftMesh mesh,double heading,double span){
-        return bake(mesh,heading,span,null);
-    }
-    static BufferedImage[] bake(WatercraftMesh mesh,double heading,double span,WatercraftMesh occluder){
-        return bake(mesh,heading,span,occluder,false);
-    }
-    static BufferedImage[] bake(WatercraftMesh mesh,double heading,double span,WatercraftMesh occluder,boolean authoredPalette){
-        Frame f=new Frame();f.authoredPalette=authoredPalette;
-        if(occluder!=null){for(WatercraftMesh.Face face:occluder.faces)for(int i=1;i<face.xyz.length-1;i++)triangle(f,new double[][]{face.xyz[0],face.xyz[i],face.xyz[i+1]},face.color,heading,span);for(int[] pixels:f.pixels)Arrays.fill(pixels,0);}
-        for(WatercraftMesh.Face face:mesh.faces)for(int i=1;i<face.xyz.length-1;i++)triangle(f,new double[][]{face.xyz[0],face.xyz[i],face.xyz[i+1]},face.color,heading,span);
+        Frame f=new Frame();for(WatercraftMesh.Face face:mesh.faces)for(int i=1;i<face.xyz.length-1;i++)triangle(f,new double[][]{face.xyz[0],face.xyz[i],face.xyz[i+1]},face.color,heading,span);
         BufferedImage[] out={new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB),new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB),new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB)};
         for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++)for(int map=0;map<3;map++){
             int count=0,r=0,g=0,b=0;for(int j=0;j<AA;j++)for(int i=0;i<AA;i++){int p=f.pixels[map][(y*AA+j)*SIZE+x*AA+i];if((p>>>24)==0)continue;count++;r+=(p>>16)&255;g+=(p>>8)&255;b+=p&255;}

@@ -145,6 +145,7 @@ public final class ArticulatedModel {
         private final float[][] worldBounds=new float[nodes.length][];
         private boolean prepared;
         private int polygonCount;
+        private float depthMin=Float.POSITIVE_INFINITY,depthMax=Float.NEGATIVE_INFINITY;
         private Poly[] transformed;
         private float[][] partRanges;
         private int[] partOrder;
@@ -155,7 +156,7 @@ public final class ArticulatedModel {
             prepared=true;fragments=motion.count;
         }
         private void update(Motion motion,float amount){
-            transform(amount);polygonCount=0;
+            transform(amount);polygonCount=0;depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
             for(int n=0;n<nodes.length;n++){
                 if(worldBounds[n]!=null){for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}}
                 if(projectedBounds[n]!=null){projectedBounds[n][0]=projectedBounds[n][1]=Float.POSITIVE_INFINITY;projectedBounds[n][2]=projectedBounds[n][3]=Float.NEGATIVE_INFINITY;}
@@ -173,6 +174,7 @@ public final class ArticulatedModel {
                         target.xyz[j]=xx;target.xyz[j+1]=yy;target.xyz[j+2]=zz;bounds(part.node,xx,yy,zz);
                         float along=(xx-root[3])*axisX+(yy-root[7])*axisY+(zz-root[11])*axisZ;lo=Math.min(lo,along);hi=Math.max(hi,along);
                     }
+                    target.depthBounds();depthMin=Math.min(depthMin,target.depthMin);depthMax=Math.max(depthMax,target.depthMax);
                     target.d=target.nx*target.xyz[0]+target.ny*target.xyz[1]+target.nz*target.xyz[2];
                 }
                 partRanges[i][0]=lo;partRanges[i][1]=hi;partOrder[i]=i;
@@ -211,6 +213,7 @@ public final class ArticulatedModel {
                     }
                 }
                 polygons[i]=new Poly(xyz,f.uv,f.node,f.color,f.material);
+                depthMin=Math.min(depthMin,polygons[i].depthMin);depthMax=Math.max(depthMax,polygons[i].depthMax);
             }
         }
         private void transform(float amount) {
@@ -266,7 +269,10 @@ public final class ArticulatedModel {
     /** Clip rigid faces to a ground-depth interval before merging billboard craft/ropes. */
     public Stats drawRange(Game g,Painter p,Pose pose,float min,float max) {return drawRange(g,p,pose,min,max,null);}
     private Stats drawRange(Game g,Painter p,Pose pose,float min,float max,FaceLighting lighting) {
-        Stats stats=new Stats();stats.sourceFaces=faces.length;float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
+        Stats stats=new Stats();stats.sourceFaces=faces.length;
+        // Particle depth cursors visit many empty intervals: geometry cannot contribute here.
+        if(pose.depthMax<=min || pose.depthMin>max)return stats;
+        float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
             if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
         for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;}
@@ -280,13 +286,18 @@ public final class ArticulatedModel {
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d;int motionIndex;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax;int motionIndex;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
-            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];
+            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];depthBounds();
         }
-        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;}
+        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
+        /** Geometry-derived bounds refresh only when a rigid pose changes, never per slice. */
+        void depthBounds(){
+            depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;
+            for(int i=0;i<xyz.length;i+=3){float depth=xyz[i+1]-xyz[i];depthMin=Math.min(depthMin,depth);depthMax=Math.max(depthMax,depth);}
+        }
         void paint(Painter p,RiverCamera c,float alpha,FaceLighting lighting) {
             float[] xy=new float[xyz.length/3*2];for(int i=0,j=0;i<xyz.length;i+=3,j+=2){xy[j]=c.screenX(xyz[i],xyz[i+1]);xy[j+1]=c.screenY(xyz[i],xyz[i+1])-xyz[i+2]*Z_SCALE*c.scale;}
             float light=p.lighting().face(nx,ny,nz);
@@ -328,8 +339,7 @@ public final class ArticulatedModel {
             float[] exact=new float[size];System.arraycopy(result,0,exact,0,size);float[] exactUV=new float[uvSize];System.arraycopy(texture,0,exactUV,0,uvSize);return new Poly(exact,exactUV,p);
         }
         private static Poly slice(Poly f,float min,float max){
-            float lo=Float.MAX_VALUE,hi=-Float.MAX_VALUE;
-            for(int i=0;i<f.xyz.length;i+=3){float d=f.xyz[i+1]-f.xyz[i];lo=Math.min(lo,d);hi=Math.max(hi,d);}
+            float lo=f.depthMin,hi=f.depthMax;
             if(hi<=min || lo>max)return null;
             if(lo>=min && hi<=max)return f;
             Poly q=f;

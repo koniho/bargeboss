@@ -13,8 +13,8 @@ final class AndroidRotationReview {
         Bitmap a=Bitmap.createBitmap(96,96,Bitmap.Config.ARGB_8888),b=Bitmap.createBitmap(96,96,Bitmap.Config.ARGB_8888);
         try {
             require(prepared.profileFrameBudget()==160L*1048576,"Production budget");
-            // Same complete preload with less spare room makes unrelated eviction testable.
-            prepared.profileRotationCache(128,true);reference.profileRotationCache(24,false);
+            // Production budget, including every registered derivative family.
+            prepared.profileRotationCache(160,true);reference.profileRotationCache(24,false);
             prepared.bind(new Canvas(a));reference.bind(new Canvas(b));
             CanvasPainter.Profile stats=prepared.enableProfile();
             prepared.prepareRotations();prepared.prepareRotations(); // idempotent
@@ -69,7 +69,7 @@ final class AndroidRotationReview {
     private static void reviewLevels(AssetManager assets,File directory)throws Exception {
         CanvasPainter scoped=new CanvasPainter(assets,false);
         try {
-            scoped.profileRotationCache(96,true);
+            scoped.profileRotationCache(160,true);
             int[] tutorial=LevelAssets.tutorial().rotationAtlases();
             scoped.prepareRotations(tutorial);scoped.profileAwaitRotations(30000);
             require(scoped.profileRotationsReady() && scoped.profileRotationFrames()==LevelAssets.tutorial().rotationFrames(),"Tutorial manifest incomplete");

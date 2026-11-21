@@ -211,11 +211,6 @@ public final class BargePoseGuide {
         BargePoseGuide guide=new BargePoseGuide(0,false);guide.materialMesh=sink;
         guide.geometry();
     }
-    /** Cargo shares the hull's local mesh/datum; the exporter supplies depth-only coaming occlusion. */
-    public static void cargoModel(int kind,java.util.function.BiConsumer<double[][],Integer> sink){
-        BargePoseGuide guide=new BargePoseGuide(0,true);guide.materialMesh=sink;guide.cargoKind=kind;
-        if(kind==0)guide.coilGeometry();else if(kind==1)guide.containerGeometry();else guide.bulkGeometry();
-    }
     public static void main(String[] args) throws Exception {
         headingCount=32;headingOffset=0;poseCount=32;columns=8;
         boolean proof=false;

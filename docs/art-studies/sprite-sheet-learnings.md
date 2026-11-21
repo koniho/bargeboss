@@ -246,28 +246,14 @@ the water-stream muzzle. Keep pump exhaust separate from tug stack metadata.
 The runtime now supports mixed 32/64 heading families; projection offset is a
 fraction of the full turn, never a hard-coded four-cell offset on a 64 sheet.
 
-## 2026-11-21: existing barges and loads at 64 headings
+## 2026-11-21 — rejected rigid fleet export
 
-Use a rigid source model for the extra angles. The hull and all three ordinary
-loads now share a fixed datum instead of fitting each painted pose separately.
-Render the hull into depth first for cargo, clear color only, then draw the load:
-this keeps foreground coaming occlusion identical across all 64 angles. Preserve
-coverage identically across albedo, normal-height and material exports.
-
-Do not reuse a generic palette classifier when exporting an authored palette:
-it flattened the recessed floor into charcoal and erased hull/tire contrast in
-the first candidate. The fleet exporter preserves explicit face colors and uses
-restrained object-space wear. Surface complexity is simpler than the older
-painted assets; predictable geometry is not evidence of identical art quality.
-
-Increasing pose count requires more than the source sheet: use one source
-heading-count helper for camera offsets, shadow/glow/shade selection and
-waterline interpolation. Regenerate opaque-interior masks and test every new
-heading at upper/lower shores. Registration CSVs record real angles and the
-fixed datum; do not fill unmeasured IoU columns with invented perfect scores.
-
-Ship frame-sized textures. Full-sheet plus cropped-frame caches can double
-resident memory and crowd out scenery. Preserve per-level manifests, including
-later spawns, and retire previous-level decoded sources as well as cache pins.
-Measure source plus crop storage together, and validate packed pixels against
-canonical sheets so stale effects cannot silently ship.
+The user rejected the 64-pose hull/cargo renders in commit6669f71 as primitive
+3D models, particularly on the title screen. The exporter used guide geometry
+as final color artwork. Correct perspective, stable pivots and 64 real rotations
+did not preserve the accepted painted style. Restored the approved 32-pose hull
+and cargo. Keep geometry as an authoring guide until the finished materials,
+rounded forms, fenders, wear and lighting match accepted artwork. Pose-count
+requirements never authorize an art-quality downgrade. Review the title convoy
+as well as gameplay composites before promoting any replacement. This 64-pose
+migration remains unfinished; equipment remains independently at64 headings.

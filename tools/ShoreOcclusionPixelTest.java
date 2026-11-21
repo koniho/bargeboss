@@ -13,7 +13,7 @@ public final class ShoreOcclusionPixelTest {
         if(args.length>0 && args[0].equals("terrain"))return;
         wallCorners();
         Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].equals("montrose")?Challenges.MONTROSE:args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
-        for(int bank=0;bank<4;bank++)for(int kind=0;kind<6;kind++)for(int heading=0;heading<(kind==0?32:64);heading++) {
+        for(int bank=0;bank<4;bank++)for(int kind=0;kind<6;kind++)for(int heading=0;heading<(kind>=4?64:32);heading++) {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
             float y=bank==0?TrainingChannel.BASIN_BOTTOM-16:bank==3?TrainingChannel.BASIN_TOP+16:600;
             if(g.calumetStage() || g.indianaStage()){
@@ -28,7 +28,7 @@ public final class ShoreOcclusionPixelTest {
                 float dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;
                 x=(ax+bx)*.5f;y=(ay+by)*.5f;if(!MontroseHarbor.openWater(x+nx*8,y+ny*8)){nx=-nx;ny=-ny;}x+=nx*16;y+=ny*16;
             }
-            Body b=new Body(kind==0?0:1,kind>=4?2:kind-1,x,y,heading*(float)Math.PI/(kind==0?16:32));b.ability=kind==4?BargeAbilities.FIREWORKS:kind==5?BargeAbilities.FIRE:BargeAbilities.NONE;b.floatingInitialized=true;b.heave=(heading%3-1)*1.5f;
+            Body b=new Body(kind==0?0:1,kind>=4?2:kind-1,x,y,heading*(float)Math.PI/(kind>=4?32:16));b.ability=kind==4?BargeAbilities.FIREWORKS:kind==5?BargeAbilities.FIRE:BargeAbilities.NONE;b.floatingInitialized=true;b.heave=(heading%3-1)*1.5f;
             b.vx=45*(float)StrictMath.cos(b.angle);b.vy=45*(float)StrictMath.sin(b.angle);
             float scale=heading%2==0?1.8f:2.7f;RiverCamera base=new RiverCamera(0,0,scale);
             RiverCamera c=new RiverCamera(192-base.screenX(x,y),240-base.screenY(x,y),scale);
