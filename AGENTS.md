@@ -12,6 +12,9 @@ the same `Painter`. Do not add a second game implementation for any platform.
 - Follow [gameplay highlight guidelines](docs/art-direction/gameplay-highlights.md) for
   quiet guidance: thin translucent strokes, open arrowheads, continuous rings
   and restrained glow. The broad neon/segmented redesign was rejected.
+- Follow [industrial UI styling](docs/art-direction/industrial-ui.md): navy plates,
+  cream text, gold actions and restrained red edges derived from the approved
+  wordmark. Preserve technical control geometry, semantic colors and tutorial space.
 - Push completed, checked development increments as work progresses; do not hold
   unrelated completed changes until a large batch is finished.
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area

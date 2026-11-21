@@ -50,15 +50,16 @@ public final class OverviewMap {
     static void slider(Game g,Painter p){
         if(!visible(g))return;
         Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.centerY(),thumb=left+(right-left)*g.overview.level;
+        PilotGlass.panel(p,b.x+2,b.y+2,b.w-4,b.h-4,0xa8101c30);
         SoftCue.line(p,left,y,right,y,3,0x51678691);
-        SoftCue.line(p,left,y,thumb,y,3,0xaac4dedb);
-        for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x527fa9ad);}
-        p.line(b.x+5,y,b.x+13,y,1.5f,0xaac4dedb);
-        p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xaac4dedb);
-        p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xaac4dedb);
-        p.circle(thumb,y,g.overview.active?14:11,g.overview.active?0x387fe1db:0x207fe1db);
-        p.circle(thumb,y,6,0xddc4dedb);
-        SoftCue.ring(p,thumb,y,8,1,0x907fe1db,1);
+        SoftCue.line(p,left,y,thumb,y,3,0xbaffc52f);
+        for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x52fff0ce);}
+        p.line(b.x+5,y,b.x+13,y,1.5f,0xbaffc52f);
+        p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xbaffc52f);
+        p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xbaffc52f);
+        p.circle(thumb,y,g.overview.active?14:11,g.overview.active?0x38ffc52f:0x20ffc52f);
+        p.circle(thumb,y,6,0xffffc52f);
+        SoftCue.ring(p,thumb,y,8,1,0x90fff0ce,1);
     }
     public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
@@ -72,7 +73,7 @@ public final class OverviewMap {
         Painter local=ScreenView.offset(p,box.x,box.y);
         // A faint viewport edge stays readable where zoom crops the world. The
         // stronger actual play boundary is drawn over it with the chart below.
-        int frame=0x2696c5ce;
+        int frame=0x26fff0ce;
         local.line(.5f,.5f,WIDTH-.5f,.5f,.8f,frame);
         local.line(WIDTH-.5f,.5f,WIDTH-.5f,HEIGHT-.5f,.8f,frame);
         local.line(WIDTH-.5f,HEIGHT-.5f,.5f,HEIGHT-.5f,.8f,frame);

@@ -95,9 +95,10 @@ public final class BargeAbilities {
         if(!visible(g))return;
         for(int button=0;button<(g.tow.incoming(selected)!=null?2:1);button++){
             float cx=buttonX(g,button),cy=buttonY(g);PilotGlass.button(p,cx-23,cy-23,46,46,button==0);
-            int tint=selected.abilityCooldown>0 && button==0?PilotGlass.MUTED:PilotGlass.AMBER;
-            if(button==1){p.line(cx-10,cy-7,cx-2,cy+1,2,tint);p.line(cx+2,cy-1,cx+10,cy+7,2,tint);p.line(cx-5,cy+8,cx+6,cy-9,1.5f,PilotGlass.TEXT);}
-            else if(selected.ability==FIRE){p.line(cx-8,cy+8,cx+5,cy-5,3,tint);for(int j=0;j<3;j++)p.line(cx+5,cy-5,cx+12+j*2,cy-12+j*4,1,PilotGlass.TEXT);}
+            int ink=PilotGlass.buttonText(button==0);
+            int tint=selected.abilityCooldown>0 && button==0?0xff695b3b:ink;
+            if(button==1){p.line(cx-10,cy-7,cx-2,cy+1,2,tint);p.line(cx+2,cy-1,cx+10,cy+7,2,tint);p.line(cx-5,cy+8,cx+6,cy-9,1.5f,ink);}
+            else if(selected.ability==FIRE){p.line(cx-8,cy+8,cx+5,cy-5,3,tint);for(int j=0;j<3;j++)p.line(cx+5,cy-5,cx+12+j*2,cy-12+j*4,1,ink);}
             else for(int j=0;j<8;j++){double a=j*StrictMath.PI/4;p.line(cx+(float)StrictMath.cos(a)*5,cy+(float)StrictMath.sin(a)*5,cx+(float)StrictMath.cos(a)*14,cy+(float)StrictMath.sin(a)*14,1.5f,tint);}
         }
     }

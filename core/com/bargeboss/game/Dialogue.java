@@ -55,12 +55,12 @@ public final class Dialogue {
             boolean left=i%2==0;
             float rear=left?b.x:b.x+b.w,tip=left?b.x+b.w:b.x,shoulder=tip+(left?-14:14);
             float[] q={rear,b.y,shoulder,b.y,tip,b.y+b.h/2,shoulder,b.y+b.h,rear,b.y+b.h};
-            glass.poly(q,selected?0xe324424a:PilotGlass.FILL);
-            for(int k=0;k<q.length-2;k+=2){int j=k+2;glass.line(q[k],q[k+1],q[j],q[j+1],.8f,selected?PilotGlass.AMBER:PilotGlass.LINE);}
-            glass.line(b.x+25,b.y+5,b.x+65,b.y+5,1,PilotGlass.AMBER);
-            Lettering.draw(glass,"0"+(i+1),b.x+26,b.y+18,11,PilotGlass.AMBER);
+            PilotGlass.plate(glass,q,selected?PilotGlass.AMBER:PilotGlass.FILL,selected?0xffad7730:PilotGlass.LINE,1.5f);
+            int ink=PilotGlass.buttonText(selected);
+            glass.line(b.x+25,b.y+5,b.x+65,b.y+5,.8f,selected?0x80fff0ce:PilotGlass.EDGE);
+            Lettering.draw(glass,"0"+(i+1),b.x+26,b.y+18,11,selected?ink:PilotGlass.AMBER);
             float size=Math.min(14,14*(b.w-92)/Math.max(1,Lettering.width(choices[i],14)));
-            Lettering.draw(glass,choices[i],b.x+61,b.y+17,size,PilotGlass.TEXT);
+            Lettering.draw(glass,choices[i],b.x+61,b.y+17,size,ink);
         }
     }
 }

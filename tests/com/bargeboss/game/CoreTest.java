@@ -181,8 +181,8 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // New title wordmark; substituting only the old title renderer restores the prior signature.
-        check(Parity.signature().equals("2e3c8f02:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
+        check(Parity.signature().equals("e9dc45fe:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

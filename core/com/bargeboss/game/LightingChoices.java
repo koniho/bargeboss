@@ -17,9 +17,8 @@ final class LightingChoices {
     static void draw(Game g,Painter p){
         for(int i=0;i<4;i++){
             Layout.Box b=box(g,i);boolean selected=g.selectedLighting()==i;
-            PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xe039545b:0xb00b1c29);
-            if(selected)p.line(b.x+7,b.y+b.h-2,b.x+b.w-7,b.y+b.h-2,1,VisualStyle.GOLD);
-            Lettering.center(p,LightingProfile.preset(i).name,b.centerX(),b.y+10,g.mode==Game.TITLE?7:10,selected?VisualStyle.GOLD:VisualStyle.CREAM);
+            PilotGlass.button(p,b.x,b.y,b.w,b.h,selected);
+            Lettering.center(p,LightingProfile.preset(i).name,b.centerX(),b.y+10,g.mode==Game.TITLE?7:10,PilotGlass.buttonText(selected));
         }
     }
 }

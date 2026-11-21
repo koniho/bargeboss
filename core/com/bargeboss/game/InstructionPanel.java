@@ -20,7 +20,7 @@ final class InstructionPanel {
             this.header=header;this.badge=badge;this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
         }
         void draw(Painter p){
-            p.line(18,7,414,7,.8f,0x9de7bc73);
+            p.line(18,7,414,7,.8f,0x9dffc52f);
             Lettering.draw(p,"FROM: "+header,18,18,9,PilotGlass.AMBER);
             String count=badge!=null?badge:lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
             Lettering.draw(p,count,414-Lettering.width(count,10),18,10,PilotGlass.MUTED);
@@ -86,11 +86,11 @@ final class InstructionPanel {
         float height=lineHeight();if(height<=0)return;
         float xx=x+starX(),top=y+starY(),bottom=y+104;
         float pulse=.8f+.2f*(float)StrictMath.sin(ticks*.5f);
-        p.line(xx,top,xx,bottom,6,SoftCue.alpha(0x1895d7d1,pulse));
-        p.line(xx,top,xx,bottom,2.5f,SoftCue.alpha(0x4095d7d1,pulse));
-        p.line(xx,top,xx,bottom,.8f,SoftCue.alpha(0xa0c4e9e5,pulse));
+        p.line(xx,top,xx,bottom,6,SoftCue.alpha(0x18ffc52f,pulse));
+        p.line(xx,top,xx,bottom,2.5f,SoftCue.alpha(0x40ffc52f,pulse));
+        p.line(xx,top,xx,bottom,.8f,SoftCue.alpha(0xa0fff0ce,pulse));
         float glint=(.5f+.5f*(float)StrictMath.sin(ticks*.55f))*height;
-        p.line(xx,Math.max(top,top+glint-5),xx,Math.min(bottom,top+glint+5),1,0x99edf8ea);
+        p.line(xx,Math.max(top,top+glint-5),xx,Math.min(bottom,top+glint+5),1,0x99fff0ce);
     }
     private void sparkle(Painter p,float x,float y,boolean waiting){
         boolean moving=phase==CLEAR || phase==DROP || phase==RETURN || phase==RISE || phase==REVEAL;
@@ -98,12 +98,12 @@ final class InstructionPanel {
         if(fade<=0)return;
         float radius=4+.65f*(float)StrictMath.sin(ticks*.65f);
         float angle=.18f*(float)StrictMath.sin(ticks*.4f),cx=x+starX(),cy=y+starY();
-        p.circle(cx,cy,8,SoftCue.alpha(0x1395d7d1,fade));
-        p.circle(cx,cy,4,SoftCue.alpha(0x3095d7d1,fade));
+        p.circle(cx,cy,8,SoftCue.alpha(0x13ffc52f,fade));
+        p.circle(cx,cy,4,SoftCue.alpha(0x30ffc52f,fade));
         for(int i=0;i<2;i++){
             float a=angle+i*(float)StrictMath.PI/2,dx=radius*(float)StrictMath.cos(a),dy=radius*(float)StrictMath.sin(a);
-            p.line(cx-dx,cy-dy,cx+dx,cy+dy,2.8f,SoftCue.alpha(0x4095d7d1,fade));
-            p.line(cx-dx,cy-dy,cx+dx,cy+dy,.8f,SoftCue.alpha(0xe0edf8ea,fade));
+            p.line(cx-dx,cy-dy,cx+dx,cy+dy,2.8f,SoftCue.alpha(0x40ffc52f,fade));
+            p.line(cx-dx,cy-dy,cx+dx,cy+dy,.8f,SoftCue.alpha(0xe0fff0ce,fade));
         }
     }
     private void shimmer(Painter p,float x,float y){
@@ -113,7 +113,7 @@ final class InstructionPanel {
         for(int i=2;i>=0;i--){
             float half=4+i*6;
             p.poly(new float[]{x+Physics.clamp(center-half+16,9,423),y+10,x+Physics.clamp(center+half+16,9,423),y+10,
-                    x+Physics.clamp(center+half-16,9,423),y+114,x+Physics.clamp(center-half-16,9,423),y+114},SoftCue.alpha(0x0795d7d1,alpha));
+                    x+Physics.clamp(center+half-16,9,423),y+114,x+Physics.clamp(center-half-16,9,423),y+114},SoftCue.alpha(0x07ffc52f,alpha));
         }
     }
     void draw(Game g,Painter p){
@@ -140,9 +140,9 @@ final class InstructionPanel {
         PilotGlass.panel(p,x,cy-h*.5f,432,h,PilotGlass.FILL);
         if(amount<1){
             float light=1-amount,beamY=phase==CLOSE?cy:cy-h*.5f+h*amount;
-            p.line(x+9,beamY,x+423,beamY,7,SoftCue.alpha(0x2095d7d1,light));
-            p.line(x+9,beamY,x+423,beamY,3,SoftCue.alpha(0x5595d7d1,light));
-            p.line(x+9,beamY,x+423,beamY,.8f,SoftCue.alpha(0xc0d9e7e2,light));
+            p.line(x+9,beamY,x+423,beamY,7,SoftCue.alpha(0x20ffc52f,light));
+            p.line(x+9,beamY,x+423,beamY,3,SoftCue.alpha(0x55ffc52f,light));
+            p.line(x+9,beamY,x+423,beamY,.8f,SoftCue.alpha(0xc0fff0ce,light));
         }
     }
 }

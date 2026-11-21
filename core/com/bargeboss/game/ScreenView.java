@@ -21,13 +21,13 @@ public final class ScreenView {
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
         if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
-        PilotGlass.panel(p,x,8,width,48,0x9d091b25);
+        PilotGlass.panel(p,x,8,width,48,0xc4101c30);
         center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)/Math.max(1,Lettering.width(title,1))),PAPER);
         center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
         Layout.Box setup=g.controlBox(Layout.SETTINGS);
-        PilotGlass.panel(p,setup.x,setup.y,setup.w,setup.h,0xaf0b202a);
+        PilotGlass.panel(p,setup.x,setup.y,setup.w,setup.h,0xe0101c30);
         center(p,"SETTINGS",setup.centerX(),setup.y+15,10,PAPER);
     }
     public static void title(Game g,Painter p) {
@@ -37,7 +37,7 @@ public final class ScreenView {
         // One shared transparent wordmark; keep its 2:1 source aspect and safe left anchor.
         p.sprite(SpriteAtlas.TITLE_LOGO,0,230,116,400,200,0,1);
         Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
-        PilotGlass.panel(menu,608,180,324,368,0xbf091b25);
+        PilotGlass.panel(menu,608,180,324,368,0xd9101c30);
         center(menu,"SAIL "+Challenges.locationTitle(g.challengeId),770,200,11,GOLD);
         center(menu,Challenges.locationTitle(g.challengeId),770,230,20,PAPER);
         String summary=goalSummary(g.challengeId);
@@ -47,7 +47,7 @@ public final class ScreenView {
         button(g,menu,Layout.START,"SAIL LOCATION",true);
         button(g,menu,Layout.CHALLENGES,"LOCATIONS",false);
         Painter rank=offset(p,0,g.layout.height-Layout.HEIGHT);
-        PilotGlass.panel(rank,28,536,545,40,0xa3091b25);
+        PilotGlass.panel(rank,28,536,545,40,0xcc101c30);
         captainBadge(rank,52,556,.37f,g.career.stripes());
         text(rank,g.career.rankTitle(),77,548,13,PAPER);
         text(rank,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",367,549,10,GOLD);
@@ -105,7 +105,7 @@ public final class ScreenView {
         center(p,"COMPLETE THE GOAL TO ADVANCE.",770,257,11,MUTED);
     }
     private static void instruction(Painter p,int index,float y,String title,String detail) {
-        PilotGlass.panel(p,106,y-3,39,39,0xb51c333e); center(p,""+index,126,y+6,20,GOLD);
+        PilotGlass.panel(p,106,y-3,39,39,0xe0101c30); center(p,""+index,126,y+6,20,GOLD);
         text(p,title,159,y,16,PAPER); text(p,detail,159,y+28,10,MUTED);
     }
     public static void settings(Game g,Painter p) {
@@ -180,7 +180,7 @@ public final class ScreenView {
             if(!Challenges.valid(i))continue;
             Layout.Box card=Layout.CHALLENGE_CARDS[slot];
             boolean open=g.career.unlocked(i),selected=Challenges.stageEntry(g.challengeId)==i;
-            PilotGlass.panel(p,card.x,card.y,card.w,card.h,selected?0xd0233d46:open?0xbf0c222c:0xc30b1922);
+            PilotGlass.panel(p,card.x,card.y,card.w,card.h,selected?0xee263044:open?0xdd101c30:0xdd0c1422);
             p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
             center(p,"0"+(slot+1)+(open?" / LOCATION":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
             center(p,Challenges.locationTitle(i),card.centerX(),card.y+47,18,open?PAPER:MUTED);
@@ -245,14 +245,14 @@ public final class ScreenView {
     }
     public static void overlay(Painter p,float top,float height) {
         p.rect(0,Layout.HEADER_HEIGHT,Layout.WIDTH,Layout.HEIGHT-Layout.HEADER_HEIGHT,0xcc07101f);
-        PilotGlass.panel(p,28,top,904,height,0xe0091b25);
-        p.line(56,top+7,904,top+7,1,0x8de7bc73);
+        PilotGlass.panel(p,28,top,904,height,0xf0101c30);
+        p.line(56,top+7,904,top+7,1,0x80ffc52f);
     }
     public static void button(Game g,Painter p,Layout.Box box,String label,boolean primary) { button(g,p,box.x,box.y,box.w,box.h,label,primary); }
     public static void button(Game g,Painter p,float x,float y,float w,float h,String label,boolean primary) {
         PilotGlass.button(p,x,y,w,h,primary);
         float size=Math.min(label.length()>18?13:16,(w-58)/Math.max(1,Lettering.width(label,1)));
-        center(p,label,x+w/2,y+(h-size)/2,size,primary?GOLD:PAPER);
+        center(p,label,x+w/2,y+(h-size)/2,size,PilotGlass.buttonText(primary));
     }
 
     public static Painter scaled(Painter p,float x,float y,float scale) { return new Transform(p,x,y,scale,0); }

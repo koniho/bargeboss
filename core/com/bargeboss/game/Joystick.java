@@ -89,14 +89,14 @@ public final class Joystick {
         if(!visible(g))return;
         Joystick j=g.joystick;float cx=centerX(g),cy=centerY(g),tx=cx+j.x*TRAVEL,ty=cy+j.y*TRAVEL;
         boolean engaged=j.active || g.driveDirection()!=0;
-        int rgb=(g.driveDirection()<0?REVERSE_COLOR:g.driveDirection()>0?FORWARD_COLOR:0x997ca5ac)&0xffffff;
-        p.circle(cx,cy,RADIUS,0x44101c30);
+        int rgb=(g.driveDirection()<0?REVERSE_COLOR:g.driveDirection()>0?FORWARD_COLOR:0x99fff0ce)&0xffffff;
+        p.circle(cx,cy,RADIUS,0x66101c30);
         driveGuide(g,ScreenView.scaled(p,cx,cy,1.5f),0,0);
-        SoftCue.ring(p,cx,cy,RADIUS,1,engaged?(0x79000000|rgb):0x467a9fa9,1.3f);
-        SoftCue.ring(p,cx,cy,DEAD_ZONE,1,engaged?(0x32000000|rgb):0x327a9fa9,.8f);
+        SoftCue.ring(p,cx,cy,RADIUS,1,engaged?(0x79000000|rgb):0x80a92d37,1.3f);
+        SoftCue.ring(p,cx,cy,DEAD_ZONE,1,engaged?(0x32000000|rgb):0x32fff0ce,.8f);
         if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x50000000|rgb);
-        p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0x507a9fa9);
-        SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x667a9fa9,1);
+        p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0xc0101c30);
+        SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x99fff0ce,1);
         if(j.throttleAlpha>0)throttleArc(p,cx,cy,j.throttleAngle,appliedThrottle(g),j.throttleRgb,j.throttleAlpha);
     }
 

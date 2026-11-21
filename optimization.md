@@ -4580,3 +4580,31 @@ Status: ok. Desktop composition reviewed at four sizes. Device visual capture wa
 not usable because the game was no longer foreground; it was discarded, not
 retained as review evidence. No iOS build was run. Logo and composite review copies
 are verified in MediaStore (17907/17909).
+
+## 2026-11-21 — title-derived game UI (shared)
+
+Moved shared panels/buttons, HUD, instruction effects, dialogue choices, ability
+icons and idle instrument accents to the approved wordmark palette. Existing
+Rajdhani font, layouts, interactions and semantic throttle colors retained. Uses
+vector primitives and existing cached text/effects, no new textures or shaders.
+Panel decoration replaces existing strokes; slider adds a small backing plate.
+No measured frame-rate claim. Added reusable actual-renderer UI review fixtures.
+
+Map pixel validation caught the first slider plate's antialiasing crossing its
+right touch boundary. Insets increased to2px, preserving the hit box and chart
+geometry; all938018 map/slider pixel bounds and idle-thumb checks now pass.
+Review both HUD sides when changing control frames, not just the centered menu.
+
+Canonical draw/state trace is now `e9dc45fe:2:1350`; a clean prior-commit core/test
+compilation reproduces `2e3c8f02:2:1350`. Reviewed source diff is limited to UI
+palette and drawing geometry, with no simulation/input changes. Updating only
+some old classes is insufficient for this comparison because Java inlines the
+palette constants into their callers; use a clean compilation for palette A/Bs.
+
+Full Android build/check pipeline passed (`out/ui-style-v1-build.log`), including
+map clipping, shared tutorial/input regressions and Vulkan encoding/clip checks.
+APK installed successfully and cold launch returned Status: ok. Restored previous
+screen timeout. Desktop review covered menus, gameplay on both control sides,
+instructions, four choices/pressed reply, ability icons and results at960/1333.
+Review PNGs copied to Downloads and Pictures/BargeBoss; MediaStore entries
+17912/17914/17916/17918 verified. iOS/native visual parity was not run this round.
