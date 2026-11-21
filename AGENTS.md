@@ -37,6 +37,9 @@ the same `Painter`. Do not add a second game implementation for any platform.
   poses for new/revised barges and their cargo (legacy accepted art remains 32 until validated), registered whole-load layers, foreground-coaming occlusion, explicit
   effect metadata and fresh shadow/surface-light derivatives. Run its asset
   checks and review actual hull composites; unique pixels do not prove correct angles.
+- Mirror cargo only when that specific load is verified port/starboard symmetric,
+  including its arrangement and visible details. Hull symmetry never authorizes
+  cargo mirroring; unverified loads require independently authored opposite views.
 - Do not promote geometric blockouts or pose guides as final watercraft color art.
   The user rejected the primitive 64-pose barge/cargo export on 2026-11-21.
   Preserve accepted painted style in gameplay and the title convoy; extra
