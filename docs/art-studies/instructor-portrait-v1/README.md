@@ -9,7 +9,9 @@ Preserve original canvas and white portrait matte; no generated replacement art.
 SpeakerPortrait owns speaker gating, frame timing and screen-center facing.
 The authored face points right; a negative shared affine X basis mirrors it
 when its center is on the right half of the display. No host-specific animation.
-It draws outside the instruction content wipe, without shifting the fixed panel.
+It sits 18 units from the right screen edge, 16 below the instruction card,
+always facing left toward screen center. It draws outside the instruction content
+wipe, without shifting the fixed panel or obscuring its text.
 The instructor portrait does not stand in for player or bridge transmissions.
 Tutorial preparation includes the atlas; other locations do not load it.
 

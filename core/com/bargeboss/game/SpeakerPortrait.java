@@ -18,7 +18,9 @@ final class SpeakerPortrait {
         if(!visible(g))return;
         float progress=g.radio.progress(),fade=Math.min(1,Math.min(progress*10,(1-progress)*8))*panelOpen;
         if(fade<=0)return;
-        float size=92,cx=panelX-56,cy=panelY+62;
+        // Reserve the outer right edge below the fixed instruction card.
+        // Never place the speaker between the card and the screen center.
+        float size=92,cx=g.layout.width-68,cy=panelY+124+16+56;
         Painter ink=new OpacityPainter(p,fade);
         PilotGlass.panel(ink,cx-50,cy-56,100,112,PilotGlass.FILL);
         ink.spriteAffine(SpriteAtlas.INSTRUCTOR_PORTRAIT,frame(Math.round(progress*54)),cx,cy-4,

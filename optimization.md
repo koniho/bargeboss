@@ -4820,3 +4820,13 @@ manifest isolation, map pixel and Vulkan geometry/clip checks. APK installed and
 cold launched Status:ok; previous display timeout restored. Review copied to
 Downloads/Photos, MediaStore 17960 verified. No native pixel capture/performance
 profile or iOS build this round; desktop mirroring review is not device parity.
+
+## 2026-11-21 — portrait at outer screen edge
+User clarified that portraits belong at the screen sides, facing inward.
+Instructor now anchors 18 units from the right edge, 16 below the fixed card,
+rather than to its inner left edge. Facing is always left at this anchor.
+No extra draw work or assets. Reviewed shared 960/1333 exports; speaker/timing
+checks pass. Canonical drawing trace updated to 55db364f:2:1350 after review.
+Full Android checks/build passed (out/instructor-edge-build.log). Installed and
+cold launched Status:ok, restored display timeout. Preview registered as
+MediaStore 17962. Desktop visual review only; iOS not built this round.
