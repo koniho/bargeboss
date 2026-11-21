@@ -4553,3 +4553,9 @@ The64 authoring/review tools run offline; no active-draw work was added. Final
 migration still needs level-scoped frame packs, bounded cache preparation and
 native title/gameplay performance validation. See study README for measurements;
 these are art-alignment metrics, not frame-time results.
+
+Validation: full Android build/check pipeline passed (`out/painted64-authoring-build.log`),
+replay remained `68ec3e6b:2:1350`; APK installed successfully and cold launch returned
+`Status: ok`. Accepted runtime art is unchanged. Review PNG copied to Downloads
+and Pictures/BargeBoss; MediaStore entry17904 verified. Interactive64-pose review
+also copied to Downloads. No iOS build or new native art-performance claim.
