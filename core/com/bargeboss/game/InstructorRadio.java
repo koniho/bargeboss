@@ -59,6 +59,6 @@ final class InstructorRadio {
         return null;
     }
     void cue(Game g,Painter p){
-        if(teach && available(g)){SoftCue.ring(p,x(g),y(g),Math.max(32,40*g.layout.camera.scale),1,SoftCue.animated(g,0x9995d7d1),1);}
+        if(teach && available(g)){SoftCue.ring(p,x(g),y(g),Math.max(32,40*g.layout.camera.scale),1,SoftCue.animated(g,0xdd28e7ff),1);}
     }
 }

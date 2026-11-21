@@ -5,7 +5,10 @@ animation for objectives and confirmed actions, while leaving hulls readable.
 Active targets have four small inward breathing chevrons around a continuous
 ring. Partial rings represent actual progress and never gain decorative progress.
 Confirmed rope catches use outward gold sparkle rays and expanding rings instead
-of a filled flash over the cargo. No broad neon bands or filled target discs.
+of a filled flash over the cargo. The latest request calls for more impact:2.8–5.5px core strokes, up to92%
+source alpha, with capped feathering. Use bright yellow for completion/action,
+cyan for routes/targets and red for damage/retry. Keep open centers; no filled
+target discs. Broad scenery lighting is separate from these gameplay cues.
 Motion uses shared visualTicks, freezes on pause and never mutates gameplay.
 Keep the existing depth/shore clipping and arrow capture pass.
 

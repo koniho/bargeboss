@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Feedback for the actual controller state, shared by all native renderers. */
 public final class ControlView {
-    public static final int BLUE=0xff83c8d5, GREEN=0xffb9df9c, AMBER=0xffffc52f, PURPLE=0xffb7a2df;
+    public static final int BLUE=SoftCue.CYAN, GREEN=SoftCue.CYAN, AMBER=SoftCue.YELLOW, PURPLE=SoftCue.YELLOW;
     private static final int PAPER=VisualStyle.CREAM, INK=VisualStyle.NAVY;
     private static final String[] LABELS={"READY","DRIVING","KEEP HOLDING","LINING UP","PUSHING",
             "MANUAL STEERING","DOCKING","COASTING","REVERSE THRUST","WAITING FOR BRIDGE"};

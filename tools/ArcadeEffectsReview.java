@@ -14,9 +14,9 @@ public final class ArcadeEffectsReview {
         for(int i=0;i<4;i++){
             float x=130+i*230;
             g.visualTicks=i*22;
-            SoftCue.target(g,p,x,150,45,1,0xee95d7d1,2);
-            SoftCue.burst(p,x,310,25,i*.22f,0xffffe5a8);
-            SoftCue.ring(p,x,310,28+i*12,1,SoftCue.alpha(0xff95e9c1,1-i*.22f),2);
+            SoftCue.target(g,p,x,150,45,1,i==3?SoftCue.RED:SoftCue.CYAN,2);
+            SoftCue.burst(p,x,310,25,i*.22f,SoftCue.YELLOW);
+            SoftCue.ring(p,x,310,28+i*12,1,SoftCue.alpha(SoftCue.CYAN,1-i*.22f),2);
             ArcadeIcons.draw(p,i,x,450,1.8f,PilotGlass.AMBER);
         }
         Lettering.draw(p,"OBJECTIVE / BREATHING CHEVRONS",32,212,14,PilotGlass.TEXT);

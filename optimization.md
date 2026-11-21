@@ -4874,3 +4874,39 @@ Full Android checks/build passed (out/npc-portraits-build.log), installed and
 cold launched Status:ok. Restored timeout. Six sheets and comparison copied to
 Downloads/Photos; MediaStore17970,17972,17974,17976,17978,17980,17982 verified.
 No native pixel capture/performance profile or iOS build this round.
+
+## 2026-11-21 — lesson coaching, stronger cues, canal leader
+Added bounded17-entry earned-feedback FIFO: one message per completed lesson,
+with clean-completion praise or recovery encouragement after significant tug
+impact(>=25) or slip retry. Four-second feedback runs on fixed steps, pauses with
+dialogues, persists through final-DONE and deduplicates fallback/recompletion.
+No arbitrary speed/time grading; lesson skipping does not earn praise.
+Real feedback adds CB transmission and a brief yellow open-center success burst.
+Shared guidance core increased from capped1.4 to2.8–5.5px with92% source alpha;
+glow plus core remains <=10.6px across tested zooms. Cyan guidance, yellow success,
+red retry/miss/damage cues. Depth routing and open ring/arrow centers preserved.
+Same bounded procedural materials; no new images or per-frame texture work.
+
+Canal guide now departs milestones about one reach earlier, uses faster route
+tracking and a water-checked side-passing maneuver if overtaken. Never relocates
+the player or teleports the teacher. Existing all-gate/water containment test and
+new stationary-player overtaking regression pass. Coaching queue/dedup/retry/
+final-DONE tests pass. Old135-alpha/6.5px visual assertions were intentionally
+updated to the user's stronger style; depth/empty-center checks remain.
+Gameplay timing and radio replay intentionally change; reviewed trace
+da429b60:2:1350. No claim of unchanged simulation or device frame-time improvement.
+Stronger overtaking review enabled actual hull collisions and exposed a bad
+detour: lane width exceeded canal clearance and re-aiming at corners pushed the
+player. Corrected to a fixed cardinal passing direction with a two-phase side/
+forward maneuver, validated water-clear side and forward spans,36-unit lateral
+separation for the two tugs, and60-unit forward clearance before rejoining.
+The tracked test now starts non-overlapping and resolves real hull collisions
+every step: player displacement0.0, teacher reaches next reach. All-gate canal
+test and full tutorial replay finish. Final replay8b9482b:2:1350 supersedes the
+earlier trace; rebuilding all checks/native package after the correction.
+Final full checks and Android build passed(out/coaching-build.log), including
+new collision-enabled lead recovery, coaching queue/DONE, scene depth and bounded
+bold strokes, full tutorial replay,924416 chart pixels and native Vulkan clips.
+Installed and cold launched Status:ok; restored display timeout. Desktop previews
+in Downloads/Photos verified as MediaStore17985/17987/17989. No native pixel capture/
+frame-time profile or iOS build this round.

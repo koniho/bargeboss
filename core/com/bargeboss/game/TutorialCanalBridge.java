@@ -76,7 +76,7 @@ public final class TutorialCanalBridge {
     void cue(Game g,Painter p){
         if(!contactable(g))return;
         float x=houseX(g),y=houseY(g),r=Math.max(22,23*g.layout.camera.scale);
-        SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0x9995d7d1),1);
+        SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0xdd28e7ff),1);
         SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);
     }
 }

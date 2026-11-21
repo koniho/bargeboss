@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Aim with a coiled rope; release launches a loop that catches or reels back to the barge. */
 public final class MooringView {
-    private static final int ROPE=RopeMaterial.COLOR, HIGHLIGHT=0xffffe3a1,DARK=VisualStyle.OUTLINE,GREEN=0xff92ecc2;
+    private static final int ROPE=RopeMaterial.COLOR, HIGHLIGHT=0xffffe3a1,DARK=VisualStyle.OUTLINE,GREEN=0xff28e7ff;
     private MooringView() {}
     private static boolean slipVisible(Game g,Painter p){
         if(!(p instanceof RiverPainter))return true;
@@ -87,7 +87,7 @@ public final class MooringView {
         float t=1-b.tieBurstTicks/30f;int alpha=(int)(235*(1-t)*(1-t));
         float radius=b.half+b.radius+7+t*65;
         ControlView.ring(p,b.x,b.y,radius,1,(alpha<<24)|0x9bffe0,4*(1-t)+1);
-        ControlView.ring(p,b.x,b.y,radius-9,1,((alpha/2)<<24)|0xffe5a8,2);
+        ControlView.ring(p,b.x,b.y,radius-9,1,((alpha/2)<<24)|0xffd329,2);
         SoftCue.burst(p,b.x,b.y,b.half+b.radius+5,t,0xffffe5a8);
     }
     private static Body readyFocus(Game g) {
@@ -199,6 +199,7 @@ public final class MooringView {
             lastX=xx;lastY=yy;
         }
         float radius=returning?8+14*distance:8+14*eased;
+        if(returning)SoftCue.ring(p,x,y,radius+4,1,SoftCue.alpha(SoftCue.RED,1-t),2);
         lasso(p,x,y,radius,radius*.72f,.3f*(float)StrictMath.sin(g.ropeTicks*.34),ROPE);
         if(t>.08f && t<.85f) {
             float behind=Physics.clamp(distance+(returning?.07f:-.07f),0,1);
@@ -228,7 +229,7 @@ public final class MooringView {
     private static void snapRings(Painter p,float startX,float startY,float endX,float endY,float t) {
         int alpha=(int)(200*(1-t)*(1-t));
         float radius=5+17*t;
-        ControlView.ring(p,startX,startY,radius,1,(alpha<<24)|0xffe5a8,2*(1-t)+1);
+        ControlView.ring(p,startX,startY,radius,1,(alpha<<24)|0xffd329,2*(1-t)+1);
         ControlView.ring(p,endX,endY,radius+3,1,(alpha<<24)|0xa1ffe3,2*(1-t)+1);
         if(t<.35f) {
             float size=4*(1-t/.35f);

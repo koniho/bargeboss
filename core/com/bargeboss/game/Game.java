@@ -821,7 +821,7 @@ public final class Game {
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
         abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;joystick.step(this);splashes.step(this);
-        if(tutorial!=null)tutorial.instructionPanel.step(TutorialView.instructionContent(this));
+        if(tutorial!=null){tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){
             tutorial.update(this);buoys.step(this);water.step(this);smoke.step(this);buildingFades.step(this);updateCamera();return;
         }

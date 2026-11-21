@@ -63,5 +63,5 @@ final class TutorialTowBridges {
                 phase==1?"YOU / CHANNEL 08":"BRIDGE CONTROL / CHANNEL 08","RADIO / CH 08",phase==1);
     }
     void cue(Game g,Painter p){if(!contactable(g))return;int i=current(g);float x=houseX(g,i),y=houseY(g,i),r=Math.max(22,23*g.layout.camera.scale);
-        ArcadeIcons.draw(p,ArcadeIcons.RADIO,x,y,.85f,PilotGlass.AMBER);SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0x9995d7d1),1);SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);}
+        ArcadeIcons.draw(p,ArcadeIcons.RADIO,x,y,.85f,PilotGlass.AMBER);SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0xdd28e7ff),1);SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);}
 }

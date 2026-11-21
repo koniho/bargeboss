@@ -30,6 +30,7 @@ public final class Tutorial {
     public boolean entering;
     public int entranceTicks;
     final InstructionPanel instructionPanel=new InstructionPanel();
+    final LessonFeedback feedback=new LessonFeedback();
     public void enter(Game g){
         if(lesson!=MOVE)return;
         entering=true;entranceTicks=0;g.cancelInputs();
@@ -43,7 +44,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
-        boolean hadTeacher=arrival!=null;instructorRadio.reset();
+        boolean hadTeacher=arrival!=null;instructorRadio.reset();feedback.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
         towBridges.reset();g.abilities.reset();firstTowParked=false;
@@ -122,6 +123,10 @@ public final class Tutorial {
     }
     private static void success(Game g){g.sounds.complete();g.haptic(Game.HAPTIC_SUCCESS);}
     public void update(Game g) {
+        feedback.sample(g);int before=lesson;
+        updateLesson(g);feedback.completed(g,before,lesson);
+    }
+    private void updateLesson(Game g) {
         if(instructorRadio.step(g))return;
         canal.step(g);towBridges.step(g);
         if(arrival!=null)arrival.step(g);
