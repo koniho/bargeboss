@@ -47,3 +47,10 @@ fender-heavy-kenney-v2.wav: edited Kenney Impact Sounds soft impacts, CC0.
 https://kenney.nl/assets/impact-sounds
 Same retained originals/licenses as v1; onset trim, low-pass, fades, gain reduction.
 Reproduce with tools/prepare-collision-thuds.py. See docs/audio/collision-thuds-v2.md.
+
+Industrial collision clunks v1 (2026-11-21)
+industrial-clunk-light-v1.wav, industrial-clunk-medium-v1.wav,
+industrial-clunk-heavy-v1.wav: mixed/edited Kenney Impact Sounds metal + soft
+impacts, CC0. https://kenney.nl/assets/impact-sounds
+Source, mirror, exact hash, license and processing: docs/audio/industrial-clunks-v1.md.
+Reproduce with tools/prepare-industrial-clunks.py.

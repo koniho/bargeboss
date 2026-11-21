@@ -4703,3 +4703,22 @@ capture was interrupted at31frames; this is dispatch evidence only, not an FPS
 sample or acoustic latency measurement. Returned to normal cold launch, restored
 screen timeout. iOS Core Haptics adapter unbuilt on Termux; physical rumble feel
 and phone speaker balance remain user-audition items.
+
+## 2026-11-21 — Industrial collision clunks + rumble parameter investigation
+
+Replaced standard collision assets with offline-mixed sampled metal/soft-body
+clunks:190/300/400ms, clean edges, onset<0.4ms, peaks.60/.73/.80. Tug fender stays
+soft. No routing/physics/haptics changes; same manifest used on all hosts. Source
+and hash/license documented in docs/audio/industrial-clunks-v1.md. Decoded added
+one-shot data is small (<80KiB), same bounded native preload architecture.
+
+User asks rumble parameters: current Android path controls amplitude/timing only.
+Device reports frequency-control/PWLEv2,50–170.75Hz with134.58Hz resonance. Newer
+Android envelope API can control frequency subject to capability/profile checks;
+recommended70–90Hz audition with low amplitude and smooth ramps. No rumble
+parameter changes made in this round. Raw vibration-history dump discarded.
+
+Full Android checks/build passed (out/industrial-clunks-build.log), canonical
+replay unchanged9ef27c86:2:1350. Installed and normal cold launch Status:ok;
+restored phone timeout. No iOS build or new subjective speaker audition this
+round. No native latency or performance improvement claim.

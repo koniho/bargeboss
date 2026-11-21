@@ -40,3 +40,16 @@ its own tactile response; shared strength does not imply identical physical feel
 
 https://developer.android.com/reference/android/os/VibrationEffect
 https://developer.apple.com/documentation/corehaptics/chhapticadvancedpatternplayer
+
+## Frequency-tuning investigation
+
+Phone reports FREQUENCY_CONTROL and CAP_COMPOSE_PWLE_EFFECTS_V2; resonant
+frequency134.58331Hz, reported frequency-profile bounds50.0–170.75Hz. Current
+Android amplitude-only waveform leaves carrier frequency to the hardware. The
+192ms modulation pattern (~5.2Hz) varies intensity, not that carrier frequency.
+Android API36+ WaveformEnvelopeBuilder can specify amplitude/frequency/time
+points; implementation must query areEnvelopeEffectsSupported and supported
+frequency/intensity limits. Lower-frequency output can be weaker. Suggested
+next audition70–90Hz, low intensity, smooth attack/release. Investigation only;
+no frequency-control implementation in the industrial-clunk round. Device dump
+playback history was discarded; retain only capability facts above.
