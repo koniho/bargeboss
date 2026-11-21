@@ -11,6 +11,7 @@ import android.os.Build;
 /** Predecoded engine loops and shared radio events; no decoding during playback. */
 final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
     private final SoundPool pool;
+    private final boolean trace;
     private final AudioManager manager;
     private final int[] sounds=new int[EngineAudio.LAYERS+SoundEffects.COUNT],streams=new int[EngineAudio.LAYERS];
     private int loaded,radioSequence,radioStream;
@@ -18,6 +19,7 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
     private boolean requested,focused,closed;
     private AudioFocusRequest request;
     EngineSound(Context context){
+        trace=(context.getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0 && context instanceof android.app.Activity && ((android.app.Activity)context).getIntent().getBooleanExtra("bb_audio_trace",false);
         manager=(AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
         AudioAttributes attributes=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
         pool=new SoundPool.Builder().setMaxStreams(EngineAudio.LAYERS+1).setAudioAttributes(attributes).build();
@@ -43,6 +45,7 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
         if(sequence!=radioSequence){radioSequence=sequence;if(SoundEffects.audible(game)){
             if(radioStream!=0)pool.stop(radioStream);
             radioStream=pool.play(sounds[EngineAudio.LAYERS+SoundEffects.cue(game)],.85f,.85f,2,0,1);
+            if(trace)android.util.Log.i("BargeBossAudio","cue="+SoundEffects.cue(game)+" stream="+radioStream+" tick="+active.ticks+" asset="+SoundEffects.asset(SoundEffects.cue(game)));
         }}
     }
     private void silence(){if(radioStream!=0)pool.stop(radioStream);radioStream=0;for(int i=0;i<streams.length;i++){if(streams[i]!=0)pool.stop(streams[i]);streams[i]=0;}}

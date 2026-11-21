@@ -40,3 +40,28 @@ native sound latency from these checks.
 Mix revision: user reported thuds masked by diesel. Peaks are now0.40/0.54/0.68
 (+6dB), paired with a short engine dip; see engine-feedback-v1.md. Timing and
 spectral processing above remain unchanged.
+
+## Seawall follow-up
+
+A real tutorial-seawall probe emitted BUMP at30 speed and THUD at60; gentle impacts
+could drop below the previous8 speed threshold. Lowered to3, matching the existing
+splash/contact threshold; resting/jitter below3 stays silent. Audio captures peak
+contact before visual spray cooldown, so a stronger subsequent contact cannot be
+hidden by a prior weaker spray. Added a real Game.step + training seawall test
+at5 speed and a same-pair severity escalation test.
+
+Phone audibility: restored one low-pass at1600/1400/1200Hz (light/medium/heavy),
+80Hz high-pass, peaks0.60/0.70/0.80. The previous two low-pass passes at450–650Hz
+made the softened body especially bass-heavy. Still the same short sampled thuds
+with faded edges, no synthetic water/noise layer. Engine ducking retained.
+
+Opt-in developer scene `seawall-audio` coasts a tug into the real training seawall.
+`--ez bb_audio_trace true` on debug builds logs dispatched cue, simulation tick,
+asset and SoundPool stream ID. A positive stream proves native dispatch, not
+speaker audibility or measured acoustic latency. No logging in normal play.
+
+Native validation: installed debug build, ran `seawall-audio` live with tracing.
+Android logged `cue=3 stream=3 tick=12 asset=audio/fender-medium-kenney-v2.wav`:
+the real wall collision reached SoundPool and obtained a valid playback stream.
+No sound-delay inference from this log; no microphone/speaker recording made.
+Returned to ordinary title launch after the diagnostic.

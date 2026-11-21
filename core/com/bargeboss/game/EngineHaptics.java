@@ -1,20 +1,17 @@
 package com.bargeboss.game;
 
-/** Bounded diesel pulses. Shared timing/load selection; native hosts supply tactile output. */
+/** Shared continuous engine rumble strength; native hosts render a sustained texture, not taps. */
 public final class EngineHaptics {
-    private int ticks,pending,quiet;
-    void reset(){ticks=pending=quiet=0;}
-    void interrupt(){pending=0;quiet=24;ticks=0;}
+    private int quiet;
+    private float strength;
+    void reset(){quiet=0;strength=0;}
+    void interrupt(){quiet=24;strength=0;}
     void step(Game g){
-        pending=0; // Never queue a backlog across slow frames.
-        if(g.mode!=Game.PLAY || !g.hapticsEnabled || g.conversation() || g.tug==null){ticks=0;return;}
-        if(quiet>0){quiet--;return;}
-        float load=Physics.clamp(g.tug.engineLoad,0,1);
-        int interval=Math.round(48-30*load); // Quiet idle at 1.25 Hz; loaded engine at 3.33 Hz.
-        if(++ticks>=interval){ticks=0;pending=load>=.55f?2:1;}
+        if(!enabled(g)){strength=0;return;}
+        if(quiet>0){quiet--;strength=0;return;}
+        float target=.10f+.18f*Physics.clamp(g.tug.engineLoad,0,1);
+        strength+=(target-strength)*.12f;
     }
-    public int poll(Game g){
-        int result=pending;pending=0;
-        return g.mode==Game.PLAY && g.hapticsEnabled && !g.conversation()?result:0;
-    }
+    private boolean enabled(Game g){return g.mode==Game.PLAY && g.hapticsEnabled && !g.conversation() && g.tug!=null;}
+    public float strength(Game g){return enabled(g) && quiet==0?strength:0;}
 }

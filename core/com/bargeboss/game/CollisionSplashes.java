@@ -17,13 +17,14 @@ public final class CollisionSplashes {
      * Use the faster incoming participant as striker so solver argument order cannot reverse spray. */
     public void contact(Watercraft a,Watercraft b,float px,float py,float ax,float ay,float bx,float by,float closing){
         if(closing<3 || !Float.isFinite(closing) || !Float.isFinite(px) || !Float.isFinite(py))return;
+        // Audio severity must not be discarded by the visual spray cooldown.
+        if(closing>peakImpact){peakImpact=closing;peakTugs=tug(a) && tug(b);}
         for(int i=0;i<CAPACITY;i++)if(age[i]<COOLDOWN && (first[i]==a && second[i]==b || first[i]==b && second[i]==a))return;
         float aa=ax*ax+ay*ay,bb=bx*bx+by*by;
         boolean reverse=b!=null && (bb>aa || bb==aa && (b.waterX()<a.waterX() || b.waterX()==a.waterX() && b.waterY()<a.waterY()));
         float dx=reverse?bx-ax:ax-bx,dy=reverse?by-ay:ay-by,len=Physics.length(dx,dy);
         if(len<.001f || !Float.isFinite(len))return;
         int i=cursor;cursor=(cursor+1)%CAPACITY;first[i]=a;second[i]=b;age[i]=0;emitted++;
-        if(closing>peakImpact){peakImpact=closing;peakTugs=tug(a) && tug(b);}
         originX[i]=px;originY[i]=py;direction[i]=(float)StrictMath.atan2(dy,dx);
         power[i]=Physics.clamp(closing/70,.12f,1);
         float spread=.16f+.48f*Physics.clamp(closing/len,0,1);

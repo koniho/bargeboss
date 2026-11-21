@@ -4,7 +4,7 @@ public final class SoundEffectsTest {
     private static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}
     public static void run(){
         Game g=new Game();g.mode=Game.PLAY;
-        for(float speed:new float[]{0,3,7,Float.NaN})g.sounds.impact(speed);
+        for(float speed:new float[]{0,1,2,Float.NaN})g.sounds.impact(speed);
         check(SoundEffects.sequence(g)==0,"resting and invalid contacts remain quiet");
         float[] speeds={10,40,90};
         for(int i=0;i<3;i++){
@@ -55,6 +55,17 @@ public final class SoundEffectsTest {
         for(int t=0;t<150;t++){hit.sounds.step();hit.splashes.step(hit);}
         check(SoundEffects.sequence(hit)==1,"falling collision spray never emits delayed static or another hit");
         check(SoundEffects.asset(SoundEffects.BUMP).endsWith("light-kenney-v2.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("heavy-kenney-v2.wav"),"collision manifest uses quiet sampled thuds");
+        // Exercise the actual tutorial seawall solver at gentle driving speed, not an injected sound.
+        Game wall=new Game();wall.resetPracticeYard();wall.mode=Game.PLAY;
+        wall.tug.x=-1600;wall.tug.y=TrainingChannel.BASIN_TOP+wall.tug.half+wall.tug.radius-.5f;
+        wall.tug.angle=-(float)Math.PI/2;wall.tug.vx=0;wall.tug.vy=-5;
+        wall.step();wall.step();
+        check(wall.splashes.emitted>0 && SoundEffects.sequence(wall)>0 && SoundEffects.cue(wall)==SoundEffects.BUMP && SoundEffects.audible(wall),"gentle seawall hit reaches audible sound bus through real collision solver");
+        Game ramp=new Game();ramp.resetPracticeYard();ramp.mode=Game.PLAY;
+        ramp.splashes.contact(ramp.tug,null,300,500,3,0,0,0,3);
+        ramp.splashes.contact(ramp.tug,null,300,500,70,0,0,0,70);
+        ramp.splashes.step(ramp);
+        check(ramp.splashes.emitted==1 && SoundEffects.cue(ramp)==SoundEffects.CRUNCH,"spray deduplication cannot hide a stronger seawall impact");
         System.out.println("Collision sound severity, priority, cooldown and stale-event checks passed");
     }
 }

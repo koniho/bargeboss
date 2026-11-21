@@ -424,7 +424,7 @@ public final class Game {
         if(practice!=null) return practice.pollHaptic();
         int event=hapticPending; hapticPending=0; return event;
     }
-    public int pollEngineHaptic(){Game g=activeGame();return g.engineHaptics.poll(g);}
+    public float engineRumble(){Game g=activeGame();return g.engineHaptics.strength(g);}
     public void cancelInputs() {
         rescue.aiming=-1;waveControls.cancel();abilities.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }

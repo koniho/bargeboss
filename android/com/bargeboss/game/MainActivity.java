@@ -45,7 +45,7 @@ public final class MainActivity extends Activity {
         }
     }
     protected void onResume() { super.onResume(); gameView.start(); }
-    protected void onDestroy(){if(gameView!=null){gameView.audio.close();gameView.closeGpu();gameView.painter.close();}super.onDestroy();}
+    protected void onDestroy(){if(gameView!=null){gameView.rumble.stop();gameView.audio.close();gameView.closeGpu();gameView.painter.close();}super.onDestroy();}
     protected void onPause() { gameView.stop(); super.onPause(); }
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
@@ -83,6 +83,7 @@ public final class MainActivity extends Activity {
         private final FrameGate frames=new FrameGate();
         private final FramePacer gpuPacer=new FramePacer();
         private final EngineSound audio=new EngineSound(MainActivity.this);
+        private final EngineRumble rumble=new EngineRumble(MainActivity.this);
         private final CanvasPainter painter=new CanvasPainter(MainActivity.this.getAssets());
         private final DeveloperHooks.Session developer=DeveloperHooks.create(MainActivity.this,painter);
         private final Game game=developer==null?new Game():developer.game();
@@ -127,7 +128,7 @@ public final class MainActivity extends Activity {
         void requestRedraw() { frames.markDirty(); invalidate(); }
         void togglePause() { if(developer!=null){MainActivity.this.finish();return;} game.back(); requestRedraw(); }
         void start() { requestRedraw(); if(running) return; running=true; last=0; gpuPacer.reset(); Choreographer.getInstance().postFrameCallback(this); }
-        void stop() { audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
+        void stop() { rumble.stop();audio.stop(); running=false; last=0; game.background(); if(developer!=null)developer.stop(); saveProgress(true); Choreographer.getInstance().removeFrameCallback(this); requestRedraw(); }
         public void doFrame(long now) {
             if(!running) return;
             prepareLevelAssets();
@@ -135,14 +136,12 @@ public final class MainActivity extends Activity {
             if(last!=0) {if(developer==null)game.advance((now-last)/1e9);else developer.advance((now-last)/1e9);} last=now;
             audio.update(game);
             int event=game.pollHaptic();
-            int enginePulse=game.pollEngineHaptic();
+            rumble.update(game,event!=0);
             if(event!=0) {
                 int feedback=event==Game.HAPTIC_IMPACT?HapticFeedbackConstants.LONG_PRESS:
                     event==Game.HAPTIC_CONTACT?HapticFeedbackConstants.VIRTUAL_KEY:HapticFeedbackConstants.CLOCK_TICK;
                 if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
                 performHapticFeedback(feedback);
-            }else if(enginePulse!=0){
-                performHapticFeedback(enginePulse==2?HapticFeedbackConstants.VIRTUAL_KEY:HapticFeedbackConstants.CLOCK_TICK);
             }
             saveProgress(false); if(developer!=null && developer.running() || frames.needsFrame(game)) invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }

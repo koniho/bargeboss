@@ -21,7 +21,7 @@ public final class SoundEffects {
     }
     void impact(float speed){impact(speed,false);}
     void impact(float speed,boolean tugContact){
-        if(!Float.isFinite(speed) || speed<8 || cooldown>0 || cue<2 && age<30)return;
+        if(!Float.isFinite(speed) || speed<3 || cooldown>0 || cue<2 && age<30)return;
         impactAge=0;emit(tugContact?TUG_THUD:speed<30?BUMP:speed<65?THUD:CRUNCH);cooldown=18;
     }
     void splash(float power){

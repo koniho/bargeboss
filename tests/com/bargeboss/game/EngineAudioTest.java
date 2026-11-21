@@ -31,20 +31,19 @@ public final class EngineAudioTest {
             check(gain>=previous && gain<=working,"engine restores smoothly without overshoot");previous=gain;
         }
         check(EngineAudio.gain(g,0)==idle && EngineAudio.gain(g,1)==working,"full engine mix restored after 400ms");
-        EngineHaptics pulses=g.engineHaptics;int idleCount=0,workCount=0;
-        g.tug.engineLoad=0;
-        for(int tick=0;tick<240;tick++){pulses.step(g);int pulse=g.pollEngineHaptic();if(pulse>0){idleCount++;check(pulse==1,"idle pulse is light");}check(g.pollEngineHaptic()==0,"engine pulse drains once");}
-        pulses.reset();g.tug.engineLoad=1;
-        for(int tick=0;tick<240;tick++){pulses.step(g);int pulse=g.pollEngineHaptic();if(pulse>0){workCount++;check(pulse==2,"loaded engine pulse is stronger");}}
-        check(idleCount==5 && workCount==13,"engine pulses are load-dependent and bounded");
+        EngineHaptics rumble=g.engineHaptics;g.tug.engineLoad=0;
+        for(int tick=0;tick<120;tick++)rumble.step(g);
+        float idleRumble=g.engineRumble();check(idleRumble>.09f && idleRumble<.11f,"idle is a sustained low rumble");
+        check(g.engineRumble()==idleRumble,"reading rumble does not consume a pulse");
+        g.tug.engineLoad=1;previous=idleRumble;
+        for(int tick=0;tick<120;tick++){rumble.step(g);float strength=g.engineRumble();check(strength>=previous && strength-previous<.03f,"load ramps continuously without taps");previous=strength;}
+        check(g.engineRumble()>.27f && g.engineRumble()<=.28f,"loaded rumble remains bounded");
         g.haptic(Game.HAPTIC_IMPACT);
-        for(int tick=0;tick<24;tick++){pulses.step(g);check(g.pollEngineHaptic()==0,"contact feedback gets priority over engine rumble");}
+        for(int tick=0;tick<24;tick++){rumble.step(g);check(g.engineRumble()==0,"contact feedback gets priority over engine rumble");}
         check(g.pollHaptic()==Game.HAPTIC_IMPACT,"engine never replaces impact event");
-        g.hapticsEnabled=false;
-        for(int tick=0;tick<60;tick++){pulses.step(g);check(g.pollEngineHaptic()==0,"haptics preference silences engine");}
-        g.hapticsEnabled=true;pulses.reset();
-        for(int tick=0;tick<18;tick++)pulses.step(g);
-        g.background();check(g.pollEngineHaptic()==0,"pause discards engine pulse");
+        rumble.step(g);check(g.engineRumble()>0 && g.engineRumble()<.04f,"rumble fades back after contact");
+        g.hapticsEnabled=false;check(g.engineRumble()==0,"setting silences engine immediately");
+        g.hapticsEnabled=true;g.background();check(g.engineRumble()==0,"pause discards engine rumble");
         System.out.println("Engine audio idle/load, headroom and lifecycle checks passed");
     }
 }

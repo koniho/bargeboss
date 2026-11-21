@@ -4674,3 +4674,32 @@ Full checks and Android build passed (out/engine-feedback-v1-build.log), replay
 unchanged2fcc437b:2:1350. Installed successfully and cold launch Status:ok; restored
 screen timeout. iOS adapter updated but not built on Termux. Device loudness and
 vibration strength await subjective review; no measured latency/FPS claim.
+
+## 2026-11-21 — Seawall contact audibility + continuous rumble
+
+Follow-up found gentle contacts below8 were silent; visual splash dedup also
+preceded peak sound capture. Now threshold3 (same as spray) and sound peak is
+independent of visual cooldown. Real Game.step seawall test at5 speed emits BUMP;
+stronger same-pair contact can promote severity with one visual spray. Restored
+phone-audible body with single1200–1600Hz low-pass,80Hz high-pass and peaks.6–.8.
+No delayed splash sound restored. SoundPool tracing is opt-in debug only; added
+`seawall-audio` developer scenario for native dispatch verification.
+
+Replaced tap pulses with shared smoothed sustained strength and native continuous
+waveforms. Android patterns prebuilt once; replacement only when strength band
+changes. No repeated UI clicks, no motor-off slots. Core Haptics loop on iOS.
+Game/system settings, conversation, semantic-event priority and lifecycle stop
+preserved. Unsupported amplitude hardware skips rumble. Normal VIBRATE permission
+added. Shared tests cover continuous strength, recovery and suppression.
+
+Canonical9ef27c86:2:1350 reflects additional genuine collision audio events; replay
+with only sound sequence/cue hashing omitted remainsf98873c8:2:1350, identical to
+prior nonaudio rendering/state trace. No graphics/physics drift in this replay.
+
+Full checks/Android build passed (out/seawall-rumble-build.log). Installed and
+ran seawall-audio fixture: native SoundPool accepted THUD at simulation tick12,
+stream3, fender-medium-kenney-v2.wav (out/seawall-audio-native.log). Diagnostic
+capture was interrupted at31frames; this is dispatch evidence only, not an FPS
+sample or acoustic latency measurement. Returned to normal cold launch, restored
+screen timeout. iOS Core Haptics adapter unbuilt on Termux; physical rumble feel
+and phone speaker balance remain user-audition items.

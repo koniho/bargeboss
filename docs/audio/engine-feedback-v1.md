@@ -21,3 +21,22 @@ EngineAudioTest covers duck headroom/recovery and unchanged pitch, idle/load pul
 counts, one-shot consumption, impact priority, haptics-off and pause cancellation.
 Subjective mix and tactile strength require phone review; automated checks do not
 prove how loud or strong feedback feels.
+
+## Continuous rumble revision
+
+User rejected individual pulses. EngineHaptics now exposes a sustained, smoothly
+ramped strength (0.10 idle→0.28 loaded), never a tap queue. Android prebuilds five
+low-amplitude continuous waveforms with small variations and no motor-off slots;
+only strength-band changes replace the running waveform. VIBRATE permission is
+normal/install-time. Game and system haptics settings are both respected. Stop
+before semantic haptics, on background, settings-off, conversation and nonplay.
+Devices without amplitude control omit engine rumble rather than emit hard taps.
+iOS uses a low-sharpness continuous Core Haptics event, looping and updating its
+intensity. CoreHaptics.framework is included. iOS implementation is unbuilt here.
+
+References: Android VibrationEffect.createWaveform timing/amplitude API and Apple
+CHHapticAdvancedPatternPlayer looping/dynamic parameter API. Native hardware has
+its own tactile response; shared strength does not imply identical physical feel.
+
+https://developer.android.com/reference/android/os/VibrationEffect
+https://developer.apple.com/documentation/corehaptics/chhapticadvancedpatternplayer
