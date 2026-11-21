@@ -4357,3 +4357,16 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   native log confirms `Vulkan renderer active` on the development phone. Reviewed
   actual shared-renderer slow/fast prompts and slip/map frames. Native iOS and
   a full manual Android touch playthrough were not performed this round.
+
+## 2026-11-20 — Release to complete slip parking
+- A clean backing entry now waits until both tug-drag and joystick controls are
+  released. A held neutral joystick does not complete the lesson. The instruction
+  panel explicitly asks the player to lift their finger once inside the slip.
+- Retained the full-slip success region and collision retry. Public-input replay
+  now releases on entry; regression covers held drag, held neutral joystick and
+  released completion across the slip region. No new assets or per-frame caches.
+- Full shared/asset checks and Vulkan Android build passed; replay baseline
+  `e02e708:2:1350` retains delivery/score totals. Actual renderer review held the
+  drive at neutral inside the slip, confirmed the release prompt and pending
+  lesson, then used pointer-up to complete. APK installed and launched on phone.
+  Native iOS and a manual Android tutorial playthrough were not run this round.

@@ -71,7 +71,8 @@ remains manual under the development CI cadence.
 3. Approach the recessed western slip, point the bow away, and reverse inside.
    Contact at 25 units/second or above invalidates the attempt. The whole hull
    must leave the mouth by 20 units before another attempt. A clean attempt succeeds anywhere inside the slip once the tug center passes
-   the mouth after powered astern travel; no precise depth or final heading is required.
+   the mouth after powered astern travel and the player releases the drive control.
+   Holding at neutral does not count as release. No precise depth or final heading is required.
 4. The overview and zoom slider stay hidden until this map lesson. Exit to open water. The overview starts fully zoomed in; a real slider interaction must
    reduce it below 1.7x. Find and reach the amber chart target. No distant world
    arrow gives away this map-reading exercise; a local arrival ring appears nearby.

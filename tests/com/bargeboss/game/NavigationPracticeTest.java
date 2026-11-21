@@ -9,7 +9,12 @@ public final class NavigationPracticeTest {
             for(float y:new float[]{TrainingChannel.SLIP_TOP+1,300,TrainingChannel.SLIP_BOTTOM-1}){
                 Game inside=fixture(Tutorial.SLIP);NavigationPractice lesson=inside.tutorial.navigation;
                 lesson.slipPhase=2;lesson.reverseTravel=1;inside.tug.x=x;inside.tug.y=y;inside.tug.angle=.6f;
-                check(lesson.slip(inside),"the entire slip counts without a precise depth, centerline or final heading");
+                inside.pointer=true;
+                check(!lesson.slip(inside),"holding drive inside the slip cannot complete parking");
+                inside.pointer=false;inside.joystick.active=true;
+                check(!lesson.slip(inside),"a held neutral joystick still requires lifting the finger");
+                inside.joystick.active=false;
+                check(lesson.slip(inside),"release anywhere inside completes a clean backing attempt");
             }
         Game outside=fixture(Tutorial.SLIP);NavigationPractice gate=outside.tutorial.navigation;
         gate.slipPhase=2;gate.reverseTravel=1;outside.tug.x=TrainingChannel.BASIN_LEFT;outside.tug.y=300;

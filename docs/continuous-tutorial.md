@@ -8,7 +8,7 @@ the player to (-1510,545). Forward and reverse figure eights use buoys at
 (-1570,650) and (-1450,440), with opposite winding directions for each half.
 
 Next is a recessed slip at x=-2000..-1856, y=250..350. The player points the bow
-out and backs past the mouth anywhere in the slip; a significant collision requires pulling the whole hull clear
+out and backs past the mouth anywhere in the slip, then releases the control; a significant collision requires pulling the whole hull clear
 before retrying. After leaving the slip, the player reaches open water at
 (-1740,650). The chart and slider first appear in this lesson. The chart starts zoomed in; a real zoom-out gesture reveals the
 amber target at (-1320,260). Reaching it unlocks canal navigation.

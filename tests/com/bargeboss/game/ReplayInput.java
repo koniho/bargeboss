@@ -215,6 +215,7 @@ public final class ReplayInput {
             case Tutorial.REVERSE:
                 helmDrive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY(),g.tutorial.lesson==Tutorial.REVERSE);break;
             case Tutorial.SLIP:
+                if(g.tutorial.navigation.readyToRelease(g)){if(g.pointer)up(g,g.pointerX,g.pointerY);break;}
                 helmDrive(g,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),!g.tutorial.navigation.retry && g.tutorial.navigation.slipPhase==2);break;
             case Tutorial.MAP:
                 if(g.tutorial.navigation.mapPhase==2){if(g.pointer)up(root,g.pointerX,g.pointerY);Layout.Box slider=OverviewMap.sliderBounds(g);tap(root,slider.x+24,slider.centerY());}
