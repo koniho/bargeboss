@@ -4799,3 +4799,24 @@ tests. Installed successfully and launch reported Status:ok; display timeout
 restored. Review image copied to Downloads and Pictures/BargeBoss, MediaStore
 17958 verified. No native visual capture/frame-time profile or iOS build;
 desktop review does not prove native antialiasing or performance.
+
+## 2026-11-21 — instructor talking portrait
+Imported the user's six-frame captain GIF as a 576x384 atlas (192px cells).
+Keep the original and deterministic ImageMagick packing script; coalesce GIF
+disposal before resizing. Shared SpeakerPortrait uses the authored delays,
+instructor transmitter identity, existing transmission progress and the fixed
+instruction-panel anchor. A signed affine basis faces toward screen center on
+both 960/1333 layouts. Replies/bridge calls never borrow the instructor face.
+A brief fade and seven-bar activity meter accompany the mouth frames.
+
+Only tutorial manifests prefetch this atlas. No GIF decoding, frame allocations
+or texture uploads in the animation code. New draw work is one sprite plus a
+small plate/meter while transmitting; no device frame-time claim. Reviewed both
+desktop sizes and checked speaker gating, source timing and mirror direction.
+State-only A/B replay remains 285ba210:2:1350; new draw trace fc647b8f:2:1350.
+Canonical preview and provenance in docs/art-studies/instructor-portrait-v1.
+Full Android check/build passed (out/instructor-portrait-v1-build.log), including
+manifest isolation, map pixel and Vulkan geometry/clip checks. APK installed and
+cold launched Status:ok; previous display timeout restored. Review copied to
+Downloads/Photos, MediaStore 17960 verified. No native pixel capture/performance
+profile or iOS build this round; desktop mirroring review is not device parity.

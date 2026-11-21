@@ -135,6 +135,7 @@ final class InstructionPanel {
         wipeLine(p,x,y);
         shimmer(p,x,y);
         sparkle(p,x,y,shown.waiting);
+        SpeakerPortrait.draw(g,p,x,y,open());
     }
     void paint(Painter p,float x,float y){
         if(hidden())return;
