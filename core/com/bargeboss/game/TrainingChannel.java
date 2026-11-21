@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** A long industrial canal with exact, shared right-angle banks. */
 public final class TrainingChannel {
     public static final float MIN=-1260,MAX=Physics.LEFT,HALF_WIDTH=58;
-    public static final float TOW_BASIN_TOP=-200, NARROW_LEFT=270,NARROW_RIGHT=330,NARROW_EXIT=-520,TOW_END=-1000;
+    public static final float TOW_BASIN_TOP=-700, NARROW_LEFT=270,NARROW_RIGHT=330,NARROW_EXIT=-1020,TOW_END=-1500;
     public static final float BASIN_LEFT=-1856,BASIN_TOP=192,BASIN_BOTTOM=832;
     public static final float SLIP_LEFT=-2000,SLIP_TOP=250,SLIP_BOTTOM=350;
     public static final float ENTRY_LEFT=-2240,ENTRY_TOP=570,ENTRY_BOTTOM=730;

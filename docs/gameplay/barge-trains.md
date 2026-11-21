@@ -107,3 +107,9 @@ and reset. Existing continuous/tow-course replays also exercise both new calls;
 the JVM/native parity trace includes authorization and exact opening positions.
 Bridge-call framing may zoom out during throttle input to reveal the actual house;
 this is a guided lesson reveal, not a separate host camera or tappable HUD proxy.
+
+Specialized-barge update: the second bridge has moved upstream to y-300, leaving
+700 units of open collection water. The pair starts at y0. On an equipped barge,
+short tap reveals icons; use its broken-line icon to release. This avoids firing
+an ability and dropping a tow with the same press. Plain barges retain direct
+tap-to-release. The train channel/exit basin move upstream by 500 units too.

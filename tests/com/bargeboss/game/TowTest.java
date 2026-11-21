@@ -115,9 +115,9 @@ public final class TowTest {
 
         g=fixture();g.challengeId=1;g.tug.x=410;g.tug.y=480;g.cargo[0].x=590;g.cargo[0].y=480;
         check(!g.canTow(g.cargo[0]),"cannot cast through finger pier");
-        g=fixture();g.tutorial=new Tutorial();g.passages=new BridgePassage(g);g.tutorial.lesson=Tutorial.LINK;g.tug.y=140;g.cargo[0].y=260;
+        g=fixture();g.tutorial=new Tutorial();g.passages=new BridgePassage(g);g.tutorial.lesson=Tutorial.LINK;g.tug.y=TutorialTowBridges.EXIT_Y-60;g.cargo[0].y=TutorialTowBridges.EXIT_Y+60;
         check(!g.canTow(g.cargo[0]),"cannot cast across closed bridge");
-        g.tutorial.towBridges.authorized[2]=true;g.passages.position[2]=BridgePassage.OPEN_TICKS;connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.passages.step(g);
+        g.tutorial.towBridges.authorized[2]=true;g.passages.position[2]=BridgePassage.OPEN_TICKS;g.fitTutorialCamera();connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.passages.step(g);
         check(g.passages.passable(2),"authorized bridge holds open for tow connection");
 
         // A bank overlap must not erase outward momentum while a hull turns.

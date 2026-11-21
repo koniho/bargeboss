@@ -32,12 +32,12 @@ public final class TutorialTowCourseTest {
     }
     private static void bridgeBounds(){
         Game g=exercise(Tutorial.BRIDGE,960);g.passages.position[TutorialTowBridges.EXIT]=0;
-        Body distant=new Body(0,-1,Tutorial.START_X,205,-(float)Math.PI/2);distant.vy=-50;
-        check(g.passages.collide(distant,null)==0 && distant.x==Tutorial.START_X && distant.y==205 && distant.vy==-50,"tutorial bridge cannot create an invisible wall in the remote opening basin");
-        Body under=new Body(0,-1,300,205,-(float)Math.PI/2);under.vy=-50;
-        check(g.passages.collide(under,null)>0 && under.y>205,"closed physical bridge still blocks its actual span");
-        check(Towline.clear(g,Tutorial.START_X,195,Tutorial.START_X,230),"remote basin line can cross the bridge's y coordinate without intersecting its span");
-        check(!Towline.clear(g,300,180,300,240),"closed bridge blocks a towline crossing its real span");
+        Body distant=new Body(0,-1,Tutorial.START_X,405,-(float)Math.PI/2);distant.vy=-50;
+        check(g.passages.collide(distant,null)==0 && distant.x==Tutorial.START_X && distant.y==405 && distant.vy==-50,"tutorial bridge cannot create an invisible wall in the remote opening basin");
+        Body under=new Body(0,-1,300,-295,-(float)Math.PI/2);under.vy=-50;
+        check(g.passages.collide(under,null)>0 && under.y>-295,"closed physical bridge still blocks its actual span");
+        check(Towline.clear(g,Tutorial.START_X,395,Tutorial.START_X,430),"remote basin line can cross the bridge's y coordinate without intersecting its span");
+        check(!Towline.clear(g,300,-320,300,-260),"closed bridge blocks a towline crossing its real span");
     }
     private static void joystickCourse(){
         Game g=exercise(Tutorial.CONNECT,1333);g.settings.setJoystickSide(GameSettings.RIGHT);
@@ -58,8 +58,8 @@ public final class TutorialTowCourseTest {
     }
     private static void closePair(){
         Game g=exercise(Tutorial.LINK,1333);Body a=g.cargo[0],b=g.cargo[2];
-        a.x=283;a.y=30;b.x=318;b.y=30;g.tug.x=300;g.tug.y=-90;g.fitTutorialCamera();
-        ReplayInput.down(g,b.x,b.y);ReplayInput.up(g,b.x,b.y);
+        a.x=283;a.y=-470;b.x=318;b.y=-470;g.tug.x=300;g.tug.y=-590;g.fitTutorialCamera();
+        ReplayInput.releaseTow(g,b);
         check(g.tow.incoming(b)==null && Tutorial.direct(g,a),"tap releases selected close-packed barge only");
         ReplayInput.down(g,b.x,b.y);check(g.heldCargo()==b,"free hull center wins over the linked neighbor's padded hit region");
         ReplayInput.move(g,a.x,a.y);check(g.towAiming && g.towAimBody==a,"close pair arms a barge-to-barge throw");ReplayInput.up(g,a.x,a.y);
@@ -72,7 +72,7 @@ public final class TutorialTowCourseTest {
         Game g=exercise(Tutorial.BRIDGE,960);g.passages.position[TutorialTowBridges.EXIT]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<120;i++)g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.BRIDGE,"waiting does not clear bridge");
-        g.tug.y=-40;g.cargo[0].y=30;g.tutorial.update(g);
+        g.tug.y=Tutorial.BRIDGE_CLEAR_Y-200;g.cargo[0].y=Tutorial.BRIDGE_CLEAR_Y-100;g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.BRIDGE && g.tutorial.bridgeCrossed==1,"tug and only one cleared load cannot advance");
         g.cargo[2].y=Tutorial.BRIDGE_CLEAR_Y-10;g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.BRIDGE,"center crossing without stern clearance cannot advance");
@@ -82,9 +82,9 @@ public final class TutorialTowCourseTest {
         check(g.tutorial.lesson==Tutorial.LINK,"programmatic rewiring without the player's release does not earn reconfiguration");
         g.releaseTow(g.cargo[2]);g.tow.attach(g,g.cargo[2],g.cargo[0]);g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.TRAIN,"explicit release and chain connections complete reconfiguration");
-        g.tug.y=-850;g.cargo[0].y=-700;g.cargo[2].y=TrainingChannel.NARROW_EXIT-5;g.tutorial.update(g);
+        g.tug.y=-1350;g.cargo[0].y=-1200;g.cargo[2].y=TrainingChannel.NARROW_EXIT-5;g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.TRAIN,"rear hull must leave the narrow channel fully");
-        g.cargo[2].y=-600;g.tutorial.update(g);
+        g.cargo[2].y=-1100;g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.RELEASE,"full train clearance finishes narrow passage");
         g=exercise(Tutorial.BRIDGE,960);Body same=g.cargo[2];g.releaseTow(same);g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.DOUBLE && g.cargo[2]==same,"lost bridge connection returns to rigging without resetting bodies");

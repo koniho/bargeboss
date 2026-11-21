@@ -69,5 +69,11 @@ public final class ShadowView {
         // Water-plane contact stays put as the vessel bobs above it; both turning frames remain registered.
         if(blend<1)mask(canvas,src,f,x,y,size*c.scale,light[0]*.08f,0,.55f,alpha*(1-blend),true);
         if(blend>0)mask(canvas,src,(f+1)%32,x,y,size*c.scale,light[0]*.08f,0,.55f,alpha*blend,true);
+        if(b.ability!=BargeAbilities.NONE){int equipment=b.ability==BargeAbilities.FIRE?SpriteAtlas.FIRE_BARGE:SpriteAtlas.FIREWORKS;
+            float h=b.angle*64/(2*(float)StrictMath.PI),w=(float)StrictMath.floor(h),mix=Physics.clamp((h-w-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
+            int a=(((int)w+RiverCamera.DIRECTION_OFFSET*2)%64+64)%64;
+            if(mix<1)mask(canvas,equipment,a,x,y,size*c.scale,light[0]*.1f,0,.45f,alpha*.35f*(1-mix),true);
+            if(mix>0)mask(canvas,equipment,(a+1)%64,x,y,size*c.scale,light[0]*.1f,0,.45f,alpha*.35f*mix,true);
+        }
     }
 }

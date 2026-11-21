@@ -347,3 +347,8 @@ the flash flag starts the fixture at the peak of a test flash. Use frozen mode
 for a repeatable heavy-rain/peak-flash comparison, and live mode to inspect motion.
 Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain, fog and
 lightning controls, plus TEST FLASH and RESET ALL. Weather is currently Montrose-only.
+
+`barge-abilities` is a shared equipment stress/review fixture: enlarged collection
+basin, fireworks in flight and both fire monitors spraying. Use frozen mode for
+pixel/cache checks and live mode for sustained spray; fireworks end naturally.
+The fixture uses the real ability pointer controls after lesson setup.

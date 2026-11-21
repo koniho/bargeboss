@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -96,6 +96,14 @@ public final class ProfileScenario {
             return;
         }
         root.startTutorial();Game g=root.activeGame();
+        if(name.equals("barge-abilities")){
+            g.tutorial.lesson=Tutorial.DOUBLE;g.tutorial.setup(g);g.tutorial.towBridges.authorized[1]=true;g.passages.position[1]=BridgePassage.OPEN_TICKS;
+            g.tug.x=300;g.tug.y=110;g.fitTutorialCamera();g.abilities.reveal(g,g.cargo[0]);
+            ReplayInput.tap(g,g.abilities.buttonX(g,0),g.abilities.buttonY(g));
+            g.abilities.reveal(g,g.cargo[2]);g.pointerDown(77,g.abilities.buttonX(g,0),g.abilities.buttonY(g));
+            Body b=g.cargo[2];g.pointerMove(77,g.layout.camera.screenX(b.x,b.y-140),g.layout.camera.screenY(b.x,b.y-140));
+            for(int i=0;i<80;i++)g.step();return;
+        }
         if(name.startsWith("instructor-")){
             for(int i=0;i<3000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}
             if(!g.tutorial.instructorRadio.teach)throw new IllegalStateException("Radio teaching not reached");
@@ -156,8 +164,7 @@ public final class ProfileScenario {
             float dx=circleX()+110*(float)StrictMath.cos(angle)-g.tug.x;
             float dy=circleY()+110*(float)StrictMath.sin(angle)-g.tug.y;
             float len=Math.max(1,Physics.length(dx,dy));
-            if(!g.pointer)ReplayInput.down(root,g.tug.x,g.tug.y);
-            ReplayInput.move(root,g.downX+dx/len*90,g.downY+dy/len*90);
+            ReplayInput.throttle(root,dx/len*90,dy/len*90);
         }else if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DONE)ReplayInput.tutorial(root);
         else if(g.montroseStage())ReplayInput.work(g);
         root.step();

@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Two explicit radio gates separate single-load work from convoy practice. */
 final class TutorialTowBridges {
     static final int ENTRY=1,EXIT=2;
-    static final float ENTRY_Y=400,EXIT_Y=Bridge.Y;
+    static final float ENTRY_Y=400,EXIT_Y=-300;
     final boolean[] authorized=new boolean[3];
     int phase,ticks,calling;
     private int pointer=-1;
@@ -21,7 +21,7 @@ final class TutorialTowBridges {
         return index==EXIT && g.tutorial.firstTowParked && Tutorial.doubleTow(g);
     }
     float houseX(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;return g.layout.camera.screenX(p[0],p[1]);}
-    float houseY(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;return g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale;}
+    float houseY(Game g,int i){float[] p=g.passages.bridges[i].radioPoint;return Math.max(100,g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale);}
     boolean contactable(Game g){
         int i=current(g);if(i==0 || authorized[i] || phase!=0 || !eligible(g,i) || g.dialogue.active || g.mode!=Game.PLAY)return false;
         LandmarkBridge b=g.passages.bridges[i];float x=houseX(g,i),y=houseY(g,i);

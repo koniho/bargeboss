@@ -229,3 +229,19 @@ The runtime sheet uses exact444px cells at1776×888. Park crops are copied bit-f
   composites. Record measured tolerance; derived shadow gutters stay exactly0.
   Distinct32-cell hashes cannot certify correct3D poses. Low steel silhouette fit
   at a few poses remains an honest generated-art limitation.
+
+## 2026-11-20: specialized equipment and the 64-heading target
+
+All new/revised barge families and corresponding cargo should target **64 genuine
+poses**, 5.625 degrees apart, per the latest user instruction. This supersedes
+the previous 32-pose authoring target for barges. Never count duplicated views,
+interpolation or an unload animation as extra headings. The accepted legacy
+painted hull/cargo family is not yet migrated.
+
+The equipment prototype uses real rigid geometry to obtain 64 registered views,
+plus normal/height/material exports and separate alpha-derived shadows. Keep
+live aiming barrels out of baked decks: they rotate continuously around local
+monitor anchors, not as flattened bitmap rotations. The same anchor supplies
+the water-stream muzzle. Keep pump exhaust separate from tug stack metadata.
+The runtime now supports mixed 32/64 heading families; projection offset is a
+fraction of the full turn, never a hard-coded four-cell offset on a 64 sheet.

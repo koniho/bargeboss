@@ -4421,3 +4421,41 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   dialogue boxes; fixed to use their actual coordinates. Full validation follows.
 
 Validation: full Android build/check.sh passed (baseline 5a2ba4cd:2:1350); all-heading shoreline regression passed 1,461,230 hull/cargo pixel assertions. APK installed and launched successfully on the development phone. iOS UI automation updated but not executed locally.
+
+## 2026-11-20 — Specialized barge ability increment (shared core)
+
+Added a bounded 192-slot fireworks/spray pool, depth-merged through SprayView
+with shore clipping. No per-frame raster generation. Two equipment families
+have 64 rigid poses each and complete prefetch manifests: 896 additional
+source/shadow/shade frames, 1632 total tutorial rotation frames. Retained CPU
+bitmap and device timing still need measurement; this is not a 60 FPS claim.
+Fire monitor barrels transform continuously; hull art remains 32 poses pending
+its controlled-source upgrade. Enlarged collection basin and moved upstream
+training gates together. Public touch replay fixtures updated for explicit
+release icons on specialized barges. iOS test source updated, not run locally.
+
+First native ability freeze capture was interrupted when the app went to the
+background (112/120 measured frames; screenshot is not the game). Do not use it
+as a performance result. It did show all 1674 preparation frames ready, no warm
+frame builds/evictions, and 159.98 MiB frame-cache storage. A concurrent developer
+fixture test further invalidates timing comparison. Inspection identified an
+unnecessarily huge per-particle shore query: radius grew with altitude, querying
+terrain between the launch point and a high rocket. Tightened this to the actual
+lifted stamp footprint and skip empty clip scopes. Retains depth/shore semantics;
+requires another native capture before any performance claim.
+
+Developer fixture audit: an older tow-circle replay still dragged the tug after
+throttle-only driving replaced that control. It now uses ReplayInput.throttle.
+All 85 fixture checks pass; the physical tow completes 11.86 circles in 6000
+repeatable ticks. Profile zoom expectations now apply finite-stage bounds.
+
+Validation for the equipment increment: full check.sh/Android build passed with
+canonical signature 2a3bfb9a:2:1350; the 64-equipment-heading shoreline regression
+passed 2,287,737 hull/cargo pixel assertions. Both 64-pose equipment families
+passed the registered material/gutter checker; generated shadow/shading
+freshness checks passed. Desktop visual review covers popup controls, rising
+fireworks, twin spray and rotating monitors. Final rebuilt APK installed
+successfully. A second native capture timed out before export; no valid native
+performance conclusion is claimed. The first interrupted capture did execute
+Vulkan, but its screenshot was the foreground terminal, not the game. Native
+raster review and timing remain open. iOS build/device checks were not run.

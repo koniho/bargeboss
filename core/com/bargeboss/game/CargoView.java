@@ -41,6 +41,7 @@ public final class CargoView {
         }
     }
     public static void draw(Game g,Painter p,Body b,float x,float y,float size){
+        if(b.ability!=BargeAbilities.NONE){BargeEquipment.draw(g,p,b,x,y,size);return;}
         float fill=CargoArt.quantity(b);if(fill<=0)return;
         int atlas=b.berth==0?SpriteAtlas.STEEL:b.berth==2?SpriteAtlas.BULK:SpriteAtlas.CONTAINER;
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;

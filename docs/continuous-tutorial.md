@@ -115,3 +115,9 @@ replay covers this late-coast case and normal scene continuity.
 `ReverseTutorialTest` separately checks tug drag, left/right joystick, momentum
 and forward-only rejection. Native lesson indices shifted: CHANNEL is 3 and
 DONE is 15; native automation must follow the updated sequence.
+
+Equipment update: the gated pair now waits in an open 700-unit collection
+basin, y400 to -300. One carries fireworks; one carries Memphis-inspired fire
+pumps. Short tapping an equipped hull opens its ability and (when linked) an
+explicit release-line icon. The narrow train channel now runs y-700 to -1020,
+with its exit basin ending at -1500. See [barge abilities](gameplay/barge-abilities.md).

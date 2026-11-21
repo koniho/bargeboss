@@ -7,7 +7,7 @@ final class LevelAssetsTest {
     private static boolean includes(LevelAssets.Plan plan,int atlas){for(int id:plan.rotationAtlases())if(id==atlas)return true;return false;}
     static void run() {
         LevelAssets.Plan tutorial=LevelAssets.tutorial();
-        check(tutorial.rotationFrames()==736 && includes(tutorial,SpriteAtlas.TEACHER_TUG),"Tutorial prepares three source families and teacher livery");
+        check(tutorial.rotationFrames()==1632 && includes(tutorial,SpriteAtlas.TEACHER_TUG),"Tutorial prepares cargo, teacher livery and both complete equipment families");
         check(!includes(tutorial,SpriteAtlas.STEEL) && !includes(tutorial,SpriteAtlas.CONTAINER),"Tutorial excludes unused cargo");
         check(!includes(tutorial,SurfaceLightArt.forSource(SpriteAtlas.STEEL)),"Unused cargo effects excluded too");
         for(int id=0;id<Challenges.COUNT;id++) {

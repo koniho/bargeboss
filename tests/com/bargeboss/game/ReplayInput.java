@@ -28,9 +28,9 @@ public final class ReplayInput {
         float radius=power>0?Joystick.DEAD_ZONE+(Joystick.TRAVEL-Joystick.DEAD_ZONE)*power:0;
         root.pointerMove(0,Joystick.centerX(g)+radius*sx/len,Joystick.centerY(g)+radius*sy/len);
     }
-    public static void releaseTow(Game root) {
-        Body b=root.activeGame().tow.primary();
-        if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y); }
+    public static void releaseTow(Game root) {releaseTow(root,root.activeGame().tow.primary());}
+    public static void releaseTow(Game root,Body b) {
+        if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y);Game g=root.activeGame();if(b.ability!=BargeAbilities.NONE)tap(root,g.abilities.buttonX(g,1),g.abilities.buttonY(g)); }
     }
     public static void lasso(Game root,Body b) {
         Game g=root.activeGame();
@@ -270,7 +270,7 @@ public final class ReplayInput {
                 if(g.ropePhase==0) {
                     Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];
                     if(Tutorial.direct(g,b))break;
-                    if(g.tow.incoming(b)!=null){if(g.pointer)up(root,g.pointerX,g.pointerY);down(root,b.x,b.y);up(root,b.x,b.y);break;}
+                    if(g.tow.incoming(b)!=null){if(g.pointer)up(root,g.pointerX,g.pointerY);releaseTow(root,b);break;}
                     if(Physics.length(b.x-g.tug.x,b.y-g.tug.y)>145){drive(g,b.x-65,b.y-85);break;}
                     if(g.pointer)up(root,g.pointerX,g.pointerY);
                     down(root,b.x,b.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
@@ -279,7 +279,7 @@ public final class ReplayInput {
                 if(g.ropePhase==0) {
                     if(g.pointer)up(root,g.pointerX,g.pointerY);
                     Body spare=g.cargo[2],parent=g.cargo[0];
-                    if(g.tow.incoming(spare)!=null){down(root,spare.x,spare.y);up(root,spare.x,spare.y);break;}
+                    if(g.tow.incoming(spare)!=null){releaseTow(root,spare);break;}
                     if(!g.tow.connected(parent,g.tug)){down(root,parent.x,parent.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);break;}
                     down(root,spare.x,spare.y);move(root,parent.x,parent.y);up(root,parent.x,parent.y);
                 }break;

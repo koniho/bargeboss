@@ -8,6 +8,8 @@ public final class Body implements Watercraft {
     public final boolean yacht,cruiser;
     public final float mass, half, radius, inertia;
     public float x, y, vx, vy, angle, spin, age, dockTime;
+    public int ability,abilityTicks,abilityCooldown;
+    public float abilityAim;
     public int unloadingTicks,lineSnapTicks,tieBurstTicks;
     public int mooringTicks;
     public float mooringX,mooringY,mooringAngle;

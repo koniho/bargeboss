@@ -18,9 +18,10 @@ public final class ProfileScenarioTest {
         Game cameraGame=new Game();ProfileScenario.prepare(cameraGame,"barge-push",1320,600);
         Game active=cameraGame.activeGame();RiverCamera old=active.layout.camera;
         float cx=660,cy=312,wx=old.worldX(cx,cy),wy=old.worldY(cx,cy);int tick=active.visualTicks;
+        Layout expectedLayout=TrainingScenery.constrain(Layout.focused(1320,600,wx,wy,.65f,cx,cy),active.tug.x,active.tug.y);
         ProfileScenario.cameraZoom(cameraGame,1320,600,.65f);
-        if(Math.abs(active.layout.camera.worldX(cx,cy)-wx)>.001f || Math.abs(active.layout.camera.worldY(cx,cy)-wy)>.001f || active.visualTicks!=tick)
-            throw new AssertionError("Profile zoom moved anchor or advanced gameplay");
+        if(Math.abs(active.layout.camera.worldX(cx,cy)-expectedLayout.camera.worldX(cx,cy))>.001f || Math.abs(active.layout.camera.worldY(cx,cy)-expectedLayout.camera.worldY(cx,cy))>.001f || active.visualTicks!=tick)
+            throw new AssertionError("Profile zoom disagrees with finite-stage camera bounds or advanced gameplay");
         try{ProfileScenario.cameraZoom(cameraGame,1320,600,Float.NaN);throw new AssertionError("Invalid zoom accepted");}catch(IllegalArgumentException expected){}
         offload();
         circle();

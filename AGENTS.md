@@ -33,8 +33,8 @@ the same `Painter`. Do not add a second game implementation for any platform.
   registered material maps and anchors are required; preserve accepted art quality
   and validate native lighting/performance before replacing production artwork.
 - Follow [the cargo authoring contract](docs/art-studies/cargo-authoring-contract.md)
-  for every cargo addition or revision: shared hold geometry/perspective, 32 real
-  poses, registered whole-load layers, foreground-coaming occlusion, explicit
+  for every cargo addition or revision: shared hold geometry/perspective, 64 real
+  poses for new/revised barges and their cargo (legacy accepted art remains 32 until validated), registered whole-load layers, foreground-coaming occlusion, explicit
   effect metadata and fresh shadow/surface-light derivatives. Run its asset
   checks and review actual hull composites; unique pixels do not prove correct angles.
 - Keep sprite atlas selection, frame indices, pivots and animation rules in

@@ -13,6 +13,8 @@ javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check
 java -cp build/check com.bargeboss.game.CargoAssetCheck
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateCargoShadows --check
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateSurfaceLighting --check
+javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check tools/BargeEquipmentAssetCheck.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BargeEquipmentAssetCheck
 # Geometric normal maps must preserve every registered boat silhouette.
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check desktop/com/bargeboss/game/*.java tools/NormalBoatReview.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.NormalBoatReview

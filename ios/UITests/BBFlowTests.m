@@ -200,6 +200,11 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         thenDragToCoordinate:[self river:stage x:target.x y:target.y status:status]
         withVelocity:300 thenHoldForDuration:0.1];
 }
+- (void)releaseBarge:(CGPoint)b stage:(XCUIElement *)stage status:(NSString *)status {
+    [[self river:stage x:b.x y:b.y status:status] tap];
+    NSString *updated=(NSString *)stage.value;
+    if([self integerInStatus:updated tag:@"ability selected"]>0){CGPoint icon=[self worldPositionInStatus:updated tag:@"ability release"];[[self point:stage x:icon.x y:icon.y] tap];}
+}
 - (void)finishTowCourse:(XCUIElement *)stage {
     NSUInteger seen=0;
     for(int attempt=0;attempt<600;attempt++) {
@@ -219,7 +224,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
             }else if([self integerInStatus:status tag:@"tow bridge contact"]==1){
                 CGPoint house=[self worldPositionInStatus:status tag:@"tow bridge house"];[[self point:stage x:house.x y:house.y] tap];
             }else if([self integerInStatus:status tag:@"tow bridge phase"]==0 && [self integerInStatus:status tag:@"tow bridge authorized"]==0){
-                [self joystickDrive:stage to:CGPointMake(300,bridge==1?500:300) status:status];
+                [self joystickDrive:stage to:CGPointMake(300,bridge==1?500:-200) status:status];
             }
             [NSThread sleepForTimeInterval:0.5];continue;
         }
@@ -227,16 +232,16 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
             [self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
         } else if(lesson==BBLessonConnect || lesson==BBLessonDouble) {
             CGPoint b=cargoLeader==0?spare:cargo;NSInteger leader=cargoLeader==0?spareLeader:cargoLeader;
-            if(leader>=0)[[self river:stage x:b.x y:b.y status:status] tap];
+            if(leader>=0)[self releaseBarge:b stage:stage status:status];
             else if(hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
             else [self castFrom:b to:tug stage:stage status:status];
         } else if(lesson==BBLessonLink) {
-            if(spareLeader>=0)[[self river:stage x:spare.x y:spare.y status:status] tap];
+            if(spareLeader>=0)[self releaseBarge:spare stage:stage status:status];
             else if(cargoLeader<0)[self castFrom:cargo to:tug stage:stage status:status];
             else [self castFrom:spare to:cargo stage:stage status:status];
         } else if(lesson==BBLessonRelease) {
             CGPoint b=cargoLeader>=0?cargo:spare;
-            [[self river:stage x:b.x y:b.y status:status] tap];
+            [self releaseBarge:b stage:stage status:status];
         }
     }
     [self waitFor:BBLessonToken(BBLessonDone) on:stage];
