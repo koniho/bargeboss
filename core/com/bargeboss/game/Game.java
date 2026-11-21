@@ -71,6 +71,7 @@ public final class Game {
     public Tutorial tutorial;
     public final Dialogue dialogue=new Dialogue();
     public final SoundEffects sounds=new SoundEffects();
+    public final EngineHaptics engineHaptics=new EngineHaptics();
     public final RadioAudio radio=new RadioAudio(sounds);
     public Body teacherBoat(){return tutorial==null || tutorial.arrival==null?null:tutorial.arrival.teacher;}
     public boolean conversation(){return dialogue.active || tutorial!=null && (tutorial.entering || tutorial.instructorRadio.phase!=0);}
@@ -414,6 +415,7 @@ public final class Game {
     public void tell(String message) { notice=message; noticeTicks=240; }
     public void haptic(int event) {
         if(!hapticsEnabled) return;
+        engineHaptics.interrupt();
         if(event>=HAPTIC_IMPACT || hapticCooldown==0) {
             hapticPending=Math.max(event,hapticPending); hapticCooldown=6;
         }
@@ -422,12 +424,13 @@ public final class Game {
         if(practice!=null) return practice.pollHaptic();
         int event=hapticPending; hapticPending=0; return event;
     }
+    public int pollEngineHaptic(){Game g=activeGame();return g.engineHaptics.poll(g);}
     public void cancelInputs() {
         rescue.aiming=-1;waveControls.cancel();abilities.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
         if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.towBridges.cancelTouch();tutorial.instructorRadio.cancelTouch();}
-        dialogue.cancel();cancel(); mapPointer=-1; hapticPending=0; reversing=false; navigating=false;
+        dialogue.cancel();cancel();engineHaptics.reset(); mapPointer=-1; hapticPending=0; reversing=false; navigating=false;
     }
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
@@ -892,6 +895,7 @@ public final class Game {
         }
         updateCamera();
         buildingFades.step(this);
+        engineHaptics.step(this);
     }
     private void advanceMontroseJob(){
         if(montroseComplete || delivered<quota() || goalFailed())return;

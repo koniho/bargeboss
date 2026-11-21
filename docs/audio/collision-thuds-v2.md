@@ -36,3 +36,7 @@ immediate thud and no landing cue. Radio priority and contact cooldown remain.
 Sound selection/processing is based on source descriptions and signal analysis;
 subjective speaker audition remains for user review. Do not claim measured
 native sound latency from these checks.
+
+Mix revision: user reported thuds masked by diesel. Peaks are now0.40/0.54/0.68
+(+6dB), paired with a short engine dip; see engine-feedback-v1.md. Timing and
+spectral processing above remain unchanged.

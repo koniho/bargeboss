@@ -5,9 +5,9 @@ import subprocess,struct,wave
 ROOT=Path(__file__).resolve().parents[1]
 # No synthesized noise/water layers. Distinct onset-aligned, low-passed hits.
 for name,source,duration,cutoff,peak in [
- ('fender-light-kenney-v2','impactSoft_medium_000.ogg',.14,650,.20),
- ('fender-medium-kenney-v2','impactSoft_heavy_000.ogg',.25,550,.27),
- ('fender-heavy-kenney-v2','impactSoft_heavy_000.ogg',.32,450,.34)]:
+ ('fender-light-kenney-v2','impactSoft_medium_000.ogg',.14,650,.40),
+ ('fender-medium-kenney-v2','impactSoft_heavy_000.ogg',.25,550,.54),
+ ('fender-heavy-kenney-v2','impactSoft_heavy_000.ogg',.32,450,.68)]:
  raw=subprocess.check_output(['ffmpeg','-v','error','-i',str(ROOT/'docs/audio/sources/kenney'/source),'-af',f'highpass=f=35,lowpass=f={cutoff}:p=2,lowpass=f={cutoff}:p=2','-ac','1','-ar','44100','-f','f32le','-'])
  values=list(struct.unpack('<'+'f'*(len(raw)//4),raw))
  threshold=max(map(abs,values))*.025

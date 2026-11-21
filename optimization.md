@@ -4659,3 +4659,18 @@ visual geometry checks and updated canonical audio trace2fcc437b:2:1350.
 Log: out/collision-thuds-v2-build.log. APK installed and cold launched Status:ok;
 previous screen timeout restored. Device speaker audition/end-to-end acoustic
 latency and iOS native build were not performed.
+
+## 2026-11-21 — Audible impacts and engine haptics
+
+Raised collision samples6dB and added shared 100ms engine duck hold plus300ms
+smooth recovery. EngineHaptics selects bounded idle/load pulses in fixed-step
+Java; Android/iOS transport the same low/high events. Ordinary feedback suppresses
+rumble; cancel, pause, conversation and settings gate it. No vibration backlog,
+new decode work or per-frame allocation. EngineAudioTest covers mix/pitch,
+restoration, pulse cadence, consumption, impact priority and lifecycle. See
+ docs/audio/engine-feedback-v1.md for adapter differences and audition limits.
+
+Full checks and Android build passed (out/engine-feedback-v1-build.log), replay
+unchanged2fcc437b:2:1350. Installed successfully and cold launch Status:ok; restored
+screen timeout. iOS adapter updated but not built on Termux. Device loudness and
+vibration strength await subjective review; no measured latency/FPS claim.

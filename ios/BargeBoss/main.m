@@ -145,7 +145,13 @@
     if(self.profiling) {[self setNeedsDisplay];return;}
     if(self.lastTime>0) [self.game advanceWithDouble:link.timestamp-self.lastTime];
     [self.audio update:self.game];
-    switch([self.game pollHaptic]) {
+    jint event=[self.game pollHaptic];
+    jint enginePulse=[self.game pollEngineHaptic];
+    if(event==0 && enginePulse>0){
+        if(@available(iOS 13.0,*)) [self.contact impactOccurredWithIntensity:enginePulse==2?.35:.15];
+        else [self.selection selectionChanged];
+    }
+    switch(event) {
         case 1: [self.selection selectionChanged]; break;
         case 2: [self.contact impactOccurred]; break;
         case 3: [self.impact impactOccurred]; break;

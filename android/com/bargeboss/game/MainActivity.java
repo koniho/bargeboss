@@ -135,11 +135,14 @@ public final class MainActivity extends Activity {
             if(last!=0) {if(developer==null)game.advance((now-last)/1e9);else developer.advance((now-last)/1e9);} last=now;
             audio.update(game);
             int event=game.pollHaptic();
+            int enginePulse=game.pollEngineHaptic();
             if(event!=0) {
                 int feedback=event==Game.HAPTIC_IMPACT?HapticFeedbackConstants.LONG_PRESS:
                     event==Game.HAPTIC_CONTACT?HapticFeedbackConstants.VIRTUAL_KEY:HapticFeedbackConstants.CLOCK_TICK;
                 if(event==Game.HAPTIC_SUCCESS && android.os.Build.VERSION.SDK_INT>=30) feedback=HapticFeedbackConstants.CONFIRM;
                 performHapticFeedback(feedback);
+            }else if(enginePulse!=0){
+                performHapticFeedback(enginePulse==2?HapticFeedbackConstants.VIRTUAL_KEY:HapticFeedbackConstants.CLOCK_TICK);
             }
             saveProgress(false); if(developer!=null && developer.running() || frames.needsFrame(game)) invalidate(); Choreographer.getInstance().postFrameCallback(this);
         }
