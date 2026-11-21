@@ -9,9 +9,11 @@ public final class VesselHighlight {
     public static int source(int atlas) {return atlas==SpriteAtlas.YACHT_GOLD || atlas==SpriteAtlas.YACHT_MINT?SpriteAtlas.YACHT:atlas==SpriteAtlas.TUG_GOLD?SpriteAtlas.TUG:SpriteAtlas.BARGE;}
     public static float scale(int atlas) {return (source(atlas)==SpriteAtlas.YACHT?YachtArt.SCALE:source(atlas)==SpriteAtlas.TUG?TugArt.SCALE:BargeArt.HULL_SCALE)*CELL/INNER;}
     static int style(Game g,Body b) {
-        if(b.id<=0 || b.berth<0 || !b.active || b.lineAttached || b.deliveryRecorded)return -1;
-        if(g.canTie(b) && !g.ropeDragging)return SpriteAtlas.BARGE_MINT;
+        if(b.id<=0 || b.berth<0 || !b.active)return -1;
         Tutorial t=g.tutorial;
+        if(t!=null && b==g.cargo[0] && (t.lesson==Tutorial.CONNECT || t.lesson==Tutorial.PULL || t.lesson==Tutorial.DOUBLE && !t.firstTowParked))return SpriteAtlas.BARGE_GOLD;
+        if(b.lineAttached || b.deliveryRecorded)return -1;
+        if(g.canTie(b) && !g.ropeDragging)return SpriteAtlas.BARGE_MINT;
         return t!=null && t.lesson>=Tutorial.HOLD && t.lesson<Tutorial.DONE && (t.lesson==Tutorial.LINK?g.cargo[2]==b:g.cargo[0]==b)
                 ?SpriteAtlas.BARGE_GOLD:-1;
     }

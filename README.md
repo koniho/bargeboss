@@ -23,10 +23,11 @@ transitional art. Reusable art workflows are maintained in
 
 ## Play
 
-Choose **Learn to Drive** for fourteen hands-on lessons without a timer, traffic or
+Choose **Learn to Drive** for seventeen hands-on lessons without a timer, traffic or
 hull damage: helm practice, forward/reverse figure eights, clean slip backing, overview-map navigation, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
-line, towing to a berth, double towing under a bridge, reconfiguring a train,
+line, towing the same unloaded barge back to the basin entrance, calling into a
+two-barge basin, requesting convoy passage, reconfiguring a train,
 narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended level. Circle each gold beacon once in either direction, following the soft water ring;
 its percentage shows your lap progress. Stay near the ring—cutting across the buoy
@@ -34,12 +35,14 @@ or leaving its area restarts that unfinished lap. Then steer
 upstream through seven gates along a narrow industrial channel spanning several
 screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
 the tug while the throttle stays fixed on the screen. The canal
-opens into the same practice harbor, with all three teaching barges already waiting.
+opens into the same practice harbor, with one teaching barge on the far side. Two more wait in the next basin behind
+a closed bridge. Leave the first tow near the entrance and radio the bridge house
+to collect them; both must be connected to the tug before the next bridge call unlocks.
 Sixteen factory modules, varied building heights, active exhausts and warm
 lighting populate packed industrial blocks behind the quays. Aligned road tiles
 separate the factory rows; the working shoreline apron stays clear.
-Towing practice continues by bringing a barge to the marked berth, connecting a
-second barge directly to the tug, and pulling both underneath the opening bridge.
+Towing practice then collects the two barges beyond the entry bridge and connects
+each directly to the tug. Radio the second bridge and pull both underneath.
 Then release one tug line and reconnect that same barge to the other barge to form
 a train. Pull both through the narrow seawalled channel; the lesson waits until
 the last hull clears the exit. All of this stays in the same continuous scene.
@@ -268,8 +271,8 @@ antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
 
 Practice is one [continuous canal and harbor](docs/continuous-tutorial.md): drive
-through the gates, push and unload the first barge, then sail to the second barge
-for towing. Boats, water and scenery stay in place between lessons; only an
+through the gates, push and unload the first barge, tow it back near the entrance,
+then call into the next basin to collect the two-barge convoy. Boats, water and scenery stay in place between lessons; only an
 explicit reset restarts an exercise.
 
 ## Design a level

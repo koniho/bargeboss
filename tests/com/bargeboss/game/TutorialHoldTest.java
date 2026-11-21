@@ -31,7 +31,7 @@ public final class TutorialHoldTest {
             check(Physics.length(b.x-Tutorial.PUSH_X,b.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,"lesson requires pushing cargo into the destination zone");
             ReplayInput.up(root,g.pointerX,g.pointerY);
             for(int i=0;i<7000 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
-            check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding");
+            check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding: "+size[0]+"x"+size[1]+" drag="+drag+" lesson="+g.tutorial.lesson+" tug="+g.tug.x+","+g.tug.y+" radio="+g.tutorial.towBridges.current(g)+"/"+g.tutorial.towBridges.phase+" contact="+g.tutorial.towBridges.contactable(g)+" tow="+g.tow.count()+" house="+g.tutorial.towBridges.houseX(g,1)+","+g.tutorial.towBridges.houseY(g,1)+" zoom="+g.layout.camera.zoom);
         }
         Game root=lesson(960,600),g=root.activeGame();Body b=g.cargo[0];
         steps(root,7200);

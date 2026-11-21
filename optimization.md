@@ -4398,3 +4398,26 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   `Vulkan renderer active`. Refreshed actual-renderer aim/catch/powered/release
   and left/right settings captures were reviewed. A manual native tutorial
   playthrough and native iOS execution were not performed in this round.
+
+## 2026-11-20 — Separate single-tow and two-barge tutorial basins
+- First basin now contains only the original push/unload hull. The single towing
+  lesson reuses it, brings it to the entrance-side target, and leaves it there
+  after a player release. The other two original bodies wait behind the y=400
+  bridge. Normal progression preserves every hull and never teleports cargo.
+- Added explicit entry and convoy-exit bridge radio calls. The y=200 call unlocks
+  after both next-basin barges are directly attached. Standby/cancel cannot open
+  a span. All openings use existing continuous `LandmarkBridge`/`BridgePassage`
+  machinery, lighting, collision and depth sorting; no new art or pose cache.
+- Tutorial no longer also collides against the obsolete proximity-operated bridge.
+  All three practice bridges appear on the chart. Static geometry is prepared at
+  setup; existing landmark culling/rigid transforms apply to the added spans.
+  No frame-rate improvement is claimed for this gameplay/layout change.
+- Guided camera reveal now includes pending towing bridge calls so a held throttle
+  cannot keep the real bridge house offscreen. Shared instructions distinguish
+  first-load cast-off, entry request and convoy request; native XCTest reads the
+  same bridge contact/phase/house metadata instead of guessing screen positions.
+- Focused radio and full tow-course tests pass across 960/1333/1680 widths. Taller
+  layout testing caught a replay helper incorrectly rescaling already-screen-space
+  dialogue boxes; fixed to use their actual coordinates. Full validation follows.
+
+Validation: full Android build/check.sh passed (baseline 5a2ba4cd:2:1350); all-heading shoreline regression passed 1,461,230 hull/cargo pixel assertions. APK installed and launched successfully on the development phone. iOS UI automation updated but not executed locally.

@@ -53,7 +53,7 @@ final class TutorialArrival {
         } else {
             if(pushedTicks>0){
                 pushedTicks--;teacher.engineLoad*=.95f;Physics.integrate(teacher);
-                CalumetMap.collide(teacher,g.splashes);g.passages.collide(teacher,g.splashes);g.bridge.collide(teacher,g.splashes);
+                CalumetMap.collide(teacher,g.splashes);g.passages.collide(teacher,g.splashes);if(g.hasBridge())g.bridge.collide(teacher,g.splashes);
             }else follow.step(g,teacher);
             if(strayed(g)
                     && returnCooldown==0 && warningTicks==0 && reactionTicks==0){

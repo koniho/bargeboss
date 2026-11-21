@@ -35,7 +35,7 @@ public final class TrainingChannelView {
         factoriesAndVessels(g,canvas);
         BridgeView.draw(g,canvas);
         gateIndicator(g,canvas);
-        if(g.tutorial!=null)g.tutorial.canal.cue(g,canvas);
+        if(g.tutorial!=null){g.tutorial.canal.cue(g,canvas);g.tutorial.towBridges.cue(g,canvas);}
     }
     static void gateIndicator(Game g,Painter canvas){RiverCamera c=g.layout.camera;
         if(g.trainingChannel() && g.tutorial.canal.escort.leading) {

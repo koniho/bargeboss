@@ -18,11 +18,19 @@ rectilinear gates lead to the work harbor through x=170, y=442..558. The last
 gate is at (80,500), before the mouth; the next instruction guides the player
 into the harbor for barge handling and towing.
 
-Both teaching barges exist at the beginning: the pushing load at (292, 700)
-and the towing load at (350, 490). After pushing to (240, 600), assisted
-steering continues with the same barge to the berth at (230, 700). The
-unloaded barge remains empty and tied alongside; the next instruction directs
-the player to the second barge. A failed or released tow retries in place.
+All three teaching barges exist from the start, with one in the first basin at
+(292,700) and two behind the entry bridge at (245,310) and (365,310). Push the
+first load to (240,600), then assist it into the far berth at (230,700) and unload.
+Reconnect that same empty hull and tow it to the entrance-side target (245,550),
+radius 58. Tap to release there; it remains in the first basin. Releasing outside
+the target returns to the connection lesson rather than unlocking the next area.
+
+Call the actual bridge house at the y=400 span and confirm its radio prompt to
+enter the next basin. Both waiting barges must connect directly to the tug before
+the second span at y=200 becomes callable. Call, wait for the full continuous
+opening, and tow both complete hulls clear. Then reconfigure the same pair into
+a train for the narrow channel. No approach automatically opens a towing bridge.
+The canal-mouth span uses its existing separate call; authorization is per bridge.
 
 Lesson progression changes instructions and completion gates. It does not
 rebuild the world, replace vessels, move a hull to its next exercise, clear
@@ -39,7 +47,8 @@ ground drawing use that geometry throughout practice. The canal mouth has
 no hidden end wall. Ordered gates span the waterway's full width and retain
 credit for genuine crossings without bypassing the earlier navigation lessons.
 
-The `deliveryRecorded` flag records each delivery once. Delivered loads remain visible, solid, moored empty barges. Its unloading crew returns to idle. Cargo slots switch
+The `deliveryRecorded` flag records each delivery once. Delivered loads remain visible and solid; the first empty hull is reused for towing,
+then parked near the entrance. Its unloading crew returns to idle. Cargo slots switch
 which existing barge the tutorial teaches without changing vessel identity.
 
 The replay suite exercises real gestures through every lesson on phone and

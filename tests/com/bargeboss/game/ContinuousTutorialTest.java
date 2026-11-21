@@ -51,8 +51,8 @@ public final class ContinuousTutorialTest {
                     if(lesson==Tutorial.STEER) check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<55,
                             "assisted docking continues from the practiced push destination");
                 }
-                if(g.delivered>0) check(g.delivered==1 && load.active && load.lineAttached && load.unloadingTicks>=Game.UNLOAD_TICKS,
-                        "the completed empty barge remains alongside and scores exactly once");
+                if(g.delivered>0) check(g.delivered==1 && load.active && load.deliveryRecorded && load.unloadingTicks>=Game.UNLOAD_TICKS,
+                        "the completed empty barge remains available for the single tow and scores exactly once");
             }
             check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,
                     "real gestures finish every lesson in one scene at "+size[0]+"x"+size[1]+"; stopped at "+g.tutorial.lesson);

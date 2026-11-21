@@ -111,6 +111,7 @@ public final class CoreTest {
         TowTest.run();
         TowTrainTest.run();
         TutorialTowCourseTest.run();
+        TutorialTowBridgesTest.run();
         CargoGestureTest.run();
         ThrottleTest.run();
         MooringEngineTest.run();
@@ -181,7 +182,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Merged wave/weather/lighting composition; JVM/native drawing parity verified.
-        check(Parity.signature().equals("7f0c0842:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("5a2ba4cd:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

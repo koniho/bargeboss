@@ -209,6 +209,20 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if([self integerInStatus:status tag:@"cast phase"]!=0){[self waitFor:@"; cast phase 0;" on:stage];continue;}
         CGPoint tug=[self worldPositionInStatus:status tag:@"tug"],cargo=[self worldPositionInStatus:status tag:@"cargo"],spare=[self worldPositionInStatus:status tag:@"spare"];
         NSInteger cargoLeader=[self integerInStatus:status tag:@"cargo leader"],spareLeader=[self integerInStatus:status tag:@"spare leader"];
+        if(lesson==BBLessonDouble && [self integerInStatus:status tag:@"first tow parked"]==0){
+            [[self river:stage x:cargo.x y:cargo.y status:status] tap];continue;
+        }
+        NSInteger bridge=[self integerInStatus:status tag:@"tow bridge"];
+        if(bridge>0){
+            if([self integerInStatus:status tag:@"dialogue"]>0){CGSize size=[self logicalSize:stage];double width=fmin(440,(size.width-64)/2);
+                [[self point:stage x:size.width/2-width/2-8 y:size.height-131] tap];
+            }else if([self integerInStatus:status tag:@"tow bridge contact"]==1){
+                CGPoint house=[self worldPositionInStatus:status tag:@"tow bridge house"];[[self point:stage x:house.x y:house.y] tap];
+            }else if([self integerInStatus:status tag:@"tow bridge phase"]==0 && [self integerInStatus:status tag:@"tow bridge authorized"]==0){
+                [self joystickDrive:stage to:CGPointMake(300,bridge==1?500:300) status:status];
+            }
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
         if(lesson==BBLessonPull || lesson==BBLessonBridge || lesson==BBLessonTrain) {
             [self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
         } else if(lesson==BBLessonConnect || lesson==BBLessonDouble) {
@@ -371,13 +385,13 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     [self waitFor:BBLessonToken(BBLessonTie) on:stage];
     [self throwLineToBollard:stage];
     [self waitFor:BBLessonToken(BBLessonConnect) on:stage];
-    // Sail to the waiting second barge; neither it nor the tug is respawned.
+    // Reuse the unloaded first barge; neither hull is respawned.
     // Approach on its upstream side so the next lesson pulls it into open water.
     for(int attempt=0;attempt<80;attempt++) {
         CGPoint load=[self worldPosition:stage tag:@"cargo"];
         CGPoint tug=[self worldPosition:stage tag:@"tug"];
         if(hypot(tug.x-load.x,tug.y-load.y)<=150 && tug.y<=load.y-55) break;
-        [self drivePracticeTug:stage toX:load.x-95 toY:load.y-85];
+        [self drivePracticeTug:stage toX:(load.x<240?load.x+85:load.x-65) toY:load.y-85];
     }
     // A released drive can still move the hull/camera before XCTest injects a
     // gesture. Retry a missed cast from a fresh shared snapshot, never teleport.

@@ -112,7 +112,7 @@ public final class Game {
     public int shiftTicks() { return calumetStage()?6000*60:Challenges.shiftTicks(challengeId); }
     public String challengeTitle() { return calumetStage()?"CALUMET RIVER / "+voyage.title():Challenges.title(challengeId); }
     public boolean calumetStage() {return tutorial==null && Challenges.calumet(challengeId);}
-    public boolean hasBridge() { return tutorial!=null || challengeId<0; }
+    public boolean hasBridge() { return tutorial==null && challengeId<0; }
     /** The practice bridge is separate from surveyed location bridge instances. */
     public boolean bridgeStage() { return false; }
     public boolean indianaStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.INDIANA;}
@@ -206,6 +206,9 @@ public final class Game {
                 PRACTICE_DRIVE_ZOOM,layout.width*.52f,layout.height*.55f);
         if(tutorial.lesson==Tutorial.FIGURE_EIGHT || tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
                 HelmPractice.MEET_X,HelmPractice.MEET_Y,1.4f,layout.width*.60f,layout.height*.52f);
+        int towBridge=tutorial.towBridges.current(this);
+        if(towBridge>0){LandmarkBridge b=passages.bridges[towBridge];
+            return Layout.focused(layout.width,layout.height,(tug.x+b.x)*.5f,(tug.y+b.y)*.5f,1.25f,layout.width*.42f,layout.height*.70f);}
         if(tutorial.lesson==Tutorial.CHANNEL && (!tutorial.canal.authorized || !passages.passable(0)
                 || !tutorial.canal.escort.leading || tug.x<TrainingChannel.MIN+20)
                 && Physics.length(tug.x-TutorialCanalBridge.X,tug.y-TutorialCanalBridge.Y)<400)
@@ -226,6 +229,7 @@ public final class Game {
     void fitTutorialCamera() { layout=TrainingScenery.constrain(tutorialCamera(),tug.x,tug.y); }
     private Body cameraLoad() {
         Body held=workingCargo();
+        if(tutorial!=null && (tutorial.lesson==Tutorial.CONNECT || tutorial.lesson==Tutorial.PULL || tutorial.lesson==Tutorial.DOUBLE && !tutorial.firstTowParked))return cargo[0];
         if(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE) && held==null)return cargo[2];
         if(held!=null && !held.deliveryRecorded) return held;
         if(tow.primary()!=null) return tow.primary();
@@ -296,7 +300,7 @@ public final class Game {
         // Do not pull the view away while the player steers or immediately after a cast/release.
         // Keep panning and allow closer approach views, including swimmer rescue proximity.
         // Early tutorial framing must still reveal the next lesson's cargo and tie target.
-        boolean guidedReveal=tutorial!=null && tutorial.lesson<Tutorial.PULL;
+        boolean guidedReveal=tutorial!=null && (tutorial.lesson<Tutorial.PULL || tutorial.towBridges.current(this)>0);
         if(!guidedReveal && cameraZoomHoldTicks>0 && targetZoom<c.zoom)targetZoom=c.zoom;
         targetZoom=pinchZoom.target(targetZoom,steering);
         float zoom=c.zoom+(targetZoom-c.zoom)*.035f;
@@ -332,6 +336,7 @@ public final class Game {
                 +(tutorial==null?"":"; slip phase "+tutorial.navigation.slipPhase+"; slip retry "+(tutorial.navigation.retry?1:0)+"; map phase "+tutorial.navigation.mapPhase+"; navigation target "+tutorial.navigation.targetX(this)+","+tutorial.navigation.targetY(this)+"; helm pace "+tutorial.helm.pace+"; helm phase "+tutorial.helm.phase+"; heading "+tug.angle+"; drive marker "+tutorial.driveMarker+"; orbit progress "+tutorial.orbitProgress()+"; drive target "+tutorial.driveTargetX()+","+tutorial.driveTargetY())
                 +(tutorial==null?"":"; reverse target "+tutorial.reverseTargetX+","+tutorial.reverseTargetY+"; reverse progress "+tutorial.reverseProgress()+"; reverse armed "+(tutorial.reverseArmed?1:0))
                 +(tutorial==null?"":"; instructor teach "+(tutorial.instructorRadio.teach?1:0)+"; instructor call "+tutorial.instructorRadio.phase+"; instructor radio "+(teacher==null?"0,0":tutorial.instructorRadio.x(this)+","+tutorial.instructorRadio.y(this))+"; canal contact "+(tutorial.canal.contactable(this)?1:0)+"; canal ready "+(tutorial.canal.authorized && passages.passable(0)?1:0)+"; bridge house "+tutorial.canal.houseX(this)+","+tutorial.canal.houseY(this)+"; teacher "+(teacher==null?"0,0":teacher.x+","+teacher.y))
+                +(tutorial==null?"":"; first tow parked "+(tutorial.firstTowParked?1:0)+"; tow bridge "+tutorial.towBridges.current(this)+"; tow bridge phase "+tutorial.towBridges.phase+"; tow bridge contact "+(tutorial.towBridges.contactable(this)?1:0)+"; tow bridge authorized "+(tutorial.towBridges.authorized[Math.max(1,tutorial.towBridges.current(this))]?1:0)+"; tow bridge house "+tutorial.towBridges.houseX(this,Math.max(1,tutorial.towBridges.current(this)))+","+tutorial.towBridges.houseY(this,Math.max(1,tutorial.towBridges.current(this))))
                 +"; bollard "+(load==null?"none":bollardX(load)+","+bollardY(load))
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
@@ -419,7 +424,7 @@ public final class Game {
         rescue.aiming=-1;waveControls.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
-        if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.instructorRadio.cancelTouch();}
+        if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.towBridges.cancelTouch();tutorial.instructorRadio.cancelTouch();}
         dialogue.cancel();cancel(); mapPointer=-1; hapticPending=0; reversing=false; navigating=false;
     }
     /** Native input is always in landscape canvas coordinates. */
@@ -435,6 +440,7 @@ public final class Game {
         }
         if(tutorial!=null && tutorial.instructorRadio.down(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.down(this,id,x,y))return;
+        if(tutorial!=null && tutorial.towBridges.down(this,id,x,y))return;
         if(pinchZoom.active()){pinchZoom.down(this,id,x,y);return;}
         if(liveRiverInput() && !(tutorial!=null && tutorial.entering) && ropePhase==0
                 && !joystick.active && !ropeDragging && !towAiming && !holdingTug() && heldCargo()==null
@@ -457,6 +463,7 @@ public final class Game {
         if(mode==PLAY && conversation()){dialogue.move(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.move(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.move(this,id,x,y))return;
+        if(tutorial!=null && tutorial.towBridges.move(this,id,x,y))return;
         if(overview.owns(id)){overview.setFromX(this,x);return;}
         if(pinchZoom.move(this,id,x,y))return;
         if(id!=mapPointer) return;
@@ -469,6 +476,7 @@ public final class Game {
         if(mode==PLAY && conversation()){dialogue.up(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.up(this,id,x,y))return;
         if(tutorial!=null && tutorial.canal.up(this,id,x,y))return;
+        if(tutorial!=null && tutorial.towBridges.up(this,id,x,y))return;
         if(overview.owns(id)){overview.setFromX(this,x);overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
         if(id!=mapPointer) return;
@@ -485,7 +493,7 @@ public final class Game {
         if(practice!=null) { practice.pointerCancel(id); return; }
         if(waveControls.owns(id)){waveControls.cancel();return;}
         dialogue.cancel(id);
-        if(tutorial!=null){tutorial.canal.cancel(id);tutorial.instructorRadio.cancel(id);}
+        if(tutorial!=null){tutorial.canal.cancel(id);tutorial.towBridges.cancel(id);tutorial.instructorRadio.cancel(id);}
         if(overview.owns(id)){overview.cancelTouch();return;}
         if(pinchZoom.up(id))return;
         if(id==mapPointer) { cancel(); mapPointer=-1; }

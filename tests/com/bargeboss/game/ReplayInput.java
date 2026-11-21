@@ -209,6 +209,16 @@ public final class ReplayInput {
     }
     /** Focused exercise fixture; entrance motion is covered by TutorialEntranceTest. */
     public static void startPractice(Game root){root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);}
+    /** Real bridge-house press/reply and a safe approach before either gate. */
+    public static boolean towRadio(Game root){
+        Game g=root.activeGame();TutorialTowBridges radio=g.tutorial.towBridges;
+        if(g.tutorial.lesson==Tutorial.DOUBLE && !g.tutorial.firstTowParked){if(g.pointer)up(root,g.pointerX,g.pointerY);releaseTow(root);return true;}
+        int index=radio.current(g);if(index==0)return false;
+        if(g.dialogue.active){if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}return true;}
+        if(radio.phase!=0 || radio.authorized[index]){if(g.pointer)up(root,g.pointerX,g.pointerY);return true;}
+        if(radio.contactable(g)){if(g.pointer)up(root,g.pointerX,g.pointerY);tap(root,radio.houseX(g,index),radio.houseY(g,index));return true;}
+        drive(g,300,g.passages.bridges[index].y+100);return true;
+    }
     public static void tutorial(Game root) {
         Game g=root.activeGame();
         if(g.tutorial.entering){
@@ -217,6 +227,7 @@ public final class ReplayInput {
         }
         if(g.tutorial.instructorRadio.teach){InstructorRadio radio=g.tutorial.instructorRadio;tap(root,radio.x(g),radio.y(g));return;}
         if(g.tutorial.instructorRadio.phase!=0){if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}return;}
+        if(towRadio(root))return;
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:
                 helmDrive(g,g.tutorial.driveTargetX(),g.tutorial.driveTargetY(),g.tutorial.helm.phase==HelmPractice.REVERSE);break;
@@ -246,7 +257,7 @@ public final class ReplayInput {
                     // Circle to the upstream side of the waiting barge. The
                     // subsequent northbound drag should pull, not ram its bow.
                     if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>150 || g.tug.y>b.y-55) {
-                        drive(g,b.x-95,b.y-85);break;
+                        drive(g,b.x<240?b.x+85:b.x-65,b.y-85);break;
                     }
                     if(g.pointer) up(root,g.pointerX,g.pointerY);
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);

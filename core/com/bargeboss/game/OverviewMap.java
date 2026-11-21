@@ -91,10 +91,10 @@ public final class OverviewMap {
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
         if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.x[i],g.rescue.y[i]),mapY(g,g.rescue.x[i],g.rescue.y[i]),1.7f,TARGET);
-        if(g.tutorial!=null){
-            int ink=g.passages.bridges.length>0 && g.passages.passable(0)?0x9995d7d1:0xbbffc170;
-            local.line(mapX(g,TutorialCanalBridge.Y-TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),
-                    mapX(g,TutorialCanalBridge.Y+TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),1,ink);
+        if(g.tutorial!=null)for(int i=0;i<g.passages.bridges.length;i++){
+            LandmarkBridge b=g.passages.bridges[i];int ink=g.passages.passable(i)?0x9995d7d1:0xbbffc170;
+            local.line(mapX(g,b.x-b.dx*b.left,b.y-b.dy*b.left),mapY(g,b.x-b.dx*b.left,b.y-b.dy*b.left),
+                    mapX(g,b.x+b.dx*b.right,b.y+b.dy*b.right),mapY(g,b.x+b.dx*b.right,b.y+b.dy*b.right),1,ink);
         }
         float x=mapX(g,g.tug.x,g.tug.y),y=mapY(g,g.tug.x,g.tug.y),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));

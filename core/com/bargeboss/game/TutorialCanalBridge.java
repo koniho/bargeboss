@@ -7,7 +7,9 @@ public final class TutorialCanalBridge {
     static final float X=TrainingChannel.MIN+24,Y=TrainingChannel.Y[0];
     private static final class Geometry {
         static final LandmarkBridge[] BRIDGES={new LandmarkBridge("practice-mouth","CANAL BRIDGE",X,Y,
-                (float)StrictMath.PI/2,LandmarkBridge.BASCULE,1,24,TrainingChannel.HALF_WIDTH,TrainingChannel.HALF_WIDTH)};
+                (float)StrictMath.PI/2,LandmarkBridge.BASCULE,1,24,TrainingChannel.HALF_WIDTH,TrainingChannel.HALF_WIDTH),
+                new LandmarkBridge("practice-tow-entry","TOW BASIN ENTRY",300,TutorialTowBridges.ENTRY_Y,0,LandmarkBridge.BASCULE,1,24,150,150),
+                new LandmarkBridge("practice-tow-exit","CONVOY BRIDGE",300,TutorialTowBridges.EXIT_Y,0,LandmarkBridge.BASCULE,1,24,150,150)};
     }
     static LandmarkBridge[] bridges(){return Geometry.BRIDGES;}
     final CanalEscort escort=new CanalEscort();

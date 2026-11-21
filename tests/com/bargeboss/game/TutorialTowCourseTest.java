@@ -11,11 +11,11 @@ public final class TutorialTowCourseTest {
         bridgeBounds();
         joystickCourse();
         for(float width:new float[]{960,1333,1680}){
-            Game g=exercise(Tutorial.CONNECT,width);Body a=g.cargo[0],b=g.cargo[2],tug=g.tug;int seen=0,releaseAtBridge=-1;
+            Game g=exercise(Tutorial.CONNECT,width);Body a=g.cargo[0],b=g.cargo[2],pair=g.cargo[1],tug=g.tug;int seen=0,releaseAtBridge=-1;
             for(int tick=0;tick<8000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
                 int lesson=g.tutorial.lesson;seen|=1<<lesson;float ax=a.x,ay=a.y,bx=b.x,by=b.y;
                 ReplayInput.tutorial(g);g.step();
-                check(g.cargo[0]==a && g.cargo[2]==b && g.tug==tug,"all towing lessons preserve the same vessels");
+                check((g.cargo[0]==a || g.cargo[1]==a) && (g.cargo[0]==pair || g.cargo[1]==pair) && g.cargo[2]==b && g.tug==tug,"all towing lessons preserve the same vessels");
                 check(Physics.length(a.x-ax,a.y-ay)<8 && Physics.length(b.x-bx,b.y-by)<8,"course never teleports cargo at lesson changes");
                 if(g.tutorial.lesson!=lesson){
                     if(lesson==Tutorial.PULL)check(Physics.length(a.x-Tutorial.TOW_BERTH_X,a.y-Tutorial.TOW_BERTH_Y)<=Tutorial.TOW_BERTH_RADIUS,"single tow reaches the berth before multi-tow lessons");
@@ -31,11 +31,11 @@ public final class TutorialTowCourseTest {
         System.out.println(checks+" berth tow, double bridge passage, reconfiguration and narrow train assertions passed");
     }
     private static void bridgeBounds(){
-        Game g=exercise(Tutorial.BRIDGE,960);g.bridge.phase=Bridge.CLOSED;
+        Game g=exercise(Tutorial.BRIDGE,960);g.passages.position[TutorialTowBridges.EXIT]=0;
         Body distant=new Body(0,-1,Tutorial.START_X,205,-(float)Math.PI/2);distant.vy=-50;
-        check(g.bridge.collide(distant)==0 && distant.x==Tutorial.START_X && distant.y==205 && distant.vy==-50,"tutorial bridge cannot create an invisible wall in the remote opening basin");
+        check(g.passages.collide(distant,null)==0 && distant.x==Tutorial.START_X && distant.y==205 && distant.vy==-50,"tutorial bridge cannot create an invisible wall in the remote opening basin");
         Body under=new Body(0,-1,300,205,-(float)Math.PI/2);under.vy=-50;
-        check(g.bridge.collide(under)>0 && under.y>205,"closed physical bridge still blocks its actual span");
+        check(g.passages.collide(under,null)>0 && under.y>205,"closed physical bridge still blocks its actual span");
         check(Towline.clear(g,Tutorial.START_X,195,Tutorial.START_X,230),"remote basin line can cross the bridge's y coordinate without intersecting its span");
         check(!Towline.clear(g,300,180,300,240),"closed bridge blocks a towline crossing its real span");
     }
@@ -43,6 +43,7 @@ public final class TutorialTowCourseTest {
         Game g=exercise(Tutorial.CONNECT,1333);g.settings.setJoystickSide(GameSettings.RIGHT);
         for(int tick=0;tick<8000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
             int lesson=g.tutorial.lesson;
+            if(ReplayInput.towRadio(g)){g.step();continue;}
             if(lesson==Tutorial.PULL || lesson==Tutorial.BRIDGE || lesson==Tutorial.TRAIN){
                 float x=Joystick.centerX(g),y=Joystick.centerY(g);
                 if(!g.joystick.active){g.cancelInputs();g.pointerDown(11,x,y);}
@@ -68,7 +69,7 @@ public final class TutorialTowCourseTest {
     private static void gates(){
         Game wrong=exercise(Tutorial.DOUBLE,960);wrong.tow.attach(wrong,wrong.cargo[2],wrong.cargo[0]);wrong.tutorial.update(wrong);
         check(wrong.tutorial.lesson==Tutorial.DOUBLE,"a chain cannot substitute for the two direct bridge connections");
-        Game g=exercise(Tutorial.BRIDGE,960);g.bridge.phase=Bridge.OPEN;
+        Game g=exercise(Tutorial.BRIDGE,960);g.passages.position[TutorialTowBridges.EXIT]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<120;i++)g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.BRIDGE,"waiting does not clear bridge");
         g.tug.y=-40;g.cargo[0].y=30;g.tutorial.update(g);

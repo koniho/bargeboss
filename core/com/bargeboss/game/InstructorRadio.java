@@ -10,7 +10,7 @@ final class InstructorRadio {
     void introduce(Game g){if(!taught){teach=true;g.cancelInputs();g.radio.transmit(RadioAudio.TEACHER);}}
     boolean available(Game g){return g.mode==Game.PLAY && !g.tutorial.entering && g.tutorial.lesson<Tutorial.DONE
             && phase==0 && !g.dialogue.active && g.teacherBoat()!=null
-            && g.tutorial.canal.phase!=TutorialCanalBridge.CALLING && g.tutorial.canal.phase!=TutorialCanalBridge.QUESTION;}
+            && !g.tutorial.towBridges.busy() && g.tutorial.canal.phase!=TutorialCanalBridge.CALLING && g.tutorial.canal.phase!=TutorialCanalBridge.QUESTION;}
     float x(Game g){Body b=g.teacherBoat();return g.layout.camera.screenX(b.x,b.y);}
     float y(Game g){Body b=g.teacherBoat();return g.layout.camera.screenY(b.x,b.y)-12*g.layout.camera.scale;}
     private boolean hit(Game g,float x,float y){
