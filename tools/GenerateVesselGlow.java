@@ -19,11 +19,11 @@ public final class GenerateVesselGlow {
     }
     public static void main(String[] args)throws Exception {
         boolean check=args.length>0 && args[0].equals("--check");
-        BufferedImage[] sheets=new BufferedImage[5];for(int i=0;i<5;i++)sheets[i]=new BufferedImage(N*8,N*4,BufferedImage.TYPE_INT_ARGB);
+        BufferedImage[] sheets=new BufferedImage[5];for(int i=0;i<5;i++)sheets[i]=new BufferedImage(N*8,N*(i<2?8:4),BufferedImage.TYPE_INT_ARGB);
         for(int vessel=0;vessel<3;vessel++) {
         int atlas=vessel==2?SpriteAtlas.YACHT:vessel==0?SpriteAtlas.BARGE:SpriteAtlas.TUG;
-        BufferedImage source=ImageIO.read(new File("assets/sprites/"+SpriteAtlas.file(atlas)));
-        for(int f=0;f<32;f++) {
+        for(int f=0;f<SpriteAtlas.count(atlas);f++) {
+            BufferedImage source=ImageIO.read(new File("assets/sprites/"+SpriteAtlas.file(atlas,f)));
             BufferedImage cell=new BufferedImage(N,N,BufferedImage.TYPE_INT_ARGB);Graphics2D g=cell.createGraphics();
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             int l=Math.round(source.getWidth()*SpriteAtlas.sourceLeft(atlas,f)),t=Math.round(source.getHeight()*SpriteAtlas.sourceTop(atlas,f));
@@ -48,13 +48,13 @@ public final class GenerateVesselGlow {
         }
         }
         for(int i=0;i<5;i++) {
-            File file=new File("assets/sprites/"+(i>=3?"yacht":i==2?"tug":"barge")+"-glow-"+(i==1 || i==4?"mint":"gold")+"-32.png");
+            File file=new File("assets/sprites/"+(i>=3?"yacht":i==2?"tug":"barge")+"-glow-"+(i==1 || i==4?"mint":"gold")+(i<2?"-64.png":"-32.png"));
             if(check) {
                 BufferedImage old=ImageIO.read(file);
                 if(old.getWidth()!=sheets[i].getWidth() || old.getHeight()!=sheets[i].getHeight())throw new AssertionError("Glow atlas size");
                 for(int y=0;y<old.getHeight();y++)for(int x=0;x<old.getWidth();x++)if(old.getRGB(x,y)!=sheets[i].getRGB(x,y))throw new AssertionError("Regenerate glow atlas: "+file);
             } else ImageIO.write(sheets[i],"png",file);
         }
-        System.out.println("160 registered watercraft glow frames validated; padded edges clear");
+        System.out.println("224 registered watercraft glow frames validated; padded edges clear");
     }
 }

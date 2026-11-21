@@ -9,7 +9,8 @@ not a claim that the production fleet has already migrated.
 ## Artwork and geometry
 
 Author one rigid model with stable local coordinates and real surface normals.
-Use the established game camera and 32 genuine headings, 11.25 degrees apart.
+Use the established game camera: 64 genuine headings (5.625 degrees) for barges
+and cargo, and 32 (11.25 degrees) for the current tug/yacht families.
 Preserve the production vessel silhouette, proportions, recognizable fittings,
 palette and worn industrial finish. Dusk illumination must come from the
 lighting model; do not paint a strong key light or lamp glow into base color.

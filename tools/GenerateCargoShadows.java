@@ -22,7 +22,7 @@ public final class GenerateCargoShadows {
         boolean check=args.length>0 && args[0].equals("--check");int frames=0;
         for(int source:new int[]{SpriteAtlas.STEEL,SpriteAtlas.CONTAINER,SpriteAtlas.BULK}) {
             int count=SpriteAtlas.count(source),cols=8;
-            BufferedImage sheet=new BufferedImage(cols*N,8*N,BufferedImage.TYPE_INT_ARGB);
+            BufferedImage sheet=new BufferedImage(cols*N,((count*2+7)/8)*N,BufferedImage.TYPE_INT_ARGB);
             BufferedImage image=null;String previous="";
             for(int frame=0;frame<count;frame++) {
                 String file=SpriteAtlas.file(source,frame);

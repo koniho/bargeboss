@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "barge-isometric-v4-64.png",
+  "frames": 64,
+  "coordinateSpace": "body-local-xyz",
+  "geometry": "tools/BargePoseGuide.java",
+  "projectedAnchors": "docs/art-studies/barge-isometric-v1-64-guide-anchors.csv",
+  "anchorIds": "preserved from barge-isometric-v1-guide-anchors.json; rigid hull parent",
+  "lights": {
+    "source": "docs/art-studies/vessel-lighting-v1/barge-authored-anchors.json",
+    "navigation": "core/com/bargeboss/game/VesselNavigationLights.java",
+    "type": "runtime fixtures, not painted"
+  },
+  "smokestacks": [],
+  "tires": {
+    "source": "docs/art-studies/barge-isometric-v1-64-guide-anchors.csv",
+    "idPrefix": "tire.",
+    "parent": "hull"
+  },
+  "registration": {
+    "pivot": [
+      0.5,
+      0.72
+    ],
+    "scale": 1,
+    "cell": 256
+  },
+  "reviewStatus": "geometry-projected; native anchor overlay review pending"
+}

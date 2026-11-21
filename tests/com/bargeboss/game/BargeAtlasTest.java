@@ -7,12 +7,13 @@ public final class BargeAtlasTest {
     private static boolean near(float a,float b) {return Math.abs(a-b)<.0001f;}
     public static void run() {
         for(int atlas:new int[]{SpriteAtlas.BARGE,SpriteAtlas.BULK}) {
-            boolean[] seen=new boolean[32];
-            for(int frame=0;frame<32;frame++) {
+            boolean[] seen=new boolean[64];
+            for(int frame=0;frame<64;frame++) {
                 float l=SpriteAtlas.sourceLeft(atlas,frame),r=SpriteAtlas.sourceRight(atlas,frame);
                 float t=SpriteAtlas.sourceTop(atlas,frame),b=SpriteAtlas.sourceBottom(atlas,frame);
-                check(l>=0 && t>=0 && r<=1 && b<=1 && near(r-l,.125f) && near(b-t,.25f),"barge/coal crops address a single square cell");
-                int index=Math.round(t*4)*8+Math.round(l*8);
+                check(l>=0 && t>=0 && r<=1 && b<=1 && near(r-l,1) && near(b-t,1),"barge/coal crops address a single square cell");
+                int index=SpriteAtlas.sourceFrame(atlas,frame);
+                check(SpriteAtlas.file(atlas,frame).equals(SpriteAtlas.packedFile(atlas,frame)),"each heading has a separate frame-sized file");
                 check(!seen[index],"every source direction is distinct");seen[index]=true;
                 check(near(SpriteAtlas.widthScale(atlas,frame),SpriteAtlas.heightScale(atlas,frame))
                     && near(SpriteAtlas.widthScale(atlas,frame),SpriteAtlas.widthScale(atlas,0)),"registration never stretches individual headings");
@@ -20,8 +21,8 @@ public final class BargeAtlasTest {
         }
         Game g=new Game();g.reset();g.visualTicks=39;
         Body b=new Body(1,2,300,600,0);b.lineAttached=true;
-        for(int heading=0;heading<32;heading++) for(int tick:new int[]{0,1,60,120,179,180}) {
-            b.angle=heading*(float)Math.PI/16;b.unloadingTicks=tick;
+        for(int heading=0;heading<64;heading++) for(int tick:new int[]{0,1,60,120,179,180}) {
+            b.angle=heading*(float)Math.PI/32;b.unloadingTicks=tick;
             Capture out=new Capture();VesselView.draw(g,new RiverPainter(out),b,false,false);
             check(out.hull==1 && out.coal==(tick<CargoTransfer.PICK?1:0),"coal transfers off hull at pickup while hull remains");
             if(out.coal>0) {

@@ -15,7 +15,7 @@ The [cargo style review](cargo-style-review.md) records the problems this preven
   Keep broad readable forms and material contrast consistent with the hull;
   realistic detail density is not a substitute for matching the accepted style.
 - Use the fixed orthographic 3/4 camera at 35.264 degrees elevation. Rotate one
-  rigid model/load through 32 actual poses, 11.25 degrees apart, in row-major 8×4
+  rigid model/load through 64 actual poses, 5.625 degrees apart, in row-major 8×8
   order. Use the same heading convention as the hull and `RiverCamera`.
 - Cargo uses the hull's waterline origin and world scale, not its visible-pixel
   bounding-box center. Encode the cargo-floor elevation in the authored pose.
@@ -47,7 +47,7 @@ batch remains ashore until the next operation replaces it. This is an arcade
 whole-batch lift, not a simulation of individual coal grabs or container picks.
 
 `CargoTransfer` owns the choreography and `CargoView.lifted` preserves source
-registration, surface lighting and all 32 headings. A separate model-based tray
+registration, surface lighting and all 64 headings. A separate model-based tray
 supports loose material; it is not baked into the production sheets. Suspended
 and landed cargo cannot trigger watercraft-only building fades. See
 [offloading](../rendering/cargo-offloading.md). A future discrete-unit unloading
@@ -56,13 +56,13 @@ than arbitrary repeated/scaled sprites.
 
 ## Required deliverables and metadata
 
-Each family must provide the color sheet, reviewed 32-row registration CSV,
+Each family must provide the color sheet, reviewed 64-row registration CSV,
 source/generation prompt and provenance, and effect metadata with explicit
 `lights`, `smokestacks` and `tires` collections. These cargo collections are empty;
 missing collections are not equivalent to empty. Cargo must not invent vessel
 navigation, fender or exhaust fixtures. Preserve hull-owned anchor identities.
 
-Deliver independent near-contact and soft cast shadow masks at all 32 headings.
+Deliver independent near-contact and soft cast shadow masks at all 64 headings.
 Record their source, receiving plane, pivot/padding transform and alpha-derived
 limitations. Follow [shadow generation](../art-prompts/shadow-masks-v1.md), and
 regenerate the shared surface-lighting data when changing source pixels or
@@ -76,8 +76,8 @@ inside active draws. Follow the [performance rules](../performance/development-r
 ## Acceptance checks
 
 Compile `tools/CargoAssetCheck.java` alongside shared core and run
-`com.bargeboss.game.CargoAssetCheck`. It checks alpha packing, all 32 nonempty
-source crops, exact duplicate content, single-sheet mapping, finite pivots, one
+`com.bargeboss.game.CargoAssetCheck`. It checks alpha packing, all 64 nonempty
+source crops, exact duplicate content, frame-pack mapping, finite pivots, one
 uniform scale and agreement with reviewed CSV metadata. It also checks explicit effect metadata, delivered contact/cast masks and
 surface-lighting derivative presence. Cargo masks are delivered separately under
 `docs/art-studies/` while runtime keeps the hull-only water shadow. Run `GenerateCargoShadows --check` and `GenerateSurfaceLighting --check` for derivative
@@ -91,17 +91,17 @@ gutters must have exactly zero alpha. Current accepted source boundary counts:
 steel 6,869 (max2), containers76 (max1), coal v3:70 (max1); inspect actual composites
 and record new counts when changing source sheets.
 
-Pixel uniqueness is not proof of 32 geometrically correct angles. Alpha gutters
+Pixel uniqueness is not proof of 64 geometrically correct angles. Alpha gutters
 and high registration IoU do not prove perspective, texture coherence, anchor
 identity or foreground-rim occlusion. Record these as separate manual findings.
 
 Review raw source frames, anchor overlays, and actual-renderer loaded/empty/partial
-unload composites on the production hull at all 32 headings, plus the 31→0 seam.
+unload composites on the production hull at all 64 headings, plus the 63→0 seam.
 Use normal gameplay size and magnification on dark, light and water backgrounds.
 Review glow, contact/cast shadows and shore clipping without letting effects mask
 bad cargo fit. Check the same fixed anchor through heave and heading blending.
 Reject or explicitly document remaining geometry drift; do not certify it solely
-from having 32 populated cells.
+from having 64 populated cells.
 
 Track accepted runtime PNGs and prompts; keep rejected candidates outside runtime
 assets. Copy versioned review outputs to Downloads. Record measured dimensions,
@@ -109,3 +109,6 @@ validation limits and any remaining mismatch in the art notes and `optimization.
 Run the shared checks and the standing Android build/install/launch workflow.
 Report actual native iOS/device validation limits rather than inferring them from
 shared source behavior.
+
+The current geometric fleet is documented in [fleet-64](barge-fleet-64/README.md).
+Runtime uses individual PNG frames; canonical sheets are offline generation inputs.

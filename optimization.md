@@ -4459,3 +4459,39 @@ successfully. A second native capture timed out before export; no valid native
 performance conclusion is claimed. The first interrupted capture did execute
 Vulkan, but its screenshot was the foreground terminal, not the game. Native
 raster review and timing remain open. iOS build/device checks were not run.
+
+## 2026-11-21 — 64-pose fleet and level residency (Android/shared, in progress)
+
+The interrupted equipment capture reached 159.98 MiB of the 160 MiB CPU cropped
+frame cache. Code inspection found a failure path: pinned rotations leave no
+space for scenery crops; demand draws can return uncached fresh bitmaps. Vulkan
+then sees changed bitmap identities and retires/reuploads textures; retirement
+currently calls vkDeviceWaitIdle. This is a plausible cause, not measured churn
+in that interrupted capture (its frame-build counters were zero).
+
+Converted revised hull, steel, containers, coal and both equipment families,
+including their glow/shadow/shade variants, to frame-sized PNG packs. Full sheets
+remain authoring inputs only; native runtime file selection points at packs.
+All 64 poses come from rigid geometry, with fixed waterline pivots and cargo
+coaming depth. Entire revised catalog is 2432 frames / 192 MiB decoded, before
+host/driver copies; each level prepares only its manifest, not that catalog.
+Tutorial rotations expand from 1632 to 2080. Source and cropped-frame counters
+must be considered together: moving frames into source storage is not by itself
+a measured memory saving. Budget remains 160 MiB pending native measurement.
+
+Android now removes previous-plan-only decoded sources/atlases and cropped cells
+at a manifest change, preserving sources shared with the new plan. Previously
+old cropped frames merely became evictable and source sheets stayed resident.
+GPU textures still have their separate bounded LRU. Native validation pending.
+
+First valid post-change native capture:
+`out/profiles/20261121-034311-barge-abilities-freeze` (Vulkan, 90 warmup/120
+measured frames, completed without interruption). All 2122 preparation frames
+ready. Source storage 290.71 MiB plus cropped-frame storage 55.75 MiB = 346.46
+MiB. The earlier interrupted run reported 429.69 MiB combined, but is not a
+valid timing baseline. Warm frames built/evicted zero textures or raster layers.
+Median draw 75.73 ms, interval 77.61 ms; max interval103.06 ms. Native Vulkan
+log reported approximately3.72 ms GPU/3.84 ms encode during its120-frame window.
+Thus there is ample crop-cache headroom now, but substantial CPU work remains;
+do not claim a frame-rate fix. Captured pixels show both specialized barges,
+registered new hulls, lighting, bridge/shore overlap and spray/fireworks.

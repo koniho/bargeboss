@@ -33,12 +33,12 @@ public final class CargoAssetCheck {
         String stem=filename.substring(0,filename.length()-7); // remove -32.png
         File csv=new File("docs/art-studies/"+stem+"-registration.csv");
         List<String> rows=Files.readAllLines(csv.toPath(),StandardCharsets.UTF_8);
-        check(rows.size()==33,"Expected 32 registration rows: "+csv);
+        check(rows.size()==65,"Expected 64 registration rows: "+csv);
         check(rows.get(0).startsWith("frame,pivot_x,pivot_y,uniform_scale,"),"Unsupported registration schema: "+csv);
         float scale=CargoArt.scale(atlas);finite(scale,"Finite uniform scale: "+filename);check(scale>0,"Positive scale: "+filename);
-        for(int frame=0;frame<32;frame++){
+        for(int frame=0;frame<64;frame++){
             String[] columns=rows.get(frame+1).split(",",-1);check(columns.length>=4,"Registration row width: "+csv);
-            check(Integer.parseInt(columns[0])==frame,"Ordered 32 frame registration: "+csv);
+            check(Integer.parseInt(columns[0])==frame,"Ordered 64 frame registration: "+csv);
             float x=Float.parseFloat(columns[1]),y=Float.parseFloat(columns[2]),s=Float.parseFloat(columns[3]);
             finite(x,"Finite pivot X");finite(y,"Finite pivot Y");finite(s,"Finite scale");
             check(x>0 && x<1 && y>0 && y<1,"Waterline pivot inside source cell: "+filename+" "+frame);
@@ -49,15 +49,16 @@ public final class CargoAssetCheck {
         }
     }
     private static void atlas(int atlas)throws Exception{
-        String filename=SpriteAtlas.file(atlas,0);File file=new File("assets/sprites/"+filename);
+        String filename=SpriteAtlas.file(atlas);File file=new File("assets/sprites/"+filename);
         BufferedImage image=ImageIO.read(file);check(image!=null,"Readable cargo PNG: "+file);
         check(image.getColorModel().hasAlpha(),"True alpha channel: "+file);
-        check(SpriteAtlas.count(atlas)==32 && SpriteAtlas.columns(atlas)==8 && SpriteAtlas.rows(atlas)==4,"Cargo uses 32 cells in one 8x4 sheet: "+filename);
+        check(SpriteAtlas.count(atlas)==64 && SpriteAtlas.columns(atlas)==8 && SpriteAtlas.rows(atlas)==8,"Cargo uses 64 frame-sized textures, canonical 8x8 sheet: "+filename);
         Set<String> fingerprints=new HashSet<String>();int pixels=0,residue=0,maxEdgeAlpha=0;
-        for(int frame=0;frame<32;frame++){
-            check(filename.equals(SpriteAtlas.file(atlas,frame)),"No interleaved legacy sheet: "+filename);
+        for(int frame=0;frame<64;frame++){
+            image=ImageIO.read(new File("assets/sprites/"+SpriteAtlas.file(atlas,frame)));
+            check(image.getWidth()==256 && image.getHeight()==256 && SpriteAtlas.framePack(atlas),"Frame-sized production texture");
             check(SpriteAtlas.sourceFrame(atlas,frame)==frame,"One real source cell per heading: "+filename);
-            check(near(SpriteAtlas.sourceLeft(atlas,frame),(frame%8)/8f) && near(SpriteAtlas.sourceTop(atlas,frame),(frame/8)/4f),"Row-major source mapping: "+filename+" "+frame);
+            check(near(SpriteAtlas.sourceLeft(atlas,frame),0) && near(SpriteAtlas.sourceTop(atlas,frame),0),"Full packed-frame source mapping: "+filename+" "+frame);
             int l=Math.round(image.getWidth()*SpriteAtlas.sourceLeft(atlas,frame)),t=Math.round(image.getHeight()*SpriteAtlas.sourceTop(atlas,frame));
             int r=Math.round(image.getWidth()*SpriteAtlas.sourceRight(atlas,frame)),b=Math.round(image.getHeight()*SpriteAtlas.sourceBottom(atlas,frame));
             check(r>l+2 && b>t+2,"Nonzero crop/gutter: "+filename+" "+frame);
@@ -77,7 +78,7 @@ public final class CargoAssetCheck {
         int surface=SurfaceLightArt.forSource(atlas);
         metadata(atlas,filename);
         check(new File("assets/sprites/"+SpriteAtlas.file(surface)).isFile(),"Surface-light data exists: "+filename);
-        System.out.println(filename+": "+image.getWidth()+"x"+image.getHeight()+", 32 nonempty/distinct cells, "+residue+" source-edge residue pixels (max "+maxEdgeAlpha+"/255; allowed <=2), "+pixels+" opaque pixels");
+        System.out.println(filename+": "+image.getWidth()+"x"+image.getHeight()+", 64 nonempty/distinct cells, "+residue+" source-edge residue pixels (max "+maxEdgeAlpha+"/255; allowed <=2), "+pixels+" opaque pixels");
     }
     private static Map<?,?> entry(Object value,int atlas){
         if(value instanceof Map){Map<?,?> object=(Map<?,?>)value;Object id=object.get("atlas");
@@ -90,7 +91,7 @@ public final class CargoAssetCheck {
         String text=new String(Files.readAllBytes(new File("docs/art-studies/cargo-effects-v1.json").toPath()),StandardCharsets.UTF_8);
         Object parsed=new Json(text).parse();check(parsed instanceof Map,"Object metadata root");Map<?,?> root=(Map<?,?>)parsed;
         check(root.get("schemaVersion") instanceof Number && ((Number)root.get("schemaVersion")).intValue()==1,"Known metadata schema");
-        check(root.get("frames") instanceof Number && ((Number)root.get("frames")).intValue()==32,"Metadata declares all headings");
+        check(root.get("frames") instanceof Number && ((Number)root.get("frames")).intValue()==64,"Metadata declares all headings");
         check(root.get("geometry") instanceof String && new File((String)root.get("geometry")).isFile(),"Named geometry provenance exists");
         Map<?,?> object=entry(parsed,atlas);check(object!=null,"Explicit effects metadata for atlas "+atlas);
         check(source.equals(object.get("source")),"Metadata source matches production sheet: "+source);
@@ -108,8 +109,8 @@ public final class CargoAssetCheck {
         check(near(((Number)shadows.get("contactSigma")).floatValue(),1) && near(((Number)shadows.get("castSigma")).floatValue(),3.2f),"Separate contact/cast softness");
         check(shadows.get("file") instanceof String,"Named shadow delivery: "+source);
         BufferedImage masks=ImageIO.read(new File((String)shadows.get("file")));
-        check(masks!=null && masks.getWidth()==1024 && masks.getHeight()==1024 && masks.getColorModel().hasAlpha(),"64 independent shadow cells: "+source);
-        for(int frame=0;frame<64;frame++){
+        check(masks!=null && masks.getWidth()==1024 && masks.getHeight()==2048 && masks.getColorModel().hasAlpha(),"128 independent shadow cells: "+source);
+        for(int frame=0;frame<128;frame++){
             int l=frame%8*128,t=frame/8*128,visible=0;
             for(int y=0;y<128;y++)for(int x=0;x<128;x++){
                 int alpha=masks.getRGB(l+x,t+y)>>>24;if(alpha>0)visible++;
@@ -152,6 +153,6 @@ public final class CargoAssetCheck {
         int count=0;for(int atlas=0;atlas<SpriteAtlas.ATLAS_COUNT;atlas++)if(CargoArt.atlas(atlas)){atlas(atlas);count++;}
         check(count>=3,"All existing cargo families remain represented");
         System.out.println(checks+" cargo packing, source mapping, registration and derivative-presence checks passed.");
-        System.out.println("Distinct pixels and within-tolerance gutters do not prove correct pose angles, material style or hold/coaming fit. Review the actual 32-heading composites, unload cycle and 31-to-0 turn.");
+        System.out.println("Distinct pixels and within-tolerance gutters do not prove correct pose angles, material style or hold/coaming fit. Review the actual 64-heading composites, unload cycle and 63-to-0 turn.");
     }
 }

@@ -30,3 +30,7 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.OverviewMapPixe
 # Cached training terrain must preserve wall faces without dynamic lighting.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/ShoreOcclusionPixelTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.ShoreOcclusionPixelTest terrain
+
+# Runtime frame packs must exactly match canonical source and effect sheets.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PackBargeFrames.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PackBargeFrames --check

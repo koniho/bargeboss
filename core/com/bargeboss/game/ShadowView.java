@@ -60,15 +60,16 @@ public final class ShadowView {
         if(!(p instanceof RiverPainter))return;
         RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
         int src=b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE;
-        float heading=b.angle/(float)(StrictMath.PI/16),whole=(float)StrictMath.floor(heading);
-        int f=((int)whole+RiverCamera.DIRECTION_OFFSET)%32;if(f<0)f+=32;
+        int poses=SpriteAtlas.headings(src);
+        float heading=b.angle/(float)(StrictMath.PI*2/poses),whole=(float)StrictMath.floor(heading);
+        int f=((int)whole+RiverCamera.DIRECTION_OFFSET*(poses/32))%poses;if(f<0)f+=poses;
         float blend=Physics.clamp((heading-whole-.4f)*5,0,1);blend=blend*blend*(3-2*blend);
         float[] light=new float[3];light(g,b.x,b.y,light);
         float lift=Math.max(0,WaterSurface.lift(g,b)),alpha=(.22f+.10f*light[2])/(1+lift*.08f);
         float x=c.screenX(b.x,b.y)+light[0]*3*c.scale,y=c.screenY(b.x,b.y)+light[1]*3*c.scale;
         // Water-plane contact stays put as the vessel bobs above it; both turning frames remain registered.
         if(blend<1)mask(canvas,src,f,x,y,size*c.scale,light[0]*.08f,0,.55f,alpha*(1-blend),true);
-        if(blend>0)mask(canvas,src,(f+1)%32,x,y,size*c.scale,light[0]*.08f,0,.55f,alpha*blend,true);
+        if(blend>0)mask(canvas,src,(f+1)%poses,x,y,size*c.scale,light[0]*.08f,0,.55f,alpha*blend,true);
         if(b.ability!=BargeAbilities.NONE){int equipment=b.ability==BargeAbilities.FIRE?SpriteAtlas.FIRE_BARGE:SpriteAtlas.FIREWORKS;
             float h=b.angle*64/(2*(float)StrictMath.PI),w=(float)StrictMath.floor(h),mix=Physics.clamp((h-w-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
             int a=(((int)w+RiverCamera.DIRECTION_OFFSET*2)%64+64)%64;

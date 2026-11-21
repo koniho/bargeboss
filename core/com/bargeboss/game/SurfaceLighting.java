@@ -100,7 +100,7 @@ public final class SurfaceLighting {
         int atlas=SurfaceLightArt.forSource(source);if(atlas<0 || alpha<=0)return;
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
         Painter canvas=river==null?p:river.canvas();RiverCamera c=river==null?null:river.camera;
-        int poses=BargeEquipment.art(source)?64:32;
+        int poses=SpriteAtlas.headings(source);
         float heading=angle/(float)(Math.PI/(poses/2)),whole=(float)StrictMath.floor(heading);
         int a=(((int)whole+(river==null?0:RiverCamera.DIRECTION_OFFSET*(poses/32)))%poses+poses)%poses,b=(a+1)%poses;
         float mix=Physics.clamp((heading-whole-.4f)*5,0,1);mix=mix*mix*(3-2*mix);
