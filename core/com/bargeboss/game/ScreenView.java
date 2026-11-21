@@ -34,13 +34,8 @@ public final class ScreenView {
         TitleView.background(g,p); TitleView.voyage(g,p); titleSettings(g,p);
         // Title anchors use the full safe canvas instead of centering a fixed
         // 960-wide poster inside a wide phone screen.
-        Painter sign=scaled(p,24,-14,.74f);
-        sign.poly(new float[]{44,132,125,110,143,66,533,66,492,238,133,270,151,240,32,246,78,169},INK);
-        sign.poly(new float[]{55,132,133,117,150,74,521,74,484,231,143,258,163,231,47,237,91,169},0xffa92d37);
-        sign.poly(new float[]{70,134,143,125,158,82,509,82,476,223,156,246,173,223,62,227,103,169},NAVY);
-        logo(sign,"BARGE",76,93,84,VisualStyle.CREAM); logo(sign,"BOSS",155,181,93,VisualStyle.GOLD);
-        float lamp=1+(float)StrictMath.sin(g.visualTicks*.065)*.25f;
-        sign.rect(99,263,15*lamp,4,VisualStyle.GOLD); sign.rect(496,91,5,19*lamp,VisualStyle.CREAM);
+        // One shared transparent wordmark; keep its 2:1 source aspect and safe left anchor.
+        p.sprite(SpriteAtlas.TITLE_LOGO,0,230,116,400,200,0,1);
         Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
         PilotGlass.panel(menu,608,180,324,368,0xbf091b25);
         center(menu,"SAIL "+Challenges.locationTitle(g.challengeId),770,200,11,GOLD);
@@ -58,12 +53,6 @@ public final class ScreenView {
         text(rank,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",367,549,10,GOLD);
     }
 
-    private static void logo(Painter p,String word,float x,float y,float size,int fill) {
-        Painter italic=new Transform(p,x,y,1,-.18f);
-        LogoLettering.draw(italic,word,4,6,size,INK); LogoLettering.draw(italic,word,-2,-2,size,INK);
-        LogoLettering.draw(italic,word,0,0,size,fill);
-        p.line(x+1,y-1,x+LogoLettering.width(word,size)-5,y-1,2,fill==VisualStyle.GOLD?0xffffef8a:0xffffffff);
-    }
     private static void harbor(Game g,Painter p) {
         int[] sky={0xff7467a8,0xff8c6ea7,0xffae7aa5,0xffd98d9c,0xfff5aa8f,0xffffc487};
         float horizon=312+g.layout.offsetY;

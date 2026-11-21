@@ -4559,3 +4559,24 @@ replay remained `68ec3e6b:2:1350`; APK installed successfully and cold launch re
 `Status: ok`. Accepted runtime art is unchanged. Review PNG copied to Downloads
 and Pictures/BargeBoss; MediaStore entry17904 verified. Interactive64-pose review
 also copied to Downloads. No iOS build or new native art-performance claim.
+
+## 2026-11-21 — title wordmark (shared UI)
+
+Replaced the pixel-glyph title with one transparent 1774x887 wordmark using existing
+sprite caches (~6MiB decoded source). Removed the unused LogoLettering glyph cache
+and multi-pass title lettering. One static sprite draw; no animation-time raster
+work or new rotation-prefetch dependency. Title-only asset, shared metadata and
+layout on all hosts. Reviewed four desktop aspect ratios. No measured performance
+claim; native Android validation recorded after build/install.
+
+Replay baseline: new title rendering yields `2e3c8f02:2:1350`. Compiling only the
+previous ScreenView/LogoLettering ahead of the same current compiled core restores
+`68ec3e6b:2:1350` exactly (`out/title-old-signature.txt`). Thus this trace change
+is isolated to the requested title drawing; delivery/score and replay behavior
+remain unchanged. Updated the canonical expectation after this comparison.
+
+Full Android checks/build passed; APK installation succeeded and launch returned
+Status: ok. Desktop composition reviewed at four sizes. Device visual capture was
+not usable because the game was no longer foreground; it was discarded, not
+retained as review evidence. No iOS build was run. Logo and composite review copies
+are verified in MediaStore (17907/17909).

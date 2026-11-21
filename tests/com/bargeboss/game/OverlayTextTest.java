@@ -16,7 +16,6 @@ public final class OverlayTextTest {
         check(Lettering.width("WWW",14)>Lettering.width("III",14),"technical font uses proportional metrics");
         check(Lettering.width("ready",14)==Lettering.width("READY",14),"uppercase normalization has matching metrics");
         check(Lettering.width("",14)==0,"empty text has zero width");
-        check(LogoLettering.width("BARGE",7)==29,"title logo keeps original geometry");
         InstructionPanel panel=new InstructionPanel();
         InstructionPanel.Content old=new InstructionPanel.Content("old","OLD","FIRST","SECOND",0,0);
         InstructionPanel.Content next=new InstructionPanel.Content("new","NEW","FIRST","SECOND",1,0);
