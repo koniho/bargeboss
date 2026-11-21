@@ -4370,3 +4370,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   drive at neutral inside the slip, confirmed the release prompt and pending
   lesson, then used pointer-up to complete. APK installed and launched on phone.
   Native iOS and a manual Android tutorial playthrough were not run this round.
+
+## 2026-11-20 — Throttle-only helm and optional practice-slip tether
+- Removed manual hull-drag propulsion and the Off throttle setting. Saved Off
+  preferences migrate to Left; Left/Right selection remains. Cargo hold/drag
+  assisted pushing and barge-to-vessel lasso gestures retain their existing rules.
+- Slip tug throws reuse the lasso arc, release launch, miss retraction and catch
+  effects. The tug remains powered and can turn while tethered; only outward
+  fitting velocity/stretch is constrained. Tap the connected bollard to release.
+  Tug ties never run unloading or score, and map departure waits for cast-off.
+- Reused the depth-sorted rope pipeline with one bounded 25-point slot. No new
+  textures, shader primitives or asset families. The tether retains a two-float
+  scratch array; its fixed-step constraint does not allocate. Offscreen slip
+  bollard rendering is culled. This is a gameplay change, not an FPS claim.
+- Migrated public-input tutorial, towing replays, visual capture helpers and iOS
+  XCTest driving helper to the screen throttle. Added JVM/native trace coverage
+  for powered tether motion and release. Native iOS execution remains deferred.
+- Focused checks pass for misses/cancel, live thrust while tied, length bounds,
+  eight heading/collision cases, bollard-only release, no tug-drag propulsion,
+  and preserved cargo assistance. Actual renderer captures reviewed in
+  `out/slip-tether-{aim,caught,powered,released}.png`. Full validation follows.
+- Full shared/asset checks and Vulkan Android build passed. Canonical replay
+  `7f0c0842:2:1350` retains two deliveries/1350 points; the trace now also includes
+  powered tug tethering and bollard release. All-heading shoreline pixel test
+  passed 1,461,230 hull/cargo assertions, plus 32,273 cached-wall probes.
+- APK installed and cold-launched through Shizuku; app-scoped log confirms
+  `Vulkan renderer active`. Refreshed actual-renderer aim/catch/powered/release
+  and left/right settings captures were reviewed. A manual native tutorial
+  playthrough and native iOS execution were not performed in this round.

@@ -167,11 +167,14 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
 }
 - (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y status:(NSString *)status thrust:(double)thrust {
     CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
-    double dx=x-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
-    // Both endpoints use this same published camera and boat position. In
-    // particular, do not re-read accessibility between the two coordinates.
-    [[self river:stage x:boat.x y:boat.y status:status] pressForDuration:0.05
-        thenDragToCoordinate:[self river:stage x:boat.x+thrust*dx/length y:boat.y+thrust*dy/length status:status]
+    double dx=x-boat.x,dy=y-boat.y;
+    double sx=dx+dy,sy=.577350269*(dy-dx),screenLength=fmax(.001,hypot(sx,sy));
+    CGSize size=[self logicalSize:stage];
+    NSInteger side=[self integerInStatus:status tag:@"joystick side"];
+    double cx=side==2?size.width-113:113,cy=size.height-171;
+    double power=fmax(0,fmin(1,(thrust-26)/60)),travel=power>0?7+56*power:0;
+    [[self point:stage x:cx y:cy] pressForDuration:0.05
+        thenDragToCoordinate:[self point:stage x:cx+travel*sx/screenLength y:cy+travel*sy/screenLength]
         withVelocity:500 thenHoldForDuration:0.35];
 }
 // Tow-course driving also exercises the new native joystick transport. The

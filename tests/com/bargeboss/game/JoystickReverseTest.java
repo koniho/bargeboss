@@ -51,7 +51,7 @@ public final class JoystickReverseTest {
             g.back();last=g.joystick.throttleAlpha();g.advance(.25);check(g.joystick.throttleAlpha()==last,"Pause freezes throttle fade");g.back();
             for(int i=0;i<60;i++)g.step();check(g.joystick.throttleAlpha()==0,"Released sector disappears completely");
             ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX+100,g.downY);
-            for(int i=0;i<20;i++)g.step();check(g.joystick.throttleAlpha()>0,"Direct tug drag also reveals throttle sector");
+            for(int i=0;i<20;i++)g.step();check(g.joystick.throttleAlpha()==0 && !g.navigating,"Removed tug drag never shows powered throttle");
             g.cancelInputs();for(int i=0;i<60;i++)g.step();check(g.joystick.throttleAlpha()==0,"Cancel fades direct-drag sector away");
         }
         System.out.println(checks+" projected reverse-sector, real input and continuous fade assertions passed");

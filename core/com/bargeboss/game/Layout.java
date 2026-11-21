@@ -5,8 +5,8 @@ public final class Layout {
     public static final int WIDTH=960, HEIGHT=600, HEADER_HEIGHT=80, FOOTER_TOP=520;
     public static final float STATUS_CENTER_X=300, STATUS_LABEL_Y=530, STATUS_HINT_Y=552;
     public static final Box SETTINGS=new Box(682,10,94,60),
-            JOYSTICK_LEFT=new Box(200,284,176,60),JOYSTICK_RIGHT=new Box(392,284,176,60),
-            JOYSTICK_OFF=new Box(584,284,176,60),SETTINGS_BACK=new Box(340,414,280,60);
+            JOYSTICK_LEFT=new Box(296,284,176,60),JOYSTICK_RIGHT=new Box(488,284,176,60),
+            SETTINGS_BACK=new Box(340,414,280,60);
     public static final Box HAPTICS=new Box(340,354,280,48);
     public static final Box HELP=new Box(722,534,102,50),
             PRACTICE=new Box(834,534,110,50);

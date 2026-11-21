@@ -39,7 +39,7 @@ public final class TutorialHoldTest {
         ReplayInput.down(root,b.x,b.y);steps(root,5);ReplayInput.up(root,b.x,b.y);steps(root,120);
         check(g.tutorial.lesson==Tutorial.HOLD,"brief tap cannot complete hold lesson");
         ReplayInput.down(root,g.tug.x,g.tug.y);steps(root,90);
-        check(g.holdingTug() && g.tutorial.lesson==Tutorial.HOLD,"holding tug cannot complete cargo lesson");
+        check(!g.holdingTug() && g.tutorial.lesson==Tutorial.HOLD,"holding tug cannot complete cargo lesson");
         g.pointerCancel(0);ReplayInput.down(root,b.x,b.y);steps(root,5);g.pointerCancel(0);steps(root,60);
         check(g.tutorial.lesson==Tutorial.HOLD,"cancelled hold cannot complete lesson");
         ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,g.downX-65,g.downY-65);

@@ -10,7 +10,7 @@ public final class ThrottleTest {
     public static void run() {
         for(float angle:new float[]{0,(float)Math.PI/2,(float)Math.PI,-(float)Math.PI/2}) {
             Game g=moving(angle),coast=moving(angle);float cx=(float)StrictMath.cos(angle),cy=(float)StrictMath.sin(angle);
-            ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX-cx*90,g.downY-cy*90);
+            ReplayInput.throttle(g,-cx*90,-cy*90);
             for(int i=0;i<30;i++) { g.step();coast.step(); }
             check(g.reversing && g.control==Game.REVERSING && g.tug.engineLoad>.5f,"reverse uses engine thrust");
             check(g.tug.vx*cx+g.tug.vy*cy<coast.tug.vx*cx+coast.tug.vy*cy-8,"counter-thrust slows more than coasting");

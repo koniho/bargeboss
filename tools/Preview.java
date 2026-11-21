@@ -24,10 +24,10 @@ public final class Preview {
         g.resetPracticeYard(); g.tug.x=260; g.tug.y=760; steps(g,180); capture(g,"feeder-blocked");
         sheet("feeder-phases",new String[]{"feeder-inbound","feeder-dropoff","feeder-return","feeder-blocked"});
         g.resetPracticeYard();
-        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
+        ReplayInput.throttle(g,0,-100);
         steps(g,45); capture(g,"driving"); ReplayInput.up(g,g.pointerX,g.pointerY);
         steps(g,4); capture(g,"coasting");
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY+100);
+        ReplayInput.throttle(g,0,100);
         steps(g,15);capture(g,"reverse-thrust");ReplayInput.up(g,g.pointerX,g.pointerY);
         ReplayInput.controlFixture(g); ReplayInput.down(g,g.cargo[0].x,g.cargo[0].y); steps(g,6); capture(g,"holding");
         for(int i=0;i<1200;i++) { g.step(); if(g.control==Game.ALIGNING) { capture(g,"aligning"); break; } }
@@ -88,7 +88,7 @@ public final class Preview {
         ReplayInput.down(g,b.x,b.y);ReplayInput.move(g,tow.tug.x,tow.tug.y);capture(g,"tow-aim");
         ReplayInput.up(g,tow.tug.x,tow.tug.y);steps(g,9);capture(g,"tow-flight");
         steps(g,9);capture(g,"tow-catch");
-        ReplayInput.down(g,tow.tug.x,tow.tug.y);ReplayInput.move(g,tow.downX,tow.downY-100);
+        ReplayInput.throttle(g,0,-100);
         steps(g,60);capture(g,"tow-pulling");
         ReplayInput.up(g,tow.pointerX,tow.pointerY);g=tow;tow.tutorial=null;ReplayInput.releaseTow(g);steps(g,5);capture(g,"tow-release");
         sheet("tow-phases",new String[]{"tow-aim","tow-flight","tow-catch","tow-pulling","tow-release","tutorial-9"});

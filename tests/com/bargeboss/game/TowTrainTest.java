@@ -22,7 +22,7 @@ public final class TowTrainTest {
     }
     private static float cruise(int count) {
         Game g=fixture(count);for(int i=0;i<count;i++)g.tow.attach(g,g.cargo[i],i==0?g.tug:g.cargo[i-1]);
-        g.down(g.tug.x,g.tug.y);g.move(g.downX,g.downY-100);
+        ReplayInput.throttle(g,0,-100);
         float total=0;for(int i=0;i<180;i++){g.move(g.downX,g.downY-100);g.step();if(i>=150)total+=g.tug.speed();}
         check(g.tow.loadCount(g.tug)==count,"train remains intact under power");return total/30;
     }

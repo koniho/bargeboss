@@ -26,7 +26,7 @@ public final class EffectsPreview {
         }
         graphics.dispose();ImageIO.write(sheet,"png",new File("out/smoke-headings.png"));
         g=new Game();g.reset();for(Feeder f:g.feeders){f.phase=Feeder.IDLE;f.load=null;}
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-90);
+        ReplayInput.throttle(g,0,-90);
         File directory=new File("out/animation-frames/wake");directory.mkdirs();
         for(int i=0;i<420;i++) {
             if(i==100) ReplayInput.up(g,g.pointerX,g.pointerY);

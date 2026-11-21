@@ -27,7 +27,7 @@ public final class CoreTest {
         CargoTransferTest.run();
         Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
-        g.resetPracticeYard(); g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-100); steps(g,60);
+        g.resetPracticeYard(); ReplayInput.throttle(g,0,-100); steps(g,60);
         check(g.navigating && g.tug.y<650,"drag drives tug in finger direction");
         g.background(); int ticks=g.ticks; g.advance(1); check(g.ticks==ticks,"background freezes shift");
         check(!g.pointer && !g.pushing,"background cancels gesture"); tap(g,Layout.RESUME); check(g.mode==Game.PLAY,"resume button");
@@ -43,7 +43,7 @@ public final class CoreTest {
         drag.move(drag.cargo[0].x,drag.cargo[0].y-120); steps(coast,150); steps(drag,150);
         check(Physics.length(coast.tug.x-drag.tug.x,coast.tug.y-drag.tug.y)>15,"drag overrides assisted direction");
         g=playing(); g.tug.x=300;g.tug.y=560;g.tug.angle=0;g.tug.vx=60;
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX-90,g.downY);steps(g,25);
+        ReplayInput.throttle(g,-90,0);steps(g,25);
         check(g.reversing && g.tug.vx<20,"astern thrust slows forward motion");
         g=playing(); for(int i=0;i<1200;i++) { ReplayInput.work(g); g.step(); }
         check(g.delivered>=1,"assisted first delivery within 20 seconds: tug="+g.tug.x+","+g.tug.y+" cargo="+g.cargo[0].x+","+g.cargo[0].y);
@@ -66,8 +66,8 @@ public final class CoreTest {
         steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
         g=playing(); g.ticks=1200; steps(g,1);
         check(!g.trafficActive(),"berth puzzles retain clear navigation rather than unrelated crossing traffic");
-        Game low=playing(), high=playing(); low.down(low.tug.x,low.tug.y); low.move(low.downX,low.downY-100);
-        high.down(high.tug.x,high.tug.y); high.move(high.downX,high.downY-100);
+        Game low=playing(), high=playing(); ReplayInput.throttle(low,0,-100);
+        ReplayInput.throttle(high,0,-100);
         for(int i=0;i<300;i++) low.advance(1.0/30); for(int i=0;i<1440;i++) high.advance(1.0/144);
         check(low.ticks==high.ticks && low.tug.x==high.tug.x && low.tug.y==high.tug.y && low.tug.heave==high.tug.heave && low.tug.engineLoad==high.tug.engineLoad && low.water.emitted==high.water.emitted && low.layout.camera.zoom==high.layout.camera.zoom && low.layout.camera.worldTop==high.layout.camera.worldTop && low.layout.camera.worldRight==high.layout.camera.worldRight,"30 and 144 Hz identical physics, exhaust load and water state");
         g=playing(); g.advance(Double.NaN); check(g.ticks==0,"invalid frame delta ignored");
@@ -85,6 +85,7 @@ public final class CoreTest {
         Renderer.draw(g,new Parity()); Renderer.draw(g,new Parity());
         check(g.tug.x==tx && g.tug.y==ty && g.ticks==ticks && g.score==score,"rendering cannot advance or mutate game");
         MooringAccessTest.run();
+        SlipMooringTest.run();
         ControlsTest.run();
         JoystickTest.run();
         DriveDirectionTest.run();
@@ -180,7 +181,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Merged wave/weather/lighting composition; JVM/native drawing parity verified.
-        check(Parity.signature().equals("e02e708:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("7f0c0842:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

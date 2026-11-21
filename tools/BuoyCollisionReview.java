@@ -10,12 +10,12 @@ public final class BuoyCollisionReview {
         Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);
         int marker=NavigationLights.count(g)-2;Buoys.Buoy b=g.buoys.get(g,marker);
         g.tug.x=b.anchorX-72;g.tug.y=b.anchorY;g.tug.angle=0;
-        g.down(g.tug.x,g.tug.y);g.move(g.downX+110,g.downY);
+        ReplayInput.throttle(g,110,0);
         File dir=new File("out/buoy-collision-motion");dir.mkdirs();
         float displacement=0,roll=0;BufferedImage board=new BufferedImage(1440,600,BufferedImage.TYPE_INT_RGB);
         Graphics2D panels=board.createGraphics();int panel=0;
         for(int tick=0;tick<360;tick++){
-            if(tick==48){g.cancel();g.down(g.tug.x,g.tug.y);g.move(g.downX-110,g.downY);}
+            if(tick==48){g.cancel();ReplayInput.throttle(g,-110,0);}
             if(tick==100)g.cancel();
             g.step();displacement=Math.max(displacement,Physics.length(b.x-b.anchorX,b.y-b.anchorY));roll=Math.max(roll,Math.abs(b.roll));
             if(tick%6!=0)continue;

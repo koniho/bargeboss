@@ -33,7 +33,7 @@ its percentage shows your lap progress. Stay near the ring—cutting across the 
 or leaving its area restarts that unfinished lap. Then steer
 upstream through seven gates along a narrow industrial channel spanning several
 screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
-the tug while keeping the original drag anchor fixed on the screen. The canal
+the tug while the throttle stays fixed on the screen. The canal
 opens into the same practice harbor, with all three teaching barges already waiting.
 Sixteen factory modules, varied building heights, active exhausts and warm
 lighting populate packed industrial blocks behind the quays. Aligned road tiles
@@ -58,15 +58,14 @@ transit framing. Automatic fitting keeps the current tow and berth targets visib
 Shared visibility culling and redraw scheduling reduce work in wide views;
 see the [night harbor rendering notes](docs/performance/night-harbor.md).
 
-- **Joystick:** move the bottom-corner thumb stick toward the direction you want
-  to travel on screen. More travel gives more thrust; release to coast. It responds
-  immediately. **Settings → Joystick position → Left / Right / Off** is available
-  from the title screen, and is saved across restarts.
-- **Drive:** press the tug and drag in the direction you want to travel. Pull
-  farther for more thrust. Keep your finger down for 0.2 seconds to engage; you
-  can start dragging immediately. The control ring stays at your original touch point;
-  there is no need to chase the boat. Center the control or release to coast.
-  Drag behind the tug to apply astern thrust without turning it around. Tapping the water does not set a route.
+- **Drive:** use the bottom-corner throttle. Pull farther for more thrust; center
+  or release to coast. Choose the green forward or amber reverse sector when
+  starting a gesture; release before changing gear. **Title → Settings → Throttle
+  position → Left / Right** chooses its side. Tug and water dragging do not drive.
+- **Practice slip tether:** once inside the slip, drag from the tug to its bollard
+  and release to throw. Misses retract. The engine still works while tied; the
+  line limits outward travel but permits turning and slack movement. **Tap the
+  connected bollard** to release. This is optional and never unloads or scores.
 - **Push:** press a cargo barge, then drag to steer the push. Keep your finger
   down; the tug lines up and pushes physically. Return to the ring and hold still
   for assistance toward the matching berth. The tutorial animates this gesture and requires pushing the load into a marked

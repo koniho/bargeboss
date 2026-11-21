@@ -16,23 +16,23 @@ public final class ControlsTest {
         // This is a straight-drive distance test. Face the requested course;
         // locked-thrust turning is exercised separately by DriveDirectionTest.
         g.tug.angle=-(float)Math.PI/2;
-        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
-        float originY=g.downY,screenOrigin=g.layout.camera.screenX(g.downX,g.downY); steps(g,60);
+        ReplayInput.throttle(g,0,-100);
+        float originY=g.tug.y,screenOrigin=g.downX; steps(g,60);
         check(g.navigating && g.tug.y<originY-35,"held drag drives tug");
-        check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f,"drag origin stays anchored as boat moves");
+        check(Math.abs(g.downX-screenOrigin)<.02f,"drag origin stays anchored as boat moves");
         g.pointerDown(2,200,400); g.pointerMove(2,100,400); g.pointerUp(2,100,400);
-        check(Math.abs(g.layout.camera.screenX(g.downX,g.downY)-screenOrigin)<.02f && g.pointer,"second finger cannot steal drag");
-        ReplayInput.move(g,g.downX,g.downY); steps(g,30);
+        check(Math.abs(g.downX-screenOrigin)<.02f && g.pointer,"second finger cannot steal drag");
+        ReplayInput.throttle(g,0,0); steps(g,30);
         check(!g.navigating && !g.reversing && g.tug.speed()>5 && g.control==Game.COASTING,"centering drag cuts throttle and coasts");
-        ReplayInput.move(g,g.downX,g.downY-100); steps(g,30); ReplayInput.up(g,g.pointerX,g.pointerY);
+        ReplayInput.throttle(g,0,-100); steps(g,30); ReplayInput.up(g,g.pointerX,g.pointerY);
         check(!g.pointer && !g.navigating && !g.reversing,"release removes thrust and coasts");
-        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100); steps(g,15);
+        ReplayInput.throttle(g,0,-100); steps(g,15);
         g.background(); check(!g.pointer && !g.navigating && g.mode==Game.PAUSE,"background cancels drive");
         g=game(); g.cargo[1].x=300; g.cargo[1].y=559;
         g.pointerDown(0,300,559); steps(g,20);
         check(g.heldCargo()==null && !g.pushing,"footer coordinates cannot grab cargo at the same numeric world coordinates");
         g.pointerUp(0,300,559);
-        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100); steps(g,15);
+        ReplayInput.throttle(g,0,-100); steps(g,15);
         g.pointerMove(0,Layout.HELP.centerX(),Layout.HELP.centerY());
         g.pointerUp(0,Layout.HELP.centerX(),Layout.HELP.centerY());
         check(g.mode==Game.PLAY && !g.pointer,"board drag released over footer never opens a menu");
@@ -131,8 +131,7 @@ public final class ControlsTest {
             if(context>0) root.startTutorial();
             g=root.activeGame();
             String progress=root.saveProgress();
-            ReplayInput.down(root,g.tug.x,g.tug.y);
-            ReplayInput.move(root,g.downX,g.downY-100);
+            ReplayInput.throttle(root,0,-100);
             root.back();
             check(g.mode==Game.PAUSE,"Back pauses the active voyage or nested tutorial");
             check(!g.pointer && !g.joystick.active && !g.navigating,"pause clears held drive before title exit");
@@ -153,7 +152,7 @@ public final class ControlsTest {
             g.tug.x=camera.worldX(sx,sy);g.tug.y=camera.worldY(sx,sy);
             boolean enabled=g.hapticsEnabled;
             g.pointerDown(0,sx,sy);
-            check(g.holdingTug(),"old top-button area now routes to visible tug");
+            check(g.pointer && !g.holdingTug(),"old top-button area does not intercept world touch or drive tug");
             g.pointerUp(0,sx,sy);
             check(g.mode==Game.PLAY && g.hapticsEnabled==enabled,"removed buttons cannot pause, open settings or toggle haptics");
         }

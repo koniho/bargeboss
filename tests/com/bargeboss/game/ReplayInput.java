@@ -19,6 +19,15 @@ public final class ReplayInput {
     public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }
+    /** Public screen-space throttle input, with a world-space steering vector. */
+    public static void throttleDown(Game root){Game g=root.activeGame();root.pointerDown(0,Joystick.centerX(g),Joystick.centerY(g));}
+    public static void throttle(Game root,float dx,float dy){
+        Game g=root.activeGame();if(g.pointer && !g.joystick.active)root.pointerCancel(0);if(!g.pointer)throttleDown(root);
+        float distance=Physics.length(dx,dy),power=Physics.clamp((distance-26)/60,0,1);
+        float sx=RiverCamera.Q*(dx+dy),sy=RiverCamera.Q*RiverCamera.DEPTH*(dy-dx),len=Math.max(.001f,Physics.length(sx,sy));
+        float radius=power>0?Joystick.DEAD_ZONE+(Joystick.TRAVEL-Joystick.DEAD_ZONE)*power:0;
+        root.pointerMove(0,Joystick.centerX(g)+radius*sx/len,Joystick.centerY(g)+radius*sy/len);
+    }
     public static void releaseTow(Game root) {
         Body b=root.activeGame().tow.primary();
         if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y); }
@@ -37,14 +46,14 @@ public final class ReplayInput {
         if(g.lockStage()){lockPassage(g);return;}
         if(g.sharedBerthStage() && clearSharedSlip(g))return;
         // A covered or drifting hull can make a press miss; lift before retrying.
-        if(g.pointer && g.heldCargo()==null && !g.holdingTug()) up(g,g.pointerX,g.pointerY);
+        if(g.pointer && g.heldCargo()==null && !g.joystick.active) up(g,g.pointerX,g.pointerY);
         Body target=null;
         for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && !b.lineAttached && (!g.depthStage() || b.berth==g.nextRequiredBerth())) { target=b; break; }
         if(g.pointer && g.heldCargo()!=null && g.heldCargo()!=target)up(g,g.pointerX,g.pointerY);
-        if(target!=null && (!g.pointer || g.holdingTug()) && !g.layout.camera.contains(g.layout.camera.screenX(target.x,target.y),g.layout.camera.screenY(target.x,target.y))) {
+        if(target!=null && (!g.pointer || g.joystick.active) && !g.layout.camera.contains(g.layout.camera.screenX(target.x,target.y),g.layout.camera.screenY(target.x,target.y))) {
             drive(g,300,target.y);return;
         }
-        if(target!=null && g.holdingTug() && Math.abs(target.y-g.tug.y)>220) { drive(g,300,target.y);return; }
+        if(target!=null && g.joystick.active && Math.abs(target.y-g.tug.y)>220) { drive(g,300,target.y);return; }
         // Return down the outer basin beside the parked empty hull.
         if(target!=null && g.sharedBerthStage() && target.awaitingPickup && g.heldCargo()==null && g.tug.x>300 && g.tug.y<625 && g.delivered>0){
             if(g.tug.x>340)drive(g,315,g.tug.y);else drive(g,325,665);
@@ -52,14 +61,14 @@ public final class ReplayInput {
         }
         // Lift each feeder load north into the turning basin before crossing toward the eastern slip.
         if(target!=null && g.orderStage() && target.y>645){
-            if(g.holdingTug())up(g,g.pointerX,g.pointerY);
+            if(g.joystick.active)up(g,g.pointerX,g.pointerY);
             if(!g.pointer)down(g,target.x,target.y);
             if(g.heldCargo()==target && g.pushing)move(g,g.downX,g.downY-90);
             return;
         }
         if(target!=null && g.orderStage() && g.heldCargo()==target && g.manualSteering)move(g,g.downX,g.downY);
         if(target!=null) {
-            if(g.holdingTug()) up(g,g.pointerX,g.pointerY);
+            if(g.joystick.active) up(g,g.pointerX,g.pointerY);
             if(g.pointer && g.canTie(g.heldCargo())) up(g,g.pointerX,g.pointerY);
             if(!g.pointer) { if(g.canTie(target)) lasso(g,target); else down(g,target.x,target.y); }
         } else {
@@ -68,8 +77,8 @@ public final class ReplayInput {
             if(len<22) {
                 if(g.pointer) up(g,g.pointerX,g.pointerY);
             } else {
-                if(!g.pointer) down(g,g.tug.x,g.tug.y);
-                move(g,g.downX+dx/len*90,g.downY+dy/len*90);
+                if(!g.pointer) throttleDown(g);
+                throttle(g,dx/len*90,dy/len*90);
             }
         }
     }
@@ -78,7 +87,7 @@ public final class ReplayInput {
         Body empty=null;
         for(Body b:g.cargo)if(b!=null && b.active && b.deliveryRecorded && (b.lineAttached || g.tow.incoming(b)!=null)){empty=b;break;}
         if(empty==null)return false;
-        if(g.pointer && !g.holdingTug())up(g,g.pointerX,g.pointerY);
+        if(g.pointer && !g.joystick.active)up(g,g.pointerX,g.pointerY);
         if(g.tow.incoming(empty)==null){
             if(Physics.length(g.tug.x-empty.x,g.tug.y-empty.y)>140 || g.tug.y<empty.y+65){drive(g,PhysicalBerths.CENTER,empty.y+100);return true;}
             if(g.pointer)up(g,g.pointerX,g.pointerY);
@@ -93,7 +102,7 @@ public final class ReplayInput {
     }
     /** Actual feeder handoff and two lasso gestures, followed by a fully physical loaded passage. */
     private static void lockPassage(Game g){
-        if(g.pointer && !g.holdingTug())up(g,g.pointerX,g.pointerY);
+        if(g.pointer && !g.joystick.active)up(g,g.pointerX,g.pointerY);
         int loads=0;Body next=null;
         for(Body b:g.cargo)if(b!=null && b.active && b.id>0){loads++;if(g.tow.incoming(b)==null && next==null)next=b;}
         if(loads<Lock.REQUIRED){drive(g,300,600);return;}
@@ -111,8 +120,8 @@ public final class ReplayInput {
         if(!g.tow.connected(b,g.tug)){if(g.pointer)up(g,g.pointerX,g.pointerY);down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;}
         float x=g.tug.y<1200?375:325,y=g.tug.y< -250?-180:1640;
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
-        if(!g.pointer)down(g,g.tug.x,g.tug.y);
-        move(g,g.downX+dx/len*52,g.downY+dy/len*52);
+        if(!g.pointer)throttleDown(g);
+        throttle(g,dx/len*52,dy/len*52);
     }
     private static void swimmerRescue(Game g){
         if(g.rescue.flying>=0 || g.rescue.cooldown>0)return;
@@ -120,7 +129,7 @@ public final class ReplayInput {
         if(target<0)return;
         float x=g.rescue.x[target],y=650+(target%10)*3;
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
-        if(len>18){if(!g.pointer)down(g,g.tug.x,g.tug.y);move(g,g.downX+dx/len*55,g.downY+dy/len*55);return;}
+        if(len>18){if(!g.pointer)throttleDown(g);throttle(g,dx/len*55,dy/len*55);return;}
         if(g.pointer)up(g,g.pointerX,g.pointerY);
         if(g.tug.speed()>3)return;
         down(g,g.rescue.x[target],g.rescue.y[target]);up(g,g.rescue.x[target],g.rescue.y[target]);
@@ -138,30 +147,30 @@ public final class ReplayInput {
         else if(mx<820){x=860;y=570;}
         else if(mx<1000 && my>520){x=1015;y=550;}
         float dx=MontroseHarbor.mapX(x)-g.tug.x,dy=MontroseHarbor.mapY(y)-g.tug.y,len=Physics.length(dx,dy);
-        if(!g.pointer)down(g,g.tug.x,g.tug.y);
+        if(!g.pointer)throttleDown(g);
         // Keel-aligned steering turns a real tow instead of translating sideways.
         // Moderate thrust gives the yacht time to follow without stretching its line.
         float drag=y==345 && len<90?42:52;
-        if(len<8)move(g,g.downX,g.downY);
-        else move(g,g.downX+dx/len*drag,g.downY+dy/len*drag);
+        if(len<8)throttle(g,0,0);
+        else throttle(g,dx/len*drag,dy/len*drag);
     }
     private static void drive(Game g,float x,float y) {
         if(g.bridgeStage() && !g.bridge.passable() && g.bridge.separates(g.tug.y,y)) y=Bridge.Y+(g.tug.y>Bridge.Y?90:-90);
         if(g.tutorial==null && PhysicalBerths.active(g.challengeId)){float[] route=new float[2];PhysicalBerths.waypoint(g.challengeId,g.tug.x,g.tug.y,x,y,18,route);x=route[0];y=route[1];}
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
-        if(!g.pointer) down(g,g.tug.x,g.tug.y);
-        if(len<25) move(g,g.downX,g.downY);
-        else move(g,g.downX+dx/len*90,g.downY+dy/len*90);
+        if(!g.pointer) throttleDown(g);
+        if(len<25) throttle(g,0,0);
+        else throttle(g,dx/len*90,dy/len*90);
     }
     public static void helmDrive(Game g,float x,float y,boolean reverse){
         if(!g.pointer){
-            down(g,g.tug.x,g.tug.y);
+            throttleDown(g);
             float sign=reverse?-1:1;
-            move(g,g.downX+sign*65*(float)StrictMath.cos(g.tug.angle),g.downY+sign*65*(float)StrictMath.sin(g.tug.angle));
+            throttle(g,sign*65*(float)StrictMath.cos(g.tug.angle),sign*65*(float)StrictMath.sin(g.tug.angle));
         }
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
         float distance=g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==HelmPractice.FORWARD?(g.tutorial.helm.pace==0?48:80):60;
-        move(g,g.downX+dx/len*distance,g.downY+dy/len*distance);
+        throttle(g,dx/len*distance,dy/len*distance);
     }
     public static void channel(Game root) {
         Game g=root.activeGame();
@@ -184,8 +193,8 @@ public final class ReplayInput {
         }
         float[] target=new float[2];TrainingChannel.guide(g.tug.x,g.tug.y,g.tutorial.channelGate,target);
         float dx=target[0]-g.tug.x,dy=target[1]-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
-        if(!g.pointer) down(root,g.tug.x,g.tug.y);
-        move(root,g.downX+dx/len*55,g.downY+dy/len*55);
+        if(!g.pointer) throttleDown(root);
+        throttle(root,dx/len*55,dy/len*55);
     }
     public static void pushPractice(Game root) {
         Game g=root.activeGame();Body b=g.cargo[0];
@@ -193,7 +202,7 @@ public final class ReplayInput {
         // before touching the load, instead of selecting an off-screen hull.
         if(g.tug.x<215) { drive(g,240,500);return; }
         if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>190) { drive(g,360,620);return; }
-        if(g.holdingTug()) up(root,g.pointerX,g.pointerY);
+        if(g.joystick.active) up(root,g.pointerX,g.pointerY);
         if(!g.pointer) down(root,b.x,b.y);
         float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
         move(root,g.downX+90*dx/len,g.downY+90*dy/len);

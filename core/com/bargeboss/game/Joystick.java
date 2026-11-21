@@ -26,15 +26,10 @@ public final class Joystick {
     private static float ease(float value,float target){value+=(target-value)*.18f;return Math.abs(target-value)<.001f?target:value;}
     static float appliedThrottle(Game g){
         if(g.driveDirection()==0)return 0;
-        return g.joystick.active?g.joystick.throttle():g.holdingTug() && g.pushing && g.manualSteering?
-                Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;
+        return g.joystick.active?g.joystick.throttle():0;
     }
     private static float thrustAngle(Game g){
         Joystick j=g.joystick;float dx=j.active?j.x:0,dy=j.active?j.y:0;
-        if(!j.active && g.holdingTug() && g.manualSteering){
-            float wx=g.pointerX-g.downX,wy=g.pointerY-g.downY;
-            dx=RiverCamera.Q*(wx+wy);dy=RiverCamera.Q*RiverCamera.DEPTH*(wy-wx);
-        }
         return Physics.length(dx,dy)>.001f?(float)StrictMath.atan2(dy,dx):
                 projectedAngle(g.tug.angle+(g.driveDirection()<0?(float)StrictMath.PI:0));
     }
@@ -75,7 +70,7 @@ public final class Joystick {
     }
     public static float centerX(Game g){return g.settings.joystickSide()==GameSettings.RIGHT?g.layout.width-(RADIUS+32):RADIUS+32;}
     public static float centerY(Game g){return g.layout.height-(RADIUS+90);}
-    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.settings.joystickSide()!=GameSettings.OFF || g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE) && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE && !g.tutorial.entering);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE && !g.tutorial.entering);}
     public static boolean hit(Game g,float x,float y){return visible(g) && Physics.length(x-centerX(g),y-centerY(g))<=RADIUS+8;}
     public void begin(Game g,float px,float py){
         active=true;touchX=px;touchY=py;x=y=0;directionReady=false;

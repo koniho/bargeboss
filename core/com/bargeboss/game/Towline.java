@@ -24,7 +24,7 @@ public final class Towline {
     }
     public void detach(Game g,Body b){Towline l=incoming(b);if(l!=null)l.releaseOne(g);}
     public void detachBody(Game g,Body b){for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null && l.cargo!=null && (l.cargo==b || l.leader==b))l.releaseOne(g);}}
-    public void prune(Game g){for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null && l.cargo!=null && (!l.cargo.active || l.cargo.lineAttached || l.leader==null || !l.leader.active || l.leader.lineAttached))l.releaseOne(g);}}
+    public void prune(Game g){for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null && l.cargo!=null && (!l.cargo.active || l.cargo.lineAttached || l.leader==null || !l.leader.active || l.leader.lineAttached && l.leader!=g.tug))l.releaseOne(g);}}
 
     public float length,tension,cargoEnd;
     public int catchTicks,releaseTicks;
@@ -62,7 +62,7 @@ public final class Towline {
         slot.leaderEnd=parent==g.tug?-(parent.half+7):parentLine!=null?-parentLine.cargoEnd:(parentDot>=0?1:-1)*(parent.half+7);
         slot.length=Physics.clamp(Physics.length(slot.tugX(g.tug)-slot.cargoX(),slot.tugY(g.tug)-slot.cargoY()),32,85);
         slot.tension=0;slot.catchTicks=24;slot.releaseTicks=0;
-        g.tell(parent==g.tug?"TOWLINE CAUGHT / DRAG TUG TO PULL":"BARGES LINKED / DRAG TUG TO PULL THE TRAIN");return true;
+        g.tell(parent==g.tug?"TOWLINE CAUGHT / USE THROTTLE TO PULL":"BARGES LINKED / USE THROTTLE TO PULL THE TRAIN");return true;
     }
     public void release(Game g) {for(int i=0;i<CAPACITY;i++){Towline l=link(i);if(l!=null)l.releaseOne(g);}}
     private void releaseOne(Game g) {
@@ -81,7 +81,7 @@ public final class Towline {
     private void stepOne(Game g) {
         if(cargo==null)return;
         Body b=cargo,t=leader;
-        if(!b.active || b.lineAttached || b.awaitingPickup || t==null || !t.active || t.lineAttached || t.awaitingPickup){releaseOne(g);return;}
+        if(!b.active || b.lineAttached || b.awaitingPickup || t==null || !t.active || t.lineAttached && t!=g.tug || t.awaitingPickup){releaseOne(g);return;}
         float ax=cargoX(),ay=cargoY(),bx=tugX(t),by=tugY(t);
         float dx=bx-ax,dy=by-ay,distance=Physics.length(dx,dy);
         if(distance>length+100 || !clear(g,ax,ay,bx,by)) {

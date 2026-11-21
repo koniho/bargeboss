@@ -64,11 +64,11 @@ public final class ResponsiveTest {
         check(game.mode==Game.TITLE,"Back returns settings to title");
         tap(game,Layout.START);
         check(game.mode==Game.PLAY && game.layout.width==layout.width && game.layout.height==layout.height,"start preserves responsive canvas");
-        ReplayInput.down(game,game.tug.x,game.tug.y);
-        check(game.holdingTug(),"screen-space tug gesture selects the same physical hull");
-        ReplayInput.move(game,game.downX,game.downY-90);
+        ReplayInput.throttleDown(game);
+        check(game.joystick.active,"screen-space tug gesture selects the same physical hull");
+        ReplayInput.throttle(game,0,-90);
         for(int i=0;i<12;i++) game.step();
-        check(game.manualSteering && game.navigating,"responsive drag drives shared navigation");
+        check(game.joystick.active && game.navigating,"responsive drag drives shared navigation");
         ReplayInput.up(game,game.pointerX,game.pointerY);
         check(!game.navigating && !game.pointer,"responsive release cuts throttle");
         game.back(); check(game.mode==Game.PAUSE,"Back pauses gameplay");
@@ -86,18 +86,18 @@ public final class ResponsiveTest {
         for(int i=0;i<600 && practice.tutorial.entering;i++){ReplayInput.tutorial(game);game.step();}
         int practiceTicks=practice.ticks;
         check(practice!=game && practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"practice inherits the exact current layout");
-        ReplayInput.down(game,practice.tug.x,practice.tug.y);
-        check(practice.holdingTug() && !game.pointer,"root pointer routes through the practice camera");
+        ReplayInput.throttleDown(game);
+        check(practice.joystick.active && !game.pointer,"root pointer routes through the practice camera");
         Layout unchanged=game.layout;
         game.configureCanvas(unchanged.width,unchanged.height);
-        check(game.layout==unchanged && practice.holdingTug(),"identical host bounds preserve an active gesture");
+        check(game.layout==unchanged && practice.joystick.active,"identical host bounds preserve an active gesture");
         game.configureCanvas(unchanged.width+96,unchanged.height+40);
         check(!practice.pointer && !practice.navigating,"resizing cancels gestures before changing projection");
         check(practice.layout.width==game.layout.width && practice.layout.height==game.layout.height,"active practice receives resized bounds");
         check(game.tug.x==originalX && game.tug.y==originalY && game.ticks==0 && practice.ticks==practiceTicks,"resizing cannot advance either simulation");
         checkPracticeLayout(practice);
-        ReplayInput.down(game,practice.tug.x,practice.tug.y);
-        check(practice.holdingTug(),"new gesture works after camera resize");
+        ReplayInput.throttleDown(game);
+        check(practice.joystick.active,"new gesture works after camera resize");
         ReplayInput.up(game,practice.tug.x,practice.tug.y); tap(game,Layout.PRACTICE);
         check(game.activeGame()==game && game.mode==Game.PLAY,"practice exit returns to resized live shift");
         game.mode=Game.TITLE; tap(game,Layout.LEARN);
@@ -133,9 +133,9 @@ public final class ResponsiveTest {
         check(first.layout==layout && first.layout.width==1400 && first.layout.height==600,"second game cannot overwrite first layout");
         check(first.layout.camera.screenX(376,700)==sx && first.layout.camera.screenY(376,700)==sy,"camera transforms remain instance-local");
         tap(first,Layout.START); tap(second,Layout.START);
-        ReplayInput.down(first,first.tug.x,first.tug.y); ReplayInput.down(second,second.tug.x,second.tug.y);
-        check(first.holdingTug() && second.holdingTug(),"different canvases accept the same world gesture independently");
-        ReplayInput.move(first,376,610); ReplayInput.move(second,376,610);
+        ReplayInput.throttleDown(first); ReplayInput.throttleDown(second);
+        check(first.joystick.active && second.joystick.active,"different canvases accept the same world gesture independently");
+        ReplayInput.throttle(first,0,-90); ReplayInput.throttle(second,0,-90);
         for(int i=0;i<60;i++) { first.step(); second.step(); }
         check(first.ticks==second.ticks && Math.abs(first.tug.x-second.tug.x)<.01f
                 && Math.abs(first.tug.y-second.tug.y)<.01f,"canvas aspect does not change movement speed or simulation geometry");

@@ -31,7 +31,7 @@ public final class TutorialEntranceTest {
         for(int i=0;i<185;i++)root.step();
         check(!g.conversation() && g.tug==tug && g.teacherBoat()==teacher,"reply hands off same continuous scene");
         check(RadioAudio.sequence(g)==3 && !g.pointer && !g.navigating,"one teacher acknowledgement; no input leaks");
-        ReplayInput.down(root,tug.x,tug.y);check(g.holdingTug(),"player can take helm");root.cancelInputs();
+        ReplayInput.throttleDown(root);check(g.joystick.active,"player can take helm");root.cancelInputs();
         g.dialogue.show(g,"DISPATCH","PICK A BERTH","FOUR DESTINATIONS.","ONE","TWO","THREE","FOUR");
         for(int i=0;i<20;i++)root.step();
         Layout.Box fourth=g.dialogue.choiceBox(g,3);root.pointerDown(9,fourth.centerX(),fourth.centerY());g.background();

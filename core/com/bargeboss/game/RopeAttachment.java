@@ -44,6 +44,6 @@ public final class RopeAttachment {
             if(end>0)bow=true;else if(end<0)stern=true;
         }
         if(bow)fitting(g,p,b,1);if(stern)fitting(g,p,b,-1);
-        if(b.lineAttached && !b.yacht && b.berth>=0){float[] at=new float[2];mooring(b,g.bollardX(b),g.bollardY(b),at);paintFitting(g,p,b,at[0],at[1]);}
+        if(b.lineAttached && !b.yacht && (b.berth>=0 || b==g.tug)){float[] at=new float[2];mooring(b,g.bollardX(b),g.bollardY(b),at);paintFitting(g,p,b,at[0],at[1]);}
     }
 }

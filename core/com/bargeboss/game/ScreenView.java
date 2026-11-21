@@ -105,7 +105,7 @@ public final class ScreenView {
         p=menu(g,p);
         overlay(p,105,411);
         center(p,"CAPTAIN'S FIELD GUIDE",480,133,24,GOLD);
-        instruction(p,1,185,"DRAG OR USE JOYSTICK","Pull farther for thrust. Release to coast.");
+        instruction(p,1,185,"USE THE THROTTLE","Pull farther for thrust. Release to coast.");
         instruction(p,2,251,"DRAG THE CARGO","Press, drag and hold. Center for assist.");
         instruction(p,3,317,"AIM, THEN RELEASE","Drag cargo toward a bollard. Release.");
         instruction(p,4,383,"LINK A BARGE TRAIN","Drag cargo to tug or barge. Release to link.");
@@ -122,12 +122,11 @@ public final class ScreenView {
     public static void settings(Game g,Painter p) {
         p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);overlay(p,100,405);
         center(p,"SETTINGS",480,138,28,GOLD);
-        center(p,"JOYSTICK POSITION",480,208,18,PAPER);
-        center(p,"TAP-AND-DRAG DRIVING REMAINS AVAILABLE.",480,244,11,MUTED);
+        center(p,"THROTTLE POSITION",480,208,18,PAPER);
+        center(p,"THROTTLE TO DRIVE. HOLD CARGO TO ASSIST.",480,244,11,MUTED);
         int side=g.settings.joystickSide();
         button(g,p,Layout.JOYSTICK_LEFT,"LEFT",side==GameSettings.LEFT);
         button(g,p,Layout.JOYSTICK_RIGHT,"RIGHT",side==GameSettings.RIGHT);
-        button(g,p,Layout.JOYSTICK_OFF,"OFF",side==GameSettings.OFF);
         button(g,p,Layout.HAPTICS,"HAPTICS: "+(g.hapticsEnabled?"ON":"OFF"),g.hapticsEnabled);
         button(g,p,Layout.SETTINGS_BACK,"BACK",true);
     }

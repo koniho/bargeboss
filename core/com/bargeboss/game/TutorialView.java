@@ -67,7 +67,7 @@ public final class TutorialView {
             ScreenView.star(p,302,254+2*(float)StrictMath.sin(g.visualTicks*.06),42,VisualStyle.GOLD);
             Lettering.center(p,"PUSH. TOW. DELIVER.",302,323,20,PAPER);
             Lettering.center(p,"READY FOR WORK.",302,355,20,ControlView.GREEN);
-            Lettering.center(p,"DRAG TUG. DRAG CARGO.",770,241,12,PAPER);
+            Lettering.center(p,"THROTTLE. DRAG CARGO.",770,241,12,PAPER);
             Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
             ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
             return;

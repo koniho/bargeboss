@@ -24,6 +24,7 @@ public final class JoystickTest {
         check(g.settings.joystickSide()==GameSettings.RIGHT && g.progressVersion()>v,"setting dirties native save");
         v=g.progressVersion();ReplayInput.tap(g,Layout.JOYSTICK_RIGHT);check(g.progressVersion()==v,"same choice is not a write");
         Game restored=new Game();restored.restoreProgress(g.saveProgress());check(restored.saveProgress().equals(g.saveProgress()),"settings and career round trip");
+        restored.settings.restore(GameSettings.OFF);check(restored.settings.joystickSide()==GameSettings.LEFT,"legacy OFF preference migrates to left throttle");
         String valid=restored.saveProgress();
         for(String invalid:new String[]{"BBG1\nbroken\n1","BBG1\n"+g.career.save()+"\n9",g.saveProgress()+"\n","BBG2\n"+g.career.save()+"\n1"}){
             restored.restoreProgress(invalid);check(restored.saveProgress().equals(valid),"invalid wrapper cannot partially restore");
@@ -31,11 +32,11 @@ public final class JoystickTest {
         restored.restoreProgress(g.career.save());check(restored.settings.joystickSide()==GameSettings.LEFT && restored.career.save().equals(g.career.save()),"legacy career loads with default joystick");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(g.mode==Game.TITLE,"settings returns to title");
         ReplayInput.startPractice(g);Game practice=g.activeGame();String career=g.career.save();v=g.progressVersion();
-        practice.openSettings();ReplayInput.tap(g,Layout.JOYSTICK_OFF);
-        check(g.settings.joystickSide()==GameSettings.OFF && g.progressVersion()>v && g.career.save().equals(career),"practice preferences persist without changing career");
+        practice.openSettings();ReplayInput.tap(g,Layout.JOYSTICK_LEFT);
+        check(g.settings.joystickSide()==GameSettings.LEFT && g.progressVersion()>v && g.career.save().equals(career),"practice preferences persist without changing career");
         ReplayInput.tap(g,Layout.SETTINGS_BACK);check(practice.mode==Game.PLAY && Joystick.visible(practice),"helm lesson temporarily demonstrates throttle without changing saved preference");
         ReplayInput.down(g,practice.tug.x,practice.tug.y);ReplayInput.move(g,practice.downX+90,practice.downY);steps(g,15);
-        check(practice.navigating && !practice.joystick.active,"original tug drag remains functional with joystick disabled");g.cancelInputs();
+        check(!practice.navigating && !practice.joystick.active,"tug dragging never drives the boat");g.cancelInputs();
         for(float[] size:new float[][]{{960,600},{1333,600},{960,720}})for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}){
             g=playing();g.configureCanvas(size[0],size[1]);g.settings.setJoystickSide(side);
             float cx=Joystick.centerX(g),cy=Joystick.centerY(g);

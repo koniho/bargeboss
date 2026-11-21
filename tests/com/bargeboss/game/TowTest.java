@@ -17,7 +17,7 @@ public final class TowTest {
     }
     private static void connect(Game g) { aim(g);ReplayInput.up(g,g.tug.x,g.tug.y);steps(g,18); }
     private static void drive(Game g,float dx,float dy) {
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX+dx,g.downY+dy);
+        ReplayInput.throttle(g,dx,dy);
     }
     public static void run() {
         Game g=fixture();Body b=g.cargo[0];

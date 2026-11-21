@@ -22,6 +22,7 @@ public final class Game {
     public boolean ropeToTug,towAiming;
     public Body towAimBody,ropeTowTarget;
     public Towline tow=new Towline();
+    final SlipMooring slipMooring=new SlipMooring();
     public int towReleases;
     public static final int[] COLORS={0xffefa94a,0xff62c8bd,0xffde7965};
     public static final String[] CARGO_NAMES={"STEEL", "FREIGHT", "BULK"};
@@ -519,6 +520,7 @@ public final class Game {
         return orderStage()?PhysicalBerths.fits(challengeId,b):Math.abs(b.x-dockX(b))<=55 && Math.abs(b.y-dockY(b))<=53;
     }
     private boolean tieEligible(Body b) {
+        if(b==tug)return SlipMooring.eligible(this);
         // Wide berths permit angled catches and winch alignment. Narrow physical
         // slips require the complete hull inside so the winch cannot cross a quay.
         return b!=null && !b.yacht && b.active && !b.deliveryRecorded && !b.lineAttached && berthEnabled(b.berth) && (!calumetStage() || b.voyageJob==voyage.job) && berthBlocker(b.berth,b)==null
@@ -527,6 +529,7 @@ public final class Game {
                 && (tutorial==null || tutorial.lesson==Tutorial.TIE && b==cargo[0]);
     }
     boolean ropeWithinReach(Body b) {
+        if(b==tug)return SlipMooring.eligible(this);
         return b!=null && !b.yacht && b.active && !b.deliveryRecorded && !b.lineAttached && berthEnabled(b.berth) && (!calumetStage() || b.voyageJob==voyage.job) && berthBlocker(b.berth,b)==null
                 && Math.abs(b.x-dockX(b))<105 && Math.abs(b.y-dockY(b))<105;
     }
@@ -535,22 +538,26 @@ public final class Game {
     public float bollardY(int berth) { return calumetStage()?voyage.bollardY(voyage.destination(berth)):(indianaStage()?IndianaHarbor.DOCK_Y+IndianaHarbor.DOCK_NY*64:dockY(berth))+(!montroseStage()?RiverCamera.riseY(GroundArt.LAND_RISE):0); }
     public float dockX(Body b){if(b.cruiser)return MontroseRescue.berth(b.berth).x;if(b.yacht)return MontroseHarbor.SLIP_X;return calumetStage() && b.destination>=0?voyage.dockX(b.destination):dockX(b.berth);}
     public float dockY(Body b){if(b.cruiser)return MontroseRescue.berth(b.berth).y;if(b.yacht)return MontroseHarbor.SLIP_Y;return calumetStage() && b.destination>=0?voyage.dockY(b.destination):dockY(b.berth);}
-    public float bollardX(Body b){return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
-    public float bollardY(Body b){return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
+    public float bollardX(Body b){if(b==tug)return SlipMooring.x();return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
+    public float bollardY(Body b){if(b==tug)return SlipMooring.y();return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
     public float ropeOriginX() { return ropeBody.x+ropeLocalX*(float)StrictMath.cos(ropeBody.angle)-ropeLocalY*(float)StrictMath.sin(ropeBody.angle); }
     public float ropeOriginY() { return ropeBody.y+ropeLocalX*(float)StrictMath.sin(ropeBody.angle)+ropeLocalY*(float)StrictMath.cos(ropeBody.angle); }
     public boolean overTiePoint(Body b,float x,float y) {
         return Physics.length(x-bollardX(b),y-bollardY(b))<=TIE_RADIUS;
     }
     public float aimX(Body b,float x,float y) {
+        if(b==tug)return overTiePoint(b,x,y)?bollardX(b):x;
         return overTiePoint(b,x,y)?bollardX(b):indianaStage()?Physics.clamp(x,IndianaHarbor.MIN_X,IndianaHarbor.MAX_X):calumetStage()?Physics.clamp(x,CalumetRiver.MIN_X,CalumetRiver.MAX_X):Physics.clamp(x,TIE_X[0]-TIE_RADIUS,TIE_X[1]+TIE_RADIUS);
     }
     public float aimY(Body b,float x,float y) {
+        if(b==tug)return overTiePoint(b,x,y)?bollardY(b):y;
         return overTiePoint(b,x,y)?bollardY(b):indianaStage()?Physics.clamp(y,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_Y):calumetStage()?Physics.clamp(y,CalumetRiver.MIN_Y,CalumetRiver.MAX_Y):Physics.clamp(y,channelTop()-47,816);
     }
     public Body heldCargo() { return held>=0 && cargo[held]!=null && cargo[held].active?cargo[held]:null; }
+    public Body heldVessel(){return holdingTug()?tug:heldCargo();}
     public Body workingCargo() { return heldCargo(); }
     public boolean canTow(Body b) {
+        if(b==tug)return false;
         if(pointer && cargoPushGesture && heldCargo()==b || ropePhase!=0 || tutorial!=null && tutorial.lesson<Tutorial.CONNECT)return false;
         if(canTowAtRelease(b,tug))return true;
         for(Body parent:cargo)if(canTowAtRelease(b,parent))return true;
@@ -616,6 +623,7 @@ public final class Game {
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
         pointer=true; driveDirection=0; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
         if(!river) return;
+        if(tug.lineAttached && overTiePoint(tug,x,y)){held=-3;return;}
         if(MontroseRescue.swimmers(this)){int swimmer=rescue.swimmerAt(this,x,y);if(swimmer>=0){rescue.aiming=swimmer;return;}}
         // Pick the nearest eligible hull before classifying the gesture. A
         // connected neighbor's padded hit area must not steal the spare's center
@@ -627,7 +635,8 @@ public final class Game {
             if(distance<closest){closest=distance;cargoHit=i;}
         }
         if(tug.hit(x,y,8) && Physics.length(x-tug.x,y-tug.y)<=closest) {
-            held=-2;reversing=false;control=HOLDING;haptic(HAPTIC_TICK);return;
+            if(canTie(tug)){held=-2;ropeDragging=canTie(tug);reversing=false;control=HOLDING;haptic(HAPTIC_TICK);}
+            return;
         }
         if(cargoHit>=0) {
             Body b=cargo[cargoHit];
@@ -645,6 +654,7 @@ public final class Game {
             if(!mapInRiver) return;
             float distance=Physics.length(x-downX,y-downY);
             if(distance>22) tapCandidate=false;
+            if(held<0)return;
             Body b=heldCargo();
             if(canTow(b) && distance>26) {
                 Body target=towTargetBody(b,x,y);float best=.88f;
@@ -662,7 +672,7 @@ public final class Game {
             boolean wasSteering=manualSteering;
             if(distance>42) manualSteering=true;
             else if(distance<26) manualSteering=false;
-            if(held==-2 && manualSteering)selectDriveDirection(x-downX,y-downY);
+
             if(manualSteering!=wasSteering) haptic(HAPTIC_TICK);
         }
     }
@@ -675,13 +685,14 @@ public final class Game {
         if(!pointer) return;
         if(mapInRiver && MontroseRescue.swimmers(this) && rescue.aiming>=0){rescue.release(this,x,y);cancel();return;}
         if(mapInRiver && tapCandidate && MontroseRescue.cruisers(this) && rescue.tapRaft(this,x,y)){cancel();return;}
+        if(mapInRiver && held==-3){if(tapCandidate && overTiePoint(tug,x,y))SlipMooring.release(this);cancel();return;}
         if(mapInRiver && tow.incoming(heldCargo())!=null
                 && tapCandidate && Physics.length(x-downX,y-downY)<22) {
             if(pressTicks<=18) releaseTow(heldCargo());
             cancel();return;
         }
         if(towAiming || towTarget(heldCargo(),x,y) || ropeDragging) {
-            Body b=heldCargo();
+            Body b=heldVessel();
             if(b!=null && ropePhase==0) {
                 ropeTowTarget=towTargetBody(b,x,y);
                 ropeToTug=towAiming || ropeTowTarget!=null;
@@ -710,7 +721,6 @@ public final class Game {
             if(tap) {
                 if(tapped(Layout.JOYSTICK_LEFT,x,y))settings.setJoystickSide(GameSettings.LEFT);
                 else if(tapped(Layout.JOYSTICK_RIGHT,x,y))settings.setJoystickSide(GameSettings.RIGHT);
-                else if(tapped(Layout.JOYSTICK_OFF,x,y))settings.setJoystickSide(GameSettings.OFF);
                 else if(tapped(Layout.HAPTICS,x,y)) {
                     hapticsEnabled=!hapticsEnabled;hapticPending=0;
                     if(hapticsEnabled)haptic(HAPTIC_TICK);
@@ -791,6 +801,7 @@ public final class Game {
     public void step() {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
+        if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
         sounds.step();radio.step();dialogue.step();visualTicks++;joystick.step(this);splashes.step(this);
         if(tutorial!=null)tutorial.instructionPanel.step(TutorialView.instructionContent(this));
         if(tutorial!=null && tutorial.entering){
@@ -807,7 +818,7 @@ public final class Game {
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
         if(pointer) {
             pressTicks++;
-            if(pressTicks>=12 && held!=-1 && (heldCargo()==null || !heldCargo().lineAttached) && !ropeDragging && !towAiming && tow.incoming(heldCargo())==null) {
+            if(pressTicks>=12 && held>=0 && (heldCargo()==null || !heldCargo().lineAttached) && !ropeDragging && !towAiming && tow.incoming(heldCargo())==null) {
                 if(!pushing) haptic(HAPTIC_TICK);
                 pushing=true;reversing=false;
                 if(held>=0) cargoPushGesture=true;
@@ -890,6 +901,7 @@ public final class Game {
             if(ropeTargeted && (ropeToTug?canTowAtRelease(ropeBody,ropeTowTarget) && ropeTowTarget.hit(ropeEndX,ropeEndY,26):ropeWithinReach(ropeBody))) {
                 Body b=ropeBody;
                 if(ropeToTug) tow.attach(this,b,ropeTowTarget);
+                else if(b==tug)slipMooring.attach(this);
                 else { tow.detachBody(this,b); Mooring.attach(b); }
                 ropePhase=3;ropeTicks=0;haptic(HAPTIC_CONTACT);
             } else { ropePhase=2; ropeTicks=0; }
@@ -915,19 +927,8 @@ public final class Game {
                 tug.vx*=.985f;tug.vy*=.985f;tug.spin*=.985f;
             }
         } else if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) pushCargo(cargo[held]);
-        else if(pushing && held==-2) {
-            float dx=pointerX-downX,dy=pointerY-downY,len=Physics.length(dx,dy);
-            if(manualSteering) {
-                navigating=true; reversing=false; control=MOVING;
-                targetX=tug.x+dx/len*200; targetY=tug.y+dy/len*200;
-                selectDriveDirection(dx,dy);reversing=driveDirection<0;
-                control=reversing?REVERSING:MOVING;
-                navigate(targetX,targetY,(reversing?60:88)*Physics.clamp((len-26)/60,0,1),reversing);
-            } else {
-                navigating=false;control=tug.speed()>3?COASTING:IDLE;
-                tug.vx*=.985f;tug.vy*=.985f;tug.spin*=.985f;
-            }
-        } else {
+        else {
+            navigating=false;
             float drag=.985f;
             tug.vx*=drag; tug.vy*=drag; tug.spin*=drag;
             control=pointer && held!=-1?HOLDING:tug.speed()>3?COASTING:IDLE;
@@ -973,6 +974,7 @@ public final class Game {
         for(Body b:cargo) if(b!=null && b.active && (b.lineAttached || b.awaitingPickup)) {
             b.x=b.tiedX; b.y=b.tiedY; b.angle=b.tiedAngle; b.vx=b.vy=b.spin=0;
         }
+        slipMooring.constrain(this);
         buoys.step(this);mooredFleet.step(this);
         if(lockStage()){
             // Cargo/float contact correction happens after integration: it cannot push hulls through doors.

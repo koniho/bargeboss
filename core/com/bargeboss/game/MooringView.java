@@ -4,8 +4,23 @@ package com.bargeboss.game;
 public final class MooringView {
     private static final int ROPE=RopeMaterial.COLOR, HIGHLIGHT=0xffffe3a1,DARK=VisualStyle.OUTLINE,GREEN=0xff92ecc2;
     private MooringView() {}
+    private static boolean slipVisible(Game g,Painter p){
+        if(!(p instanceof RiverPainter))return true;
+        RiverCamera c=((RiverPainter)p).camera;float x=c.screenX(SlipMooring.x(),SlipMooring.y()),y=c.screenY(SlipMooring.x(),SlipMooring.y()),margin=60*c.scale;
+        return x>=-margin && x<=g.layout.width+margin && y>=-margin && y<=g.layout.height+margin;
+    }
     public static void draw(Game g,Painter p) {
         int tick=g.visualTicks;
+        if(SlipMooring.available(g) && slipVisible(g,p)){
+            float x=g.bollardX(g.tug),y=g.bollardY(g.tug);bollard(g,p,x,y);
+            if(g.canTie(g.tug)){bollardGlow(g,p,x,y);if(g.holdingTug() && g.ropeDragging)aim(g,p,g.tug);}
+            if(g.tug.lineAttached){
+                bollardGlow(g,p,x,y);
+                lasso(p,x,y,9,7,0,ROPE);
+                if(g.tug.tieBurstTicks>0)catchBurst(p,g.tug);
+                if(g.tug.lineSnapTicks>0){float[] edge=new float[2];RopeAttachment.mooring(g.tug,x,y,edge);float deck=RopeAttachment.height(g.tug)+WaterSurface.lift(g,g.tug);snapRings(p,edge[0]+liftX(p,deck),edge[1]+liftY(p,deck),x,y,1-g.tug.lineSnapTicks/18f);}
+            }
+        }
         if(g.calumetStage())for(int d=0;d<CalumetRiver.JOB_SITES.length;d++)bollard(g,p,g.voyage.bollardX(d),g.voyage.bollardY(d));
         for(int berth=0;berth<3;berth++) {
             if(g.montroseStage() || !g.berthEnabled(berth)) continue;
