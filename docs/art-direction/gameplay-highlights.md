@@ -1,14 +1,17 @@
-# Gameplay highlights — restored quiet style
+# Gameplay highlights — arcade feedback
 
-The user rejected the broad neon redesign on 2026-11-16 and requested a full
-visual rollback. The earlier `e48588a` highlight appearance is the current baseline.
-Do not reintroduce thick saturated bands, filled arrows or segmented rings based
-on the superseded guidelines in Git history.
+The November 21 user request supersedes the quiet-only guidance: use arcade
+animation for objectives and confirmed actions, while leaving hulls readable.
+Active targets have four small inward breathing chevrons around a continuous
+ring. Partial rings represent actual progress and never gain decorative progress.
+Confirmed rope catches use outward gold sparkle rays and expanding rings instead
+of a filled flash over the cargo. No broad neon bands or filled target discs.
+Motion uses shared visualTicks, freezes on pause and never mutates gameplay.
+Keep the existing depth/shore clipping and arrow capture pass.
 
-Use thin translucent strokes, open arrowheads, continuous rings, restrained
-feathering and the original gentle pulse. Restore the original hull-glow assets,
-berth corner treatment and interaction highlighting. Preserve readable hulls and
-keep docks dark. Any further visual redesign needs a small reviewed example first.
+Ability buttons use a consistent bold icon family: rocket/fireworks, nozzle,
+broken chain, and a radio in the instruction header. Preserve hit geometry.
+Do not display lesson n/total text; explicit radio and gate status may remain.
 
 Do not draw a persistent circle around a watercraft just because it is being
 towed. Towlines show the connection; brief catch feedback and active targeting

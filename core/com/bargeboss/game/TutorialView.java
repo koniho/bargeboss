@@ -58,7 +58,7 @@ public final class TutorialView {
             float t=Physics.clamp((age-28)/(Tutorial.BUOY_CLEAR_LIFE-28f),0,1),fade=1-t*t*(3-2*t);
             float pulse=.5f+.5f*(float)StrictMath.cos(age*.22f);
             float radius=Tutorial.DRIVE_RADIUS+grow*(1+3*pulse),width=2+grow*(3+2*pulse);
-            SoftCue.ring(river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],radius,1,SoftCue.alpha(0xe06fffc2,fade),width);
+            SoftCue.target(g,river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],radius,1,SoftCue.alpha(0xe06fffc2,fade),width);
         }
     }
     public static void draw(Game g,Painter p) {
@@ -108,28 +108,28 @@ public final class TutorialView {
                 Layout.Box b=OverviewMap.sliderBounds(g);
                 SoftCue.line(p,b.x+24,b.centerY(),b.x+b.w-24,b.centerY(),2,SoftCue.animated(g,0x9995d7d1));
                 if(n.mapPhase==3 && Physics.length(g.tug.x-NavigationPractice.TARGET_X,g.tug.y-NavigationPractice.TARGET_Y)<150)
-                    SoftCue.ring(river,NavigationPractice.TARGET_X,NavigationPractice.TARGET_Y,40+pulse,1,0x9995d7d1,2);
+                    SoftCue.target(g,river,NavigationPractice.TARGET_X,NavigationPractice.TARGET_Y,40+pulse,1,0x9995d7d1,2);
             }else{
                 if(t.lesson==Tutorial.SLIP && n.slipPhase==2 && !n.retry){
                     float l=TrainingChannel.SLIP_LEFT+5,r=TrainingChannel.BASIN_LEFT-2,top=TrainingChannel.SLIP_TOP+5,bottom=TrainingChannel.SLIP_BOTTOM-5;
                     int ink=SoftCue.animated(g,0x7795d7d1);
                     SoftCue.line(river,l,top,r,top,1.5f,ink);SoftCue.line(river,r,top,r,bottom,1.5f,ink);
                     SoftCue.line(river,r,bottom,l,bottom,1.5f,ink);SoftCue.line(river,l,bottom,l,top,1.5f,ink);
-                }else SoftCue.ring(river,n.targetX(g),n.targetY(g),30+pulse,1,0x9995d7d1,2);
+                }else SoftCue.target(g,river,n.targetX(g),n.targetY(g),30+pulse,1,0x9995d7d1,2);
                 driveArrow(g,river,n.targetX(g),n.targetY(g),null);
             }
         } else if(t.lesson==Tutorial.MOVE){
             if(t.helm.phase==HelmPractice.RENDEZVOUS){
-                SoftCue.ring(river,HelmPractice.MEET_X,HelmPractice.MEET_Y,HelmPractice.MEET_RADIUS+pulse,1,0x9995d7d1,2);
+                SoftCue.target(g,river,HelmPractice.MEET_X,HelmPractice.MEET_Y,HelmPractice.MEET_RADIUS+pulse,1,0x9995d7d1,2);
                 driveArrow(g,river,HelmPractice.MEET_X,HelmPractice.MEET_Y,null);
-            }else SoftCue.ring(p,Joystick.centerX(g),Joystick.centerY(g),Joystick.RADIUS+9+pulse,1,SoftCue.animated(g,0x9995d7d1),2);
+            }else SoftCue.target(g,p,Joystick.centerX(g),Joystick.centerY(g),Joystick.RADIUS+9+pulse,1,SoftCue.animated(g,0x9995d7d1),2);
         } else if(t.lesson==Tutorial.FIGURE_EIGHT || t.lesson==Tutorial.REVERSE) {
-            for(int i=0;i<2;i++)SoftCue.ring(river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],Tutorial.DRIVE_RADIUS,1,0x3395d7d1,1);
+            for(int i=0;i<2;i++)SoftCue.target(g,river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],Tutorial.DRIVE_RADIUS,1,0x3395d7d1,1);
             int buoy=Math.min(t.driveMarker,Tutorial.DRIVE_X.length-1);
             float bx=Tutorial.DRIVE_X[buoy],by=Tutorial.DRIVE_Y[buoy];
             // The course is a soft projected circle; tall lit buoys live in world depth.
-            SoftCue.ring(river,bx,by,Tutorial.DRIVE_RADIUS,1,0x5595d7d1,1);
-            SoftCue.ring(river,bx,by,Tutorial.DRIVE_RADIUS,t.orbitProgress(),0xbb6fffc2,2);
+            SoftCue.target(g,river,bx,by,Tutorial.DRIVE_RADIUS,1,0x5595d7d1,1);
+            SoftCue.target(g,river,bx,by,Tutorial.DRIVE_RADIUS,t.orbitProgress(),0xbb6fffc2,2);
             float a=t.orbitArmed?t.orbitAngle:(float)StrictMath.PI,d=t.orbitDirection();
             for(int k=1;k<=3;k++) {
                 float angle=a+d*(.42f+k*.36f),next=angle+d*.14f;

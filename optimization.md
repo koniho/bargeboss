@@ -4773,3 +4773,29 @@ Full Android checks/build passed (out/ui-type-v3-build.log), canonicalab21678e:
 visual review covered title at960/1333, harbor/settings/help/results, gameplay
 instructions and selected radio choices. No native screenshot/iOS build this
 round; shared tests do not establish identical device antialiasing or performance.
+
+## 2026-11-21 — shared arcade guidance and action icons
+Removed tutorial lesson n/total from mission header and instruction badge;
+explicit radio/gate status and real continuous progress remain. Added shared
+vector rocket, nozzle, broken-link and radio icons without changing hit areas.
+Ready abilities breathe subtly. Objective rings gain four inward breathing
+chevrons; partial progress arcs remain literal. Successful mooring adds eight
+outward gold rays instead of a filled hull flash. Existing projection, arrow
+depth capture and rope/shore clipping are unchanged.
+
+Effects use visualTicks and existing lifetime counters; no new textures, caches,
+simulation state, particles or per-frame asset preparation. Four chevrons cost
+eight direct strokes per complete active target; no added strokes on partial
+progress. This is not a measured device frame-time improvement. Shared state-only
+A/B replay stayed 285ba210:2:1350; reviewed drawing trace is f623db84:2:1350.
+Reviewed actual desktop lesson overlay and shared cue/icon phase sheet
+(docs/art-studies/ui-arcade-v4/feedback.png). Reproduce sheet with
+tools/ArcadeEffectsReview.java. Android checks/build and installation recorded
+below when complete; iOS not built this round.
+
+Full checks and Android build passed (out/ui-arcade-v4-build.log), including
+canonical replay, map pixel clipping, cargo derivatives and Vulkan geometry/clip
+tests. Installed successfully and launch reported Status:ok; display timeout
+restored. Review image copied to Downloads and Pictures/BargeBoss, MediaStore
+17958 verified. No native visual capture/frame-time profile or iOS build;
+desktop review does not prove native antialiasing or performance.

@@ -20,11 +20,11 @@ final class InstructionPanel {
             this.header=header;this.badge=badge;this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
         }
         void draw(Painter p){
-            String count=badge!=null?badge:lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
-            float badgeWidth=Lettering.width(count,9)+16,badgeX=414-badgeWidth;
+            String count=badge!=null?badge:lesson<0?"ARRIVAL":"";
+            float badgeWidth=count.isEmpty()?0:Lettering.width(count,9)+16,badgeX=414-badgeWidth;
             p.rect(badgeX,12,badgeWidth,22,0xff26334a);
             Lettering.draw(p,count,badgeX+8,18,9,PilotGlass.MUTED);
-            p.rect(18,18,11,10,PilotGlass.RED);p.line(22,18,27,12,1.5f,PilotGlass.AMBER);
+            ArcadeIcons.draw(p,ArcadeIcons.RADIO,24,22,.65f,PilotGlass.AMBER);
             Lettering.draw(p,header,38,18,Math.min(9,(badgeX-48)/Math.max(1,Lettering.width(header,1))),PilotGlass.AMBER);
             Lettering.heading(p,title,18,39,Math.min(19,19*(waiting?382:396)/Math.max(1,Lettering.headingWidth(title,19))),PilotGlass.TEXT);
             Lettering.draw(p,first,18,70,Math.min(12,396/Math.max(1,Lettering.width(first,1))),PilotGlass.TEXT);

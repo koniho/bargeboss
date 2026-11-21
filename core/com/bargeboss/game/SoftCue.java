@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Quiet guidance: translucent feathered strokes, with width capped at close zoom. */
+/** Shared arcade guidance; open centers, bounded strokes and simulation-timed motion. */
 public final class SoftCue {
     private SoftCue(){}
     public static int alpha(int color,float amount){return ((int)((color>>>24)*Physics.clamp(amount,0,1))<<24)|(color&0xffffff);}
@@ -27,6 +27,34 @@ public final class SoftCue {
         ringBand(p,x,y,radius,fraction,core+5/zoom,alpha(color,.055f));
         ringBand(p,x,y,radius,fraction,core+2.5f/zoom,alpha(color,.11f));
         ringBand(p,x,y,radius,fraction,core,alpha(color,.52f));
+    }
+    /** Four inward chevrons breathe around an objective; progress remains a true continuous arc. */
+    public static void target(Game g,Painter p,float x,float y,float radius,float fraction,int color,float width) {
+        ring(p,x,y,radius,fraction,animated(g,color),width);
+        if(fraction<.999f)return;
+        float zoom=p instanceof RiverPainter?((RiverPainter)p).camera.scale:1;
+        float phase=(g.visualTicks%90)/90f;
+        float inset=(3+4*(float)StrictMath.cos(phase*StrictMath.PI*2))/Math.max(1,zoom);
+        float r=radius+8/Math.max(1,zoom)+inset,h=5/Math.max(1,zoom);
+        int ink=alpha(color,.62f);
+        for(int i=0;i<4;i++){
+            float dx=i==0?1:i==2?-1:0,dy=i==1?1:i==3?-1:0;
+            float xx=x+dx*r,yy=y+dy*r;
+            p.line(xx+dx*h-dy*h,yy+dy*h+dx*h,xx,yy,1.8f/Math.max(1,zoom),ink);
+            p.line(xx+dx*h+dy*h,yy+dy*h-dx*h,xx,yy,1.8f/Math.max(1,zoom),ink);
+        }
+    }
+    /** Short outward sparkle accents only for confirmed actions; no persistent vessel halo. */
+    public static void burst(Painter p,float x,float y,float radius,float t,int color) {
+        if(t<0 || t>=1)return;
+        float ease=1-(1-t)*(1-t),r=radius+ease*28;
+        int ink=alpha(color,(1-t)*(1-t));
+        for(int i=0;i<8;i++){
+            double a=i*StrictMath.PI/4;
+            float dx=(float)StrictMath.cos(a),dy=(float)StrictMath.sin(a);
+            float len=(i%2==0?12:7)*(1-t);
+            line(p,x+dx*r,y+dy*r,x+dx*(r+len),y+dy*(r+len),2,ink);
+        }
     }
     private static void ringBand(Painter p,float x,float y,float radius,float fraction,float width,int color) {
         float diameter=(radius*2+width)/.98f;

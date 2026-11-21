@@ -88,7 +88,7 @@ public final class MooringView {
         float radius=b.half+b.radius+7+t*65;
         ControlView.ring(p,b.x,b.y,radius,1,(alpha<<24)|0x9bffe0,4*(1-t)+1);
         ControlView.ring(p,b.x,b.y,radius-9,1,((alpha/2)<<24)|0xffe5a8,2);
-        if(t<.25f) p.circle(b.x,b.y,b.half+b.radius,((int)(65*(1-t*4))<<24)|0xb8ffe2);
+        SoftCue.burst(p,b.x,b.y,b.half+b.radius+5,t,0xffffe5a8);
     }
     private static Body readyFocus(Game g) {
         Body held=g.heldCargo();if(g.canTie(held))return held;

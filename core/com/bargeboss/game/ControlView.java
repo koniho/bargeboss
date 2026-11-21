@@ -76,7 +76,7 @@ public final class ControlView {
         SoftCue.ring(p,x,y,radius,fraction,color,width);
     }
     public static void ring(Game g,Painter p,float x,float y,float radius,float fraction,int color,float width) {
-        ring(p,x,y,radius,fraction,SoftCue.animated(g,color),width);
+        SoftCue.target(g,p,x,y,radius,fraction,color,width);
     }
     public static void arrow(Painter p,float x,float y,float xx,float yy,int color) {
         SoftCue.arrow(p,x,y,xx,yy,color);

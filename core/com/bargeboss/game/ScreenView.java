@@ -14,7 +14,7 @@ public final class ScreenView {
         String title=g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
         String subtitle;
         if(g.tutorial!=null) {
-            subtitle=g.tutorial.entering?"DOCKSIDE RADIO / CHANNEL 08":"LESSON "+Math.min(Tutorial.DONE,g.tutorial.lesson+1)+" / "+Tutorial.DONE;
+            subtitle=g.tutorial.entering?"DOCKSIDE RADIO / CHANNEL 08":"CAPTAIN TRAINING";
             if(g.trainingChannel())subtitle+=" / GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1);
         } else if(g.lockStage()) {
             boolean window=g.lock.phase==Lock.ENTRY || g.lock.phase==Lock.EXIT;

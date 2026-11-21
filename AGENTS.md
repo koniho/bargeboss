@@ -10,8 +10,8 @@ the same `Painter`. Do not add a second game implementation for any platform.
   dark; keep shore/scenery subdued and cool, with warm lamps/windows and navigation
   lights supplying localized contrast. Preserve readable vessels, goals and controls.
 - Follow [gameplay highlight guidelines](docs/art-direction/gameplay-highlights.md) for
-  quiet guidance: thin translucent strokes, open arrowheads, continuous rings
-  and restrained glow. The broad neon/segmented redesign was rejected.
+  arcade guidance: open target centers, breathing chevrons, continuous progress rings
+  and brief success sparkles. Keep vessel silhouettes readable.
 - Follow [industrial UI styling](docs/art-direction/industrial-ui.md): navy plates,
   cream text, gold actions and restrained red edges derived from the approved
   wordmark. Preserve technical control geometry, semantic colors and tutorial space.
