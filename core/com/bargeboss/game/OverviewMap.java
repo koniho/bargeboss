@@ -49,17 +49,18 @@ public final class OverviewMap {
     }
     static void slider(Game g,Painter p){
         if(!visible(g))return;
-        Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.centerY(),thumb=left+(right-left)*g.overview.level;
+        Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.y+28,thumb=left+(right-left)*g.overview.level;
         PilotGlass.panel(p,b.x+2,b.y+2,b.w-4,b.h-4,0xa8101c30);
+        Lettering.draw(p,"CHART ZOOM",b.x+12,b.y+7,7,PilotGlass.MUTED);
         SoftCue.line(p,left,y,right,y,3,0x51678691);
         SoftCue.line(p,left,y,thumb,y,3,0xbaffc52f);
         for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x52fff0ce);}
         p.line(b.x+5,y,b.x+13,y,1.5f,0xbaffc52f);
         p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xbaffc52f);
         p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xbaffc52f);
-        p.circle(thumb,y,g.overview.active?14:11,g.overview.active?0x38ffc52f:0x20ffc52f);
-        p.circle(thumb,y,6,0xffffc52f);
-        SoftCue.ring(p,thumb,y,8,1,0x90fff0ce,1);
+        p.poly(new float[]{thumb-8,y-9,thumb+5,y-9,thumb+8,y-6,thumb+8,y+9,thumb-5,y+9,thumb-8,y+6},PilotGlass.AMBER);
+        p.line(thumb-2,y-4,thumb-2,y+4,1,PilotGlass.NAVY);
+        p.line(thumb+2,y-4,thumb+2,y+4,1,PilotGlass.NAVY);
     }
     public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}

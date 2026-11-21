@@ -25,7 +25,7 @@ public final class Dialogue {
     InstructionPanel.Content content(){return new InstructionPanel.Content("radio-"+revision,title,first,second,-1,0,speaker,"RADIO / RX",active && result<0);}
     public void step(){if(!active)return;ticks++;panel.step(content());}
     public Layout.Box choiceBox(Game g,int i){
-        float width=g.layout.width*.5f-8,left=0;
+        float width=(g.layout.width-52)*.5f,left=18;
         int rows=(count()+1)/2;
         return new Layout.Box(left+(i%2)*(width+16),g.layout.height-32-rows*62+(i/2)*62,width,50);
     }
@@ -57,8 +57,8 @@ public final class Dialogue {
             float[] q={rear,b.y,shoulder,b.y,tip,b.y+b.h/2,shoulder,b.y+b.h,rear,b.y+b.h};
             PilotGlass.plate(glass,q,selected?PilotGlass.AMBER:PilotGlass.FILL,selected?0xffad7730:PilotGlass.LINE,1.5f);
             int ink=PilotGlass.buttonText(selected);
-            glass.line(b.x+25,b.y+5,b.x+65,b.y+5,.8f,selected?0x80fff0ce:PilotGlass.EDGE);
-            Lettering.draw(glass,"0"+(i+1),b.x+26,b.y+18,11,selected?ink:PilotGlass.AMBER);
+            glass.circle(b.x+32,b.y+25,14,selected?PilotGlass.NAVY:0xff26334a);
+            Lettering.draw(glass,"0"+(i+1),b.x+26,b.y+18,11,PilotGlass.AMBER);
             float size=Math.min(14,14*(b.w-92)/Math.max(1,Lettering.width(choices[i],14)));
             Lettering.draw(glass,choices[i],b.x+61,b.y+17,size,ink);
         }

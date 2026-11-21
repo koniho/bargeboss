@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 /** Actual shared UI composition, including small-screen controls and selected replies. */
 public final class UiStyleReview {
-    private static final File OUT=new File("out/ui-style-v1");
+    private static final File OUT=new File("out/ui-layout-v2");
     private static void capture(Game root,String name)throws Exception{
         Game g=root.activeGame();
         BufferedImage image=new BufferedImage((int)g.layout.width,(int)g.layout.height,BufferedImage.TYPE_INT_RGB);

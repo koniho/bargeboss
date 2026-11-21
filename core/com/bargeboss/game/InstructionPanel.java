@@ -20,15 +20,17 @@ final class InstructionPanel {
             this.header=header;this.badge=badge;this.key=key;this.title=title;this.first=first;this.second=second;this.lesson=lesson;this.progress=progress;
         }
         void draw(Painter p){
-            p.line(18,7,414,7,.8f,0x9dffc52f);
-            Lettering.draw(p,"FROM: "+header,18,18,9,PilotGlass.AMBER);
             String count=badge!=null?badge:lesson<0?"ARRIVAL":(lesson+1)+" / "+Tutorial.DONE;
-            Lettering.draw(p,count,414-Lettering.width(count,10),18,10,PilotGlass.MUTED);
+            float badgeWidth=Lettering.width(count,9)+16,badgeX=414-badgeWidth;
+            p.rect(badgeX,12,badgeWidth,22,0xff26334a);
+            Lettering.draw(p,count,badgeX+8,18,9,PilotGlass.MUTED);
+            p.rect(18,18,11,10,PilotGlass.RED);p.line(22,18,27,12,1.5f,PilotGlass.AMBER);
+            Lettering.draw(p,header,38,18,Math.min(9,(badgeX-48)/Math.max(1,Lettering.width(header,1))),PilotGlass.AMBER);
             Lettering.draw(p,title,18,39,Math.min(19,19*(waiting?382:396)/Math.max(1,Lettering.width(title,19))),PilotGlass.TEXT);
             Lettering.draw(p,first,18,70,12,PilotGlass.TEXT);
             Lettering.draw(p,second,18,89,11,PilotGlass.MUTED);
             if(lesson==Tutorial.CHANNEL){p.rect(18,112,400,4,PilotGlass.TRACK);p.rect(18,112,400*progress,4,ControlView.GREEN);}
-            else if(lesson>=0)for(int i=0;i<Tutorial.DONE;i++)p.rect(18+i*(400f/Tutorial.DONE),112,400f/Tutorial.DONE-8,4,i<lesson?ControlView.GREEN:i==lesson?PilotGlass.AMBER:PilotGlass.TRACK);
+            else if(lesson>=0){p.rect(18,112,400,3,PilotGlass.TRACK);p.rect(18,112,400f*(lesson+1)/Tutorial.DONE,3,PilotGlass.AMBER);}
         }
     }
     void reset(){phase=OPEN;ticks=shimmerTicks=0;content=pending=null;}

@@ -4608,3 +4608,31 @@ screen timeout. Desktop review covered menus, gameplay on both control sides,
 instructions, four choices/pressed reply, ability icons and results at960/1333.
 Review PNGs copied to Downloads and Pictures/BargeBoss; MediaStore entries
 17912/17914/17916/17918 verified. iOS/native visual parity was not run this round.
+
+## 2026-11-21 — UI layout/component redesign v2 (shared)
+
+User requested structural redesign after the palette-only pass. Title now splits
+training from voyage setup; settings use rows/switch/segments, pause is compact,
+harbor cards show connected jobs/completion, results group metrics, and gameplay
+uses differentiated ribbons/radio badges/fader/thumb grips. Shared Layout and
+choice definitions own the relocated touch regions. No native-specific UI,
+textures, shaders or per-frame raster work added. Container/selector decoration
+uses fewer primitives than the old outlined octagons; no frame-rate claim.
+
+Added public-input menu flow and nonoverlap/safe-area checks at960x600,1333x600,
+and960x720. 1316 title/layout checks pass; 924386 chart/slider pixels stay inside
+existing bounds and retain a visible idle zoom indicator. Canonical replay and
+clean old/new simulation-only trace comparisons recorded after final layout.
+
+Final canonical renderer/state trace: `2101eca9:2:1350`. A clean HEAD core
+versus current core using the same render-free replay both produce
+`3601335f:2:1350`: menu relocation and component drawing did not change the
+simulated replay state. Baseline updated only after this comparison.
+
+Full Android check/build passed (`out/ui-layout-v2-build.log`), including 2810
+core assertions, replay baseline, 924386 map pixels, tutorial/dialogue input and
+Vulkan encoding/clip checks. APK installed successfully; cold launch Status: ok.
+Phone timeout restored. Actual desktop renderer reviewed at960/1333 widths;
+no native screenshot or iOS build/visual-parity run this round. No measured FPS
+claim. Six canonical review images are in `docs/art-studies/ui-layout-v2`, copied
+to Downloads and Pictures/BargeBoss; MediaStore IDs17925–17930 verified.

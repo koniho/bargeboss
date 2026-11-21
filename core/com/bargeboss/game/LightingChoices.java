@@ -5,8 +5,8 @@ final class LightingChoices {
     private LightingChoices(){}
     static Layout.Box box(Game g,int index){
         boolean title=g.mode==Game.TITLE;
-        float x=title?g.layout.width-960+632:g.layout.offsetX+232;
-        float y=(title?294:467)+g.layout.offsetY,w=title?69:124;
+        float x=title?g.layout.width-332:g.layout.offsetX+232;
+        float y=(title?318:467)+g.layout.offsetY,w=title?71:124;
         return new Layout.Box(x+index*w,y,w-4,30);
     }
     static boolean tap(Game g,float x,float y){
@@ -17,8 +17,8 @@ final class LightingChoices {
     static void draw(Game g,Painter p){
         for(int i=0;i<4;i++){
             Layout.Box b=box(g,i);boolean selected=g.selectedLighting()==i;
-            PilotGlass.button(p,b.x,b.y,b.w,b.h,selected);
-            Lettering.center(p,LightingProfile.preset(i).name,b.centerX(),b.y+10,g.mode==Game.TITLE?7:10,PilotGlass.buttonText(selected));
+            PilotGlass.segment(p,b.x,b.y,b.w,b.h,selected);
+            Lettering.center(p,LightingProfile.preset(i).name,b.centerX(),b.y+10,g.mode==Game.TITLE?7:10,selected?PilotGlass.AMBER:PilotGlass.MUTED);
         }
     }
 }

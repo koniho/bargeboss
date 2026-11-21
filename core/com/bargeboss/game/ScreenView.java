@@ -21,36 +21,44 @@ public final class ScreenView {
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
         if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
-        PilotGlass.panel(p,x,8,width,48,0xc4101c30);
-        center(p,title,g.layout.width*.5f,17,Math.min(13,(width-24)/Math.max(1,Lettering.width(title,1))),PAPER);
+        PilotGlass.ribbon(p,x,8,width,48);
+        center(p,title,g.layout.width*.5f,14,Math.min(16,(width-24)/Math.max(1,Lettering.width(title,1))),PAPER);
         center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
         Layout.Box setup=g.controlBox(Layout.SETTINGS);
-        PilotGlass.panel(p,setup.x,setup.y,setup.w,setup.h,0xe0101c30);
-        center(p,"SETTINGS",setup.centerX(),setup.y+15,10,PAPER);
+        PilotGlass.button(p,setup.x,setup.y,setup.w,setup.h,false);
+        center(p,"SETTINGS",setup.centerX(),setup.y+14,11,PAPER);
+    }
+    private static void titleAction(Painter p,Layout.Box b,String label,String detail,boolean primary){
+        PilotGlass.button(p,b.x,b.y,b.w,b.h,primary);
+        int ink=PilotGlass.buttonText(primary);
+        text(p,label,b.x+20,b.y+17,22,ink);
+        text(p,detail,b.x+20,b.y+48,10,primary?NAVY:MUTED);
+        PilotGlass.chevron(p,b.x+b.w-22,b.centerY(),1,ink);
     }
     public static void title(Game g,Painter p) {
-        TitleView.background(g,p); TitleView.voyage(g,p); titleSettings(g,p);
-        // Title anchors use the full safe canvas instead of centering a fixed
-        // 960-wide poster inside a wide phone screen.
-        // One shared transparent wordmark; keep its 2:1 source aspect and safe left anchor.
+        TitleView.background(g,p);TitleView.voyage(g,p);titleSettings(g,p);
         p.sprite(SpriteAtlas.TITLE_LOGO,0,230,116,400,200,0,1);
-        Painter menu=offset(p,g.layout.width-Layout.WIDTH,g.layout.offsetY);
-        PilotGlass.panel(menu,608,180,324,368,0xd9101c30);
-        center(menu,"SAIL "+Challenges.locationTitle(g.challengeId),770,200,11,GOLD);
-        center(menu,Challenges.locationTitle(g.challengeId),770,230,20,PAPER);
-        String summary=goalSummary(g.challengeId);
-        center(menu,summary,770,274,Math.min(12,288/Math.max(1,Lettering.width(summary,1))),GOLD);
-        LightingChoices.draw(g,p);
-        button(g,menu,Layout.LEARN,"LEARN TO DRIVE",false);
-        button(g,menu,Layout.START,"SAIL LOCATION",true);
-        button(g,menu,Layout.CHALLENGES,"LOCATIONS",false);
-        Painter rank=offset(p,0,g.layout.height-Layout.HEIGHT);
-        PilotGlass.panel(rank,28,536,545,40,0xcc101c30);
-        captainBadge(rank,52,556,.37f,g.career.stripes());
-        text(rank,g.career.rankTitle(),77,548,13,PAPER);
-        text(rank,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",367,549,10,GOLD);
+        float x=g.layout.width-356,y=130+g.layout.offsetY;
+        PilotGlass.panel(p,x,y,328,350,0xe8101c30);
+        text(p,"YOUR VOYAGE",x+24,y+21,10,GOLD);
+        String harbor=Challenges.locationTitle(g.challengeId);
+        text(p,harbor,x+24,y+49,Math.min(24,284/Math.max(1,Lettering.width(harbor,1))),PAPER);
+        text(p,goalSummary(g.challengeId),x+24,y+80,Math.min(10,284/Math.max(1,Lettering.width(goalSummary(g.challengeId),1))),MUTED);
+        Layout.Box choose=g.controlBox(Layout.CHALLENGES);
+        PilotGlass.button(p,choose.x,choose.y,choose.w,choose.h,false);
+        text(p,"CHOOSE HARBOR",choose.x+16,choose.y+14,14,PAPER);
+        PilotGlass.chevron(p,choose.x+choose.w-18,choose.centerY(),1,GOLD);
+        text(p,"TIME OF DAY",x+24,y+167,9,MUTED);LightingChoices.draw(g,p);
+        titleAction(p,g.controlBox(Layout.START),"SET SAIL","BEGIN JOBS AT THIS HARBOR",true);
+        Layout.Box learn=g.controlBox(Layout.LEARN);
+        text(p,"FIRST TIME AT THE HELM?",learn.x+2,learn.y-20,10,GOLD);
+        titleAction(p,learn,"LEARN TO DRIVE","GUIDED LESSONS WITH YOUR INSTRUCTOR",false);
+        PilotGlass.ribbon(p,28,g.layout.height-58,350,42);
+        captainBadge(p,54,g.layout.height-37,.38f,g.career.stripes());
+        text(p,g.career.rankTitle(),80,g.layout.height-49,14,PAPER);
+        text(p,g.career.totalStars()+" STARS / CAPTAIN'S PROGRESS",80,g.layout.height-29,9,MUTED);
     }
 
     private static void harbor(Game g,Painter p) {
@@ -105,109 +113,102 @@ public final class ScreenView {
         center(p,"COMPLETE THE GOAL TO ADVANCE.",770,257,11,MUTED);
     }
     private static void instruction(Painter p,int index,float y,String title,String detail) {
-        PilotGlass.panel(p,106,y-3,39,39,0xe0101c30); center(p,""+index,126,y+6,20,GOLD);
+        p.circle(126,y+15,19,0xff26334a);center(p,""+index,126,y+6,20,GOLD);
         text(p,title,159,y,16,PAPER); text(p,detail,159,y+28,10,MUTED);
     }
     public static void settings(Game g,Painter p) {
-        p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);overlay(p,100,405);
-        center(p,"SETTINGS",480,138,28,GOLD);
-        center(p,"THROTTLE POSITION",480,208,18,PAPER);
-        center(p,"THROTTLE TO DRIVE. HOLD CARGO TO ASSIST.",480,244,11,MUTED);
-        int side=g.settings.joystickSide();
-        button(g,p,Layout.JOYSTICK_LEFT,"LEFT",side==GameSettings.LEFT);
-        button(g,p,Layout.JOYSTICK_RIGHT,"RIGHT",side==GameSettings.RIGHT);
-        button(g,p,Layout.HAPTICS,"HAPTICS: "+(g.hapticsEnabled?"ON":"OFF"),g.hapticsEnabled);
-        button(g,p,Layout.SETTINGS_BACK,"BACK",true);
+        p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);
+        PilotGlass.panel(p,180,96,600,436,0xf0101c30);
+        text(p,"YOUR CONTROLS",212,124,28,PAPER);
+        text(p,"MAKE THE HELM COMFORTABLE",212,162,10,MUTED);
+        text(p,"THROTTLE SIDE",212,202,17,PAPER);
+        text(p,"CHOOSE YOUR DRIVING HAND",212,228,10,MUTED);
+        boolean left=g.settings.joystickSide()==GameSettings.LEFT;
+        Layout.Box[] sides={Layout.JOYSTICK_LEFT,Layout.JOYSTICK_RIGHT};
+        for(int i=0;i<2;i++){
+            Layout.Box b=sides[i];boolean selected=i==0?left:!left;
+            PilotGlass.segment(p,b.x,b.y,b.w,b.h,selected);
+            center(p,i==0?"LEFT":"RIGHT",b.centerX()+5,b.y+20,14,selected?GOLD:PAPER);
+        }
+        p.line(212,264,736,264,1,PilotGlass.TRACK);
+        text(p,"HAPTIC FEEDBACK",212,292,17,PAPER);
+        text(p,"FEEL CONTACTS AND CONTROL CUES",212,319,10,MUTED);
+        PilotGlass.toggle(p,672,292,g.hapticsEnabled);
+        text(p,g.hapticsEnabled?"ON":"OFF",631,301,11,g.hapticsEnabled?GOLD:MUTED);
+        text(p,"THROTTLE TO DRIVE. HOLD CARGO TO ASSIST.",212,375,11,MUTED);
+        button(g,p,Layout.SETTINGS_BACK,"DONE",true);
     }
     public static void pause(Game g,Painter p) {
         p=menu(g,p);
-        overlay(p,113,450);
-        p.rect(451,142,18,37,GOLD); p.rect(492,142,18,37,GOLD);
-        center(p,"VOYAGE PAUSED",480,203,28,PAPER);
-        center(p,"LINES HELD. ENGINES QUIET.",480,253,12,MUTED);
-        button(g,p,Layout.RESUME,"RESUME",true); button(g,p,Layout.RESTART,"RESTART VOYAGE",false);
-        button(g,p,Layout.TITLE_SCREEN,"TITLE SCREEN",false);
+        PilotGlass.panel(p,216,126,528,300,0xf0101c30);
+        p.rect(244,155,6,25,GOLD);p.rect(256,155,6,25,GOLD);
+        text(p,"VOYAGE PAUSED",280,153,26,PAPER);
+        text(p,g.challengeTitle(),244,204,12,MUTED);
+        button(g,p,Layout.RESUME,"RESUME VOYAGE",true);
+        button(g,p,Layout.RESTART,"RESTART",false);
+        button(g,p,Layout.TITLE_SCREEN,"BACK TO TITLE",false);
     }
     public static void finish(Game g,Painter p) {
-        p=menu(g,p);
-        overlay(p,82,454);
+        p=menu(g,p);overlay(p,82,454);
         boolean complete=g.goalComplete() && g.hull>0;
-        center(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"LOCATION COMPLETE":"TRY AGAIN, CAPTAIN",480,106,26,PAPER);
-        center(p,g.challengeTitle(),480,148,12,MUTED);
-        int earned=g.earnedStars;
-        for(int i=0;i<3;i++) star(p,400+i*80,200+(earned>i?2*(float)StrictMath.sin(g.visualTicks*.05+i):0),25,earned>i?GOLD:0xff465366);
-        center(p,earned==3?"GOLD STRIPES":earned==2?"SILVER STRIPES":earned==1?"BRONZE STRIPES":"KEEP PRACTICING",480,238,11,earned>0?GOLD:MUTED);
-        center(p,""+g.score,480,271,38,GOLD);
-        center(p,g.goalProgress()+" / "+g.quota()+(g.lockStage()?" THROUGH LOCK":" DELIVERED")+" / HULL "+g.hull+"%",480,323,12,PAPER);
-        if(g.lockStage() && g.lock.failed())center(p,g.lock.failure(),480,349,11,GOLD);
-        if(g.rankPromoted) for(int i=0;i<6;i++) {
-            double angle=i*Math.PI/3+g.visualTicks*.008;
-            star(p,174+(float)StrictMath.cos(angle)*70,211+(float)StrictMath.sin(angle)*65,
-                    3+2*(float)StrictMath.sin(g.visualTicks*.06+i),GOLD);
-        }
-        captainBadge(p,174,211,1.1f,g.career.stripes());
-        center(p,g.career.rankTitle(),174,280,14,PAPER);
-        center(p,g.rankPromoted?"PROMOTED, CAPTAIN!":"CAPTAIN'S RANK",174,306,10,g.rankPromoted?GOLD:MUTED);
-        center(p,g.career.totalStars()+" / "+Challenges.maxStars()+" CAREER STARS",174,329,10,GOLD);
-        center(p,"PERSONAL BEST",784,183,11,MUTED);
-        center(p,""+g.career.locationScore(g.challengeId),784,207,26,GOLD);
-        for(int i=0;i<3;i++) star(p,748+i*36,264,12,g.career.locationRating(g.challengeId)>i?GOLD:0xff465366);
-        center(p,g.rankPromoted?"NEW STRIPES. SAME GOOD TUG.":complete?"GOOD WORK, CAPTAIN.":"TRY THE GOAL AGAIN.",480,378,14,PAPER);
+        text(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,PAPER);
+        text(p,g.challengeTitle(),60,151,12,MUTED);
+        captainBadge(p,190,250,1.2f,g.career.stripes());
+        center(p,g.career.rankTitle(),190,328,17,GOLD);
+        center(p,g.rankPromoted?"NEW CAPTAIN STRIPES!":"CAPTAIN'S RANK",190,355,10,MUTED);
+        for(int i=0;i<3;i++)star(p,410+i*72,213,24,g.earnedStars>i?GOLD:0xff465366);
+        text(p,g.earnedStars==3?"GOLD STRIPES":g.earnedStars==2?"SILVER STRIPES":g.earnedStars==1?"BRONZE STRIPES":"KEEP PRACTICING",340,250,11,GOLD);
+        metric(p,340,280,"GOAL",g.goalProgress()+" / "+g.quota());
+        metric(p,505,280,"HULL",g.hull+"%");
+        metric(p,670,280,"SCORE",""+g.score);
+        text(p,"PERSONAL BEST  "+g.career.locationScore(g.challengeId),340,366,10,MUTED);
         boolean next=Challenges.nextStage(g.challengeId)>=0 && g.career.unlocked(Challenges.nextStage(g.challengeId));
-        if(next) center(p,"NEXT: "+Challenges.locationTitle(Challenges.nextStage(g.challengeId)),480,409,11,GOLD);
-        else center(p,"REPLAY TO IMPROVE YOUR STARS AND BEST SCORE",480,409,10,MUTED);
-        button(g,p,Layout.FINISH_CHALLENGES,"LOCATIONS",false);
-        button(g,p,Layout.AGAIN,"REPLAY LOCATION",!next);
-        if(next) button(g,p,Layout.NEXT_CHALLENGE,"NEXT LOCATION",true);
+        String note=g.lockStage() && g.lock.failed()?g.lock.failure():next?"NEXT HARBOR: "+Challenges.locationTitle(Challenges.nextStage(g.challengeId)):"REPLAY TO IMPROVE YOUR RATING";
+        center(p,note,480,409,11,PAPER);
+        button(g,p,Layout.FINISH_CHALLENGES,"CHOOSE HARBOR",false);
+        button(g,p,Layout.AGAIN,"REPLAY",!next);
+        if(next)button(g,p,Layout.NEXT_CHALLENGE,"NEXT HARBOR",true);
+    }
+    private static void metric(Painter p,float x,float y,String label,String value){
+        p.rect(x,y,145,68,0x70070f1e);
+        text(p,label,x+12,y+10,9,MUTED);text(p,value,x+12,y+31,24,PAPER);
     }
     private static String goalSummary(int id) {
         return Challenges.calumet(id)?"FOUR JOBS / INLET TO BASIN FIVE":Challenges.stageEntry(id)==Challenges.MONTROSE?"THREE JOBS / TOW AND RESCUE":"STEEL TOW / HARBOR AND CANAL";
     }
     /** Persistent career board; levels finish when their displayed goal is complete. */
     public static void challenges(Game g,Painter p) {
-        harbor(g,p); p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
-        Painter screen=p; p=centered(g,p);
-        center(p,"CHOOSE A LOCATION",480,37,28,PAPER);
-        center(p,"THREE LOCATIONS / CONTIGUOUS JOBS ON EACH STAGE",480,79,11,MUTED);
-        captainBadge(p,85,130,.7f,g.career.stripes());
-        text(p,g.career.rankTitle(),125,109,19,GOLD);
-        text(p,g.career.totalStars()+" / "+Challenges.maxStars()+" UNIQUE STARS",126,140,11,PAPER);
-        text(p,"SAIL ONE CONTINUOUS LOCATION",529,113,12,GOLD);
-        text(p,"BETTER STARS EARN CAPTAIN STRIPES",529,140,10,MUTED);
-        int page=Math.max(0,Math.min(Challenges.pageCount()-1,g.challengePage));
-        for(int slot=0;slot<Layout.CHALLENGE_CARDS.length;slot++) {
-            int i=Challenges.menuId(slot);
-            if(!Challenges.valid(i))continue;
-            Layout.Box card=Layout.CHALLENGE_CARDS[slot];
-            boolean open=g.career.unlocked(i),selected=Challenges.stageEntry(g.challengeId)==i;
-            PilotGlass.panel(p,card.x,card.y,card.w,card.h,selected?0xee263044:open?0xdd101c30:0xdd0c1422);
-            p.rect(card.x+5,card.y+5,card.w-10,4,selected?GOLD:open?0xff678197:0xff3b4859);
-            center(p,"0"+(slot+1)+(open?" / LOCATION":" / LOCKED"),card.centerX(),card.y+20,10,open?MUTED:0xff6b798a);
-            center(p,Challenges.locationTitle(i),card.centerX(),card.y+47,18,open?PAPER:MUTED);
-            String goal=i==Challenges.TWO_BANKS?"LAKE ENTRANCE TO BASIN FIVE":i==Challenges.MONTROSE?"TOW / UNRAFT / RESCUE":Challenges.cardGoal(i);
-            float goalSize=Math.min(12,12*(card.w-20)/Lettering.width(goal,12));
-            center(p,goal,card.centerX(),card.y+84,goalSize,open?GOLD:MUTED);
-            center(p,(i==Challenges.TWO_BANKS?"FOUR JOBS / ONE CONTINUOUS RIVER":i==Challenges.MONTROSE?"THREE JOBS / ONE HARBOR":Challenges.cardHint(i)),card.centerX(),card.y+105,8,MUTED);
-            if(open) {
-                for(int j=0;j<3;j++) star(p,card.centerX()-42+j*42,card.y+132,17,g.career.locationRating(i)>j?GOLD:0xff465366);
-                center(p,"JOB STARS "+g.career.locationStars(i)+" / "+(Challenges.locationJobs(i).length*3),card.centerX(),card.y+165,12,MUTED);
-                center(p,selected?"READY TO SAIL":"TAP TO SELECT",card.centerX(),card.y+205,12,selected?GOLD:PAPER);
-                if(selected) p.rect(card.x+19+(g.visualTicks%120)/120f*(card.w-60),card.y+230,20,2,PAPER);
-            } else {
-                lock(p,card.centerX(),card.y+132);
-                center(p,"EARN BRONZE IN",card.centerX(),card.y+170,11,MUTED);
-                center(p,Challenges.title(i-1),card.centerX(),card.y+193,12,PAPER);
-            }
+        harbor(g,p);p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
+        Painter screen=p;p=centered(g,p);
+        text(p,"CHOOSE YOUR HARBOR",60,40,30,PAPER);
+        text(p,"ONE PLACE. CONNECTED JOBS. SAIL AT YOUR OWN PACE.",60,84,11,MUTED);
+        for(int slot=0;slot<Layout.CHALLENGE_CARDS.length;slot++){
+            int id=Challenges.menuId(g.challengePage*Challenges.PAGE_SIZE+slot);if(!Challenges.valid(id))continue;
+            Layout.Box b=Layout.CHALLENGE_CARDS[slot];boolean open=g.career.unlocked(id),selected=Challenges.stageEntry(g.challengeId)==id;
+            PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xf0202e43:0xe0101c30);
+            if(selected)p.rect(b.x+18,b.y,70,3,GOLD);
+            text(p,slot==0?"RIVER WORK":slot==1?"MARINA RESCUE":"INDUSTRIAL CANAL",b.x+20,b.y+22,10,GOLD);
+            String name=Challenges.locationTitle(id);
+            text(p,name,b.x+20,b.y+49,Math.min(23,220/Math.max(1,Lettering.width(name,1))),PAPER);
+            int[] jobs=Challenges.locationJobs(id);int completed=0;for(int job:jobs)if(g.career.bestStars(job)>0)completed++;
+            text(p,""+jobs.length,b.x+20,b.y+93,40,open?GOLD:MUTED);
+            text(p,jobs.length==1?"CONNECTED JOB":"CONNECTED JOBS",b.x+62,b.y+105,12,PAPER);
+            text(p,"ONE CONTINUOUS WATERWAY",b.x+62,b.y+126,8,MUTED);
+            text(p,slot==0?"LAKE ENTRANCE TO BASIN FIVE":slot==1?"TOW, UNRAFT AND RESCUE":"HARBOR AND STEELWORKS",b.x+20,b.y+168,10,PAPER);
+            text(p,completed+" / "+jobs.length+" JOBS COMPLETED",b.x+20,b.y+194,10,MUTED);
+            p.rect(b.x+20,b.y+218,220,3,PilotGlass.TRACK);
+            if(completed>0)p.rect(b.x+20,b.y+218,220f*completed/jobs.length,3,GOLD);
+            if(open){
+                if(selected){PilotGlass.tick(p,b.x+25,b.y+248,4,GOLD);text(p,"SELECTED",b.x+42,b.y+241,13,GOLD);}
+                else{text(p,"CHOOSE HARBOR",b.x+20,b.y+241,13,PAPER);PilotGlass.chevron(p,b.x+b.w-24,b.y+249,1,PAPER);}
+            }else{text(p,"EARN BRONZE TO UNLOCK",b.x+20,b.y+241,11,MUTED);}
         }
-        boolean selectionHere=Challenges.pageFor(g.challengeId)==page;
-        center(p,selectionHere?Challenges.locationDescription(g.challengeId):"EARN BRONZE TO OPEN THE NEXT HARBOR JOB.",480,444,13,PAPER);
-        LightingChoices.draw(g,screen);
-        button(g,p,Layout.BACK,"BACK",false);
-        button(g,p,Layout.CHALLENGE_START,selectionHere?"SAIL LOCATION":"SELECT LOCATION",selectionHere);
+        center(p,"DEPARTING FROM "+Challenges.locationTitle(g.challengeId),480,439,12,PAPER);
+        text(p,"TIME OF DAY",60,477,10,MUTED);LightingChoices.draw(g,screen);
+        button(g,p,Layout.BACK,"BACK",false);button(g,p,Layout.CHALLENGE_START,"SET SAIL",true);
         if(Challenges.pageCount()>1){
-            if(page>0)button(g,p,Layout.CHALLENGE_PREV_PAGE,"PREV",false);
-            if(page+1<Challenges.pageCount())button(g,p,Layout.CHALLENGE_NEXT_PAGE,"NEXT",false);
-            center(p,"PAGE "+(page+1)+" / "+Challenges.pageCount(),480,539,11,MUTED);
+            if(g.challengePage>0)button(g,p,Layout.CHALLENGE_PREV_PAGE,"PREV",false);
+            if(g.challengePage+1<Challenges.pageCount())button(g,p,Layout.CHALLENGE_NEXT_PAGE,"NEXT",false);
         }
     }
     private static void lock(Painter p,float x,float y) {
@@ -252,7 +253,8 @@ public final class ScreenView {
     public static void button(Game g,Painter p,float x,float y,float w,float h,String label,boolean primary) {
         PilotGlass.button(p,x,y,w,h,primary);
         float size=Math.min(label.length()>18?13:16,(w-58)/Math.max(1,Lettering.width(label,1)));
-        center(p,label,x+w/2,y+(h-size)/2,size,PilotGlass.buttonText(primary));
+        center(p,label,x+w/2-(primary && w>=220?8:0),y+(h-size)/2,size,PilotGlass.buttonText(primary));
+        if(primary && w>=220)PilotGlass.chevron(p,x+w-24,y+h*.5f,1,NAVY);
     }
 
     public static Painter scaled(Painter p,float x,float y,float scale) { return new Transform(p,x,y,scale,0); }
