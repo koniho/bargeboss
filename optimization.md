@@ -4855,3 +4855,22 @@ Final full Android checks/build passed (out/instructor-panel-build.log). Install
 and cold launched Status:ok; restored timeout. Review/art copies in Downloads
 and Photos, MediaStore17964/17966 verified. Desktop visual review only; no native
 pixel capture/frame-time profile or iOS build this round.
+
+## 2026-11-21 — six NPC talking portraits
+Generated six transparent3x2 portrait sheets with built-in imagegen, preserving
+source outputs and exact prompts under docs/art-studies/npc-portraits-v1.
+Runtime atlases are576x384/192px cells. Two bridge operators now use shared
+SpeakerPortrait routing: entry tow bridge gets night operator; canal/exit gets
+steelworks operator. Instructor keeps her identity. Face stays during replies/
+waiting and mouths animate only for the matching transmitter. Remaining four
+characters are authored assets only; no unrequested conversations or eager
+decoding. Only two additional sheets join tutorial preparation.
+36-frame alpha/nonempty checks and real panel bridge identity/persistence checks
+pass. Visually reviewed crew sheet and shared bridge panel. Render-disabled A/B
+replay stayedbf5d3e90:2:1350; updated drawing traceb0317b94:2:1350.
+No additional per-frame geometry beyond the existing portrait sprite/meter,
+no new texture-cache keys per tick, no measured device performance claim.
+Full Android checks/build passed (out/npc-portraits-build.log), installed and
+cold launched Status:ok. Restored timeout. Six sheets and comparison copied to
+Downloads/Photos; MediaStore17970,17972,17974,17976,17978,17980,17982 verified.
+No native pixel capture/performance profile or iOS build this round.

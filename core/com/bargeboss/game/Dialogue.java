@@ -6,6 +6,7 @@ public final class Dialogue {
     private String speaker,title,first,second;
     private String[] choices=new String[0];
     private int speakerKind=RadioAudio.TEACHER;
+    boolean bridgeConversation(){return active && speakerKind==RadioAudio.BRIDGE;}
     boolean instructorConversation(){return active && speakerKind==RadioAudio.TEACHER;}
     private int pointer=-1,pressed=-1,result=-1,revision,ticks;
     public boolean active;

@@ -21,7 +21,7 @@ public final class SpeakerPortraitReview {
             g.radio.transmit(RadioAudio.REPLY);
             if(!SpeakerPortrait.visible(g,"INSTRUCTOR"))throw new AssertionError("Portrait lost during reply");
             g.dialogue.showFrom(g,RadioAudio.BRIDGE,"BRIDGE","READY?","WAIT.","YES");
-            if(SpeakerPortrait.visible(g,"INSTRUCTOR / CHANNEL 08"))throw new AssertionError("Bridge uses teacher face");
+            if(SpeakerPortrait.atlas(g,"BRIDGE")!=SpriteAtlas.BRIDGE_OPERATOR_STEEL)throw new AssertionError("Bridge operator identity");
         }
         if(SpeakerPortrait.facing(700,960)!=-1 || SpeakerPortrait.facing(200,960)!=1)throw new AssertionError("Must face center");
         int[] ticks={0,14,21,30,38,49};

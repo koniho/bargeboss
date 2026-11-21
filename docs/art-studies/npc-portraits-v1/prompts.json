@@ -1,0 +1,53 @@
+{
+  "tool": "built-in imagegen",
+  "transparent_background": true,
+  "reference": "assets/sprites/instructor-portrait-v2.png",
+  "batches": [
+    {
+      "characters": [
+        [
+          "bridge-operator-steel",
+          "Calumet steelworks bridge operator: middle-aged stocky man with warm brown skin, broad square face, thick dark moustache, amber safety helmet with small unlettered metal bridge-shaped badge, navy industrial jacket, heavy radio headset with short boom microphone. Dependable, dry humor. Accent amber and rust."
+        ],
+        [
+          "bridge-operator-night",
+          "Indiana Harbor night-shift bridge operator: older East Asian woman with silver hair in a short bob tucked behind ear, high cheekbones, round amber spectacles, navy peaked work cap with simple gold bridge badge, teal collared work jacket, radio headset. Sharp, alert, slightly mischievous. Accent teal and brass."
+        ],
+        [
+          "harbor-dispatcher",
+          "Harbor dispatcher: young adult Black woman with compact braided bun under a red-orange dock cap, expressive eyebrows and rounded face, dark blue utility vest over mustard shirt, single-ear radio headset. Upbeat and confident. Accent coral and gold."
+        ],
+        [
+          "lock-keeper",
+          "Lock keeper: older white man with a broad ginger-and-gray beard, large friendly nose, weathered face, deep green knit watch cap, brass ear defender headset, olive waterproof work coat with orange collar. Patient and slightly eccentric. Accent forest green and orange."
+        ],
+        [
+          "dock-foreman",
+          "Cargo dock foreman: adult Latina woman with a strong angular face, short dark hair under a cream-yellow hard hat, red bandana at neck, burgundy work jacket with chunky shoulder panels, small radio earpiece. Energetic no-nonsense expression. Accent burgundy and cream."
+        ],
+        [
+          "fire-rescue-captain",
+          "Fire-rescue barge captain: middle-aged South Asian man, athletic square jaw, neat dark beard with a gray streak, red rescue helmet with plain gold shield emblem without lettering, dark navy rescue coat with gold collar and compact radio earpiece. Calm decisive expression. Accent fire red and gold."
+        ]
+      ],
+      "common": "Create one NEW NPC talking portrait sprite sheet for Barge Boss. Reference image is STYLE AND LAYOUT reference only, not the character to copy. Match its hand-inked arcade illustration: bold dark contours, chunky stylized adult head and shoulders, rich warm orange highlights, clean readable shapes, limited texture, colorful nautical adventure tone. EXACTLY six cells in a regular 3-column x 2-row grid, landscape 3:2 canvas. All six depict SAME character in SAME right-facing profile, head/shoulder positions and silhouette registered identically, fully within each cell with 8% transparent margins. Frame order: closed mouth relaxed, small open mouth, wide speaking mouth, medium speaking mouth, closed mouth smile, blink with closed mouth. Only lips/jaw and eyelids change; absolutely no head angle/size/position changes. Chest-up bust, no hands, no text, no labels, no borders. Actual transparent alpha background everywhere outside the busts, no scenery, no halo, no drop shadow, no checkerboard. Professional contemporary harbor workwear interpreted in the same whimsical arcade art style, not photorealism. "
+    },
+    {
+      "common": "NEW Barge Boss NPC talking portrait sprite sheet. The supplied image is style/layout reference only: match hand-inked arcade illustration, bold dark contours, chunky stylized adult head and shoulders, warm orange highlights and readable shapes, rich nautical adventure colors. Exactly SIX frames in regular THREE columns by TWO rows, landscape3:2 canvas. Same character in identical RIGHT-facing profile in every cell; register head, shoulders, hat and scale exactly, only mouth/eyelids move. Frame order: closed mouth relaxed, small open mouth, wide speaking mouth, medium speaking mouth, closed mouth smile, blink closed mouth. Chest-up, no hands; entire bust within each cell with8% transparent margins. Actual transparent alpha background, no scenery/halo/shadow/checkerboard/text/borders. Professional contemporary harbor workwear interpreted in the same whimsical arcade style, not photorealism. Character: ",
+      "characters": [
+        [
+          "lock-keeper",
+          "older white man with broad ginger-and-gray beard, large friendly nose, weathered face, deep green knit watch cap, brass ear defender headset, olive waterproof work coat with orange collar. Patient and slightly eccentric. Forest green and orange accents."
+        ],
+        [
+          "dock-foreman",
+          "adult Latina woman with strong angular face, short dark hair under cream-yellow hard hat, red bandana at neck, burgundy work jacket with chunky shoulder panels, small radio earpiece. Energetic no-nonsense expression. Burgundy and cream accents."
+        ],
+        [
+          "fire-rescue-captain",
+          "middle-aged South Asian man, athletic square jaw, neat dark beard with gray streak, red rescue helmet with plain gold shield emblem without lettering, dark navy rescue coat with gold collar and compact radio earpiece. Calm decisive expression. Fire red and gold accents."
+        ]
+      ]
+    }
+  ]
+}
