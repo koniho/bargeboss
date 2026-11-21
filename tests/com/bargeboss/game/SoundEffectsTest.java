@@ -45,6 +45,16 @@ public final class SoundEffectsTest {
         for(int i=0;i<60;i++)g.sounds.step();
         check(SoundEffects.sequence(g)==sequence,"long radio exchange expires old milestone instead of playing a stale reward");
         g.mode=Game.PAUSE;check(!SoundEffects.audible(g),"paused host cannot play cues");
+        // One real contact produces its thud at the next simulation update, never on spray landing.
+        Game hit=new Game();hit.resetPracticeYard();hit.mode=Game.PLAY;
+        hit.splashes.contact(hit.tug,null,300,500,70,0,0,0,70);
+        hit.splashes.step(hit);
+        check(SoundEffects.sequence(hit)==1 && SoundEffects.cue(hit)==SoundEffects.CRUNCH && SoundEffects.audible(hit),"contact thud is immediate on effect update");
+        for(int t=0;t<6;t++)hit.sounds.step();
+        check(!SoundEffects.audible(hit),"late host must drop an impact older than 100 ms of simulation");
+        for(int t=0;t<150;t++){hit.sounds.step();hit.splashes.step(hit);}
+        check(SoundEffects.sequence(hit)==1,"falling collision spray never emits delayed static or another hit");
+        check(SoundEffects.asset(SoundEffects.BUMP).endsWith("light-kenney-v2.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("heavy-kenney-v2.wav"),"collision manifest uses quiet sampled thuds");
         System.out.println("Collision sound severity, priority, cooldown and stale-event checks passed");
     }
 }

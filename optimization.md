@@ -4636,3 +4636,26 @@ Phone timeout restored. Actual desktop renderer reviewed at960/1333 widths;
 no native screenshot or iOS build/visual-parity run this round. No measured FPS
 claim. Six canonical review images are in `docs/art-studies/ui-layout-v2`, copied
 to Downloads and Pictures/BargeBoss; MediaStore IDs17925–17930 verified.
+
+## 2026-11-21 — Quiet immediate collision feedback (shared audio)
+
+Traced delayed noise to CollisionSplashes landing audio, separate from impact
+playback. Removed landing sound dispatch and its bookkeeping; visuals/physics
+unchanged. Replaced contact manifest with three short low-passed CC0 Kenney
+thuds, 0.115–0.320s, peaks0.20–0.34. All preparation is offline, native hosts
+predecode as before. Impacts stale after100ms simulation time instead of500ms.
+Regression covers immediate contact dispatch and no delayed cue across full
+spray lifetime. See docs/audio/collision-thuds-v2.md for provenance, reproducible
+processing, limitations and source investigation. No FPS or native latency claim.
+
+Replay baseline intentionally changes2101eca9→2fcc437b because the tutorial trace
+records SoundEffects sequence/cue and removed landing events change that history.
+A/B of original/current CollisionSplashes with ONLY sound sequence/cue excluded
+from a temporary replay copy yields identical `f98873c8:2:1350`, retaining all
+graphics and other gameplay-state hashing. Permanent replay retains audio checks.
+
+Full Android check/build passed, including contact/audio regression, unchanged
+visual geometry checks and updated canonical audio trace2fcc437b:2:1350.
+Log: out/collision-thuds-v2-build.log. APK installed and cold launched Status:ok;
+previous screen timeout restored. Device speaker audition/end-to-end acoustic
+latency and iOS native build were not performed.

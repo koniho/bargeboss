@@ -30,8 +30,9 @@ public final class SoundEffects {
     }
     public static int sequence(Game root){return root.activeGame().sounds.sequence;}
     public static int cue(Game root){return root.activeGame().sounds.cue;}
-    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.sounds.age<30;}
+    /** Drop stale contact events instead of replaying a late bump after host recovery. */
+    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/fender-light-kenney-v1.wav","audio/fender-heavy-kenney-v1.wav","audio/fender-heavy-kenney-v1.wav","audio/fender-heavy-kenney-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/fender-light-kenney-v2.wav","audio/fender-medium-kenney-v2.wav","audio/fender-heavy-kenney-v2.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav"}[cue];
     }
 }

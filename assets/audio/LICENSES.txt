@@ -40,3 +40,10 @@ https://kenney.nl/assets/interface-sounds
 https://creativecommons.org/publicdomain/zero/1.0/
 Source files, hashes, original Kenney license notices and transformations:
 docs/audio/licensed-cues-v1.md and tools/prepare-licensed-audio.py.
+
+Collision thuds v2 (2026-11-21)
+fender-light-kenney-v2.wav, fender-medium-kenney-v2.wav,
+fender-heavy-kenney-v2.wav: edited Kenney Impact Sounds soft impacts, CC0.
+https://kenney.nl/assets/impact-sounds
+Same retained originals/licenses as v1; onset trim, low-pass, fades, gain reduction.
+Reproduce with tools/prepare-collision-thuds.py. See docs/audio/collision-thuds-v2.md.
