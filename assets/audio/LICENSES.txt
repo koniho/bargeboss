@@ -54,3 +54,10 @@ industrial-clunk-heavy-v1.wav: mixed/edited Kenney Impact Sounds metal + soft
 impacts, CC0. https://kenney.nl/assets/impact-sounds
 Source, mirror, exact hash, license and processing: docs/audio/industrial-clunks-v1.md.
 Reproduce with tools/prepare-industrial-clunks.py.
+
+Dull collision chunks v1 (2026-11-21)
+collision-chunk-light-v1.wav, collision-chunk-medium-v1.wav,
+collision-chunk-heavy-v1.wav: edited Kenney Impact Sounds wood impact, CC0.
+https://kenney.nl/assets/impact-sounds
+Source/hash/license and processing: docs/audio/dull-chunks-v1.md.
+Reproduce with tools/prepare-dull-chunks.py.

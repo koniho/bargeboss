@@ -38,6 +38,6 @@ public final class SoundEffects {
     /** Drop stale contact events instead of replaying a late bump after host recovery. */
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/industrial-clunk-light-v1.wav","audio/industrial-clunk-medium-v1.wav","audio/industrial-clunk-heavy-v1.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-chunk-light-v1.wav","audio/collision-chunk-medium-v1.wav","audio/collision-chunk-heavy-v1.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav"}[cue];
     }
 }

@@ -4722,3 +4722,24 @@ Full Android checks/build passed (out/industrial-clunks-build.log), canonical
 replay unchanged9ef27c86:2:1350. Installed and normal cold launch Status:ok;
 restored phone timeout. No iOS build or new subjective speaker audition this
 round. No native latency or performance improvement claim.
+
+## 2026-11-21 — Dull chunks + device-minimum idle rumble
+
+Replaced rejected metal layer with pitch-lowered, damped CC0 wood recording,
+160/220/280ms; no noise or metallic overlay. Source and reproducible script in
+docs/audio/dull-chunks-v1.md. No collision event/physics changes.
+
+Android prebuilds API36 public frequency envelopes with device-minimum idle,
+shared five load bands up to90Hz clamped to profile. Startup reflection only
+supports retained older compile SDK; no hidden APIs or per-frame effect builds.
+Idle band corrected to stay at minimum through fade-in. Lower-sharpness0 on iOS,
+which has no Hz equivalent. Fallback is quieter constant amplitude, not taps.
+Explicit debug haptic-review opt-in added, off for all normal profiling.
+Shared tests cover idle band, range clamps, continuous amplitude and lifecycle.
+
+Full checks/build passed (out/dull-chunks-low-rumble-build.log), replay unchanged
+9ef27c86:2:1350. APK installed. Native initialization logged frequencyControl=true,
+minimumHz50.0/maximumHz170.75 (out/low-rumble-native.log), proving public capability
+and envelope construction path succeeded. This diagnostic did not log gameplay
+band playback/scene READY, so it does not establish physical playback or feel.
+Returned to normal cold launch Status:ok; restored timeout. iOS not built here.

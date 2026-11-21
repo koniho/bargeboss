@@ -53,3 +53,26 @@ frequency/intensity limits. Lower-frequency output can be weaker. Suggested
 next audition70–90Hz, low intensity, smooth attack/release. Investigation only;
 no frequency-control implementation in the industrial-clunk round. Device dump
 playback history was discarded; retain only capability facts above.
+
+## Lowest-frequency idle implementation
+
+User requested lower actual frequency, then the lowest supported frequency at
+idle. Android now queries the public API36 envelope capability/frequency profile.
+Idle and fade-in use exactly the reported minimum (50Hz on development phone).
+Five shared load bands rise toward90Hz, clamped to hardware range. The smoothed
+shared amplitude selects bands; idle .10 stays in band1 (not band2 as a linear
+0–.28 scale would do). All effects are prepared once.120ms attack then constant
+low-frequency envelope segments; no5.2Hz amplitude modulation. The finite envelope
+is repeated by the public createRepeatingEffect API; loop renewal includes the
+short attack. Strength band transitions replace the native effect.
+
+Public API reflection is isolated in EngineRumble because the retained build SDK
+predates36. No private/hidden API access. Probe hardware min/max frequency, envelope
+point count and point duration constraints. Unsupported/error cases retain a
+quieter steady amplitude-only fallback; it cannot promise lower carrier frequency.
+iOS sharpness is set to its lowest0; Core Haptics does not expose equivalent Hz.
+
+Debug profile extra bb_haptic_review=true explicitly enables haptics for native
+verification; ordinary performance profiles remain haptics-free. bb_audio_trace
+also logs frequency capability and selected rumble band/Hz. Stop/priority/settings
+behavior remains unchanged.

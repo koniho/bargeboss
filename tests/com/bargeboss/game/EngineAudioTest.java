@@ -44,6 +44,9 @@ public final class EngineAudioTest {
         rumble.step(g);check(g.engineRumble()>0 && g.engineRumble()<.04f,"rumble fades back after contact");
         g.hapticsEnabled=false;check(g.engineRumble()==0,"setting silences engine immediately");
         g.hapticsEnabled=true;g.background();check(g.engineRumble()==0,"pause discards engine rumble");
+        check(EngineHaptics.band(0)==0 && EngineHaptics.band(.05f)==1 && EngineHaptics.band(.10f)==1 && EngineHaptics.band(.28f)==5,"idle/fade-in retain lowest frequency band");
+        check(EngineHaptics.frequency(1,50,170.75f)==50 && EngineHaptics.frequency(5,50,170.75f)==90,"frequency rises from device minimum to 90Hz");
+        check(EngineHaptics.frequency(5,50,80)==80 && EngineHaptics.frequency(1,110,160)==110 && EngineHaptics.frequency(5,110,160)==110,"frequency never leaves device profile");
         System.out.println("Engine audio idle/load, headroom and lifecycle checks passed");
     }
 }
