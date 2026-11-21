@@ -4543,3 +4543,13 @@ old reading is not a valid timing baseline. The CPU crop budget remains160 MiB.
 Restored original art confirmed in native equipment screenshot and desktop title
 review. Full check.sh, derivative/pack freshness checks and Android build passed;
 installed and relaunched on the development phone. iOS was not built or tested.
+
+## 2026-11-21 — 64-pose painted art authoring checkpoint (shared/offline)
+
+No runtime cache, renderer, assets or level-manifest changes in this increment.
+The four-quarter painted hull experiment fails continuity/angle review and is
+kept under docs/art-studies/barge-painted-64. Do not preload these candidates.
+The64 authoring/review tools run offline; no active-draw work was added. Final
+migration still needs level-scoped frame packs, bounded cache preparation and
+native title/gameplay performance validation. See study README for measurements;
+these are art-alignment metrics, not frame-time results.

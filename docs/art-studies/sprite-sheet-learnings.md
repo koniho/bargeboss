@@ -257,3 +257,24 @@ rounded forms, fenders, wear and lighting match accepted artwork. Pose-count
 requirements never authorize an art-quality downgrade. Review the title convoy
 as well as gameplay composites before promoting any replacement. This 64-pose
 migration remains unfinished; equipment remains independently at64 headings.
+
+## 2026-11-21 — painted 64-pose quarter experiment
+
+See `barge-painted-64/README.md`. A single requested 8x8 sheet generated only56
+cells. Four 4x4 requests preserved the painted style better, but did not preserve
+rigid dimensions, exact angles or hardware across quarters. A precise fender
+edit also introduced a background; a separate extraction fixed alpha but did
+not fix geometry. Inspect both alpha and hardware after every edit.
+
+The assembled64-cell study has mean registered silhouette IoU0.834 but still
+fails the turntable review. Frame15/47 approach cardinal views early and the
+15→16 seam changes apparent length. Good silhouette overlap and populated cells
+are not production acceptance. Keep accepted art until controlled geometry with
+finished materials or authored pose correction passes the complete turn. Do not
+spend on cargo/shadow derivatives while the hull itself is unstable.
+
+Tools now support four16-pose guide sections, lossless quarter packing, 8x8
+registration, 32/64 review viewers and 32/64 guide-projected effect metadata.
+Quarter frame IDs are local0..15; global frame is quarter*16+local. Guide angles
+and pixels are checked against the original full64 guide. One shared scale and
+per-frame translation remain allowed; per-frame shape stretching remains banned.

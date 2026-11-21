@@ -10,12 +10,15 @@ import javax.imageio.ImageIO;
 
 /** Read-only silhouette registration against a known projected vessel guide. */
 public final class VesselRegistration {
-    private static final int N=128,COUNT=32;
+    private static final int N=128;
     private VesselRegistration() {}
     static BufferedImage cell(BufferedImage atlas,int frame) {
-        int x=Math.round(atlas.getWidth()*(frame%8)/8f),y=Math.round(atlas.getHeight()*(frame/8)/4f);
-        int w=Math.round(atlas.getWidth()*(frame%8+1)/8f)-x;
-        int h=Math.round(atlas.getHeight()*(frame/8+1)/4f)-y;
+        return cell(atlas,frame,8,4);
+    }
+    static BufferedImage cell(BufferedImage atlas,int frame,int columns,int rows) {
+        int x=Math.round(atlas.getWidth()*(frame%columns)/(float)columns),y=Math.round(atlas.getHeight()*(frame/columns)/(float)rows);
+        int w=Math.round(atlas.getWidth()*(frame%columns+1)/(float)columns)-x;
+        int h=Math.round(atlas.getHeight()*(frame/columns+1)/(float)rows)-y;
         return atlas.getSubimage(x,y,w,h);
     }
     private static boolean[] mask(BufferedImage cell,double scale) {
@@ -50,19 +53,22 @@ public final class VesselRegistration {
         return pts;
     }
     public static void main(String[] args) throws Exception {
-        if(args.length!=3) throw new IllegalArgumentException("VesselRegistration guide.png candidate.png output.csv (8x4 atlases)");
+        if(args.length!=3 && args.length!=5) throw new IllegalArgumentException("VesselRegistration guide.png candidate.png output.csv [columns rows] (default 8x4)");
+        int columns=args.length==5?Integer.parseInt(args[3]):8,rows=args.length==5?Integer.parseInt(args[4]):4;
+        if(columns<1 || rows<1 || columns>64 || rows>64) throw new IllegalArgumentException("Invalid grid");
+        int count=columns*rows;
         BufferedImage guide=ImageIO.read(new File(args[0])),source=ImageIO.read(new File(args[1]));
         if(guide==null || source==null || !guide.getColorModel().hasAlpha() || !source.getColorModel().hasAlpha())
             throw new IllegalArgumentException("Both inputs must be transparent images");
-        double[] ratios=new double[COUNT];
-        for(int i=0;i<COUNT;i++) ratios[i]=width(cell(guide,i))/width(cell(source,i));
-        Arrays.sort(ratios);double scale=(ratios[15]+ratios[16])*.5;
+        double[] ratios=new double[count];
+        for(int i=0;i<count;i++) ratios[i]=width(cell(guide,i,columns,rows))/width(cell(source,i,columns,rows));
+        Arrays.sort(ratios);double scale=(ratios[(count-1)/2]+ratios[count/2])*.5;
         if(scale<.5 || scale>2) throw new IllegalArgumentException("Guide/candidate scale differs too much for this tool");
         StringBuilder out=new StringBuilder("frame,pivot_x,pivot_y,uniform_scale,raw_iou,registered_iou,shift_x,shift_y\n");
         double rawTotal=0,fitTotal=0,minFit=1;
-        for(int frame=0;frame<COUNT;frame++) {
-            boolean[] gm=mask(cell(guide,frame),1);int gc=count(gm);
-            int[] raw=points(mask(cell(source,frame),1)),scaled=points(mask(cell(source,frame),scale));
+        for(int frame=0;frame<count;frame++) {
+            boolean[] gm=mask(cell(guide,frame,columns,rows),1);int gc=count(gm);
+            int[] raw=points(mask(cell(source,frame,columns,rows),1)),scaled=points(mask(cell(source,frame,columns,rows),scale));
             if(gc==0 || raw.length==0 || scaled.length==0) throw new IllegalArgumentException("Empty mask "+frame);
             double rawScore=overlap(gm,gc,raw,0,0),best=-1;int bx=0,by=0;
             for(int dy=-24;dy<=24;dy++) for(int dx=-24;dx<=24;dx++) {
@@ -76,7 +82,7 @@ public final class VesselRegistration {
         File output=new File(args[2]);if(output.getParentFile()!=null)output.getParentFile().mkdirs();
         Files.write(output.toPath(),out.toString().getBytes(StandardCharsets.UTF_8));
         System.out.printf(Locale.ROOT,"%s: one uniform scale %.4f; mean silhouette overlap raw %.3f, registered %.3f, minimum %.3f%n",
-            args[1],scale,rawTotal/COUNT,fitTotal/COUNT,minFit);
+            args[1],scale,rawTotal/count,fitTotal/count,minFit);
         System.out.println("Estimates only: silhouette overlap does not verify heading, waterline, fittings or physical model consistency.");
     }
 }

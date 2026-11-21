@@ -14,6 +14,7 @@ public final class BargePoseGuide {
     private static final int CELL=384;
     private static int headingCount=32,poseCount=32,columns=8;
     private static double headingOffset=0;
+    private static int headingStart=0;
     private static final double DEPTH=1/StrictMath.sqrt(3),HEIGHT=StrictMath.sqrt(2.0/3);
     private static final class Face {
         double[] x,y,z; int color;
@@ -35,7 +36,7 @@ public final class BargePoseGuide {
     }
     private BargePoseGuide(int frame,boolean bulk) {
         this.frame=frame;this.bulk=bulk;
-        angle=(frame+headingOffset)*StrictMath.PI*2/headingCount; cx=(frame%columns+.5)*CELL;
+        angle=(frame+headingStart+headingOffset)*StrictMath.PI*2/headingCount; cx=(frame%columns+.5)*CELL;
         cy=(frame/columns+.72)*CELL; scale=CELL*.78/77.5;
     }
     private void face(double[][] vertices,int rgb) {
@@ -212,18 +213,21 @@ public final class BargePoseGuide {
         guide.geometry();
     }
     public static void main(String[] args) throws Exception {
-        headingCount=32;headingOffset=0;poseCount=32;columns=8;
-        boolean proof=false;
+        headingCount=32;headingOffset=0;headingStart=0;poseCount=32;columns=8;
+        boolean proof=false;int quarter=-1;
         ArrayList<String> options=new ArrayList<String>();
         String suffix="";
         for(String arg:args) {
-            if(arg.equals("--64")){headingCount=64;suffix="64-";}
+            if(arg.startsWith("--quarter=")){quarter=Integer.parseInt(arg.substring(10));if(quarter<0 || quarter>3)throw new IllegalArgumentException("Quarter must be 0..3");headingCount=64;headingStart=quarter*16;}
+            else if(arg.equals("--64")){headingCount=64;suffix="64-";}
             else if(arg.equals("--intermediate")){headingOffset=.5;suffix="intermediate-";}
             else if(arg.equals("--proof"))proof=true;
             else options.add(arg);
         }
         if(headingCount==64 && headingOffset!=0)throw new IllegalArgumentException("Choose --64 or --intermediate");
-        poseCount=proof?4:headingCount;columns=proof?4:8;
+        if(quarter>=0 && proof)throw new IllegalArgumentException("Choose --quarter or --proof");
+        poseCount=quarter>=0?16:proof?4:headingCount;columns=quarter>=0?4:proof?4:8;
+        if(quarter>=0)suffix="64-quarter-"+quarter+"-";
         if(proof)suffix+="proof-";
         args=options.toArray(new String[options.size()]);
         int kind=args.length>0 && args[0].equals("--steel")?0:args.length>0 && args[0].equals("--containers")?1:args.length>0 && args[0].equals("--coal-v2")?3:2;
@@ -252,7 +256,7 @@ public final class BargePoseGuide {
         ImageIO.write(guide,"png",new File(prefix+"pose-guide.png"));
         Files.write(new File(prefix+"guide-anchors.csv").toPath(),anchors.toString().getBytes(StandardCharsets.UTF_8));
         Files.write(new File(prefix+"guide-registration.csv").toPath(),registration.toString().getBytes(StandardCharsets.UTF_8));
-        System.out.println(prefix+"pose-guide.png — "+poseCount+" poses, "+guide.getWidth()+"x"+guide.getHeight()+", fixed 35.264-degree camera, "+(360.0/headingCount)+"-degree steps, offset "+(headingOffset*360/headingCount));
+        System.out.println(prefix+"pose-guide.png — "+poseCount+" poses, "+guide.getWidth()+"x"+guide.getHeight()+", fixed 35.264-degree camera, "+(360.0/headingCount)+"-degree steps, offset "+((headingStart+headingOffset)*360/headingCount));
         System.out.println(poseCount+" source-gutter checks passed; "+(bulk?"1 cargo origin per pose":"open holds checked; 28 named anchors per pose")+"; no lights or smoke outlets.");
     }
 }
