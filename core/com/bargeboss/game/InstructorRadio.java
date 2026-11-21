@@ -15,7 +15,7 @@ final class InstructorRadio {
     float y(Game g){Body b=g.teacherBoat();return g.layout.camera.screenY(b.x,b.y)-12*g.layout.camera.scale;}
     private boolean hit(Game g,float x,float y){
         if(g.teacherBoat()==null || x<0 || x>g.layout.width || y<64 || y>=g.layout.height-64
-                || OverviewMap.bounds(g).contains(x,y) || Joystick.hit(g,x,y)
+                || OverviewMap.visible(g) && OverviewMap.bounds(g).contains(x,y) || Joystick.hit(g,x,y)
                 || g.layout.box(Layout.HELP).contains(x,y) || g.layout.box(Layout.PRACTICE).contains(x,y)
                 || (x>g.layout.width-450 && y<192))return false;
         float dx=(x-x(g))/Math.max(30,37*g.layout.camera.scale),dy=(y-y(g))/Math.max(24,28*g.layout.camera.scale);

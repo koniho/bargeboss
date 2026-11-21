@@ -24,7 +24,7 @@ public final class Joystick {
         if(powered){throttleAngle=thrustAngle(g);throttleRgb=(g.driveDirection()<0?REVERSE_COLOR:FORWARD_COLOR)&0xffffff;}
     }
     private static float ease(float value,float target){value+=(target-value)*.18f;return Math.abs(target-value)<.001f?target:value;}
-    private static float appliedThrottle(Game g){
+    static float appliedThrottle(Game g){
         if(g.driveDirection()==0)return 0;
         return g.joystick.active?g.joystick.throttle():g.holdingTug() && g.pushing && g.manualSteering?
                 Physics.clamp((Physics.length(g.pointerX-g.downX,g.pointerY-g.downY)-26)/60,0,1):0;

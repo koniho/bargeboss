@@ -60,7 +60,7 @@ public final class OverviewMap {
         p.circle(thumb,y,6,0xddc4dedb);
         SoftCue.ring(p,thumb,y,8,1,0x907fe1db,1);
     }
-    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
     static Chart chart(Game g){return CHARTS[g.montroseStage()?1:g.indianaStage()?2:g.calumetStage()?3:0];}
     static float pulse(int tick){return .65f+.35f*(float)StrictMath.sin(tick*StrictMath.PI/60);}

@@ -39,7 +39,7 @@ find build/android/classes -name '*.class' | sort > build/android/classes.txt
 d8 --lib "$SDK_JAR" --min-api 24 --output build/android/dex @build/android/classes.txt
 (cd build/android/dex && zip -q -j ../base.apk classes*.dex)
 if [ "${BARGEBOSS_VULKAN:-1}" = 1 ]; then
-    (cd build/android/vulkan && zip -q ../base.apk lib/arm64-v8a/libbargeboss_vulkan.so)
+    (cd build/android/vulkan && zip -q ../base.apk lib/arm64-v8a/*.so)
 fi
 if command -v zipalign >/dev/null; then
     zipalign -f -p 4 build/android/base.apk build/android/aligned.apk

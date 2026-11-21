@@ -23,8 +23,10 @@ public final class NavigationPractice {
         if(slipPhase==0 && Physics.length(b.x-APPROACH_X,b.y-SLIP_Y)<35){slipPhase=1;g.cancelInputs();}
         if(slipPhase==1 && Math.abs(Physics.angle(b.angle))<.20f && Math.abs(b.y-SLIP_Y)<30){slipPhase=2;reverseTravel=0;g.cancelInputs();}
         if(slipPhase==2 && g.navigating && g.reversing && dx<0 && dx>-10)reverseTravel-=dx;
-        return slipPhase==2 && reverseTravel>=90 && b.x<SLIP_X+15 && b.x>SLIP_X-22
-                && Math.abs(b.y-SLIP_Y)<20 && Math.abs(Physics.angle(b.angle))<.25f;
+        // Any position inside the slip counts once the center crosses the mouth.
+        // Actual astern travel is still required; the collision retry above takes priority.
+        return slipPhase==2 && reverseTravel>0 && b.x<TrainingChannel.BASIN_LEFT && b.x>=TrainingChannel.SLIP_LEFT
+                && b.y>=TrainingChannel.SLIP_TOP && b.y<=TrainingChannel.SLIP_BOTTOM;
     }
     boolean map(Game g){
         if(mapPhase==0 && g.tug.x>TrainingChannel.BASIN_LEFT+50){mapPhase=1;g.cancelInputs();}
@@ -45,7 +47,7 @@ public final class NavigationPractice {
         if(slip){
             title=retry?"PULL CLEAR AND TRY AGAIN":"BACK INTO THE SLIP";
             first=retry?"THAT WAS A HARD BUMP. DRIVE FULLY OUT.":slipPhase==0?"APPROACH THE MARKER OUTSIDE THE SLIP.":slipPhase==1?"POINT YOUR BOW AWAY FROM THE SLIP.":"RELEASE. SELECT AMBER. BACK IN GENTLY.";
-            second=retry?"THE NEXT ATTEMPT STARTS OUTSIDE.":"KEEP CLEAR OF THE WALLS. SMALL INPUTS.";
+            second=retry?"THE NEXT ATTEMPT STARTS OUTSIDE.":"BACK PAST THE MOUTH. KEEP CLEAR OF WALLS.";
         }else{
             title=mapPhase<2?"HEAD INTO OPEN WATER":mapPhase==2?"USE YOUR OVERVIEW MAP":"FIND THE CHART TARGET";
             first=mapPhase==0?"DRIVE FORWARD OUT OF THE SLIP.":mapPhase==1?"MEET AT THE OPEN-WATER MARKER.":mapPhase==2?"DRAG THE MAP SLIDER LEFT TO ZOOM OUT.":"STEER TO THE AMBER DIAMOND ON THE MAP.";

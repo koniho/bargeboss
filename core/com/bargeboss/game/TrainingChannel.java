@@ -5,6 +5,7 @@ public final class TrainingChannel {
     public static final float MIN=-1260,MAX=Physics.LEFT,HALF_WIDTH=58;
     public static final float TOW_BASIN_TOP=-200, NARROW_LEFT=270,NARROW_RIGHT=330,NARROW_EXIT=-520,TOW_END=-1000;
     public static final float BASIN_LEFT=-1856,BASIN_TOP=192,BASIN_BOTTOM=832;
+    public static final float SLIP_LEFT=-2000,SLIP_TOP=250,SLIP_BOTTOM=350;
     public static final float ENTRY_LEFT=-2240,ENTRY_TOP=570,ENTRY_BOTTOM=730;
     public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};
@@ -25,7 +26,7 @@ public final class TrainingChannel {
         water[RECTANGLES.length+4]=new float[]{Physics.RIGHT,570,628,Physics.BOTTOM};
         water[RECTANGLES.length+5]=new float[]{570,148,628,570};
         water[RECTANGLES.length+6]=new float[]{ENTRY_LEFT,ENTRY_TOP,BASIN_LEFT,ENTRY_BOTTOM};
-        water[RECTANGLES.length+7]=new float[]{-2000,250,BASIN_LEFT,350};
+        water[RECTANGLES.length+7]=new float[]{SLIP_LEFT,SLIP_TOP,BASIN_LEFT,SLIP_BOTTOM};
         return water;
     }
     private static float[] waterBoundary() {
@@ -57,10 +58,10 @@ public final class TrainingChannel {
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_BOTTOM;
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_TOP;
         result[n++]=BASIN_LEFT;result[n++]=ENTRY_TOP;
-        result[n++]=BASIN_LEFT;result[n++]=350;
-        result[n++]=-2000;result[n++]=350;
-        result[n++]=-2000;result[n++]=250;
-        result[n++]=BASIN_LEFT;result[n]=250;
+        result[n++]=BASIN_LEFT;result[n++]=SLIP_BOTTOM;
+        result[n++]=SLIP_LEFT;result[n++]=SLIP_BOTTOM;
+        result[n++]=SLIP_LEFT;result[n++]=SLIP_TOP;
+        result[n++]=BASIN_LEFT;result[n]=SLIP_TOP;
         return result;
     }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */

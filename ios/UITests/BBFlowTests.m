@@ -260,8 +260,10 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         // A fresh straight gesture selects gear from the current bow/stern.
         // Turn toward distant targets without accidentally selecting the other gear.
         double angle=base+fmax(-1.0,fmin(1.0,error));
-        CGPoint aim=CGPointMake(tug.x+100*cos(angle),tug.y+100*sin(angle));
-        [self joystickDrive:stage to:aim status:status minimumTravel:42 hold:.45];
+        BOOL slow=lesson==BBLessonMove && phase==0 && [self integerInStatus:status tag:@"helm pace"]==0;
+        double distance=slow?45:100;
+        CGPoint aim=CGPointMake(tug.x+distance*cos(angle),tug.y+distance*sin(angle));
+        [self joystickDrive:stage to:aim status:status minimumTravel:slow?26:55 hold:.45];
     }
     [self waitFor:BBLessonToken(BBLessonChannel) on:stage];
     XCTAssertEqual(seen,(NSUInteger)31,@"Helm and both figure eights must be exercised");

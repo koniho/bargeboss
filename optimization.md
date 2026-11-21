@@ -4329,3 +4329,31 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
 - Separate observation: mission yacht still has its existing silhouette-wide
   pulsing target bloom after surface shading, making it appear lit at night.
   That guidance treatment is unchanged by this fix.
+
+## 2026-11-20 — Easier slip entry and staged throttle/map teaching
+- Slip success now covers the full authoritative slip rectangle once the tug
+  center passes its mouth after actual backing. Removed precise depth, centerline,
+  heading and 90-unit requirements; significant impacts still require exiting
+  before retry. The cue outlines the whole slip instead of a tiny target ring.
+- Map and slider visibility/input begin at the map lesson; hidden map bounds no
+  longer prevent tapping the instructor. Normal location gameplay is unchanged.
+- First helm exercise now requires gentle forward throttle (up to 45%) then
+  stronger throttle (at least 75%), with real travel for both. Reads the same
+  normalized throttle as the HUD and preserves drag-tug and left/right joystick
+  controls. No new assets, caches or rendering primitives.
+- Updated region regression covers entry immediately past the mouth, full width
+  and depth, and an oblique final heading. Wrong throttle settings cannot earn
+  either pace gate; actual left/right joystick and drag replays complete the course.
+- Renderer review confirms early map/slider absence, both pace instructions and
+  whole-slip outline. Shared replay baseline now `df642bb4:2:1350`; delivery and
+  score totals are unchanged.
+- The newly pulled default Vulkan build needed an on-device toolchain path.
+  Added Termux clang++/glslang support, bundling libc++_shared with its LLVM license;
+  host NDK builds retain static C++ linkage. Locally used Khronos Vulkan-Headers
+  v1.3.290 in ignored `build/android/native-deps/vulkan-headers/include`, selected
+  with `BARGEBOSS_VULKAN_HEADERS`. No native renderer or shader logic changed.
+- Full shared and asset checks, Vulkan encoding/clip checks, Android packaging
+  and desktop packaging passed. APK installed through Shizuku and launched;
+  native log confirms `Vulkan renderer active` on the development phone. Reviewed
+  actual shared-renderer slow/fast prompts and slip/map frames. Native iOS and
+  a full manual Android touch playthrough were not performed this round.

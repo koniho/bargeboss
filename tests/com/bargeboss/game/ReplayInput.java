@@ -160,7 +160,8 @@ public final class ReplayInput {
             move(g,g.downX+sign*65*(float)StrictMath.cos(g.tug.angle),g.downY+sign*65*(float)StrictMath.sin(g.tug.angle));
         }
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
-        move(g,g.downX+dx/len*60,g.downY+dy/len*60);
+        float distance=g.tutorial!=null && g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==HelmPractice.FORWARD?(g.tutorial.helm.pace==0?48:80):60;
+        move(g,g.downX+dx/len*distance,g.downY+dy/len*distance);
     }
     public static void channel(Game root) {
         Game g=root.activeGame();

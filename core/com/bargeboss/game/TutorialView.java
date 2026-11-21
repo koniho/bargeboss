@@ -36,7 +36,7 @@ public final class TutorialView {
         if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
             first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
         }
-        if(t.lesson==Tutorial.MOVE)return new InstructionPanel.Content("helm-"+t.helm.phase,t.helm.title(),t.helm.first(),t.helm.second(),t.lesson,t.helm.phase/5f);
+        if(t.lesson==Tutorial.MOVE)return new InstructionPanel.Content("helm-"+t.helm.phase+":"+t.helm.pace,t.helm.title(),t.helm.first(),t.helm.second(),t.lesson,t.helm.phase/5f);
         if(t.lesson==Tutorial.FIGURE_EIGHT || t.lesson==Tutorial.REVERSE)
             second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% / CROSS THROUGH THE MIDDLE";
         String key=t.lesson+":"+title+":"+approach+":"+wrongTug+":"+t.reverseArmed;
@@ -103,7 +103,12 @@ public final class TutorialView {
                 if(n.mapPhase==3 && Physics.length(g.tug.x-NavigationPractice.TARGET_X,g.tug.y-NavigationPractice.TARGET_Y)<150)
                     SoftCue.ring(river,NavigationPractice.TARGET_X,NavigationPractice.TARGET_Y,40+pulse,1,0x9995d7d1,2);
             }else{
-                SoftCue.ring(river,n.targetX(g),n.targetY(g),30+pulse,1,0x9995d7d1,2);
+                if(t.lesson==Tutorial.SLIP && n.slipPhase==2 && !n.retry){
+                    float l=TrainingChannel.SLIP_LEFT+5,r=TrainingChannel.BASIN_LEFT-2,top=TrainingChannel.SLIP_TOP+5,bottom=TrainingChannel.SLIP_BOTTOM-5;
+                    int ink=SoftCue.animated(g,0x7795d7d1);
+                    SoftCue.line(river,l,top,r,top,1.5f,ink);SoftCue.line(river,r,top,r,bottom,1.5f,ink);
+                    SoftCue.line(river,r,bottom,l,bottom,1.5f,ink);SoftCue.line(river,l,bottom,l,top,1.5f,ink);
+                }else SoftCue.ring(river,n.targetX(g),n.targetY(g),30+pulse,1,0x9995d7d1,2);
                 driveArrow(g,river,n.targetX(g),n.targetY(g),null);
             }
         } else if(t.lesson==Tutorial.MOVE){

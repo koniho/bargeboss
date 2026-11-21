@@ -333,7 +333,10 @@ available, and `apksigner`. Install Android platform 36 and build-tools 36.0.0,
 and NDK 27.0.12077973, and put the build-tools directory on `PATH`.
 Vulkan is the default Android renderer, paced to 60 FPS with automatic Canvas
 fallback. The native library currently targets arm64. Set `BARGEBOSS_VULKAN=0`
-for a Canvas-only build (including Termux without the host NDK toolchain).
+for a Canvas-only build. On-device Termux builds use `clang++` and `glslang`
+instead of the host NDK; install Vulkan headers or set `BARGEBOSS_VULKAN_HEADERS`
+to a Vulkan-Headers `include` directory. They bundle Termux's C++ runtime and
+its license alongside the renderer.
 For diagnosis, launch with `--es bb_renderer canvas` to force Canvas.
 
 ```sh
