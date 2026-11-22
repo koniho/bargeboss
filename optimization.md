@@ -5457,3 +5457,33 @@ launch restored after capture; screen timeout restored to300000ms.
   confirming warm glow/reflection and panel ordering. This is not a full native
   motion/performance validation or a speaker audition. Normal launch restored
   after the fixture. iOS adapter changes were not built or run on this phone.
+
+### 2026-11-22 — layered flame sprite loop and per-instance smoke (shared)
+
+- Replaced 27 per-frame flame polygons and nine individual glows with five
+  translucent sprite blends using 16 registered 256-square cells (4 MiB RGBA).
+  The two aggregate fire glows, changing-color light, reflection and sparks remain.
+  Tutorial LevelAssets prefetches the complete flame set; other levels do not.
+- Five distinct fixed world anchors drive both drawing and smoke emission. Each
+  emits once per 16 ticks, staggered, for 18.75 puffs/sec total versus the former
+  single source's 7.5/sec. Existing 384-puff pool and 480-tick lifetime stay bounded;
+  no new particle buffers. Smoke travels independently after emission.
+- Targeted checks cover every source, draw purity, 1000 ticks of valid seamless
+  frame indices/blends, planted pivots, transparency and extinction. Actual shared
+  renderer sequence exported to out/flame-animation and reviewed at gameplay size.
+  Fire remains readable through translucency, and UI continues to draw above it.
+- Generated dimensions differed from the prompt; preparation uses actual source
+  quarters and bright-core registration. Source, exact prompt, metadata and
+  reproducible preparation are retained. Full/native build validation follows.
+- Complete Android build/checks passed (including the flame asset and source-anchor
+  checks), APK installed and normal cold launch restored. Native Vulkan screenshot
+  out/flame-sprites-native.png confirms soft translucent flames, multiple smoke
+  sources and panel-over-effects order. Review images/video were copied to Photos
+  BargeBoss and verified in MediaStore (IDs 18120 and 18121).
+- Short frozen-fire native profile retained as out/flame-freeze.csv: 30 warmup +
+  60 measured frames. This is a render-cost smoke test, not an animated full-scene
+  A/B benchmark; it does not establish an FPS improvement. Shared animation is
+  exercised in the 64-frame renderer video; iOS was not device-tested.
+- Replay baseline be9f8d0c:2:1350 reflects sprite draws and staggered smoke emission.
+- Measured frozen samples: draw p50 11.15ms / p95 12.28ms; frame interval p50
+  16.62ms / p95 18.46ms; zero frame texture builds or evictions after warmup.

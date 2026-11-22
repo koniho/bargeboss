@@ -9,6 +9,8 @@ java -cp build/check com.bargeboss.game.CoreTest
 java -cp build/check com.bargeboss.game.MooredBoatsTest
 
 # Asset contract is host-only; native game remains pure shared Java.
+javac -Xlint:-options --release 8 -d build/check tools/FlameAssetCheck.java
+java -cp build/check FlameAssetCheck
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check tools/CargoAssetCheck.java tools/GenerateCargoShadows.java tools/GenerateSurfaceLighting.java
 java -cp build/check com.bargeboss.game.CargoAssetCheck
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateCargoShadows --check
