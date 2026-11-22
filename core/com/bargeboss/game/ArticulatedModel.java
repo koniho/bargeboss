@@ -105,15 +105,19 @@ public final class ArticulatedModel {
             beam(node,ax,ay,az,bx,by,bz,width,color,-1);
         }
         public void beam(int node,float ax,float ay,float az,float bx,float by,float bz,float width,int color,int material) {
+            beam(node,ax,ay,az,bx,by,bz,width,width,color,material);
+        }
+        /** Rectangular section: webbing's broad face and thin edge share one rigid frame. */
+        public void beam(int node,float ax,float ay,float az,float bx,float by,float bz,float width,float thickness,int color,int material) {
             float dx=bx-ax,dy=by-ay,dz=bz-az,len=(float)StrictMath.sqrt(dx*dx+dy*dy+dz*dz);
             if(len<EPS)throw new IllegalArgumentException("Rigid beam needs length");
             dx/=len;dy/=len;dz/=len;
             float ux=-dy,uy=dx,uz=0,ul=(float)StrictMath.sqrt(ux*ux+uy*uy);
             if(ul<EPS){ux=1;uy=0;ul=1;}
-            ux/=ul;uy/=ul;float vx=dy*uz-dz*uy,vy=dz*ux-dx*uz,vz=dx*uy-dy*ux,h=width*.5f;
+            ux/=ul;uy/=ul;float vx=dy*uz-dz*uy,vy=dz*ux-dx*uz,vz=dx*uy-dy*ux,h=width*.5f,t=thickness*.5f;
             float[][] p=new float[8][3];
             for(int end=0;end<2;end++)for(int i=0;i<4;i++) {
-                float su=(i==0 || i==3)?-h:h,sv=i<2?-h:h;
+                float su=(i==0 || i==3)?-h:h,sv=i<2?-t:t;
                 p[end*4+i]=new float[]{(end==0?ax:bx)+su*ux+sv*vx,(end==0?ay:by)+su*uy+sv*vy,(end==0?az:bz)+su*uz+sv*vz};
             }
             prism(node,color,material,p);

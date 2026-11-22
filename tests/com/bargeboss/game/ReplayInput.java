@@ -8,11 +8,11 @@ public final class ReplayInput {
         g.resetPracticeYard(); g.tug=new Body(0,-1,376,390,(float)Math.PI); for(Feeder f:g.feeders) { f.phase=Feeder.IDLE; f.load=null; }
         g.addCargo(2,292,290); g.addCargo(1,320,480);
     }
-    /** Isolated later Montrose job; production entry always starts with the yacht. */
+    /** Isolated later Montrose job; production entry starts with the haulout. */
     static Game montroseJob(int id){
         Game g=new Game();g.challengeId=Challenges.MONTROSE;g.reset();
         g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
-        g.rescue.setup(g);return g;
+        g.dialogue.close(g);g.mission.setup(g);return g;
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
     public static void tap(Game g,Layout.Box box) { box=g.activeGame().controlBox(box); tap(g,box.centerX(),box.centerY()); }
@@ -39,6 +39,8 @@ public final class ReplayInput {
     }
     public static void work(Game g) {
         if(g.mode!=Game.PLAY || g.ropePhase!=0) return;
+        if(g.dialogue.active){if(g.dialogue.ready())tap(g,g.dialogue.choiceBox(g,0).centerX(),g.dialogue.choiceBox(g,0).centerY());return;}
+        if(MontroseHaulout.active(g)){haulout(g);return;}
         if(MontroseRescue.swimmers(g)){swimmerRescue(g);return;}
         if(MontroseRescue.cruisers(g))return; // Dedicated phase fixtures cover raft release and both narrow slips.
         if(g.indianaStage()){indianaTow(g);return;}
@@ -133,6 +135,26 @@ public final class ReplayInput {
         if(g.pointer)up(g,g.pointerX,g.pointerY);
         if(g.tug.speed()>3)return;
         down(g,g.rescue.x[target],g.rescue.y[target]);up(g,g.rescue.x[target],g.rescue.y[target]);
+    }
+    private static void haulout(Game g){
+        Body b=g.cargo[0];
+        if(!g.haulout.requested){if(!g.haulout.radio.waiting())tap(g,TravelLiftRadio.x(g),TravelLiftRadio.y(g));return;}
+        if(!g.haulout.lowered())return;
+        if(g.haulout.warping){if(g.pointer)up(g,g.pointerX,g.pointerY);return;}
+        if(!g.tow.connected(b,g.tug)){
+            if(g.haulout.towed){
+                if(g.joystick.active)up(g,g.pointerX,g.pointerY);
+                if(!g.pointer)down(g,b.x,b.y);
+                return;
+            }
+            if(g.pointer)up(g,g.pointerX,g.pointerY);
+            down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
+        }
+        if(b.y<MontroseHaulout.APPROACH_Y+80 && Math.abs(b.x-MontroseHaulout.X)<45){
+            throttle(g,0,0);if(b.speed()<6 && g.tug.speed()<6){if(g.pointer)up(g,g.pointerX,g.pointerY);releaseTow(g);}return;
+        }
+        float dx=MontroseHaulout.X-g.tug.x,dy=MontroseHarbor.mapY(279)-g.tug.y,len=Math.max(1,Physics.length(dx,dy));
+        if(len<8)throttle(g,0,0);else throttle(g,dx/len*44,dy/len*44);
     }
     private static void marinaTow(Game g) {
         Body b=g.cargo[0];

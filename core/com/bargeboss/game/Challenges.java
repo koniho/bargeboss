@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Append-only level catalog. Existing IDs stay stable in saved careers. */
 public final class Challenges {
-    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,RAFT_RESCUE=6,SWIMMER_RESCUE=7,PAGE_SIZE=3;
+    public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,RAFT_RESCUE=6,SWIMMER_RESCUE=7,HAULOUT=8,PAGE_SIZE=3;
     private static final class Definition {
         final int kind,quota,replaySeconds;
         final String title,description,summary,cardGoal,cardHint;
@@ -28,7 +28,9 @@ public final class Challenges {
         new Definition(MONTROSE,2,1200,"RAFTED CRUISERS","SEPARATE TWO RAFTED CRUISERS. TOW BOTH TO DOCK C.",
                 "2 CRUISERS / DOCK C","SEPARATE / TOW / DOCK","RETURN TO C-38 AND C-22"),
         new Definition(MONTROSE,20,900,"SWIMMER RESCUE","THROW BUOYS TO 20 SWIMMERS OFF THE SEAWALL.",
-                "20 SWIMMERS / KEEP CLEAR","SLOW DOWN / THROW BUOYS","AVOID HULL AND PROPELLER CONTACT")
+                "20 SWIMMERS / KEEP CLEAR","SLOW DOWN / THROW BUOYS","AVOID HULL AND PROPELLER CONTACT"),
+        new Definition(MONTROSE,1,600,"HAULOUT CALL","TOW A DISABLED BOAT TO THE NORTH SHORE TRAVEL LIFT.",
+                "DISABLED BOAT / HAULOUT","TOW / RELEASE / CREW HANDOFF","BETWEEN DOCKS N AND M")
     };
     public static final int COUNT=LEVELS.length;
     // Hot scene queries need only primitive metadata. Object-array reads retain /
@@ -36,7 +38,7 @@ public final class Challenges {
     private static final int[] KINDS=kinds();
     private static int[] kinds(){int[] out=new int[COUNT];for(int i=0;i<COUNT;i++)out[i]=LEVELS[i].kind;return out;}
     private Challenges() {}
-    public static boolean standalone(int id) {return id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE;}
+    public static boolean standalone(int id) {return id==HAULOUT || id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
     public static int kind(int id) { return KINDS[valid(id)?id:0]; }
@@ -54,12 +56,12 @@ public final class Challenges {
     public static int quota(int id) { return level(id).quota; }
     public static final int LOCATION_COUNT=3;
     public static boolean calumet(int id){return id>=0 && id<=DEEP_CHANNEL;}
-    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==RAFT_RESCUE || id==SWIMMER_RESCUE?MONTROSE:id;}
+    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==HAULOUT || id==RAFT_RESCUE || id==SWIMMER_RESCUE?MONTROSE:id;}
     public static int menuId(int slot){return slot==0?TWO_BANKS:slot==1?MONTROSE:slot==2?INDIANA:-1;}
-    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{4,6,7}:new int[]{5};}
+    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{8,4,6,7}:new int[]{5};}
     public static int nextStage(int id){int entry=stageEntry(id);return entry==TWO_BANKS?MONTROSE:entry==MONTROSE?INDIANA:-1;}
     public static String locationTitle(int id){return calumet(id)?"CALUMET RIVER":stageEntry(id)==MONTROSE?"MONTROSE HARBOR":"INDIANA HARBOR";}
-    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"YACHT TOW / RAFTED CRUISERS / SWIMMER RESCUE":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
+    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"HAULOUT / YACHT TOW / CRUISERS / SWIMMERS":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
     public static int pageCount() { return 1; }
     public static int pageFor(int id) { return 0; }
     public static int maxStars() { return COUNT*3; }

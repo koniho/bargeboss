@@ -402,6 +402,11 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 - (void)circleWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withInt:(jint)c {
     [self color:c]; CGContextFillEllipseInRect(self.context,CGRectMake(x-radius,y-radius,radius*2,radius*2));
 }
+- (void)convexQuadWithFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)cx withFloat:(jfloat)cy withFloat:(jfloat)dx withFloat:(jfloat)dy withInt:(jint)c {
+    [self color:c];CGContextBeginPath(self.context);CGContextMoveToPoint(self.context,ax,ay);
+    CGContextAddLineToPoint(self.context,bx,by);CGContextAddLineToPoint(self.context,cx,cy);
+    CGContextAddLineToPoint(self.context,dx,dy);CGContextClosePath(self.context);CGContextFillPath(self.context);
+}
 - (void)polyWithFloatArray:(IOSFloatArray *)xy withInt:(jint)c {
     if(xy->size_<6) return;
     [self color:c]; CGContextBeginPath(self.context);

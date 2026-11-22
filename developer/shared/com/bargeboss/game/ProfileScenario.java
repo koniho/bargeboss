@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -76,12 +76,22 @@ public final class ProfileScenario {
             if(root.splashes.emitted==0)throw new AssertionError("Impact fixture missed contact");return;
         }
         if(name.equals("montrose-raft") || name.equals("montrose-swimmers")){
-            root.challengeId=Challenges.MONTROSE;root.reset();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);
+            root.challengeId=Challenges.MONTROSE;root.reset();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.dialogue.close(root);
             if(name.equals("montrose-swimmers")){root.tug.x=660;root.tug.y=640;root.tug.angle=0;root.layout=Layout.focused(width,height,660,590,3.6f,width*.5f,height*.52f);}
             return;
         }
         if(name.startsWith("montrose-")){
             root.selectChallenge(Challenges.MONTROSE);root.reset();
+            if(name.equals("montrose-dispatch")){for(int i=0;i<24;i++)root.step();return;}
+            root.dialogue.close(root);
+            if(name.equals("montrose-haulout") || name.startsWith("montrose-lift-")){
+                if(name.startsWith("montrose-lift-")){
+                    for(int i=0;i<150 && !root.haulout.requested;i++){ReplayInput.work(root);root.step();}
+                    if(name.equals("montrose-lift-water"))while(root.haulout.liftTicks<175)root.step();
+                }
+                root.layout=Layout.focused(width,height,MontroseHaulout.X,MontroseHarbor.mapY(240),2.4f,width*.5f,height*.56f);return;
+            }
+            root.challengeId=Challenges.MONTROSE;root.mission.setup(root);
             if(name.equals("montrose-lights")){
                 root.tug.x=MontroseHarbor.mapX(500);root.tug.y=MontroseHarbor.mapY(1320);root.visualTicks=15;
                 root.layout=Layout.focused(width,height,MontroseHarbor.mapX(458),MontroseHarbor.mapY(1274),1.4f,width*.5f,height*.52f);return;

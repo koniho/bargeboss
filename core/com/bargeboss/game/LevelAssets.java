@@ -17,11 +17,12 @@ public final class LevelAssets {
     }
     // The continuous tutorial uses coal loads throughout, including its later tow-train steps.
     private static final Plan TUTORIAL=new Plan(SpriteAtlas.FIREWORKS,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TEACHER_TUG,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);
+    private static final Plan MONTROSE=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT);
     private static final Plan[] CHALLENGES=new Plan[Challenges.COUNT];
     static {
         for(int id=0;id<CHALLENGES.length;id++) {
             if(id==Challenges.INDIANA){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL);continue;}
-            if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT);continue;}
+            if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=MONTROSE;continue;}
             if(Challenges.calumet(id)){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {

@@ -137,6 +137,7 @@ public final class WaterSurface {
         return g.water.height(g,b.x,b.y,g.visualTicks,b)*(b.lineAttached && b!=g.tug?.25f:b.berth>=0?.5f:.75f);
     }
     public void draw(Game g,Painter p) {
+        if(g.settings.waterDetail<1)return;
         foam.draw(g,p);
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
         Painter canvas=river==null?p:river.canvas();float[] clip=ShoreOcclusion.EMPTY;

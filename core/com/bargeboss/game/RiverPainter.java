@@ -26,6 +26,10 @@ public final class RiverPainter implements Painter {
     public boolean supportsUnionClips(){return painter.supportsUnionClips();}
     public boolean prefersPolygonBatches(){return painter.prefersPolygonBatches();}
     public void popClip(){painter.popClip();}
+    public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
+        painter.convexQuad(camera.screenX(ax,ay),camera.screenY(ax,ay),camera.screenX(bx,by),camera.screenY(bx,by),
+                camera.screenX(cx,cy),camera.screenY(cx,cy),camera.screenX(dx,dy),camera.screenY(dx,dy),color);
+    }
     public void rect(float x,float y,float w,float h,int c) {
         poly(new float[]{x,y,x+w,y,x+w,y+h,x,y+h},c);
     }

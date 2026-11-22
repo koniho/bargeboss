@@ -59,7 +59,7 @@ public final class MooredBoats {
         float delta=full-rest;delta-=ORIENTATIONS*(float)StrictMath.floor((delta+ORIENTATIONS*.5f)/ORIENTATIONS);
         float heading=rest+delta*detail,whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int a=Math.floorMod((int)whole,ORIENTATIONS),next=(a+1)%ORIENTATIONS,base=b.kind*ORIENTATIONS;
-        if(detail>.001f){
+        if(detail>.001f && g.settings.waterDetail>0){
             float reach=b.length*.65f+6;
             float[] rippleClip=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,Float.NEGATIVE_INFINITY,p.supportsUnionClips());
             if(rippleClip.length>0)p.pushClipOutside(rippleClip);

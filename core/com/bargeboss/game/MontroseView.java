@@ -194,7 +194,7 @@ public final class MontroseView {
             StaticLayer raster=GROUND_LEVELS[tier][tile];float display=c.scale/GROUND_DENSITY[tier];
             if(canvas.preparesLayers())canvas.prepareLayer(raster,display);canvas.layer(raster,x,y,display,1);
         }
-        MontroseShoreArt.terraces(g,canvas);MontroseEntranceShore.substrate(g,canvas);MontroseEntranceShore.rocks(g,canvas);MontroseShoreArt.promenade(g,canvas);MontroseShoreArt.access(g,canvas);MontroseEntranceShore.steps(g,canvas);MontroseShoreArt.gates(g,canvas);
+        MontroseShoreArt.terraces(g,canvas);MontroseEntranceShore.substrate(g,canvas);MontroseEntranceShore.rocks(g,canvas);MontroseShoreArt.promenade(g,canvas);MontroseTravelLift.apron(g,canvas);MontroseShoreArt.access(g,canvas);MontroseEntranceShore.steps(g,canvas);MontroseShoreArt.gates(g,canvas);
         VesselShoreLight.draw(g,canvas);
         // Every ground receiver finishes before any upright park sprite; a later
         // tree's cast mask must never darken an earlier tree's canopy.
@@ -211,7 +211,7 @@ public final class MontroseView {
         WeatherView.backgroundFog(g,canvas);
         Renderer.river(g,world);
     }
-    public static void slip(Game g,Painter p){if(MontroseRescue.active(g)){MontroseRescueView.water(g,p);return;}int color=SoftCue.animated(g,g.mission.settledTicks>0?0xdd4fffc0:0xddffe69c);float c=(float)StrictMath.cos(MontroseHarbor.SLIP_ANGLE),s=(float)StrictMath.sin(MontroseHarbor.SLIP_ANGLE);
+    public static void slip(Game g,Painter p){g.haulout.effects.draw(g,p);if(MontroseHaulout.active(g)){MontroseHaulout.cue(g,p);return;}if(MontroseRescue.active(g)){MontroseRescueView.water(g,p);return;}int color=SoftCue.animated(g,g.mission.settledTicks>0?0xdd4fffc0:0xddffe69c);float c=(float)StrictMath.cos(MontroseHarbor.SLIP_ANGLE),s=(float)StrictMath.sin(MontroseHarbor.SLIP_ANGLE);
         for(int side=-1;side<=1;side+=2)for(int end=-1;end<=1;end+=2){float x=MontroseHarbor.SLIP_X+c*end*96-s*side*38,y=MontroseHarbor.SLIP_Y+s*end*96+c*side*38;
             SoftCue.line(p,x,y,x-c*end*28,y-s*end*28,2,color);SoftCue.line(p,x,y,x+s*side*20,y-c*side*20,2,color);}
     }

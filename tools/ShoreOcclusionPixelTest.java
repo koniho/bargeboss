@@ -7,12 +7,14 @@ import java.awt.image.BufferedImage;
 /** Actual hull pixels, all hull headings plus 64-pose equipment, both lower banks and both upper banks. */
 public final class ShoreOcclusionPixelTest {
     private static int checks;
+    // This probe projects the full land rise; floating docks have their own lower clip.
+    private static boolean land(Game g,float x,float y){return g.montroseStage()?!MontroseHarbor.openWater(x,y):!g.inWater(x,y);}
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static void main(String[] args) {
         cachedWalls();
         if(args.length>0 && args[0].equals("terrain"))return;
         wallCorners();
-        Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].equals("montrose")?Challenges.MONTROSE:args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
+        Game root=new Game();root.startTutorial();Game g=root.activeGame();if(args.length>0){g=new Game();g.challengeId=args[0].startsWith("montrose")?Challenges.MONTROSE:args[0].equals("calumet")?0:Challenges.INDIANA;g.reset();}int wetPixels=0,landProbes=0;
         for(int bank=0;bank<4;bank++)for(int kind=0;kind<6;kind++)for(int heading=0;heading<(kind>=4?64:32);heading++) {
             float x=bank==0?-1610:bank==1?TrainingChannel.BASIN_LEFT+16:bank==2?TrainingChannel.MIN-16:-1610;
             float y=bank==0?TrainingChannel.BASIN_BOTTOM-16:bank==3?TrainingChannel.BASIN_TOP+16:600;
@@ -24,6 +26,7 @@ public final class ShoreOcclusionPixelTest {
             }
             if(g.montroseStage()){
                 float[][] endpoints={{1520,-660,1320,-750},{2240,-1150,2290,-1370},{2125,-1470,2095,-1410},{1990,-552,1870,-560}};
+                if(args.length>0 && args[0].equals("montrose-haulout"))endpoints=new float[][]{{1040,275,1040,205},{1080,205,1080,275},{1040,205,1080,205},{1080,275,1105,275}};
                 float[] a=endpoints[bank];float ax=MontroseHarbor.mapX(a[0]),ay=MontroseHarbor.mapY(a[1]),bx=MontroseHarbor.mapX(a[2]),by=MontroseHarbor.mapY(a[3]);
                 float dx=bx-ax,dy=by-ay,len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;
                 x=(ax+bx)*.5f;y=(ay+by)*.5f;if(!MontroseHarbor.openWater(x+nx*8,y+ny*8)){nx=-nx;ny=-ny;}x+=nx*16;y+=ny*16;
@@ -41,10 +44,10 @@ public final class ShoreOcclusionPixelTest {
             float rise=(g.montroseStage()?MontroseHarbor.LAND_RISE:GroundArt.LAND_RISE)*scale,depth=c.screenY(x,y);
             for(int py=20;py<380;py+=3)for(int px=8;px<376;px+=3) {
                 float wx=c.worldX(px+.5f,py+.5f+rise),wy=c.worldY(px+.5f,py+.5f+rise);
-                boolean land=!g.inWater(wx,wy);
+                boolean land=land(g,wx,wy);
                 // Ignore one-pixel antialias boundary and the sprite's ground-depth plane.
-                boolean dryInterior=land && !g.inWater(wx-2,wy) && !g.inWater(wx+2,wy)
-                    && !g.inWater(wx,wy-2) && !g.inWater(wx,wy+2);
+                boolean dryInterior=land && land(g,wx-2,wy) && land(g,wx+2,wy)
+                    && land(g,wx,wy-2) && land(g,wx,wy+2);
                 if(dryInterior && py+rise>depth+2 && Math.abs(wx-x)<150 && Math.abs(wy-y)<150) {
                     landProbes++;check((image.getRGB(px,py)>>>24)==0,"painted hull/cargo/light pixels must not show through solid foreground land: bank="+bank+" kind="+kind+" heading="+heading+" pixel="+px+","+py);
                 } else if(!land && (image.getRGB(px,py)>>>24)>40)wetPixels++;

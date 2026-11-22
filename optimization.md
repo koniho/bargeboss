@@ -4330,6 +4330,26 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   pulsing target bloom after surface shading, making it appear lit at night.
   That guidance treatment is unchanged by this fix.
 
+## 2026-11-20 Ambient water isolation and direct quads
+- Isolated Montrose overview: iOS CPU draw 57.45 ms full, 23.73 ms without fine
+  ambient strokes, 22.20 ms solid. CPU sampling exposed stroke allocation,
+  wrapper projection and general polygon triangulation in WaveView.
+- Added shared convexQuad and native Metal/Vulkan paths, retaining vertices,
+  colors, clipping and animation. Scene/viewport/opacity wrappers forward it;
+  regression catches accidental fallback. No new textures/cache; eight-float
+  Vulkan scratch. Added unsaved diagnostic switches for repeatable comparisons.
+- Final iOS CPU median 46.13/47.15 ms, mean presentation 50.00/53.33 ms, roughly
+  19–20 FPS versus 15. Final native image differs in only 37 tiny ripple pixels
+  out of 3,162,132; direct triangulation restores thin coverage.
+- Pixel 11 Pro/Vulkan first pair CPU median 66.97 -> 63.45 ms; repeated direct
+  68.66 ms and original 100.90 ms show unresolved timing drift. No reliable
+  Android speedup percentage claimed. Solid-water CPU 12.79 ms. Final paired
+  images match all 2,602,800 pixels; all samples same tick/zoom and Vulkan path.
+- Shared/asset checks, Android APK, iOS build, direct-quad encoder/wrapper checks,
+  2,434,414 Montrose shoreline pixels plus 32,273 walls and final native/JVM parity
+  b0bbe1a2:2:1350 pass. Evidence: docs/performance/water-detail-2026-11-20/.
+  Wide-water sampling/submission remains a major cost; this is not a 60 FPS fix.
+
 ## 2026-11-20 — Easier slip entry and staged throttle/map teaching
 - Slip success now covers the full authoritative slip rectangle once the tug
   center passes its mouth after actual backing. Removed precise depth, centerline,
@@ -5146,6 +5166,80 @@ launch restored after capture; screen timeout restored to300000ms.
   display timeout. No native iOS build, audio audition/recording or frame-time
   measurement this round; checked PCM timing/peak and shared event delivery.
 
+## 2026-11-22 — Montrose dockmaster and N–M haulout
+- Shared Java: appended haulout job8 before legacy4/6/7. Reuses the accepted
+  cabin-cruiser artwork and native assets; one shared Montrose preparation plan
+  covers all four jobs. Dockmaster uses existing radio clips and reply panel.
+- The annotated N–M gap supplies the new well, connected wheel tracks and apron.
+  Changed the authoritative coast so physics, water effects, solid land and chart
+  agree. The four-wheel travel lift prepares one rigid BSP, with stable part IDs;
+  it joins BridgeLayers' exact depth slices instead of a flattened overlay.
+  No new raster textures, pose tables or per-frame geometry preparation.
+- The public pointer/throttle replay tows and releases the disabled cruiser,
+  completes the crew handoff with hull100, retains the boat and tug, and dispatches
+  the yacht job. Native parity now samples that voyage too. Actual Java2D dispatch,
+  empty well, delivered boat and overview reviewed. Native validation follows.
+- Native iOS26.5/iPhone17Pro simulator: Debug Metal build/install passed; viewed
+  daylight lift/yard and dusk Dockmaster panel. CPU draw p50/p95 for the frozen
+  daylight view22.30/24.74ms; mean interval32.35ms (60samples,30warmup).
+  Concurrent desktop build/test work makes this visual evidence, not a clean
+  timing comparison or a60FPS claim. Logs/captures: out/ios-profile/haulout-metal
+  and dockmaster-metal. Native/JVM parity e501393e:2:1350 passed, including the
+  public-input haulout voyage and subsequent radio dispatch.
+- Expanded all-heading shore regression to the three well walls and outer quay:
+  1,756,523 production hull/cargo checks pass, plus38,121 cached training wall
+  pixels. Corrected its full-land-height probe to exclude lower floating docks;
+  the initial report was a nearby yacht-slip crossbar projected at land height.
+  Actual full-height coast is queried independently of navigable dock cutouts.
+- Existing chart/camera unit and pixel fixtures now dismiss the introductory
+  radio before testing gestures. Their input remains intentionally blocked until
+  acknowledgement in production. Save tests retain all eight legacy reward slots
+  and verify the ninth appended job without inventing earned progress.
+- Final Android profile APK built with shared/asset checks, portrait audit,
+  terrain/chart pixel checks and Vulkan encoder checks passing. Installed over
+  the existing package using its original debug key; cold launches succeeded.
+  Pixel11Pro Vulkan850-frame native replay acknowledged Dockmaster, attached and
+  released the tow, retained the boat inside the well and advanced to the yacht
+  job (native screenshot reviewed). Native fixture captures live in
+  out/native-montrose; raw CSVs/summary in docs/performance/montrose-haulout-2026-11-22.
+- The same public voyage completed at tick678/hull100 on960x600,1333x600 and
+  1280x720 canvases. The next yacht now stays anchored until pickup while the tug
+  travels back to the inlet; targeted voyage and unchanged canonical trace pass.
+  Final iOS rebuild/install passed. No physical iPhone test or full four-job
+  on-device voyage; the lift is static and this mission ends at crew handoff.
+
+## 2026-11-22 — Shared travelift radio, continuous webbing and contact effects
+
+- Owner/platform: Montrose worktree, shared Java, desktop and iOS Metal simulator;
+  no host gameplay changes. Read existing optimization entries before edits.
+- Replaced the static slings with two broad, thin rectangular-section straps,
+  moving blocks and exact cable anchors. One local BSP is prepared at setup;
+  continuous translation updates reusable vertex/normal buffers each of 240 ticks.
+  Static frame partitions surround the moving rig; no pose table or new textures.
+- Radio has explicit lower/standby responses. Full tug/cargo/NPC hull clearance
+  is checked at reply and after physics throughout travel. Intrusions stop exact
+  phase and motion emissions; cleared space resumes. Player must tow/release and
+  physically push into the lowered slings before crew settling and next dispatch.
+- Existing ripple textures occupy a 32-event pool, emitted only where the moving
+  webbing intersects the sampled water plane. Exhaust follows the authored stack
+  anchor into the existing smoke pool. Paused/finished motion emits no new puffs.
+- Fixed foreground-quay overdraw in visual review: straps/hoist lines share a
+  visible-frame shore cutout across depth slices. Skip mask construction when the
+  lift is offscreen. Stable far/rig/near/header partitions preserve frame ordering.
+- Full shared/asset/Android build passed; 763 focused interlock/transform/effect
+  checks, public physical voyages at three canvases with hull100, JVM/J2ObjC trace
+  dd774209:2:1350, and 1,756,523 all-heading shoreline pixels passed.
+- Simulator Metal240-frame moving-scene interval median25.7154ms/p95 40.988ms;
+  draw median21.436ms/p95 23.6667ms. Includes startup and overlapping desktop work;
+  not a before/after comparison or evidence of 60fps. Frozen water-contact native
+  pixels reviewed separately. Raw CSVs and limits in
+  docs/performance/montrose-travelift-2026-11-22.
+- Android installed with existing key; requested profile launch reached an
+  existing activity instead of starting a capture. No current Android timing
+  claimed; pending capture stopped and its original awake setting restored.
+- Connected iPhone11ProMax signed build/install passed after profile refresh;
+  launch initially blocked by lock screen. Development remained on the simulator.
+
 ## 2026-11-22 — remove tutorial placement checkpoints, explain push assist
 - Removed the tow-to-circle stage from normal progression. Connecting now offers
   towing/release instructions immediately; explicit player cast-off starts push
@@ -5262,3 +5356,29 @@ launch restored after capture; screen timeout restored to300000ms.
  remaining frame-spacing tails prevent claiming locked60FPS.
 - Final APK reinstalled after reverse-order comparisons and launched normally
   (Status ok, cold launch1116ms). Restored previous300000ms display timeout.
+
+## 2026-11-22 — integrate Montrose travelift with current main
+
+- Merged main6b7a209's tutorial progression and tow-gesture priority into the
+  isolated Montrose haulout worktree. Shared gameplay merged without conflicts;
+  preserved both append-only performance histories. Recomputed the combined
+  canonical trace instead of choosing either branch's obsolete baseline.
+- Combined JVM/J2ObjC gameplay and drawing parity passes c04212db:2:1350.
+  Full shared tests pass, including TowPriorityTest, 763 travelift interlock/
+  transform/effect checks and the physical tow/release/push mission handoff.
+- This merge adds no new art or host behavior. Earlier simulator/device results
+  and their limits remain recorded above; merge validation uses the combined
+  shared/native trace and the full Android build/asset checks.
+
+## 2026-11-22 — integrate figure-eight optimization with concurrent main
+- Push found origin/main28d5ec5, including Montrose travelift and water quad work.
+  Preserved those changes and both performance histories; combined profiling
+  whitelist includes figure-eight, dockmaster and haulout fixtures.
+- Recomputed combined drawing/gameplay trace8e9ed60:2:1350. Earlier A/B evidence
+  isolates this optimization on6b7a209; it must not be relabeled as a measurement
+  of the new combined water renderer. Combined build/device check follows.
+- Combined main build passes all shared/assets/native checks. Pixel11Pro Vulkan
+  verification out/profiles/20261122-141501-buoy-complete-replay retains only2
+  background builds; draw median/p95 10.655/12.906ms, interval16.662/22.251ms.
+  Same360-sample forward-circle fixture. This is a post-merge smoke/performance
+  check, not another isolated A/B. Installed successfully; native scene reviewed.

@@ -15,6 +15,7 @@ public final class WaterFoam {
     /** Title contact crest split at unraised water-plane depth, never at the cabin. */
     public static void bowLayer(Game g,Painter p,Body b,boolean foreground) {bow(g,p,b,foreground?1:-1);}
     private static void bow(Game g,Painter p,Body b,int layer) {
+        if(g.settings.waterDetail<1)return;
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         float forward=b.vx*c+b.vy*s,motion=Physics.clamp((forward-3)/40,0,1);
         float pressure=pressure(forward);

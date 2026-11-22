@@ -348,6 +348,20 @@ for a repeatable heavy-rain/peak-flash comparison, and live mode to inspect moti
 Defaults are clear. The in-game WAVES + WEATHER panel provides the same rain, fog and
 lightning controls, plus TEST FLASH and RESET ALL. Weather is currently Montrose-only.
 
+For iOS water isolation, build with `BARGEBOSS_IOS_PROFILE=1` and use
+`ios/scripts/profile.py NAME --scene=montrose-overview --water-detail=0`.
+Mode 2 is normal rendering; mode 1 omits the fine ambient WaveView strokes;
+mode 0 also omits water-surface crests/foam, vessel ripples/bow foam and light
+reflections. The base water fill, scene, physics and camera stay intact. These
+are unsaved render diagnostics, not quality settings. Mode 1 still includes
+SeaWaves' larger wave crests. Compare equal warmup/frame counts and repeat in
+reverse order; do not run builds or CPU sampling during timed captures.
+
+Android profiling builds accept `--ei bb_water_detail 0|1|2` and
+`--ez bb_water_quads false|true` with the normal scene/mode extras. The latter
+selects the original polygon path or direct convex-quadrilateral path in the
+same APK; default is true. Neither switch affects water physics or saved settings.
+
 `barge-abilities` is a shared equipment stress/review fixture: enlarged collection
 basin, fireworks in flight and both fire monitors spraying. Use frozen mode for
 pixel/cache checks and live mode for sustained spray; fireworks end naturally.
@@ -365,3 +379,7 @@ just after the first buoy and drives the second circle using real lesson input.
 Use30 warmup and360 sample frames to stay within the forward figure-eight lesson
 and compare the same moving camera/progress arc. Inspect the native `scene.png`
 and match tick, tug position and zoom columns before comparing timings.
+
+`montrose-dispatch` captures the opening Dockmaster call and waiting reply.
+`montrose-haulout` frames the N–M well and travel lift; use replay mode to
+exercise the shared public-input tow and crew handoff. Both use production art.

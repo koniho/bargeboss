@@ -57,3 +57,10 @@ not a claim of locked 60 FPS. Android gfxinfo does not cover this direct Vulkan
 surface (zero matched recent frames). No physical iOS or desktop performance run
 was made; the numeric text optimization is shared, while terrain-worker retention
 is Android-specific. Shared gameplay/assets/native encoder checks passed.
+
+After merging concurrent main28d5ec5 (water quads and Montrose travelift), full
+checks passed with combined trace8e9ed60:2:1350. A final360-frame device capture
+at `out/profiles/20261122-141501-buoy-complete-replay` recorded draw median/p95
+10.655/12.906 ms, intervals16.662/22.251 ms and only2 background builds. This
+confirms the fix remains active in the installed merged build; it is separate
+from the isolated comparison above. Native scene reviewed after integration.

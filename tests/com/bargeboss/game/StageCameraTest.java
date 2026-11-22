@@ -6,7 +6,7 @@ public final class StageCameraTest {
  private static void steps(Game g,int n){for(int i=0;i<n;i++)g.step();}
  public static void run(){
   for(int id:new int[]{0,Challenges.MONTROSE,Challenges.INDIANA}){
-   Game g=new Game();g.challengeId=id;g.reset();
+   Game g=new Game();g.challengeId=id;g.reset();g.dialogue.close(g);
    check(g.layout.camera.zoom>=Game.TRANSIT_ZOOM,"lake approach uses readable transit scale");
    g.layout=Layout.focused(1333,600,g.tug.x,g.tug.y,2.4f,666,312);
    float x=Joystick.centerX(g),y=Joystick.centerY(g);g.pointerDown(9,x,y);g.pointerMove(9,x+30,y-18);
@@ -21,7 +21,7 @@ public final class StageCameraTest {
     check(Math.abs(c.worldX(sx,sy)-wx)<.01f && Math.abs(c.worldY(sx,sy)-wy)<.01f,"large geographic coordinates preserve pointer inverse");
    }
    int frame=Parity.frame(g);check(frame==Parity.frame(g) && g.layout.camera==c,"draw is camera-pure");
-   g.reset();check(g.cameraZoomHoldTicks==0 && g.ticks==0,"location restart clears camera hold");
+   g.reset();g.dialogue.close(g);check(g.cameraZoomHoldTicks==0 && g.ticks==0,"location restart clears camera hold");
   }
   System.out.println(checks+" geographic camera, driving hold, pause and inverse assertions passed");
  }

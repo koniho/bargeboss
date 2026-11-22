@@ -1,0 +1,22 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-replay",
+    "--ios-scene=montrose-lift-lowering",
+    "--ios-warmup=0",
+    "--ios-frames=240",
+    "--ios-lighting=1"
+  ],
+  "frames": 240,
+  "mean_ms": 29.995492083333325,
+  "median_ms": 25.7154,
+  "p95_ms": 40.988,
+  "max_ms": 291.5721,
+  "fps": 33.33834288238396,
+  "draw_median_ms": 21.436,
+  "draw_p95_ms": 23.6667,
+  "draw_max_ms": 94.6418,
+  "gpu_median_ms": 0.1081,
+  "gpu_p95_ms": 0.1928
+}

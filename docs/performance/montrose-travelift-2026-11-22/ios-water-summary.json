@@ -1,0 +1,21 @@
+{
+  "device": "9A8B5387-AF92-48A8-960B-9957AB21693E",
+  "arguments": [
+    "--ios-profile",
+    "--ios-scene=montrose-lift-water",
+    "--ios-warmup=30",
+    "--ios-frames=60",
+    "--ios-lighting=0"
+  ],
+  "frames": 60,
+  "mean_ms": 19.028380000000002,
+  "median_ms": 18.8831,
+  "p95_ms": 20.3175,
+  "max_ms": 21.0506,
+  "fps": 52.55308123970617,
+  "draw_median_ms": 16.3913,
+  "draw_p95_ms": 16.7425,
+  "draw_max_ms": 16.8066,
+  "gpu_median_ms": 0.0954,
+  "gpu_p95_ms": 0.1421
+}

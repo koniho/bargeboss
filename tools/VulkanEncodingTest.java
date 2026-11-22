@@ -32,6 +32,9 @@ public class VulkanEncodingTest {
    float[] q={x,y,x+20*scale,y+2*scale,x+20*scale,y+(2+direction*.12f)*scale,x,y+direction*.12f*scale};
    start(painter);painter.poly(q,0x5083b3b4);
    if((Integer)read(painter,"used")!=36)throw new AssertionError("Thin ripple lost triangles at scale "+scale+" winding "+direction);
+   ArrayList<Integer> expected=stream(painter);
+   start(painter);painter.convexQuad(q[0],q[1],q[2],q[3],q[4],q[5],q[6],q[7],0x5083b3b4);
+   if(!expected.equals(stream(painter)))throw new AssertionError("Direct quad changes ripple vertices at scale "+scale);
    checked++;
   }
   System.out.println(checked+" thin ripple zoom/winding cases retain both triangles");

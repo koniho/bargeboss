@@ -124,6 +124,8 @@
     if((self.profiling || self.liveScene) && self.profileScene && !self.profileConfigured) {
         [BBProfileScenario prepareWithBBGame:self.game withNSString:self.profileScene withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight]];
         if(self.profileZoom>0) [BBProfileScenario cameraZoomWithBBGame:self.game withFloat:[self.viewport logicalWidth] withFloat:[self.viewport logicalHeight] withFloat:self.profileZoom];
+        for(NSString *arg in NSProcessInfo.processInfo.arguments)
+            if([arg hasPrefix:@"--ios-water-detail="]) self.game->settings_->waterDetail_=MAX(0,MIN(2,[[arg substringFromIndex:19] intValue]));
         self.profileConfigured=YES;
     }
 #endif

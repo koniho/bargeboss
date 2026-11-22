@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class MontroseTest {
     private static int checks;
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
-    static Game game(){Game g=new Game();check(g.selectChallenge(Challenges.MONTROSE),"Marina selectable without changing earned progress");g.reset();return g;}
+    static Game game(){return ReplayInput.montroseJob(Challenges.MONTROSE);}
     static void drive(Game g,float x,float y,float speed){
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
         if(!g.pointer)ReplayInput.throttleDown(g);

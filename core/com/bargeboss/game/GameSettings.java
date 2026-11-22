@@ -5,6 +5,9 @@ public final class GameSettings {
     public static final int OFF=0,LEFT=1,RIGHT=2;
     private int side=LEFT,version;
     public boolean developerWaves;
+    /** Render-only diagnostic: 0 solid water, 1 vessel effects, 2 all detail. Never persisted. */
+    public int waterDetail=2;
+    public boolean directWaterQuads=true;
     private int waveLevel=4,waveDirection;
     double waveCos=1,waveSin;
     public float waveIntensity(){return waveLevel*.25f;}
