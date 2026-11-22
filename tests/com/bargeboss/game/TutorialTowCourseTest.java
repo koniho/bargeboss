@@ -18,14 +18,13 @@ public final class TutorialTowCourseTest {
                 check((g.cargo[0]==a || g.cargo[1]==a) && (g.cargo[0]==pair || g.cargo[1]==pair) && g.cargo[2]==b && g.tug==tug,"all towing lessons preserve the same vessels");
                 check(Physics.length(a.x-ax,a.y-ay)<8 && Physics.length(b.x-bx,b.y-by)<8,"course never teleports cargo at lesson changes");
                 if(g.tutorial.lesson!=lesson){
-                    if(lesson==Tutorial.PULL)check(Physics.length(a.x-Tutorial.TOW_BERTH_X,a.y-Tutorial.TOW_BERTH_Y)<=Tutorial.TOW_BERTH_RADIUS,"single tow reaches the berth before multi-tow lessons");
                     if(lesson==Tutorial.DOUBLE)check(Tutorial.doubleTow(g),"bridge exercise starts with two independent tug connections");
                     if(lesson==Tutorial.BRIDGE){check(Tutorial.doubleTow(g) && Tutorial.allClear(g,Tutorial.BRIDGE_CLEAR_Y) && g.tutorial.bridgeCrossed==3,"both whole hulls physically clear bridge with direct tug connections");releaseAtBridge=g.towReleases;}
                     if(lesson==Tutorial.LINK)check(Tutorial.chain(g) && g.towReleases>releaseAtBridge,"player actually releases and re-rigs one of the same two loads into a train");
                     if(lesson==Tutorial.TRAIN)check(Tutorial.chain(g) && Tutorial.allClear(g,Tutorial.TRAIN_CLEAR_Y) && g.tutorial.trainCrossed==3,"channel completion waits for tug and both complete hulls");
                 }
             }
-            check(g.tutorial.lesson==Tutorial.DONE && seen==((1<<Tutorial.DONE)-(1<<Tutorial.CONNECT)),"public touch gestures complete every tow lesson at width "+width+"; lesson="+g.tutorial.lesson);
+            check(g.tutorial.lesson==Tutorial.DONE && seen==(((1<<Tutorial.DONE)-(1<<Tutorial.CONNECT)) & ~(1<<Tutorial.PULL)),"public touch gestures complete every tow lesson at width "+width+"; lesson="+g.tutorial.lesson);
             check(g.tow.count()==1 && Tutorial.direct(g,g.cargo[3]) && g.delivered==1,"final fire response preserves first delivery and leaves only the separate fire barge connected");
         }
         System.out.println(checks+" berth tow, double bridge passage, reconfiguration and narrow train assertions passed");
@@ -44,17 +43,17 @@ public final class TutorialTowCourseTest {
         for(int tick=0;tick<10000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
             int lesson=g.tutorial.lesson;
             if(ReplayInput.towRadio(g)){g.step();continue;}
-            if(lesson==Tutorial.PULL || lesson==Tutorial.BRIDGE || lesson==Tutorial.TRAIN){
+            if(lesson==Tutorial.CASTOFF && (g.cargo[0].x>480 || g.cargo[0].y<600) || lesson==Tutorial.BRIDGE || lesson==Tutorial.TRAIN){
                 float x=Joystick.centerX(g),y=Joystick.centerY(g);
                 if(!g.joystick.active){g.cancelInputs();g.pointerDown(11,x,y);}
                 float dx=g.tutorial.towTargetX(g)-g.tug.x,dy=g.tutorial.towTargetY(g)-g.tug.y;
                 float sx=RiverCamera.Q*(dx+dy),sy=RiverCamera.Q*RiverCamera.DEPTH*(dy-dx),len=Math.max(1,Physics.length(sx,sy));
                 if(Physics.length(dx,dy)<25)g.pointerMove(11,x,y);
                 else g.pointerMove(11,x+Joystick.TRAVEL*sx/len,y+Joystick.TRAVEL*sy/len);
-            } else ReplayInput.tutorial(g);
+            } else {if(g.joystick.active)g.pointerUp(11,g.pointerX,g.pointerY);ReplayInput.tutorial(g);}
             g.step();
         }
-        check(g.tutorial.lesson==Tutorial.DONE,"joystick can tow to berth, through bridge and narrow channel using screen-space target feedback");
+        check(g.tutorial.lesson==Tutorial.DONE,"joystick can tow to berth, through bridge and narrow channel using screen-space target feedback; lesson="+g.tutorial.lesson);
     }
     private static void closePair(){
         Game g=exercise(Tutorial.LINK,1333);Body a=g.cargo[0],b=g.cargo[2];

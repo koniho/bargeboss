@@ -228,7 +228,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if(lesson==BBLessonHold){[self pushPracticeLoad:stage];continue;}
         if(lesson==BBLessonSteer || lesson==BBLessonDock){[self holdCargo:stage duration:.8];continue;}
         if(lesson==BBLessonTie){[self throwLineToBollard:stage];[NSThread sleepForTimeInterval:.5];continue;}
-        if(lesson==BBLessonCastoff){[self releaseBarge:cargo stage:stage status:status];continue;}
+        if(lesson==BBLessonCastoff){if(cargo.x>480 || cargo.y<600)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];else [self releaseBarge:cargo stage:stage status:status];continue;}
         if(lesson==BBLessonShow || lesson==BBLessonExtinguish){
             if(lesson==BBLessonShow && [self integerInStatus:status tag:@"fire launched"]>0){[NSThread sleepForTimeInterval:.5];continue;}
             CGPoint b=lesson==BBLessonShow?cargo:[self worldPositionInStatus:status tag:@"fire barge"];
@@ -265,7 +265,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         }
     }
     [self waitFor:BBLessonToken(BBLessonDone) on:stage];
-    NSUInteger required=BBLessonMask(BBLessonPull)|BBLessonMask(BBLessonDouble)|BBLessonMask(BBLessonBridge)
+    NSUInteger required=BBLessonMask(BBLessonCastoff)|BBLessonMask(BBLessonDouble)|BBLessonMask(BBLessonBridge)
         |BBLessonMask(BBLessonLink)|BBLessonMask(BBLessonTrain)|BBLessonMask(BBLessonRelease)|BBLessonMask(BBLessonShow)|BBLessonMask(BBLessonFireTow)|BBLessonMask(BBLessonExtinguish);
     XCTAssertEqual(seen & required,required,@"Native gestures visit berth, double tow, bridge, reconfiguration, channel and release lessons");
 }
@@ -378,7 +378,8 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         CGPoint boat=[self worldPosition:stage tag:@"tug"];
         if(boat.x<215) { [self drivePracticeTug:stage toX:240 toY:500];continue; }
         if(hypot(boat.x-b.x,boat.y-b.y)>190) { [self drivePracticeTug:stage toX:360 toY:620];continue; }
-        double dx=240-b.x,dy=600-b.y,length=fmax(1,hypot(dx,dy));
+        CGPoint berth=[self worldPosition:stage tag:@"push berth"];
+        double dx=berth.x-b.x,dy=berth.y-b.y,length=fmax(1,hypot(dx,dy));
         [[self river:stage x:b.x y:b.y] pressForDuration:0.05
             thenDragToCoordinate:[self river:stage x:b.x+90*dx/length y:b.y+90*dy/length]
             withVelocity:500 thenHoldForDuration:3];

@@ -204,7 +204,7 @@ public final class ReplayInput {
         if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>190) { drive(g,360,620);return; }
         if(g.joystick.active) up(root,g.pointerX,g.pointerY);
         if(!g.pointer) down(root,b.x,b.y);
-        float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
+        float dx=g.dockX(b)-b.x,dy=g.dockY(b)-b.y,len=Math.max(1,Physics.length(dx,dy));
         move(root,g.downX+90*dx/len,g.downY+90*dy/len);
     }
     /** Focused exercise fixture; entrance motion is covered by TutorialEntranceTest. */
@@ -274,6 +274,7 @@ public final class ReplayInput {
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
                 } break;
             case Tutorial.CASTOFF:
+                if(g.cargo[0].x>480 || g.cargo[0].y<600){drive(g,g.tutorial.towTargetX(g),g.tutorial.towTargetY(g));break;}
                 if(g.pointer)up(root,g.pointerX,g.pointerY);releaseTow(root,g.cargo[0]);break;
             case Tutorial.PULL:
             case Tutorial.BRIDGE:

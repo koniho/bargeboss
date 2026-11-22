@@ -124,11 +124,6 @@ public final class TutorialView {
             }
             return;
         }
-        if(t.lesson==Tutorial.HOLD) {
-            river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x0c35c8bd);
-            ControlView.ring(g,river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);
-            SoftCue.caption(river,"PUSH HERE",Tutorial.PUSH_X,Tutorial.PUSH_Y,11,ControlView.GREEN);
-        }
         if(t.lesson==Tutorial.SLIP || t.lesson==Tutorial.MAP){
             NavigationPractice n=t.navigation;
             if(t.lesson==Tutorial.MAP && n.mapPhase>=2){
@@ -193,12 +188,10 @@ public final class TutorialView {
             SoftCue.caption(river,"DRAG THIS BARGE",spare.x,spare.y+35,9,VisualStyle.GOLD);
         } else if(t.lesson==Tutorial.CASTOFF) {
             Body b=g.cargo[0];ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
-        } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.BRIDGE || t.lesson==Tutorial.TRAIN) {
+            driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),null);
+        } else if(t.lesson==Tutorial.BRIDGE || t.lesson==Tutorial.TRAIN) {
             driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),t.lesson==Tutorial.BRIDGE && !g.passages.passable(TutorialTowBridges.EXIT)?"WAIT FOR GREEN":null);
-            if(t.lesson==Tutorial.PULL) {
-                ControlView.ring(g,river,Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,Tutorial.TOW_BERTH_RADIUS+pulse,1,ControlView.GREEN,2);
-                SoftCue.caption(river,"OPEN WATER",Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,10,ControlView.GREEN);
-            } else {
+            {
                 float y=t.lesson==Tutorial.BRIDGE?Tutorial.BRIDGE_CLEAR_Y:Tutorial.TRAIN_CLEAR_Y;
                 int mask=t.lesson==Tutorial.BRIDGE?t.bridgeCrossed:t.trainCrossed;
                 SoftCue.line(river,t.lesson==Tutorial.TRAIN?270:200,y,t.lesson==Tutorial.TRAIN?330:400,y,2,SoftCue.animated(g,ControlView.GREEN));
@@ -257,7 +250,7 @@ public final class TutorialView {
         float phase=(g.visualTicks%150)/150f;
         float travel=Physics.clamp((phase-.2f)/.5f,0,1);
         float from=assist?1:0,to=assist?0:1,position=from+(to-from)*travel;
-        float dx=Tutorial.PUSH_X-b.x,dy=Tutorial.PUSH_Y-b.y,len=Math.max(1,Physics.length(dx,dy));
+        float dx=g.dockX(b)-b.x,dy=g.dockY(b)-b.y,len=Math.max(1,Physics.length(dx,dy));
         dx=assist?-65:dx/len*90;dy=assist?-65:dy/len*90;
         float sx=x+dx*from,sy=y+dy*from,tx=x+dx*to,ty=y+dy*to;
         ControlView.path(river,sx,sy,tx,ty,ControlView.BLUE);

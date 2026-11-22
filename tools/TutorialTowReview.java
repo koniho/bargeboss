@@ -5,6 +5,8 @@ public final class TutorialTowReview {
     private static void capture(Game g,String name)throws Exception{g.cancelInputs();for(int i=0;i<650 && (i<120 || g.tutorial.feedback.active());i++)g.step();for(int i=0;i<100;i++)g.step();DialogueReview.capture(g,name);}
     public static void main(String[] args)throws Exception{
         Game root=new Game();root.configureCanvas(1333,600);ReplayInput.startPractice(root);Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.HOLD;g.tutorial.setup(g);capture(g,"tow-course-hold-drag");
+        g.tutorial.lesson=Tutorial.STEER;g.tutorial.setup(g);capture(g,"tow-course-berth-assist");
         g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);for(int i=0;i<70;i++)g.step();
         capture(g,"tow-course-single-load");
         boolean first=false,entry=false,pair=false,exit=false;

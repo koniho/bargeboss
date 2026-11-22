@@ -22,8 +22,9 @@ public final class InstructorRadioTest {
             for(int phase=2;phase<=4;phase++){call(root);reply(root,1);check(g.tutorial.helm.phase==phase,"helm skip preserves next exercise prerequisites");}
             call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.FIGURE_EIGHT,"skip rendezvous prepares figure eights");
             for(int lesson=Tutorial.FIGURE_EIGHT;lesson<Tutorial.DONE;lesson++){
+                if(lesson==Tutorial.PULL)continue;
                 check(g.tutorial.lesson==lesson && g.teacherBoat()!=null,"instructor remains available after skipping");
-                call(root);reply(root,1);check(g.tutorial.lesson==lesson+1,"one accepted reply advances exactly one lesson");
+                call(root);reply(root,1);check(g.tutorial.lesson==(lesson==Tutorial.CONNECT?Tutorial.CASTOFF:lesson+1),"one accepted reply advances to the next active lesson, skipping the retired placement checkpoint");
                 if(g.tutorial.lesson==Tutorial.TRAIN)check(Tutorial.chain(g),"skipping link prepares a usable single-file tow");
                 if(g.tutorial.lesson==Tutorial.CONNECT)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
             }

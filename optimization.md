@@ -5145,3 +5145,38 @@ launch restored after capture; screen timeout restored to300000ms.
   through rish (Success) and cold launched (Status: ok,1346ms). Restored prior
   display timeout. No native iOS build, audio audition/recording or frame-time
   measurement this round; checked PCM timing/peak and shared event delivery.
+
+## 2026-11-22 — remove tutorial placement checkpoints, explain push assist
+- Removed the tow-to-circle stage from normal progression. Connecting now offers
+  towing/release instructions immediately; explicit player cast-off starts push
+  training at the actual cargo position. No fixed arrival position is required.
+  Automatic line loss still returns to connection practice. Legacy lesson7 is
+  retained only for ID compatibility and redirects to CASTOFF on explicit reset.
+- Removed the separate manual-push marker too. The player practices a real
+  contact-driven manual push (>6 units with6 contact ticks), then holds for berth
+  assist and delivers to the real berth. No teleport or auto-delivery; the same
+  hull, momentum and full unloading/tie sequence remain.
+- Instructions explain press/keep holding, automatic tug alignment, dragging to
+  steer toward berth, lifting to stop pushing, then a fresh hold without dragging
+  for automatic berth steering. Animated drag demonstration now points toward the
+  real berth. Removed both arbitrary destination rings from shared rendering.
+- Shared guide points lead around the far-arm peninsula toward the berth, with
+  no completion gate attached. Replays choose roomy water to release as a player
+  would; that automation choice is not a gameplay constraint. Native iOS automation
+  now reads a shared push-berth target and excludes retired lesson7.
+- Targeted hold tests passed63 assertions; full tow course33029 and continuous
+  tutorial409641 assertions passed. Public early release now earns the pushing
+  lesson directly, proving placement is not required. Corrected joystick replay
+  to actually lift its owner pointer before tapping the line (formerly a separate
+  stage transition cancelled it implicitly). Replay9a4e4920:2:1350.
+- No new textures, effects, caches or physics work. tools/TutorialTowReview now
+  captures hold-and-drag and berth-assist cards. Final build/install results follow.
+- Shared-renderer hold/drag and berth-assist panels reviewed; no practice marker
+  remains over the water. Updated skip-radio assertions to visit only active IDs.
+  The first-basin test also now explicitly lifts the driving pointer before its
+  waiting/release assertion; the removed checkpoint no longer cancels it. Targeted
+  bridge/inventory/cast-off authorization checks pass with this real gesture flow.
+- Final build passed all shared/assets/native/pixel checks (out/push-lesson-build.log).
+  Installed via rish (Success), cold launched (Status: ok,1251ms). Native iOS and
+  manual on-device full lesson remain unvalidated. Awake scope remains open for
+  the user's follow-up investigation into tow-lasso gesture priority.
