@@ -25,7 +25,7 @@ public final class FireworksLessonTest {
         g.pointerMove(88,g.layout.camera.screenX(fire.x-130,fire.y),g.layout.camera.screenY(fire.x-130,fire.y));
         steps(g,200);check(g.abilities.spraying && g.tutorial.fireworks.heat==FireworksLesson.HEAT,"spraying away from flames earns no credit");
         g.pointerCancel(88);check(!g.abilities.spraying,"cancel stops water emission");
-        for(int i=0;i<700 && g.tutorial.lesson!=Tutorial.DONE;i++){ReplayInput.tutorial(g);g.step();}
+        for(int i=0;i<1400 && g.tutorial.lesson!=Tutorial.DONE;i++){ReplayInput.tutorial(g);g.step();}
         check(g.tutorial.lesson==Tutorial.DONE && g.tutorial.fireworks.done && g.tutorial.fireworks.heat==0,"aimed simulated water hits are required to finish");
         check(g.cargo[0]==first && g.cargo[2]==second && g.cargo[3]==fire,"finale preserves all three original specialty barges");
         steps(g,200);check(g.tutorial.fireworks.steam==0,"completion steam expires even on DONE");

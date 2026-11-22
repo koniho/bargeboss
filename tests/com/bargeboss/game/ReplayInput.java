@@ -261,6 +261,7 @@ public final class ReplayInput {
         }
         if(g.tutorial.instructorRadio.teach){InstructorRadio radio=g.tutorial.instructorRadio;tap(root,radio.x(g),radio.y(g));return;}
         if(g.tutorial.instructorRadio.phase!=0){if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}return;}
+        if(g.dialogue.active){if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}return;}
         if(towRadio(root))return;
         switch(g.tutorial.lesson) {
             case Tutorial.MOVE:

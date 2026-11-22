@@ -72,3 +72,22 @@ Modified for Barge Boss: excerpted launch (0.145–0.490 seconds), mono conversi
 band limiting, gain adjustment, short fades and peak limiting.
 Original MP3 preview retained in docs/audio/sources/orangefreesounds/.
 No endorsement by the original artist is implied.
+
+Fireworks and firefighting recorded audio v2 (2026-11-22)
+firework-launch-recorded-v2.wav and firework-burst-a-v1.wav / -c-v1.wav:
+Alexander / Orange Free Sounds, Launching And Exploding Firework Sound Effect,
+https://orangefreesounds.com/launching-and-exploding-firework-sound-effect-free-wav/
+firework-burst-b-v1.wav:
+Alexander / Orange Free Sounds, Firework Sound Effect,
+https://orangefreesounds.com/firework-sound-effect/
+timber-fire-roar-v1.wav:
+pcaeldries, FireBurning.wav, https://freesound.org/people/pcaeldries/sounds/28314/
+fire-water-sizzle-v1.wav:
+d.n.audio.uk, Water Sizzle, https://freesound.org/people/d.n.audio.uk/sounds/463370/
+All four sources: Creative Commons Attribution 4.0 International,
+https://creativecommons.org/licenses/by/4.0/
+Changes: excerpts from public MP3 previews, mono conversion, filtering, peak
+normalization, fades; burst C has a modest pitch change; fire/steam compressed
+and seam-crossfaded for looping. No endorsement implied. Retained sources and
+reproducible edits: docs/audio/fireworks-fire-v2.md and
+ tools/prepare-fireworks-fire-audio.py.

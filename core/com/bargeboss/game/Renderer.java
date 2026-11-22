@@ -21,6 +21,7 @@ public final class Renderer {
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
         HarborView.objective(g,p);
         FeederView.callouts(g,p);
+        g.abilities.drawScreenFlash(g,p);
         ScreenView.hud(g,p);
         if(!g.conversation())AssistView.draw(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);

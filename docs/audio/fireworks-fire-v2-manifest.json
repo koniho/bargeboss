@@ -1,0 +1,50 @@
+[
+  {
+    "file": "assets/audio/firework-launch-recorded-v2.wav",
+    "seconds": 0.63,
+    "peak_db": -7.535367628986886,
+    "rms_db": -23.252063107352207,
+    "bytes": 55610,
+    "sha256": "e6cf0bdce91a93e5a0e5a19a161382ce31cdc8d1588411a1bef62073869230b6"
+  },
+  {
+    "file": "assets/audio/firework-burst-a-v1.wav",
+    "seconds": 1.18,
+    "peak_db": -3.8766158942488604,
+    "rms_db": -23.626909775842226,
+    "bytes": 104120,
+    "sha256": "7ebe6880ba31b7950cd710854c05ee1a7821e0c411ad94cacfeac9ef9aecf19a"
+  },
+  {
+    "file": "assets/audio/firework-burst-b-v1.wav",
+    "seconds": 1.18,
+    "peak_db": -3.8766158942488604,
+    "rms_db": -29.564802603251522,
+    "bytes": 104120,
+    "sha256": "02f86ce5036ce2d45e8366673103b0a62eb881e7acb04b7ad65ae0a0270c7812"
+  },
+  {
+    "file": "assets/audio/firework-burst-c-v1.wav",
+    "seconds": 1.1579138321995466,
+    "peak_db": -4.293611883783374,
+    "rms_db": -21.399622541249098,
+    "bytes": 102172,
+    "sha256": "5351be0a888e95316c461a96b5f8013258283e882636d8202523f6cda27fe0d8"
+  },
+  {
+    "file": "assets/audio/timber-fire-roar-v1.wav",
+    "seconds": 4.000022675736961,
+    "peak_db": -5.680116640845738,
+    "rms_db": -37.0296350267036,
+    "bytes": 352846,
+    "sha256": "baa9c62be0e0448b3046393b52c839163898c44c90af275eb2ac22104c0f3a87"
+  },
+  {
+    "file": "assets/audio/fire-water-sizzle-v1.wav",
+    "seconds": 2.0000226757369615,
+    "peak_db": -6.375528689433151,
+    "rms_db": -20.55009867356879,
+    "bytes": 176446,
+    "sha256": "f5869a90bb1fc5081d9c3fc407030e50277a9a0e4f143c058477bd81a17d86ef"
+  }
+]

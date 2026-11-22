@@ -6,13 +6,13 @@ public final class BargeAbilities {
     public Body selected;
     public int owner=-1,heldTicks,visibleTicks,launches;
     public boolean spraying;
-    private int pressed=-1,next;
+    private int pressed=-1,next,screenFlash;
     private float aimX,aimY;
     private final float[] x=new float[CAPACITY],y=new float[CAPACITY],z=new float[CAPACITY],vx=new float[CAPACITY],vy=new float[CAPACITY],vz=new float[CAPACITY];
     private final boolean[] rocket=new boolean[CAPACITY],flash=new boolean[CAPACITY];
     private final int[] age=new int[CAPACITY];
     private final int[] life=new int[CAPACITY],color=new int[CAPACITY];
-    public void reset(){selected=null;cancel();visibleTicks=launches=next=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
+    public void reset(){selected=null;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
     public void cancel(){owner=-1;pressed=-1;spraying=false;heldTicks=0;}
     public boolean reveal(Game g,Body b){
         if(b==null || !b.active || b.ability==NONE)return false;
@@ -58,6 +58,7 @@ public final class BargeAbilities {
         cancel();return true;
     }
     public void step(Game g){
+        if(screenFlash>0)screenFlash--;
         if(visibleTicks>0 && owner==-1)visibleTicks--;
         if(selected!=null && !selected.active){selected=null;cancel();}
         if(owner!=-1){heldTicks++;spraying=pressed==0 && selected!=null && selected.ability==FIRE && heldTicks>=12;}
@@ -89,9 +90,16 @@ public final class BargeAbilities {
             if(color[i]==0xffb9e9f4 && z[i]<=GroundArt.LAND_RISE && g.tutorial!=null
                     && g.tutorial.fireworks.waterHit(x[i],y[i]))life[i]=0;
             if(z[i]<0)life[i]=0;
-            if(life[i]==0 && rocket[i]){rocket[i]=false;explode(x[i],y[i],z[i],color[i]);}
+            if(life[i]==0 && rocket[i]){rocket[i]=false;explode(x[i],y[i],z[i],color[i]);screenFlash=8;g.sounds.fireworkBurst();}
         }
     }
+    /** Brief warm exposure pulse; shared timing and a single rectangle behind HUD. */
+    void drawScreenFlash(Game g,Painter p){
+        if(screenFlash<=0)return;
+        float t=screenFlash/8f;
+        p.rect(0,0,g.layout.width,g.layout.height,SoftCue.alpha(0x38fff0c7,t*t));
+    }
+    int screenFlashTicks(){return screenFlash;}
     private void burst(Body b,int tick){
         int hue=(tick/24)%3;int tint=hue==0?0xffffd329:hue==1?0xff28e7ff:0xffff534b;
         emit(b.x,b.y,12,(hue-1)*34,(tick%5-2)*17,210,54,tint);rocket[(next-1)%CAPACITY]=true;

@@ -145,3 +145,17 @@ one ability button. Cast-off belongs to the towline itself, with a small open
 midline cue in release lessons or when that line's barge is selected. Do not
 restore an ability-versus-unhook popup. Fire suppression rings show real remaining
 work; the nozzle only earns progress when its simulated spray reaches the fire.
+
+Fireworks exposure pulses originate from actual rocket detonation events, last
+8 fixed ticks, and fade quadratically from a bounded warm tint. Composite before
+HUD/instruction panels so text and controls remain readable. Firelight uses one
+simulation-timed orange/amber/pale-yellow emitter for glow, water reflection,
+timber normals and vessel shade removal; heat controls strength. Do not cache
+its animated color or bake it into static terrain. Extinguishing removes the
+emitter while retaining charred timber and the short steam tail.
+
+Fire rescue radio reminders are nonblocking: retain the current task instruction,
+space calls at least twelve seconds apart, and yield to conversations and earned
+coaching. After suppression, wait for a player reply before completing the finale.
+Bridge approach framing favors the left side for the player, leaving room for the
+bridge house and radio on the right; preserve aiming projection freezes and bounds.

@@ -5400,3 +5400,60 @@ launch restored after capture; screen timeout restored to300000ms.
   (NotificationShade / mDreamingLockscreen=true), capture is black. Did not alter
   keyguard security. Requested normal launch without profiling extras and restored
   display timeout. Native visual validation remains pending unlock; no iOS run.
+
+## 2026-11-22 — recorded fireworks, fire ambience and dynamic firelight
+- Existing fireworks had only a345ms launch cue and no aerial burst audio. Shared
+  one-shot policy also stopped every prior clip, which would truncate burst tails.
+  Added a longer recorded launch and3 deterministically cycled burst variants;
+  shared interruption policy permits four firework voices while radio/contact
+  remains exclusive. Android/iOS/desktop adapters consume the same policy.
+- Added predecoded4s timber-fire and2s water-sizzle loops. Shared gains track heat,
+  listener distance and actual droplet hits; sizzle fades over the final12 of24
+  ticks after a hit. Radio ducks ambience. Pause/background stops every voice.
+  Sources are CC BY4 recordings with retained previews, attribution and recipe
+  in docs/audio/fireworks-fire-v2.md; no runtime synthesis/decoding introduced.
+- Burst events trigger an8-tick warm screen exposure pulse before HUD/panels.
+  Fire has deterministic orange/amber/pale-yellow variation shared by diffuse
+  glow, clipped water reflection, timber face lighting and watercraft shade
+  removal. No new sprite textures or raster cache. Firelight stops at zero heat.
+- Targeted actual rocket timing, flash decay, voice overlap, fire/water-hit audio,
+  pause/reset and colored face-receiver checks passed. Full/native checks follow.
+- Six generated mono44.1kHz PCM files total895314 bytes; all peaks below0.65,
+  each loop below SoundPool's per-sample decoded limit. Native loaders preload
+  the shared manifests; desktop now also plays the shared environmental loops.
+  Source hashes, edits and generated peak/RMS/duration manifest are recorded.
+- Actual shared-renderer flash and four firelight-color frames reviewed under
+  out/fireworks-burst-screen-flash.png and out/firelight-colors-{0..3}.png.
+  Warm exposure stays behind UI; timber/water/glow vary together. Device is
+  locked (NotificationShade/mDreamingLockscreen); acoustic device audition and
+  native pixel/performance validation remain unavailable until unlock.
+
+### 2026-11-22 — fire rescue radio and bridge framing follow-up (shared Java)
+
+- Added fixed-step, nonblocking instructor urgency calls for retrieval, return tow,
+  and spraying. Calls last six seconds and recur no faster than twelve seconds;
+  dialogue, existing coaching and active radio take priority. Each card preserves
+  the current actionable instruction. No extra textures, voices or render passes.
+- Extinguishing now leads to relief, three selectable player replies, and a matching
+  instructor comeback before DONE. No response timeout. Shared radio sounds and
+  portrait/transmission animation are reused. Tests cover all replies, reset,
+  control continuity and call spacing; full public-input firefighting replay passes.
+- Reviewed phone screenshots Screenshot_20261122-145706.png and -145637.png.
+  Removed the two redundant tutorial entrance marker pairs at bridge approaches;
+  bridge signals remain. Bridge approach cameras anchor the tug at 38% width,
+  subject to existing scenery bounds and eased projection/aim freeze contracts.
+- Shared-renderer previews reviewed: out/bridge-left-framing.png,
+  out/fire-frantic-radio.png, out/fire-relief-choices.png. Reply text fits the
+  existing panels; bridge house remains accessible beside the instruction panel.
+- Replay baseline is now e1daa725:2:1350 after reviewing changed lighting/audio,
+  marker inventory, bridge camera framing, and added interactive finale timing.
+- Final validation: complete ./build-android.sh run passed shared checks, asset
+  contracts, shoreline pixels, 722 ripple cases, 2,526,477 native encoder fields,
+  and Vulkan clip tests. The first camera run exposed a >20px transition after a
+  bridge opened; reducing later-tutorial pan easing to .03 fixed it. The full
+  continuous tutorial now passes 419,164 assertions, including camera continuity.
+- APK installed successfully through Shizuku and cold-launched. A native fire
+  fixture was visible in the phone's recent-app snapshot (out/fire-color-native.png),
+  confirming warm glow/reflection and panel ordering. This is not a full native
+  motion/performance validation or a speaker audition. Normal launch restored
+  after the fixture. iOS adapter changes were not built or run on this phone.

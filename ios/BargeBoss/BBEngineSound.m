@@ -18,7 +18,7 @@
     if((self=[super init])) {
         _engine=[[AVAudioEngine alloc] init];
         NSMutableArray *players=[NSMutableArray array],*rates=[NSMutableArray array],*buffers=[NSMutableArray array];
-        for(int i=0;i<2;i++) {
+        for(int i=0;i<BBEngineAudio_LAYERS;i++) {
             NSString *path=[@"assets/" stringByAppendingString:[BBEngineAudio assetWithInt:i]];
             NSURL *url=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:path];
             NSError *error=nil;
@@ -51,14 +51,14 @@
 }
 - (void)update:(BBGame *)game {
     BBGame *active=[game activeGame];
-    if(active!=_radioGame){_radioGame=active;_radioSequence=0;}
+    if(active!=_radioGame){[self stop];_radioGame=active;_radioSequence=0;}
     if(![BBEngineAudio audibleWithBBGame:game]){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];[self stop];_interrupted=NO;return;}
     if(_failed || _interrupted)return;
     if(!_playing){
         NSError *error=nil;
         AVAudioSession *session=AVAudioSession.sharedInstance;
         if(![session setCategory:AVAudioSessionCategoryAmbient error:&error] || ![session setActive:YES error:&error] || ![_engine startAndReturnError:&error]){NSLog(@"Engine audio start failed: %@",error);_interrupted=YES;return;}
-        for(int i=0;i<2;i++){
+        for(int i=0;i<BBEngineAudio_LAYERS;i++){
             _players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];
             _rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];
             [_players[i] scheduleBuffer:_buffers[i] atTime:nil options:AVAudioPlayerNodeBufferLoops completionHandler:nil];
@@ -70,11 +70,12 @@
     if(sequence!=_radioSequence){
         _radioSequence=sequence;
         if(_radio.count==BBSoundEffects_COUNT && [BBSoundEffects audibleWithBBGame:game]){
-            for(AVAudioPlayer *clip in _radio)[clip stop];
-            AVAudioPlayer *clip=_radio[[BBSoundEffects cueWithBBGame:game]];clip.currentTime=0;[clip play];
+            jint cue=[BBSoundEffects cueWithBBGame:game];
+            for(jint i=0;i<_radio.count;i++)if([BBSoundEffects interruptsWithInt:cue withInt:i])[_radio[i] stop];
+            AVAudioPlayer *clip=_radio[cue];clip.currentTime=0;[clip play];
         }
     }
-    for(int i=0;i<2;i++){_players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];_rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];}
+    for(int i=0;i<BBEngineAudio_LAYERS;i++){_players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];_rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];}
 }
 - (void)stop {
     for(AVAudioPlayer *clip in _radio)[clip stop];

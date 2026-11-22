@@ -14,7 +14,8 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
     private final boolean trace;
     private final AudioManager manager;
     private final int[] sounds=new int[EngineAudio.LAYERS+SoundEffects.COUNT],streams=new int[EngineAudio.LAYERS];
-    private int loaded,radioSequence,radioStream;
+    private int loaded,radioSequence;
+    private final int[] effects=new int[SoundEffects.COUNT];
     private Game radioGame;
     private boolean requested,focused,closed;
     private AudioFocusRequest request;
@@ -22,7 +23,7 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
         trace=(context.getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0 && context instanceof android.app.Activity && ((android.app.Activity)context).getIntent().getBooleanExtra("bb_audio_trace",false);
         manager=(AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
         AudioAttributes attributes=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
-        pool=new SoundPool.Builder().setMaxStreams(EngineAudio.LAYERS+1).setAudioAttributes(attributes).build();
+        pool=new SoundPool.Builder().setMaxStreams(EngineAudio.LAYERS+SoundEffects.VOICES).setAudioAttributes(attributes).build();
         if(Build.VERSION.SDK_INT>=26)request=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attributes).setOnAudioFocusChangeListener(this).build();
         pool.setOnLoadCompleteListener((p,id,status)->{if(status==0)loaded++;else android.util.Log.w("BargeBoss","Engine loop failed to load: "+id);});
         for(int i=0;i<sounds.length;i++)try(AssetFileDescriptor file=context.getAssets().openFd(i<EngineAudio.LAYERS?EngineAudio.asset(i):SoundEffects.asset(i-EngineAudio.LAYERS))){sounds[i]=pool.load(file,1);}
@@ -31,7 +32,7 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
     void update(Game game){
         if(closed)return;
         Game active=game.activeGame();
-        if(radioGame!=active){radioGame=active;radioSequence=0;}
+        if(radioGame!=active){silence();radioGame=active;radioSequence=0;}
         if(!EngineAudio.audible(game)){radioSequence=SoundEffects.sequence(game);stop();return;}
         if(loaded!=sounds.length)return;
         if(!requested){requested=true;focused=(Build.VERSION.SDK_INT>=26?manager.requestAudioFocus(request):manager.requestAudioFocus(this,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN))==AudioManager.AUDIOFOCUS_REQUEST_GRANTED;}
@@ -43,12 +44,13 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
         }
         int sequence=SoundEffects.sequence(game);
         if(sequence!=radioSequence){radioSequence=sequence;if(SoundEffects.audible(game)){
-            if(radioStream!=0)pool.stop(radioStream);
-            radioStream=pool.play(sounds[EngineAudio.LAYERS+SoundEffects.cue(game)],.85f,.85f,2,0,1);
+            int cue=SoundEffects.cue(game);
+            for(int i=0;i<effects.length;i++)if(SoundEffects.interrupts(cue,i) && effects[i]!=0){pool.stop(effects[i]);effects[i]=0;}
+            int radioStream=effects[cue]=pool.play(sounds[EngineAudio.LAYERS+cue],.85f,.85f,2,0,1);
             if(trace)android.util.Log.i("BargeBossAudio","cue="+SoundEffects.cue(game)+" stream="+radioStream+" tick="+active.ticks+" asset="+SoundEffects.asset(SoundEffects.cue(game)));
         }}
     }
-    private void silence(){if(radioStream!=0)pool.stop(radioStream);radioStream=0;for(int i=0;i<streams.length;i++){if(streams[i]!=0)pool.stop(streams[i]);streams[i]=0;}}
+    private void silence(){for(int i=0;i<effects.length;i++){if(effects[i]!=0)pool.stop(effects[i]);effects[i]=0;}for(int i=0;i<streams.length;i++){if(streams[i]!=0)pool.stop(streams[i]);streams[i]=0;}}
     public void onAudioFocusChange(int change){focused=change==AudioManager.AUDIOFOCUS_GAIN;if(!focused)silence();}
     void stop(){if(closed)return;silence();if(requested){if(Build.VERSION.SDK_INT>=26)manager.abandonAudioFocusRequest(request);else manager.abandonAudioFocus(this);}requested=focused=false;}
     void close(){stop();closed=true;pool.release();}

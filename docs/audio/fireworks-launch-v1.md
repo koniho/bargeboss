@@ -1,5 +1,7 @@
 # Fireworks launch audio
 
+Historical v1 recipe; superseded by [fireworks and firefighting audio v2](fireworks-fire-v2.md).
+
 Source: [Launching And Exploding Firework Sound Effect](https://orangefreesounds.com/launching-and-exploding-firework-sound-effect-free-wav/)
 by Alexander / Orange Free Sounds, November 9, 2026.
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); attribution and changes

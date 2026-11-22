@@ -197,7 +197,7 @@ public final class Tutorial {
         } else if(lesson==FIRE_TOW){
             Body fire=g.cargo[3];if(direct(g,fire) && g.navigating)actionTicks++;
             if(direct(g,fire) && actionTicks>=6 && Physics.length(fire.x-FireworksLesson.TOW_X,fire.y-FireworksLesson.TOW_Y)<=50){lesson=EXTINGUISH;g.cancelInputs();success(g);}
-        } else if(lesson==EXTINGUISH && fireworks.done) {
+        } else if(lesson==EXTINGUISH && fireworks.done && fireworks.rescueRadio.complete()) {
             lesson=DONE;g.cancelInputs();success(g);
         } else if(lesson==DOUBLE && g.passages.passable(TutorialTowBridges.ENTRY) && doubleTow(g)) {
             lesson=BRIDGE;rememberTow(g);g.cancelInputs();success(g);

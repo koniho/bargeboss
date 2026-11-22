@@ -12,21 +12,24 @@ final class FireworksLesson {
         return TowRouteGuide.target(g.tug.x,g.tug.y,ROUTE_X,ROUTE_Y,Tutorial.direct(g,g.cargo[3]),x);
     }
     static final int HEAT=240,IGNITION=140;
-    int showTicks,heat,steam;
+    final FireRescueRadio rescueRadio=new FireRescueRadio();
+    int showTicks,heat,steam,sizzle;
     boolean launched,ignited,done;
     float launchX,launchY;
-    void reset(){showTicks=heat=steam=0;launched=ignited=done=false;}
+    void reset(){rescueRadio.reset();showTicks=heat=steam=sizzle=0;launched=ignited=done=false;}
     void launched(Game g,Body b){
         if(g.tutorial.lesson!=Tutorial.SHOW || (b!=g.cargo[0] && b!=g.cargo[2]) || !g.passages.passable(TutorialTowBridges.ENTRY) || launched)return;
         launched=true;launchX=b.x;launchY=b.y;
     }
     void step(Game g){
-        if(steam>0)steam--;
+        if(steam>0)steam--;if(sizzle>0)sizzle--;
+        rescueRadio.step(g);
         if(launched && !ignited && ++showTicks>=IGNITION){ignited=true;heat=HEAT;g.radio.transmit(RadioAudio.TEACHER);}
         if(ignited && heat>0 && g.visualTicks%8==0)g.smoke.shore(X,Y,GroundArt.LAND_RISE+18,1);
     }
     boolean waterHit(float x,float y){
         if(!ignited || done || heat==0 || Physics.length(x-X,y-Y)>RADIUS)return false;
+        sizzle=24;
         if(--heat==0){done=true;steam=180;}return true;
     }
     boolean visible(){return launched && !ignited || heat>0 || steam>0;}
@@ -37,6 +40,7 @@ final class FireworksLesson {
         String title=fire?"THAT WAS NOT THE TINY BUTTON.":launched?"PERHAPS A LITTLE TOO FESTIVE...":"YOU PASSED! CUE THE FIREWORKS.";
         String first=fire?"SMALL UPDATE: WE LIT THE WOODPILE.":launched?"I SAID CONFETTI. THAT IS A SMALL SUN.":"TAP THE FIREWORKS BARGE, THEN ITS ROCKET.";
         String second=collect?(Tutorial.direct(g,g.cargo[3])?"TOW THE FIRE BARGE INTO THE MARKED WATER.":"FETCH THE FIRE BARGE THROUGH THE SOUTH CANAL."):fire?"HOLD THE NOZZLE. DRAG WATER ONTO THE FLAMES.":launched?"WHO PARKED ALL THAT FIREWOOD THERE?":"A TINY VICTORY DISPLAY. YOU HAVE EARNED IT.";
+        InstructionPanel.Content radio=rescueRadio.content(g,second);if(radio!=null)return radio;
         return new InstructionPanel.Content("fireworks-lesson-"+g.tutorial.lesson+":"+launched,title,first,second,-1,fire?1-heat/(float)HEAT:0,"INSTRUCTOR / CHANNEL 08",fire?"FIRE RESPONSE":"EQUIPMENT PRACTICE");
     }
     private static float curve(float a,float b,float c,float d,float t){float u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;}
@@ -65,12 +69,14 @@ final class FireworksLesson {
         if(!onScreen)return;
         if(heat>0){
             float strength=.35f+.65f*heat/HEAT;
-            p.material(sx,sy,160*scale,0,0,85*scale,EffectMaterial.GLOW,0,strength,0xdfff651d);
+            int fireColor=FireLight.color(g);
+            p.material(sx,sy-30*scale,270*scale,0,0,200*scale,EffectMaterial.GLOW,0,FireLight.energy(g),SoftCue.alpha(fireColor,.62f));
+            p.material(sx,sy,160*scale,0,0,85*scale,EffectMaterial.GLOW,0,FireLight.energy(g),SoftCue.alpha(fireColor,.85f));
             for(int i=0;i<9;i++){
                 float pulse=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.17+i*2.1);
                 float x=sx+(i-4)*6*scale,h=(48+34*pulse)*strength*scale;
                 float lean=(float)StrictMath.sin(g.visualTicks*.11+i*1.7)*13*scale;
-                p.material(x,sy-h*.4f,44*scale,0,lean,h*1.8f,EffectMaterial.GLOW,0,1,0xdfff4612);
+                p.material(x,sy-h*.4f,44*scale,0,lean,h*1.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(fireColor,.85f));
                 flame(p,x,sy,16*scale,h,lean,0xefff4a13);
                 flame(p,x,sy,10*scale,h*.72f,lean*.7f,0xffffbd24);
                 flame(p,x,sy,5*scale,h*.40f,lean*.3f,0xffffefb0);

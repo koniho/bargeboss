@@ -211,13 +211,13 @@ public final class Game {
         if(tutorial.lesson==Tutorial.FIGURE_EIGHT || tutorial.lesson==Tutorial.REVERSE)return Layout.focused(layout.width,layout.height,
                 HelmPractice.MEET_X,HelmPractice.MEET_Y,1.4f,layout.width*.60f,layout.height*.52f);
         int towBridge=tutorial.towBridges.current(this);
-        if(towBridge>0){LandmarkBridge b=passages.bridges[towBridge];
-            return Layout.focused(layout.width,layout.height,(tug.x+b.x)*.5f,(tug.y+b.y)*.5f,1.25f,layout.width*.42f,layout.height*.70f);}
+        if(towBridge>0){
+            // Reserve the right side for the elevated bridge house and radio panel.
+            return Layout.focused(layout.width,layout.height,tug.x,tug.y,1.25f,layout.width*.38f,layout.height*.64f);}
         if(tutorial.lesson==Tutorial.CHANNEL && (!tutorial.canal.authorized || !passages.passable(0)
                 || !tutorial.canal.escort.leading || tug.x<TrainingChannel.MIN+20)
                 && Physics.length(tug.x-TutorialCanalBridge.X,tug.y-TutorialCanalBridge.Y)<400)
-            return Layout.focused(layout.width,layout.height,(tug.x+TutorialCanalBridge.X)*.5f,
-                    (tug.y+TutorialCanalBridge.Y)*.5f,1.4f,layout.width*.45f,layout.height*.65f);
+            return Layout.focused(layout.width,layout.height,tug.x,tug.y,1.4f,layout.width*.38f,layout.height*.64f);
         if(tutorial.lesson==Tutorial.CHANNEL && tutorial.canal.escort.leading && teacherBoat()!=null)
             return Layout.focused(layout.width,layout.height,tug.x*.75f+teacherBoat().x*.25f,
                     tug.y*.75f+teacherBoat().y*.25f,PRACTICE_CANAL_ZOOM,layout.width*.5f,layout.height*.65f);
@@ -315,7 +315,7 @@ public final class Game {
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
         float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
         float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
-        float ease=tutorial!=null && tutorial.lesson<=Tutorial.CONNECT?.045f:.055f;
+        float ease=tutorial!=null?(tutorial.lesson<=Tutorial.CONNECT?.045f:.03f):.055f;
         Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
         if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
                 && Math.abs(zoom-c.zoom)<.000001f) return;

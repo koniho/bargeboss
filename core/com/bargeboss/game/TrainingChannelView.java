@@ -12,6 +12,7 @@ public final class TrainingChannelView {
         if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0)WaveView.surface(g,canvas);
         ArcadeView.water(g,p);
         NavigationLights.reflections(g,canvas);
+        FireLight.reflection(g,p);
         LocationBridges.shadows(g,canvas);
         LockView.water(g,g.lock,canvas);
         FeederView.draw(g,p);

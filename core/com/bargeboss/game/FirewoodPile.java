@@ -33,6 +33,6 @@ final class FirewoodPile {
         Painter top=new RiverPainter(GroundArt.raisedCanvas(g,p),c);
         top.poly(new float[]{X-27,Y-39,X+29,Y-39,X+33,Y+42,X-25,Y+42},0x59030910);
         int state=g.tutorial.fireworks.ignited?1:0;
-        MODELS[state].draw(g,p,POSES[state]);
+        MODELS[state].drawLit(g,p,POSES[state],new FireLight(g));
     }
 }

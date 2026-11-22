@@ -11,9 +11,8 @@ public final class NavigationLights {
         public float markerX(boolean red){return x+(red?1:-1)*-dy*halfWidth;}
         public float markerY(boolean red){return y+(red?1:-1)*dx*halfWidth;}
     }
+    // Bridge approaches use the bridge's own signals; separate towers intersect the spans.
     private static final Entrance[] PRACTICE={
-        new Entrance("OPEN BASIN / CANAL",TrainingChannel.MIN+26,500,1,0,76),
-        new Entrance("CANAL / HARBOR",TrainingChannel.MAX-26,500,1,0,76),
         new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP-26,0,-1,48),
         new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48),
         new Entrance("PRACTICE HARBOR ENTRANCE",TrainingChannel.BASIN_LEFT-12,650,1,0,94)

@@ -39,7 +39,7 @@ public final class SurfaceLighting {
             add(weights,x,y,lx,ly,17+(g.tutorial!=null?GroundArt.LAND_RISE:0),155,
                     .9f*SceneryEffects.intensity(g.visualTicks,lamp*1.31f+side*.77f));
         }
-        if(g.tutorial!=null)FactorySources.sample(g,weights,x,y);
+        if(g.tutorial!=null){FactorySources.sample(g,weights,x,y);FireLight.sample(g,weights,x,y);}
         if(g.montroseStage()){MarinaPedestals.sample(g,weights,x,y);MontroseBeaconArt.sample(g,weights,x,y);}
         vessel(g,weights,x,y,g.tug,receiver);
         if(g.teacherBoat()!=null)vessel(g,weights,x,y,g.teacherBoat(),receiver);
