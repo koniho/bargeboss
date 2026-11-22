@@ -107,11 +107,14 @@ public final class TutorialView {
         if(t.lesson>=Tutorial.SHOW && t.lesson<=Tutorial.EXTINGUISH){
             if(t.towBridges.current(g)>0)return;
             Body equipment=t.lesson==Tutorial.SHOW?g.cargo[0]:g.cargo[3];
-            if(Physics.length(g.tug.x-equipment.x,g.tug.y-equipment.y)>160){approach(g,p,river,equipment,pulse);return;}
+            if(Physics.length(g.tug.x-equipment.x,g.tug.y-equipment.y)>160){
+                if(t.lesson==Tutorial.FIRE_TOW)driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),null);
+                else approach(g,p,river,equipment,pulse);return;
+            }
             ControlView.ring(g,river,equipment.x,equipment.y,46+pulse,1,VisualStyle.GOLD,3);
             if(t.lesson==Tutorial.FIRE_TOW){
                 if(Tutorial.direct(g,equipment)){
-                    driveArrow(g,river,t.towTargetX(),t.towTargetY(g),null);
+                    driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),null);
                     ControlView.ring(g,river,FireworksLesson.TOW_X,FireworksLesson.TOW_Y,50+pulse,1,ControlView.GREEN,3);
                 }else ControlView.arrow(g,river,equipment.x,equipment.y,g.tug.x,g.tug.y,ControlView.BLUE);
             }
@@ -191,7 +194,7 @@ public final class TutorialView {
         } else if(t.lesson==Tutorial.CASTOFF) {
             Body b=g.cargo[0];ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
         } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.BRIDGE || t.lesson==Tutorial.TRAIN) {
-            driveArrow(g,river,t.towTargetX(),t.towTargetY(g),t.lesson==Tutorial.BRIDGE && !g.passages.passable(TutorialTowBridges.EXIT)?"WAIT FOR GREEN":null);
+            driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),t.lesson==Tutorial.BRIDGE && !g.passages.passable(TutorialTowBridges.EXIT)?"WAIT FOR GREEN":null);
             if(t.lesson==Tutorial.PULL) {
                 ControlView.ring(g,river,Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,Tutorial.TOW_BERTH_RADIUS+pulse,1,ControlView.GREEN,2);
                 SoftCue.caption(river,"OPEN WATER",Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,10,ControlView.GREEN);

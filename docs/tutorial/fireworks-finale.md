@@ -1,7 +1,12 @@
 # Victory fireworks and the unplanned final lesson
 
 The convoy/reconfiguration exercises use two fireworks barges. A separate fire
-barge waits at(365,-1400) in the final basin and is not part of that convoy.
+barge waits at(-350,-1050) in a separate basin south of the celebration area
+and is not part of that convoy. The basin spans(-500,-1190) to(-150,-850).
+A160-unit-wide dogleg canal leaves the celebration basin at(170,-1350),
+turns at(-50,-1350), then at(-50,-1050) into the rescue basin. The peninsula
+prevents towing directly across land. This remains one continuous scene;
+water rectangles, collision outline, retaining walls, ground cutouts and chart agree.
 
 After the player clears the narrow channel and uncouples both fireworks barges:
 
@@ -11,8 +16,9 @@ After the player clears the narrow channel and uncouples both fireworks barges:
 2. A large gold/cyan/red display launches. A stray ember follows an arc to the
    dock at(448,-1160), igniting it140 simulation ticks after activation.
 3. “THAT WAS NOT THE TINY BUTTON.” The instructor asks the player to collect the
-   separate fire barge. Connect it to the tug and tow it into the target near
-   (330,-1230); existing boats are not teleported at a lesson boundary.
+   separate fire barge through the winding south canal. Connect it to the tug and tow it into the target near
+   (330,-1230), returning through both bends. Guidance follows the canal and the
+   camera stays local during retrieval; existing boats are not teleported at a lesson boundary.
 4. Hold the fire barge's nozzle button and drag toward the flames. Aiming at the
    visible flames resolves to the elevated dock target; nozzle range remains210
    world units. Simulated water particles remove fire heat on impact. Wrong aim,

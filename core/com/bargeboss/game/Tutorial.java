@@ -61,7 +61,7 @@ public final class Tutorial {
         g.addCargo(2,520,700);park(g.cargo[0]);
         g.addCargo(2,245,0);g.cargo[1].ability=BargeAbilities.FIREWORKS;g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
         g.addCargo(2,365,0);g.cargo[2].ability=BargeAbilities.FIREWORKS;g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
-        g.addCargo(2,365,-1400);g.cargo[3].ability=BargeAbilities.FIRE;g.cargo[3].angle=(float)Math.PI/2;park(g.cargo[3]);
+        g.addCargo(2,FireworksLesson.BERTH_X,FireworksLesson.BERTH_Y);g.cargo[3].ability=BargeAbilities.FIRE;g.cargo[3].angle=0;park(g.cargo[3]);
         g.tug=new Body(0,-1,START_X,START_Y,0);
         if(lesson==FIGURE_EIGHT || lesson==REVERSE){
             g.tug.x=HelmPractice.MEET_X;g.tug.y=HelmPractice.MEET_Y;
@@ -240,9 +240,9 @@ public final class Tutorial {
         return mask;
     }
     /** One route target for the actual tow; cues and public-input replays share it. */
-    public float towTargetX(){if(lesson==FIRE_TOW)return FireworksLesson.TOW_X;return lesson==PULL?TOW_BERTH_X:300;}
+    public float towTargetX(Game g){if(lesson==FIRE_TOW)return fireworks.target(g,true);return lesson==PULL?TOW_BERTH_X:300;}
     public float towTargetY(Game g){
-        if(lesson==FIRE_TOW)return FireworksLesson.TOW_Y+110;
+        if(lesson==FIRE_TOW)return fireworks.target(g,false);
         if(lesson==PULL)return 435;
         if(lesson==BRIDGE)return g.passages.passable(TutorialTowBridges.EXIT)?-595:TutorialTowBridges.EXIT_Y+95;
         return TrainingChannel.TOW_END+80;

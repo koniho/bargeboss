@@ -260,7 +260,7 @@ public final class Game {
         if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230 && !(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE))) {load=null;docking=false;}
         RiverCamera base=RiverCamera.DEFAULT;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
-        boolean fireResponse=tutorial!=null && tutorial.fireworks.heat>0 && (tutorial.lesson==Tutorial.FIRE_TOW || tutorial.lesson==Tutorial.EXTINGUISH);
+        boolean fireResponse=tutorial!=null && tutorial.fireworks.heat>0 && tutorial.lesson==Tutorial.EXTINGUISH;
         int count=load==null?1:docking || fireResponse?3:2;
         for(int i=0;i<count+cargo.length;i++) {
             Body train=i>=count?cargo[i-count]:null;
@@ -346,7 +346,7 @@ public final class Game {
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
                 +"; spare leader "+(spareLead==null?-1:spareLead.leader.id)
-                +(tutorial==null?"":"; tow target "+tutorial.towTargetX()+","+tutorial.towTargetY(this))
+                +(tutorial==null?"":"; tow target "+tutorial.towTargetX(this)+","+tutorial.towTargetY(this))
 
                 +(abilities.selected==null || tow.incoming(abilities.selected)==null?"":"; tow release "+TowRelease.point(this,tow.incoming(abilities.selected),.5f,true)+","+TowRelease.point(this,tow.incoming(abilities.selected),.5f,false))
                 +(abilities.selected==null?"":"; ability button "+abilities.buttonX(this,0)+","+abilities.buttonY(this))

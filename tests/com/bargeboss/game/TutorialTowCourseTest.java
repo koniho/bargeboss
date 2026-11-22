@@ -47,7 +47,7 @@ public final class TutorialTowCourseTest {
             if(lesson==Tutorial.PULL || lesson==Tutorial.BRIDGE || lesson==Tutorial.TRAIN){
                 float x=Joystick.centerX(g),y=Joystick.centerY(g);
                 if(!g.joystick.active){g.cancelInputs();g.pointerDown(11,x,y);}
-                float dx=g.tutorial.towTargetX()-g.tug.x,dy=g.tutorial.towTargetY(g)-g.tug.y;
+                float dx=g.tutorial.towTargetX(g)-g.tug.x,dy=g.tutorial.towTargetY(g)-g.tug.y;
                 float sx=RiverCamera.Q*(dx+dy),sy=RiverCamera.Q*RiverCamera.DEPTH*(dy-dx),len=Math.max(1,Physics.length(sx,sy));
                 if(Physics.length(dx,dy)<25)g.pointerMove(11,x,y);
                 else g.pointerMove(11,x+Joystick.TRAVEL*sx/len,y+Joystick.TRAVEL*sy/len);

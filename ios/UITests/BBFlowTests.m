@@ -243,7 +243,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if(lesson==BBLessonFireTow){
             CGPoint b=[self worldPositionInStatus:status tag:@"fire barge"];
             if([self integerInStatus:status tag:@"fire leader"]==0)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
-            else if(hypot(tug.x-b.x,tug.y-b.y)>150 || tug.y<b.y+55)[self joystickDrive:stage to:CGPointMake(b.x-55,b.y+85) status:status];
+            else if(hypot(tug.x-b.x,tug.y-b.y)>125)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
             else [self castFrom:b to:tug stage:stage status:status];
             continue;
         }

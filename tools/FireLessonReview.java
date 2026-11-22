@@ -7,7 +7,7 @@ public final class FireLessonReview {
         for(int i=0;i<95;i++){ReplayInput.tutorial(g);g.step();}
         DialogueReview.capture(g,"fire-lesson-fireworks");
         for(int i=0;i<160;i++)g.step();DialogueReview.capture(g,"fire-lesson-mishap");
-        for(int i=0;i<1200 && g.tutorial.lesson!=Tutorial.EXTINGUISH;i++){ReplayInput.tutorial(g);g.step();}
+        for(int i=0;i<3000 && g.tutorial.lesson!=Tutorial.EXTINGUISH;i++){ReplayInput.tutorial(g);g.step();}
         for(int i=0;i<110;i++){ReplayInput.tutorial(g);g.step();}
         DialogueReview.capture(g,"fire-lesson-spray");
         for(int i=0;i<700 && g.tutorial.lesson!=Tutorial.DONE;i++){ReplayInput.tutorial(g);g.step();}

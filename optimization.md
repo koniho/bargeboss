@@ -5023,3 +5023,36 @@ Including startup, mean frame intervals were21.51/21.98ms for fireworks/firefigh
 maximum intervals544.78/606.10ms and maximum draw542.59/602.07ms. These cold-start
 spikes are retained in the evidence rather than hidden by the median. Normal game
 launch restored after capture; screen timeout restored to300000ms.
+
+## 2026-11-22 — tutorial fire-barge retrieval basin (shared Java)
+- Added a separate340-unit-deep rescue basin south of the celebration area, joined
+  by a160-unit-wide two-bend canal. Reused the permanent rectangle union and exact
+  exterior polygon, so chart, water, terrain subtraction, seawalls and hull
+  collisions share the new boundary. No new sprites, caches or effects pools.
+- Fire barge now waits at(-350,-1050). Shared nearest-centerline guidance supports
+  outbound collection and the return tow. Camera fits local hulls on retrieval;
+  the remote dock fire only enters camera fitting during extinguishing.
+- Public input trace reaches the fire basin around tick400 and returns with the
+  attached barge around tick1300. Full continuous tutorial passed408488 assertions
+  across its three viewport sizes; tow-course tests passed33626 assertions.
+- Added basin/canal/solid-peninsula checks and sampled polygon-versus-water-union
+  agreement. Exclude exact boundary samples: polygon ray crossing and inclusive
+  water rectangles intentionally differ at a mathematically exact outer edge.
+- Reviewed actual Java2D frames out/fire-basin-overview.png and
+  out/fire-basin-retrieval.png, reproducible with tools/FireBasinReview.java.
+  Seawalls frame the new dogleg without closing its mouth; accepted industrial
+  scenery and watercraft remain unchanged. Expanded the finite finale test budget
+  to3000ticks for the physical trip. Replay signature now fe1a4fc4:2:1350 because
+  the permanent cargo start and subsequent voyage changed.
+- iOS UI automation reads the same route target for the outbound trip as well;
+  native iOS validation remains deferred. No frame-rate improvement claim and no
+  native timing sample this round; added geometry uses existing visible-tile and
+  shore-segment culling. Android build/install results follow below.
+- Full checks exposed a dry-terrain cache fixture at projected chunk(-5,0)
+  newly intersecting the canal. Moved it to genuinely dry chunk(-8,-2), preserving
+  assertions for live material faces, no raster layers, no empty preparation and
+  render purity; targeted StaticTerrainTest passed66484 assertions.
+- Final ./build-android.sh passed all shared, asset, native encoder and pixel
+  checks (out/fire-basin-build.log). APK installed through authorized rish
+  (Success) and cold launched (Status: ok,1075ms). Shared renderer reviewed above;
+  no on-device full canal voyage or iOS build this round.

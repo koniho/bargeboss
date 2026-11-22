@@ -278,12 +278,12 @@ public final class ReplayInput {
             case Tutorial.PULL:
             case Tutorial.BRIDGE:
             case Tutorial.TRAIN:
-                drive(g,g.tutorial.towTargetX(),g.tutorial.towTargetY(g));break;
+                drive(g,g.tutorial.towTargetX(g),g.tutorial.towTargetY(g));break;
             case Tutorial.FIRE_TOW:{
                 Body b=g.cargo[3];
-                if(Tutorial.direct(g,b)){drive(g,g.tutorial.towTargetX(),g.tutorial.towTargetY(g));break;}
+                if(Tutorial.direct(g,b)){drive(g,g.tutorial.towTargetX(g),g.tutorial.towTargetY(g));break;}
                 if(g.ropePhase!=0)break;
-                if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>150 || g.tug.y<b.y+55){drive(g,b.x-55,b.y+85);break;}
+                if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>125){drive(g,g.tutorial.towTargetX(g),g.tutorial.towTargetY(g));break;}
                 if(g.pointer)up(root,g.pointerX,g.pointerY);
                 down(root,b.x,b.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);break;
             }

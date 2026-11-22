@@ -9,11 +9,16 @@ public final class FireworksLessonTest {
         Game g=fixture(Tutorial.SHOW);Body first=g.cargo[0],second=g.cargo[2],fire=g.cargo[3];
         check(first.ability==BargeAbilities.FIREWORKS && second.ability==BargeAbilities.FIREWORKS && fire.ability==BargeAbilities.FIRE,"two celebration barges and a separate fire barge");
         check(Physics.length(fire.x-FireworksLesson.X,fire.y-FireworksLesson.Y)>210,"fire barge starts outside nozzle range and needs collecting");
+        check(fire.x==FireworksLesson.BERTH_X && fire.y==FireworksLesson.BERTH_Y,"rescue craft waits in its separate southern basin");
+        check(TrainingChannel.contains(-350,-1050) && TrainingChannel.contains(-50,-1200) && TrainingChannel.contains(100,-1350),"basin and both canal legs are water");
+        check(!TrainingChannel.contains(100,-1100),"solid peninsula prevents a direct shortcut to the fire");
+        for(float yy=-1479.75f;yy<-800;yy+=11)for(float xx=-519.75f;xx<450;xx+=11)
+            check(TrainingChannel.contains(xx,yy)==PolygonWater.contains(TrainingChannel.WATER_BOUNDARY,xx,yy),"water fill and collision shoreline agree");
         steps(g,600);check(g.tutorial.lesson==Tutorial.SHOW && !g.tutorial.fireworks.launched,"waiting cannot finish the fireworks lesson");
         for(int i=0;i<700 && g.tutorial.lesson==Tutorial.SHOW;i++){ReplayInput.tutorial(g);g.step();}
         check(g.abilities.launches>0 && g.tutorial.lesson==Tutorial.FIRE_TOW && g.tutorial.fireworks.heat==FireworksLesson.HEAT,"actual launch causes delayed dock fire, not automatic success");
         steps(g,180);check(g.tutorial.lesson==Tutorial.FIRE_TOW,"fire cannot expire or skip the separate tow");
-        for(int i=0;i<1000 && g.tutorial.lesson==Tutorial.FIRE_TOW;i++){ReplayInput.tutorial(g);g.step();}
+        for(int i=0;i<3000 && g.tutorial.lesson==Tutorial.FIRE_TOW;i++){ReplayInput.tutorial(g);g.step();}
         check(g.tutorial.lesson==Tutorial.EXTINGUISH && Tutorial.direct(g,fire),"public rope gesture and towing collect the separate fire barge");
         ReplayInput.down(g,fire.x,fire.y);ReplayInput.up(g,fire.x,fire.y);
         float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);g.pointerDown(88,x,y);
