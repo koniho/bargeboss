@@ -4910,3 +4910,11 @@ bold strokes, full tutorial replay,924416 chart pixels and native Vulkan clips.
 Installed and cold launched Status:ok; restored display timeout. Desktop previews
 in Downloads/Photos verified as MediaStore17985/17987/17989. No native pixel capture/
 frame-time profile or iOS build this round.
+
+## 2026-11-21 — remove throttle guidance halo
+Removed the tutorial-only cyan target ring/chevrons surrounding the throttle.
+Throttle sectors, puck, input and world target cues remain. Reviewed shared
+1333px gameplay preview. Visual-only canonical trace87857f4b:2:1350.
+Full checks/Android build passed(out/throttle-ring-build.log). Installed and
+launch reported Status:ok; restored timeout. Updated preview saved in Downloads/
+Photos, MediaStore18071 verified. No iOS build or native pixel capture this round.

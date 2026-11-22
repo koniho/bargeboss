@@ -129,7 +129,7 @@ public final class TutorialView {
             if(t.helm.phase==HelmPractice.RENDEZVOUS){
                 SoftCue.target(g,river,HelmPractice.MEET_X,HelmPractice.MEET_Y,HelmPractice.MEET_RADIUS+pulse,1,0xdd28e7ff,2);
                 driveArrow(g,river,HelmPractice.MEET_X,HelmPractice.MEET_Y,null);
-            }else SoftCue.target(g,p,Joystick.centerX(g),Joystick.centerY(g),Joystick.RADIUS+9+pulse,1,SoftCue.animated(g,0xdd28e7ff),2);
+            }
         } else if(t.lesson==Tutorial.FIGURE_EIGHT || t.lesson==Tutorial.REVERSE) {
             for(int i=0;i<2;i++)SoftCue.target(g,river,Tutorial.DRIVE_X[i],Tutorial.DRIVE_Y[i],Tutorial.DRIVE_RADIUS,1,0x3395d7d1,1);
             int buoy=Math.min(t.driveMarker,Tutorial.DRIVE_X.length-1);

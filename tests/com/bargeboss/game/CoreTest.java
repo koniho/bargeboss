@@ -184,7 +184,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("8b9482b:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("87857f4b:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
