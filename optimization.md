@@ -4929,3 +4929,11 @@ state fields, rendering gate only. Drawing replay57af69a1:2:1350.
 Full checks/Android build passed(out/portrait-arrival-build.log), installed and
 cold launched Status:ok. Restored timeout. Preview copies verified in Photos as
 MediaStore18079/18081. Desktop visual review; no native pixel capture/iOS build.
+
+## 2026-11-21 — plain throttle center
+Removed the three decorative grip strokes from the throttle puck. Shared UI
+preview reviewed; inputs and sectors unchanged. Three fewer line draws when
+the control is visible. Drawing replay10e7c9ed:2:1350.
+Full checks/Android build passed(out/plain-throttle-build.log), installed and
+launch reported Status:ok. Restored timeout. Preview verified in Photos as
+MediaStore18085. Desktop visual review; no native pixel capture/iOS build.

@@ -97,8 +97,6 @@ public final class Joystick {
         if(j.active)SoftCue.line(p,cx,cy,tx,ty,2,0x50000000|rgb);
         p.circle(tx,ty,25.5f,engaged?(0x98000000|rgb):0xc0101c30);
         SoftCue.ring(p,tx,ty,27,1,engaged?(0xb8000000|rgb):0x99fff0ce,1);
-        // Thumb grip distinguishes the movable puck from the surrounding drive sectors.
-        for(int grip=-1;grip<=1;grip++)p.line(tx+grip*5,ty-6,tx+grip*5,ty+6,1.4f,0x99fff0ce);
         if(j.throttleAlpha>0)throttleArc(p,cx,cy,j.throttleAngle,appliedThrottle(g),j.throttleRgb,j.throttleAlpha);
     }
 
