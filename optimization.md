@@ -4918,3 +4918,14 @@ Throttle sectors, puck, input and world target cues remain. Reviewed shared
 Full checks/Android build passed(out/throttle-ring-build.log). Installed and
 launch reported Status:ok; restored timeout. Updated preview saved in Downloads/
 Photos, MediaStore18071 verified. No iOS build or native pixel capture this round.
+
+## 2026-11-21 — portrait waits for first introduction
+Hide speaker portrait during initial instructor approach; reveal exactly when
+the first radio question opens at arrival tick240. Preserve the portrait through
+the subsequent conversation and lessons. Arrival regression checks every tick
+before/after introduction on three widths and all answer branches. Shared approach/
+introduction captures in docs/art-studies/instructor-arrival-v1; no new assets or
+state fields, rendering gate only. Drawing replay57af69a1:2:1350.
+Full checks/Android build passed(out/portrait-arrival-build.log), installed and
+cold launched Status:ok. Restored timeout. Preview copies verified in Photos as
+MediaStore18079/18081. Desktop visual review; no native pixel capture/iOS build.

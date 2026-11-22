@@ -11,6 +11,7 @@ final class SpeakerPortrait {
     }
     static int atlas(Game g,String header){
         if(g.mode!=Game.PLAY || g.tutorial==null)return -1;
+        if(g.tutorial.entering && g.tutorial.entranceTicks<TutorialArrival.APPROACH)return -1;
         boolean bridge=g.dialogue.active?g.dialogue.bridgeConversation():header.startsWith("BRIDGE") || header.startsWith("TOW BRIDGE");
         if(bridge){
             int gate=g.tutorial.towBridges.current(g);
