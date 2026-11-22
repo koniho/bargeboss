@@ -720,3 +720,11 @@ projection rise must never shorten or offset the physical tether. Slack lowers
 span heights; it never changes hull depth or lifts the shore endpoint. The
 bollard and glow are culled when the slip is outside the camera. No separate
 on-top rope overlay or tug driving ring should be added.
+
+### Tutorial guidance and instruction panel
+
+Draw tutorial world guidance (orbit/progress rings, chevrons, arrows, gesture
+examples and success effects) before the instruction panel. The panel background,
+text, wipe/shimmer and portrait form one screen-space overlay above these cues.
+Early exits from lesson guidance must not skip this final panel pass. Arrival and
+completion panels keep their existing lifecycle; do not draw the panel twice.

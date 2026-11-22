@@ -5382,3 +5382,21 @@ launch restored after capture; screen timeout restored to300000ms.
   background builds; draw median/p95 10.655/12.906ms, interval16.662/22.251ms.
   Same360-sample forward-circle fixture. This is a post-merge smoke/performance
   check, not another isolated A/B. Installed successfully; native scene reviewed.
+
+## 2026-11-22 — instruction panel above tutorial circles
+- Reviewed Pictures/Screenshots/Screenshot_20261122-143435.png: active cyan orbit
+  arc crosses the instruction title and text. TutorialView painted its panel
+  before lesson-specific guidance. Extracted guidance into a helper, then paint
+  the panel once after it, including its portrait and wipe effects. Early returns
+  within guidance no longer affect final panel composition.
+- No new effect, cache or drawing pass; existing calls reordered only. Native
+  figure-eight screenshot/build validation follows.
+- Full shared/assets/native encoder checks and Android build passed; drawing
+  signature7dd71ae:2:1350 reflects the intended composition change. Installed
+  successfully with the existing signing key. Shared-renderer figure-eight
+  preview out/panel-above-figure-eight.png reviewed: orbit arc lies behind the
+  entire instruction panel, text and portrait.
+- Native screenshot check could not run: phone window state reports lockscreen
+  (NotificationShade / mDreamingLockscreen=true), capture is black. Did not alter
+  keyguard security. Requested normal launch without profiling extras and restored
+  display timeout. Native visual validation remains pending unlock; no iOS run.

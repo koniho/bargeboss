@@ -89,7 +89,12 @@ public final class TutorialView {
             ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
             return;
         }
+        drawLessonGuidance(g,p);
+        // Screen-space instructions always composite above world guidance.
         t.instructionPanel.draw(g,p);
+    }
+    private static void drawLessonGuidance(Game g,Painter p) {
+        Tutorial t=g.tutorial;
         t.instructorRadio.cue(g,p);
         if(t.instructorRadio.teach || t.instructorRadio.phase!=0)return;
         if(t.lesson==Tutorial.CHANNEL) {
