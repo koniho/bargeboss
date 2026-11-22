@@ -28,7 +28,7 @@ public final class TutorialHoldTest {
             int frames=0;
             while(g.tutorial.lesson==Tutorial.HOLD && frames++<1200) { ReplayInput.pushPractice(root);root.step(); }
             check(g.tutorial.lesson==Tutorial.STEER,"hold must finish after real "+(drag?"steered":"assisted")+" push on "+size[0]+"x"+size[1]);
-            check(Physics.length(b.x-Tutorial.PUSH_X,b.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,"lesson requires pushing cargo into the destination zone");
+            check(Physics.length(b.x-292,b.y-700)>6,"lesson requires a real manual push, without an arbitrary placement target");
             ReplayInput.up(root,g.pointerX,g.pointerY);
             for(int i=0;i<7000 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
             check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding: "+size[0]+"x"+size[1]+" drag="+drag+" lesson="+g.tutorial.lesson+" tug="+g.tug.x+","+g.tug.y+" radio="+g.tutorial.towBridges.current(g)+"/"+g.tutorial.towBridges.phase+" contact="+g.tutorial.towBridges.contactable(g)+" tow="+g.tow.count()+" house="+g.tutorial.towBridges.houseX(g,1)+","+g.tutorial.towBridges.houseY(g,1)+" zoom="+g.layout.camera.zoom);
@@ -47,7 +47,7 @@ public final class TutorialHoldTest {
         check(g.tutorial.lesson==Tutorial.STEER,"retry after waiting or wrong target still works");
         root=lesson(960,600);g=root.activeGame();b=g.cargo[0];
         ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,g.downX-65,g.downY-15);steps(root,75);
-        check(Physics.length(b.x-292,b.y-700)>3 && g.tutorial.lesson==Tutorial.HOLD,"a small push away from the target cannot complete delivery exercise");
+        check(Physics.length(b.x-292,b.y-700)>3 && g.tutorial.lesson!=Tutorial.DONE,"manual push alone cannot complete delivery");
         System.out.println(checks+" hold tutorial, moving finger, delayed input and continuation assertions passed");
     }
     public static void main(String[] args) { run(); }

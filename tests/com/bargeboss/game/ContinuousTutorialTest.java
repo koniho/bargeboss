@@ -48,13 +48,13 @@ public final class ContinuousTutorialTest {
                     transitions++;
                     if(lesson==Tutorial.CHANNEL) check(Math.abs(tug.x-TrainingChannel.X[7])<30,
                             "last gate advances the lesson while the tug remains at the canal mouth");
-                    if(lesson==Tutorial.STEER) check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<55,
-                            "assisted docking continues from the practiced push destination");
+                    if(lesson==Tutorial.STEER) check(g.cargo[0]==load,
+                            "assisted docking continues with the same manually pushed load");
                 }
                 if(g.delivered>0) check(g.delivered==1 && load.active && load.deliveryRecorded && load.unloadingTicks>=Game.UNLOAD_TICKS,
                         "the completed empty barge remains alongside and scores exactly once");
             }
-            check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,
+            check(g.tutorial.lesson==Tutorial.DONE && seen==(((1<<Tutorial.DONE)-1)&~(1<<Tutorial.PULL)) && transitions==Tutorial.DONE-1,
                     "real gestures finish every lesson in one scene at "+size[0]+"x"+size[1]+"; stopped at "+g.tutorial.lesson);
             check(closeWorkSeen,"cargo lessons use the closer working camera on each layout");
             check(g.cargo[0]==towLoad && load.active && g.delivered==1,"the second original barge becomes the tow exercise");
@@ -108,7 +108,7 @@ public final class ContinuousTutorialTest {
             int attempts=0;
             while(g.tutorial.lesson==Tutorial.HOLD && attempts++<40) {
                 RiverCamera camera=g.layout.camera;
-                float dx=Tutorial.PUSH_X-load.x,dy=Tutorial.PUSH_Y-load.y,len=Math.max(1,Physics.length(dx,dy));
+                float dx=g.dockX(load)-load.x,dy=g.dockY(load)-load.y,len=Math.max(1,Physics.length(dx,dy));
                 float sx=camera.screenX(load.x,load.y),sy=camera.screenY(load.x,load.y);
                 float ex=camera.screenX(load.x+90*dx/len,load.y+90*dy/len);
                 float ey=camera.screenY(load.x+90*dx/len,load.y+90*dy/len);
@@ -125,8 +125,8 @@ public final class ContinuousTutorialTest {
             }
             check(g.tutorial.lesson==Tutorial.STEER,
                     "native three-second manual push bursts finish despite "+coast+" idle ticks between gestures at width "+width);
-            check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,
-                    "native cadence earns the actual push-target gate rather than bypassing it");
+            check(g.cargo[0]==load && Physics.length(load.x-292,load.y-700)>6,
+                    "native cadence earns real manual movement without a placement checkpoint");
         }
     }
     private static void raisedBollard() {
@@ -211,10 +211,10 @@ public final class ContinuousTutorialTest {
         g.tutorial.lesson=Tutorial.CONNECT;g.tutorial.setup(g);
         Body tug=g.tug,load=g.cargo[0];
         for(int i=0;i<300 && g.tutorial.lesson==Tutorial.CONNECT;i++) { ReplayInput.tutorial(root);root.step(); }
-        check(g.tutorial.lesson==Tutorial.PULL && g.tow.cargo==load,"tow retry fixture connects using the public gesture");
+        check(g.tutorial.lesson==Tutorial.CASTOFF && g.tow.cargo==load,"tow retry fixture connects using the public gesture");
         ReplayInput.releaseTow(root);
         float x=tug.x,y=tug.y,bx=load.x,by=load.y;root.step();
-        check(g.tutorial.lesson==Tutorial.CONNECT && g.tow.cargo==null,"an early release returns to connect instruction");
+        check(g.tutorial.lesson==Tutorial.HOLD && g.tow.cargo==null,"explicit release starts push instruction without any placement checkpoint");
         check(g.tug==tug && g.cargo[0]==load && Physics.length(tug.x-x,tug.y-y)<8 && Physics.length(load.x-bx,load.y-by)<8,
                 "retrying a tow preserves the existing boats and positions");
     }

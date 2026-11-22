@@ -21,9 +21,10 @@ public final class TutorialTowBridgesTest {
         g=fixture(Tutorial.CONNECT,960);Body firstLoad=g.cargo[0];
         check(!firstLoad.deliveryRecorded && !firstLoad.lineAttached && firstLoad.x>Physics.RIGHT,"loaded first hull starts on far side of the basin");
         check(firstLoad.x==599 && firstLoad.y==300 && Math.abs(firstLoad.angle-(float)Math.PI/2)<.001f,"first load occupies the annotated narrow arm, aligned along its length");
-        for(int i=0;i<1800 && g.tutorial.lesson<Tutorial.CASTOFF;i++){ReplayInput.tutorial(g);g.step();}
-        check(g.tutorial.lesson==Tutorial.CASTOFF && g.tow.incoming(firstLoad)!=null,"tow reaches open water before release lesson");
+        for(int i=0;i<1800 && (g.tutorial.lesson<Tutorial.CASTOFF || g.tutorial.lesson==Tutorial.CASTOFF && (firstLoad.x>480 || firstLoad.y<600));i++){ReplayInput.tutorial(g);g.step();}
+        check(g.tutorial.lesson==Tutorial.CASTOFF && g.tow.incoming(firstLoad)!=null,"player can tow out of the narrow arm while the release instruction is available");
         check(!g.tutorial.towBridges.eligible(g,1),"entry bridge remains locked until pushed delivery");
+        if(g.pointer)ReplayInput.up(g,g.pointerX,g.pointerY);
         steps(g,120);check(g.tutorial.lesson==Tutorial.CASTOFF,"waiting with line attached does not earn cast-off");
         ReplayInput.releaseTow(g);g.step();
         check(g.tutorial.lesson==Tutorial.HOLD && g.cargo[0]==firstLoad && !g.tutorial.firstTowParked,"explicit release starts pushing with the same loaded hull");

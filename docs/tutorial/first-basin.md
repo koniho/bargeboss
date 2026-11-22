@@ -6,15 +6,22 @@ This follows the circled location in Screenshot_20261122-113310~2.jpg. The other
 first tow bridge.
 
 1. Follow the water around (320,700) and (599,700) into the far arm. Approach the first barge and drag from it to the tug to connect a towline.
-2. Tow the barge into the marked open-water circle at (320,550), radius 58.
-   The barge must reach the circle while connected; tug position alone is insufficient.
-3. Tap the towline itself to release. Waiting with a line
-   attached does not advance; automatic line loss returns to connection practice.
-4. Drag the barge to push it into the existing push target at (240,600).
-5. Practice holding still for assisted pushing, then push into its berth.
-6. Lasso the bollard and finish unloading. The hull stays moored in the same scene.
-7. Call the first bridge, collect both fireworks barges, and continue the
-   two-tow / train lessons.
+2. Tow out of the narrow arm toward the berth. There is no intermediate parking
+   circle or required tow position. Tap the towline when ready to switch to pushing.
+   Waiting does not advance; an automatic line loss returns to connection practice.
+3. Press the barge and keep holding: the tug automatically gets behind it. Without
+   lifting, drag toward the berth to steer the push. This lesson requires actual
+   contact and movement, not placing the barge on a second practice marker.
+4. Lift, then press and hold again without dragging: assist steers toward the real
+   berth. Drag to override the direction; lift to stop pushing (the boats can coast).
+5. Continue holding to enter the berth, lasso the bollard and unload. The empty hull
+   remains moored in the continuous scene.
+6. Call the first bridge, collect both fireworks barges and continue the two-tow /
+   train lessons.
+
+Legacy lesson ID7 (PULL) is retired and redirects to CASTOFF on explicit reset;
+normal play skips it. IDs after it remain stable for native tooling. Tests may
+choose a roomy cast-off point as player input, but gameplay has no such position gate.
 
 Normal transitions preserve bodies, position and momentum. Explicit skip/reset
 may prepare a lesson fixture. Tests cover real gestures, full-scene continuity,
@@ -30,3 +37,13 @@ Equipment-control follow-up: cast-off is now a tap on the towline itself, with a
 open release cue at its midpoint. The two-barge convoy now contains two fireworks
 barges; the separate fire-barge collection belongs to the
 [celebration finale](fireworks-finale.md).
+
+Tow gestures remain available during pushing/docking lessons for recovery; tutorial
+stage IDs must not disable the base interaction. A fresh drag from a free barge
+arms tow aim early, with forgiving initial direction. Release over the destination
+craft throws the line. Press and hold first to commit push assist; an established
+push must never switch into a lasso as the tug crosses beneath the finger.
+Hull touches take priority over floating equipment icons and crossing towline
+hit zones. Equipment icons seek nearby clear positions; rope release remains a
+short tap on an exposed span. Reattaching during push practice shows an explicit
+release-before-pushing instruction rather than silently blocking the gesture.

@@ -343,6 +343,7 @@ public final class Game {
                 +(tutorial==null?"":"; reverse target "+tutorial.reverseTargetX+","+tutorial.reverseTargetY+"; reverse progress "+tutorial.reverseProgress()+"; reverse armed "+(tutorial.reverseArmed?1:0))
                 +(tutorial==null?"":"; instructor teach "+(tutorial.instructorRadio.teach?1:0)+"; instructor call "+tutorial.instructorRadio.phase+"; instructor radio "+(teacher==null?"0,0":tutorial.instructorRadio.x(this)+","+tutorial.instructorRadio.y(this))+"; canal contact "+(tutorial.canal.contactable(this)?1:0)+"; canal ready "+(tutorial.canal.authorized && passages.passable(0)?1:0)+"; bridge house "+tutorial.canal.houseX(this)+","+tutorial.canal.houseY(this)+"; teacher "+(teacher==null?"0,0":teacher.x+","+teacher.y))
                 +(tutorial==null?"":"; first tow parked "+(tutorial.firstTowParked?1:0)+"; tow bridge "+tutorial.towBridges.current(this)+"; tow bridge phase "+tutorial.towBridges.phase+"; tow bridge contact "+(tutorial.towBridges.contactable(this)?1:0)+"; tow bridge authorized "+(tutorial.towBridges.authorized[Math.max(1,tutorial.towBridges.current(this))]?1:0)+"; tow bridge house "+tutorial.towBridges.houseX(this,Math.max(1,tutorial.towBridges.current(this)))+","+tutorial.towBridges.houseY(this,Math.max(1,tutorial.towBridges.current(this))))
+                +"; push berth "+(load==null?"none":dockX(load)+","+dockY(load))
                 +"; bollard "+(load==null?"none":bollardX(load)+","+bollardY(load))
                 +"; spare "+(spare==null?"none":spare.x+","+spare.y)
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
@@ -446,8 +447,11 @@ public final class Game {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
-        if(abilities.down(this,id,x,y))return;
-        if(towRelease.down(this,id,x,y))return;
+        // A visible hull touch starts a vessel gesture, even beneath a floating
+        // ability button or a nearby rope's generous tap area.
+        boolean hullTouch=cargoTouch(x,y);
+        if(!hullTouch && abilities.down(this,id,x,y))return;
+        if(!hullTouch && towRelease.down(this,id,x,y))return;
         if(OverviewMap.sliderHit(this,x,y)) {
             // A second finger may zoom while the existing drive touch remains held.
             // Slider fingers never enter the world/pinch pointer router.
@@ -589,9 +593,20 @@ public final class Game {
     public Body heldCargo() { return held>=0 && cargo[held]!=null && cargo[held].active?cargo[held]:null; }
     public Body heldVessel(){return holdingTug()?tug:heldCargo();}
     public Body workingCargo() { return heldCargo(); }
+    boolean cargoTouch(float sx,float sy){
+        if(mode!=PLAY)return false;
+        RiverCamera c=layout.camera;
+        for(Body b:cargo)if(b!=null && b.active){
+            float wy=c.worldY(sx,sy),wx=c.worldX(sx,sy);
+            if(b.hit(wx,wy,0))return true;
+            float deckY=sy+(8+WaterSurface.lift(this,b))*c.scale;
+            if(b.hit(c.worldX(sx,deckY),c.worldY(sx,deckY),0))return true;
+        }
+        return false;
+    }
     public boolean canTow(Body b) {
         if(b==tug)return false;
-        if(pointer && cargoPushGesture && heldCargo()==b || ropePhase!=0 || tutorial!=null && (tutorial.lesson<Tutorial.CONNECT || tutorial.lesson>=Tutorial.HOLD && tutorial.lesson<=Tutorial.TIE))return false;
+        if(pointer && cargoPushGesture && heldCargo()==b || ropePhase!=0)return false;
         if(canTowAtRelease(b,tug))return true;
         for(Body parent:cargo)if(canTowAtRelease(b,parent))return true;
         return false;
@@ -689,19 +704,19 @@ public final class Game {
             if(distance>22) tapCandidate=false;
             if(held<0)return;
             Body b=heldCargo();
-            if(canTow(b) && distance>26) {
-                Body target=towTargetBody(b,x,y);float best=.88f;
+            if(canTow(b) && distance>16) {
+                Body target=towTargetBody(b,x,y);float best=.55f;
                 if(target==null)for(int i=-1;i<cargo.length;i++) {
                     Body parent=i<0?tug:cargo[i];if(!canTowAtRelease(b,parent))continue;
                     float tx=parent.x-downX,ty=parent.y-downY;
                     float alignment=((x-downX)*tx+(y-downY)*ty)/(distance*Math.max(1,Physics.length(tx,ty)));
                     if(alignment>best){target=parent;best=alignment;}
                 }
-                if(target!=null){towAiming=true;towAimBody=target;}
+                if(target!=null){if(!towAiming)haptic(HAPTIC_TICK);towAiming=true;towAimBody=target;}
             }
-            if(distance<20 || (b!=null && canTie(b) && overTiePoint(b,x,y))) towAiming=false;
+            if(distance<12 || (b!=null && canTie(b) && overTiePoint(b,x,y))) towAiming=false;
             if(towAiming) { pushing=false;navigating=false;reversing=false; }
-            else if(b!=null && !ropeDragging && distance>26) cargoPushGesture=true;
+            else if(b!=null && !ropeDragging && distance>42) cargoPushGesture=true;
             boolean wasSteering=manualSteering;
             if(distance>42) manualSteering=true;
             else if(distance<26) manualSteering=false;

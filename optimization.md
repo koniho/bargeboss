@@ -5239,3 +5239,79 @@ launch restored after capture; screen timeout restored to300000ms.
   claimed; pending capture stopped and its original awake setting restored.
 - Connected iPhone11ProMax signed build/install passed after profile refresh;
   launch initially blocked by lock screen. Development remained on the simulator.
+
+## 2026-11-22 — remove tutorial placement checkpoints, explain push assist
+- Removed the tow-to-circle stage from normal progression. Connecting now offers
+  towing/release instructions immediately; explicit player cast-off starts push
+  training at the actual cargo position. No fixed arrival position is required.
+  Automatic line loss still returns to connection practice. Legacy lesson7 is
+  retained only for ID compatibility and redirects to CASTOFF on explicit reset.
+- Removed the separate manual-push marker too. The player practices a real
+  contact-driven manual push (>6 units with6 contact ticks), then holds for berth
+  assist and delivers to the real berth. No teleport or auto-delivery; the same
+  hull, momentum and full unloading/tie sequence remain.
+- Instructions explain press/keep holding, automatic tug alignment, dragging to
+  steer toward berth, lifting to stop pushing, then a fresh hold without dragging
+  for automatic berth steering. Animated drag demonstration now points toward the
+  real berth. Removed both arbitrary destination rings from shared rendering.
+- Shared guide points lead around the far-arm peninsula toward the berth, with
+  no completion gate attached. Replays choose roomy water to release as a player
+  would; that automation choice is not a gameplay constraint. Native iOS automation
+  now reads a shared push-berth target and excludes retired lesson7.
+- Targeted hold tests passed63 assertions; full tow course33029 and continuous
+  tutorial409641 assertions passed. Public early release now earns the pushing
+  lesson directly, proving placement is not required. Corrected joystick replay
+  to actually lift its owner pointer before tapping the line (formerly a separate
+  stage transition cancelled it implicitly). Replay9a4e4920:2:1350.
+- No new textures, effects, caches or physics work. tools/TutorialTowReview now
+  captures hold-and-drag and berth-assist cards. Final build/install results follow.
+- Shared-renderer hold/drag and berth-assist panels reviewed; no practice marker
+  remains over the water. Updated skip-radio assertions to visit only active IDs.
+  The first-basin test also now explicitly lifts the driving pointer before its
+  waiting/release assertion; the removed checkpoint no longer cancels it. Targeted
+  bridge/inventory/cast-off authorization checks pass with this real gesture flow.
+- Final build passed all shared/assets/native/pixel checks (out/push-lesson-build.log).
+  Installed via rish (Success), cold launched (Status: ok,1251ms). Native iOS and
+  manual on-device full lesson remain unvalidated. Awake scope remains open for
+  the user's follow-up investigation into tow-lasso gesture priority.
+
+## 2026-11-22 — make tow gestures primary across cargo lessons
+- Found tutorial hard gates that disabled canTow throughout HOLD/STEER/DOCK/TIE,
+  plus early drag classification that committed push after26 world units when
+  the first move missed a narrow .88 directional-dot threshold. Floating ability
+  controls and16px towline hit bands also ran before hull selection.
+- Removed tutorial-stage towing bans (physical range, clear water, ownership,
+  capacity, mooring/cycle checks remain). Fresh aim arms after16 units with .55
+  directional alignment; an unmatched drag waits until42 units to commit push.
+  Established stationary-hold or deliberate push ownership remains locked until
+  lift/cancel. Throw still occurs only on release; misses retract normally.
+- Hull footprint/deck touches bypass floating ability and rope-release capture.
+  Equipment buttons seek nearby clear hull-free positions using bounded9-candidate
+  searches, no added textures/caches. Core owns all selection and priority rules.
+- Recovery during push lessons now displays release-before-pushing when retowed.
+  Replays/native automation explicitly hold before dragging for push ownership.
+  Added TowPriorityTest for all cargo lesson stages, diagonal initial drag,
+  release-only throw and ability/rope overlap; existing CargoGestureTest protects
+  against pushing unexpectedly switching to lasso. Targeted priority test passed.
+  Full checks, actual renderer review and installation results follow below.
+- Validation: full check.sh via Android build passed, including new ability-icon
+  relocation/hull-priority assertions and existing push-lock regressions; replay
+  signature 31b50c1d:2:1350. Reviewed actual shared-renderer previews
+  out/tow-ability-hull-priority.png and out/tow-early-drag-aim.png: icon clears
+  neighboring hull and fresh tow aim displays its trajectory/targets.
+- Android APK installed successfully and cold-launched (Status ok, 2157ms).
+  No native iOS run or on-device gesture latency measurement this round;
+  touch ownership was validated with shared input regression tests.
+
+## 2026-11-22 — integrate Montrose travelift with current main
+
+- Merged main6b7a209's tutorial progression and tow-gesture priority into the
+  isolated Montrose haulout worktree. Shared gameplay merged without conflicts;
+  preserved both append-only performance histories. Recomputed the combined
+  canonical trace instead of choosing either branch's obsolete baseline.
+- Combined JVM/J2ObjC gameplay and drawing parity passes c04212db:2:1350.
+  Full shared tests pass, including TowPriorityTest, 763 travelift interlock/
+  transform/effect checks and the physical tow/release/push mission handoff.
+- This merge adds no new art or host behavior. Earlier simulator/device results
+  and their limits remain recorded above; merge validation uses the combined
+  shared/native trace and the full Android build/asset checks.
