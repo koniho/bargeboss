@@ -14,9 +14,9 @@ public final class MontroseHauloutTest {
         for(int i=0;i<30;i++)g.step();check(g.dialogue.ready() && g.score==initialScore,"Waiting for reply does not complete job");
         for(int tick=0;tick<6000 && !boat.deliveryRecorded;tick++){
             ReplayInput.work(g);g.step();
-            if(log && tick%300==0)System.out.println(tick+" tug="+MontroseHarbor.planX(tug.x)+","+MontroseHarbor.planY(tug.y)+" boat="+MontroseHarbor.planX(boat.x)+","+MontroseHarbor.planY(boat.y)+" tow="+g.tow.count()+" warp="+g.haulout.warping+" speed="+boat.speed()+" hull="+g.hull);
+            if(log && tick%300==0)System.out.println(tick+" tug="+MontroseHarbor.planX(tug.x)+","+MontroseHarbor.planY(tug.y)+" boat="+MontroseHarbor.planX(boat.x)+","+MontroseHarbor.planY(boat.y)+" lift="+g.haulout.liftTicks+" pushed="+g.haulout.pushed+" tow="+g.tow.count()+" warp="+g.haulout.warping+" speed="+boat.speed()+" hull="+g.hull);
         }
-        check(boat.deliveryRecorded && g.haulout.towed && g.haulout.warping,"Public tow and release completes crew handoff");
+        check(boat.deliveryRecorded && g.haulout.lowered() && g.haulout.pushed && g.haulout.towed && g.haulout.warping,"Public radio, tow, release and physical push complete crew handoff");
         check(g.challengeId==Challenges.MONTROSE && g.tug==tug && g.hull==100,"Safe haulout continues voyage without relocating tug");
         check(g.cargo[g.cargo.length-1]==boat && boat.active && boat.awaitingPickup,"Crew secures and retains disabled boat");
         check(g.career.bestStars(Challenges.HAULOUT)==3 && g.score==1200,"Dedicated save slot and once-only haulout reward");

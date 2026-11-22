@@ -7,6 +7,11 @@ public final class MontroseHauloutReview {
         for(int i=0;i<24;i++)g.step();DialogueReview.capture(g,"montrose-dockmaster");
         g.dialogue.close(g);g.layout=Layout.focused(1333,750,MontroseHaulout.X,MontroseHarbor.mapY(255),2.4f,666,420);
         DialogueReview.capture(g,"montrose-haulout-dusk");
+        g.haulout.requested=true;
+        for(int tick=1;tick<=240;tick++){
+            g.step();g.layout=Layout.focused(1333,750,MontroseHaulout.X,MontroseHarbor.mapY(255),2.4f,666,420);
+            if(tick==90 || tick==175 || tick==240)DialogueReview.capture(g,"montrose-lift-"+tick);
+        }
         g=MontroseHauloutTest.voyage(false);g.configureCanvas(1333,750);g.dialogue.close(g);
         g.layout=Layout.focused(1333,750,MontroseHaulout.X,MontroseHarbor.mapY(255),2.4f,666,420);
         DialogueReview.capture(g,"montrose-haulout-delivered");

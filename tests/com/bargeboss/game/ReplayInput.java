@@ -138,13 +138,19 @@ public final class ReplayInput {
     }
     private static void haulout(Game g){
         Body b=g.cargo[0];
+        if(!g.haulout.requested){if(!g.haulout.radio.waiting())tap(g,TravelLiftRadio.x(g),TravelLiftRadio.y(g));return;}
+        if(!g.haulout.lowered())return;
         if(g.haulout.warping){if(g.pointer)up(g,g.pointerX,g.pointerY);return;}
         if(!g.tow.connected(b,g.tug)){
-            if(g.haulout.towed)return;
+            if(g.haulout.towed){
+                if(g.joystick.active)up(g,g.pointerX,g.pointerY);
+                if(!g.pointer)down(g,b.x,b.y);
+                return;
+            }
             if(g.pointer)up(g,g.pointerX,g.pointerY);
             down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;
         }
-        if(b.y<MontroseHaulout.APPROACH_Y+25 && Math.abs(b.x-MontroseHaulout.X)<24){
+        if(b.y<MontroseHaulout.APPROACH_Y+80 && Math.abs(b.x-MontroseHaulout.X)<45){
             throttle(g,0,0);if(b.speed()<6 && g.tug.speed()<6){if(g.pointer)up(g,g.pointerX,g.pointerY);releaseTow(g);}return;
         }
         float dx=MontroseHaulout.X-g.tug.x,dy=MontroseHarbor.mapY(279)-g.tug.y,len=Math.max(1,Physics.length(dx,dy));

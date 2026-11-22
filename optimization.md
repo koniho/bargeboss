@@ -5207,3 +5207,35 @@ launch restored after capture; screen timeout restored to300000ms.
   travels back to the inlet; targeted voyage and unchanged canonical trace pass.
   Final iOS rebuild/install passed. No physical iPhone test or full four-job
   on-device voyage; the lift is static and this mission ends at crew handoff.
+
+## 2026-11-22 — Shared travelift radio, continuous webbing and contact effects
+
+- Owner/platform: Montrose worktree, shared Java, desktop and iOS Metal simulator;
+  no host gameplay changes. Read existing optimization entries before edits.
+- Replaced the static slings with two broad, thin rectangular-section straps,
+  moving blocks and exact cable anchors. One local BSP is prepared at setup;
+  continuous translation updates reusable vertex/normal buffers each of 240 ticks.
+  Static frame partitions surround the moving rig; no pose table or new textures.
+- Radio has explicit lower/standby responses. Full tug/cargo/NPC hull clearance
+  is checked at reply and after physics throughout travel. Intrusions stop exact
+  phase and motion emissions; cleared space resumes. Player must tow/release and
+  physically push into the lowered slings before crew settling and next dispatch.
+- Existing ripple textures occupy a 32-event pool, emitted only where the moving
+  webbing intersects the sampled water plane. Exhaust follows the authored stack
+  anchor into the existing smoke pool. Paused/finished motion emits no new puffs.
+- Fixed foreground-quay overdraw in visual review: straps/hoist lines share a
+  visible-frame shore cutout across depth slices. Skip mask construction when the
+  lift is offscreen. Stable far/rig/near/header partitions preserve frame ordering.
+- Full shared/asset/Android build passed; 763 focused interlock/transform/effect
+  checks, public physical voyages at three canvases with hull100, JVM/J2ObjC trace
+  dd774209:2:1350, and 1,756,523 all-heading shoreline pixels passed.
+- Simulator Metal240-frame moving-scene interval median25.7154ms/p95 40.988ms;
+  draw median21.436ms/p95 23.6667ms. Includes startup and overlapping desktop work;
+  not a before/after comparison or evidence of 60fps. Frozen water-contact native
+  pixels reviewed separately. Raw CSVs and limits in
+  docs/performance/montrose-travelift-2026-11-22.
+- Android installed with existing key; requested profile launch reached an
+  existing activity instead of starting a capture. No current Android timing
+  claimed; pending capture stopped and its original awake setting restored.
+- Connected iPhone11ProMax signed build/install passed after profile refresh;
+  launch initially blocked by lock screen. Development remained on the simulator.

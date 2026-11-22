@@ -130,7 +130,7 @@ public final class Parity implements Painter {
             for(int i=0;i<120;i++){g.step();p.value(g.tug.x);p.value(g.tug.y);p.add(g.hull);}
             Renderer.draw(g,p);p.add(g.goalProgress());
             if(id==Challenges.MONTROSE){
-                Body disabled=g.cargo[0];for(int tick=0;tick<1200 && !disabled.deliveryRecorded;tick++){ReplayInput.work(g);g.step();if(tick%90==0){p.value(disabled.x);p.value(disabled.y);p.add(g.haulout.warping?1:0);Renderer.draw(g,p);}}
+                Body disabled=g.cargo[0];for(int tick=0;tick<2400 && !disabled.deliveryRecorded;tick++){ReplayInput.work(g);g.step();if(tick%90==0){p.value(disabled.x);p.value(disabled.y);p.add(g.haulout.warping?1:0);Renderer.draw(g,p);}}
                 p.add(g.challengeId);p.add(g.career.bestStars(Challenges.HAULOUT));Renderer.draw(g,p);
             }
             if(id==0){

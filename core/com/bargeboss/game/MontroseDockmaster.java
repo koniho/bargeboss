@@ -8,7 +8,7 @@ public final class MontroseDockmaster {
         switch(g.challengeId){
             case Challenges.HAULOUT:
                 title="A BOAT HAS LOST POWER";
-                detail="TOW IT TO THE LIFT BETWEEN N AND M. RELEASE OUTSIDE.";
+                detail="TAP THE N-M LIFT TO RADIO. CLEAR THE WELL FIRST.";
                 reply="COPY. TAKING THE TOW.";break;
             case Challenges.MONTROSE:
                 title="NEXT CALL: YACHT AT THE INLET";
