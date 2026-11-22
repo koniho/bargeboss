@@ -373,3 +373,7 @@ spray. Use short samples (`BARGEBOSS_PROFILE_WARMUP=0`,120–180frames) to measu
 finite effect rather than averaging mostly idle frames after it finishes. Replay
 mode uses public controls and can complete the lesson; live mode keeps the held
 nozzle running. Both fixtures use the same level asset plan and core effects.
+
+`montrose-dispatch` captures the opening Dockmaster call and waiting reply.
+`montrose-haulout` frames the N–M well and travel lift; use replay mode to
+exercise the shared public-input tow and crew handoff. Both use production art.

@@ -5165,3 +5165,45 @@ launch restored after capture; screen timeout restored to300000ms.
   through rish (Success) and cold launched (Status: ok,1346ms). Restored prior
   display timeout. No native iOS build, audio audition/recording or frame-time
   measurement this round; checked PCM timing/peak and shared event delivery.
+
+## 2026-11-22 — Montrose dockmaster and N–M haulout
+- Shared Java: appended haulout job8 before legacy4/6/7. Reuses the accepted
+  cabin-cruiser artwork and native assets; one shared Montrose preparation plan
+  covers all four jobs. Dockmaster uses existing radio clips and reply panel.
+- The annotated N–M gap supplies the new well, connected wheel tracks and apron.
+  Changed the authoritative coast so physics, water effects, solid land and chart
+  agree. The four-wheel travel lift prepares one rigid BSP, with stable part IDs;
+  it joins BridgeLayers' exact depth slices instead of a flattened overlay.
+  No new raster textures, pose tables or per-frame geometry preparation.
+- The public pointer/throttle replay tows and releases the disabled cruiser,
+  completes the crew handoff with hull100, retains the boat and tug, and dispatches
+  the yacht job. Native parity now samples that voyage too. Actual Java2D dispatch,
+  empty well, delivered boat and overview reviewed. Native validation follows.
+- Native iOS26.5/iPhone17Pro simulator: Debug Metal build/install passed; viewed
+  daylight lift/yard and dusk Dockmaster panel. CPU draw p50/p95 for the frozen
+  daylight view22.30/24.74ms; mean interval32.35ms (60samples,30warmup).
+  Concurrent desktop build/test work makes this visual evidence, not a clean
+  timing comparison or a60FPS claim. Logs/captures: out/ios-profile/haulout-metal
+  and dockmaster-metal. Native/JVM parity e501393e:2:1350 passed, including the
+  public-input haulout voyage and subsequent radio dispatch.
+- Expanded all-heading shore regression to the three well walls and outer quay:
+  1,756,523 production hull/cargo checks pass, plus38,121 cached training wall
+  pixels. Corrected its full-land-height probe to exclude lower floating docks;
+  the initial report was a nearby yacht-slip crossbar projected at land height.
+  Actual full-height coast is queried independently of navigable dock cutouts.
+- Existing chart/camera unit and pixel fixtures now dismiss the introductory
+  radio before testing gestures. Their input remains intentionally blocked until
+  acknowledgement in production. Save tests retain all eight legacy reward slots
+  and verify the ninth appended job without inventing earned progress.
+- Final Android profile APK built with shared/asset checks, portrait audit,
+  terrain/chart pixel checks and Vulkan encoder checks passing. Installed over
+  the existing package using its original debug key; cold launches succeeded.
+  Pixel11Pro Vulkan850-frame native replay acknowledged Dockmaster, attached and
+  released the tow, retained the boat inside the well and advanced to the yacht
+  job (native screenshot reviewed). Native fixture captures live in
+  out/native-montrose; raw CSVs/summary in docs/performance/montrose-haulout-2026-11-22.
+- The same public voyage completed at tick678/hull100 on960x600,1333x600 and
+  1280x720 canvases. The next yacht now stays anchored until pickup while the tug
+  travels back to the inlet; targeted voyage and unchanged canonical trace pass.
+  Final iOS rebuild/install passed. No physical iPhone test or full four-job
+  on-device voyage; the lift is static and this mission ends at crew handoff.

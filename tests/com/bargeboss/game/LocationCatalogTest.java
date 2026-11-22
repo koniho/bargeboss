@@ -19,7 +19,8 @@ public final class LocationCatalogTest {
         }
         for(int count:seen)check(count==1,"all legacy rewards appear in exactly one location");
         Career marina=new Career();marina.record(4,3,1200);marina.record(6,2,2400);marina.record(7,3,2000);
-        check(marina.locationStars(4)==8 && marina.locationRating(6)==2 && marina.locationScore(7)==5600,"Montrose summaries include its three noncontiguous legacy IDs");
+        check(marina.locationStars(4)==8 && marina.locationRating(6)==0 && marina.locationScore(7)==5600,"Legacy Montrose rewards survive with the new haulout still unearned");
+        marina.record(Challenges.HAULOUT,3,1200);check(marina.locationRating(4)==2 && marina.locationStars(4)==11,"Haulout adds its own reward slot");
         check(Challenges.nextStage(3)==4 && Challenges.nextStage(7)==5 && Challenges.nextStage(5)==-1,"next-location flow does not expose a standalone job");
         System.out.println(checks+" location grouping and legacy career compatibility assertions passed");
     }

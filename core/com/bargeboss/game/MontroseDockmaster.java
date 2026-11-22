@@ -1,0 +1,29 @@
+package com.bargeboss.game;
+
+/** Montrose dispatch voice. The reference name is deliberately absent from player copy. */
+public final class MontroseDockmaster {
+    private MontroseDockmaster(){}
+    public static void dispatch(Game g){
+        String title,detail,reply;
+        switch(g.challengeId){
+            case Challenges.HAULOUT:
+                title="A BOAT HAS LOST POWER";
+                detail="TOW IT TO THE LIFT BETWEEN N AND M. RELEASE OUTSIDE.";
+                reply="COPY. TAKING THE TOW.";break;
+            case Challenges.MONTROSE:
+                title="NEXT CALL: YACHT AT THE INLET";
+                detail="CREW HAS THE HAULOUT. BRING THE YACHT TO DOCK N.";
+                reply="COPY. HEADING TO THE INLET.";break;
+            case Challenges.RAFT_RESCUE:
+                title="TWO CRUISERS NEED A HAND";
+                detail="SEPARATE THE RAFT. RETURN THEM TO C-38 AND C-22.";
+                reply="COPY. TWO TOWS TO DOCK C.";break;
+            case Challenges.SWIMMER_RESCUE:
+                title="PEOPLE IN THE WATER";
+                detail="20 OFF THE SOUTH SEAWALL. SLOW DOWN AND THROW BUOYS.";
+                reply="COPY. KEEPING THE HULL CLEAR.";break;
+            default:return;
+        }
+        g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"DOCKMASTER / MONTROSE",title,detail,reply);
+    }
+}

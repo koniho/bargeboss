@@ -26,7 +26,7 @@ final class LevelAssetsTest {
                 if(id==Challenges.SWIMMER_RESCUE)check(preparation[preparation.length-4]==SpriteAtlas.SWIMMERS,"Swimmer atlas warmed before active draws");
                 continue;
             }
-            if(id==Challenges.MONTROSE){
+            if(Challenges.kind(id)==Challenges.MONTROSE){
                 check(plan.rotationFrames()==544,"Montrose prepares complete tug and yacht families");
                 check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");
                 check(!includes(plan,SpriteAtlas.BARGE) && !includes(plan,SpriteAtlas.BULK),"Marina excludes industrial cargo");continue;

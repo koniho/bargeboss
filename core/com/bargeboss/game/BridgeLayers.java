@@ -14,6 +14,7 @@ final class BridgeLayers {
             bridge.drawRange(game,painter,game.passages.amount(i),game.passages.passable(i),previous,depth);
         }
         for(int i=0;i<cranes.length;i++)DockView.drawRange(game,painter,cranes[i],cranePoses[i],previous,depth);
+        if(game.montroseStage())MontroseTravelLift.drawRange(game,painter,previous,depth);
         previous=depth;
     }
 }

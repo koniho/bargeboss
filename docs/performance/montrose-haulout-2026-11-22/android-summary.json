@@ -1,0 +1,54 @@
+{
+  "freeze": {
+    "frames": 60,
+    "tick_start": 24.0,
+    "tick_end": 24.0,
+    "draw_ms": {
+      "mean": 14.030420683333332,
+      "p50": 13.859244499999999,
+      "p95": 16.168801
+    },
+    "interval_ms": {
+      "mean": 16.69137305,
+      "p50": 15.3820175,
+      "p95": 20.717031
+    },
+    "vulkan": [
+      "1.0"
+    ],
+    "rotation_ready": [
+      "1.0"
+    ],
+    "cache_builds": 0.0,
+    "cache_fallbacks": 0.0,
+    "frame_builds": 0.0,
+    "tow_frames": 0,
+    "final_tow_count": 0.0
+  },
+  "replay": {
+    "frames": 850,
+    "tick_start": 25.0,
+    "tick_end": 874.0,
+    "draw_ms": {
+      "mean": 21.18727628352941,
+      "p50": 18.870234,
+      "p95": 27.045416
+    },
+    "interval_ms": {
+      "mean": 27.474653692941175,
+      "p50": 25.235416,
+      "p95": 35.219218
+    },
+    "vulkan": [
+      "1.0"
+    ],
+    "rotation_ready": [
+      "1.0"
+    ],
+    "cache_builds": 0.0,
+    "cache_fallbacks": 0.0,
+    "frame_builds": 5.0,
+    "tow_frames": 332,
+    "final_tow_count": 0.0
+  }
+}

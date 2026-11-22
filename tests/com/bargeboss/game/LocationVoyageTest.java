@@ -48,7 +48,7 @@ public final class LocationVoyageTest {
         int stars=g.career.totalStars();g.voyage.step(g);check(g.career.totalStars()==stars,"completed voyage cannot farm repeated rewards");
     }
     private static void montrose(){
-        Game g=new Game();g.challengeId=Challenges.MONTROSE;g.reset();Body yacht=g.cargo[0],tug=g.tug;
+        Game g=ReplayInput.montroseJob(Challenges.MONTROSE);Body yacht=g.cargo[0],tug=g.tug;
         yacht.deliveryRecorded=true;yacht.awaitingPickup=true;yacht.tiedX=yacht.x;yacht.tiedY=yacht.y;yacht.tiedAngle=yacht.angle;
         g.delivered=1;g.ticks=500;g.visualTicks=500;float x=tug.x,y=tug.y;g.step();
         check(g.challengeId==Challenges.RAFT_RESCUE && g.mode==Game.PLAY,"yacht mission continues into cruiser rescue");
