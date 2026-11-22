@@ -380,7 +380,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if(hypot(boat.x-b.x,boat.y-b.y)>190) { [self drivePracticeTug:stage toX:360 toY:620];continue; }
         CGPoint berth=[self worldPosition:stage tag:@"push berth"];
         double dx=berth.x-b.x,dy=berth.y-b.y,length=fmax(1,hypot(dx,dy));
-        [[self river:stage x:b.x y:b.y] pressForDuration:0.05
+        [[self river:stage x:b.x y:b.y] pressForDuration:0.25
             thenDragToCoordinate:[self river:stage x:b.x+90*dx/length y:b.y+90*dy/length]
             withVelocity:500 thenHoldForDuration:3];
     }

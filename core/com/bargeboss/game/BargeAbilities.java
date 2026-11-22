@@ -18,8 +18,21 @@ public final class BargeAbilities {
         if(b==null || !b.active || b.ability==NONE)return false;
         selected=b;visibleTicks=600;g.haptic(Game.HAPTIC_TICK);return true;
     }
-    public float buttonX(Game g,int button){float sx=g.layout.camera.screenX(selected.x,selected.y);return Physics.clamp(sx,78,g.layout.width-78);}
-    public float buttonY(Game g){return Physics.clamp(g.layout.camera.screenY(selected.x,selected.y)-82*g.layout.camera.scale,110,g.layout.height-110);}
+    public float buttonX(Game g,int button){return buttonPoint(g,true);}
+    public float buttonY(Game g){return buttonPoint(g,false);}
+    private float buttonPoint(Game g,boolean horizontal){
+        float sx=g.layout.camera.screenX(selected.x,selected.y),sy=g.layout.camera.screenY(selected.x,selected.y)-82*g.layout.camera.scale;
+        float x=Physics.clamp(sx,78,g.layout.width-78),y=Physics.clamp(sy,110,g.layout.height-110);
+        // Floating actions must not cover another hull's primary drag surface.
+        for(int i=0;i<9;i++){
+            int column=i%3,row=i/3;
+            float xx=Physics.clamp(sx+(column==0?0:column==1?-68:68),78,g.layout.width-78);
+            float yy=Physics.clamp(sy-row*60,110,g.layout.height-110);
+            if(!g.cargoTouch(xx,yy) && !g.cargoTouch(xx-20,yy) && !g.cargoTouch(xx+20,yy)
+                    && !g.cargoTouch(xx,yy-20) && !g.cargoTouch(xx,yy+20))return horizontal?xx:yy;
+        }
+        return horizontal?x:y;
+    }
     private boolean visible(Game g){return g.mode==Game.PLAY && !g.conversation() && selected!=null && selected.active && visibleTicks>0;}
     private boolean hit(Game g,float px,float py,int button){return Math.abs(px-buttonX(g,button))<=24 && Math.abs(py-buttonY(g))<=24;}
     public boolean down(Game g,int id,float px,float py){

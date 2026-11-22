@@ -5180,3 +5180,31 @@ launch restored after capture; screen timeout restored to300000ms.
   Installed via rish (Success), cold launched (Status: ok,1251ms). Native iOS and
   manual on-device full lesson remain unvalidated. Awake scope remains open for
   the user's follow-up investigation into tow-lasso gesture priority.
+
+## 2026-11-22 — make tow gestures primary across cargo lessons
+- Found tutorial hard gates that disabled canTow throughout HOLD/STEER/DOCK/TIE,
+  plus early drag classification that committed push after26 world units when
+  the first move missed a narrow .88 directional-dot threshold. Floating ability
+  controls and16px towline hit bands also ran before hull selection.
+- Removed tutorial-stage towing bans (physical range, clear water, ownership,
+  capacity, mooring/cycle checks remain). Fresh aim arms after16 units with .55
+  directional alignment; an unmatched drag waits until42 units to commit push.
+  Established stationary-hold or deliberate push ownership remains locked until
+  lift/cancel. Throw still occurs only on release; misses retract normally.
+- Hull footprint/deck touches bypass floating ability and rope-release capture.
+  Equipment buttons seek nearby clear hull-free positions using bounded9-candidate
+  searches, no added textures/caches. Core owns all selection and priority rules.
+- Recovery during push lessons now displays release-before-pushing when retowed.
+  Replays/native automation explicitly hold before dragging for push ownership.
+  Added TowPriorityTest for all cargo lesson stages, diagonal initial drag,
+  release-only throw and ability/rope overlap; existing CargoGestureTest protects
+  against pushing unexpectedly switching to lasso. Targeted priority test passed.
+  Full checks, actual renderer review and installation results follow below.
+- Validation: full check.sh via Android build passed, including new ability-icon
+  relocation/hull-priority assertions and existing push-lock regressions; replay
+  signature 31b50c1d:2:1350. Reviewed actual shared-renderer previews
+  out/tow-ability-hull-priority.png and out/tow-early-drag-aim.png: icon clears
+  neighboring hull and fresh tow aim displays its trajectory/targets.
+- Android APK installed successfully and cold-launched (Status ok, 2157ms).
+  No native iOS run or on-device gesture latency measurement this round;
+  touch ownership was validated with shared input regression tests.

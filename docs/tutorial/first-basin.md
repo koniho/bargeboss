@@ -37,3 +37,13 @@ Equipment-control follow-up: cast-off is now a tap on the towline itself, with a
 open release cue at its midpoint. The two-barge convoy now contains two fireworks
 barges; the separate fire-barge collection belongs to the
 [celebration finale](fireworks-finale.md).
+
+Tow gestures remain available during pushing/docking lessons for recovery; tutorial
+stage IDs must not disable the base interaction. A fresh drag from a free barge
+arms tow aim early, with forgiving initial direction. Release over the destination
+craft throws the line. Press and hold first to commit push assist; an established
+push must never switch into a lasso as the tug crosses beneath the finger.
+Hull touches take priority over floating equipment icons and crossing towline
+hit zones. Equipment icons seek nearby clear positions; rope release remains a
+short tap on an exposed span. Reattaching during push practice shows an explicit
+release-before-pushing instruction rather than silently blocking the gesture.

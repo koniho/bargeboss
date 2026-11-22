@@ -33,6 +33,9 @@ public final class TutorialView {
                 wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine();
         String second=secured?(unloading?"THE NEXT BARGE IS WAITING UPSTREAM.":"THE CREW WILL UNLOAD HER NEXT."):
                 approach?"APPROACH THE GLOWING BARGE.":wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine();
+        if(t.lesson>=Tutorial.HOLD && t.lesson<=Tutorial.DOCK && g.tow.incoming(g.cargo[0])!=null)
+            return new InstructionPanel.Content("push-release-recovery","RELEASE BEFORE PUSHING",
+                    "TAP THE TOWLINE TO LET GO.","THEN PRESS, HOLD AND DRAG THE BARGE.",-1,0);
         if(t.lesson==Tutorial.LINK && (g.tow.incoming(g.cargo[2])==null || g.tow.incoming(g.cargo[0])==null)) {
             first="DRAG THE FREE BARGE TO THE TOWED ONE.";second="MAKE A SINGLE-FILE TRAIN TO FIT THE PASSAGE.";
         }

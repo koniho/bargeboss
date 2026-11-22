@@ -204,6 +204,7 @@ public final class ReplayInput {
         if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>190) { drive(g,360,620);return; }
         if(g.joystick.active) up(root,g.pointerX,g.pointerY);
         if(!g.pointer) down(root,b.x,b.y);
+        if(!g.pushing)return; // Deliberately hold for push ownership before steering.
         float dx=g.dockX(b)-b.x,dy=g.dockY(b)-b.y,len=Math.max(1,Physics.length(dx,dy));
         move(root,g.downX+90*dx/len,g.downY+90*dy/len);
     }
