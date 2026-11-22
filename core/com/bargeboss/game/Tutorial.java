@@ -134,7 +134,11 @@ public final class Tutorial {
         updateLesson(g);feedback.completed(g,before,lesson);
     }
     private void updateLesson(Game g) {
-        if(instructorRadio.step(g))return;
+        if(instructorRadio.step(g)){
+            // Radio pauses lesson progression, not the observer hull's motion state.
+            if(arrival!=null)arrival.step(g);
+            return;
+        }
         canal.step(g);towBridges.step(g);
         if(arrival!=null)arrival.step(g);
         if(entering)return;

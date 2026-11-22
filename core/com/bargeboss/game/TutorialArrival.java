@@ -51,7 +51,14 @@ final class TutorialArrival {
                 if(replyTicks>=180){t.entering=false;g.cancelInputs();g.haptic(Game.HAPTIC_TICK);}
             }
         } else {
-            if(pushedTicks>0){
+            if(t.instructorRadio.teach || t.instructorRadio.phase!=0){
+                // Hold station for the radio interaction; stale approach velocity/load
+                // must not keep producing a stationary pile of wake and prop wash.
+                teacher.vx*=.7f;teacher.vy*=.7f;teacher.spin*=.7f;teacher.engineLoad*=.9f;
+                Physics.integrate(teacher);
+                CalumetMap.collide(teacher,g.splashes);g.passages.collide(teacher,g.splashes);
+                if(g.hasBridge())g.bridge.collide(teacher,g.splashes);
+            }else if(pushedTicks>0){
                 pushedTicks--;teacher.engineLoad*=.95f;Physics.integrate(teacher);
                 CalumetMap.collide(teacher,g.splashes);g.passages.collide(teacher,g.splashes);if(g.hasBridge())g.bridge.collide(teacher,g.splashes);
             }else follow.step(g,teacher);

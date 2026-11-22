@@ -5081,3 +5081,31 @@ launch restored after capture; screen timeout restored to300000ms.
   rish (Success), cold launched (Status: ok,2401ms), and restored display timeout.
   Native full-voyage touch/performance and iOS runtime were not revalidated;
   launch time is not a frame-time measurement.
+
+## 2026-11-22 — idle instructor wake accumulation during radio
+- Inspected Pictures/Screenshots/Screenshot_20261122-122430.png: dense white
+  prop wash and a fan of repeated wake packets under the green instructor during
+  TAP MY GREEN TUG. Root cause: Tutorial.updateLesson returned on instructor radio
+  before TutorialArrival.step, freezing teacher position while retaining velocity
+  and engine load. Water/foam/smoke continued ticking and trusted those stale values.
+- Reproduced against the prior compiled classes: after180 radio ticks, instructor
+  speed remained72.8011 and engine load1.0. The new regression fails there.
+- Radio now pauses lesson progression but advances the observer in a station-hold
+  branch: velocity/spin decay, engine eases to idle, and collision-aware integration
+  continues. No change to genuine moving-vessel wake emission or effect pools.
+  Existing wake and foam still age; no abrupt clearing, global world freeze or
+  suppress-all-wake workaround. Instruction interactions remain pending.
+- InstructorIdleWakeTest checks teach prompt and unanswered radio conversation,
+  a short physical coast, idle load,600ticks without new foam/prop/wake emission,
+  expiry of existing packets and resumed wake after real movement. Passed.
+  Updated canonical replay9762e42b:2:1350 reflects the corrected teacher motion.
+- tools/InstructorIdleWakeReview recreates the shared-renderer case; before/fixed
+  images are out/instructor-idle-wake-before.png and out/instructor-idle-wake-fixed.png.
+  Full Android build/install and visual review results follow below. No new cache,
+  texture, allocation in active updates, or claimed frame-time improvement.
+- Before/fixed Java2D images reviewed: old stationary white prop wash and wake fan
+  reproduce the screenshot, fixed scene retains ambient water without accumulating
+  packets. Final build passed shared/full tutorial, asset, native encoder and pixel
+  checks (out/instructor-idle-wake-build.log). Android installed (Success) and cold
+  launched (Status: ok,1111ms). Screen timeout restored. iOS not rebuilt; no native
+  long radio-wait recording or frame-time profile this round.
