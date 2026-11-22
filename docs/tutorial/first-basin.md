@@ -1,10 +1,11 @@
 # First basin lesson sequence
 
 After navigating the canal, the player finds one loaded barge on the far side
-of the connected basin at (520,700). The other two barges remain behind the
+of the connected basin, in the narrow arm at (599,300), aligned along its length.
+This follows the circled location in Screenshot_20261122-113310~2.jpg. The other two barges remain behind the
 first tow bridge.
 
-1. Approach the first barge and drag from it to the tug to connect a towline.
+1. Follow the water around (320,700) and (599,700) into the far arm. Approach the first barge and drag from it to the tug to connect a towline.
 2. Tow the barge into the marked open-water circle at (320,550), radius 58.
    The barge must reach the circle while connected; tug position alone is insufficient.
 3. Tap the towline itself to release. Waiting with a line

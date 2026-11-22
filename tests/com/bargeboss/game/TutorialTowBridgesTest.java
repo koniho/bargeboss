@@ -20,6 +20,7 @@ public final class TutorialTowBridgesTest {
         check(!g.tutorial.towBridges.eligible(g,1) && !g.tutorial.towBridges.eligible(g,2),"calls unavailable before first tow delivery");
         g=fixture(Tutorial.CONNECT,960);Body firstLoad=g.cargo[0];
         check(!firstLoad.deliveryRecorded && !firstLoad.lineAttached && firstLoad.x>Physics.RIGHT,"loaded first hull starts on far side of the basin");
+        check(firstLoad.x==599 && firstLoad.y==300 && Math.abs(firstLoad.angle-(float)Math.PI/2)<.001f,"first load occupies the annotated narrow arm, aligned along its length");
         for(int i=0;i<1800 && g.tutorial.lesson<Tutorial.CASTOFF;i++){ReplayInput.tutorial(g);g.step();}
         check(g.tutorial.lesson==Tutorial.CASTOFF && g.tow.incoming(firstLoad)!=null,"tow reaches open water before release lesson");
         check(!g.tutorial.towBridges.eligible(g,1),"entry bridge remains locked until pushed delivery");

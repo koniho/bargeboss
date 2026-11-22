@@ -9,21 +9,7 @@ final class FireworksLesson {
     private static final float[] ROUTE_X={330,300,-50,-50,-240};
     private static final float[] ROUTE_Y={-1120,-1350,-1350,-1050,-1050};
     float target(Game g,boolean x){
-        boolean returning=Tutorial.direct(g,g.cargo[3]);
-        float best=Float.MAX_VALUE,along=0,total=0;
-        for(int i=0;i<ROUTE_X.length-1;i++){
-            float dx=ROUTE_X[i+1]-ROUTE_X[i],dy=ROUTE_Y[i+1]-ROUTE_Y[i],len=Physics.length(dx,dy);
-            float t=Physics.clamp(((g.tug.x-ROUTE_X[i])*dx+(g.tug.y-ROUTE_Y[i])*dy)/(len*len),0,1);
-            float ex=g.tug.x-ROUTE_X[i]-t*dx,ey=g.tug.y-ROUTE_Y[i]-t*dy,d=ex*ex+ey*ey;
-            if(d<best){best=d;along=total+t*len;} total+=len;
-        }
-        float distance=Physics.clamp(along+(returning?-45:45),0,total);
-        for(int i=0;i<ROUTE_X.length-1;i++){
-            float dx=ROUTE_X[i+1]-ROUTE_X[i],dy=ROUTE_Y[i+1]-ROUTE_Y[i],len=Physics.length(dx,dy);
-            if(distance<=len || i==ROUTE_X.length-2){float t=distance/len;return x?ROUTE_X[i]+t*dx:ROUTE_Y[i]+t*dy;}
-            distance-=len;
-        }
-        return x?ROUTE_X[0]:ROUTE_Y[0];
+        return TowRouteGuide.target(g.tug.x,g.tug.y,ROUTE_X,ROUTE_Y,Tutorial.direct(g,g.cargo[3]),x);
     }
     static final int HEAT=240,IGNITION=140;
     int showTicks,heat,steam;

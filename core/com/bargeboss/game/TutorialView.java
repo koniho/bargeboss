@@ -103,7 +103,7 @@ public final class TutorialView {
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
         if(g.towAiming || g.ropeDragging)return; // The live trajectory replaces the demonstration.
-        if(approach) { approach(g,p,river,target,pulse);return; }
+        if(approach) { if(t.lesson==Tutorial.CONNECT)driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),null);else approach(g,p,river,target,pulse);return; }
         if(t.lesson>=Tutorial.SHOW && t.lesson<=Tutorial.EXTINGUISH){
             if(t.towBridges.current(g)>0)return;
             Body equipment=t.lesson==Tutorial.SHOW?g.cargo[0]:g.cargo[3];

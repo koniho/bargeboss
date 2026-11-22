@@ -265,10 +265,10 @@ public final class ReplayInput {
             case Tutorial.CONNECT:
                 if(g.ropePhase==0 && g.tow.cargo==null) {
                     Body b=g.cargo[0];
-                    // Circle to the upstream side of the waiting barge. The
-                    // subsequent northbound drag should pull, not ram its bow.
-                    if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>150 || g.tug.y>b.y-55) {
-                        drive(g,b.x<240?b.x+85:b.x-65,b.y-85);break;
+                    // Follow the open basin around the peninsula, approaching the
+                    // waiting load from the mouth of its narrow arm.
+                    if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>125) {
+                        drive(g,g.tutorial.towTargetX(g),g.tutorial.towTargetY(g));break;
                     }
                     if(g.pointer) up(root,g.pointerX,g.pointerY);
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);

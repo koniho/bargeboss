@@ -12,7 +12,7 @@ public final class TutorialTowCourseTest {
         joystickCourse();
         for(float width:new float[]{960,1333,1680}){
             Game g=exercise(Tutorial.CONNECT,width);Body a=g.cargo[0],b=g.cargo[2],pair=g.cargo[1],tug=g.tug;int seen=0,releaseAtBridge=-1;
-            for(int tick=0;tick<8000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
+            for(int tick=0;tick<10000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
                 int lesson=g.tutorial.lesson;seen|=1<<lesson;float ax=a.x,ay=a.y,bx=b.x,by=b.y;
                 ReplayInput.tutorial(g);g.step();
                 check((g.cargo[0]==a || g.cargo[1]==a) && (g.cargo[0]==pair || g.cargo[1]==pair) && g.cargo[2]==b && g.tug==tug,"all towing lessons preserve the same vessels");
@@ -41,7 +41,7 @@ public final class TutorialTowCourseTest {
     }
     private static void joystickCourse(){
         Game g=exercise(Tutorial.CONNECT,1333);g.settings.setJoystickSide(GameSettings.RIGHT);
-        for(int tick=0;tick<8000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
+        for(int tick=0;tick<10000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
             int lesson=g.tutorial.lesson;
             if(ReplayInput.towRadio(g)){g.step();continue;}
             if(lesson==Tutorial.PULL || lesson==Tutorial.BRIDGE || lesson==Tutorial.TRAIN){

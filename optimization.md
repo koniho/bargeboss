@@ -5056,3 +5056,28 @@ launch restored after capture; screen timeout restored to300000ms.
   checks (out/fire-basin-build.log). APK installed through authorized rish
   (Success) and cold launched (Status: ok,1075ms). Shared renderer reviewed above;
   no on-device full canal voyage or iOS build this round.
+
+## 2026-11-22 — launch smoke and annotated first-tow location
+- Inspected Pictures/Screenshots/Screenshot_20261122-113310~2.jpg: the red circle
+  marks the narrow far-side arm of the first towing basin on the overhead chart.
+  First loaded barge now starts at(599,300), oriented along that arm. Existing
+  shore geometry is unchanged. Shared guidance routes around the peninsula via
+  (320,700) and(599,700), then reverses this route for delivery into open water.
+- Extracted the same stateless centerline guide used by fire-barge retrieval;
+  no route allocations or gameplay mutation during cue drawing. Updated iOS
+  automation to use the shared target; native iOS execution remains deferred.
+- Fireworks now emit three deck puffs per rocket plus residual smoke every12ticks:
+  36puffs per180-tick activation, using the existing384-slot smoke pool,8-second
+  independent drift and existing smoke stamps. No new texture/cache or pool size.
+  Isolated ability checks verify bounded emission, cessation and independence
+  after moving the emitting hull. No performance improvement claim.
+- Real-input tow course passed41334 assertions across viewport sizes/joystick.
+  Its budget is now10000ticks to cover both physical retrieval voyages. Reviewed
+  out/first-tow-marked-arm.png and out/fireworks-launch-smoke.png from the actual
+  Java2D renderer. Full Android validation/install results follow below.
+- Final Android build passed all checks (out/launch-smoke-first-tow-build.log),
+  including420315 continuous tutorial assertions and native Vulkan/pixel checks.
+  Canonical replay is5ce9eb90:2:1350 after moving the first load. Installed via
+  rish (Success), cold launched (Status: ok,2401ms), and restored display timeout.
+  Native full-voyage touch/performance and iOS runtime were not revalidated;
+  launch time is not a frame-time measurement.

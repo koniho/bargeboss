@@ -26,6 +26,13 @@ public final class BargeAbilitiesTest {
         g.pointerCancel(77);check(!g.abilities.spraying && g.abilities.owner==-1,"cancel immediately stops spray");
         x=g.abilities.buttonX(g,0);y=g.abilities.buttonY(g);g.pointerDown(78,x,y);steps(g,14);g.background();check(!g.abilities.spraying && g.abilities.owner==-1,"background cancels held nozzle");
         for(int atlas:new int[]{SpriteAtlas.FIREWORKS,SpriteAtlas.FIRE_BARGE}){check(SpriteAtlas.count(atlas)==64,"equipment has 64 real source poses");for(int i=0;i<64;i++){check(SpriteAtlas.sourceBottom(atlas,i)<=1 && SpriteAtlas.sourceTop(atlas,i)>=0,"all source rectangles fit");check(SpriteAtlas.pivotY(atlas,i)==.72f,"waterline datum never moves");}}
+        Game smoke=fixture();smoke.cargo[0].abilityTicks=180;
+        int before=smoke.smoke.emitted;
+        for(int i=0;i<180;i++)smoke.abilities.step(smoke);
+        check(smoke.smoke.emitted-before==36,"bounded launch clouds and residual deck smoke");
+        int emitted=smoke.smoke.emitted;float sx=smoke.smoke.x[0],sy=smoke.smoke.y[0];
+        smoke.cargo[0].x+=500;smoke.abilities.step(smoke);smoke.smoke.drift();
+        check(smoke.smoke.emitted==emitted && Math.abs(smoke.smoke.x[0]-sx)<1 && Math.abs(smoke.smoke.y[0]-sy)<1,"launch smoke stops emitting but drifts independently of the barge");
         System.out.println("Barge ability selection, activation, cooldown, directional spraying, release and lifecycle passed");
     }
     public static void main(String[] args){run();}

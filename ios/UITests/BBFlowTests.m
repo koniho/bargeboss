@@ -252,7 +252,8 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         } else if(lesson==BBLessonConnect || lesson==BBLessonDouble) {
             CGPoint b=cargoLeader==0?spare:cargo;NSInteger leader=cargoLeader==0?spareLeader:cargoLeader;
             if(leader>=0)[self releaseBarge:b stage:stage status:status];
-            else if(hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
+            else if(lesson==BBLessonConnect && hypot(tug.x-b.x,tug.y-b.y)>125)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
+            else if(lesson==BBLessonDouble && hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
             else [self castFrom:b to:tug stage:stage status:status];
         } else if(lesson==BBLessonLink) {
             if(spareLeader>=0)[self releaseBarge:spare stage:stage status:status];

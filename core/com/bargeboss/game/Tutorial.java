@@ -58,7 +58,7 @@ public final class Tutorial {
         g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.delivered=g.score=0;g.nextId=1;g.selected=-1;actionTicks=0;
-        g.addCargo(2,520,700);park(g.cargo[0]);
+        g.addCargo(2,599,300);g.cargo[0].angle=(float)Math.PI/2;park(g.cargo[0]);
         g.addCargo(2,245,0);g.cargo[1].ability=BargeAbilities.FIREWORKS;g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
         g.addCargo(2,365,0);g.cargo[2].ability=BargeAbilities.FIREWORKS;g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
         g.addCargo(2,FireworksLesson.BERTH_X,FireworksLesson.BERTH_Y);g.cargo[3].ability=BargeAbilities.FIRE;g.cargo[3].angle=0;park(g.cargo[3]);
@@ -75,8 +75,9 @@ public final class Tutorial {
         // Reset can restart the current exercise; normal progression preserves
         // the original bodies, positions, momentum, water and camera instead.
         if(lesson>=CONNECT) g.tug=new Body(0,-1,455,600,0);
-        if(lesson>=HOLD){g.cargo[0].x=292;g.cargo[0].y=700;park(g.cargo[0]);g.tug=new Body(0,-1,376,700,(float)Math.PI);}
+        if(lesson>=HOLD){g.cargo[0].x=292;g.cargo[0].y=700;g.cargo[0].angle=(float)Math.PI;park(g.cargo[0]);g.tug=new Body(0,-1,376,700,(float)Math.PI);}
         if(lesson==PULL || lesson==CASTOFF){
+            if(lesson==PULL){g.tug.x=599;g.tug.y=410;g.tug.angle=(float)Math.PI/2;}
             if(lesson==CASTOFF){g.cargo[0].x=TOW_BERTH_X;g.cargo[0].y=TOW_BERTH_Y;park(g.cargo[0]);g.tug.x=TOW_BERTH_X;g.tug.y=435;}
             g.tow.attach(g,g.cargo[0]);actionTicks=g.towReleases;
         }
@@ -239,11 +240,15 @@ public final class Tutorial {
         }
         return mask;
     }
+    private static final float[] FIRST_TOW_X={320,320,599,599},FIRST_TOW_Y={435,700,700,410};
+    float firstTowTarget(Game g,boolean x){
+        return TowRouteGuide.target(g.tug.x,g.tug.y,FIRST_TOW_X,FIRST_TOW_Y,lesson==PULL,x);
+    }
     /** One route target for the actual tow; cues and public-input replays share it. */
-    public float towTargetX(Game g){if(lesson==FIRE_TOW)return fireworks.target(g,true);return lesson==PULL?TOW_BERTH_X:300;}
+    public float towTargetX(Game g){if(lesson==FIRE_TOW)return fireworks.target(g,true);return lesson==PULL || lesson==CONNECT?firstTowTarget(g,true):300;}
     public float towTargetY(Game g){
         if(lesson==FIRE_TOW)return fireworks.target(g,false);
-        if(lesson==PULL)return 435;
+        if(lesson==PULL || lesson==CONNECT)return firstTowTarget(g,false);
         if(lesson==BRIDGE)return g.passages.passable(TutorialTowBridges.EXIT)?-595:TutorialTowBridges.EXIT_Y+95;
         return TrainingChannel.TOW_END+80;
     }

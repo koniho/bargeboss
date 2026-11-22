@@ -51,7 +51,12 @@ public final class BargeAbilities {
         for(Body b:g.cargo)if(b!=null && b.active){
             if(b.abilityCooldown>0)b.abilityCooldown--;
             if(b.abilityTicks>0){
-                if(b.abilityTicks%24==0)burst(b,180-b.abilityTicks);
+                if(b.abilityTicks%24==0){
+                    burst(b,180-b.abilityTicks);
+                    // Deck-level launch cloud follows the boat only at emission.
+                    for(int side=-1;side<=1;side++)g.smoke.equipment(g,b,side*7,0,12/ArticulatedModel.Z_SCALE);
+                }
+                if(b.abilityTicks%12==0)g.smoke.equipment(g,b,0,0,12/ArticulatedModel.Z_SCALE);
                 b.abilityTicks--;
             }
         }
