@@ -5208,3 +5208,57 @@ launch restored after capture; screen timeout restored to300000ms.
 - Android APK installed successfully and cold-launched (Status ok, 2157ms).
   No native iOS run or on-device gesture latency measurement this round;
   touch ownership was validated with shared input regression tests.
+
+## 2026-11-22 — figure-eight ring investigation (Android Vulkan)
+- Captured buoy-complete replay on device, 30 warmup +360 samples, all lesson1.
+  Baseline out/profiles/20261122-134844-buoy-complete-replay: draw median8.918ms,
+  p95 28.773ms; intervals16.731/33.372ms. No frame-cache evictions/builds or
+  synchronous raster builds.330 background layer builds also warrant attention;
+  this is not proof that circle shading explains every long frame.
+- Found three rectangular shader patches per ring (soft shoulders +core), with
+  multiple full course/progress rings. Empty interiors still run radial/angle
+  shading. Testing conservative annular Vulkan geometry with original shader,
+  UVs, colors, progress and feathering. No appearance/physics/cache changes.
+- Ring experiment rejected: matched replay after annular geometry measured
+  draw9.048/29.684ms and intervals16.751/34.585ms (median/p95), no improvement.
+  Reverted it rather than retaining added vertices/host complexity. Its95040
+  coverage assertions passed, but geometric fill reduction was not enough.
+- Separate ART trace (out/profiles/20261122-135426-buoy-complete-replay) ranks bridge depth drawing20% inclusive,
+  water9.8%, tutorial UI5.3%; texture uploads also appear. Traced timings are not
+  valid frame-rate comparisons. No evidence singles out ring animation alone.
+- Found concrete prefetch churn: prepareLayer requests offscreen neighbors but
+  never takes completed results into the retained cache; only visible layer()
+  adopts them. More neighboring hints than the four worker slots can repeatedly
+  discard completed speculative tiles. Promote completed hinted tiles within
+  existing48MiB budget without evicting visible entries. Test this factor alone
+  with original ring drawing restored.
+- First cache-fix replay: out/profiles/20261122-135943-buoy-complete-replay.
+  Background builds330→66. Draw8.402/31.685ms and intervals16.951/34.487ms;
+  median work improved but long frames remain. Of360 measured frames,66 with
+  completed background builds have median draw28.538ms;294 without have8.247ms.
+- The figure-eight card creates a new full-sentence TextLayer for each displayed
+  percentage. Each cold sentence pays direct glyph polygons while its raster is
+  prepared. Split percentage-bearing instruction lines into cached fixed words
+  and individual digits, preserving glyph advances, text, colors and progress.
+  This bounds changing numeric artwork to ten digit layers rather than101 long
+  sentence images. Other instruction lines retain their existing single layer.
+- Counter regression compares every glyph coordinate for all101 percentages
+  against original full-sentence layout:3904976 checks passed, exactly14 reused
+  word/digit keys. Shared text code applies on all hosts. Added to CoreTest;
+  targeted test ran separately after the current full build had compiled tests.
+- Rendering-command replay signature changes31b50c1d→73652222 because the same
+  percentage sentence now uses multiple reusable layers. Delivery/score remain
+  2/1350 and glyph geometry matches. Updated the drawing baseline after reviewing
+  that intended command change; final full build includes the new counter test.
+- Final repeated device comparison confirmed the fix: Pixel11 Pro Vulkan,
+ 30 warmup +360 replay samples. OriginalAPK rerun restores the slowdown;
+ finalA/B draw p95 10.274/10.939ms versus28.773/29.178ms; interval p95
+ 21.934/24.387ms versus33.372/33.945ms. Intervals>25ms66→3/11, background
+ builds330/328→2/2. Peak retained+pending layers47.22→22.22MiB, below48MiB.
+- See docs/performance/figure-eight-progress.md and its JSON for paths, matching
+ trajectory/camera checks, rejected experiment, native pixel review and limits.
+ Full checks/build passed including new counter regression and replay73652222.
+ Native screenshots reviewed; no circle/scene simplification. No native iOS run;
+ remaining frame-spacing tails prevent claiming locked60FPS.
+- Final APK reinstalled after reverse-order comparisons and launched normally
+  (Status ok, cold launch1116ms). Restored previous300000ms display timeout.

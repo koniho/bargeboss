@@ -359,3 +359,9 @@ spray. Use short samples (`BARGEBOSS_PROFILE_WARMUP=0`,120–180frames) to measu
 finite effect rather than averaging mostly idle frames after it finishes. Replay
 mode uses public controls and can complete the lesson; live mode keeps the held
 nozzle running. Both fixtures use the same level asset plan and core effects.
+
+Figure-eight guidance: `./tools/profile-android.sh buoy-complete replay` starts
+just after the first buoy and drives the second circle using real lesson input.
+Use30 warmup and360 sample frames to stay within the forward figure-eight lesson
+and compare the same moving camera/progress arc. Inspect the native `scene.png`
+and match tick, tug position and zoom columns before comparing timings.

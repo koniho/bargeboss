@@ -35,6 +35,18 @@ public final class Lettering {
         if(layer==null){layer=new TextLayer(key,nextKey++);CACHE.put(key,layer);}return layer;
     }
     public static void draw(Painter p,String text,float x,float y,float size,int color){draw(p,text,x,y,size,color,false);}
+    /** Dynamic counters reuse fixed words and ten digits, not a sentence atlas per value. */
+    public static void changingNumbers(Painter p,String text,float x,float y,float size,int color){
+        if(text.isEmpty() || size<=0 || (color>>>24)==0)return;
+        float cursor=x;
+        for(int start=0;start<text.length();){
+            char ch=text.charAt(start);int end=start+1;
+            if(ch<'0' || ch>'9')while(end<text.length() && (text.charAt(end)<'0' || text.charAt(end)>'9'))end++;
+            draw(p,text.substring(start,end),cursor,y,size,color);
+            for(int i=start;i<end;i++)cursor+=advance(text.charAt(i),false)*size;
+            start=end;
+        }
+    }
     public static void heading(Painter p,String text,float x,float y,float size,int color){draw(p,text,x,y,size,color,true);}
     private static void draw(Painter p,String text,float x,float y,float size,int color,boolean heading){
         if(text.isEmpty() || size<=0 || (color>>>24)==0)return;

@@ -28,7 +28,9 @@ final class InstructionPanel {
             Lettering.draw(p,header,38,18,Math.min(9,(badgeX-48)/Math.max(1,Lettering.width(header,1))),PilotGlass.AMBER);
             Lettering.heading(p,title,18,39,Math.min(19,19*(waiting?382:396)/Math.max(1,Lettering.headingWidth(title,19))),PilotGlass.TEXT);
             Lettering.draw(p,first,18,70,Math.min(12,396/Math.max(1,Lettering.width(first,1))),PilotGlass.TEXT);
-            Lettering.draw(p,second,18,89,Math.min(11,396/Math.max(1,Lettering.width(second,1))),PilotGlass.MUTED);
+            float secondSize=Math.min(11,396/Math.max(1,Lettering.width(second,1)));
+            if(second.indexOf('%')>=0)Lettering.changingNumbers(p,second,18,89,secondSize,PilotGlass.MUTED);
+            else Lettering.draw(p,second,18,89,secondSize,PilotGlass.MUTED);
             if(lesson==Tutorial.CHANNEL){p.rect(18,112,400,4,PilotGlass.TRACK);p.rect(18,112,400*progress,4,ControlView.GREEN);}
             else if(lesson>=0){p.rect(18,112,400,3,PilotGlass.TRACK);p.rect(18,112,400f*(lesson+1)/Tutorial.DONE,3,PilotGlass.AMBER);}
         }

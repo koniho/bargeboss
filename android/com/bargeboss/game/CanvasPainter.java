@@ -209,7 +209,17 @@ public final class CanvasPainter implements Painter {
     public void prepareLayer(StaticLayer layer,float scale) {
         if(!preparesLayers() || !layer.backgroundSafe() || !(scale>0) || !Float.isFinite(scale))return;
         float density=StaticLayer.rasterScale(scale);long key=layerKey(layer,density);
-        if(!layers.containsKey(key))requestLayer(layer,density,key,false);
+        if(layers.containsKey(key))return;
+        // Retain completed speculative work before requesting another neighbor.
+        // Otherwise the four worker slots repeatedly evict/rebuild the same
+        // offscreen chunks while the camera moves, competing with live drawing.
+        // Speculation never evicts visible layers or exceeds the shared budget.
+        long bytes=4L*(long)StrictMath.ceil(layer.width()*density)*(long)StrictMath.ceil(layer.height()*density);
+        if(terrain!=null && bytes>0 && bytes<=StaticLayer.cacheBudgetBytes()-layerBytes){
+            Bitmap image=terrain.take(key);
+            if(image!=null){layers.put(key,image);layerBytes+=image.getAllocationByteCount();return;}
+        }
+        requestLayer(layer,density,key,false);
     }
     private static long layerKey(StaticLayer layer,float density){return ((long)layer.key()<<32)^(Float.floatToIntBits(density)&0xffffffffL);}
     private boolean requestLayer(StaticLayer layer,float density,long key,boolean visible) {
@@ -306,7 +316,7 @@ public final class CanvasPainter implements Painter {
         canvas.clipPath(path,android.graphics.Region.Op.DIFFERENCE);
     }
     public void popClip(){flushSurfaceMesh();flushFoam();canvas.restore();}
-    public void beginFrame() {if(!paintingLayer) {gpuFrame=false;layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();terrain.telemetry(profile);}}}
+    public void beginFrame() {if(!paintingLayer) {gpuFrame=false;layerBuilds=0;if(profile!=null)profile.clear();if(terrain!=null){terrain.beginFrame();layerBytes+=terrain.retainCompleted(layers,StaticLayer.cacheBudgetBytes()-layerBytes);terrain.telemetry(profile);}}}
     public void layer(StaticLayer layer,float x,float y,float scale,float alpha) { flushSurfaceMesh();
         float width=layer.width()*scale,height=layer.height()*scale;
         if(!(width>0 && height>0 && alpha>0) || !Float.isFinite(width) || !Float.isFinite(height)) return;

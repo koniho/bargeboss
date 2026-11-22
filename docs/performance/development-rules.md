@@ -161,3 +161,18 @@ all vertices to rediscover those bounds in each slice can dominate CPU time.
 Reject empty pose intervals early, preserve clipping and painter order, and
 compare exact before/after command traces as well as native timing. See the
 2026-11-21 bridge-depth investigation in `optimization.md`.
+
+### Animated progress text and speculative preparation
+
+A progress animation can expose text-cache misses even when its ring is cheap.
+Keep changing counters in small reusable text layers: fixed words plus individual
+digits (`Lettering.changingNumbers`), with the original font advances. Do not
+rasterize an entire instruction sentence for each percentage. Check cold fallback
+work as well as eventual cache hits; a background build does not remove the
+cost of drawing uncached glyph polygons in the meantime.
+
+Completed speculative terrain must reach the retained cache before new neighbor
+hints displace it. Android adopts ready worker results at frame start within the
+existing layer budget, without evicting visible layers for speculation. Track
+background builds during camera movement: repeated builds of nearby unchanged
+content waste CPU even if they never appear as synchronous build time.

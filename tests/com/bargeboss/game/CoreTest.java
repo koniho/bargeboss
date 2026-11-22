@@ -10,6 +10,7 @@ public final class CoreTest {
     private static void tap(Game g,Layout.Box box) { ReplayInput.tap(g,box); }
     public static void main(String[] args) {
         TypographyTest.run();
+        ChangingNumberTextTest.run();
         LocationCatalogTest.run();
         LocationVoyageTest.run();
         HarborPolygonGeometryTest.run();
@@ -186,7 +187,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("31b50c1d:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("73652222:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

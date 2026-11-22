@@ -39,6 +39,19 @@ final class TerrainRasterizer implements AutoCloseable {
         if(profile!=null){profile.backgroundNs+=completedNs;profile.backgroundBuilds+=completed;}
         completedNs=0;completed=0;
     }
+    /** UI thread adopts ready hints before this frame's new requests can evict them. */
+    synchronized long retainCompleted(java.util.Map<Long,Bitmap> target,long allowance) {
+        long retained=0;
+        Iterator<Job> entries=jobs.values().iterator();
+        while(entries.hasNext()){
+            Job job=entries.next();
+            if(job.image==null || job.active)continue;
+            long bytes=job.image.getAllocationByteCount();if(bytes>allowance-retained)continue;
+            if(!target.containsKey(job.key)){target.put(job.key,job.image);retained+=bytes;}
+            entries.remove();reserved-=job.bytes;
+        }
+        return retained;
+    }
     synchronized Bitmap take(long key) {
         Job job=jobs.get(key);if(job==null)return null;
         if(job.failure!=null){jobs.remove(key);reserved-=job.bytes;throw job.failure;}

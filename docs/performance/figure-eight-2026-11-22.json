@@ -1,0 +1,98 @@
+[
+  {
+    "run": "before-a",
+    "raw": "out/profiles/20261122-134844-buoy-complete-replay/frames.csv",
+    "samples": 360,
+    "max_zoom_delta": 0.0,
+    "draw_ms": {
+      "median": 8.9147915,
+      "p95": 28.773332,
+      "mean": 12.327811938888889
+    },
+    "interval_ms": {
+      "median": 16.7296875,
+      "p95": 33.372083,
+      "mean": 19.807354755555554
+    },
+    "advance_ms": {
+      "median": 0.787182,
+      "p95": 0.948255,
+      "mean": 0.7523673027777777
+    },
+    "interval_over_25ms": 66,
+    "background_builds": 330,
+    "peak_layer_mib": 47.22285842895508
+  },
+  {
+    "run": "before-b",
+    "raw": "out/profiles/20261122-140825-buoy-complete-replay/frames.csv",
+    "samples": 360,
+    "max_zoom_delta": 1.9073486328125e-06,
+    "draw_ms": {
+      "median": 8.919973500000001,
+      "p95": 29.178281,
+      "mean": 12.206814694444445
+    },
+    "interval_ms": {
+      "median": 16.785546,
+      "p95": 33.945052,
+      "mean": 19.718864377777777
+    },
+    "advance_ms": {
+      "median": 0.807492,
+      "p95": 1.195418,
+      "mean": 0.7867459583333334
+    },
+    "interval_over_25ms": 66,
+    "background_builds": 328,
+    "peak_layer_mib": 47.22285842895508
+  },
+  {
+    "run": "after-a",
+    "raw": "out/profiles/20261122-140733-buoy-complete-replay/frames.csv",
+    "samples": 360,
+    "max_zoom_delta": 1.9073486328125e-06,
+    "draw_ms": {
+      "median": 8.734185,
+      "p95": 10.273645,
+      "mean": 8.948251361111112
+    },
+    "interval_ms": {
+      "median": 16.6617755,
+      "p95": 21.93401,
+      "mean": 16.798379730555556
+    },
+    "advance_ms": {
+      "median": 0.8062235,
+      "p95": 1.010233,
+      "mean": 0.7720649472222222
+    },
+    "interval_over_25ms": 3,
+    "background_builds": 2,
+    "peak_layer_mib": 22.224842071533203
+  },
+  {
+    "run": "after-b",
+    "raw": "out/profiles/20261122-140908-buoy-complete-replay/frames.csv",
+    "samples": 360,
+    "max_zoom_delta": 1.9073486328125e-06,
+    "draw_ms": {
+      "median": 8.8330075,
+      "p95": 10.939036,
+      "mean": 9.094626916666666
+    },
+    "interval_ms": {
+      "median": 16.6347785,
+      "p95": 24.387223,
+      "mean": 16.802346066666665
+    },
+    "advance_ms": {
+      "median": 0.7708595,
+      "p95": 1.030183,
+      "mean": 0.7461803416666667
+    },
+    "interval_over_25ms": 11,
+    "background_builds": 2,
+    "peak_layer_mib": 22.224842071533203
+  }
+]
