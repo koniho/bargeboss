@@ -28,7 +28,7 @@ public final class Renderer {
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);
         else if(g.tutorial!=null && !g.dialogue.active) TutorialView.draw(g,p);
         if(!g.conversation()){Joystick.draw(g,p);OverviewMap.draw(g,p);}
-        g.abilities.drawUI(g,p);
+        TowRelease.draw(g,p);g.abilities.drawUI(g,p);
         if(g.mode==Game.PLAY)g.dialogue.draw(g,p);
         g.waveControls.draw(g,p);
         } finally {WorldArrows.end();}

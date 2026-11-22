@@ -32,7 +32,7 @@ public final class ContinuousTutorialTest {
                 root.step();
                 int feedback=root.pollHaptic();
                 if(g.tutorial.lesson>lesson || g.tutorial.driveMarker>marker || g.tutorial.channelGate>gate)
-                    check(feedback==Game.HAPTIC_SUCCESS,"each completed tutorial goal emits success feedback: tick="+tick+" lesson="+lesson+" next="+g.tutorial.lesson+" feedback="+feedback);
+                    check(feedback==(lesson==Tutorial.SHOW?Game.HAPTIC_CONTACT:Game.HAPTIC_SUCCESS),"each completed tutorial goal emits success feedback: tick="+tick+" lesson="+lesson+" next="+g.tutorial.lesson+" feedback="+feedback);
                 check(g.tug==tug && present(g,load) && present(g,towLoad),"lesson progression preserves all vessel identities");
                 check(Physics.length(tug.x-x,tug.y-y)<8,"tug moves physically instead of teleporting between lessons");
                 check(Physics.length(load.x-lx,load.y-ly)<8 && Physics.length(towLoad.x-bx,towLoad.y-by)<8,

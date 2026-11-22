@@ -26,7 +26,7 @@ public final class TutorialTowCourseTest {
                 }
             }
             check(g.tutorial.lesson==Tutorial.DONE && seen==((1<<Tutorial.DONE)-(1<<Tutorial.CONNECT)),"public touch gestures complete every tow lesson at width "+width+"; lesson="+g.tutorial.lesson);
-            check(g.tow.count()==0 && g.delivered==1,"final uncoupling preserves first delivery and removes all links");
+            check(g.tow.count()==1 && Tutorial.direct(g,g.cargo[3]) && g.delivered==1,"final fire response preserves first delivery and leaves only the separate fire barge connected");
         }
         System.out.println(checks+" berth tow, double bridge passage, reconfiguration and narrow train assertions passed");
     }

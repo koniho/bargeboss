@@ -53,6 +53,11 @@ public final class VesselSmoke {
         x[i]=b.x+co*localX-si*localY;y[i]=b.y+si*localX+co*localY;
         vx[i]=-5+b.vx*.1f;vy[i]=-10+b.vy*.1f;rise[i]=height*ArticulatedModel.Z_SCALE+WaterSurface.lift(g,b);power[i]=.8f;age[i]=0;
     }
+    /** Fixed shore emitter; emitted puffs drift independently using the existing bounded pool. */
+    public void shore(float xx,float yy,float height,float load){
+        int i=cursor;cursor=(cursor+1)%CAPACITY;emitted++;
+        x[i]=xx;y[i]=yy;rise[i]=height;vx[i]=-5;vy[i]=-10;power[i]=load;age[i]=0;
+    }
     public int count(){int n=0;for(int a:age)if(a<LIFE)n++;return n;}
     public void draw(Painter p,RiverCamera c,float width,float height) {
         // Oldest first: fresh, darker exhaust covers older diffuse clouds.

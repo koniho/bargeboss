@@ -50,6 +50,7 @@ public final class Game {
     public int noticeTicks, damageCooldown, nextId=1;
     public String notice="WELCOME TO THE RIVER";
     public final BargeAbilities abilities=new BargeAbilities();
+    final TowRelease towRelease=new TowRelease();
     public float targetX, targetY, pointerX, pointerY, downX, downY;
     public boolean pointer, pushing, navigating, ropeDragging;
     public static final int IDLE=0, MOVING=1, HOLDING=2, ALIGNING=3, PUSHING=4,
@@ -231,6 +232,7 @@ public final class Game {
     void fitTutorialCamera() { layout=TrainingScenery.constrain(tutorialCamera(),tug.x,tug.y); }
     private Body cameraLoad() {
         Body held=workingCargo();
+        if(tutorial!=null && (tutorial.lesson==Tutorial.EXTINGUISH || tutorial.lesson==Tutorial.FIRE_TOW))return cargo[3];
         if(tutorial!=null && (tutorial.lesson==Tutorial.CONNECT || tutorial.lesson==Tutorial.PULL || tutorial.lesson==Tutorial.CASTOFF))return cargo[0];
         if(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE) && held==null)return cargo[2];
         if(held!=null && !held.deliveryRecorded) return held;
@@ -258,12 +260,13 @@ public final class Game {
         if(load!=null && Physics.length(tug.x-load.x,tug.y-load.y)>230 && !(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE))) {load=null;docking=false;}
         RiverCamera base=RiverCamera.DEFAULT;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
-        int count=load==null?1:docking?3:2;
+        boolean fireResponse=tutorial!=null && tutorial.fireworks.heat>0 && (tutorial.lesson==Tutorial.FIRE_TOW || tutorial.lesson==Tutorial.EXTINGUISH);
+        int count=load==null?1:docking || fireResponse?3:2;
         for(int i=0;i<count+cargo.length;i++) {
             Body train=i>=count?cargo[i-count]:null;
             if(i>=count && (train==null || train==load || !tow.connected(train,tug)))continue;
-            float wx=i>=count?train.x:i==0?tug.x:i==1?load.x:bollardX(load);
-            float wy=i>=count?train.y:i==0?tug.y:i==1?load.y: bollardY(load);
+            float wx=i>=count?train.x:i==0?tug.x:i==1?load.x:fireResponse?FireworksLesson.X:bollardX(load);
+            float wy=i>=count?train.y:i==0?tug.y:i==1?load.y:fireResponse?FireworksLesson.Y: bollardY(load);
             float x=base.screenX(wx,wy)/base.scale,y=base.screenY(wx,wy)/base.scale;
             minX=Math.min(minX,x-48);maxX=Math.max(maxX,x+48);
             minY=Math.min(minY,y-78);maxY=Math.max(maxY,y+36);
@@ -344,7 +347,10 @@ public final class Game {
                 +"; cargo id "+(load==null?-1:load.id)+"; cargo leader "+(lead==null?-1:lead.leader.id)
                 +"; spare leader "+(spareLead==null?-1:spareLead.leader.id)
                 +(tutorial==null?"":"; tow target "+tutorial.towTargetX()+","+tutorial.towTargetY(this))
-                +(abilities.selected==null?"":"; ability release "+abilities.buttonX(this,1)+","+abilities.buttonY(this))
+
+                +(abilities.selected==null || tow.incoming(abilities.selected)==null?"":"; tow release "+TowRelease.point(this,tow.incoming(abilities.selected),.5f,true)+","+TowRelease.point(this,tow.incoming(abilities.selected),.5f,false))
+                +(abilities.selected==null?"":"; ability button "+abilities.buttonX(this,0)+","+abilities.buttonY(this))
+                +(tutorial==null?"":"; fire launched "+(tutorial.fireworks.launched?1:0)+"; fire heat "+tutorial.fireworks.heat+"; fire barge "+cargo[3].x+","+cargo[3].y+"; fire leader "+(tow.incoming(cargo[3])==null?-1:tow.incoming(cargo[3]).leader.id)+"; fire target "+c.screenX(FireworksLesson.X,FireworksLesson.Y)+","+(c.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*c.scale))
                 +"; ability selected "+(abilities.selected==null?0:abilities.selected.ability)+"; cast phase "+ropePhase+"; joystick side "+settings.joystickSide()+"; camera "+c.left+","+c.top+","+c.scale+","+c.worldTop+","+c.worldRight;
     }
     public Game activeGame() { return practice==null?this:practice; }
@@ -426,7 +432,7 @@ public final class Game {
     }
     public float engineRumble(){Game g=activeGame();return g.engineHaptics.strength(g);}
     public void cancelInputs() {
-        rescue.aiming=-1;waveControls.cancel();abilities.cancel();
+        rescue.aiming=-1;waveControls.cancel();abilities.cancel();towRelease.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
         if(tutorial!=null){tutorial.canal.cancelTouch();tutorial.towBridges.cancelTouch();tutorial.instructorRadio.cancelTouch();}
@@ -438,6 +444,7 @@ public final class Game {
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
         if(abilities.down(this,id,x,y))return;
+        if(towRelease.down(this,id,x,y))return;
         if(OverviewMap.sliderHit(this,x,y)) {
             // A second finger may zoom while the existing drive touch remains held.
             // Slider fingers never enter the world/pinch pointer router.
@@ -466,6 +473,7 @@ public final class Game {
     public void pointerMove(int id,float x,float y) {
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(abilities.move(this,id,x,y))return;
+        if(towRelease.move(id,x,y))return;
         if(waveControls.owns(id))return;
         if(mode==PLAY && conversation()){dialogue.move(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.move(this,id,x,y))return;
@@ -480,6 +488,7 @@ public final class Game {
     public void pointerUp(int id,float x,float y) {
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(abilities.up(this,id,x,y))return;
+        if(towRelease.up(this,id,x,y))return;
         if(waveControls.up(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.up(this,id,x,y);return;}
         if(tutorial!=null && tutorial.instructorRadio.up(this,id,x,y))return;
@@ -501,6 +510,7 @@ public final class Game {
         if(practice!=null) { practice.pointerCancel(id); return; }
         if(waveControls.owns(id)){waveControls.cancel();return;}
         if(abilities.owner==id)abilities.cancel();
+        if(towRelease.owns(id))towRelease.cancel();
         dialogue.cancel(id);
         if(tutorial!=null){tutorial.canal.cancel(id);tutorial.towBridges.cancel(id);tutorial.instructorRadio.cancel(id);}
         if(overview.owns(id)){overview.cancelTouch();return;}
@@ -704,7 +714,7 @@ public final class Game {
         if(mapInRiver && tapCandidate && MontroseRescue.cruisers(this) && rescue.tapRaft(this,x,y)){cancel();return;}
         if(mapInRiver && held==-3){if(tapCandidate && overTiePoint(tug,x,y))SlipMooring.release(this);cancel();return;}
         if(mapInRiver && tapCandidate && pressTicks<12 && !pushing && Physics.length(x-downX,y-downY)<22 && abilities.reveal(this,heldCargo())){cancel();return;}
-        if(mapInRiver && tow.incoming(heldCargo())!=null
+        if(mapInRiver && tow.incoming(heldCargo())!=null && heldCargo().ability==BargeAbilities.NONE
                 && tapCandidate && Physics.length(x-downX,y-downY)<22) {
             if(pressTicks<=18) releaseTow(heldCargo());
             cancel();return;
@@ -821,7 +831,7 @@ public final class Game {
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
         abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;joystick.step(this);splashes.step(this);
-        if(tutorial!=null){tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
+        if(tutorial!=null){tutorial.fireworks.step(this);tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){
             tutorial.update(this);buoys.step(this);water.step(this);smoke.step(this);buildingFades.step(this);updateCamera();return;
         }

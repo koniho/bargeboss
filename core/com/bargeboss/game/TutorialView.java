@@ -6,6 +6,7 @@ public final class TutorialView {
     private TutorialView() {}
     static InstructionPanel.Content instructionContent(Game g) {
         Tutorial t=g.tutorial;
+        if((t.lesson>=Tutorial.SHOW && t.lesson<=Tutorial.EXTINGUISH) && t.towBridges.current(g)==0 && !t.towBridges.busy())return t.fireworks.content(g);
         InstructionPanel.Content coaching=t.feedback.content();if(coaching!=null)return coaching;
         InstructionPanel.Content radio=t.instructorRadio.content();if(radio!=null)return radio;
         InstructionPanel.Content towRadio=t.towBridges.content(g);if(towRadio!=null)return towRadio;
@@ -20,7 +21,7 @@ public final class TutorialView {
                     entering?"STEER THROUGH THE OPENING AHEAD.":"STEER UPSTREAM THROUGH EACH GATE.",
                     "SLOW AT CORNERS. LIFT TO COAST.",t.lesson,(t.channelGate-1)/(TrainingChannel.X.length-1f));
         }
-        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
+        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE || t.lesson==Tutorial.EXTINGUISH?g.cargo[2]:g.cargo[0];
         boolean secured=t.lesson==Tutorial.TIE && target!=null && target.lineAttached;
         boolean unloading=secured && target.unloadingTicks>0;
         String title=secured?(unloading?"CREW AT WORK":"LINE SECURED"):t.title();
@@ -43,7 +44,7 @@ public final class TutorialView {
             second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% / CROSS THROUGH THE MIDDLE";
         if(g.abilities.selected!=null && g.abilities.visibleTicks>0){
             Body equipment=g.abilities.selected;
-            return new InstructionPanel.Content("ability-"+equipment.ability,"BARGE EQUIPMENT",equipment.ability==BargeAbilities.FIREWORKS?"TAP THE STARBURST TO LAUNCH FIREWORKS.":"HOLD THE NOZZLE ICON, DRAG TO AIM.","BROKEN-LINE ICON RELEASES A TOWLINE.",t.lesson,0);
+            return new InstructionPanel.Content("ability-"+equipment.ability,"BARGE EQUIPMENT",equipment.ability==BargeAbilities.FIREWORKS?"TAP THE STARBURST TO LAUNCH FIREWORKS.":"HOLD THE NOZZLE ICON, DRAG TO AIM.","TAP THE TOWLINE ITSELF TO DISCONNECT.",t.lesson,0);
         }
         if(t.lesson==Tutorial.DOUBLE && t.firstTowParked && g.passages.passable(TutorialTowBridges.ENTRY))second="SHORT TAP FOR ABILITIES. DRAG TO LINK.";
         String key=t.lesson+":"+title+":"+approach+":"+wrongTug+":"+t.reverseArmed;
@@ -96,13 +97,30 @@ public final class TutorialView {
             }
             return;
         }
-        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE?g.cargo[2]:g.cargo[0];
+        Body target=t.lesson==Tutorial.LINK || t.lesson==Tutorial.DOUBLE || t.lesson==Tutorial.EXTINGUISH?g.cargo[2]:g.cargo[0];
         boolean approach=target!=null && (t.lesson==Tutorial.HOLD || t.lesson==Tutorial.CONNECT)
                 && (Physics.length(target.x-g.tug.x,target.y-g.tug.y)>165 || t.lesson==Tutorial.HOLD && g.tug.x<210);
         Painter river=new RiverPainter(p,g.layout.camera);
         float pulse=.8f*(float)StrictMath.sin(g.visualTicks*.045);
         if(g.towAiming || g.ropeDragging)return; // The live trajectory replaces the demonstration.
         if(approach) { approach(g,p,river,target,pulse);return; }
+        if(t.lesson>=Tutorial.SHOW && t.lesson<=Tutorial.EXTINGUISH){
+            if(t.towBridges.current(g)>0)return;
+            Body equipment=t.lesson==Tutorial.SHOW?g.cargo[0]:g.cargo[3];
+            if(Physics.length(g.tug.x-equipment.x,g.tug.y-equipment.y)>160){approach(g,p,river,equipment,pulse);return;}
+            ControlView.ring(g,river,equipment.x,equipment.y,46+pulse,1,VisualStyle.GOLD,3);
+            if(t.lesson==Tutorial.FIRE_TOW){
+                if(Tutorial.direct(g,equipment)){
+                    driveArrow(g,river,t.towTargetX(),t.towTargetY(g),null);
+                    ControlView.ring(g,river,FireworksLesson.TOW_X,FireworksLesson.TOW_Y,50+pulse,1,ControlView.GREEN,3);
+                }else ControlView.arrow(g,river,equipment.x,equipment.y,g.tug.x,g.tug.y,ControlView.BLUE);
+            }
+            if(t.lesson==Tutorial.EXTINGUISH){
+                float x=g.layout.camera.screenX(FireworksLesson.X,FireworksLesson.Y),y=g.layout.camera.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*g.layout.camera.scale;
+                SoftCue.ring(p,x,y,34,1-t.fireworks.heat/(float)FireworksLesson.HEAT,SoftCue.CYAN,3);
+            }
+            return;
+        }
         if(t.lesson==Tutorial.HOLD) {
             river.circle(Tutorial.PUSH_X,Tutorial.PUSH_Y,58,0x0c35c8bd);
             ControlView.ring(g,river,Tutorial.PUSH_X,Tutorial.PUSH_Y,58+pulse,1,ControlView.GREEN,3);

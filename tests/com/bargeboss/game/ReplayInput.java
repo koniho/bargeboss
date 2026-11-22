@@ -30,7 +30,7 @@ public final class ReplayInput {
     }
     public static void releaseTow(Game root) {releaseTow(root,root.activeGame().tow.primary());}
     public static void releaseTow(Game root,Body b) {
-        if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y);Game g=root.activeGame();if(b.ability!=BargeAbilities.NONE)tap(root,g.abilities.buttonX(g,1),g.abilities.buttonY(g)); }
+        if(b!=null) { down(root,b.x,b.y);up(root,b.x,b.y);Game g=root.activeGame();if(b.ability!=BargeAbilities.NONE){Towline l=g.tow.incoming(b);if(l!=null)tap(root,TowRelease.point(g,l,.5f,true),TowRelease.point(g,l,.5f,false));} }
     }
     public static void lasso(Game root,Body b) {
         Game g=root.activeGame();
@@ -218,6 +218,18 @@ public final class ReplayInput {
         if(radio.contactable(g)){if(g.pointer)up(root,g.pointerX,g.pointerY);tap(root,radio.houseX(g,index),radio.houseY(g,index));return true;}
         drive(g,300,g.passages.bridges[index].y+100);return true;
     }
+    static void abilityLesson(Game root){
+        Game g=root.activeGame();boolean fire=g.tutorial.lesson==Tutorial.EXTINGUISH;
+        Body b=fire?g.cargo[3]:g.cargo[0];
+        if(g.tutorial.fireworks.launched && !fire){if(g.pointer)up(root,g.pointerX,g.pointerY);return;}
+        if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>155){drive(g,300,b.y-85);return;}
+        if(g.pointer)up(root,g.pointerX,g.pointerY);
+        if(g.abilities.selected!=b || g.abilities.visibleTicks==0){down(root,b.x,b.y);up(root,b.x,b.y);return;}
+        float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);
+        if(!fire){tap(root,x,y);return;}
+        if(g.abilities.owner<0)root.pointerDown(88,x,y);
+        root.pointerMove(88,g.layout.camera.screenX(FireworksLesson.X,FireworksLesson.Y),g.layout.camera.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*g.layout.camera.scale);
+    }
     public static void tutorial(Game root) {
         Game g=root.activeGame();
         if(g.tutorial.entering){
@@ -267,6 +279,17 @@ public final class ReplayInput {
             case Tutorial.BRIDGE:
             case Tutorial.TRAIN:
                 drive(g,g.tutorial.towTargetX(),g.tutorial.towTargetY(g));break;
+            case Tutorial.FIRE_TOW:{
+                Body b=g.cargo[3];
+                if(Tutorial.direct(g,b)){drive(g,g.tutorial.towTargetX(),g.tutorial.towTargetY(g));break;}
+                if(g.ropePhase!=0)break;
+                if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>150 || g.tug.y<b.y+55){drive(g,b.x-55,b.y+85);break;}
+                if(g.pointer)up(root,g.pointerX,g.pointerY);
+                down(root,b.x,b.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);break;
+            }
+            case Tutorial.SHOW:
+            case Tutorial.EXTINGUISH:
+                abilityLesson(root);break;
             case Tutorial.DOUBLE:
                 if(g.ropePhase==0) {
                     Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];

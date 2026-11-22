@@ -34,3 +34,8 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.ShoreOcclusionP
 # Packed equipment must remain pixel-identical to its source/effect sheets.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PackBargeFrames.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PackBargeFrames --check
+
+# Portrait cutouts must keep a stable painted base across all talking frames.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PortraitRegistrationReview.java
+mkdir -p out
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PortraitRegistrationReview corrected > out/portrait-registration-check.log

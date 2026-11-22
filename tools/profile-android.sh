@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")/.."
 scene=${1:-barge-push}
 mode=${2:-live}
-case "$scene" in barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
+case "$scene" in tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
 case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
 bargeboss_frames=${BARGEBOSS_PROFILE_FRAMES:-360}
 bargeboss_warmup=${BARGEBOSS_PROFILE_WARMUP:-120}

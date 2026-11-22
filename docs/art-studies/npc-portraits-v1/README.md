@@ -29,3 +29,9 @@ magick docs/art-studies/npc-portraits-v1/source/<id>.png -resize 576x384 assets/
 tools/NpcPortraitReview.java exports crew-review.png and bridge-0/1.png, checks
 all36 frames for actual alpha/nonempty bodies, and checks bridge assignment and
 reply persistence. Palette/silhouette and small UI-size readability were reviewed.
+
+November22 registration correction: use the shared `PortraitRegistration` pivots
+for every frame; neutral-cell center alone is no longer the runtime pivot.
+[All-frame base audit](../portrait-registration-v1/README.md) fixes the night
+operator, instructor, foreman and keeper drift without resampling source art.
+All seven IDs now exist in SpriteAtlas; unused crew still are not prefetched.

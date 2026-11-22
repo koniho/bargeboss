@@ -4962,3 +4962,64 @@ regressions. APK installed successfully and cold launched Status:ok; previous
 300000ms display timeout restored. Photos entries18090/18091 verified. Desktop
 visual/input validation; no manual native playthrough, native pixel capture,
 frame-time profile or iOS build this round.
+
+## 2026-11-22 — finale equipment flow and portrait registration
+Tutorial convoy now contains two fireworks barges; a separate fire barge waits
+near the final basin. Mandatory celebration after uncoupling starts a delayed
+shore fire, requires a separate fire-barge tow, then aimed water impacts to finish.
+Equipment has one action; rope taps perform cast-off. New rope hit tests sample
+the same deck height/slack curve in screen space, with bounded16px tolerance,
+short-tap/drag/cancel gates. Native automation release target follows this curve.
+Fireworks use320 bounded particle slots instead of192,40-ray gold/cyan/red bursts;
+fire uses bounded glow calls in the ground-depth merge and existing smoke pool.
+No new effect textures or raster preparation. Fire camera includes the shore target
+so it does not sit behind the map. No claim of measured60FPS for the new effects.
+
+All42 portrait frames audited from alpha pixels: night operator shifted24px,
+foreman10px/3px, instructor5px, keeper1px. Shared per-frame pivots anchor painted
+bases while preserving neutral layout and original artwork. Four unused NPC
+atlases registered for future use, not added to level prefetch. Source-derived
+registration check added to check.sh; all42 corrected anchors agree within.001px.
+Before/after review in docs/art-studies/portrait-registration-v1. Full checks,
+final effect previews and native package validation in progress.
+Arcade effect refinement adds analytic ballistic trails (three feathered segments
+per spark, no history buffers), white-hot heads, and28-tick burst rings within the
+same320-slot pool. Shore flames now have red/gold/cream tongues, whipping tips and
+20 bounded rising embers instead of only soft ovals. Clip queries include the trail
+footprint. Added finite-effect profiling fixtures tutorial-fireworks/firefight;
+short samples are necessary to avoid reporting mostly post-effect idle time.
+Finale gates pass with actual public controls: waiting cannot launch, ignition is
+delayed, fire-barge tow is required, wrong aim earns no cooling, and water impacts
+extinguish before DONE. Full continuous replay passes388958 continuity assertions;
+new rope regression rejects long holds, drags, cancels and competing pointers.
+Final reviewed trace9798e8a9:2:1350 includes reordered finale, new vessel inventory,
+registered portraits and effects. Source native UI automation updated for the
+new lesson order/equipment targets; iOS execution remains deferred.
+Final input audit found a legacy12–18tick hull-press path that could still detach
+an equipped barge after the short ability-reveal window. Restricted that legacy
+path to plain cargo and added a15tick connected-equipment regression. Rebuilding
+final package after this correction; prior full checks/asset/native encoder run
+passed, but this input fix still needs the final rerun below.
+Final full build/check passed(out/finale-final-build.log), including the15tick
+press regression, core replay9798e8a9:2:1350, portrait source audit, shoreline
+pixels, asset derivatives and native Vulkan encoding/clips. Developer fixtures:
+91 repeatability checks passed(out/fire-profile-check.log). APK installed.
+
+On-device Vulkan,120-frame live samples, zero warmup:
+- Fireworks: out/profiles/20261122-113241-tutorial-fireworks-live, stages18–19,
+  draw p50/p95 9.163/15.803ms, interval p50/p95 16.755/24.960ms.
+- Firefighting: out/profiles/20261122-113319-tutorial-firefight-live, stage20,
+  draw p50/p95 8.926/17.667ms, interval p50/p95 16.702/22.005ms.
+Both had no synchronous layer builds/fallbacks/evictions, frame builds/evictions,
+or cold decode events during the sampled draws. These are short finite-effect
+runs, not stable60FPS or an A/B improvement claim; initial presentation/preparation
+still has large startup outliers. The firefighting screenshot was interrupted by
+an app switch after the CSV export; it is excluded/deleted, so only shared-renderer
+firefighting pixels were reviewed. Native fireworks screenshot reviewed and kept
+in docs/art-studies/tutorial-finale-v1/android-fireworks.png. No iOS build/native
+portrait animation recording this round; shared42-frame registration is verified.
+Photos review entries18093/18094/18095 verified; review copies also in Downloads.
+Including startup, mean frame intervals were21.51/21.98ms for fireworks/firefight;
+maximum intervals544.78/606.10ms and maximum draw542.59/602.07ms. These cold-start
+spikes are retained in the evidence rather than hidden by the median. Normal game
+launch restored after capture; screen timeout restored to300000ms.

@@ -139,3 +139,9 @@ only content, never the frame or world; balance native clip scopes in all cases.
 The tug no longer uses the gold silhouette pulse while navigating/pushing, or
 the faint idle hull bloom. Keep its actual work/navigation lamps and their fog
 scattering. Cargo targeting highlights remain unchanged.
+
+Equipment interaction update (November22): selecting an equipped barge exposes
+one ability button. Cast-off belongs to the towline itself, with a small open
+midline cue in release lessons or when that line's barge is selected. Do not
+restore an ability-versus-unhook popup. Fire suppression rings show real remaining
+work; the nozzle only earns progress when its simulated spray reaches the fire.
