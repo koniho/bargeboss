@@ -9,7 +9,6 @@ public final class TutorialView {
         InstructionPanel.Content coaching=t.feedback.content();if(coaching!=null)return coaching;
         InstructionPanel.Content radio=t.instructorRadio.content();if(radio!=null)return radio;
         InstructionPanel.Content towRadio=t.towBridges.content(g);if(towRadio!=null)return towRadio;
-        if(t.lesson==Tutorial.DOUBLE && !t.firstTowParked)return new InstructionPanel.Content("leave-first-tow","LEAVE YOUR FIRST BARGE HERE","TAP THE BARGE TO RELEASE ITS TOWLINE.","THEN CALL INTO THE NEXT BASIN.",t.lesson,0);
         if(t.lesson==Tutorial.CHANNEL && !t.entering)return t.canal.content(g);
         if(t.arrival!=null && t.arrival.warningTicks>0)return t.arrival.warning();
         if(t.lesson==Tutorial.DONE)return null;
@@ -29,7 +28,7 @@ public final class TutorialView {
                 && (Physics.length(target.x-g.tug.x,target.y-g.tug.y)>165 || t.lesson==Tutorial.HOLD && g.tug.x<210);
         boolean wrongTug=t.lesson==Tutorial.HOLD && g.holdingTug() && !approach;
         String first=secured?(unloading?"UNLOADING: "+Math.max(1,(Game.UNLOAD_TICKS-target.unloadingTicks+59)/60)+" SECONDS.":"WINCHING THE BARGE ALONGSIDE."):
-                approach?(t.lesson==Tutorial.HOLD?"DRIVE INTO THE HARBOR.":"APPROACH THE UNLOADED BARGE."):
+                approach?(t.lesson==Tutorial.HOLD?"DRIVE INTO THE HARBOR.":"APPROACH THE FAR-SIDE BARGE."):
                 wrongTug?"THAT IS THE TUG. LIFT YOUR FINGER.":t.firstLine();
         String second=secured?(unloading?"THE NEXT BARGE IS WAITING UPSTREAM.":"THE CREW WILL UNLOAD HER NEXT."):
                 approach?"APPROACH THE GLOWING BARGE.":wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine();
@@ -148,7 +147,6 @@ public final class TutorialView {
             Body b=g.tow.primary();if(b==null)return;RiverCamera c=g.layout.camera;
             ControlView.ring(g,river,b.x,b.y,44+pulse,1,ControlView.GREEN,3);
         } else if(t.lesson==Tutorial.DOUBLE) {
-            if(!t.firstTowParked){Body first=g.cargo[0];ControlView.ring(g,river,first.x,first.y,44+pulse,1,ControlView.GREEN,2);return;}
             if(t.towBridges.current(g)>0)return;
             Body b=!Tutorial.direct(g,g.cargo[0])?g.cargo[0]:g.cargo[2];
             if(Physics.length(b.x-g.tug.x,b.y-g.tug.y)>150){approach(g,p,river,b,pulse);return;}
@@ -172,11 +170,13 @@ public final class TutorialView {
             ControlView.ring(g,river,parent.x,parent.y,44+pulse,1,ControlView.GREEN,2);
             ControlView.arrow(g,river,spare.x,spare.y-30,parent.x,parent.y+30,ControlView.GREEN);
             SoftCue.caption(river,"DRAG THIS BARGE",spare.x,spare.y+35,9,VisualStyle.GOLD);
+        } else if(t.lesson==Tutorial.CASTOFF) {
+            Body b=g.cargo[0];ControlView.ring(g,river,b.x,b.y,46+pulse,1,VisualStyle.GOLD,3);
         } else if(t.lesson==Tutorial.PULL || t.lesson==Tutorial.BRIDGE || t.lesson==Tutorial.TRAIN) {
             driveArrow(g,river,t.towTargetX(),t.towTargetY(g),t.lesson==Tutorial.BRIDGE && !g.passages.passable(TutorialTowBridges.EXIT)?"WAIT FOR GREEN":null);
             if(t.lesson==Tutorial.PULL) {
                 ControlView.ring(g,river,Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,Tutorial.TOW_BERTH_RADIUS+pulse,1,ControlView.GREEN,2);
-                SoftCue.caption(river,"TOW BERTH",Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,10,ControlView.GREEN);
+                SoftCue.caption(river,"OPEN WATER",Tutorial.TOW_BERTH_X,Tutorial.TOW_BERTH_Y,10,ControlView.GREEN);
             } else {
                 float y=t.lesson==Tutorial.BRIDGE?Tutorial.BRIDGE_CLEAR_Y:Tutorial.TRAIN_CLEAR_Y;
                 int mask=t.lesson==Tutorial.BRIDGE?t.bridgeCrossed:t.trainCrossed;
@@ -227,7 +227,7 @@ public final class TutorialView {
         PilotGlass.panel(p,x-117,y-9,234,43,0xe1101c30);
         float pop=1+2*(float)StrictMath.sin(Math.min(1,age*5)*Math.PI);
         Lettering.center(p,complete?"CANAL CLEARED!":"GATE "+t.clearedGate+" CLEARED!",x,y,13+pop,cream);
-        Lettering.center(p,complete?"READY TO PUSH":"KEEP GOING, CAPTAIN",x,y+21,9,green);
+        Lettering.center(p,complete?"READY TO TOW":"KEEP GOING, CAPTAIN",x,y+21,9,green);
     }
     private static void pushGesture(Game g,Painter canvas,Painter river,Body b,boolean assist) {
         boolean held=g.heldCargo()==b;

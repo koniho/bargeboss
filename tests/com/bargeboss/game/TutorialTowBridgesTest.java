@@ -19,16 +19,17 @@ public final class TutorialTowBridgesTest {
         steps(g,600);check(g.passages.position[1]==0 && g.passages.position[2]==0,"proximity and waiting cannot auto-open towing bridges");
         check(!g.tutorial.towBridges.eligible(g,1) && !g.tutorial.towBridges.eligible(g,2),"calls unavailable before first tow delivery");
         g=fixture(Tutorial.CONNECT,960);Body firstLoad=g.cargo[0];
-        check(firstLoad.deliveryRecorded && firstLoad.lineAttached,"single towing lesson reuses the unloaded first hull");
-        for(int i=0;i<1200 && g.tutorial.lesson<Tutorial.DOUBLE;i++){ReplayInput.tutorial(g);g.step();}
-        check(g.tutorial.lesson==Tutorial.DOUBLE && !g.tutorial.firstTowParked && g.tow.incoming(firstLoad)!=null,"single tow must reach its entrance target before releasing");
-        check(!g.tutorial.towBridges.eligible(g,1),"entry bridge remains locked while first tow is attached");
+        check(!firstLoad.deliveryRecorded && !firstLoad.lineAttached && firstLoad.x>Physics.RIGHT,"loaded first hull starts on far side of the basin");
+        for(int i=0;i<1800 && g.tutorial.lesson<Tutorial.CASTOFF;i++){ReplayInput.tutorial(g);g.step();}
+        check(g.tutorial.lesson==Tutorial.CASTOFF && g.tow.incoming(firstLoad)!=null,"tow reaches open water before release lesson");
+        check(!g.tutorial.towBridges.eligible(g,1),"entry bridge remains locked until pushed delivery");
+        steps(g,120);check(g.tutorial.lesson==Tutorial.CASTOFF,"waiting with line attached does not earn cast-off");
         ReplayInput.releaseTow(g);g.step();
-        check(g.tutorial.firstTowParked && g.cargo[1]==firstLoad && firstLoad.active,"first hull stays in the first basin after cast-off");
-        g=fixture(Tutorial.CONNECT,960);
-        for(int i=0;i<1200 && g.tutorial.lesson<Tutorial.DOUBLE;i++){ReplayInput.tutorial(g);g.step();}
-        g.cargo[0].y=710;ReplayInput.releaseTow(g);g.step();
-        check(g.tutorial.lesson==Tutorial.CONNECT && !g.tutorial.firstTowParked,"releasing outside the entrance target requires recovering the first load");
+        check(g.tutorial.lesson==Tutorial.HOLD && g.cargo[0]==firstLoad && !g.tutorial.firstTowParked,"explicit release starts pushing with the same loaded hull");
+        for(int i=0;i<2200 && g.tutorial.lesson<Tutorial.DOUBLE;i++){ReplayInput.tutorial(g);g.step();}
+        check(g.tutorial.lesson==Tutorial.DOUBLE && g.tutorial.firstTowParked && g.cargo[1]==firstLoad && firstLoad.lineAttached && firstLoad.deliveryRecorded,"pushed and unloaded first hull remains tied alongside before next basin opens");
+        g=fixture(Tutorial.CASTOFF,960);g.tow.release(g);g.tutorial.update(g);
+        check(g.tutorial.lesson==Tutorial.CONNECT,"automatic line loss cannot substitute for player cast-off");
         for(float width:new float[]{960,1333,1680}){
             g=fixture(Tutorial.DOUBLE,width);TutorialTowBridges r=g.tutorial.towBridges;
             check(r.current(g)==1 && !r.eligible(g,2),"only the entry bridge is offered initially");

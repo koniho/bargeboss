@@ -25,8 +25,8 @@ public final class ContinuousTutorialTest {
                 float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;
                 RiverCamera camera=g.layout.camera;
                 if(lesson==Tutorial.CONNECT && waitAtTow++<180) {
-                    // Leave the unloaded barge alongside while reading the next
-                    // card; it must not disappear or keep awarding deliveries.
+                    // Leave the far-side barge waiting while reading the connection
+                    // card; it must remain in the same continuous scene.
                     if(g.pointer) ReplayInput.up(root,g.pointerX,g.pointerY);
                 } else ReplayInput.tutorial(root);
                 root.step();
@@ -52,7 +52,7 @@ public final class ContinuousTutorialTest {
                             "assisted docking continues from the practiced push destination");
                 }
                 if(g.delivered>0) check(g.delivered==1 && load.active && load.deliveryRecorded && load.unloadingTicks>=Game.UNLOAD_TICKS,
-                        "the completed empty barge remains available for the single tow and scores exactly once");
+                        "the completed empty barge remains alongside and scores exactly once");
             }
             check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,
                     "real gestures finish every lesson in one scene at "+size[0]+"x"+size[1]+"; stopped at "+g.tutorial.lesson);

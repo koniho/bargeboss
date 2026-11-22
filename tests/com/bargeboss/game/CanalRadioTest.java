@@ -47,7 +47,7 @@ public final class CanalRadioTest {
                 }
                 check(g.inWater(g.teacherBoat().x,g.teacherBoat().y),"leader remains in the navigable canal");
             }
-            check(g.tutorial.lesson==Tutorial.HOLD && seen==255,"leader waits beyond every canal milestone before cargo lesson: "+seen);
+            check(g.tutorial.lesson==Tutorial.CONNECT && seen==255,"leader waits beyond every canal milestone before cargo lesson: "+seen);
             g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.setup(g);check(!b.authorized && g.passages.position[0]==0,"explicit canal reset closes the gate and clears radio authorization");
         }
         System.out.println(checks+" mouth bridge, radio choice, continuous motion and leader milestone assertions passed");

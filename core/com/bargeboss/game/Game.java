@@ -231,7 +231,7 @@ public final class Game {
     void fitTutorialCamera() { layout=TrainingScenery.constrain(tutorialCamera(),tug.x,tug.y); }
     private Body cameraLoad() {
         Body held=workingCargo();
-        if(tutorial!=null && (tutorial.lesson==Tutorial.CONNECT || tutorial.lesson==Tutorial.PULL || tutorial.lesson==Tutorial.DOUBLE && !tutorial.firstTowParked))return cargo[0];
+        if(tutorial!=null && (tutorial.lesson==Tutorial.CONNECT || tutorial.lesson==Tutorial.PULL || tutorial.lesson==Tutorial.CASTOFF))return cargo[0];
         if(tutorial!=null && (tutorial.lesson==Tutorial.LINK || tutorial.lesson==Tutorial.DOUBLE) && held==null)return cargo[2];
         if(held!=null && !held.deliveryRecorded) return held;
         if(tow.primary()!=null) return tow.primary();
@@ -302,7 +302,7 @@ public final class Game {
         // Do not pull the view away while the player steers or immediately after a cast/release.
         // Keep panning and allow closer approach views, including swimmer rescue proximity.
         // Early tutorial framing must still reveal the next lesson's cargo and tie target.
-        boolean guidedReveal=tutorial!=null && (tutorial.lesson<Tutorial.PULL || tutorial.towBridges.current(this)>0);
+        boolean guidedReveal=tutorial!=null && (tutorial.lesson<Tutorial.DOUBLE || tutorial.towBridges.current(this)>0);
         if(!guidedReveal && cameraZoomHoldTicks>0 && targetZoom<c.zoom)targetZoom=c.zoom;
         targetZoom=pinchZoom.target(targetZoom,steering);
         float zoom=c.zoom+(targetZoom-c.zoom)*.035f;
@@ -311,7 +311,7 @@ public final class Game {
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
         float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
         float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
-        float ease=tutorial!=null && tutorial.lesson<=Tutorial.CHANNEL?.045f:.055f;
+        float ease=tutorial!=null && tutorial.lesson<=Tutorial.CONNECT?.045f:.055f;
         Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
         if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
                 && Math.abs(zoom-c.zoom)<.000001f) return;
@@ -575,7 +575,7 @@ public final class Game {
     public Body workingCargo() { return heldCargo(); }
     public boolean canTow(Body b) {
         if(b==tug)return false;
-        if(pointer && cargoPushGesture && heldCargo()==b || ropePhase!=0 || tutorial!=null && tutorial.lesson<Tutorial.CONNECT)return false;
+        if(pointer && cargoPushGesture && heldCargo()==b || ropePhase!=0 || tutorial!=null && (tutorial.lesson<Tutorial.CONNECT || tutorial.lesson>=Tutorial.HOLD && tutorial.lesson<=Tutorial.TIE))return false;
         if(canTowAtRelease(b,tug))return true;
         for(Body parent:cargo)if(canTowAtRelease(b,parent))return true;
         return false;

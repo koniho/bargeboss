@@ -38,7 +38,7 @@ public final class ChannelTest {
                             "camera keeps tug clear of every screen edge throughout course");
                 }
             }
-            check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.HOLD,"seven ordered gates lead into cargo practice");
+            check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.CONNECT,"seven ordered gates lead into cargo practice");
             check(g.tug==originalTug && g.cargo[0]==originalLoad && originalLoad.awaitingPickup,
                     "course exit preserves the tug and waiting harbor load");
             check(Math.abs(g.tug.x-TrainingChannel.X[7])<30,
@@ -53,7 +53,7 @@ public final class ChannelTest {
             if(pulsedGame.trainingChannel()) ReplayInput.up(pulsed,pulsedGame.pointerX,pulsedGame.pointerY);
             for(int i=0;i<30 && pulsedGame.trainingChannel();i++) pulsed.step();
         }
-        check(pulsedGame.tutorial.lesson==Tutorial.HOLD && pulsedGame.tutorial.channelGate==8,
+        check(pulsedGame.tutorial.lesson==Tutorial.CONNECT && pulsedGame.tutorial.channelGate==8,
                 "short drag-and-release gestures also complete every right-angle reach within the native attempt budget");
         Game root=course(960,600),g=root.activeGame();
         g.tug.x=TrainingChannel.X[7];g.tug.y=TrainingChannel.Y[7];g.tutorial.update(g);
@@ -97,7 +97,7 @@ public final class ChannelTest {
                 root.step();
                 check(g.tutorial.gateClearTicks==89,"remaining at a cleared gate does not restart the effect");
             }
-            check(g.tutorial.lesson==Tutorial.HOLD && g.cargo[0]!=null,
+            check(g.tutorial.lesson==Tutorial.CONNECT && g.cargo[0]!=null,
                     "bank-side navigation reaches the harbor and starts barge practice");
             root.background();root.advance(1);
             check(g.tutorial.gateClearTicks==89,"gate celebration pauses with the game");

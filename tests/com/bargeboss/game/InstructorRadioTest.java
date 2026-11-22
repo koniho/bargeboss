@@ -25,7 +25,7 @@ public final class InstructorRadioTest {
                 check(g.tutorial.lesson==lesson && g.teacherBoat()!=null,"instructor remains available after skipping");
                 call(root);reply(root,1);check(g.tutorial.lesson==lesson+1,"one accepted reply advances exactly one lesson");
                 if(g.tutorial.lesson==Tutorial.TRAIN)check(Tutorial.chain(g),"skipping link prepares a usable single-file tow");
-                if(g.tutorial.lesson==Tutorial.HOLD)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
+                if(g.tutorial.lesson==Tutorial.CONNECT)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
             }
             root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);g=root.activeGame();
             for(int i=0;i<1000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}

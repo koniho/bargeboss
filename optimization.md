@@ -4937,3 +4937,28 @@ the control is visible. Drawing replay10e7c9ed:2:1350.
 Full checks/Android build passed(out/plain-throttle-build.log), installed and
 launch reported Status:ok. Restored timeout. Preview verified in Photos as
 MediaStore18085. Desktop visual review; no native pixel capture/iOS build.
+
+## 2026-11-22 — first basin: tow, cast off, then push
+Reordered shared tutorial lessons: connect to the loaded far-side barge at
+(520,700), tow into open water centered at (320,550), explicitly cast off,
+drag-push, assisted berth approach, tie/unload, then call for the next basin.
+Same bodies and momentum persist across transitions; no scene rebuild. Delivered
+hull remains moored alongside. Automatic tow loss retries connection; only a
+player release earns cast-off. Push lessons retain their tow-gesture exclusion.
+Reordered coaching, highlights, berth visibility, skip/reset fixtures and public
+input replay. Kept guided camera reveal through first delivery and gentler focus
+easing while approaching the farther load (continuity test caught a >20px step).
+No new textures, caches or per-frame effect allocations. Shared continuous replay
+passed 379529 assertions across three canvas sizes before final gesture guard
+cleanup. Full checks/native build and final preview validation pending below.
+All gameplay checks passed; initial check stopped only at intentionally changed
+canonical replay (reordered stages/layout/camera), reviewed as d657e566:2:1350.
+Updated baseline and started full Android build/check rerun. Actual shared-renderer
+connection/cast-off frames reviewed in docs/art-studies/first-basin-v2; both radio
+gates still traversed by the preview replay after the new first delivery.
+Final full checks and Android build passed (out/tow-build.log), including full
+continuous tutorial, multi-width gesture course, shoreline pixels and Vulkan clip
+regressions. APK installed successfully and cold launched Status:ok; previous
+300000ms display timeout restored. Photos entries18090/18091 verified. Desktop
+visual/input validation; no manual native playthrough, native pixel capture,
+frame-time profile or iOS build this round.

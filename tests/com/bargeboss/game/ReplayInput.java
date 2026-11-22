@@ -212,7 +212,6 @@ public final class ReplayInput {
     /** Real bridge-house press/reply and a safe approach before either gate. */
     public static boolean towRadio(Game root){
         Game g=root.activeGame();TutorialTowBridges radio=g.tutorial.towBridges;
-        if(g.tutorial.lesson==Tutorial.DOUBLE && !g.tutorial.firstTowParked){if(g.pointer)up(root,g.pointerX,g.pointerY);releaseTow(root);return true;}
         int index=radio.current(g);if(index==0)return false;
         if(g.dialogue.active){if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);tap(root,b.centerX(),b.centerY());}return true;}
         if(radio.phase!=0 || radio.authorized[index]){if(g.pointer)up(root,g.pointerX,g.pointerY);return true;}
@@ -262,6 +261,8 @@ public final class ReplayInput {
                     if(g.pointer) up(root,g.pointerX,g.pointerY);
                     down(root,g.cargo[0].x,g.cargo[0].y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
                 } break;
+            case Tutorial.CASTOFF:
+                if(g.pointer)up(root,g.pointerX,g.pointerY);releaseTow(root,g.cargo[0]);break;
             case Tutorial.PULL:
             case Tutorial.BRIDGE:
             case Tutorial.TRAIN:

@@ -65,7 +65,7 @@ final class TutorialArrival {
         Tutorial t=g.tutorial;float x=HelmPractice.MEET_X,y=HelmPractice.MEET_Y,limit=490;
         if(t.lesson==Tutorial.SLIP || t.lesson==Tutorial.MAP){x=t.navigation.targetX(g);y=t.navigation.targetY(g);limit=700;}
         else if(t.lesson==Tutorial.CHANNEL){int gate=Math.min(t.channelGate,TrainingChannel.X.length-1);x=TrainingChannel.X[gate];y=TrainingChannel.Y[gate];limit=700;}
-        else if(t.lesson>=Tutorial.HOLD){
+        else if(t.lesson>=Tutorial.CONNECT){
             if(t.lesson==Tutorial.DONE)return false;
             Body b=t.lesson==Tutorial.DOUBLE || t.lesson==Tutorial.LINK?g.cargo[2]:g.cargo[0];
             if(b==null)return false;x=b.x;y=b.y;limit=700;
