@@ -41,3 +41,20 @@ reset and cancellation follow normal shared rules.
 Validation: FireworksLessonTest, full public-input convoy/continuous replays,
 BargeAbilitiesTest, actual renderer frames from FireLessonReview. Native visual
 and frame-time measurements are separate from shared trace validation.
+
+The ignition point now has a permanent large timber stack on pallet sleepers.
+Its fixed shared XYZ geometry is prepared at tutorial setup, and its contact
+shadow, dusk-colored faces and the existing fire share ground-depth ordering.
+The entire footprint stays above the quay edge; no new water collision obstacle.
+FirewoodPile owns the fixed stack anchor at (463,-1160), grounded at LAND_RISE.
+No lamps or exhaust outlets belong to this prop. Ignition/glow and fire smoke
+remain separate animated effects anchored at FireworksLesson.X/Y, never baked
+into wood. The pile remains visible before ignition and after suppression. Ignition selects
+a separate prepared charred model with blackened beams and ash on their ends
+and split grain; this state persists after steam expires and resets with tutorial
+setup. Both variants retain the same footprint, pivot and stack height.
+
+Tow reconfiguration explicitly introduces a narrow passage: two abreast will not
+fit. Disconnect one tug-to-barge line, connect that free barge to the other barge,
+then tow single file and clear the exit with both hulls. Recovery instructions
+retain this reason when one or both towlines are missing.

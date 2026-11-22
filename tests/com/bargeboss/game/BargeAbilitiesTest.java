@@ -27,8 +27,9 @@ public final class BargeAbilitiesTest {
         x=g.abilities.buttonX(g,0);y=g.abilities.buttonY(g);g.pointerDown(78,x,y);steps(g,14);g.background();check(!g.abilities.spraying && g.abilities.owner==-1,"background cancels held nozzle");
         for(int atlas:new int[]{SpriteAtlas.FIREWORKS,SpriteAtlas.FIRE_BARGE}){check(SpriteAtlas.count(atlas)==64,"equipment has 64 real source poses");for(int i=0;i<64;i++){check(SpriteAtlas.sourceBottom(atlas,i)<=1 && SpriteAtlas.sourceTop(atlas,i)>=0,"all source rectangles fit");check(SpriteAtlas.pivotY(atlas,i)==.72f,"waterline datum never moves");}}
         Game smoke=fixture();smoke.cargo[0].abilityTicks=180;
-        int before=smoke.smoke.emitted;
+        int before=smoke.smoke.emitted,launchSounds=SoundEffects.sequence(smoke);
         for(int i=0;i<180;i++)smoke.abilities.step(smoke);
+        check(SoundEffects.sequence(smoke)-launchSounds==7 && SoundEffects.cue(smoke)==SoundEffects.FIREWORK_LAUNCH,"each of seven actual rocket launches emits its sound");
         check(smoke.smoke.emitted-before==36,"bounded launch clouds and residual deck smoke");
         int emitted=smoke.smoke.emitted;float sx=smoke.smoke.x[0],sy=smoke.smoke.y[0];
         smoke.cargo[0].x+=500;smoke.abilities.step(smoke);smoke.smoke.drift();

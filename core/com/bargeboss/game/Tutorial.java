@@ -45,6 +45,7 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
+        FirewoodPile.prepare();
         boolean hadTeacher=arrival!=null;instructorRadio.reset();feedback.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
@@ -297,7 +298,7 @@ public final class Tutorial {
     public float driveTargetX(){return lesson==MOVE?helm.targetX:DRIVE_X[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return lesson==MOVE?helm.targetY:DRIVE_Y[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","TOW INTO OPEN WATER","RELEASE THE TOWLINE","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","READY FOR YOUR LEVEL"}[lesson];
+        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","TOW INTO OPEN WATER","RELEASE THE TOWLINE","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
@@ -314,7 +315,7 @@ public final class Tutorial {
             case PULL: return "TOW THE BARGE INTO THE MARKED OPEN WATER.";
             case DOUBLE: return "LINK BOTH BARGES DIRECTLY TO THE TUG.";
             case BRIDGE: return "PULL BOTH BARGES UNDER THE BRIDGE.";
-            case LINK: return "TAP A TOWLINE TO UNCOUPLE THAT BARGE.";
+            case LINK: return "TWO ABREAST WON'T FIT. TAP ONE TOWLINE.";
             case TRAIN: return "PULL YOUR TRAIN THROUGH THE CHANNEL.";
             case RELEASE: return "TAP EACH TOWLINE TO LET GO.";
             default: return "YOU PUSHED, TIED UP AND TOWED A TRAIN.";
@@ -335,8 +336,8 @@ public final class Tutorial {
             case PULL: return "MAKE ROOM TO GET BEHIND IT AND PUSH.";
             case DOUBLE: return "DRAG EACH UNLINKED BARGE TO THE TUG.";
             case BRIDGE: return "WAIT FOR GREEN. BOTH LOADS MUST CLEAR.";
-            case LINK: return "THEN DRAG THE BARGE TO THE OTHER ONE.";
-            case TRAIN: return "SINGLE FILE. CLEAR THE EXIT WITH BOTH.";
+            case LINK: return "UNCOUPLE, THEN DRAG BARGE TO BARGE.";
+            case TRAIN: return "GO SLOW. BOTH BARGES MUST CLEAR THE EXIT.";
             case RELEASE: return "LEAVE BOTH BARGES READY FOR CELEBRATION.";
             default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }

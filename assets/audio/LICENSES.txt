@@ -61,3 +61,14 @@ collision-chunk-heavy-v1.wav: edited Kenney Impact Sounds wood impact, CC0.
 https://kenney.nl/assets/impact-sounds
 Source/hash/license and processing: docs/audio/dull-chunks-v1.md.
 Reproduce with tools/prepare-dull-chunks.py.
+
+Firework launch recorded v1:
+"Launching And Exploding Firework Sound Effect | Free WAV"
+by Alexander / Orange Free Sounds, published November 9, 2026.
+https://orangefreesounds.com/launching-and-exploding-firework-sound-effect-free-wav/
+Licensed under Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+Modified for Barge Boss: excerpted launch (0.145–0.490 seconds), mono conversion,
+band limiting, gain adjustment, short fades and peak limiting.
+Original MP3 preview retained in docs/audio/sources/orangefreesounds/.
+No endorsement by the original artist is implied.

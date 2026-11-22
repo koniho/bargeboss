@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Bounded fixed-step one-shot bus. Radio has priority over contact chatter. */
 public final class SoundEffects {
-    public static final int COUNT=9,BUMP=2,THUD=3,CRUNCH=4,TUG_THUD=5,SPLASH_SMALL=6,SPLASH_LARGE=7,COMPLETE=8;
+    public static final int COUNT=10,FIREWORK_LAUNCH=9,BUMP=2,THUD=3,CRUNCH=4,TUG_THUD=5,SPLASH_SMALL=6,SPLASH_LARGE=7,COMPLETE=8;
     private int sequence,cue,age=1000,cooldown,pendingComplete,impactAge=1000;
     void step(){
         if(age<1000)age++;if(impactAge<1000)impactAge++;if(cooldown>0)cooldown--;
@@ -24,6 +24,11 @@ public final class SoundEffects {
         if(!Float.isFinite(speed) || speed<3 || cooldown>0 || cue<2 && age<30)return;
         impactAge=0;emit(tugContact?TUG_THUD:speed<30?BUMP:speed<65?THUD:CRUNCH);cooldown=18;
     }
+    /** Real launch transient, emitted with the rocket; never interrupt instructor speech. */
+    void firework(){
+        if(cue<2 && age<54 || cue>=BUMP && cue<=TUG_THUD && age<6)return;
+        emit(FIREWORK_LAUNCH);impactAge=0;
+    }
     void splash(float power){
         if(!Float.isFinite(power) || power<.18f || cooldown>0 || cue<2 && age<54)return;
         emit(power<.6f?SPLASH_SMALL:SPLASH_LARGE);cooldown=24;
@@ -36,8 +41,8 @@ public final class SoundEffects {
     public static int sequence(Game root){return root.activeGame().sounds.sequence;}
     public static int cue(Game root){return root.activeGame().sounds.cue;}
     /** Drop stale contact events instead of replaying a late bump after host recovery. */
-    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD?6:30);}
+    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD || g.sounds.cue==FIREWORK_LAUNCH?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-chunk-light-v1.wav","audio/collision-chunk-medium-v1.wav","audio/collision-chunk-heavy-v1.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-chunk-light-v1.wav","audio/collision-chunk-medium-v1.wav","audio/collision-chunk-heavy-v1.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v1.wav"}[cue];
     }
 }

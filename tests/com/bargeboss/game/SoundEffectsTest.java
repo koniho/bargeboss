@@ -66,6 +66,14 @@ public final class SoundEffectsTest {
         ramp.splashes.contact(ramp.tug,null,300,500,70,0,0,0,70);
         ramp.splashes.step(ramp);
         check(ramp.splashes.emitted==1 && SoundEffects.cue(ramp)==SoundEffects.CRUNCH,"spray deduplication cannot hide a stronger seawall impact");
+        Game launch=new Game();launch.mode=Game.PLAY;
+        launch.sounds.firework();check(SoundEffects.cue(launch)==SoundEffects.FIREWORK_LAUNCH && SoundEffects.audible(launch),"launch cue is immediate and shared");
+        check(SoundEffects.engineGain(launch)<.3f,"engine ducks for the launch transient");
+        for(int i=0;i<6;i++)launch.sounds.step();check(!SoundEffects.audible(launch),"late launch cue is dropped rather than played out of sync");
+        launch.radio.transmit(RadioAudio.TEACHER);int launchSequence=SoundEffects.sequence(launch);launch.sounds.firework();
+        check(SoundEffects.sequence(launch)==launchSequence,"rocket cannot cut off instructor radio");
+        for(int i=0;i<54;i++)launch.sounds.step();launch.sounds.firework();
+        check(SoundEffects.cue(launch)==SoundEffects.FIREWORK_LAUNCH,"new rockets sound after radio grace period");
         System.out.println("Collision sound severity, priority, cooldown and stale-event checks passed");
     }
 }

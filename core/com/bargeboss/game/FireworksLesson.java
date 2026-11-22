@@ -35,8 +35,8 @@ final class FireworksLesson {
         boolean fire=g.tutorial.lesson>=Tutorial.FIRE_TOW;
         boolean collect=g.tutorial.lesson==Tutorial.FIRE_TOW;
         String title=fire?"THAT WAS NOT THE TINY BUTTON.":launched?"PERHAPS A LITTLE TOO FESTIVE...":"YOU PASSED! CUE THE FIREWORKS.";
-        String first=fire?"SMALL UPDATE: THE DOCK IS ON FIRE.":launched?"I SAID CONFETTI. THAT IS A SMALL SUN.":"TAP THE FIREWORKS BARGE, THEN ITS ROCKET.";
-        String second=collect?(Tutorial.direct(g,g.cargo[3])?"TOW THE FIRE BARGE INTO THE MARKED WATER.":"FETCH THE FIRE BARGE THROUGH THE SOUTH CANAL."):fire?"HOLD THE NOZZLE. DRAG WATER ONTO THE FLAMES.":launched?"LET'S HOPE NOTHING FLAMMABLE NOTICES.":"A TINY VICTORY DISPLAY. YOU HAVE EARNED IT.";
+        String first=fire?"SMALL UPDATE: WE LIT THE WOODPILE.":launched?"I SAID CONFETTI. THAT IS A SMALL SUN.":"TAP THE FIREWORKS BARGE, THEN ITS ROCKET.";
+        String second=collect?(Tutorial.direct(g,g.cargo[3])?"TOW THE FIRE BARGE INTO THE MARKED WATER.":"FETCH THE FIRE BARGE THROUGH THE SOUTH CANAL."):fire?"HOLD THE NOZZLE. DRAG WATER ONTO THE FLAMES.":launched?"WHO PARKED ALL THAT FIREWOOD THERE?":"A TINY VICTORY DISPLAY. YOU HAVE EARNED IT.";
         return new InstructionPanel.Content("fireworks-lesson-"+g.tutorial.lesson+":"+launched,title,first,second,-1,fire?1-heat/(float)HEAT:0,"INSTRUCTOR / CHANNEL 08",fire?"FIRE RESPONSE":"EQUIPMENT PRACTICE");
     }
     private static float curve(float a,float b,float c,float d,float t){float u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;}
@@ -50,17 +50,19 @@ final class FireworksLesson {
     }
     void draw(Game g,Painter p){
         RiverCamera c=g.layout.camera;float scale=c.scale;
+        float sx=c.screenX(X,Y),sy=c.screenY(X,Y)-GroundArt.LAND_RISE*scale;
+        boolean onScreen=sx>=-180*scale && sx<=g.layout.width+180*scale && sy>=-180*scale && sy<=g.layout.height+180*scale;
+        if(onScreen)FirewoodPile.draw(g,p);
         if(launched && !ignited){
             float t=Physics.clamp((showTicks-65)/75f,0,1);
             if(t>0){float x=launchX+(X-launchX)*t,y=launchY+(Y-launchY)*t;
                 float h=GroundArt.LAND_RISE+150*(1-t)+90*4*t*(1-t);
-                float sx=c.screenX(x,y),sy=c.screenY(x,y)-h*scale;
-                p.material(sx,sy,30*scale,0,0,30*scale,EffectMaterial.GLOW,0,1,0xffff7f2d);
-                p.material(sx,sy,10*scale,0,0,10*scale,EffectMaterial.DOT,0,1,0xffffed9e);
+                float emberX=c.screenX(x,y),emberY=c.screenY(x,y)-h*scale;
+                p.material(emberX,emberY,30*scale,0,0,30*scale,EffectMaterial.GLOW,0,1,0xffff7f2d);
+                p.material(emberX,emberY,10*scale,0,0,10*scale,EffectMaterial.DOT,0,1,0xffffed9e);
             }return;
         }
-        float sx=c.screenX(X,Y),sy=c.screenY(X,Y)-GroundArt.LAND_RISE*scale;
-        if(sx< -180 || sx>g.layout.width+180 || sy< -180 || sy>g.layout.height+180)return;
+        if(!onScreen)return;
         if(heat>0){
             float strength=.35f+.65f*heat/HEAT;
             p.material(sx,sy,160*scale,0,0,85*scale,EffectMaterial.GLOW,0,strength,0xdfff651d);

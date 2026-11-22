@@ -5109,3 +5109,39 @@ launch restored after capture; screen timeout restored to300000ms.
   checks (out/instructor-idle-wake-build.log). Android installed (Success) and cold
   launched (Status: ok,1111ms). Screen timeout restored. iOS not rebuilt; no native
   long radio-wait recording or frame-time profile this round.
+
+## 2026-11-22 — woodpile fire, narrow-passage context and recorded launch audio
+- Added a permanent large timber stack at the existing dock ignition location.
+  Fixed shared XYZ plank geometry, sleepers and contact shadow respect the dry
+  quay footprint and enter the existing fire depth slot. Offscreen culling occurs
+  before model drawing. Both intact and charred geometry/BSP poses prepare at
+  tutorial setup, never on first visible draw. Blackened grain and ash end caps
+  persist after extinguishing; both variants share footprint and stack height.
+- No sprite sheet/host-specific artwork or new lighting texture. Dark wood uses
+  face shading/scenery grade, avoiding the marine-dock material's near-black
+  treatment. Fire glow/smoke remain the existing separate anchored effects.
+- Reconfiguration instructions now explain that two abreast will not fit the
+  narrow passage. Missing-line recovery retains the single-file purpose.
+- Located Alexander / Orange Free Sounds' recorded launch/explosion sample,
+  CC BY4.0; saved source MP3 and bundled attribution. Extracted345ms launch-only
+  transient (44.1kHz mono16-bit, peak-5.52dBFS), omitting the separate explosion.
+  Shared sound cue9 fires on actual rocket emission. Engine ducks; radio/recent
+  collisions win; events older than6ticks drop. Existing native manifest loaders
+  cover Android/iOS/desktop without an additional platform sound implementation.
+  No new audio voices;345ms fits inside400ms rocket interval. Source/recipe in
+  docs/audio/fireworks-launch-v1.md. Subjective device listening remains unverified.
+- Rebuilding after user requested the persistent charred state; interrupted the
+  earlier build during CoreTest before packaging so it cannot be installed stale.
+  Actual shared renderer reviews: tools/FirewoodReview.java and FireLessonReview.
+  Final checks and installation results follow below.
+- Reviewed intact/burning/charred timber and reconfiguration panel in actual
+  Java2D frames from FirewoodReview. Charred variant retains the same anchor and
+  silhouette, with charcoal faces and pale exposed ends; no temporary steam state
+  is required to keep it burned. Canonical shared replay4021f84b:2:1350 reflects
+  the permanent prop and changed panel text. Launch tests check7 cues for7 rocket
+  emissions, immediate audibility/engine duck, radio priority and stale-event drop.
+- Final ./build-android.sh passed (out/timber-fireworks-build.log), including
+  shared tutorial, assets, native encoder and pixel regressions. APK installed
+  through rish (Success) and cold launched (Status: ok,1346ms). Restored prior
+  display timeout. No native iOS build, audio audition/recording or frame-time
+  measurement this round; checked PCM timing/peak and shared event delivery.

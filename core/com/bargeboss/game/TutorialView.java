@@ -34,10 +34,10 @@ public final class TutorialView {
         String second=secured?(unloading?"THE NEXT BARGE IS WAITING UPSTREAM.":"THE CREW WILL UNLOAD HER NEXT."):
                 approach?"APPROACH THE GLOWING BARGE.":wrongTug?"PRESS THE CARGO, THEN DRAG TO PUSH.":t.secondLine();
         if(t.lesson==Tutorial.LINK && (g.tow.incoming(g.cargo[2])==null || g.tow.incoming(g.cargo[0])==null)) {
-            first="DRAG THE FREE BARGE TO THE TOWED ONE.";second="RELEASE TO MAKE A SINGLE-FILE TRAIN.";
+            first="DRAG THE FREE BARGE TO THE TOWED ONE.";second="MAKE A SINGLE-FILE TRAIN TO FIT THE PASSAGE.";
         }
         if(t.lesson==Tutorial.LINK && !g.tow.connected(g.cargo[0],g.tug) && !g.tow.connected(g.cargo[2],g.tug)) {
-            first="RECONNECT A BARGE TO THE TUG.";second="THEN REBUILD YOUR SINGLE-FILE TRAIN.";
+            first="RECONNECT A BARGE TO THE TUG.";second="WE NEED SINGLE FILE FOR THE NARROW PASSAGE.";
         }
         if(t.lesson==Tutorial.MOVE)return new InstructionPanel.Content("helm-"+t.helm.phase+":"+t.helm.pace,t.helm.title(),t.helm.first(),t.helm.second(),t.lesson,t.helm.phase/5f);
         if(t.lesson==Tutorial.FIGURE_EIGHT || t.lesson==Tutorial.REVERSE)

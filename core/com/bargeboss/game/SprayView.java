@@ -13,7 +13,7 @@ final class SprayView {
             work[at]=-i-1;
         }
         for(int i=0;i<BargeAbilities.CAPACITY;i++)if(g.abilities.alive(i)){int at=n++;float d=g.abilities.depth(g,i);while(at>0 && depth(g,work[at-1])>d){work[at]=work[at-1];at--;}work[at]=-i-1000;}
-        if(g.tutorial!=null && g.tutorial.fireworks.visible()){
+        if(g.tutorial!=null){
             int at=n++;float d=g.tutorial.fireworks.depth(g);while(at>0 && depth(g,work[at-1])>d){work[at]=work[at-1];at--;}work[at]=-2000;
         }
         int[] result=new int[n];System.arraycopy(work,0,result,0,n);return result;

@@ -52,7 +52,7 @@ public final class BargeAbilities {
             if(b.abilityCooldown>0)b.abilityCooldown--;
             if(b.abilityTicks>0){
                 if(b.abilityTicks%24==0){
-                    burst(b,180-b.abilityTicks);
+                    burst(b,180-b.abilityTicks);g.sounds.firework();
                     // Deck-level launch cloud follows the boat only at emission.
                     for(int side=-1;side<=1;side++)g.smoke.equipment(g,b,side*7,0,12/ArticulatedModel.Z_SCALE);
                 }
