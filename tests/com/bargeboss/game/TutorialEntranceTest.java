@@ -6,6 +6,7 @@ public final class TutorialEntranceTest {
     public static void run(){for(float width:new float[]{960,1333,1600})for(int answer=0;answer<3;answer++){
         Game root=new Game();root.configureCanvas(width,600);root.startTutorial();Game g=root.activeGame();Body tug=g.tug,teacher=g.teacherBoat();
         check(g.tutorial.entering && tug.y==TutorialArrival.DOCK_Y,"starts beside seawall dock");
+        check(!SpeakerPortrait.visible(g,"INSTRUCTOR"),"arrival starts without a portrait");
         check(teacher!=null && teacher.x<tug.x && teacher.y<tug.y,"teacher approaches alongside from clear water");
         ReplayInput.down(root,tug.x,tug.y);ReplayInput.move(root,tug.x-90,tug.y);
         check(!g.pointer && !g.joystick.active,"arrival blocks drive gestures");
@@ -13,6 +14,7 @@ public final class TutorialEntranceTest {
         check(teacher.x==start && g.tutorial.entranceTicks==0,"pause freezes arrival");g.pause();
         for(int tick=0;tick<270;tick++){
             float x=teacher.x;root.step();
+            check(SpeakerPortrait.visible(g,"INSTRUCTOR")==(g.tutorial.entranceTicks>=TutorialArrival.APPROACH),"portrait appears with first radio introduction");
             check(g.tug==tug && tug.x==TutorialArrival.DOCK_X && tug.speed()==0,"original player hull stays at dock");
             check(teacher.x>=x && teacher.x-x<2,"teacher approaches continuously");
             check(CalumetMap.clear(teacher.x-teacher.half,teacher.y,teacher.x+teacher.half,teacher.y,teacher.radius),"teacher hull stays in navigable water");
@@ -31,7 +33,7 @@ public final class TutorialEntranceTest {
         for(int i=0;i<185;i++)root.step();
         check(!g.conversation() && g.tug==tug && g.teacherBoat()==teacher,"reply hands off same continuous scene");
         check(RadioAudio.sequence(g)==3 && !g.pointer && !g.navigating,"one teacher acknowledgement; no input leaks");
-        ReplayInput.down(root,tug.x,tug.y);check(g.holdingTug(),"player can take helm");root.cancelInputs();
+        ReplayInput.throttleDown(root);check(g.joystick.active,"player can take helm");root.cancelInputs();
         g.dialogue.show(g,"DISPATCH","PICK A BERTH","FOUR DESTINATIONS.","ONE","TWO","THREE","FOUR");
         for(int i=0;i<20;i++)root.step();
         Layout.Box fourth=g.dialogue.choiceBox(g,3);root.pointerDown(9,fourth.centerX(),fourth.centerY());g.background();

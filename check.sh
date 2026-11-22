@@ -13,6 +13,8 @@ javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check
 java -cp build/check com.bargeboss.game.CargoAssetCheck
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateCargoShadows --check
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateSurfaceLighting --check
+javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check tools/BargeEquipmentAssetCheck.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BargeEquipmentAssetCheck
 # Geometric normal maps must preserve every registered boat silhouette.
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check desktop/com/bargeboss/game/*.java tools/NormalBoatReview.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.NormalBoatReview
@@ -28,3 +30,12 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.OverviewMapPixe
 # Cached training terrain must preserve wall faces without dynamic lighting.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/ShoreOcclusionPixelTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.ShoreOcclusionPixelTest terrain
+
+# Packed equipment must remain pixel-identical to its source/effect sheets.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PackBargeFrames.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PackBargeFrames --check
+
+# Portrait cutouts must keep a stable painted base across all talking frames.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PortraitRegistrationReview.java
+mkdir -p out
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PortraitRegistrationReview corrected > out/portrait-registration-check.log

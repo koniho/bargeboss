@@ -62,7 +62,7 @@ remains manual under the development CI cadence.
 
 ## Continuous navigation curriculum
 
-1. Leave the seawall: powered forward movement, actual left/right turns, then
+1. Leave the seawall: gentle then strong forward throttle with actual movement, left/right turns, then
    reverse. Highlight the throttle, temporarily showing it if disabled in settings.
 2. Reach the rendezvous marker, then trace opposite windings around both buoys in
    forward gear. Repeat the figure eight with astern thrust. Radius tolerance is
@@ -70,9 +70,10 @@ remains manual under the development CI cadence.
    drift and position jumps cannot earn winding progress.
 3. Approach the recessed western slip, point the bow away, and reverse inside.
    Contact at 25 units/second or above invalidates the attempt. The whole hull
-   must leave the mouth by 20 units before another attempt. A clean attempt needs
-   90 units of powered astern displacement and the actual aligned hull in the slip.
-4. Exit to open water. The overview starts at 4x; a real slider interaction must
+   must leave the mouth by 20 units before another attempt. A clean attempt succeeds anywhere inside the slip once the tug center passes
+   the mouth after powered astern travel and the player releases the drive control.
+   Holding at neutral does not count as release. No precise depth or final heading is required.
+4. The overview and zoom slider stay hidden until this map lesson. Exit to open water. The overview starts fully zoomed in; a real slider interaction must
    reduce it below 1.7x. Find and reach the amber chart target. No distant world
    arrow gives away this map-reading exercise; a local arrival ring appears nearby.
 5. Navigate the canal, then push, berth, tow, and reconfigure the same barges.

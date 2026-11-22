@@ -100,7 +100,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
         if(reviewZoom>0){Game g=root.activeGame();RiverCamera c=g.layout.camera;float x=width*.5f,y=height*.52f;
             g.layout=Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),reviewZoom,x,y);reviewLayout=g.layout;}
         configured=true;
-        root.hapticsEnabled=false;root.activeGame().hapticsEnabled=false;
+        root.hapticsEnabled=activity.getIntent().getBooleanExtra("bb_haptic_review",false);root.activeGame().hapticsEnabled=root.hapticsEnabled;
         // Live mode advances the world without the replay's held pointer. Replay keeps its exact gesture.
         if(!mode.equals("replay"))root.cancelInputs();
         Log.i("BargeBossProfile","READY scene="+scene+" mode="+mode+" width="+width+" height="+height+" warmup="+warmup+" samples="+samples+" compound_paths="+compoundPaths+" frame_textures="+frameTextures+" async_layers="+asyncLayers+" water_grouping="+waterGrouping+" frame_cache_mib="+(painter.profileFrameBudget()/1048576)+" rotation_prefetch="+activity.getIntent().getBooleanExtra("bb_rotation_prefetch",true));

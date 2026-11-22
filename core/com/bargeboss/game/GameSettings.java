@@ -26,6 +26,6 @@ public final class GameSettings {
     public void resetWeather(){rainLevel=lightningLevel=fogLevel=0;weatherFlashTick=-1000000;}
     public int joystickSide(){return side;}
     public int version(){return version;}
-    public void setJoystickSide(int next){if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}
-    void restore(int next){side=next;version=0;}
+    public void setJoystickSide(int next){if(next==OFF)next=LEFT;if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}
+    void restore(int next){side=next==OFF?LEFT:next;version=0;}
 }

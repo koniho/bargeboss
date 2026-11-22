@@ -7,7 +7,9 @@ public final class TutorialCanalBridge {
     static final float X=TrainingChannel.MIN+24,Y=TrainingChannel.Y[0];
     private static final class Geometry {
         static final LandmarkBridge[] BRIDGES={new LandmarkBridge("practice-mouth","CANAL BRIDGE",X,Y,
-                (float)StrictMath.PI/2,LandmarkBridge.BASCULE,1,24,TrainingChannel.HALF_WIDTH,TrainingChannel.HALF_WIDTH)};
+                (float)StrictMath.PI/2,LandmarkBridge.BASCULE,1,24,TrainingChannel.HALF_WIDTH,TrainingChannel.HALF_WIDTH),
+                new LandmarkBridge("practice-tow-entry","TOW BASIN ENTRY",300,TutorialTowBridges.ENTRY_Y,0,LandmarkBridge.BASCULE,1,24,150,150),
+                new LandmarkBridge("practice-tow-exit","CONVOY BRIDGE",300,TutorialTowBridges.EXIT_Y,0,LandmarkBridge.BASCULE,1,24,150,150)};
     }
     static LandmarkBridge[] bridges(){return Geometry.BRIDGES;}
     final CanalEscort escort=new CanalEscort();
@@ -21,10 +23,10 @@ public final class TutorialCanalBridge {
     private boolean houseVisible(Game g){
         float x=houseX(g),y=houseY(g);
         return x>=28 && x<=g.layout.width-28 && y>=80 && y<=g.layout.height-80
-                && !(x>=g.layout.width-450 && y<=192) && !OverviewMap.bounds(g).contains(x,y);
+                && !(x>=g.layout.width-562 && y<=192) && !OverviewMap.bounds(g).contains(x,y);
     }
     float houseX(Game g){float[] p=bridges()[0].radioPoint;return g.layout.camera.screenX(p[0],p[1]);}
-    float houseY(Game g){float[] p=bridges()[0].radioPoint;return g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale;}
+    float houseY(Game g){float[] p=bridges()[0].radioPoint;float y=g.layout.camera.screenY(p[0],p[1])-p[2]*ArticulatedModel.Z_SCALE*g.layout.camera.scale;return InstructionPanel.radioY(g,houseX(g),y);}
     boolean hit(Game g,float x,float y){
         return Math.abs(x-houseX(g))<=Math.max(24,22*g.layout.camera.scale)
                 && Math.abs(y-houseY(g))<=Math.max(28,27*g.layout.camera.scale);
@@ -74,7 +76,7 @@ public final class TutorialCanalBridge {
     void cue(Game g,Painter p){
         if(!contactable(g))return;
         float x=houseX(g),y=houseY(g),r=Math.max(22,23*g.layout.camera.scale);
-        SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0x9995d7d1),1);
+        SoftCue.ring(p,x,y,r,1,SoftCue.animated(g,0xdd28e7ff),1);
         SoftCue.caption(p,"RADIO",x,y-r-13,9,0xbbe7bc73);
     }
 }

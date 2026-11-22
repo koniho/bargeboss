@@ -708,3 +708,15 @@ Beacon sources also feed the existing directional shade masks for painted moving
 vessels and the colored normal receivers for moored boats. Moving painted hulls
 retain their existing four-direction approximation; they are not migrated to the
 full watercraft material contract by this change.
+
+### Practice tug tether (2026-11-20)
+
+The slip bollard uses the same raised-ground anchor for drawing, aim snapping and
+hit-testing. The tug's caught local deck fitting rotates with the hull. Its rope
+occupies one additional bounded slot in `TowView.Segments`, sharing span depth,
+shore clipping, ground-to-deck height and rope material with cargo moorings.
+The constraint measures horizontal distance to the unraised bollard location;
+projection rise must never shorten or offset the physical tether. Slack lowers
+span heights; it never changes hull depth or lifts the shore endpoint. The
+bollard and glow are culled when the slip is outside the camera. No separate
+on-top rope overlay or tug driving ring should be added.

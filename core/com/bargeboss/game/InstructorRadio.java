@@ -10,14 +10,14 @@ final class InstructorRadio {
     void introduce(Game g){if(!taught){teach=true;g.cancelInputs();g.radio.transmit(RadioAudio.TEACHER);}}
     boolean available(Game g){return g.mode==Game.PLAY && !g.tutorial.entering && g.tutorial.lesson<Tutorial.DONE
             && phase==0 && !g.dialogue.active && g.teacherBoat()!=null
-            && g.tutorial.canal.phase!=TutorialCanalBridge.CALLING && g.tutorial.canal.phase!=TutorialCanalBridge.QUESTION;}
+            && !g.tutorial.towBridges.busy() && g.tutorial.canal.phase!=TutorialCanalBridge.CALLING && g.tutorial.canal.phase!=TutorialCanalBridge.QUESTION;}
     float x(Game g){Body b=g.teacherBoat();return g.layout.camera.screenX(b.x,b.y);}
     float y(Game g){Body b=g.teacherBoat();return g.layout.camera.screenY(b.x,b.y)-12*g.layout.camera.scale;}
     private boolean hit(Game g,float x,float y){
         if(g.teacherBoat()==null || x<0 || x>g.layout.width || y<64 || y>=g.layout.height-64
-                || OverviewMap.bounds(g).contains(x,y) || Joystick.hit(g,x,y)
+                || OverviewMap.visible(g) && OverviewMap.bounds(g).contains(x,y) || Joystick.hit(g,x,y)
                 || g.layout.box(Layout.HELP).contains(x,y) || g.layout.box(Layout.PRACTICE).contains(x,y)
-                || (x>g.layout.width-450 && y<192))return false;
+                || (x>g.layout.width-562 && y<192))return false;
         float dx=(x-x(g))/Math.max(30,37*g.layout.camera.scale),dy=(y-y(g))/Math.max(24,28*g.layout.camera.scale);
         return dx*dx+dy*dy<=1;
     }
@@ -59,6 +59,6 @@ final class InstructorRadio {
         return null;
     }
     void cue(Game g,Painter p){
-        if(teach && available(g)){SoftCue.ring(p,x(g),y(g),Math.max(32,40*g.layout.camera.scale),1,SoftCue.animated(g,0x9995d7d1),1);}
+        if(teach && available(g)){SoftCue.ring(p,x(g),y(g),Math.max(32,40*g.layout.camera.scale),1,SoftCue.animated(g,0xdd28e7ff),1);}
     }
 }

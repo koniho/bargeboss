@@ -37,7 +37,7 @@ public final class TowView {
         final boolean[] mooring;
         int flightTip=-1;
         public Segments(Game g) {
-            game=g;int used=0,capacity=Towline.CAPACITY+g.cargo.length;
+            game=g;int used=0,capacity=Towline.CAPACITY+g.cargo.length+1;
             x=new float[capacity*25+33];y=new float[x.length];height=new float[x.length];strand=new float[x.length];
             order=new int[capacity*24+32];points=new int[order.length];colors=new int[order.length];mooring=new boolean[order.length];
             for(int link=0;link<Towline.CAPACITY;link++) {
@@ -61,14 +61,14 @@ public final class TowView {
                 }
                 for(int i=0;i<24;i++){points[used]=base+i;colors[used]=color;used++;}
             }
-            for(int slot=0;slot<g.cargo.length;slot++) {
-                Body b=g.cargo[slot];if(b==null || !b.active || !b.lineAttached || b.yacht)continue;
+            for(int slot=0;slot<=g.cargo.length;slot++) {
+                Body b=slot==g.cargo.length?g.tug:g.cargo[slot];if(b==null || !b.active || !b.lineAttached || b.yacht)continue;
                 float tx=g.bollardX(b),ty=g.bollardY(b),rise=g.tutorial!=null?GroundArt.LAND_RISE:0;
                 float[] fit=new float[2];RopeAttachment.mooring(b,tx,ty,fit);
                 // Bollard coordinates include raised projection; recover ground for depth sorting.
                 float ex=tx-RiverCamera.riseX(rise),ey=ty-RiverCamera.riseY(rise);
                 float h0=RopeAttachment.height(b)+WaterSurface.lift(g,b),progress=Math.min(1,b.dockTime/1.2f);
-                float slack=b.lineSnapTicks>0?0:Math.min(9,23*(1-progress*progress*progress));
+                float slack=b==g.tug?g.slipMooring.slack(g):b.lineSnapTicks>0?0:Math.min(9,23*(1-progress*progress*progress));
                 int base=(Towline.CAPACITY+slot)*25;
                 for(int i=0;i<=24;i++) {
                     float t=i/24f;x[base+i]=fit[0]+(ex-fit[0])*t;y[base+i]=fit[1]+(ey-fit[1])*t;

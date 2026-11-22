@@ -1,14 +1,14 @@
-# Pilot Glass UI font
+# Legacy Pilot Glass UI font
 
 Rajdhani SemiBold by Indian Type Foundry, distributed under the SIL Open Font
 License in OFL.txt. Source: https://github.com/google/fonts/tree/main/ofl/rajdhani
 Downloaded 2026-11-19. The original font is included unchanged for reproducibility.
 
-Runtime UI uses uppercase shared Java glyph geometry, not platform text APIs or
+Superseded by Barge Display headings and Barlow body in2026-11-21. Retained for
+source provenance. The former UI used uppercase shared Java glyph geometry, not platform text APIs or
 native font installation. Size means cap height. Proportional advances include
 0.055 cap-height tracking. Existing text caches retain rendered strings; opacity
-and position do not cause new glyph rasters. The original title logo remains in
-LogoLettering.
+and position do not cause new glyph rasters. The title wordmark is now assets/sprites/title-logo-v1.png.
 
 Regenerate from the repository root:
 

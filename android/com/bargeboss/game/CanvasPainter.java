@@ -106,9 +106,25 @@ public final class CanvasPainter implements Painter {
         }
         synchronized(frameLock) {
             if(closed || !rotationPrefetch || !frameTextures || Arrays.equals(plan,rotationPlan))return;
-            // Replace speculation with the newest level. Shared cached cells remain reusable;
-            // old-only cells become ordinary LRU candidates instead of staying pinned forever.
+            // Retire the previous level's full decoded families, not just their LRU pins.
+            // Frame packs are source bitmaps, so unpinning cropped copies alone leaks residency.
+            Set<Integer> retired=new HashSet<Integer>(pinnedAtlases);retired.removeAll(pins);
             rotationPlan=plan;pinnedAtlases=pins;rotationGeneration++;rotationStarted=true;
+            Set<String> keepSources=new HashSet<String>();
+            for(int id:pins)for(int f=0;f<SpriteAtlas.count(id);f++)
+                keepSources.add(SpriteGrade.cacheKey(id,"sprites/"+SpriteAtlas.file(id,f),lightingProfile));
+            for(int id:retired){
+                atlases.remove(id);
+                for(int f=0;f<SpriteAtlas.count(id);f++){
+                    String key=SpriteGrade.cacheKey(id,"sprites/"+SpriteAtlas.file(id,f),lightingProfile);
+                    if(!keepSources.contains(key))sourceImages.remove(key);
+                }
+            }
+            Iterator<Map.Entry<Long,Bitmap>> oldFrames=frameImages.entrySet().iterator();
+            while(oldFrames.hasNext()){
+                Map.Entry<Long,Bitmap> entry=oldFrames.next();
+                if(retired.contains((int)(entry.getKey()>>>32))){frameBytes-=entry.getValue().getAllocationByteCount();oldFrames.remove();}
+            }
             rotationsReady=false;rotationFrames=0;rotationNs=0;rotationFailure=null;
             if(rotationWorking)return;
             rotationWorking=true;

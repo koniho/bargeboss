@@ -152,3 +152,12 @@ cache budgets. A small harbor dock in a large transparent tile still pays for
 the entire bitmap. Verify warm frames have no persistent fallbacks/evictions,
 then examine native issue-to-swap timing. Keep light kernels shared and allow both
 raster buckets when a subtle animation straddles a density threshold.
+
+### Depth-interleaved rigid geometry
+
+Cache exact face and pose depth bounds when transforms change. A depth stream
+with wakes or effects can visit one bridge hundreds of times per frame; scanning
+all vertices to rediscover those bounds in each slice can dominate CPU time.
+Reject empty pose intervals early, preserve clipping and painter order, and
+compare exact before/after command traces as well as native timing. See the
+2026-11-21 bridge-depth investigation in `optimization.md`.

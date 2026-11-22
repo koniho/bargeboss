@@ -17,7 +17,7 @@ public final class WaterEffectsPreview {
     public static void main(String[] args) throws Exception {
         OUTPUT.mkdirs();Game g=new Game();g.reset();
         for(int i=0;i<150;i++)g.step();save(g,"harbor");
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-100);
+        ReplayInput.throttle(g,0,-100);
         for(int i=0;i<70;i++)g.step();save(g,"underway");ReplayInput.up(g,g.pointerX,g.pointerY);
         File frames=new File(OUTPUT,"frames");frames.mkdirs();
         for(int i=0;i<120;i++) {

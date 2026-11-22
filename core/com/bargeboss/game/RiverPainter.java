@@ -73,10 +73,10 @@ public final class RiverPainter implements Painter {
         painter.spriteAffine(a,f,camera.screenX(x,y),camera.screenY(x,y),RiverCamera.Q*(ax+ay)*s,RiverCamera.Q*RiverCamera.DEPTH*(ay-ax)*s,RiverCamera.Q*(bx+by)*s,RiverCamera.Q*RiverCamera.DEPTH*(by-bx)*s,alpha);
     }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
-        painter.sprite(atlas,(frame+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),width*camera.scale,height*camera.scale,rotation,alpha);
+        painter.sprite(atlas,(frame+RiverCamera.DIRECTION_OFFSET*(BargeEquipment.family(atlas)?2:1))%(BargeEquipment.family(atlas)?64:32),camera.screenX(cx,cy),camera.screenY(cx,cy),width*camera.scale,height*camera.scale,rotation,alpha);
     }
     public void spriteBlend(int atlas,int frameA,int frameB,float cx,float cy,float width,float height,float rotation,float blend,float alpha) {
-        painter.spriteBlend(atlas,(frameA+RiverCamera.DIRECTION_OFFSET)%32,(frameB+RiverCamera.DIRECTION_OFFSET)%32,camera.screenX(cx,cy),camera.screenY(cx,cy),
+        painter.spriteBlend(atlas,(frameA+RiverCamera.DIRECTION_OFFSET*(BargeEquipment.family(atlas)?2:1))%(BargeEquipment.family(atlas)?64:32),(frameB+RiverCamera.DIRECTION_OFFSET*(BargeEquipment.family(atlas)?2:1))%(BargeEquipment.family(atlas)?64:32),camera.screenX(cx,cy),camera.screenY(cx,cy),
                 width*camera.scale,height*camera.scale,rotation,blend,alpha);
     }
     /** World rendering has no text. Screen-overlay callers retain authored lettering. */

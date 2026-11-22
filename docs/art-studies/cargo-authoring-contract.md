@@ -8,6 +8,24 @@ Use the [industrial concept](../reference/industrial-isometric-concept.png) for
 material/style direction and the accepted production barge for the actual fit.
 The [cargo style review](cargo-style-review.md) records the problems this prevents.
 
+## Current pose target and symmetry rule
+
+New or revised barge cargo must cover 64 headings at 5.625-degree intervals.
+The 32-heading references below describe the accepted legacy runtime family.
+
+Do not mirror cargo unless that specific load is actually symmetric across the
+vessel's port/starboard plane. A symmetric hull does not make its cargo symmetric.
+Check the entire arrangement, including stack heights, container placement,
+equipment, markings and visible material details. Treat unverified loads as
+asymmetric and author their opposite-side poses independently. Cargo categories
+such as containers, steel or coal do not establish symmetry by themselves.
+
+Record symmetry evidence and the heading mapping for any approved mirrored load.
+Preserve bow/stern identity, registration, coaming occlusion and effect anchors;
+handle directional lighting separately. Review the resulting full turn on the
+hull. Mirroring is a conditional authoring technique, not permission to claim
+additional correct headings by duplicating arbitrary frames.
+
 ## Shared physical and visual frame
 
 - Author inside the same 62 × 24 world-unit hold, with floor Z=3.05 and rim Z=11.

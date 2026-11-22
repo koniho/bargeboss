@@ -272,7 +272,7 @@ static vector_float4 BBColor(jint argb) {
     NSString *key=[NSString stringWithFormat:@"sprite:%@:%d:%d",[self.lightingProfile key],atlas,frame];
     id<MTLTexture> texture=[self cached:key]?:[self upload:[self.resources frame:frame atlas:atlas] key:key];
     int count=[BBSpriteAtlas countWithInt:atlas];
-    if(count==32) {[self prefetchAtlas:atlas frame:(frame+1)%count];[self prefetchAtlas:atlas frame:(frame+count-1)%count];}
+    if(count==32 || count==64) {[self prefetchAtlas:atlas frame:(frame+1)%count];[self prefetchAtlas:atlas frame:(frame+count-1)%count];}
     return texture;
 }
 - (void)quad:(vector_float2)p a:(vector_float2)a b:(vector_float2)b texture:(id<MTLTexture>)texture alpha:(float)alpha {

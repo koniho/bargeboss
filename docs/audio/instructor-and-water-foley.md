@@ -22,3 +22,7 @@ the water; small/large selection uses its existing impact power. Existing bounde
 contact pools, fixed-step cooldowns and radio priority prevent chatter. Native
 hosts decode the same shared cue manifest; iOS now uses its count instead of a
 hard-coded five-entry array. No phone installation was performed in this round.
+
+Superseded collision behavior (2026-11-21): collision spray landings are now
+silent. Their noise-based delayed cues were perceived as static/late collisions.
+Only onset-aligned sampled thuds play for contacts; see collision-thuds-v2.md.

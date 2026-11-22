@@ -23,11 +23,17 @@ public final class NavigationPractice {
         if(slipPhase==0 && Physics.length(b.x-APPROACH_X,b.y-SLIP_Y)<35){slipPhase=1;g.cancelInputs();}
         if(slipPhase==1 && Math.abs(Physics.angle(b.angle))<.20f && Math.abs(b.y-SLIP_Y)<30){slipPhase=2;reverseTravel=0;g.cancelInputs();}
         if(slipPhase==2 && g.navigating && g.reversing && dx<0 && dx>-10)reverseTravel-=dx;
-        return slipPhase==2 && reverseTravel>=90 && b.x<SLIP_X+15 && b.x>SLIP_X-22
-                && Math.abs(b.y-SLIP_Y)<20 && Math.abs(Physics.angle(b.angle))<.25f;
+        // Any position inside the slip counts once the center crosses the mouth.
+        // Actual astern travel is still required; the collision retry above takes priority.
+        return readyToRelease(g) && !g.pointer && !g.joystick.active;
+    }
+    boolean readyToRelease(Game g){
+        Body b=g.tug;
+        return !retry && slipPhase==2 && reverseTravel>0 && b.x<TrainingChannel.BASIN_LEFT && b.x>=TrainingChannel.SLIP_LEFT
+                && b.y>=TrainingChannel.SLIP_TOP && b.y<=TrainingChannel.SLIP_BOTTOM;
     }
     boolean map(Game g){
-        if(mapPhase==0 && g.tug.x>TrainingChannel.BASIN_LEFT+50){mapPhase=1;g.cancelInputs();}
+        if(mapPhase==0 && !g.tug.lineAttached && g.tug.x>TrainingChannel.BASIN_LEFT+50){mapPhase=1;g.cancelInputs();}
         if(mapPhase==1 && Physics.length(g.tug.x-OPEN_X,g.tug.y-OPEN_Y)<45){
             mapPhase=2;g.cancelInputs();g.overview.lessonZoomIn(g);mapEdits=g.overview.edits;
         }
@@ -40,17 +46,20 @@ public final class NavigationPractice {
     }
     float targetY(Game g){return g.tutorial.lesson==Tutorial.SLIP || mapPhase==0?SLIP_Y:mapPhase==1?OPEN_Y:TARGET_Y;}
     InstructionPanel.Content content(Game g){
-        boolean slip=g.tutorial.lesson==Tutorial.SLIP;
+        boolean slip=g.tutorial.lesson==Tutorial.SLIP,release=slip && readyToRelease(g);
         String title,first,second;
-        if(slip){
-            title=retry?"PULL CLEAR AND TRY AGAIN":"BACK INTO THE SLIP";
-            first=retry?"THAT WAS A HARD BUMP. DRIVE FULLY OUT.":slipPhase==0?"APPROACH THE MARKER OUTSIDE THE SLIP.":slipPhase==1?"POINT YOUR BOW AWAY FROM THE SLIP.":"RELEASE. SELECT AMBER. BACK IN GENTLY.";
-            second=retry?"THE NEXT ATTEMPT STARTS OUTSIDE.":"KEEP CLEAR OF THE WALLS. SMALL INPUTS.";
+        if(slip && g.tug.lineAttached){
+            title="TETHERED AT THE SLIP";first="THROTTLE STILL WORKS WITHIN THE TETHER.";
+            second=retry?"TAP BOLLARD, THEN PULL CLEAR TO RETRY.":"TAP THE BOLLARD TO RELEASE THE LINE.";
+        }else if(slip){
+            title=retry?"PULL CLEAR AND TRY AGAIN":release?"LET GO OF THE CONTROL":"BACK INTO THE SLIP";
+            first=retry?"THAT WAS A HARD BUMP. DRIVE FULLY OUT.":release?"LIFT YOUR FINGER TO FINISH PARKING.":slipPhase==0?"APPROACH THE MARKER OUTSIDE THE SLIP.":slipPhase==1?"POINT YOUR BOW AWAY FROM THE SLIP.":"RELEASE. SELECT AMBER. BACK IN GENTLY.";
+            second=retry?"THE NEXT ATTEMPT STARTS OUTSIDE.":"BACK PAST THE MOUTH, THEN LET GO.";
         }else{
             title=mapPhase<2?"HEAD INTO OPEN WATER":mapPhase==2?"USE YOUR OVERVIEW MAP":"FIND THE CHART TARGET";
-            first=mapPhase==0?"DRIVE FORWARD OUT OF THE SLIP.":mapPhase==1?"MEET AT THE OPEN-WATER MARKER.":mapPhase==2?"DRAG THE MAP SLIDER LEFT TO ZOOM OUT.":"STEER TO THE AMBER DIAMOND ON THE MAP.";
-            second=mapPhase<2?"WE'LL PRACTICE READING THE CHART.":"YOUR TUG IS YELLOW. THE MAP FOLLOWS YOU.";
+            first=mapPhase==0?(g.tug.lineAttached?"TAP THE BOLLARD TO RELEASE THE LINE.":"THROTTLE FORWARD TO LEAVE THE SLIP."):mapPhase==1?"MEET AT THE OPEN-WATER MARKER.":mapPhase==2?"DRAG THE MAP SLIDER LEFT TO ZOOM OUT.":"STEER TO THE AMBER DIAMOND ON THE MAP.";
+            second=mapPhase==0?(g.tug.lineAttached?"THROTTLE STILL WORKS WITHIN THE TETHER.":"OPTIONAL: DRAG TUG TO THE BOLLARD."):mapPhase<2?"WE'LL PRACTICE READING THE CHART.":"YOUR TUG IS YELLOW. THE MAP FOLLOWS YOU.";
         }
-        return new InstructionPanel.Content("navigation-"+g.tutorial.lesson+":"+slipPhase+":"+retry+":"+mapPhase,title,first,second,g.tutorial.lesson,0);
+        return new InstructionPanel.Content("navigation-"+g.tutorial.lesson+":"+slipPhase+":"+retry+":"+mapPhase+":"+release+":"+g.tug.lineAttached,title,first,second,g.tutorial.lesson,0);
     }
 }

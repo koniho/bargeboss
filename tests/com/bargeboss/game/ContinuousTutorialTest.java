@@ -25,14 +25,14 @@ public final class ContinuousTutorialTest {
                 float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;
                 RiverCamera camera=g.layout.camera;
                 if(lesson==Tutorial.CONNECT && waitAtTow++<180) {
-                    // Leave the unloaded barge alongside while reading the next
-                    // card; it must not disappear or keep awarding deliveries.
+                    // Leave the far-side barge waiting while reading the connection
+                    // card; it must remain in the same continuous scene.
                     if(g.pointer) ReplayInput.up(root,g.pointerX,g.pointerY);
                 } else ReplayInput.tutorial(root);
                 root.step();
                 int feedback=root.pollHaptic();
                 if(g.tutorial.lesson>lesson || g.tutorial.driveMarker>marker || g.tutorial.channelGate>gate)
-                    check(feedback==Game.HAPTIC_SUCCESS,"each completed tutorial goal emits success feedback: tick="+tick+" lesson="+lesson+" next="+g.tutorial.lesson+" feedback="+feedback);
+                    check(feedback==(lesson==Tutorial.SHOW?Game.HAPTIC_CONTACT:Game.HAPTIC_SUCCESS),"each completed tutorial goal emits success feedback: tick="+tick+" lesson="+lesson+" next="+g.tutorial.lesson+" feedback="+feedback);
                 check(g.tug==tug && present(g,load) && present(g,towLoad),"lesson progression preserves all vessel identities");
                 check(Physics.length(tug.x-x,tug.y-y)<8,"tug moves physically instead of teleporting between lessons");
                 check(Physics.length(load.x-lx,load.y-ly)<8 && Physics.length(towLoad.x-bx,towLoad.y-by)<8,
@@ -51,7 +51,7 @@ public final class ContinuousTutorialTest {
                     if(lesson==Tutorial.STEER) check(g.cargo[0]==load && Physics.length(load.x-Tutorial.PUSH_X,load.y-Tutorial.PUSH_Y)<55,
                             "assisted docking continues from the practiced push destination");
                 }
-                if(g.delivered>0) check(g.delivered==1 && load.active && load.lineAttached && load.unloadingTicks>=Game.UNLOAD_TICKS,
+                if(g.delivered>0) check(g.delivered==1 && load.active && load.deliveryRecorded && load.unloadingTicks>=Game.UNLOAD_TICKS,
                         "the completed empty barge remains alongside and scores exactly once");
             }
             check(g.tutorial.lesson==Tutorial.DONE && seen==(1<<Tutorial.DONE)-1 && transitions==Tutorial.DONE,

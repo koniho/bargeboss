@@ -3,8 +3,9 @@ package com.bargeboss.game;
 /** A long industrial canal with exact, shared right-angle banks. */
 public final class TrainingChannel {
     public static final float MIN=-1260,MAX=Physics.LEFT,HALF_WIDTH=58;
-    public static final float TOW_BASIN_TOP=-200, NARROW_LEFT=270,NARROW_RIGHT=330,NARROW_EXIT=-520,TOW_END=-1000;
+    public static final float TOW_BASIN_TOP=-700, NARROW_LEFT=270,NARROW_RIGHT=330,NARROW_EXIT=-1020,TOW_END=-1500;
     public static final float BASIN_LEFT=-1856,BASIN_TOP=192,BASIN_BOTTOM=832;
+    public static final float SLIP_LEFT=-2000,SLIP_TOP=250,SLIP_BOTTOM=350;
     public static final float ENTRY_LEFT=-2240,ENTRY_TOP=570,ENTRY_BOTTOM=730;
     public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};
@@ -16,7 +17,7 @@ public final class TrainingChannel {
     public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
     private static float[][] waterRectangles() {
-        float[][] water=new float[RECTANGLES.length+8][];
+        float[][] water=new float[RECTANGLES.length+12][];
         System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
         water[RECTANGLES.length]=new float[]{Physics.LEFT,TOW_BASIN_TOP,Physics.RIGHT,Physics.BOTTOM};
         water[RECTANGLES.length+1]=new float[]{BASIN_LEFT,BASIN_TOP,MIN,BASIN_BOTTOM};
@@ -25,12 +26,16 @@ public final class TrainingChannel {
         water[RECTANGLES.length+4]=new float[]{Physics.RIGHT,570,628,Physics.BOTTOM};
         water[RECTANGLES.length+5]=new float[]{570,148,628,570};
         water[RECTANGLES.length+6]=new float[]{ENTRY_LEFT,ENTRY_TOP,BASIN_LEFT,ENTRY_BOTTOM};
-        water[RECTANGLES.length+7]=new float[]{-2000,250,BASIN_LEFT,350};
+        water[RECTANGLES.length+7]=new float[]{SLIP_LEFT,SLIP_TOP,BASIN_LEFT,SLIP_BOTTOM};
+        water[RECTANGLES.length+8]=new float[]{-130,-1430,Physics.LEFT,-1270};
+        water[RECTANGLES.length+9]=new float[]{-130,-1430,30,-970};
+        water[RECTANGLES.length+10]=new float[]{-150,-1130,30,-970};
+        water[RECTANGLES.length+11]=new float[]{-500,-1190,-150,-850};
         return water;
     }
     private static float[] waterBoundary() {
         // Open both canal ends into permanent basins; neither mouth has a wall.
-        float[] result=new float[LOW.length+HIGH.length+56];int n=0;
+        float[] result=new float[LOW.length+HIGH.length+80];int n=0;
         result[n++]=BASIN_LEFT;result[n++]=BASIN_TOP;
         result[n++]=MIN;result[n++]=BASIN_TOP;
         for(float v:LOW) result[n++]=v;
@@ -38,6 +43,18 @@ public final class TrainingChannel {
         result[n++]=NARROW_LEFT;result[n++]=TOW_BASIN_TOP;
         result[n++]=NARROW_LEFT;result[n++]=NARROW_EXIT;
         result[n++]=Physics.LEFT;result[n++]=NARROW_EXIT;
+        result[n++]=Physics.LEFT;result[n++]=-1270;
+        result[n++]=30;result[n++]=-1270;
+        result[n++]=30;result[n++]=-970;
+        result[n++]=-150;result[n++]=-970;
+        result[n++]=-150;result[n++]=-850;
+        result[n++]=-500;result[n++]=-850;
+        result[n++]=-500;result[n++]=-1190;
+        result[n++]=-150;result[n++]=-1190;
+        result[n++]=-150;result[n++]=-1130;
+        result[n++]=-130;result[n++]=-1130;
+        result[n++]=-130;result[n++]=-1430;
+        result[n++]=Physics.LEFT;result[n++]=-1430;
         result[n++]=Physics.LEFT;result[n++]=TOW_END;
         result[n++]=Physics.RIGHT;result[n++]=TOW_END;
         result[n++]=Physics.RIGHT;result[n++]=NARROW_EXIT;
@@ -57,10 +74,10 @@ public final class TrainingChannel {
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_BOTTOM;
         result[n++]=ENTRY_LEFT;result[n++]=ENTRY_TOP;
         result[n++]=BASIN_LEFT;result[n++]=ENTRY_TOP;
-        result[n++]=BASIN_LEFT;result[n++]=350;
-        result[n++]=-2000;result[n++]=350;
-        result[n++]=-2000;result[n++]=250;
-        result[n++]=BASIN_LEFT;result[n]=250;
+        result[n++]=BASIN_LEFT;result[n++]=SLIP_BOTTOM;
+        result[n++]=SLIP_LEFT;result[n++]=SLIP_BOTTOM;
+        result[n++]=SLIP_LEFT;result[n++]=SLIP_TOP;
+        result[n++]=BASIN_LEFT;result[n]=SLIP_TOP;
         return result;
     }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */

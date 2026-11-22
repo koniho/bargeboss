@@ -17,7 +17,7 @@ public final class TowTest {
     }
     private static void connect(Game g) { aim(g);ReplayInput.up(g,g.tug.x,g.tug.y);steps(g,18); }
     private static void drive(Game g,float dx,float dy) {
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX+dx,g.downY+dy);
+        ReplayInput.throttle(g,dx,dy);
     }
     public static void run() {
         Game g=fixture();Body b=g.cargo[0];
@@ -115,10 +115,10 @@ public final class TowTest {
 
         g=fixture();g.challengeId=1;g.tug.x=410;g.tug.y=480;g.cargo[0].x=590;g.cargo[0].y=480;
         check(!g.canTow(g.cargo[0]),"cannot cast through finger pier");
-        g=fixture();g.tutorial=new Tutorial();g.bridge.phase=Bridge.CLOSED;g.tutorial.lesson=Tutorial.LINK;g.tug.y=140;g.cargo[0].y=260;
+        g=fixture();g.tutorial=new Tutorial();g.passages=new BridgePassage(g);g.tutorial.lesson=Tutorial.LINK;g.tug.y=TutorialTowBridges.EXIT_Y-60;g.cargo[0].y=TutorialTowBridges.EXIT_Y+60;
         check(!g.canTow(g.cargo[0]),"cannot cast across closed bridge");
-        g.bridge.phase=Bridge.OPEN;connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.bridge.ticks=720;g.bridge.step(g);
-        check(g.bridge.phase==Bridge.OPEN,"bridge holds open for tow connection");
+        g.tutorial.towBridges.authorized[2]=true;g.passages.position[2]=BridgePassage.OPEN_TICKS;g.fitTutorialCamera();connect(g);check(g.tow.cargo==g.cargo[0],"open tutorial bridge permits an actual tow connection");g.passages.step(g);
+        check(g.passages.passable(2),"authorized bridge holds open for tow connection");
 
         // A bank overlap must not erase outward momentum while a hull turns.
         b=new Body(1,2,188,600,-1.3f);b.vx=12;Physics.banks(b,215,817,false);

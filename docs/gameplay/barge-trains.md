@@ -47,15 +47,19 @@ loads; the bridge stays open while any link spans its passage.
 
 ## Tutorial and validation
 
-The continuous tutorial has 14 lessons. The towing sequence follows the first
+The continuous tutorial has 17 lessons. Its towing sequence follows the first
 push, tie-up and unloading job:
 
-1. Connect the waiting barge to the tug and physically tow it into the marked
-   berth approach at `(245, 310)`, radius 58. Keep its line attached for reuse.
-2. Attach the second waiting barge directly to the tug as a separate branch.
-3. Wait for the articulated bridge to open, then pull both barges underneath.
-   Each barge's complete collision hull must cross north of `Bridge.Y - 35`
-   while both have direct tug connections. The tug must also be clear.
+1. Reconnect the same unloaded hull, the only barge in the first basin. Tow it
+   from the far berth to the marked entrance-side position `(245, 550)`, radius
+   58. Tap it to release there. It remains a physical empty hull in that basin.
+2. Tap the highlighted bridge house and confirm the radio request. The entry
+   bridge at y=400 opens into the next basin, containing the other two barges
+   at `(245, 310)` and `(365, 310)`. Connect both directly to the tug.
+3. Only those two direct connections unlock the second bridge's radio call.
+   Call, confirm, and wait for green at y=200. Pull both complete hulls north of
+   `Bridge.Y - 35`; the tug must also be clear. Proximity never requests either
+   towing bridge automatically. Standby leaves it closed and permits another call.
 4. Tap either barge to release its tug line, then drag that free barge to the
    other barge. A tug → barge → barge chain in either order is accepted. The
    tutorial checks that the player actually released a line during this lesson;
@@ -66,7 +70,7 @@ push, tie-up and unloading job:
 
 All boats exist from the start. Normal progression never replaces a boat,
 teleports it, unloads the reused towing loads, or rebuilds scenery. The first
-unloaded barge remains alongside its original berth. The permanent connected
+unloaded barge is reused for the single tow, then remains at the entrance target. The permanent connected
 water extends from the original harbor through the bridge into a broad rigging
 basin to world y=-200. The single-file reach spans x=270..330 and y=-520..-200;
 its 60-unit width accommodates one 35-unit-wide barge, but not two abreast. The
@@ -76,10 +80,9 @@ for collision, wakes, shore masking, static ground, scenery setbacks and roads.
 
 Broken or released links return to the relevant rigging instruction in place.
 Valid full-hull crossings already earned remain credited. Each obstacle must
-still finish with the correct topology and all vessels clear. The bridge waits
-for vessels and spanning towlines before closing. Transit camera framing includes
-the connected train; close rigging includes the spare. Drag and joystick driving
-use the same physical progression conditions.
+still finish with the correct topology and all vessels clear. Authorized practice bridges remain open for recovery and return travel; reset
+restores only the openings earned before the restarted lesson. Transit camera framing includes
+the connected train; close rigging includes the spare. Throttle driving uses the same physical progression conditions on every host.
 
 `TowTrainTest` covers actual cast/release gestures, direct and chained loads,
 prebuilt trains, cycle prevention, momentum preservation, cleanup, pause/resize,
@@ -91,3 +94,22 @@ recovery, and close-packed barge picking during reconfiguration. The continuous
 tutorial tests retain vessel and scene continuity from initial driving through
 final uncoupling. `TrainReview` exports double towing through the bridge,
 reconfiguration, narrow-channel pulling and uncoupling using the shared renderer.
+
+`TutorialTowBridges` owns the two radio conversations and call eligibility.
+`BridgePassage` indices 0/1/2 are the original canal bridge, towing-basin entry,
+and convoy exit. All three use continuous landmark bridge models, shared lamps,
+collision and depth sorting. The old proximity-driven `Bridge` is not a second
+invisible collision wall in tutorial play. The overview draws all three spans.
+
+`TutorialTowBridgesTest` checks basin inventory, retained first-load release,
+closed-gate waiting, cancel/standby/confirm, delayed opening, convoy requirements,
+and reset. Existing continuous/tow-course replays also exercise both new calls;
+the JVM/native parity trace includes authorization and exact opening positions.
+Bridge-call framing may zoom out during throttle input to reveal the actual house;
+this is a guided lesson reveal, not a separate host camera or tappable HUD proxy.
+
+Specialized-barge update: the second bridge has moved upstream to y-300, leaving
+700 units of open collection water. The pair starts at y0. On an equipped barge,
+short tap reveals icons; use its broken-line icon to release. This avoids firing
+an ability and dropping a tow with the same press. Plain barges retain direct
+tap-to-release. The train channel/exit basin move upstream by 500 units too.

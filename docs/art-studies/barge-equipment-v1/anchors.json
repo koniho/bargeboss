@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "model-projected; runtime composites reviewed",
+  "cameraElevation": 35.26438968,
+  "headings": 64,
+  "headingDegrees": 5.625,
+  "cell": 256,
+  "pivot": [0.5, 0.72],
+  "worldSpan": 99.35897436,
+  "coordinateSpace": "vessel-local XYZ; +X bow; Z waterplane height",
+  "hullAnchors": "Inherited from barge hull. Hull remains the accepted 32-pose painted source pending the separate 64-pose migration.",
+  "fireworks": {
+    "lights": [], "smokestacks": [], "tires": [],
+    "launchOrigin": [0, 0, 12],
+    "deckBounds": [-30, -11.5, 30, 11.5],
+    "parts": ["deck", "mortar-racks", "control-box"]
+  },
+  "fire": {
+    "lights": [],
+    "smokestacks": [{"id":"stack.pump", "localXYZ":[-24,6,30.5], "localNormal":[0,0,1], "radius":0.75}],
+    "tires": [],
+    "monitors": [
+      {"id":"monitor.port", "localXYZ":[18,-7,22], "muzzleOffset":9},
+      {"id":"monitor.starboard", "localXYZ":[18,7,22], "muzzleOffset":9}
+    ],
+    "parts": ["deck", "pump-room", "generator", "pipework", "rails", "monitor.port", "monitor.starboard"],
+    "animation": "Monitor barrels rotate continuously in world XY toward abilityAim; hull/equipment static pieces select their own registered poses. Spray originates at the transformed muzzle. Smoke stays detached after emission."
+  },
+  "shadows": {"source":"accepted equipment alpha", "contactAndCast":true, "cell":128,"inner":96,"padding":16,"receivingPlane":"water","heightReconstruction":false},
+  "materialMaps": {"normalSpace":"world, octahedral RG", "heightB":[-8,88], "material":"roughness R; emission G; reserved B", "productionShader":"legacy surface-shade derivatives; normal maps retained for later migration"}
+}

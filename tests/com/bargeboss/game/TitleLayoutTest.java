@@ -50,7 +50,36 @@ public final class TitleLayoutTest {
         public void line(float x,float y,float xx,float yy,float w,int c){}
         public void poly(float[] xy,int c){}
     }
+    private static boolean overlaps(Layout.Box a,Layout.Box b){
+        return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+    }
+    private static void menuFlow(int width,int height){
+        Game g=new Game();g.configureCanvas(width,height);
+        Layout.Box[] targets=new Layout.Box[8];
+        targets[0]=g.controlBox(Layout.LEARN);targets[1]=g.controlBox(Layout.START);
+        targets[2]=g.controlBox(Layout.CHALLENGES);targets[3]=g.controlBox(Layout.SETTINGS);
+        for(int i=0;i<4;i++)targets[i+4]=LightingChoices.box(g,i);
+        for(int i=0;i<targets.length;i++){
+            Layout.Box a=targets[i];
+            check(a.x>=0 && a.y>=0 && a.x+a.w<=width && a.y+a.h<=height,"title action stays within safe canvas");
+            for(int j=i+1;j<targets.length;j++)check(!overlaps(a,targets[j]),"title actions have distinct touch regions");
+        }
+        ReplayInput.tap(g,targets[4].centerX(),targets[4].centerY());
+        check(g.mode==Game.TITLE && g.selectedLighting()==0,"time selector changes departure preset without starting");
+        ReplayInput.tap(g,Layout.SETTINGS);check(g.mode==Game.SETTINGS,"settings entry opens settings");
+        ReplayInput.tap(g,Layout.JOYSTICK_RIGHT);check(g.settings.joystickSide()==GameSettings.RIGHT,"segmented hand choice remains interactive");
+        boolean haptics=g.hapticsEnabled;Layout.Box toggle=g.controlBox(Layout.HAPTICS);
+        ReplayInput.tap(g,toggle.x+8,toggle.centerY());check(g.hapticsEnabled!=haptics,"whole labeled haptic row toggles the switch");
+        ReplayInput.tap(g,Layout.SETTINGS_BACK);check(g.mode==Game.TITLE,"done returns to title");
+        ReplayInput.tap(g,Layout.CHALLENGES);check(g.mode==Game.CHALLENGES,"choose harbor opens harbor list");
+        ReplayInput.tap(g,Layout.CHALLENGE_CARDS[1]);
+        check(Challenges.stageEntry(g.challengeId)==Challenges.menuId(1),"harbor card selects the requested location");
+        ReplayInput.tap(g,Layout.CHALLENGE_START);check(g.mode==Game.PLAY && g.montroseStage(),"set sail enters selected harbor");
+        g.pause();ReplayInput.tap(g,Layout.RESUME);check(g.mode==Game.PLAY,"new resume action resumes voyage");
+        g.pause();ReplayInput.tap(g,Layout.TITLE_SCREEN);check(g.mode==Game.TITLE,"new back action returns to title");
+    }
     public static void run() {
+        menuFlow(960,600);menuFlow(1333,600);menuFlow(960,720);
         TitleRockWavesTest.run();
         for(boolean tug:new boolean[]{false,true}){
             Game g=new Game();Body b=new Body(tug?0:1,tug?-1:0,300,300,TitleView.HEADING);
@@ -74,7 +103,7 @@ public final class TitleLayoutTest {
                 check(p.factories==0 && p.middle>=1 && p.middleOrder<p.shoreOrder,"side-elevation steel stays behind rockwall without isometric factories");
                 check(p.shoreOrder>0 && p.vesselOrder>p.shoreOrder,"shoreline covers wake while vessels remain in front");
             }
-            check(g.controlBox(Layout.START).x==size[0]-328,"title action is anchored to the actual right edge");
+            check(g.controlBox(Layout.START).x==size[0]-332,"title action is anchored to the actual right edge");
             g.mode=Game.HELP;
             check(g.controlBox(Layout.START).x==Layout.START.x+g.layout.offsetX,"help action keeps its centered rendered position");
             g.mode=Game.TITLE;

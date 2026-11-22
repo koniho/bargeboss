@@ -89,7 +89,9 @@ final class OverviewMapTest {
             check(!g.overview.active && !g.pointer,"touch cancel releases slider");
             g.reset();check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
         }
-        Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);Layout.Box slider=OverviewMap.sliderBounds(practice);
+        Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);
+        for(int lesson=Tutorial.MOVE;lesson<Tutorial.MAP;lesson++){practice.tutorial.lesson=lesson;check(!OverviewMap.visible(practice),"map hidden before map lesson");Layout.Box hidden=OverviewMap.sliderBounds(practice);check(!OverviewMap.sliderHit(practice,hidden.centerX(),hidden.centerY()),"hidden slider cannot capture touch");}
+        practice.tutorial.lesson=Tutorial.MAP;check(OverviewMap.visible(practice),"map appears for its lesson");Layout.Box slider=OverviewMap.sliderBounds(practice);
         ReplayInput.tap(root,slider.x+slider.w-24,slider.centerY());
         check(practice.overview.zoom()==OverviewMap.maxZoom(practice) && root.overview.zoom()==1,"practice routes slider to its active game");
     }
@@ -105,22 +107,22 @@ final class OverviewMapTest {
         }
     }
     private static void simultaneousControls(){
-        for(boolean joystick:new boolean[]{false,true})for(boolean zoomFirst:new boolean[]{false,true})for(boolean releaseZoomFirst:new boolean[]{false,true}) {
-            Game g=new Game();ReplayInput.controlFixture(g);g.settings.setJoystickSide(GameSettings.RIGHT);
+        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(boolean zoomFirst:new boolean[]{false,true})for(boolean releaseZoomFirst:new boolean[]{false,true}) {
+            Game g=new Game();ReplayInput.controlFixture(g);g.settings.setJoystickSide(side);
             Layout.Box slider=OverviewMap.sliderBounds(g);
-            float dx=joystick?Joystick.centerX(g):g.layout.camera.screenX(g.tug.x,g.tug.y);
-            float dy=joystick?Joystick.centerY(g):g.layout.camera.screenY(g.tug.x,g.tug.y);
+            float dx=Joystick.centerX(g);
+            float dy=Joystick.centerY(g);
             if(zoomFirst)g.pointerDown(7,slider.x+24,slider.centerY());
             g.pointerDown(2,dx,dy);g.pointerMove(2,dx+65,dy);
             if(!zoomFirst)g.pointerDown(7,slider.x+24,slider.centerY());
-            check(g.pointer && g.overview.active && (joystick?g.joystick.active:g.holdingTug()),"zoom and drive both own their touch in either start order");
+            check(g.pointer && g.overview.active && g.joystick.active,"zoom and drive both own their touch in either start order");
             float startX=g.tug.x,startY=g.tug.y;
             for(int i=0;i<24;i++) {g.pointerMove(7,slider.x+24+(slider.w-48)*i/23,slider.centerY());g.step();}
             check(g.overview.zoom()==OverviewMap.maxZoom(g) && !g.pinchZoom.active(),"zoom moves while drive remains held without main camera pinch");
-            check(Physics.length(g.tug.x-startX,g.tug.y-startY)>1 && (joystick?g.joystick.active:g.holdingTug()),"tug keeps moving during map zoom");
+            check(Physics.length(g.tug.x-startX,g.tug.y-startY)>1 && g.joystick.active,"tug keeps moving during map zoom");
             if(releaseZoomFirst) {
                 if(zoomFirst)g.pointerCancel(7);else g.pointerUp(7,slider.x+slider.w-24,slider.centerY());
-                check(!g.overview.active && g.pointer && (joystick?g.joystick.active:g.holdingTug()),"zoom release/cancel preserves drive");
+                check(!g.overview.active && g.pointer && g.joystick.active,"zoom release/cancel preserves drive");
                 g.pointerCancel(2);
             } else {
                 g.pointerCancel(2);

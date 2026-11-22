@@ -4,9 +4,9 @@
 // One local mirror of Tutorial.java. Keep native flow code named when lessons are inserted.
 typedef NS_ENUM(NSInteger, BBTutorialLesson) {
     BBLessonMove=0, BBLessonFigureEight=1, BBLessonReverse=2, BBLessonSlip=3, BBLessonMap=4, BBLessonChannel=5,
-    BBLessonHold=6, BBLessonSteer=7, BBLessonDock=8, BBLessonTie=9,
-    BBLessonConnect=10, BBLessonPull=11, BBLessonDouble=12, BBLessonBridge=13,
-    BBLessonLink=14, BBLessonTrain=15, BBLessonRelease=16, BBLessonDone=17
+    BBLessonConnect=6, BBLessonPull=7, BBLessonCastoff=8, BBLessonHold=9, BBLessonSteer=10, BBLessonDock=11, BBLessonTie=12,
+    BBLessonDouble=13, BBLessonBridge=14, BBLessonLink=15, BBLessonTrain=16, BBLessonRelease=17,
+    BBLessonShow=18, BBLessonFireTow=19, BBLessonExtinguish=20, BBLessonDone=21
 };
 static NSString *BBLessonToken(BBTutorialLesson lesson) {
     return [NSString stringWithFormat:@"lesson %ld;",(long)lesson];
@@ -167,11 +167,14 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
 }
 - (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y status:(NSString *)status thrust:(double)thrust {
     CGPoint boat=[self worldPositionInStatus:status tag:@"tug"];
-    double dx=x-boat.x,dy=y-boat.y,length=fmax(1,hypot(dx,dy));
-    // Both endpoints use this same published camera and boat position. In
-    // particular, do not re-read accessibility between the two coordinates.
-    [[self river:stage x:boat.x y:boat.y status:status] pressForDuration:0.05
-        thenDragToCoordinate:[self river:stage x:boat.x+thrust*dx/length y:boat.y+thrust*dy/length status:status]
+    double dx=x-boat.x,dy=y-boat.y;
+    double sx=dx+dy,sy=.577350269*(dy-dx),screenLength=fmax(.001,hypot(sx,sy));
+    CGSize size=[self logicalSize:stage];
+    NSInteger side=[self integerInStatus:status tag:@"joystick side"];
+    double cx=side==2?size.width-113:113,cy=size.height-171;
+    double power=fmax(0,fmin(1,(thrust-26)/60)),travel=power>0?7+56*power:0;
+    [[self point:stage x:cx y:cy] pressForDuration:0.05
+        thenDragToCoordinate:[self point:stage x:cx+travel*sx/screenLength y:cy+travel*sy/screenLength]
         withVelocity:500 thenHoldForDuration:0.35];
 }
 // Tow-course driving also exercises the new native joystick transport. The
@@ -197,6 +200,11 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         thenDragToCoordinate:[self river:stage x:target.x y:target.y status:status]
         withVelocity:300 thenHoldForDuration:0.1];
 }
+- (void)releaseBarge:(CGPoint)b stage:(XCUIElement *)stage status:(NSString *)status {
+    [[self river:stage x:b.x y:b.y status:status] tap];
+    NSString *updated=(NSString *)stage.value;
+    if([self integerInStatus:updated tag:@"ability selected"]>0){CGPoint icon=[self worldPositionInStatus:updated tag:@"tow release"];[[self point:stage x:icon.x y:icon.y] tap];}
+}
 - (void)finishTowCourse:(XCUIElement *)stage {
     NSUInteger seen=0;
     for(int attempt=0;attempt<600;attempt++) {
@@ -206,25 +214,59 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         if([self integerInStatus:status tag:@"cast phase"]!=0){[self waitFor:@"; cast phase 0;" on:stage];continue;}
         CGPoint tug=[self worldPositionInStatus:status tag:@"tug"],cargo=[self worldPositionInStatus:status tag:@"cargo"],spare=[self worldPositionInStatus:status tag:@"spare"];
         NSInteger cargoLeader=[self integerInStatus:status tag:@"cargo leader"],spareLeader=[self integerInStatus:status tag:@"spare leader"];
+        NSInteger bridge=[self integerInStatus:status tag:@"tow bridge"];
+        if(bridge>0){
+            if([self integerInStatus:status tag:@"dialogue"]>0){CGSize size=[self logicalSize:stage];double width=fmin(440,(size.width-64)/2);
+                [[self point:stage x:size.width/2-width/2-8 y:size.height-131] tap];
+            }else if([self integerInStatus:status tag:@"tow bridge contact"]==1){
+                CGPoint house=[self worldPositionInStatus:status tag:@"tow bridge house"];[[self point:stage x:house.x y:house.y] tap];
+            }else if([self integerInStatus:status tag:@"tow bridge phase"]==0 && [self integerInStatus:status tag:@"tow bridge authorized"]==0){
+                [self joystickDrive:stage to:CGPointMake(300,bridge==1?500:-200) status:status];
+            }
+            [NSThread sleepForTimeInterval:0.5];continue;
+        }
+        if(lesson==BBLessonHold){[self pushPracticeLoad:stage];continue;}
+        if(lesson==BBLessonSteer || lesson==BBLessonDock){[self holdCargo:stage duration:.8];continue;}
+        if(lesson==BBLessonTie){[self throwLineToBollard:stage];[NSThread sleepForTimeInterval:.5];continue;}
+        if(lesson==BBLessonCastoff){[self releaseBarge:cargo stage:stage status:status];continue;}
+        if(lesson==BBLessonShow || lesson==BBLessonExtinguish){
+            if(lesson==BBLessonShow && [self integerInStatus:status tag:@"fire launched"]>0){[NSThread sleepForTimeInterval:.5];continue;}
+            CGPoint b=lesson==BBLessonShow?cargo:[self worldPositionInStatus:status tag:@"fire barge"];
+            if(hypot(tug.x-b.x,tug.y-b.y)>155){[self joystickDrive:stage to:CGPointMake(300,b.y-85) status:status];continue;}
+            [[self river:stage x:b.x y:b.y status:status] tap];
+            NSString *fresh=(NSString *)stage.value;CGPoint button=[self worldPositionInStatus:fresh tag:@"ability button"];
+            if(lesson==BBLessonShow)[[self point:stage x:button.x y:button.y] tap];
+            else {CGPoint target=[self worldPositionInStatus:fresh tag:@"fire target"];
+                [[self point:stage x:button.x y:button.y] pressForDuration:.25 thenDragToCoordinate:[self point:stage x:target.x y:target.y] withVelocity:500 thenHoldForDuration:3];}
+            continue;
+        }
+        if(lesson==BBLessonFireTow){
+            CGPoint b=[self worldPositionInStatus:status tag:@"fire barge"];
+            if([self integerInStatus:status tag:@"fire leader"]==0)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
+            else if(hypot(tug.x-b.x,tug.y-b.y)>125)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
+            else [self castFrom:b to:tug stage:stage status:status];
+            continue;
+        }
         if(lesson==BBLessonPull || lesson==BBLessonBridge || lesson==BBLessonTrain) {
             [self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
         } else if(lesson==BBLessonConnect || lesson==BBLessonDouble) {
             CGPoint b=cargoLeader==0?spare:cargo;NSInteger leader=cargoLeader==0?spareLeader:cargoLeader;
-            if(leader>=0)[[self river:stage x:b.x y:b.y status:status] tap];
-            else if(hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
+            if(leader>=0)[self releaseBarge:b stage:stage status:status];
+            else if(lesson==BBLessonConnect && hypot(tug.x-b.x,tug.y-b.y)>125)[self joystickDrive:stage to:[self worldPositionInStatus:status tag:@"tow target"] status:status];
+            else if(lesson==BBLessonDouble && hypot(tug.x-b.x,tug.y-b.y)>145)[self joystickDrive:stage to:CGPointMake(b.x-65,b.y-85) status:status];
             else [self castFrom:b to:tug stage:stage status:status];
         } else if(lesson==BBLessonLink) {
-            if(spareLeader>=0)[[self river:stage x:spare.x y:spare.y status:status] tap];
+            if(spareLeader>=0)[self releaseBarge:spare stage:stage status:status];
             else if(cargoLeader<0)[self castFrom:cargo to:tug stage:stage status:status];
             else [self castFrom:spare to:cargo stage:stage status:status];
         } else if(lesson==BBLessonRelease) {
             CGPoint b=cargoLeader>=0?cargo:spare;
-            [[self river:stage x:b.x y:b.y status:status] tap];
+            [self releaseBarge:b stage:stage status:status];
         }
     }
     [self waitFor:BBLessonToken(BBLessonDone) on:stage];
     NSUInteger required=BBLessonMask(BBLessonPull)|BBLessonMask(BBLessonDouble)|BBLessonMask(BBLessonBridge)
-        |BBLessonMask(BBLessonLink)|BBLessonMask(BBLessonTrain)|BBLessonMask(BBLessonRelease);
+        |BBLessonMask(BBLessonLink)|BBLessonMask(BBLessonTrain)|BBLessonMask(BBLessonRelease)|BBLessonMask(BBLessonShow)|BBLessonMask(BBLessonFireTow)|BBLessonMask(BBLessonExtinguish);
     XCTAssertEqual(seen & required,required,@"Native gestures visit berth, double tow, bridge, reconfiguration, channel and release lessons");
 }
 - (void)driveOpenWaterPractice:(XCUIElement *)stage {
@@ -260,8 +302,10 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         // A fresh straight gesture selects gear from the current bow/stern.
         // Turn toward distant targets without accidentally selecting the other gear.
         double angle=base+fmax(-1.0,fmin(1.0,error));
-        CGPoint aim=CGPointMake(tug.x+100*cos(angle),tug.y+100*sin(angle));
-        [self joystickDrive:stage to:aim status:status minimumTravel:42 hold:.45];
+        BOOL slow=lesson==BBLessonMove && phase==0 && [self integerInStatus:status tag:@"helm pace"]==0;
+        double distance=slow?45:100;
+        CGPoint aim=CGPointMake(tug.x+distance*cos(angle),tug.y+distance*sin(angle));
+        [self joystickDrive:stage to:aim status:status minimumTravel:slow?26:55 hold:.45];
     }
     [self waitFor:BBLessonToken(BBLessonChannel) on:stage];
     XCTAssertEqual(seen,(NSUInteger)31,@"Helm and both figure eights must be exercised");
@@ -322,7 +366,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
         }
         [self drivePracticeTug:stage toX:tx toY:ty status:status thrust:55];
     }
-    [self waitFor:BBLessonToken(BBLessonHold) on:stage];
+    [self waitFor:BBLessonToken(BBLessonConnect) on:stage];
 }
 - (void)drivePracticeTug:(XCUIElement *)stage toX:(double)x toY:(double)y {
     NSString *status=(NSString *)stage.value;
@@ -354,39 +398,6 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     [self waitFor:@"; arrival 0;" on:stage];
     [self driveOpenWaterPractice:stage];
     [self driveTrainingChannel:stage];
-    [self pushPracticeLoad:stage];
-    CGPoint b;
-    // HOLD FOR ASSIST now continues directly into docking on the same load.
-    // Do not require a transient DOCK snapshot after a long held touch.
-    for(int attempt=0;attempt<20;attempt++) {
-        NSString *status=(NSString *)stage.value;
-        if(![status containsString:BBLessonToken(BBLessonSteer)] && ![status containsString:BBLessonToken(BBLessonDock)]) break;
-        [self holdCargo:stage duration:0.8];
-    }
-    [self waitFor:BBLessonToken(BBLessonTie) on:stage];
-    [self throwLineToBollard:stage];
-    [self waitFor:BBLessonToken(BBLessonConnect) on:stage];
-    // Sail to the waiting second barge; neither it nor the tug is respawned.
-    // Approach on its upstream side so the next lesson pulls it into open water.
-    for(int attempt=0;attempt<80;attempt++) {
-        CGPoint load=[self worldPosition:stage tag:@"cargo"];
-        CGPoint tug=[self worldPosition:stage tag:@"tug"];
-        if(hypot(tug.x-load.x,tug.y-load.y)<=150 && tug.y<=load.y-55) break;
-        [self drivePracticeTug:stage toX:load.x-95 toY:load.y-85];
-    }
-    // A released drive can still move the hull/camera before XCTest injects a
-    // gesture. Retry a missed cast from a fresh shared snapshot, never teleport.
-    for(int attempt=0;attempt<6;attempt++) {
-        NSString *towStatus=(NSString *)stage.value;
-        if([self integerInStatus:towStatus tag:@"lesson"]!=BBLessonConnect)break;
-        if([self integerInStatus:towStatus tag:@"cast phase"]==0){
-            b=[self worldPositionInStatus:towStatus tag:@"cargo"];
-            CGPoint boat=[self worldPositionInStatus:towStatus tag:@"tug"];
-            [self castFrom:b to:boat stage:stage status:towStatus];
-        }
-        [self waitFor:@"; cast phase 0;" on:stage after:0.5];
-    }
-    [self waitFor:BBLessonToken(BBLessonPull) on:stage];
     [self finishTowCourse:stage];
     XCTAttachment *image=[XCTAttachment attachmentWithScreenshot:app.screenshot];
     image.name=@"native-landscape-tutorial-complete"; image.lifetime=XCTAttachmentLifetimeKeepAlways; [self addAttachment:image];

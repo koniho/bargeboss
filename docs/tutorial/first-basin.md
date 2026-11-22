@@ -1,0 +1,32 @@
+# First basin lesson sequence
+
+After navigating the canal, the player finds one loaded barge on the far side
+of the connected basin, in the narrow arm at (599,300), aligned along its length.
+This follows the circled location in Screenshot_20261122-113310~2.jpg. The other two barges remain behind the
+first tow bridge.
+
+1. Follow the water around (320,700) and (599,700) into the far arm. Approach the first barge and drag from it to the tug to connect a towline.
+2. Tow the barge into the marked open-water circle at (320,550), radius 58.
+   The barge must reach the circle while connected; tug position alone is insufficient.
+3. Tap the towline itself to release. Waiting with a line
+   attached does not advance; automatic line loss returns to connection practice.
+4. Drag the barge to push it into the existing push target at (240,600).
+5. Practice holding still for assisted pushing, then push into its berth.
+6. Lasso the bollard and finish unloading. The hull stays moored in the same scene.
+7. Call the first bridge, collect both fireworks barges, and continue the
+   two-tow / train lessons.
+
+Normal transitions preserve bodies, position and momentum. Explicit skip/reset
+may prepare a lesson fixture. Tests cover real gestures, full-scene continuity,
+failed/released lines, unloading and bridge authorization on multiple widths.
+
+Shared-renderer reviews: [far-side connection](../art-studies/first-basin-v2/connect.png)
+and [cast-off instruction](../art-studies/first-basin-v2/cast-off.png).
+Regenerate with `tools/TutorialTowReview.java` after compiling shared/desktop/test
+sources plus `tools/DialogueReview.java`. It traverses the real input replay and
+both subsequent radio gates, allowing panels to finish their wipes before capture.
+
+Equipment-control follow-up: cast-off is now a tap on the towline itself, with an
+open release cue at its midpoint. The two-barge convoy now contains two fireworks
+barges; the separate fire-barge collection belongs to the
+[celebration finale](fireworks-finale.md).

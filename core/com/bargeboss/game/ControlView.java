@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Feedback for the actual controller state, shared by all native renderers. */
 public final class ControlView {
-    public static final int BLUE=0xff83c8d5, GREEN=0xffb9df9c, AMBER=0xffffc52f, PURPLE=0xffb7a2df;
+    public static final int BLUE=SoftCue.CYAN, GREEN=SoftCue.CYAN, AMBER=SoftCue.YELLOW, PURPLE=SoftCue.YELLOW;
     private static final int PAPER=VisualStyle.CREAM, INK=VisualStyle.NAVY;
     private static final String[] LABELS={"READY","DRIVING","KEEP HOLDING","LINING UP","PUSHING",
             "MANUAL STEERING","DOCKING","COASTING","REVERSE THRUST","WAITING FOR BRIDGE"};
@@ -27,16 +27,17 @@ public final class ControlView {
     public static String hint(Game g) {
         if(g.tutorial!=null && g.tutorial.entering)return "TAKE THE HELM ONCE INSIDE";
         if(MontroseRescue.active(g))return g.rescue.status(g);
-        if(g.montroseStage())return g.tow.count()>0?"DRAG TUG TO TOW / TAP YACHT TO UNCOUPLE":"DRAG YACHT TO TUG / RELEASE TO LINK";
+        if(g.montroseStage())return g.tow.count()>0?"USE THROTTLE TO TOW / TAP YACHT TO UNCOUPLE":"DRAG YACHT TO TUG / RELEASE TO LINK";
         if(g.towAiming) return "RELEASE OVER THE HIGHLIGHTED BOAT TO LINK";
         if(g.ropeToTug && g.ropePhase==1) return "TOWLINE AWAY / WATCH THE TARGET";
         if(g.tow.count()>0) {
             if(g.heldCargo()!=null)return g.tow.incoming(g.heldCargo())!=null?"TAP TO UNCOUPLE / DRAG TO BOLLARD":"DRAG TO TUG OR BARGE / RELEASE TO LINK";
-            return g.tow.loadCount(g.tug)>0?"DRAG TUG TO PULL / TAP LINKED BARGE TO UNCOUPLE":"DRAG THE TRAIN HEAD TO THE TUG TO RECONNECT";
+            return g.tow.loadCount(g.tug)>0?"USE THROTTLE TO PULL / TAP LINKED BARGE TO UNCOUPLE":"DRAG THE TRAIN HEAD TO THE TUG TO RECONNECT";
         }
         if(g.ropeDragging) return "AIM THE ARC / RELEASE TO THROW THE LASSO";
         if(g.ropePhase==1) return "LINE AWAY / WATCH THE BOLLARD";
         if(g.ropePhase==2) return "MISSED / REELING BACK FOR ANOTHER THROW";
+        if(g.tug.lineAttached)return "TETHERED / THROTTLE TO MOVE / TAP BOLLARD TO RELEASE";
         if(g.ropePhase==3) return "BOLLARD CAUGHT / LINE TAUT / WINCHING";
         for(Body b:g.cargo) if(b!=null && b.active && !b.deliveryRecorded && b.lineSnapTicks>0) return "LINE TAUT / CREW TAKING OVER";
         for(Body b:g.cargo) if(b!=null && b.active && Mooring.aligning(b)) return "WINCHING ALONGSIDE / LINING UP WITH SHORE";
@@ -45,7 +46,6 @@ public final class ControlView {
         if(g.bridgeStage() && !g.bridge.passable() && Math.abs(g.tug.y-Bridge.Y)<220) return "BRIDGE / "+g.bridge.signal()+" / HOLD FOR ASSIST";
         if(g.noticeTicks>0 && g.notice.startsWith("TOWLINE RELEASED")) return "LINE BLOCKED OR TOO LONG / RECONNECT NEARBY";
         if(g.lockStage() && g.lock.phase==Lock.FILLING)return "CROSS CURRENT / STEER TO HOLD THE CONVOY";
-        if(g.holdingTug()) return "DRAG FOR THRUST / CENTER TO COAST";
         if(emptyToMove(g)!=null) return "DRAG EMPTY TO TUG / PULL CLEAR OF BERTH";
         switch(g.control) {
             case Game.MOVING: return "DRAG TO STEER / RELEASE TO COAST";
@@ -56,7 +56,7 @@ public final class ControlView {
             case Game.DOCKING: return "KEEP HOLDING / SLOW AND STEADY";
             case Game.COASTING: return "THRUST OFF / DRAG AGAINST MOTION TO SLOW";
             case Game.REVERSING: return "ASTERN POWER / RELEASE TO COAST";
-            default: return g.trainingChannel()?"DRAG TUG UPSTREAM / PASS EACH GATE":"DRAG TUG TO DRIVE / DRAG CARGO TO PUSH";
+            default: return g.trainingChannel()?"THROTTLE UPSTREAM / PASS EACH GATE":"USE THROTTLE TO DRIVE / DRAG CARGO TO PUSH";
         }
     }
     public static void status(Game g,Painter p) {
@@ -76,7 +76,7 @@ public final class ControlView {
         SoftCue.ring(p,x,y,radius,fraction,color,width);
     }
     public static void ring(Game g,Painter p,float x,float y,float radius,float fraction,int color,float width) {
-        ring(p,x,y,radius,fraction,SoftCue.animated(g,color),width);
+        SoftCue.target(g,p,x,y,radius,fraction,color,width);
     }
     public static void arrow(Painter p,float x,float y,float xx,float yy,int color) {
         SoftCue.arrow(p,x,y,xx,yy,color);
@@ -91,14 +91,6 @@ public final class ControlView {
     static boolean assistPush(Game g){return g.pushing && !g.manualSteering && g.workingCargo()!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0;}
     public static void draw(Game g,Painter p) {
         int color=color(g);
-        if(g.holdingTug()) {
-            dragRing(g,p,BLUE);
-            if(!g.pushing) ring(g,p,g.tug.x,g.tug.y,36,g.holdProgress(),AMBER,4);
-            else if(g.manualSteering && !g.reversing && g.control!=Game.REVERSING && g.driveDirection()>=0) {
-                float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
-                if(len>0)arrow(g,p,g.tug.x,g.tug.y,g.tug.x+dx/len*70,g.tug.y+dy/len*70,BLUE);
-            }
-        }
         Body b=g.workingCargo();
         if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0 && !g.canTie(b)) {
             if(!g.pushing) ring(g,p,b.x,b.y,46,g.holdProgress(),AMBER,5);

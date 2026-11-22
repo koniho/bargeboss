@@ -17,14 +17,15 @@ public final class InstructorRadioTest {
             call(root);check(radio.taught && g.tutorial.helm.phase==0,"experienced player can call during first throttle exercise");
             reply(root,0);check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==0,"keep practicing preserves current exercise");
             call(root);int tick=radio.ticks;g.pause();ticks(root,60);check(radio.ticks==tick,"pause freezes instructor conversation");g.pause();
-            reply(root,1);check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==1,"skip advances one helm exercise");
+            reply(root,1);check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==0 && g.tutorial.helm.pace==1,"skip advances from gentle to stronger throttle");
+            call(root);reply(root,1);check(g.tutorial.helm.phase==1,"next skip advances to turning");
             for(int phase=2;phase<=4;phase++){call(root);reply(root,1);check(g.tutorial.helm.phase==phase,"helm skip preserves next exercise prerequisites");}
             call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.FIGURE_EIGHT,"skip rendezvous prepares figure eights");
             for(int lesson=Tutorial.FIGURE_EIGHT;lesson<Tutorial.DONE;lesson++){
                 check(g.tutorial.lesson==lesson && g.teacherBoat()!=null,"instructor remains available after skipping");
                 call(root);reply(root,1);check(g.tutorial.lesson==lesson+1,"one accepted reply advances exactly one lesson");
                 if(g.tutorial.lesson==Tutorial.TRAIN)check(Tutorial.chain(g),"skipping link prepares a usable single-file tow");
-                if(g.tutorial.lesson==Tutorial.HOLD)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
+                if(g.tutorial.lesson==Tutorial.CONNECT)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
             }
             root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);g=root.activeGame();
             for(int i=0;i<1000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}

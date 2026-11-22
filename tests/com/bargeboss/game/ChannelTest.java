@@ -23,22 +23,22 @@ public final class ChannelTest {
             for(int i=0;i<6500 && g.trainingChannel();i++) {
                 if(i%20==0) ReplayInput.channel(root);
                 boolean touching=g.pointer;RiverCamera c=g.layout.camera;
-                float px=c.screenX(g.pointerX,g.pointerY),py=c.screenY(g.pointerX,g.pointerY);
-                float ax=c.screenX(g.downX,g.downY),ay=c.screenY(g.downX,g.downY);
+                float px=g.pointerX,py=g.pointerY;
+                float ax=g.downX,ay=g.downY;
                 seen|=1<<g.tutorial.channelGate;root.step();
                 if(g.trainingChannel()) {
                     check(g.inWater(g.tug.x,g.tug.y),"tug remains within the winding waterway");
-                    check(!touching || !g.pointer || Math.abs(g.layout.camera.screenX(g.downX,g.downY)-ax)<.002f
-                            && Math.abs(g.layout.camera.screenY(g.downX,g.downY)-ay)<.002f
-                            && Math.abs(g.layout.camera.screenX(g.pointerX,g.pointerY)-px)<.002f
-                            && Math.abs(g.layout.camera.screenY(g.pointerX,g.pointerY)-py)<.002f,"scroll preserves physical touch anchors");
+                    check(!touching || !g.pointer || Math.abs(g.downX-ax)<.002f
+                            && Math.abs(g.downY-ay)<.002f
+                            && Math.abs(g.pointerX-px)<.002f
+                            && Math.abs(g.pointerY-py)<.002f,"scroll preserves physical touch anchors");
                     scrolled|=g.layout.camera.worldRight>original+700;
                     float x=g.layout.camera.screenX(g.tug.x,g.tug.y),y=g.layout.camera.screenY(g.tug.x,g.tug.y);
                     check(x>100 && x<g.layout.width-100 && y>100 && y<g.layout.height-100,
                             "camera keeps tug clear of every screen edge throughout course");
                 }
             }
-            check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.HOLD,"seven ordered gates lead into cargo practice");
+            check(scrolled && seen==254 && g.tutorial.lesson==Tutorial.CONNECT,"seven ordered gates lead into cargo practice");
             check(g.tug==originalTug && g.cargo[0]==originalLoad && originalLoad.awaitingPickup,
                     "course exit preserves the tug and waiting harbor load");
             check(Math.abs(g.tug.x-TrainingChannel.X[7])<30,
@@ -53,12 +53,12 @@ public final class ChannelTest {
             if(pulsedGame.trainingChannel()) ReplayInput.up(pulsed,pulsedGame.pointerX,pulsedGame.pointerY);
             for(int i=0;i<30 && pulsedGame.trainingChannel();i++) pulsed.step();
         }
-        check(pulsedGame.tutorial.lesson==Tutorial.HOLD && pulsedGame.tutorial.channelGate==8,
+        check(pulsedGame.tutorial.lesson==Tutorial.CONNECT && pulsedGame.tutorial.channelGate==8,
                 "short drag-and-release gestures also complete every right-angle reach within the native attempt budget");
         Game root=course(960,600),g=root.activeGame();
         g.tug.x=TrainingChannel.X[7];g.tug.y=TrainingChannel.Y[7];g.tutorial.update(g);
         check(g.tutorial.lesson==Tutorial.CHANNEL && g.tutorial.channelGate==1,"finish cannot bypass earlier gates");
-        root=course(960,600);g=root.activeGame();ReplayInput.down(root,g.tug.x,g.tug.y);ReplayInput.move(root,g.downX,g.downY+100);
+        root=course(960,600);g=root.activeGame();ReplayInput.throttle(root,0,100);
         for(int i=0;i<300;i++)root.step();
         check(g.tutorial.channelGate==1 && g.inWater(g.tug.x,g.tug.y),"driving into a solid bank cannot shortcut the course");
         root.background();float x=g.tug.x;int ticks=g.ticks;root.advance(1);
@@ -97,7 +97,7 @@ public final class ChannelTest {
                 root.step();
                 check(g.tutorial.gateClearTicks==89,"remaining at a cleared gate does not restart the effect");
             }
-            check(g.tutorial.lesson==Tutorial.HOLD && g.cargo[0]!=null,
+            check(g.tutorial.lesson==Tutorial.CONNECT && g.cargo[0]!=null,
                     "bank-side navigation reaches the harbor and starts barge practice");
             root.background();root.advance(1);
             check(g.tutorial.gateClearTicks==89,"gate celebration pauses with the game");

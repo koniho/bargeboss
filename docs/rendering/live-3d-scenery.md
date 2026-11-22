@@ -63,3 +63,15 @@ these interleaved depths. See [drawing order](drawing-order.md).
 `LocationBridgeTest`, `ContinuousBridgeReview` and `LocationBridgeBenchmark`
 provide the bridge examples. Keep the reusable rule in `AGENTS.md`, performance
 rules and the shore-animation skill as the machinery catalog grows.
+
+## Repeated depth slices
+
+A single bridge pose may be visited hundreds of times while the renderer merges
+vessels, ropes and particles into the scene. Cache each transformed polygon's
+exact min/max `(worldY - worldX)` at pose update, and the enclosing pose range.
+Reject nonintersecting intervals before scanning faces. Do not recompute vertex
+bounds for every particle, quantize moving poses, or reorder the geometry to
+save work. Refresh bounds for every new rigid transform and every clipped face.
+`tools/BridgeDepthReview.java` compares exact primitive/UV/color order against
+a separately compiled previous implementation. The first comparison covered
+4715 intervals and185215 commands with identical raw-float hashes.

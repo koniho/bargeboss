@@ -23,23 +23,26 @@ transitional art. Reusable art workflows are maintained in
 
 ## Play
 
-Choose **Learn to Drive** for fourteen hands-on lessons without a timer, traffic or
+Choose **Learn to Drive** for seventeen hands-on lessons without a timer, traffic or
 hull damage: helm practice, forward/reverse figure eights, clean slip backing, overview-map navigation, a scrolling rectilinear industrial canal, drag-to-push,
 assisted pushing, docking, throwing a mooring
-line, towing to a berth, double towing under a bridge, reconfiguring a train,
+line, towing the same unloaded barge back to the basin entrance, calling into a
+two-barge basin, requesting convoy passage, reconfiguring a train,
 narrow-channel towing and uncoupling. Lessons advance only after the action. **Reset Lesson** gives another try;
 **Exit Practice** restores your suspended level. Circle each gold beacon once in either direction, following the soft water ring;
 its percentage shows your lap progress. Stay near the ring—cutting across the buoy
 or leaving its area restarts that unfinished lap. Then steer
 upstream through seven gates along a narrow industrial channel spanning several
 screens. Rectilinear steel quay walls prevent shortcuts; the camera follows
-the tug while keeping the original drag anchor fixed on the screen. The canal
-opens into the same practice harbor, with all three teaching barges already waiting.
+the tug while the throttle stays fixed on the screen. The canal
+opens into the same practice harbor, with one teaching barge on the far side. Two more wait in the next basin behind
+a closed bridge. Leave the first tow near the entrance and radio the bridge house
+to collect them; both must be connected to the tug before the next bridge call unlocks.
 Sixteen factory modules, varied building heights, active exhausts and warm
 lighting populate packed industrial blocks behind the quays. Aligned road tiles
 separate the factory rows; the working shoreline apron stays clear.
-Towing practice continues by bringing a barge to the marked berth, connecting a
-second barge directly to the tug, and pulling both underneath the opening bridge.
+Towing practice then collects the two barges beyond the entry bridge and connects
+each directly to the tug. Radio the second bridge and pull both underneath.
 Then release one tug line and reconnect that same barge to the other barge to form
 a train. Pull both through the narrow seawalled channel; the lesson waits until
 the last hull clears the exit. All of this stays in the same continuous scene.
@@ -58,15 +61,14 @@ transit framing. Automatic fitting keeps the current tow and berth targets visib
 Shared visibility culling and redraw scheduling reduce work in wide views;
 see the [night harbor rendering notes](docs/performance/night-harbor.md).
 
-- **Joystick:** move the bottom-corner thumb stick toward the direction you want
-  to travel on screen. More travel gives more thrust; release to coast. It responds
-  immediately. **Settings → Joystick position → Left / Right / Off** is available
-  from the title screen, and is saved across restarts.
-- **Drive:** press the tug and drag in the direction you want to travel. Pull
-  farther for more thrust. Keep your finger down for 0.2 seconds to engage; you
-  can start dragging immediately. The control ring stays at your original touch point;
-  there is no need to chase the boat. Center the control or release to coast.
-  Drag behind the tug to apply astern thrust without turning it around. Tapping the water does not set a route.
+- **Drive:** use the bottom-corner throttle. Pull farther for more thrust; center
+  or release to coast. Choose the green forward or amber reverse sector when
+  starting a gesture; release before changing gear. **Title → Settings → Throttle
+  position → Left / Right** chooses its side. Tug and water dragging do not drive.
+- **Practice slip tether:** once inside the slip, drag from the tug to its bollard
+  and release to throw. Misses retract. The engine still works while tied; the
+  line limits outward travel but permits turning and slack movement. **Tap the
+  connected bollard** to release. This is optional and never unloads or scores.
 - **Push:** press a cargo barge, then drag to steer the push. Keep your finger
   down; the tug lines up and pushes physically. Return to the ring and hold still
   for assistance toward the matching berth. The tutorial animates this gesture and requires pushing the load into a marked
@@ -269,8 +271,8 @@ antialiasing and bitmap sampling can still differ slightly.
 See [architecture and parity](docs/architecture.md).
 
 Practice is one [continuous canal and harbor](docs/continuous-tutorial.md): drive
-through the gates, push and unload the first barge, then sail to the second barge
-for towing. Boats, water and scenery stay in place between lessons; only an
+through the gates, push and unload the first barge, tow it back near the entrance,
+then call into the next basin to collect the two-barge convoy. Boats, water and scenery stay in place between lessons; only an
 explicit reset restarts an exercise.
 
 ## Design a level
@@ -333,7 +335,10 @@ available, and `apksigner`. Install Android platform 36 and build-tools 36.0.0,
 and NDK 27.0.12077973, and put the build-tools directory on `PATH`.
 Vulkan is the default Android renderer, paced to 60 FPS with automatic Canvas
 fallback. The native library currently targets arm64. Set `BARGEBOSS_VULKAN=0`
-for a Canvas-only build (including Termux without the host NDK toolchain).
+for a Canvas-only build. On-device Termux builds use `clang++` and `glslang`
+instead of the host NDK; install Vulkan headers or set `BARGEBOSS_VULKAN_HEADERS`
+to a Vulkan-Headers `include` directory. They bundle Termux's C++ runtime and
+its license alongside the renderer.
 For diagnosis, launch with `--es bb_renderer canvas` to force Canvas.
 
 ```sh

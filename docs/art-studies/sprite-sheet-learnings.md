@@ -229,3 +229,52 @@ The runtime sheet uses exact444px cells at1776×888. Park crops are copied bit-f
   composites. Record measured tolerance; derived shadow gutters stay exactly0.
   Distinct32-cell hashes cannot certify correct3D poses. Low steel silhouette fit
   at a few poses remains an honest generated-art limitation.
+
+## 2026-11-20: specialized equipment and the 64-heading target
+
+All new/revised barge families and corresponding cargo should target **64 genuine
+poses**, 5.625 degrees apart, per the latest user instruction. This supersedes
+the previous 32-pose authoring target for barges. Never count duplicated views,
+interpolation or an unload animation as extra headings. The accepted legacy
+painted hull/cargo family is not yet migrated.
+
+The equipment prototype uses real rigid geometry to obtain 64 registered views,
+plus normal/height/material exports and separate alpha-derived shadows. Keep
+live aiming barrels out of baked decks: they rotate continuously around local
+monitor anchors, not as flattened bitmap rotations. The same anchor supplies
+the water-stream muzzle. Keep pump exhaust separate from tug stack metadata.
+The runtime now supports mixed 32/64 heading families; projection offset is a
+fraction of the full turn, never a hard-coded four-cell offset on a 64 sheet.
+
+## 2026-11-21 — rejected rigid fleet export
+
+The user rejected the 64-pose hull/cargo renders in commit6669f71 as primitive
+3D models, particularly on the title screen. The exporter used guide geometry
+as final color artwork. Correct perspective, stable pivots and 64 real rotations
+did not preserve the accepted painted style. Restored the approved 32-pose hull
+and cargo. Keep geometry as an authoring guide until the finished materials,
+rounded forms, fenders, wear and lighting match accepted artwork. Pose-count
+requirements never authorize an art-quality downgrade. Review the title convoy
+as well as gameplay composites before promoting any replacement. This 64-pose
+migration remains unfinished; equipment remains independently at64 headings.
+
+## 2026-11-21 — painted 64-pose quarter experiment
+
+See `barge-painted-64/README.md`. A single requested 8x8 sheet generated only56
+cells. Four 4x4 requests preserved the painted style better, but did not preserve
+rigid dimensions, exact angles or hardware across quarters. A precise fender
+edit also introduced a background; a separate extraction fixed alpha but did
+not fix geometry. Inspect both alpha and hardware after every edit.
+
+The assembled64-cell study has mean registered silhouette IoU0.834 but still
+fails the turntable review. Frame15/47 approach cardinal views early and the
+15→16 seam changes apparent length. Good silhouette overlap and populated cells
+are not production acceptance. Keep accepted art until controlled geometry with
+finished materials or authored pose correction passes the complete turn. Do not
+spend on cargo/shadow derivatives while the hull itself is unstable.
+
+Tools now support four16-pose guide sections, lossless quarter packing, 8x8
+registration, 32/64 review viewers and 32/64 guide-projected effect metadata.
+Quarter frame IDs are local0..15; global frame is quarter*16+local. Guide angles
+and pixels are checked against the original full64 guide. One shared scale and
+per-frame translation remain allowed; per-frame shape stretching remains banned.

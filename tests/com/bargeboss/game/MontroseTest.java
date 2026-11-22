@@ -7,9 +7,9 @@ public final class MontroseTest {
     static Game game(){Game g=new Game();check(g.selectChallenge(Challenges.MONTROSE),"Marina selectable without changing earned progress");g.reset();return g;}
     static void drive(Game g,float x,float y,float speed){
         float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
-        if(!g.pointer)ReplayInput.down(g,g.tug.x,g.tug.y);
-        if(len<8)ReplayInput.move(g,g.downX,g.downY);
-        else ReplayInput.move(g,g.downX+dx/len*speed,g.downY+dy/len*speed);
+        if(!g.pointer)ReplayInput.throttleDown(g);
+        if(len<8)ReplayInput.throttle(g,0,0);
+        else ReplayInput.throttle(g,dx/len*speed,dy/len*speed);
     }
     static Game voyage(boolean log){
         Game g=game();Body b=g.cargo[0];

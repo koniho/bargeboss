@@ -41,6 +41,7 @@ targets:
         script: 'bash "$SRCROOT/scripts/translate.sh"'
         basedOnDependencyAnalysis: false
     dependencies:
+      - sdk: CoreHaptics.framework
       - sdk: AVFoundation.framework
       - sdk: UIKit.framework
       - sdk: QuartzCore.framework

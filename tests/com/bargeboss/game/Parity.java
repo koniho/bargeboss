@@ -65,13 +65,13 @@ public final class Parity implements Painter {
         for(int i=0;i<Game.SHIFT_TICKS;i++) {
             ReplayInput.work(g);
             if(i==300) { g.background(); Renderer.draw(g,p); g.pause(); }
-            if(i==1200) { g.cancel(); g.down(g.tug.x,g.tug.y); g.move(g.downX,g.downY-90); }
+            if(i==1200) { g.cancel(); ReplayInput.throttle(g,0,-90); }
             if(i==1260) g.cancel();
             g.step();
             if(i%60==0) {
                 p.add(g.ticks); p.add(g.score); p.add(g.delivered); p.add(g.hull); p.add(g.ropePhase); p.add(g.ropeTicks); p.add(g.cameraZoomHoldTicks);
                 p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.value(g.tug.engineLoad); p.add(g.water.emitted);
-                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.mooringTicks); p.add(b.unloadingTicks); p.add(b.lineSnapTicks); p.add(b.tieBurstTicks); p.value(b.heave); p.add(b.wakeKickTicks); }
+                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.ability);p.add(b.abilityTicks);p.add(b.abilityCooldown);p.value(b.abilityAim); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.mooringTicks); p.add(b.unloadingTicks); p.add(b.lineSnapTicks); p.add(b.tieBurstTicks); p.value(b.heave); p.add(b.wakeKickTicks); }
             }
             if(i%600==0) Renderer.draw(g,p);
         }
@@ -85,7 +85,20 @@ public final class Parity implements Painter {
         goalLevels(p);
         rescue(p);
         joystick(p);
+        slipTether(p);
         return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+    }
+    private static void slipTether(Parity p){
+        Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();
+        g.tutorial.lesson=Tutorial.MAP;g.tutorial.setup(g);g.tug.x=-1910;g.tug.y=300;g.tug.angle=0;g.fitTutorialCamera();
+        ReplayInput.lasso(g,g.tug);
+        for(int i=0;i<240;i++){
+            if(i==45)ReplayInput.throttle(g,90,0);
+            if(i==180){g.cancelInputs();ReplayInput.down(g,g.bollardX(g.tug),g.bollardY(g.tug));ReplayInput.up(g,g.bollardX(g.tug),g.bollardY(g.tug));}
+            g.step();p.value(g.tug.x);p.value(g.tug.y);p.value(g.tug.angle);p.value(g.tug.vx);p.value(g.tug.vy);p.value(g.tug.spin);
+            p.add(g.tug.lineAttached?1:0);p.value(g.slipMooring.length);p.add(g.ropePhase);
+            if(i%30==0)Renderer.draw(g,p);
+        }
     }
     /** Native parity includes arrival motion, livery, modal reply and audio event ordering. */
     private static void radio(Parity p){
@@ -100,9 +113,9 @@ public final class Parity implements Painter {
     }
     private static void joystick(Parity p) {
         Game g=new Game();g.configureCanvas(1333.3334f,600);ReplayInput.startPractice(g);
-        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT,GameSettings.OFF}) {
-            ReplayInput.tap(g,Layout.SETTINGS);
-            ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:side==GameSettings.RIGHT?Layout.JOYSTICK_RIGHT:Layout.JOYSTICK_OFF);
+        for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}) {
+            g.activeGame().openSettings();
+            ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:Layout.JOYSTICK_RIGHT);
             Renderer.draw(g,p);p.add(filenameHash(g.saveProgress()));ReplayInput.tap(g,Layout.SETTINGS_BACK);
             Game active=g.activeGame();float x=Joystick.centerX(active),y=Joystick.centerY(active);
             g.pointerDown(4,x,y);g.pointerMove(4,x+28,y-28);
@@ -159,7 +172,8 @@ public final class Parity implements Painter {
                 if(link!=null && link.cargo!=null){p.add(link.leader.id);p.value(link.length);p.value(link.tension);}
             }
             if(g.cargo[0]!=null) { p.value(g.cargo[0].x);p.value(g.cargo[0].y);p.value(g.cargo[0].angle); }
-            p.add(g.tutorial.lesson);p.add(g.tutorial.helm.phase);p.add(g.tutorial.navigation.slipPhase);p.add(g.tutorial.navigation.retry?1:0);p.add(g.tutorial.navigation.mapPhase);p.add(SoundEffects.sequence(g));p.add(SoundEffects.cue(g));p.add(g.tutorial.channelGate);p.value(g.layout.camera.worldRight); p.add(g.control); p.add(root.pollHaptic());
+            p.add(g.tutorial.lesson);p.add(g.tutorial.helm.phase);p.add(g.tutorial.helm.pace);p.add(g.tutorial.navigation.slipPhase);p.add(g.tutorial.navigation.retry?1:0);p.add(g.tutorial.navigation.mapPhase);p.add(SoundEffects.sequence(g));p.add(SoundEffects.cue(g));p.add(g.tutorial.channelGate);p.value(g.layout.camera.worldRight); p.add(g.control); p.add(root.pollHaptic());
+            p.add(g.tutorial.firstTowParked?1:0);p.add(g.tutorial.towBridges.phase);p.add(g.tutorial.towBridges.authorized[1]?1:0);p.add(g.tutorial.towBridges.authorized[2]?1:0);p.add(g.passages.position[1]);p.add(g.passages.position[2]);
             p.add(g.tutorial.canal.phase);p.add(g.tutorial.canal.authorized?1:0);p.add(g.passages.position[0]);
             p.add(g.tutorial.canal.escort.gate);p.add(g.tutorial.canal.escort.waiting?1:0);p.add(g.radio.transmitter());
             p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.add(g.water.emitted); p.add(g.ropeDragging?1:0); p.add(g.ropePhase); p.add(g.ropeTicks);
@@ -170,7 +184,7 @@ public final class Parity implements Painter {
     private static void responsive(Parity p) {
         Game g=new Game(); g.configureCanvas(1333.3334f,600); Renderer.draw(g,p);
         ReplayInput.tap(g,Layout.START); Renderer.draw(g,p);
-        ReplayInput.down(g,g.tug.x,g.tug.y); ReplayInput.move(g,g.downX,g.downY-100);
+        ReplayInput.throttle(g,0,-100);
         for(int i=0;i<45;i++) g.step();
         p.value(g.tug.x); p.value(g.tug.y); Renderer.draw(g,p);
         g.background(); Renderer.draw(g,p);

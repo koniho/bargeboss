@@ -40,3 +40,35 @@ https://kenney.nl/assets/interface-sounds
 https://creativecommons.org/publicdomain/zero/1.0/
 Source files, hashes, original Kenney license notices and transformations:
 docs/audio/licensed-cues-v1.md and tools/prepare-licensed-audio.py.
+
+Collision thuds v2 (2026-11-21)
+fender-light-kenney-v2.wav, fender-medium-kenney-v2.wav,
+fender-heavy-kenney-v2.wav: edited Kenney Impact Sounds soft impacts, CC0.
+https://kenney.nl/assets/impact-sounds
+Same retained originals/licenses as v1; onset trim, low-pass, fades, gain reduction.
+Reproduce with tools/prepare-collision-thuds.py. See docs/audio/collision-thuds-v2.md.
+
+Industrial collision clunks v1 (2026-11-21)
+industrial-clunk-light-v1.wav, industrial-clunk-medium-v1.wav,
+industrial-clunk-heavy-v1.wav: mixed/edited Kenney Impact Sounds metal + soft
+impacts, CC0. https://kenney.nl/assets/impact-sounds
+Source, mirror, exact hash, license and processing: docs/audio/industrial-clunks-v1.md.
+Reproduce with tools/prepare-industrial-clunks.py.
+
+Dull collision chunks v1 (2026-11-21)
+collision-chunk-light-v1.wav, collision-chunk-medium-v1.wav,
+collision-chunk-heavy-v1.wav: edited Kenney Impact Sounds wood impact, CC0.
+https://kenney.nl/assets/impact-sounds
+Source/hash/license and processing: docs/audio/dull-chunks-v1.md.
+Reproduce with tools/prepare-dull-chunks.py.
+
+Firework launch recorded v1:
+"Launching And Exploding Firework Sound Effect | Free WAV"
+by Alexander / Orange Free Sounds, published November 9, 2026.
+https://orangefreesounds.com/launching-and-exploding-firework-sound-effect-free-wav/
+Licensed under Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+Modified for Barge Boss: excerpted launch (0.145–0.490 seconds), mono conversion,
+band limiting, gain adjustment, short fades and peak limiting.
+Original MP3 preview retained in docs/audio/sources/orangefreesounds/.
+No endorsement by the original artist is implied.

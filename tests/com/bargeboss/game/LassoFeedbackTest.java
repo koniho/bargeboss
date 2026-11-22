@@ -50,7 +50,7 @@ public final class LassoFeedbackTest {
                     "tether stays on the moving barge's deck edge");
             if(tick>=5 && tick<=15) check(Math.abs(capture.rope[61]-(capture.rope[1]+capture.rope[127])*.5f)>1,"paid-out rope bends over the arc rather than a straight chord");
             RiverCamera camera=g.layout.camera;TowView.Segments flight=new TowView.Segments(g);
-            int tip=(Towline.CAPACITY+g.cargo.length)*25+32;
+            int tip=flight.flightTip+1;
             LassoPath.sample(g.ropeStartX,g.ropeStartY,g.ropeEndX,g.ropeEndY,g.ropeStartHeight,fraction,true,point);
             check(Math.abs(camera.screenX(flight.x[tip],flight.y[tip])-camera.screenX(point[0],point[1]))<.003f
                     && Math.abs(camera.screenY(flight.x[tip],flight.y[tip])-flight.height[tip]*camera.scale-camera.screenY(point[0],point[1]))<.003f,"depth-sorted flight preserves the same isometric arc");

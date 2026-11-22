@@ -49,18 +49,20 @@ public final class OverviewMap {
     }
     static void slider(Game g,Painter p){
         if(!visible(g))return;
-        Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.centerY(),thumb=left+(right-left)*g.overview.level;
+        Layout.Box b=sliderBounds(g);float left=b.x+24,right=b.x+b.w-24,y=b.y+28,thumb=left+(right-left)*g.overview.level;
+        PilotGlass.panel(p,b.x+2,b.y+2,b.w-4,b.h-4,0xa8101c30);
+        Lettering.draw(p,"CHART ZOOM",b.x+12,b.y+7,7,PilotGlass.MUTED);
         SoftCue.line(p,left,y,right,y,3,0x51678691);
-        SoftCue.line(p,left,y,thumb,y,3,0xaac4dedb);
-        for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x527fa9ad);}
-        p.line(b.x+5,y,b.x+13,y,1.5f,0xaac4dedb);
-        p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xaac4dedb);
-        p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xaac4dedb);
-        p.circle(thumb,y,g.overview.active?14:11,g.overview.active?0x387fe1db:0x207fe1db);
-        p.circle(thumb,y,6,0xddc4dedb);
-        SoftCue.ring(p,thumb,y,8,1,0x907fe1db,1);
+        SoftCue.line(p,left,y,thumb,y,3,0xbaffc52f);
+        for(int i=0;i<=3;i++){float x=left+(right-left)*i/3; p.line(x,y-5,x,y+5,1,0x52fff0ce);}
+        p.line(b.x+5,y,b.x+13,y,1.5f,0xbaffc52f);
+        p.line(b.x+b.w-13,y,b.x+b.w-5,y,1.5f,0xbaffc52f);
+        p.line(b.x+b.w-9,y-4,b.x+b.w-9,y+4,1.5f,0xbaffc52f);
+        p.poly(new float[]{thumb-8,y-9,thumb+5,y-9,thumb+8,y-6,thumb+8,y+9,thumb-5,y+9,thumb-8,y+6},PilotGlass.AMBER);
+        p.line(thumb-2,y-4,thumb-2,y+4,1,PilotGlass.NAVY);
+        p.line(thumb+2,y-4,thumb+2,y+4,1,PilotGlass.NAVY);
     }
-    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson!=Tutorial.DONE);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
     static Chart chart(Game g){return CHARTS[g.montroseStage()?1:g.indianaStage()?2:g.calumetStage()?3:0];}
     static float pulse(int tick){return .65f+.35f*(float)StrictMath.sin(tick*StrictMath.PI/60);}
@@ -72,7 +74,7 @@ public final class OverviewMap {
         Painter local=ScreenView.offset(p,box.x,box.y);
         // A faint viewport edge stays readable where zoom crops the world. The
         // stronger actual play boundary is drawn over it with the chart below.
-        int frame=0x2696c5ce;
+        int frame=0x26fff0ce;
         local.line(.5f,.5f,WIDTH-.5f,.5f,.8f,frame);
         local.line(WIDTH-.5f,.5f,WIDTH-.5f,HEIGHT-.5f,.8f,frame);
         local.line(WIDTH-.5f,HEIGHT-.5f,.5f,HEIGHT-.5f,.8f,frame);
@@ -80,7 +82,7 @@ public final class OverviewMap {
         local.pushClipOutside(OUTSIDE);
         try {
         local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
-        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.HOLD))target(g,local,g.dockX(i),g.dockY(i),TARGET);
+        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.x,b.y),y=mapY(g,b.x,b.y);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
@@ -91,10 +93,10 @@ public final class OverviewMap {
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
         if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.x[i],g.rescue.y[i]),mapY(g,g.rescue.x[i],g.rescue.y[i]),1.7f,TARGET);
-        if(g.tutorial!=null){
-            int ink=g.passages.bridges.length>0 && g.passages.passable(0)?0x9995d7d1:0xbbffc170;
-            local.line(mapX(g,TutorialCanalBridge.Y-TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),
-                    mapX(g,TutorialCanalBridge.Y+TrainingChannel.HALF_WIDTH),mapY(g,TutorialCanalBridge.X),1,ink);
+        if(g.tutorial!=null)for(int i=0;i<g.passages.bridges.length;i++){
+            LandmarkBridge b=g.passages.bridges[i];int ink=g.passages.passable(i)?0x9995d7d1:0xbbffc170;
+            local.line(mapX(g,b.x-b.dx*b.left,b.y-b.dy*b.left),mapY(g,b.x-b.dx*b.left,b.y-b.dy*b.left),
+                    mapX(g,b.x+b.dx*b.right,b.y+b.dy*b.right),mapY(g,b.x+b.dx*b.right,b.y+b.dy*b.right),1,ink);
         }
         float x=mapX(g,g.tug.x,g.tug.y),y=mapY(g,g.tug.x,g.tug.y),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));

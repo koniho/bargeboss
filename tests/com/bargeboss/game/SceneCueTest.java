@@ -44,8 +44,8 @@ public final class SceneCueTest {
             Strokes strokes=new Strokes();Painter p=new RiverPainter(strokes,new RiverCamera(0,0,zoom));
             ControlView.ring(p,300,500,40,1,VisualStyle.GOLD,5);
             ControlView.arrow(p,300,500,360,560,VisualStyle.GOLD);
-            check(strokes.maxAlpha<=135,"even bright cues remain translucent");
-            check(strokes.maxWidth<=6.5f,"zoom cannot inflate guidance into thick opaque strokes");
+            check(strokes.maxAlpha>=220 && strokes.maxAlpha<=235,"arcade cues are bold but retain alpha");
+            check(strokes.maxWidth<=10.6f,"arcade stroke plus glow remains zoom-bounded");
             check(strokes.polys==0 && strokes.circles==0,"arrows are open and rings leave their interiors clear");
         }
         Game g=new Game();g.visualTicks=0;int a=SoftCue.animated(g,VisualStyle.GOLD);g.visualTicks=35;

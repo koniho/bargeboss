@@ -2,6 +2,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "BBPainter.h"
 #import "BBEngineSound.h"
+#import "BBEngineRumble.h"
 #import "BBMetalPainter.h"
 #if BB_IOS_PROFILE
 #import "com/bargeboss/game/ProfileScenario.h"
@@ -19,6 +20,7 @@
 @property(nonatomic,strong) BBGame *game;
 @property(nonatomic,strong) BBLevelAssets_Plan *preparedPlan;
 @property(nonatomic,strong) BBEngineSound *audio;
+@property(nonatomic,strong) BBEngineRumble *rumble;
 @property(nonatomic,strong) BBFrameGate *frames;
 @property(nonatomic,strong) BBViewport *viewport;
 @property(nonatomic,strong) id<BBPainter> painter;
@@ -58,7 +60,7 @@
         self.multipleTouchEnabled=YES;
         self.isAccessibilityElement=YES; self.accessibilityIdentifier=@"river-stage";
         self.accessibilityLabel=@"Barge Boss river game";
-        self.audio=[[BBEngineSound alloc] init]; self.game=[[BBGame alloc] init]; self.frames=[[BBFrameGate alloc] init]; self.painter=[self createPainter];
+        self.audio=[[BBEngineSound alloc] init];self.rumble=[[BBEngineRumble alloc] init]; self.game=[[BBGame alloc] init]; self.frames=[[BBFrameGate alloc] init]; self.painter=[self createPainter];
         #if BB_IOS_PROFILE
         self.game->settings_->developerWaves_=YES;
         #endif
@@ -147,7 +149,9 @@
     if(self.profiling) {[self setNeedsDisplay];return;}
     if(self.lastTime>0) [self.game advanceWithDouble:link.timestamp-self.lastTime];
     [self.audio update:self.game];
-    switch([self.game pollHaptic]) {
+    jint event=[self.game pollHaptic];
+    [self.rumble update:self.game feedback:event!=0];
+    switch(event) {
         case 1: [self.selection selectionChanged]; break;
         case 2: [self.contact impactOccurred]; break;
         case 3: [self.impact impactOccurred]; break;
@@ -184,7 +188,7 @@
         else NSLog(@"Could not save captain progress");
     } @catch(NSException *exception) { NSLog(@"Could not save captain progress: %@",exception); }
 }
-- (void)suspend { [self.audio stop]; [self.game background]; [self saveProgress:YES]; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self requestRedraw]; }
+- (void)suspend { [self.rumble stop];[self.audio stop]; [self.game background]; [self saveProgress:YES]; self.accessibilityValue=self.automation?[self.game automationStatus]:[self.game status]; [self.touches removeAllObjects]; [self.touchIDs removeAllObjects]; self.lastTime=0; self.displayLink.paused=YES; [self requestRedraw]; }
 - (void)resume { self.lastTime=0; self.displayLink.paused=NO; [self requestRedraw]; }
 - (void)recordProfileFrame {
     if(self.profiling) {

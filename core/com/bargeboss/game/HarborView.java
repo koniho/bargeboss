@@ -100,7 +100,7 @@ public final class HarborView {
             return;
         }
         // The early lessons teach a touch target, before the berth destination.
-        if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.CONNECT)) return;
+        if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.DOUBLE)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
         Body blocker=g.berthBlocker(berth,null);
         if(blocker!=null && blocker.deliveryRecorded){destination(g,canvas,blocker.x,blocker.y,"TOW EMPTY CLEAR");return;}

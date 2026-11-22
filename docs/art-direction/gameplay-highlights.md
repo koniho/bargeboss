@@ -1,14 +1,20 @@
-# Gameplay highlights — restored quiet style
+# Gameplay highlights — arcade feedback
 
-The user rejected the broad neon redesign on 2026-11-16 and requested a full
-visual rollback. The earlier `e48588a` highlight appearance is the current baseline.
-Do not reintroduce thick saturated bands, filled arrows or segmented rings based
-on the superseded guidelines in Git history.
+The November 21 user request supersedes the quiet-only guidance: use arcade
+animation for objectives and confirmed actions, while leaving hulls readable.
+Active targets have four small inward breathing chevrons around a continuous
+ring. Partial rings represent actual progress and never gain decorative progress.
+Confirmed rope catches use outward gold sparkle rays and expanding rings instead
+of a filled flash over the cargo. The latest request calls for more impact:2.8–5.5px core strokes, up to92%
+source alpha, with capped feathering. Use bright yellow for completion/action,
+cyan for routes/targets and red for damage/retry. Keep open centers; no filled
+target discs. Broad scenery lighting is separate from these gameplay cues.
+Motion uses shared visualTicks, freezes on pause and never mutates gameplay.
+Keep the existing depth/shore clipping and arrow capture pass.
 
-Use thin translucent strokes, open arrowheads, continuous rings, restrained
-feathering and the original gentle pulse. Restore the original hull-glow assets,
-berth corner treatment and interaction highlighting. Preserve readable hulls and
-keep docks dark. Any further visual redesign needs a small reviewed example first.
+Ability buttons use a consistent bold icon family: rocket/fireworks, nozzle,
+broken chain, and a radio in the instruction header. Preserve hit geometry.
+Do not display lesson n/total text; explicit radio and gate status may remain.
 
 Do not draw a persistent circle around a watercraft just because it is being
 towed. Towlines show the connection; brief catch feedback and active targeting
@@ -107,8 +113,10 @@ for fitting, never fixed pixel-font character counts. The original Barge Boss
 logo deliberately retains `LogoLettering`. Font provenance and regeneration
 instructions are in [the font README](../../assets/fonts/rajdhani/README.md).
 
-Tutorial instructions occupy one fixed upper-right screen-space slot (432x124,
-18 units from the right edge, y=68). Arrival, driving, canal, pushing and towing
+Tutorial instructions occupy one fixed upper-right screen-space slot (544x124,
+18 units from the right edge, y=68). The rightmost 112 units reserve the inward-facing instructor portrait; text
+retains its 432-unit area. Keep the face visible throughout instructor conversations,
+resting between transmissions. Arrival, driving, canal, pushing and towing
 share its title/body baselines. Change copy/progress within the slot; never flip
 sides based on lesson, vessel position or camera. Completion uses the separate
 results screen. Keep the slot clear when framing future tutorial objectives.
@@ -131,3 +139,9 @@ only content, never the frame or world; balance native clip scopes in all cases.
 The tug no longer uses the gold silhouette pulse while navigating/pushing, or
 the faint idle hull bloom. Keep its actual work/navigation lamps and their fog
 scattering. Cargo targeting highlights remain unchanged.
+
+Equipment interaction update (November22): selecting an equipped barge exposes
+one ability button. Cast-off belongs to the towline itself, with a small open
+midline cue in release lessons or when that line's barge is selected. Do not
+restore an ability-versus-unhook popup. Fire suppression rings show real remaining
+work; the nozzle only earns progress when its simulated spray reaches the fire.

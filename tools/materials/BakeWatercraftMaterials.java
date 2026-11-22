@@ -31,7 +31,7 @@ public final class BakeWatercraftMaterials {
         if(r<85 && g<100 && b<105)return 0x292f32;
         return rgb;
     }
-    static void triangle(Frame f,double[][] v,int color,int heading,double span){
+    static void triangle(Frame f,double[][] v,int color,double heading,double span){
         double angle=heading*StrictMath.PI/16,ca=StrictMath.cos(angle),sa=StrictMath.sin(angle),scale=SIZE/span;
         double[] sx=new double[3],sy=new double[3],depth=new double[3];
         for(int i=0;i<3;i++){
@@ -69,7 +69,7 @@ public final class BakeWatercraftMaterials {
             f.pixels[2][at]=0xff000000|(clamp(roughness*255)<<16)|(emission?0xff00:0);
         }
     }
-    static BufferedImage[] bake(WatercraftMesh mesh,int heading,double span){
+    static BufferedImage[] bake(WatercraftMesh mesh,double heading,double span){
         Frame f=new Frame();for(WatercraftMesh.Face face:mesh.faces)for(int i=1;i<face.xyz.length-1;i++)triangle(f,new double[][]{face.xyz[0],face.xyz[i],face.xyz[i+1]},face.color,heading,span);
         BufferedImage[] out={new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB),new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB),new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB)};
         for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++)for(int map=0;map<3;map++){

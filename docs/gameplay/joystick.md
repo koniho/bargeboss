@@ -1,12 +1,16 @@
 # Optional thumb joystick
 
-The shared Java HUD offers a fixed thumb pad in the bottom left by default.
-Settings (title screen or live HUD) selects Left, Right or Off. Both pad and tug
-press-and-drag remain available. A pad press owns its pointer immediately; thrust
-waits for 14 logical points of travel from the actual touchdown, without the tug
-gesture's 12-tick hold. After direction selection, the seven-point neutral zone
-allows fine throttle/coasting control. An off-center press alone never drives.
-Thumb travel up to 42 logical points scales requested speed. Screen direction is
+The shared Java HUD offers a fixed throttle pad in the bottom left by default.
+Title-screen Settings selects Left or Right. Throttle is the only manual tug
+propulsion control; touching/dragging the hull never drives it. Cargo hold/drag
+push assistance remains available. Hull dragging in the practice slip arms the
+shore lasso instead. Tap its connected bollard to release the tug tether.
+
+A pad press owns its pointer immediately; thrust waits for 14 logical points of
+travel from the actual touchdown. After direction selection, the seven-point
+neutral zone allows fine throttle/coasting control. An off-center press alone
+never drives. Thumb travel up to 63 logical points scales requested speed.
+Screen direction is
 inverse-projected to the water plane, then uses the existing navigation, astern,
 acceleration, tow-load, collision and coasting rules. Release cuts engine demand;
 it does not zero velocity. More linked cargo still reduces towing performance.
@@ -22,7 +26,8 @@ Settings pauses simulation and Back restores the previous screen. Practice share
 player settings with its parent, but keeps its own career progress. Native hosts
 continue storing the opaque Game.saveProgress() string on progressVersion changes.
 The BBG1 wrapper contains the existing BB1 career snapshot plus joystick side;
-legacy BB1 saves load with a left joystick. Invalid wrappers are ignored atomically.
+legacy BB1 saves load with a left joystick. Saved BBG1 Off (0) migrates to Left;
+there is no Off button because that would leave no manual driving control. Invalid wrappers are ignored atomically.
 No native gameplay or input rule is added.
 
 Validation: JoystickTest checks native pointer ownership, cancellation, responsive
@@ -33,15 +38,14 @@ still require device testing on each host.
 
 ## Forward and reverse selection
 
-Cyan segments show the forward selection region; amber segments show reverse.
+Green segments show the forward selection region; amber segments show reverse.
 Both are projected from the same world-space thrust threshold (the rear 120-degree
 cone selects reverse) and rotate with the tug heading. They ease out while a finger
 is held and back in after release/cancel, on fixed simulation ticks. The label
 beneath the pad shows the selected FORWARD or REVERSE while a drive gesture owns it.
 
 The first deliberate input chooses direction for the whole gesture: beyond the
-joystick's 14-point intent threshold measured from touchdown, or when direct tug drag enters its existing
-42-world-unit steering threshold. This selection occurs on pointer input, so a
+throttle's 14-point intent threshold measured from touchdown. This selection occurs on pointer input, so a
 second move before the next simulation tick cannot replace the first intent.
 Heading changes, crossing the colored boundary and returning to neutral do not
 change it. Neutral still cuts thrust; steering and proportional speed stay live.
@@ -49,7 +53,7 @@ Release and press again to change direction. Cancel, pause, resize, settings,
 background and reset all clear the choice. Cargo pushing/tow-lasso classification
 is unaffected; this latch is exclusively manual tug driving.
 
-`DriveDirectionTest` covers both joystick sides and direct tug dragging, initial
+`DriveDirectionTest` covers both throttle sides, initial
 neutral, between-tick input changes, continuing steering, neutral re-entry,
 release/reselection, momentum preservation and lifecycle cancellation. The full
 continuous public-input tutorial remains a regression check for practical route
@@ -66,3 +70,21 @@ Joystick steering and neutral remain relative to the original touchdown for the
 whole gesture, so landing on one side of the pad cannot invert an intended drag.
 The fixed pad displays this relative command. Small opposite-direction jitter
 before the threshold remains neutral and does not latch a gear.
+
+## Practice slip tether
+
+`SlipMooring` owns a separate tug-to-shore constraint; it does not run the cargo
+winch/unloading flow. Drag from a tug inside the practice slip to the raised
+bollard and release to throw. The existing arc, miss/retraction and impact effects
+are reused. A catch retains momentum and stores the initial horizontal rope length
+and body-local fitting choice. Each motion substep constrains only outward
+fitting velocity, transferring angular impulse through the hull inertia. Inward
+motion is free and creates visible slack; steering and the throttle remain live.
+A positional length limit prevents sustained thrust from stretching the line.
+
+Tap the attached bollard to cast off. Tug taps do not release, and cancelled or
+dragged-off bollard touches leave the tether intact. Pause/resume preserves the
+line, while reset creates a new untied hull. Existing barge tow release still uses
+a tap on the connected barge. A tug tether can coexist with tow links. Tug tying
+is optional; the slip lesson still requires backing in and lifting the control.
+The map lesson waits for cast-off before leaving the slip phase.

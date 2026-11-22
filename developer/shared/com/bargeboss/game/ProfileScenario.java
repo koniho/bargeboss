@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
     static float circleY(){return IndianaHarbor.START_Y;}
@@ -24,6 +24,12 @@ public final class ProfileScenario {
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
+        if(name.equals("seawall-audio")){
+            root.configureCanvas(width,height);root.resetPracticeYard();
+            root.tug.x=-1600;root.tug.y=TrainingChannel.BASIN_TOP+root.tug.half+root.tug.radius+16;
+            root.tug.angle=-(float)Math.PI/2;root.tug.vy=-60;
+            root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,1.6f,width*.5f,height*.52f);return;
+        }
         CIRCLES.remove(root);
         root.configureCanvas(width,height);
         if(name.startsWith("calumet-") || name.equals("shared-slip-wide")){
@@ -96,6 +102,13 @@ public final class ProfileScenario {
             return;
         }
         root.startTutorial();Game g=root.activeGame();
+        if(name.equals("tutorial-fireworks") || name.equals("tutorial-firefight") || name.equals("barge-abilities")){
+            boolean spray=name.equals("tutorial-firefight") || name.equals("barge-abilities");
+            g.tutorial.lesson=spray?Tutorial.EXTINGUISH:Tutorial.SHOW;g.tutorial.setup(g);
+            for(int i=0;i<100;i++)g.step();
+            for(int i=0;i<(spray?80:90);i++){ReplayInput.abilityLesson(root);root.step();}
+            return;
+        }
         if(name.startsWith("instructor-")){
             for(int i=0;i<3000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}
             if(!g.tutorial.instructorRadio.teach)throw new IllegalStateException("Radio teaching not reached");
@@ -156,8 +169,7 @@ public final class ProfileScenario {
             float dx=circleX()+110*(float)StrictMath.cos(angle)-g.tug.x;
             float dy=circleY()+110*(float)StrictMath.sin(angle)-g.tug.y;
             float len=Math.max(1,Physics.length(dx,dy));
-            if(!g.pointer)ReplayInput.down(root,g.tug.x,g.tug.y);
-            ReplayInput.move(root,g.downX+dx/len*90,g.downY+dy/len*90);
+            ReplayInput.throttle(root,dx/len*90,dy/len*90);
         }else if(g.tutorial!=null && g.tutorial.lesson<Tutorial.DONE)ReplayInput.tutorial(root);
         else if(g.montroseStage())ReplayInput.work(g);
         root.step();

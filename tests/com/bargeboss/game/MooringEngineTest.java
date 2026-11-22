@@ -28,7 +28,7 @@ public final class MooringEngineTest {
             steps(g,Game.UNLOAD_TICKS-1);check(g.delivered==deliveredBefore+1 && b.active && b.deliveryRecorded && b.lineAttached,"aligned cargo scores once and remains as a secured empty hull");
         }
         Game g=new Game();g.challengeId=1;g.resetPracticeYard();steps(g,60);check(g.tug.engineLoad<.01f,"idle engine carries no propulsion load");
-        ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX,g.downY-100);steps(g,45);
+        ReplayInput.throttle(g,0,-100);steps(g,45);
         check(g.tug.engineLoad>.5f,"acceleration increases exhaust load");
         ReplayInput.up(g,g.pointerX,g.pointerY);steps(g,90);
         check(g.tug.engineLoad<.03f,"coasting exhaust returns toward idle without depending on boat speed");

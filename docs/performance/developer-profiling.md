@@ -361,3 +361,15 @@ Android profiling builds accept `--ei bb_water_detail 0|1|2` and
 `--ez bb_water_quads false|true` with the normal scene/mode extras. The latter
 selects the original polygon path or direct convex-quadrilateral path in the
 same APK; default is true. Neither switch affects water physics or saved settings.
+
+`barge-abilities` is a shared equipment stress/review fixture: enlarged collection
+basin, fireworks in flight and both fire monitors spraying. Use frozen mode for
+pixel/cache checks and live mode for sustained spray; fireworks end naturally.
+The fixture uses the real ability pointer controls after lesson setup.
+
+Finale effects: `tutorial-fireworks` prepares an actual victory launch90 ticks into
+the display; `tutorial-firefight` prepares a connected fire barge with active aimed
+spray. Use short samples (`BARGEBOSS_PROFILE_WARMUP=0`,120–180frames) to measure the
+finite effect rather than averaging mostly idle frames after it finishes. Replay
+mode uses public controls and can complete the lesson; live mode keeps the held
+nozzle running. Both fixtures use the same level asset plan and core effects.

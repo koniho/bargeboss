@@ -2,13 +2,16 @@ package com.bargeboss.game;
 
 /** Drag-control practice with action gates and no clock, damage or traffic. */
 public final class Tutorial {
-    public static final int MOVE=0, FIGURE_EIGHT=1, REVERSE=2, SLIP=3, MAP=4, CHANNEL=5, HOLD=6, STEER=7, DOCK=8, TIE=9, CONNECT=10, PULL=11, DOUBLE=12, BRIDGE=13, LINK=14, TRAIN=15, RELEASE=16, DONE=17;
-    public static final float TOW_BERTH_X=245,TOW_BERTH_Y=310,TOW_BERTH_RADIUS=58;
-    public static final float BRIDGE_CLEAR_Y=Bridge.Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
+    public static final int MOVE=0, FIGURE_EIGHT=1, REVERSE=2, SLIP=3, MAP=4, CHANNEL=5, CONNECT=6, PULL=7, CASTOFF=8, HOLD=9, STEER=10, DOCK=11, TIE=12, DOUBLE=13, BRIDGE=14, LINK=15, TRAIN=16, RELEASE=17, SHOW=18, FIRE_TOW=19, EXTINGUISH=20, DONE=21;
+    public static final float TOW_BERTH_X=320,TOW_BERTH_Y=550,TOW_BERTH_RADIUS=58;
+    public static final float BRIDGE_CLEAR_Y=TutorialTowBridges.EXIT_Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
     final InstructorRadio instructorRadio=new InstructorRadio();
     public final HelmPractice helm=new HelmPractice();
     public final NavigationPractice navigation=new NavigationPractice();
     public final TutorialCanalBridge canal=new TutorialCanalBridge();
+    final TutorialTowBridges towBridges=new TutorialTowBridges();
+    final FireworksLesson fireworks=new FireworksLesson();
+    public boolean firstTowParked;
     private int firstOrbitDirection,outsideTicks;
     public boolean reverseArmed;
     public float reverseTargetX,reverseTargetY;
@@ -28,6 +31,7 @@ public final class Tutorial {
     public boolean entering;
     public int entranceTicks;
     final InstructionPanel instructionPanel=new InstructionPanel();
+    final LessonFeedback feedback=new LessonFeedback();
     public void enter(Game g){
         if(lesson!=MOVE)return;
         entering=true;entranceTicks=0;g.cancelInputs();
@@ -41,9 +45,11 @@ public final class Tutorial {
     private float startX,startY,channelPreviousX,channelPreviousY;
     /** Explicit start/reset only. Lesson progression never rebuilds the scene. */
     public void setup(Game g) {
-        boolean hadTeacher=arrival!=null;instructorRadio.reset();
+        FirewoodPile.prepare();
+        boolean hadTeacher=arrival!=null;instructorRadio.reset();feedback.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
+        towBridges.reset();fireworks.reset();g.abilities.reset();firstTowParked=false;
         canal.reset(lesson>CHANNEL);g.passages=new BridgePassage(g);LocationBridges.prepare(g.passages.bridges);
         if(lesson>CHANNEL)g.passages.position[0]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
@@ -53,9 +59,10 @@ public final class Tutorial {
         g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;g.tow=new Towline();
         for(int i=0;i<g.cargo.length;i++) g.cargo[i]=null;
         g.delivered=g.score=0;g.nextId=1;g.selected=-1;actionTicks=0;
-        g.addCargo(2,292,700);park(g.cargo[0]);
-        g.addCargo(2,350,490);g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
-        g.addCargo(2,390,430);g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
+        g.addCargo(2,599,300);g.cargo[0].angle=(float)Math.PI/2;park(g.cargo[0]);
+        g.addCargo(2,245,0);g.cargo[1].ability=BargeAbilities.FIREWORKS;g.cargo[1].angle=-(float)Math.PI/2;park(g.cargo[1]);
+        g.addCargo(2,365,0);g.cargo[2].ability=BargeAbilities.FIREWORKS;g.cargo[2].angle=-(float)Math.PI/2;park(g.cargo[2]);
+        g.addCargo(2,FireworksLesson.BERTH_X,FireworksLesson.BERTH_Y);g.cargo[3].ability=BargeAbilities.FIRE;g.cargo[3].angle=0;park(g.cargo[3]);
         g.tug=new Body(0,-1,START_X,START_Y,0);
         if(lesson==FIGURE_EIGHT || lesson==REVERSE){
             g.tug.x=HelmPractice.MEET_X;g.tug.y=HelmPractice.MEET_Y;
@@ -68,36 +75,39 @@ public final class Tutorial {
         }
         // Reset can restart the current exercise; normal progression preserves
         // the original bodies, positions, momentum, water and camera instead.
-        if(lesson>=HOLD) g.tug=new Body(0,-1,376,700,(float)Math.PI);
+        if(lesson>=CONNECT) g.tug=new Body(0,-1,455,600,0);
+        if(lesson>=HOLD){g.cargo[0].x=292;g.cargo[0].y=700;g.cargo[0].angle=(float)Math.PI;park(g.cargo[0]);g.tug=new Body(0,-1,376,700,(float)Math.PI);}
+        if(lesson==PULL || lesson==CASTOFF){
+            if(lesson==PULL){g.tug.x=599;g.tug.y=410;g.tug.angle=(float)Math.PI/2;}
+            if(lesson==CASTOFF){g.cargo[0].x=TOW_BERTH_X;g.cargo[0].y=TOW_BERTH_Y;park(g.cargo[0]);g.tug.x=TOW_BERTH_X;g.tug.y=435;}
+            g.tow.attach(g,g.cargo[0]);actionTicks=g.towReleases;
+        }
         if(lesson==TIE) {g.cargo[0].x=Game.DOCK_X[2];park(g.cargo[0]);}
-        if(lesson>=CONNECT) {
-            Body finished=g.cargo[0],towPractice=g.cargo[1];
+        if(lesson>=DOUBLE) {
+            Body finished=g.cargo[0];
             finished.x=Physics.LEFT+finished.radius+10;finished.y=g.dockY(2);finished.angle=(float)Math.PI/2;
             park(finished);finished.lineAttached=true;finished.deliveryRecorded=true;
-            finished.unloadingTicks=Game.UNLOAD_TICKS;finished.mooringTicks=Mooring.ALIGN_TICKS;
-            finished.dockTime=1.2f;
-            g.cargo[0]=towPractice;g.cargo[1]=finished;g.delivered=1;
-            towPractice.x=300;towPractice.y=690;park(towPractice);
-            g.tug=new Body(0,-1,300,570,-(float)Math.PI/2);
-            g.cargo[2].x=350;g.cargo[2].y=450;park(g.cargo[2]);
-            if(lesson>=PULL) g.tow.attach(g,towPractice);
-            if(lesson>=DOUBLE) {
-                g.tug.x=300;g.tug.y=230;towPractice.x=275;towPractice.y=345;park(towPractice);towPractice.awaitingPickup=false;
-                g.cargo[2].x=365;g.cargo[2].y=360;park(g.cargo[2]);
-                g.tow.release(g);g.tow.attach(g,towPractice);
+            finished.unloadingTicks=Game.UNLOAD_TICKS;finished.mooringTicks=Mooring.ALIGN_TICKS;finished.dockTime=1.2f;g.delivered=1;
+            g.tug=new Body(0,-1,260,590,-(float)Math.PI/2);
+            g.cargo[0]=g.cargo[1];g.cargo[1]=finished;firstTowParked=true;
+            g.tug.x=300;g.tug.y=480;
+            Body towPractice=g.cargo[0];
+            if(lesson>=BRIDGE){
+                towBridges.authorized[TutorialTowBridges.ENTRY]=true;g.passages.position[TutorialTowBridges.ENTRY]=BridgePassage.OPEN_TICKS;
+                g.tug.x=300;g.tug.y=-255;towPractice.y=-190;g.cargo[2].y=-190;g.tow.attach(g,towPractice);g.tow.attach(g,g.cargo[2]);
             }
-            if(lesson>=BRIDGE)g.tow.attach(g,g.cargo[2]);
-            if(lesson>=LINK) {
-                g.tug.x=300;g.tug.y=-70;towPractice.x=275;towPractice.y=55;g.cargo[2].x=365;g.cargo[2].y=60;
-                bridgeCrossed=3;g.bridge.phase=Bridge.OPEN;
+            if(lesson>=LINK){
+                towBridges.authorized[TutorialTowBridges.EXIT]=true;g.passages.position[TutorialTowBridges.EXIT]=BridgePassage.OPEN_TICKS;
+                g.tug.x=300;g.tug.y=-570;towPractice.x=275;towPractice.y=-445;g.cargo[2].x=365;g.cargo[2].y=-440;bridgeCrossed=3;
             }
-            if(lesson>=TRAIN) {
-                towPractice.x=300;towPractice.y=30;g.cargo[2].x=300;g.cargo[2].y=140;
+            if(lesson>=TRAIN){
+                towPractice.x=300;towPractice.y=-470;g.cargo[2].x=300;g.cargo[2].y=-360;
                 g.tow.detach(g,g.cargo[2]);g.tow.attach(g,g.cargo[2],towPractice);
             }
-            if(lesson>=RELEASE) {
-                g.tug.y=-850;towPractice.y=-750;g.cargo[2].y=-640;trainCrossed=3;
-            }
+            if(lesson>=RELEASE){g.tug.y=-1350;towPractice.y=-1250;g.cargo[2].y=-1140;trainCrossed=3;}
+            if(lesson>=SHOW){g.tow.release(g);fireworks.reset();}
+            if(lesson>=FIRE_TOW){fireworks.launched=fireworks.ignited=true;fireworks.heat=FireworksLesson.HEAT;}
+            if(lesson==EXTINGUISH){g.cargo[3].x=FireworksLesson.TOW_X;g.cargo[3].y=FireworksLesson.TOW_Y;park(g.cargo[3]);g.tug.x=FireworksLesson.TOW_X;g.tug.y=FireworksLesson.TOW_Y+110;g.tow.attach(g,g.cargo[3]);}
             reconfigureRelease=g.towReleases;rememberTow(g);
             actionTicks=g.towReleases;
         }
@@ -121,8 +131,16 @@ public final class Tutorial {
     }
     private static void success(Game g){g.sounds.complete();g.haptic(Game.HAPTIC_SUCCESS);}
     public void update(Game g) {
-        if(instructorRadio.step(g))return;
-        canal.step(g);
+        feedback.sample(g);int before=lesson;
+        updateLesson(g);feedback.completed(g,before,lesson);
+    }
+    private void updateLesson(Game g) {
+        if(instructorRadio.step(g)){
+            // Radio pauses lesson progression, not the observer hull's motion state.
+            if(arrival!=null)arrival.step(g);
+            return;
+        }
+        canal.step(g);towBridges.step(g);
         if(arrival!=null)arrival.step(g);
         if(entering)return;
         if(gateClearTicks>0) gateClearTicks--;
@@ -148,7 +166,7 @@ public final class Tutorial {
             if(navigation.map(g)){lesson=CHANNEL;g.cancelInputs();success(g);}
         } else if(lesson==CHANNEL) {
             if(channelGate==TrainingChannel.X.length && canal.authorized && g.passages.passable(0)) {
-                lesson=HOLD;actionTicks=0;success(g);
+                lesson=CONNECT;actionTicks=0;success(g);
             }
         } else if(lesson==HOLD) {
             Body b=g.cargo[0];
@@ -166,29 +184,37 @@ public final class Tutorial {
         } else if(lesson==DOCK && g.inTieArea(g.cargo[0])) {
             lesson=TIE;g.cancelInputs();success(g);
         } else if(lesson==TIE && g.delivered>0) {
-            // The unloaded barge stays alongside. The next job uses the second
-            // hull that has been waiting in the same harbor since the start.
-            Body finished=g.cargo[0];g.cargo[0]=g.cargo[1];g.cargo[1]=finished;
-            lesson=CONNECT;actionTicks=0;g.selected=-1;g.cancelInputs();
-            success(g);
-        }
-        else if(lesson==CONNECT && direct(g,g.cargo[0])) {
-            lesson=PULL;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();success(g);
+            // Keep the delivered hull alongside while the next pair waits beyond the bridge.
+            Body finished=g.cargo[0];
+            g.cargo[0]=g.cargo[1];g.cargo[1]=finished;firstTowParked=true;
+            lesson=DOUBLE;actionTicks=0;g.selected=-1;g.cancelInputs();success(g);
+        } else if(lesson==CONNECT && direct(g,g.cargo[0])) {
+            lesson=PULL;actionTicks=0;startX=g.cargo[0].x;startY=g.cargo[0].y;g.cancelInputs();success(g);
         } else if(lesson==PULL) {
             Body b=g.cargo[0];if(g.navigating)actionTicks++;
             if(!g.tow.connected(b,g.tug) && g.ropePhase==0){lesson=CONNECT;g.cancelInputs();}
             else if(actionTicks>=6 && Physics.length(b.x-TOW_BERTH_X,b.y-TOW_BERTH_Y)<=TOW_BERTH_RADIUS) {
-                lesson=DOUBLE;g.cancelInputs();success(g);
+                lesson=CASTOFF;actionTicks=g.towReleases;g.cancelInputs();success(g);
             }
-        } else if(lesson==DOUBLE && doubleTow(g)) {
+        } else if(lesson==CASTOFF && g.tow.incoming(g.cargo[0])==null && g.ropePhase==0) {
+            if(g.towReleases>actionTicks){lesson=HOLD;actionTicks=0;g.cancelInputs();success(g);}
+            else {lesson=CONNECT;g.cancelInputs();}
+        } else if(lesson==SHOW && fireworks.ignited) {
+            lesson=FIRE_TOW;actionTicks=0;g.cancelInputs();g.haptic(Game.HAPTIC_CONTACT);
+        } else if(lesson==FIRE_TOW){
+            Body fire=g.cargo[3];if(direct(g,fire) && g.navigating)actionTicks++;
+            if(direct(g,fire) && actionTicks>=6 && Physics.length(fire.x-FireworksLesson.TOW_X,fire.y-FireworksLesson.TOW_Y)<=50){lesson=EXTINGUISH;g.cancelInputs();success(g);}
+        } else if(lesson==EXTINGUISH && fireworks.done) {
+            lesson=DONE;g.cancelInputs();success(g);
+        } else if(lesson==DOUBLE && g.passages.passable(TutorialTowBridges.ENTRY) && doubleTow(g)) {
             lesson=BRIDGE;rememberTow(g);g.cancelInputs();success(g);
         } else if(lesson==BRIDGE) {
-            if(doubleTow(g)) {
+            if(doubleTow(g) && g.passages.passable(TutorialTowBridges.EXIT)) {
                 bridgeCrossed=crossed(g,BRIDGE_CLEAR_Y,bridgeCrossed);
                 if(bridgeCrossed==3 && allClear(g,BRIDGE_CLEAR_Y)) {
                     lesson=LINK;reconfigureRelease=g.towReleases;g.cancelInputs();success(g);
                 }
-            } else if(g.ropePhase==0){lesson=DOUBLE;g.cancelInputs();}
+            } else if(!doubleTow(g) && g.ropePhase==0){lesson=DOUBLE;g.cancelInputs();}
         } else if(lesson==LINK && chain(g) && g.towReleases>reconfigureRelease) {
             lesson=TRAIN;rememberTow(g);g.cancelInputs();success(g);
         } else if(lesson==TRAIN) {
@@ -198,7 +224,7 @@ public final class Tutorial {
                     lesson=RELEASE;actionTicks=g.towReleases;g.cancelInputs();success(g);
                 }
             } else if(g.ropePhase==0){lesson=LINK;g.cancelInputs();}
-        } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=DONE;g.cancelInputs();success(g);}
+        } else if(lesson==RELEASE && g.tow.count()==0 && g.towReleases>actionTicks) {lesson=SHOW;fireworks.reset();g.cancelInputs();success(g);}
         else if(lesson==RELEASE && g.tow.count()==0 && g.ropePhase==0){lesson=LINK;g.cancelInputs();}
     }
     public float reverseProgress(){return Physics.clamp((driveMarker+orbitProgress())/2,0,1);}
@@ -219,11 +245,16 @@ public final class Tutorial {
         }
         return mask;
     }
+    private static final float[] FIRST_TOW_X={320,320,599,599},FIRST_TOW_Y={435,700,700,410};
+    float firstTowTarget(Game g,boolean x){
+        return TowRouteGuide.target(g.tug.x,g.tug.y,FIRST_TOW_X,FIRST_TOW_Y,lesson==PULL,x);
+    }
     /** One route target for the actual tow; cues and public-input replays share it. */
-    public float towTargetX(){return lesson==PULL?TOW_BERTH_X:300;}
+    public float towTargetX(Game g){if(lesson==FIRE_TOW)return fireworks.target(g,true);return lesson==PULL || lesson==CONNECT?firstTowTarget(g,true):300;}
     public float towTargetY(Game g){
-        if(lesson==PULL)return 230;
-        if(lesson==BRIDGE)return g.bridge.passable()?-95:Bridge.Y+95;
+        if(lesson==FIRE_TOW)return fireworks.target(g,false);
+        if(lesson==PULL || lesson==CONNECT)return firstTowTarget(g,false);
+        if(lesson==BRIDGE)return g.passages.passable(TutorialTowBridges.EXIT)?-595:TutorialTowBridges.EXIT_Y+95;
         return TrainingChannel.TOW_END+80;
     }
 
@@ -267,7 +298,7 @@ public final class Tutorial {
     public float driveTargetX(){return lesson==MOVE?helm.targetX:DRIVE_X[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return lesson==MOVE?helm.targetY:DRIVE_Y[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT A TOWLINE","TOW TO THE BERTH","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","RECONFIGURE YOUR TOW","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","READY FOR YOUR LEVEL"}[lesson];
+        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","TOW INTO OPEN WATER","RELEASE THE TOWLINE","DRAG TO PUSH","HOLD FOR ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {
@@ -279,13 +310,14 @@ public final class Tutorial {
             case STEER: return "LIFT, THEN HOLD THE BARGE STILL.";
             case DOCK: return "LIFT, THEN HOLD THE BARGE AGAIN.";
             case TIE: return "DRAG TO AIM AT THE GLOWING BOLLARD.";
-            case CONNECT: return "APPROACH THE SECOND BARGE. DRAG TO TUG.";
-            case PULL: return "TOW YOUR BARGE TO THE MARKED BERTH.";
+            case CONNECT: return "DRAG THE FAR-SIDE BARGE TO YOUR TUG.";
+            case CASTOFF: return "TAP THE TOWLINE TO LET GO.";
+            case PULL: return "TOW THE BARGE INTO THE MARKED OPEN WATER.";
             case DOUBLE: return "LINK BOTH BARGES DIRECTLY TO THE TUG.";
             case BRIDGE: return "PULL BOTH BARGES UNDER THE BRIDGE.";
-            case LINK: return "TAP ONE BARGE TO RELEASE ITS TUG LINE.";
+            case LINK: return "TWO ABREAST WON'T FIT. TAP ONE TOWLINE.";
             case TRAIN: return "PULL YOUR TRAIN THROUGH THE CHANNEL.";
-            case RELEASE: return "TAP EACH LINKED BARGE TO UNCOUPLE.";
+            case RELEASE: return "TAP EACH TOWLINE TO LET GO.";
             default: return "YOU PUSHED, TIED UP AND TOWED A TRAIN.";
         }
     }
@@ -300,12 +332,13 @@ public final class Tutorial {
             case DOCK: return "HOLD STILL TO ENTER THE BERTH.";
             case TIE: return "RELEASE TO THROW. MISSES REEL BACK.";
             case CONNECT: return "RELEASE OVER THE TUG TO THROW.";
-            case PULL: return "KEEP THE LINE ATTACHED FOR THE NEXT JOB.";
+            case CASTOFF: return "RELEASE THE LINE BEFORE PUSHING TO BERTH.";
+            case PULL: return "MAKE ROOM TO GET BEHIND IT AND PUSH.";
             case DOUBLE: return "DRAG EACH UNLINKED BARGE TO THE TUG.";
             case BRIDGE: return "WAIT FOR GREEN. BOTH LOADS MUST CLEAR.";
-            case LINK: return "THEN DRAG IT TO THE OTHER BARGE.";
-            case TRAIN: return "SINGLE FILE. CLEAR THE EXIT WITH BOTH.";
-            case RELEASE: return "EACH TAP RELEASES ITS INCOMING LINE.";
+            case LINK: return "UNCOUPLE, THEN DRAG BARGE TO BARGE.";
+            case TRAIN: return "GO SLOW. BOTH BARGES MUST CLEAR THE EXIT.";
+            case RELEASE: return "LEAVE BOTH BARGES READY FOR CELEBRATION.";
             default: return "THE SAME CONTROLS WORK IN A SHIFT.";
         }
     }

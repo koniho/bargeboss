@@ -13,8 +13,9 @@ def project(guide_path, registration_path, image_path):
         guide = list(csv.DictReader(stream))
     with Path(registration_path).open() as stream:
         registration = list(csv.DictReader(stream))
-    if len(registration) != 32 or [int(r['frame']) for r in registration] != list(range(32)):
-        raise ValueError('Registration must contain 32 ordered frames')
+    count = len(registration)
+    if count not in (32, 64) or [int(r['frame']) for r in registration] != list(range(count)):
+        raise ValueError('Registration must contain 32 or 64 ordered frames')
     data = Path(image_path).read_bytes()
     if data[:8] != b'\x89PNG\r\n\x1a\n':
         raise ValueError('Expected PNG atlas')
@@ -28,7 +29,7 @@ def project(guide_path, registration_path, image_path):
         px, py, scale = (float(reg[k]) for k in ('pivot_x', 'pivot_y', 'uniform_scale'))
         if not all(math.isfinite(n) for n in (px, py, scale)) or scale <= 0:
             raise ValueError('Invalid registration')
-        row = {'frame': frame, 'intendedYawDegrees': frame * 11.25,
+        row = {'frame': frame, 'intendedYawDegrees': frame * 360.0 / count,
                'waterlinePivot': [px, py], 'uniformScale': scale,
                **{category: [] for category in kinds.values()}}
         ids = set()
@@ -68,7 +69,7 @@ def project(guide_path, registration_path, image_path):
     if len(guide) != sum(sum(len(f[k]) for k in kinds.values()) for f in frames):
         raise ValueError('Unexpected guide frame number')
     return {'schemaVersion': 1, 'atlas': str(image_path), 'imageSize': [width, height],
-            'grid': [8, 4], 'coordinateSpace': 'normalized-source-cell',
+            'grid': [8, count // 8], 'coordinateSpace': 'normalized-source-cell',
             'localAxes': 'X bow, Y starboard, Z above waterline',
             'guide': str(guide_path), 'registration': str(registration_path),
             'reviewStatus': 'guide-projected-unverified',
@@ -93,7 +94,7 @@ def main():
     first = result['frames'][0]
     counts = {k: len(first[k]) for k in ('lights', 'smokestacks', 'tires', 'contacts',
                                       'towPoints', 'mooringPoints', 'cargoOrigins')}
-    print(f'Wrote {output}: 32 frames, per-frame counts {counts}; guide estimates, not approved pixel anchors.')
+    print(f"Wrote {output}: {len(result['frames'])} frames, per-frame counts {counts}; guide estimates, not approved pixel anchors.")
 
 
 if __name__ == '__main__':

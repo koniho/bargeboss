@@ -4349,3 +4349,819 @@ same camera, scenery bounds and drawing rules; native iOS remains unmeasured.
   2,434,414 Montrose shoreline pixels plus 32,273 walls and final native/JVM parity
   b0bbe1a2:2:1350 pass. Evidence: docs/performance/water-detail-2026-11-20/.
   Wide-water sampling/submission remains a major cost; this is not a 60 FPS fix.
+
+## 2026-11-20 — Easier slip entry and staged throttle/map teaching
+- Slip success now covers the full authoritative slip rectangle once the tug
+  center passes its mouth after actual backing. Removed precise depth, centerline,
+  heading and 90-unit requirements; significant impacts still require exiting
+  before retry. The cue outlines the whole slip instead of a tiny target ring.
+- Map and slider visibility/input begin at the map lesson; hidden map bounds no
+  longer prevent tapping the instructor. Normal location gameplay is unchanged.
+- First helm exercise now requires gentle forward throttle (up to 45%) then
+  stronger throttle (at least 75%), with real travel for both. Reads the same
+  normalized throttle as the HUD and preserves drag-tug and left/right joystick
+  controls. No new assets, caches or rendering primitives.
+- Updated region regression covers entry immediately past the mouth, full width
+  and depth, and an oblique final heading. Wrong throttle settings cannot earn
+  either pace gate; actual left/right joystick and drag replays complete the course.
+- Renderer review confirms early map/slider absence, both pace instructions and
+  whole-slip outline. Shared replay baseline now `df642bb4:2:1350`; delivery and
+  score totals are unchanged.
+- The newly pulled default Vulkan build needed an on-device toolchain path.
+  Added Termux clang++/glslang support, bundling libc++_shared with its LLVM license;
+  host NDK builds retain static C++ linkage. Locally used Khronos Vulkan-Headers
+  v1.3.290 in ignored `build/android/native-deps/vulkan-headers/include`, selected
+  with `BARGEBOSS_VULKAN_HEADERS`. No native renderer or shader logic changed.
+- Full shared and asset checks, Vulkan encoding/clip checks, Android packaging
+  and desktop packaging passed. APK installed through Shizuku and launched;
+  native log confirms `Vulkan renderer active` on the development phone. Reviewed
+  actual shared-renderer slow/fast prompts and slip/map frames. Native iOS and
+  a full manual Android touch playthrough were not performed this round.
+
+## 2026-11-20 — Release to complete slip parking
+- A clean backing entry now waits until both tug-drag and joystick controls are
+  released. A held neutral joystick does not complete the lesson. The instruction
+  panel explicitly asks the player to lift their finger once inside the slip.
+- Retained the full-slip success region and collision retry. Public-input replay
+  now releases on entry; regression covers held drag, held neutral joystick and
+  released completion across the slip region. No new assets or per-frame caches.
+- Full shared/asset checks and Vulkan Android build passed; replay baseline
+  `e02e708:2:1350` retains delivery/score totals. Actual renderer review held the
+  drive at neutral inside the slip, confirmed the release prompt and pending
+  lesson, then used pointer-up to complete. APK installed and launched on phone.
+  Native iOS and a manual Android tutorial playthrough were not run this round.
+
+## 2026-11-20 — Throttle-only helm and optional practice-slip tether
+- Removed manual hull-drag propulsion and the Off throttle setting. Saved Off
+  preferences migrate to Left; Left/Right selection remains. Cargo hold/drag
+  assisted pushing and barge-to-vessel lasso gestures retain their existing rules.
+- Slip tug throws reuse the lasso arc, release launch, miss retraction and catch
+  effects. The tug remains powered and can turn while tethered; only outward
+  fitting velocity/stretch is constrained. Tap the connected bollard to release.
+  Tug ties never run unloading or score, and map departure waits for cast-off.
+- Reused the depth-sorted rope pipeline with one bounded 25-point slot. No new
+  textures, shader primitives or asset families. The tether retains a two-float
+  scratch array; its fixed-step constraint does not allocate. Offscreen slip
+  bollard rendering is culled. This is a gameplay change, not an FPS claim.
+- Migrated public-input tutorial, towing replays, visual capture helpers and iOS
+  XCTest driving helper to the screen throttle. Added JVM/native trace coverage
+  for powered tether motion and release. Native iOS execution remains deferred.
+- Focused checks pass for misses/cancel, live thrust while tied, length bounds,
+  eight heading/collision cases, bollard-only release, no tug-drag propulsion,
+  and preserved cargo assistance. Actual renderer captures reviewed in
+  `out/slip-tether-{aim,caught,powered,released}.png`. Full validation follows.
+- Full shared/asset checks and Vulkan Android build passed. Canonical replay
+  `7f0c0842:2:1350` retains two deliveries/1350 points; the trace now also includes
+  powered tug tethering and bollard release. All-heading shoreline pixel test
+  passed 1,461,230 hull/cargo assertions, plus 32,273 cached-wall probes.
+- APK installed and cold-launched through Shizuku; app-scoped log confirms
+  `Vulkan renderer active`. Refreshed actual-renderer aim/catch/powered/release
+  and left/right settings captures were reviewed. A manual native tutorial
+  playthrough and native iOS execution were not performed in this round.
+
+## 2026-11-20 — Separate single-tow and two-barge tutorial basins
+- First basin now contains only the original push/unload hull. The single towing
+  lesson reuses it, brings it to the entrance-side target, and leaves it there
+  after a player release. The other two original bodies wait behind the y=400
+  bridge. Normal progression preserves every hull and never teleports cargo.
+- Added explicit entry and convoy-exit bridge radio calls. The y=200 call unlocks
+  after both next-basin barges are directly attached. Standby/cancel cannot open
+  a span. All openings use existing continuous `LandmarkBridge`/`BridgePassage`
+  machinery, lighting, collision and depth sorting; no new art or pose cache.
+- Tutorial no longer also collides against the obsolete proximity-operated bridge.
+  All three practice bridges appear on the chart. Static geometry is prepared at
+  setup; existing landmark culling/rigid transforms apply to the added spans.
+  No frame-rate improvement is claimed for this gameplay/layout change.
+- Guided camera reveal now includes pending towing bridge calls so a held throttle
+  cannot keep the real bridge house offscreen. Shared instructions distinguish
+  first-load cast-off, entry request and convoy request; native XCTest reads the
+  same bridge contact/phase/house metadata instead of guessing screen positions.
+- Focused radio and full tow-course tests pass across 960/1333/1680 widths. Taller
+  layout testing caught a replay helper incorrectly rescaling already-screen-space
+  dialogue boxes; fixed to use their actual coordinates. Full validation follows.
+
+Validation: full Android build/check.sh passed (baseline 5a2ba4cd:2:1350); all-heading shoreline regression passed 1,461,230 hull/cargo pixel assertions. APK installed and launched successfully on the development phone. iOS UI automation updated but not executed locally.
+
+## 2026-11-20 — Specialized barge ability increment (shared core)
+
+Added a bounded 192-slot fireworks/spray pool, depth-merged through SprayView
+with shore clipping. No per-frame raster generation. Two equipment families
+have 64 rigid poses each and complete prefetch manifests: 896 additional
+source/shadow/shade frames, 1632 total tutorial rotation frames. Retained CPU
+bitmap and device timing still need measurement; this is not a 60 FPS claim.
+Fire monitor barrels transform continuously; hull art remains 32 poses pending
+its controlled-source upgrade. Enlarged collection basin and moved upstream
+training gates together. Public touch replay fixtures updated for explicit
+release icons on specialized barges. iOS test source updated, not run locally.
+
+First native ability freeze capture was interrupted when the app went to the
+background (112/120 measured frames; screenshot is not the game). Do not use it
+as a performance result. It did show all 1674 preparation frames ready, no warm
+frame builds/evictions, and 159.98 MiB frame-cache storage. A concurrent developer
+fixture test further invalidates timing comparison. Inspection identified an
+unnecessarily huge per-particle shore query: radius grew with altitude, querying
+terrain between the launch point and a high rocket. Tightened this to the actual
+lifted stamp footprint and skip empty clip scopes. Retains depth/shore semantics;
+requires another native capture before any performance claim.
+
+Developer fixture audit: an older tow-circle replay still dragged the tug after
+throttle-only driving replaced that control. It now uses ReplayInput.throttle.
+All 85 fixture checks pass; the physical tow completes 11.86 circles in 6000
+repeatable ticks. Profile zoom expectations now apply finite-stage bounds.
+
+Validation for the equipment increment: full check.sh/Android build passed with
+canonical signature 2a3bfb9a:2:1350; the 64-equipment-heading shoreline regression
+passed 2,287,737 hull/cargo pixel assertions. Both 64-pose equipment families
+passed the registered material/gutter checker; generated shadow/shading
+freshness checks passed. Desktop visual review covers popup controls, rising
+fireworks, twin spray and rotating monitors. Final rebuilt APK installed
+successfully. A second native capture timed out before export; no valid native
+performance conclusion is claimed. The first interrupted capture did execute
+Vulkan, but its screenshot was the foreground terminal, not the game. Native
+raster review and timing remain open. iOS build/device checks were not run.
+
+## 2026-11-21 — 64-pose fleet and level residency (Android/shared, in progress)
+
+The interrupted equipment capture reached 159.98 MiB of the 160 MiB CPU cropped
+frame cache. Code inspection found a failure path: pinned rotations leave no
+space for scenery crops; demand draws can return uncached fresh bitmaps. Vulkan
+then sees changed bitmap identities and retires/reuploads textures; retirement
+currently calls vkDeviceWaitIdle. This is a plausible cause, not measured churn
+in that interrupted capture (its frame-build counters were zero).
+
+Converted revised hull, steel, containers, coal and both equipment families,
+including their glow/shadow/shade variants, to frame-sized PNG packs. Full sheets
+remain authoring inputs only; native runtime file selection points at packs.
+All 64 poses come from rigid geometry, with fixed waterline pivots and cargo
+coaming depth. Entire revised catalog is 2432 frames / 192 MiB decoded, before
+host/driver copies; each level prepares only its manifest, not that catalog.
+Tutorial rotations expand from 1632 to 2080. Source and cropped-frame counters
+must be considered together: moving frames into source storage is not by itself
+a measured memory saving. Budget remains 160 MiB pending native measurement.
+
+Android now removes previous-plan-only decoded sources/atlases and cropped cells
+at a manifest change, preserving sources shared with the new plan. Previously
+old cropped frames merely became evictable and source sheets stayed resident.
+GPU textures still have their separate bounded LRU. Native validation pending.
+
+First valid post-change native capture:
+`out/profiles/20261121-034311-barge-abilities-freeze` (Vulkan, 90 warmup/120
+measured frames, completed without interruption). All 2122 preparation frames
+ready. Source storage 290.71 MiB plus cropped-frame storage 55.75 MiB = 346.46
+MiB. The earlier interrupted run reported 429.69 MiB combined, but is not a
+valid timing baseline. Warm frames built/evicted zero textures or raster layers.
+Median draw 75.73 ms, interval 77.61 ms; max interval103.06 ms. Native Vulkan
+log reported approximately3.72 ms GPU/3.84 ms encode during its120-frame window.
+Thus there is ample crop-cache headroom now, but substantial CPU work remains;
+do not claim a frame-rate fix. Captured pixels show both specialized barges,
+registered new hulls, lighting, bridge/shore overlap and spray/fireworks.
+
+### Art rollback and bridge CPU finding
+
+User rejected the model-rendered hull/cargo replacement as primitive, especially
+on the title screen. Restored the accepted painted 32-pose hull and all ordinary
+cargo, including original registration, masks, shading and glow. The 64-pose
+ordinary-fleet upgrade is NOT complete. Do not promote geometry guides as final
+painted artwork. Candidate work is retained in commit6669f71 for further art
+work; it is not an accepted visual direction. Keep only the accepted specialized
+equipment frame packs and Android old-level source retirement from this attempt.
+
+Sampling capture `20261121-034410-barge-abilities-freeze` had no trace overflow
+and identified ArticulatedModel.drawRange at78.69% inclusive CPU, Branch.slice
+at53.90%, with repeated Math.min/max dominant. BridgeLayers interleaves every
+particle depth, rescanning every face's vertex depth bounds in each interval.
+Cache exact face bounds when geometry changes and reject whole-pose empty
+intervals before traversal. Motion still uses continuous transforms; slicing,
+UV interpolation, order and lighting remain unchanged. Validation in progress.
+
+Cached bridge depth bounds matched the previous implementation bit-for-bit
+across4715 depth intervals and185215 painter calls, covering tutorial, Calumet
+and Indiana bridges at five phases: exact trace d530063e868e3f60 on both sides.
+`tools/BridgeDepthReview.java` records raw float bits, material UVs, colors and
+primitive order. Comparison used separately compiled before/after model classes.
+This verifies the optimization's drawing output independently of FPS measurements.
+
+The canonical replay with restored art and equipment frame packs is
+68ec3e6b:2:1350 on BOTH the before and after bridge implementations. The changed
+baseline versus2a3bfb9a is equipment file/crop metadata in the render trace, not
+simulation or bridge appearance. Title preview at1243×600 confirms restoration
+of the accepted rounded hulls, fenders and painted cargo.
+
+Final restored-art/native capture:
+`out/profiles/20261121-035429-barge-abilities-freeze` completed90 warmup plus120
+measured frames on Vulkan. Median draw21.46 ms, interval22.51 ms; p95 interval
+24.17 ms, max29.95 ms. This is approximately44 FPS, not60. Earlier same-scene
+capture with the rejected hull art was77.61 ms median interval; geometry trace
+comparison isolates the bridge optimization's unchanged drawing behavior, but
+the native captures also differ in hull artwork and are not a pure one-variable
+A/B. No concurrent builds/tests ran during either timing capture.
+
+All1674 preparation frames ready, no warm frame builds/evictions, no cold decode
+or raster fallbacks. Source248.71 MiB + crop89.76 MiB =338.47 MiB; source/crop
+storage remains below the pre-change interrupted reading429.69 MiB, while that
+old reading is not a valid timing baseline. The CPU crop budget remains160 MiB.
+Restored original art confirmed in native equipment screenshot and desktop title
+review. Full check.sh, derivative/pack freshness checks and Android build passed;
+installed and relaunched on the development phone. iOS was not built or tested.
+
+## 2026-11-21 — 64-pose painted art authoring checkpoint (shared/offline)
+
+No runtime cache, renderer, assets or level-manifest changes in this increment.
+The four-quarter painted hull experiment fails continuity/angle review and is
+kept under docs/art-studies/barge-painted-64. Do not preload these candidates.
+The64 authoring/review tools run offline; no active-draw work was added. Final
+migration still needs level-scoped frame packs, bounded cache preparation and
+native title/gameplay performance validation. See study README for measurements;
+these are art-alignment metrics, not frame-time results.
+
+Validation: full Android build/check pipeline passed (`out/painted64-authoring-build.log`),
+replay remained `68ec3e6b:2:1350`; APK installed successfully and cold launch returned
+`Status: ok`. Accepted runtime art is unchanged. Review PNG copied to Downloads
+and Pictures/BargeBoss; MediaStore entry17904 verified. Interactive64-pose review
+also copied to Downloads. No iOS build or new native art-performance claim.
+
+## 2026-11-21 — title wordmark (shared UI)
+
+Replaced the pixel-glyph title with one transparent 1774x887 wordmark using existing
+sprite caches (~6MiB decoded source). Removed the unused LogoLettering glyph cache
+and multi-pass title lettering. One static sprite draw; no animation-time raster
+work or new rotation-prefetch dependency. Title-only asset, shared metadata and
+layout on all hosts. Reviewed four desktop aspect ratios. No measured performance
+claim; native Android validation recorded after build/install.
+
+Replay baseline: new title rendering yields `2e3c8f02:2:1350`. Compiling only the
+previous ScreenView/LogoLettering ahead of the same current compiled core restores
+`68ec3e6b:2:1350` exactly (`out/title-old-signature.txt`). Thus this trace change
+is isolated to the requested title drawing; delivery/score and replay behavior
+remain unchanged. Updated the canonical expectation after this comparison.
+
+Full Android checks/build passed; APK installation succeeded and launch returned
+Status: ok. Desktop composition reviewed at four sizes. Device visual capture was
+not usable because the game was no longer foreground; it was discarded, not
+retained as review evidence. No iOS build was run. Logo and composite review copies
+are verified in MediaStore (17907/17909).
+
+## 2026-11-21 — title-derived game UI (shared)
+
+Moved shared panels/buttons, HUD, instruction effects, dialogue choices, ability
+icons and idle instrument accents to the approved wordmark palette. Existing
+Rajdhani font, layouts, interactions and semantic throttle colors retained. Uses
+vector primitives and existing cached text/effects, no new textures or shaders.
+Panel decoration replaces existing strokes; slider adds a small backing plate.
+No measured frame-rate claim. Added reusable actual-renderer UI review fixtures.
+
+Map pixel validation caught the first slider plate's antialiasing crossing its
+right touch boundary. Insets increased to2px, preserving the hit box and chart
+geometry; all938018 map/slider pixel bounds and idle-thumb checks now pass.
+Review both HUD sides when changing control frames, not just the centered menu.
+
+Canonical draw/state trace is now `e9dc45fe:2:1350`; a clean prior-commit core/test
+compilation reproduces `2e3c8f02:2:1350`. Reviewed source diff is limited to UI
+palette and drawing geometry, with no simulation/input changes. Updating only
+some old classes is insufficient for this comparison because Java inlines the
+palette constants into their callers; use a clean compilation for palette A/Bs.
+
+Full Android build/check pipeline passed (`out/ui-style-v1-build.log`), including
+map clipping, shared tutorial/input regressions and Vulkan encoding/clip checks.
+APK installed successfully and cold launch returned Status: ok. Restored previous
+screen timeout. Desktop review covered menus, gameplay on both control sides,
+instructions, four choices/pressed reply, ability icons and results at960/1333.
+Review PNGs copied to Downloads and Pictures/BargeBoss; MediaStore entries
+17912/17914/17916/17918 verified. iOS/native visual parity was not run this round.
+
+## 2026-11-21 — UI layout/component redesign v2 (shared)
+
+User requested structural redesign after the palette-only pass. Title now splits
+training from voyage setup; settings use rows/switch/segments, pause is compact,
+harbor cards show connected jobs/completion, results group metrics, and gameplay
+uses differentiated ribbons/radio badges/fader/thumb grips. Shared Layout and
+choice definitions own the relocated touch regions. No native-specific UI,
+textures, shaders or per-frame raster work added. Container/selector decoration
+uses fewer primitives than the old outlined octagons; no frame-rate claim.
+
+Added public-input menu flow and nonoverlap/safe-area checks at960x600,1333x600,
+and960x720. 1316 title/layout checks pass; 924386 chart/slider pixels stay inside
+existing bounds and retain a visible idle zoom indicator. Canonical replay and
+clean old/new simulation-only trace comparisons recorded after final layout.
+
+Final canonical renderer/state trace: `2101eca9:2:1350`. A clean HEAD core
+versus current core using the same render-free replay both produce
+`3601335f:2:1350`: menu relocation and component drawing did not change the
+simulated replay state. Baseline updated only after this comparison.
+
+Full Android check/build passed (`out/ui-layout-v2-build.log`), including 2810
+core assertions, replay baseline, 924386 map pixels, tutorial/dialogue input and
+Vulkan encoding/clip checks. APK installed successfully; cold launch Status: ok.
+Phone timeout restored. Actual desktop renderer reviewed at960/1333 widths;
+no native screenshot or iOS build/visual-parity run this round. No measured FPS
+claim. Six canonical review images are in `docs/art-studies/ui-layout-v2`, copied
+to Downloads and Pictures/BargeBoss; MediaStore IDs17925–17930 verified.
+
+## 2026-11-21 — Quiet immediate collision feedback (shared audio)
+
+Traced delayed noise to CollisionSplashes landing audio, separate from impact
+playback. Removed landing sound dispatch and its bookkeeping; visuals/physics
+unchanged. Replaced contact manifest with three short low-passed CC0 Kenney
+thuds, 0.115–0.320s, peaks0.20–0.34. All preparation is offline, native hosts
+predecode as before. Impacts stale after100ms simulation time instead of500ms.
+Regression covers immediate contact dispatch and no delayed cue across full
+spray lifetime. See docs/audio/collision-thuds-v2.md for provenance, reproducible
+processing, limitations and source investigation. No FPS or native latency claim.
+
+Replay baseline intentionally changes2101eca9→2fcc437b because the tutorial trace
+records SoundEffects sequence/cue and removed landing events change that history.
+A/B of original/current CollisionSplashes with ONLY sound sequence/cue excluded
+from a temporary replay copy yields identical `f98873c8:2:1350`, retaining all
+graphics and other gameplay-state hashing. Permanent replay retains audio checks.
+
+Full Android check/build passed, including contact/audio regression, unchanged
+visual geometry checks and updated canonical audio trace2fcc437b:2:1350.
+Log: out/collision-thuds-v2-build.log. APK installed and cold launched Status:ok;
+previous screen timeout restored. Device speaker audition/end-to-end acoustic
+latency and iOS native build were not performed.
+
+## 2026-11-21 — Audible impacts and engine haptics
+
+Raised collision samples6dB and added shared 100ms engine duck hold plus300ms
+smooth recovery. EngineHaptics selects bounded idle/load pulses in fixed-step
+Java; Android/iOS transport the same low/high events. Ordinary feedback suppresses
+rumble; cancel, pause, conversation and settings gate it. No vibration backlog,
+new decode work or per-frame allocation. EngineAudioTest covers mix/pitch,
+restoration, pulse cadence, consumption, impact priority and lifecycle. See
+ docs/audio/engine-feedback-v1.md for adapter differences and audition limits.
+
+Full checks and Android build passed (out/engine-feedback-v1-build.log), replay
+unchanged2fcc437b:2:1350. Installed successfully and cold launch Status:ok; restored
+screen timeout. iOS adapter updated but not built on Termux. Device loudness and
+vibration strength await subjective review; no measured latency/FPS claim.
+
+## 2026-11-21 — Seawall contact audibility + continuous rumble
+
+Follow-up found gentle contacts below8 were silent; visual splash dedup also
+preceded peak sound capture. Now threshold3 (same as spray) and sound peak is
+independent of visual cooldown. Real Game.step seawall test at5 speed emits BUMP;
+stronger same-pair contact can promote severity with one visual spray. Restored
+phone-audible body with single1200–1600Hz low-pass,80Hz high-pass and peaks.6–.8.
+No delayed splash sound restored. SoundPool tracing is opt-in debug only; added
+`seawall-audio` developer scenario for native dispatch verification.
+
+Replaced tap pulses with shared smoothed sustained strength and native continuous
+waveforms. Android patterns prebuilt once; replacement only when strength band
+changes. No repeated UI clicks, no motor-off slots. Core Haptics loop on iOS.
+Game/system settings, conversation, semantic-event priority and lifecycle stop
+preserved. Unsupported amplitude hardware skips rumble. Normal VIBRATE permission
+added. Shared tests cover continuous strength, recovery and suppression.
+
+Canonical9ef27c86:2:1350 reflects additional genuine collision audio events; replay
+with only sound sequence/cue hashing omitted remainsf98873c8:2:1350, identical to
+prior nonaudio rendering/state trace. No graphics/physics drift in this replay.
+
+Full checks/Android build passed (out/seawall-rumble-build.log). Installed and
+ran seawall-audio fixture: native SoundPool accepted THUD at simulation tick12,
+stream3, fender-medium-kenney-v2.wav (out/seawall-audio-native.log). Diagnostic
+capture was interrupted at31frames; this is dispatch evidence only, not an FPS
+sample or acoustic latency measurement. Returned to normal cold launch, restored
+screen timeout. iOS Core Haptics adapter unbuilt on Termux; physical rumble feel
+and phone speaker balance remain user-audition items.
+
+## 2026-11-21 — Industrial collision clunks + rumble parameter investigation
+
+Replaced standard collision assets with offline-mixed sampled metal/soft-body
+clunks:190/300/400ms, clean edges, onset<0.4ms, peaks.60/.73/.80. Tug fender stays
+soft. No routing/physics/haptics changes; same manifest used on all hosts. Source
+and hash/license documented in docs/audio/industrial-clunks-v1.md. Decoded added
+one-shot data is small (<80KiB), same bounded native preload architecture.
+
+User asks rumble parameters: current Android path controls amplitude/timing only.
+Device reports frequency-control/PWLEv2,50–170.75Hz with134.58Hz resonance. Newer
+Android envelope API can control frequency subject to capability/profile checks;
+recommended70–90Hz audition with low amplitude and smooth ramps. No rumble
+parameter changes made in this round. Raw vibration-history dump discarded.
+
+Full Android checks/build passed (out/industrial-clunks-build.log), canonical
+replay unchanged9ef27c86:2:1350. Installed and normal cold launch Status:ok;
+restored phone timeout. No iOS build or new subjective speaker audition this
+round. No native latency or performance improvement claim.
+
+## 2026-11-21 — Dull chunks + device-minimum idle rumble
+
+Replaced rejected metal layer with pitch-lowered, damped CC0 wood recording,
+160/220/280ms; no noise or metallic overlay. Source and reproducible script in
+docs/audio/dull-chunks-v1.md. No collision event/physics changes.
+
+Android prebuilds API36 public frequency envelopes with device-minimum idle,
+shared five load bands up to90Hz clamped to profile. Startup reflection only
+supports retained older compile SDK; no hidden APIs or per-frame effect builds.
+Idle band corrected to stay at minimum through fade-in. Lower-sharpness0 on iOS,
+which has no Hz equivalent. Fallback is quieter constant amplitude, not taps.
+Explicit debug haptic-review opt-in added, off for all normal profiling.
+Shared tests cover idle band, range clamps, continuous amplitude and lifecycle.
+
+Full checks/build passed (out/dull-chunks-low-rumble-build.log), replay unchanged
+9ef27c86:2:1350. APK installed. Native initialization logged frequencyControl=true,
+minimumHz50.0/maximumHz170.75 (out/low-rumble-native.log), proving public capability
+and envelope construction path succeeded. This diagnostic did not log gameplay
+band playback/scene READY, so it does not establish physical playback or feel.
+Returned to normal cold launch Status:ok; restored timeout. iOS not built here.
+
+## 2026-11-21 — Arcade heading + readable body typography
+
+User requested title-style heading lettering and readable body. Added offline
+OFL font exports: Barge Display (Russo One with22% shear/88% width), Barlow Semi
+Condensed Medium body incl lowercase. Heading selection explicit at semantic
+call sites; no font inference by platform/size. Existing128string shared cache
+retained, key now includes role. No per-frame font parsing/raster prep introduced;
+source shape arrays immutable. Increased text-cache padding for italic bearings,
+parentheses and descenders; glyph bounds regression caught this before build.
+No FPS claim. Existing title bitmap, layouts, hit regions and tutorial animation
+remain. Body/instruction fit measured with own metrics. Preview/debug tools and
+source/OFL provenance retained. See docs/art-direction/industrial-ui.md.
+
+State-only A/B of previous/current compiled core with the same render-free replay:
+285ba210:2:1350 on both. Canonical draw trace nowab21678e:2:1350 after new glyphs
+and padding; updated only after A/B and visual review. Typography glyph bounds,
+1316title/input/layout checks passed; independent map pixel review passed924386.
+
+Full suite caught an obsolete uppercase-normalization assumption. Moved that
+assertion to heading metrics; body intentionally preserves authored mixed case.
+Added cache-role separation assertion. All76 overlay/cache/CRT/world-text checks
+pass, retaining cache alpha reuse/eviction protections. Specimen and menu review
+copies in Downloads/Pictures/BargeBoss, MediaStore17943–17948 verified.
+
+Full Android checks/build passed (out/ui-type-v3-build.log), canonicalab21678e:
+2:1350. Installed and normal cold launch Status:ok; restored timeout. Desktop
+visual review covered title at960/1333, harbor/settings/help/results, gameplay
+instructions and selected radio choices. No native screenshot/iOS build this
+round; shared tests do not establish identical device antialiasing or performance.
+
+## 2026-11-21 — shared arcade guidance and action icons
+Removed tutorial lesson n/total from mission header and instruction badge;
+explicit radio/gate status and real continuous progress remain. Added shared
+vector rocket, nozzle, broken-link and radio icons without changing hit areas.
+Ready abilities breathe subtly. Objective rings gain four inward breathing
+chevrons; partial progress arcs remain literal. Successful mooring adds eight
+outward gold rays instead of a filled hull flash. Existing projection, arrow
+depth capture and rope/shore clipping are unchanged.
+
+Effects use visualTicks and existing lifetime counters; no new textures, caches,
+simulation state, particles or per-frame asset preparation. Four chevrons cost
+eight direct strokes per complete active target; no added strokes on partial
+progress. This is not a measured device frame-time improvement. Shared state-only
+A/B replay stayed 285ba210:2:1350; reviewed drawing trace is f623db84:2:1350.
+Reviewed actual desktop lesson overlay and shared cue/icon phase sheet
+(docs/art-studies/ui-arcade-v4/feedback.png). Reproduce sheet with
+tools/ArcadeEffectsReview.java. Android checks/build and installation recorded
+below when complete; iOS not built this round.
+
+Full checks and Android build passed (out/ui-arcade-v4-build.log), including
+canonical replay, map pixel clipping, cargo derivatives and Vulkan geometry/clip
+tests. Installed successfully and launch reported Status:ok; display timeout
+restored. Review image copied to Downloads and Pictures/BargeBoss, MediaStore
+17958 verified. No native visual capture/frame-time profile or iOS build;
+desktop review does not prove native antialiasing or performance.
+
+## 2026-11-21 — instructor talking portrait
+Imported the user's six-frame captain GIF as a 576x384 atlas (192px cells).
+Keep the original and deterministic ImageMagick packing script; coalesce GIF
+disposal before resizing. Shared SpeakerPortrait uses the authored delays,
+instructor transmitter identity, existing transmission progress and the fixed
+instruction-panel anchor. A signed affine basis faces toward screen center on
+both 960/1333 layouts. Replies/bridge calls never borrow the instructor face.
+A brief fade and seven-bar activity meter accompany the mouth frames.
+
+Only tutorial manifests prefetch this atlas. No GIF decoding, frame allocations
+or texture uploads in the animation code. New draw work is one sprite plus a
+small plate/meter while transmitting; no device frame-time claim. Reviewed both
+desktop sizes and checked speaker gating, source timing and mirror direction.
+State-only A/B replay remains 285ba210:2:1350; new draw trace fc647b8f:2:1350.
+Canonical preview and provenance in docs/art-studies/instructor-portrait-v1.
+Full Android check/build passed (out/instructor-portrait-v1-build.log), including
+manifest isolation, map pixel and Vulkan geometry/clip checks. APK installed and
+cold launched Status:ok; previous display timeout restored. Review copied to
+Downloads/Photos, MediaStore 17960 verified. No native pixel capture/performance
+profile or iOS build this round; desktop mirroring review is not device parity.
+
+## 2026-11-21 — portrait at outer screen edge
+User clarified that portraits belong at the screen sides, facing inward.
+Instructor now anchors 18 units from the right edge, 16 below the fixed card,
+rather than to its inner left edge. Facing is always left at this anchor.
+No extra draw work or assets. Reviewed shared 960/1333 exports; speaker/timing
+checks pass. Canonical drawing trace updated to 55db364f:2:1350 after review.
+Full Android checks/build passed (out/instructor-edge-build.log). Installed and
+cold launched Status:ok, restored display timeout. Preview registered as
+MediaStore 17962. Desktop visual review only; iOS not built this round.
+
+## 2026-11-21 — persistent in-panel speaker
+Widened tutorial instruction plate to544 while preserving432-unit text/wipe
+region. Right112 is a transparent inward-facing portrait. Visibility follows
+the conversation speaker/content, not short radio sound duration; mouth and
+meter still animate only on instructor transmissions. Dialogue retains explicit
+speaker kind during replies, so bridge conversations never borrow instructor
+art. Updated teacher/bridge touch exclusions for enlarged panel.
+Built-in imagegen removed white matte; runtime remains six192px frames with
+alpha (same dimensions/cache footprint), no live background processing.
+Speaker review tests cover pauses between transmissions and reply persistence.
+Reviewed960/1333 layouts; draw replay now2f791c5d:2:1350.
+First full check caught tow-bridge call target covered by wider panel at1333.
+Moved bridge radio callouts below the panel when overlapping; drawing and input
+share the same adjusted anchor. Added a radio glyph to the tow callout. Mouth
+and tow-bridge checks pass after correction. Final draw trace2405ba3c:2:1350.
+Render-disabled replay changed285ba210 tobf5d3e90 after the bridge callout fix;
+it is not state-identical to the old build. This change also affects when a
+previously UI-obscured radio target becomes contactable, so tutorial timing can
+change. Full tutorial completion/tow/bridge tests pass and bounded-play outcome
+remains2 deliveries/1350. Do not describe this round as a purely visual replay.
+Final full Android checks/build passed (out/instructor-panel-build.log). Installed
+and cold launched Status:ok; restored timeout. Review/art copies in Downloads
+and Photos, MediaStore17964/17966 verified. Desktop visual review only; no native
+pixel capture/frame-time profile or iOS build this round.
+
+## 2026-11-21 — six NPC talking portraits
+Generated six transparent3x2 portrait sheets with built-in imagegen, preserving
+source outputs and exact prompts under docs/art-studies/npc-portraits-v1.
+Runtime atlases are576x384/192px cells. Two bridge operators now use shared
+SpeakerPortrait routing: entry tow bridge gets night operator; canal/exit gets
+steelworks operator. Instructor keeps her identity. Face stays during replies/
+waiting and mouths animate only for the matching transmitter. Remaining four
+characters are authored assets only; no unrequested conversations or eager
+decoding. Only two additional sheets join tutorial preparation.
+36-frame alpha/nonempty checks and real panel bridge identity/persistence checks
+pass. Visually reviewed crew sheet and shared bridge panel. Render-disabled A/B
+replay stayedbf5d3e90:2:1350; updated drawing traceb0317b94:2:1350.
+No additional per-frame geometry beyond the existing portrait sprite/meter,
+no new texture-cache keys per tick, no measured device performance claim.
+Full Android checks/build passed (out/npc-portraits-build.log), installed and
+cold launched Status:ok. Restored timeout. Six sheets and comparison copied to
+Downloads/Photos; MediaStore17970,17972,17974,17976,17978,17980,17982 verified.
+No native pixel capture/performance profile or iOS build this round.
+
+## 2026-11-21 — lesson coaching, stronger cues, canal leader
+Added bounded17-entry earned-feedback FIFO: one message per completed lesson,
+with clean-completion praise or recovery encouragement after significant tug
+impact(>=25) or slip retry. Four-second feedback runs on fixed steps, pauses with
+dialogues, persists through final-DONE and deduplicates fallback/recompletion.
+No arbitrary speed/time grading; lesson skipping does not earn praise.
+Real feedback adds CB transmission and a brief yellow open-center success burst.
+Shared guidance core increased from capped1.4 to2.8–5.5px with92% source alpha;
+glow plus core remains <=10.6px across tested zooms. Cyan guidance, yellow success,
+red retry/miss/damage cues. Depth routing and open ring/arrow centers preserved.
+Same bounded procedural materials; no new images or per-frame texture work.
+
+Canal guide now departs milestones about one reach earlier, uses faster route
+tracking and a water-checked side-passing maneuver if overtaken. Never relocates
+the player or teleports the teacher. Existing all-gate/water containment test and
+new stationary-player overtaking regression pass. Coaching queue/dedup/retry/
+final-DONE tests pass. Old135-alpha/6.5px visual assertions were intentionally
+updated to the user's stronger style; depth/empty-center checks remain.
+Gameplay timing and radio replay intentionally change; reviewed trace
+da429b60:2:1350. No claim of unchanged simulation or device frame-time improvement.
+Stronger overtaking review enabled actual hull collisions and exposed a bad
+detour: lane width exceeded canal clearance and re-aiming at corners pushed the
+player. Corrected to a fixed cardinal passing direction with a two-phase side/
+forward maneuver, validated water-clear side and forward spans,36-unit lateral
+separation for the two tugs, and60-unit forward clearance before rejoining.
+The tracked test now starts non-overlapping and resolves real hull collisions
+every step: player displacement0.0, teacher reaches next reach. All-gate canal
+test and full tutorial replay finish. Final replay8b9482b:2:1350 supersedes the
+earlier trace; rebuilding all checks/native package after the correction.
+Final full checks and Android build passed(out/coaching-build.log), including
+new collision-enabled lead recovery, coaching queue/DONE, scene depth and bounded
+bold strokes, full tutorial replay,924416 chart pixels and native Vulkan clips.
+Installed and cold launched Status:ok; restored display timeout. Desktop previews
+in Downloads/Photos verified as MediaStore17985/17987/17989. No native pixel capture/
+frame-time profile or iOS build this round.
+
+## 2026-11-21 — remove throttle guidance halo
+Removed the tutorial-only cyan target ring/chevrons surrounding the throttle.
+Throttle sectors, puck, input and world target cues remain. Reviewed shared
+1333px gameplay preview. Visual-only canonical trace87857f4b:2:1350.
+Full checks/Android build passed(out/throttle-ring-build.log). Installed and
+launch reported Status:ok; restored timeout. Updated preview saved in Downloads/
+Photos, MediaStore18071 verified. No iOS build or native pixel capture this round.
+
+## 2026-11-21 — portrait waits for first introduction
+Hide speaker portrait during initial instructor approach; reveal exactly when
+the first radio question opens at arrival tick240. Preserve the portrait through
+the subsequent conversation and lessons. Arrival regression checks every tick
+before/after introduction on three widths and all answer branches. Shared approach/
+introduction captures in docs/art-studies/instructor-arrival-v1; no new assets or
+state fields, rendering gate only. Drawing replay57af69a1:2:1350.
+Full checks/Android build passed(out/portrait-arrival-build.log), installed and
+cold launched Status:ok. Restored timeout. Preview copies verified in Photos as
+MediaStore18079/18081. Desktop visual review; no native pixel capture/iOS build.
+
+## 2026-11-21 — plain throttle center
+Removed the three decorative grip strokes from the throttle puck. Shared UI
+preview reviewed; inputs and sectors unchanged. Three fewer line draws when
+the control is visible. Drawing replay10e7c9ed:2:1350.
+Full checks/Android build passed(out/plain-throttle-build.log), installed and
+launch reported Status:ok. Restored timeout. Preview verified in Photos as
+MediaStore18085. Desktop visual review; no native pixel capture/iOS build.
+
+## 2026-11-22 — first basin: tow, cast off, then push
+Reordered shared tutorial lessons: connect to the loaded far-side barge at
+(520,700), tow into open water centered at (320,550), explicitly cast off,
+drag-push, assisted berth approach, tie/unload, then call for the next basin.
+Same bodies and momentum persist across transitions; no scene rebuild. Delivered
+hull remains moored alongside. Automatic tow loss retries connection; only a
+player release earns cast-off. Push lessons retain their tow-gesture exclusion.
+Reordered coaching, highlights, berth visibility, skip/reset fixtures and public
+input replay. Kept guided camera reveal through first delivery and gentler focus
+easing while approaching the farther load (continuity test caught a >20px step).
+No new textures, caches or per-frame effect allocations. Shared continuous replay
+passed 379529 assertions across three canvas sizes before final gesture guard
+cleanup. Full checks/native build and final preview validation pending below.
+All gameplay checks passed; initial check stopped only at intentionally changed
+canonical replay (reordered stages/layout/camera), reviewed as d657e566:2:1350.
+Updated baseline and started full Android build/check rerun. Actual shared-renderer
+connection/cast-off frames reviewed in docs/art-studies/first-basin-v2; both radio
+gates still traversed by the preview replay after the new first delivery.
+Final full checks and Android build passed (out/tow-build.log), including full
+continuous tutorial, multi-width gesture course, shoreline pixels and Vulkan clip
+regressions. APK installed successfully and cold launched Status:ok; previous
+300000ms display timeout restored. Photos entries18090/18091 verified. Desktop
+visual/input validation; no manual native playthrough, native pixel capture,
+frame-time profile or iOS build this round.
+
+## 2026-11-22 — finale equipment flow and portrait registration
+Tutorial convoy now contains two fireworks barges; a separate fire barge waits
+near the final basin. Mandatory celebration after uncoupling starts a delayed
+shore fire, requires a separate fire-barge tow, then aimed water impacts to finish.
+Equipment has one action; rope taps perform cast-off. New rope hit tests sample
+the same deck height/slack curve in screen space, with bounded16px tolerance,
+short-tap/drag/cancel gates. Native automation release target follows this curve.
+Fireworks use320 bounded particle slots instead of192,40-ray gold/cyan/red bursts;
+fire uses bounded glow calls in the ground-depth merge and existing smoke pool.
+No new effect textures or raster preparation. Fire camera includes the shore target
+so it does not sit behind the map. No claim of measured60FPS for the new effects.
+
+All42 portrait frames audited from alpha pixels: night operator shifted24px,
+foreman10px/3px, instructor5px, keeper1px. Shared per-frame pivots anchor painted
+bases while preserving neutral layout and original artwork. Four unused NPC
+atlases registered for future use, not added to level prefetch. Source-derived
+registration check added to check.sh; all42 corrected anchors agree within.001px.
+Before/after review in docs/art-studies/portrait-registration-v1. Full checks,
+final effect previews and native package validation in progress.
+Arcade effect refinement adds analytic ballistic trails (three feathered segments
+per spark, no history buffers), white-hot heads, and28-tick burst rings within the
+same320-slot pool. Shore flames now have red/gold/cream tongues, whipping tips and
+20 bounded rising embers instead of only soft ovals. Clip queries include the trail
+footprint. Added finite-effect profiling fixtures tutorial-fireworks/firefight;
+short samples are necessary to avoid reporting mostly post-effect idle time.
+Finale gates pass with actual public controls: waiting cannot launch, ignition is
+delayed, fire-barge tow is required, wrong aim earns no cooling, and water impacts
+extinguish before DONE. Full continuous replay passes388958 continuity assertions;
+new rope regression rejects long holds, drags, cancels and competing pointers.
+Final reviewed trace9798e8a9:2:1350 includes reordered finale, new vessel inventory,
+registered portraits and effects. Source native UI automation updated for the
+new lesson order/equipment targets; iOS execution remains deferred.
+Final input audit found a legacy12–18tick hull-press path that could still detach
+an equipped barge after the short ability-reveal window. Restricted that legacy
+path to plain cargo and added a15tick connected-equipment regression. Rebuilding
+final package after this correction; prior full checks/asset/native encoder run
+passed, but this input fix still needs the final rerun below.
+Final full build/check passed(out/finale-final-build.log), including the15tick
+press regression, core replay9798e8a9:2:1350, portrait source audit, shoreline
+pixels, asset derivatives and native Vulkan encoding/clips. Developer fixtures:
+91 repeatability checks passed(out/fire-profile-check.log). APK installed.
+
+On-device Vulkan,120-frame live samples, zero warmup:
+- Fireworks: out/profiles/20261122-113241-tutorial-fireworks-live, stages18–19,
+  draw p50/p95 9.163/15.803ms, interval p50/p95 16.755/24.960ms.
+- Firefighting: out/profiles/20261122-113319-tutorial-firefight-live, stage20,
+  draw p50/p95 8.926/17.667ms, interval p50/p95 16.702/22.005ms.
+Both had no synchronous layer builds/fallbacks/evictions, frame builds/evictions,
+or cold decode events during the sampled draws. These are short finite-effect
+runs, not stable60FPS or an A/B improvement claim; initial presentation/preparation
+still has large startup outliers. The firefighting screenshot was interrupted by
+an app switch after the CSV export; it is excluded/deleted, so only shared-renderer
+firefighting pixels were reviewed. Native fireworks screenshot reviewed and kept
+in docs/art-studies/tutorial-finale-v1/android-fireworks.png. No iOS build/native
+portrait animation recording this round; shared42-frame registration is verified.
+Photos review entries18093/18094/18095 verified; review copies also in Downloads.
+Including startup, mean frame intervals were21.51/21.98ms for fireworks/firefight;
+maximum intervals544.78/606.10ms and maximum draw542.59/602.07ms. These cold-start
+spikes are retained in the evidence rather than hidden by the median. Normal game
+launch restored after capture; screen timeout restored to300000ms.
+
+## 2026-11-22 — tutorial fire-barge retrieval basin (shared Java)
+- Added a separate340-unit-deep rescue basin south of the celebration area, joined
+  by a160-unit-wide two-bend canal. Reused the permanent rectangle union and exact
+  exterior polygon, so chart, water, terrain subtraction, seawalls and hull
+  collisions share the new boundary. No new sprites, caches or effects pools.
+- Fire barge now waits at(-350,-1050). Shared nearest-centerline guidance supports
+  outbound collection and the return tow. Camera fits local hulls on retrieval;
+  the remote dock fire only enters camera fitting during extinguishing.
+- Public input trace reaches the fire basin around tick400 and returns with the
+  attached barge around tick1300. Full continuous tutorial passed408488 assertions
+  across its three viewport sizes; tow-course tests passed33626 assertions.
+- Added basin/canal/solid-peninsula checks and sampled polygon-versus-water-union
+  agreement. Exclude exact boundary samples: polygon ray crossing and inclusive
+  water rectangles intentionally differ at a mathematically exact outer edge.
+- Reviewed actual Java2D frames out/fire-basin-overview.png and
+  out/fire-basin-retrieval.png, reproducible with tools/FireBasinReview.java.
+  Seawalls frame the new dogleg without closing its mouth; accepted industrial
+  scenery and watercraft remain unchanged. Expanded the finite finale test budget
+  to3000ticks for the physical trip. Replay signature now fe1a4fc4:2:1350 because
+  the permanent cargo start and subsequent voyage changed.
+- iOS UI automation reads the same route target for the outbound trip as well;
+  native iOS validation remains deferred. No frame-rate improvement claim and no
+  native timing sample this round; added geometry uses existing visible-tile and
+  shore-segment culling. Android build/install results follow below.
+- Full checks exposed a dry-terrain cache fixture at projected chunk(-5,0)
+  newly intersecting the canal. Moved it to genuinely dry chunk(-8,-2), preserving
+  assertions for live material faces, no raster layers, no empty preparation and
+  render purity; targeted StaticTerrainTest passed66484 assertions.
+- Final ./build-android.sh passed all shared, asset, native encoder and pixel
+  checks (out/fire-basin-build.log). APK installed through authorized rish
+  (Success) and cold launched (Status: ok,1075ms). Shared renderer reviewed above;
+  no on-device full canal voyage or iOS build this round.
+
+## 2026-11-22 — launch smoke and annotated first-tow location
+- Inspected Pictures/Screenshots/Screenshot_20261122-113310~2.jpg: the red circle
+  marks the narrow far-side arm of the first towing basin on the overhead chart.
+  First loaded barge now starts at(599,300), oriented along that arm. Existing
+  shore geometry is unchanged. Shared guidance routes around the peninsula via
+  (320,700) and(599,700), then reverses this route for delivery into open water.
+- Extracted the same stateless centerline guide used by fire-barge retrieval;
+  no route allocations or gameplay mutation during cue drawing. Updated iOS
+  automation to use the shared target; native iOS execution remains deferred.
+- Fireworks now emit three deck puffs per rocket plus residual smoke every12ticks:
+  36puffs per180-tick activation, using the existing384-slot smoke pool,8-second
+  independent drift and existing smoke stamps. No new texture/cache or pool size.
+  Isolated ability checks verify bounded emission, cessation and independence
+  after moving the emitting hull. No performance improvement claim.
+- Real-input tow course passed41334 assertions across viewport sizes/joystick.
+  Its budget is now10000ticks to cover both physical retrieval voyages. Reviewed
+  out/first-tow-marked-arm.png and out/fireworks-launch-smoke.png from the actual
+  Java2D renderer. Full Android validation/install results follow below.
+- Final Android build passed all checks (out/launch-smoke-first-tow-build.log),
+  including420315 continuous tutorial assertions and native Vulkan/pixel checks.
+  Canonical replay is5ce9eb90:2:1350 after moving the first load. Installed via
+  rish (Success), cold launched (Status: ok,2401ms), and restored display timeout.
+  Native full-voyage touch/performance and iOS runtime were not revalidated;
+  launch time is not a frame-time measurement.
+
+## 2026-11-22 — idle instructor wake accumulation during radio
+- Inspected Pictures/Screenshots/Screenshot_20261122-122430.png: dense white
+  prop wash and a fan of repeated wake packets under the green instructor during
+  TAP MY GREEN TUG. Root cause: Tutorial.updateLesson returned on instructor radio
+  before TutorialArrival.step, freezing teacher position while retaining velocity
+  and engine load. Water/foam/smoke continued ticking and trusted those stale values.
+- Reproduced against the prior compiled classes: after180 radio ticks, instructor
+  speed remained72.8011 and engine load1.0. The new regression fails there.
+- Radio now pauses lesson progression but advances the observer in a station-hold
+  branch: velocity/spin decay, engine eases to idle, and collision-aware integration
+  continues. No change to genuine moving-vessel wake emission or effect pools.
+  Existing wake and foam still age; no abrupt clearing, global world freeze or
+  suppress-all-wake workaround. Instruction interactions remain pending.
+- InstructorIdleWakeTest checks teach prompt and unanswered radio conversation,
+  a short physical coast, idle load,600ticks without new foam/prop/wake emission,
+  expiry of existing packets and resumed wake after real movement. Passed.
+  Updated canonical replay9762e42b:2:1350 reflects the corrected teacher motion.
+- tools/InstructorIdleWakeReview recreates the shared-renderer case; before/fixed
+  images are out/instructor-idle-wake-before.png and out/instructor-idle-wake-fixed.png.
+  Full Android build/install and visual review results follow below. No new cache,
+  texture, allocation in active updates, or claimed frame-time improvement.
+- Before/fixed Java2D images reviewed: old stationary white prop wash and wake fan
+  reproduce the screenshot, fixed scene retains ambient water without accumulating
+  packets. Final build passed shared/full tutorial, asset, native encoder and pixel
+  checks (out/instructor-idle-wake-build.log). Android installed (Success) and cold
+  launched (Status: ok,1111ms). Screen timeout restored. iOS not rebuilt; no native
+  long radio-wait recording or frame-time profile this round.
+
+## 2026-11-22 — woodpile fire, narrow-passage context and recorded launch audio
+- Added a permanent large timber stack at the existing dock ignition location.
+  Fixed shared XYZ plank geometry, sleepers and contact shadow respect the dry
+  quay footprint and enter the existing fire depth slot. Offscreen culling occurs
+  before model drawing. Both intact and charred geometry/BSP poses prepare at
+  tutorial setup, never on first visible draw. Blackened grain and ash end caps
+  persist after extinguishing; both variants share footprint and stack height.
+- No sprite sheet/host-specific artwork or new lighting texture. Dark wood uses
+  face shading/scenery grade, avoiding the marine-dock material's near-black
+  treatment. Fire glow/smoke remain the existing separate anchored effects.
+- Reconfiguration instructions now explain that two abreast will not fit the
+  narrow passage. Missing-line recovery retains the single-file purpose.
+- Located Alexander / Orange Free Sounds' recorded launch/explosion sample,
+  CC BY4.0; saved source MP3 and bundled attribution. Extracted345ms launch-only
+  transient (44.1kHz mono16-bit, peak-5.52dBFS), omitting the separate explosion.
+  Shared sound cue9 fires on actual rocket emission. Engine ducks; radio/recent
+  collisions win; events older than6ticks drop. Existing native manifest loaders
+  cover Android/iOS/desktop without an additional platform sound implementation.
+  No new audio voices;345ms fits inside400ms rocket interval. Source/recipe in
+  docs/audio/fireworks-launch-v1.md. Subjective device listening remains unverified.
+- Rebuilding after user requested the persistent charred state; interrupted the
+  earlier build during CoreTest before packaging so it cannot be installed stale.
+  Actual shared renderer reviews: tools/FirewoodReview.java and FireLessonReview.
+  Final checks and installation results follow below.
+- Reviewed intact/burning/charred timber and reconfiguration panel in actual
+  Java2D frames from FirewoodReview. Charred variant retains the same anchor and
+  silhouette, with charcoal faces and pale exposed ends; no temporary steam state
+  is required to keep it burned. Canonical shared replay4021f84b:2:1350 reflects
+  the permanent prop and changed panel text. Launch tests check7 cues for7 rocket
+  emissions, immediate audibility/engine duck, radio priority and stale-event drop.
+- Final ./build-android.sh passed (out/timber-fireworks-build.log), including
+  shared tutorial, assets, native encoder and pixel regressions. APK installed
+  through rish (Success) and cold launched (Status: ok,1346ms). Restored prior
+  display timeout. No native iOS build, audio audition/recording or frame-time
+  measurement this round; checked PCM timing/peak and shared event delivery.

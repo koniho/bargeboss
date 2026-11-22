@@ -36,7 +36,7 @@ public final class PersistentBargeTest {
         check(!b.lineAttached && g.tow.incoming(b)!=null,"successful catch releases shore mooring and connects the same empty hull");
         check(b.active && b.deliveryRecorded && b.unloadingTicks==Game.UNLOAD_TICKS,"tow transfer preserves the identity and empty state");
         steps(g,Game.ROPE_HIT_TICKS+1);
-        x=b.x;y=b.y;ReplayInput.down(g,g.tug.x,g.tug.y);ReplayInput.move(g,g.downX+80,g.downY+30);
+        x=b.x;y=b.y;ReplayInput.throttle(g,80,30);
         steps(g,120);ReplayInput.up(g,g.pointerX,g.pointerY);
         check(Physics.length(b.x-x,b.y-y)>10,"normal tug thrust physically pulls the retained empty hull away");
         ReplayInput.releaseTow(g);steps(g,30);

@@ -36,9 +36,9 @@ public final class VesselView {
                 // A bright hull-shaped pulse under the fading sprite flashes the
                 // vessel itself; normal fender contacts never start this timer.
                 p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
-                        2*b.radius+7,0x88ff935a);
+                        2*b.radius+7,0xccff534b);
                 p.line(hullX-c*b.half,hullY-s*b.half,hullX+c*b.half,hullY+s*b.half,
-                        2*b.radius+1,0xffffedc0);
+                        2*b.radius+1,0xffffb69a);
             }
             SpriteAtlas.draw(p,b==g.teacherBoat()?SpriteAtlas.TEACHER_TUG:b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,size,flash?.28f:1);
             SurfaceLighting.directional(g,p,b.yacht?SpriteAtlas.YACHT:tug?SpriteAtlas.TUG:SpriteAtlas.BARGE,b.angle,hullX,hullY,size,flash?.28f:1,b);

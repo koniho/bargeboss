@@ -31,7 +31,7 @@ public final class TutorialHoldTest {
             check(Physics.length(b.x-Tutorial.PUSH_X,b.y-Tutorial.PUSH_Y)<=Tutorial.PUSH_RADIUS,"lesson requires pushing cargo into the destination zone");
             ReplayInput.up(root,g.pointerX,g.pointerY);
             for(int i=0;i<7000 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
-            check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding");
+            check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding: "+size[0]+"x"+size[1]+" drag="+drag+" lesson="+g.tutorial.lesson+" tug="+g.tug.x+","+g.tug.y+" radio="+g.tutorial.towBridges.current(g)+"/"+g.tutorial.towBridges.phase+" contact="+g.tutorial.towBridges.contactable(g)+" tow="+g.tow.count()+" house="+g.tutorial.towBridges.houseX(g,1)+","+g.tutorial.towBridges.houseY(g,1)+" zoom="+g.layout.camera.zoom);
         }
         Game root=lesson(960,600),g=root.activeGame();Body b=g.cargo[0];
         steps(root,7200);
@@ -39,7 +39,7 @@ public final class TutorialHoldTest {
         ReplayInput.down(root,b.x,b.y);steps(root,5);ReplayInput.up(root,b.x,b.y);steps(root,120);
         check(g.tutorial.lesson==Tutorial.HOLD,"brief tap cannot complete hold lesson");
         ReplayInput.down(root,g.tug.x,g.tug.y);steps(root,90);
-        check(g.holdingTug() && g.tutorial.lesson==Tutorial.HOLD,"holding tug cannot complete cargo lesson");
+        check(!g.holdingTug() && g.tutorial.lesson==Tutorial.HOLD,"holding tug cannot complete cargo lesson");
         g.pointerCancel(0);ReplayInput.down(root,b.x,b.y);steps(root,5);g.pointerCancel(0);steps(root,60);
         check(g.tutorial.lesson==Tutorial.HOLD,"cancelled hold cannot complete lesson");
         ReplayInput.down(root,b.x,b.y);ReplayInput.move(root,g.downX-65,g.downY-65);

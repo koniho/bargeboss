@@ -11,7 +11,7 @@ public final class EngineAudio {
         if(!audible(root))return 0;
         float load=load(root),work=Physics.clamp((load-.12f)/.88f,0,1);
         work=work*work*(3-2*work);
-        return layer==0?.42f-.14f*work:.48f*work;
+        return (layer==0?.42f-.14f*work:.48f*work)*SoundEffects.engineGain(root);
     }
     public static float rate(Game root,int layer){float load=load(root);return layer==0?.72f+.20f*load:.68f+.28f*load;}
 }

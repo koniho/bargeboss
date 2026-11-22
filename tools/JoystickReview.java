@@ -48,7 +48,7 @@ public final class JoystickReview {
             Game g=new Game();g.configureCanvas(width,600);g.reset();
             float cx=Joystick.centerX(g),cy=Joystick.centerY(g);g.pointerDown(0,cx,cy);g.pointerMove(0,cx+25,cy-25);for(int i=0;i<35;i++)g.step();
             capture(g,"joystick-left-"+width);g.cancelInputs();g.settings.setJoystickSide(GameSettings.RIGHT);
-            for(int i=0;i<40;i++)g.step();capture(g,"joystick-right-"+width);ReplayInput.tap(g,Layout.SETTINGS);capture(g,"joystick-settings-"+width);
+            for(int i=0;i<40;i++)g.step();capture(g,"joystick-right-"+width);g.openSettings();capture(g,"joystick-settings-"+width);
         }
         System.out.println("Joystick and settings frames exported to out/");
     }

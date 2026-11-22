@@ -91,7 +91,7 @@ public final class WaterSurface {
         foam.emit(g,b);
         float old=b.heave,velocity=b.heaveVelocity;
         float response=b.berth>=0?.76f:1;
-        if(b.lineAttached || b.awaitingPickup) response*=.45f;
+        if(b.lineAttached && b!=g.tug || b.awaitingPickup) response*=.45f;
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);
         if(g.montroseStage()){
             float ambient=0,wakes=0;
@@ -118,7 +118,7 @@ public final class WaterSurface {
         if(b.floatingInitialized && velocity<0 && b.heaveVelocity>=0 && b.speed()>6 && b.wakeCooldown==0) {
             emit(b,1);pulses++;b.wakeKickTicks=18;b.wakeCooldown=35;
         }
-        if(b.speed()>6 && !b.lineAttached && !b.awaitingPickup) {
+        if(b.speed()>6 && (!b.lineAttached || b==g.tug) && !b.awaitingPickup) {
             if(++b.wakeTrailTicks>=8) { emit(b,.34f);b.wakeTrailTicks=0; }
         } else b.wakeTrailTicks=0;
         b.floatingInitialized=true;
@@ -134,7 +134,7 @@ public final class WaterSurface {
     public static float lift(Game g,Body b) {
         if(b.floatingInitialized) return b.heave;
         // Title/preview hulls have no simulation clock, but still ride ambient water.
-        return g.water.height(g,b.x,b.y,g.visualTicks,b)*(b.lineAttached?.25f:b.berth>=0?.5f:.75f);
+        return g.water.height(g,b.x,b.y,g.visualTicks,b)*(b.lineAttached && b!=g.tug?.25f:b.berth>=0?.5f:.75f);
     }
     public void draw(Game g,Painter p) {
         if(g.settings.waterDetail<1)return;
