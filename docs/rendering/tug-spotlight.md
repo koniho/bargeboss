@@ -1,10 +1,15 @@
 # Tug spotlight receivers
 
-Shared state stores on/off and tug-relative heading. The 480-unit beam has a
+Shared state stores on/off and tug-relative heading. The 320-unit beam has a
 smooth 0.10-radian penumbra within a 0.28-radian half angle and squared distance
 attenuation. Turning the tug rotates the light without changing relative aim.
 
-- Water uses a bounded 4 by 10 feathered mesh, stopped at dry terrain.
+- Every location calls the shared WaveView.surface pass, which draws the light
+  even at low ambient-water detail. A 4 by 10 feathered water footprint and a
+  second faint mesh descending from the registered mast show the downward beam.
+  Five independently traced boundaries stop at shores; one blocked edge cannot
+  erase the whole beam. Fixed world range is roughly half a landscape screen at
+  the close training zoom, never resized to change gameplay with screen size.
 - Painted watercraft, cargo and buoys remove directional surface darkness.
 - Moored boats and swimmers use existing normal lighting and its four strongest
   source budget.

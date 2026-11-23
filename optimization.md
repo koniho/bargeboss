@@ -6354,3 +6354,25 @@ launch restored after capture; screen timeout restored to300000ms.
 - Added complete Montrose preparation/rotation-retention assertions to optional
   AndroidRotationReview and enabled the arrival fixture in profile-android.sh.
   Shared gameplay and iOS rendering rules are unchanged.
+
+## 2026-11-23 — visible downward searchlight in training and geographic levels
+- Screenshot 071928 showed an active searchlight control and lit objects but no
+  cone. Training, Calumet and Indiana call WaveView.surface directly; the cone
+  was only called by WaveView.draw. Moved it into the common surface pass before
+  the water-detail early return, fixing all locations and low-detail water.
+- Reduced fixed world reach to 320 (roughly half the supplied landscape view at
+  close zoom). Added a faint volume descending from the registered mast to the
+  water footprint. Five boundary rays find shore contact independently instead
+  of erasing a whole wedge when one coarse endpoint crosses land.
+- Cost is bounded at 160 shared shaded triangles when enabled, five short shore
+  marches, no raster caches or new native primitives. Land, boats and UI retain
+  their normal later drawing order. Shared regression verifies training/low-detail
+  visibility, exact lamp origin, finite geometry and approximate screen reach.
+- Actual renderer review and final device/build results follow below.
+- Validation: full Android build/checks passed with replay ea542145:2:1350.
+  Actual shared-renderer normal/low-detail training images reviewed; Android APK
+  installed and native cone/pool pixels reviewed in training-spotlight fixture.
+  Complete 120-sample freeze capture: draw p50 6.916 ms/p95 8.980 ms; frame interval
+  p50 16.657 ms/p95 23.424 ms, no frame/layer builds, evictions or cold decoding.
+  This is a short frozen-scene renderer check, not sustained live-play evidence.
+  Capture: out/profiles/20261123-073032-training-spotlight-freeze. iOS untested.
