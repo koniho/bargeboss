@@ -5568,3 +5568,55 @@ launch restored after capture; screen timeout restored to300000ms.
   the two-fire tutorial. Reinstalled the merged APK successfully and launched
   normally; the native fire view was already inspected before this unrelated
   marina merge. No new iOS/device-parity claim is made for the combined revision.
+
+## 2026-11-22 — Stable Montrose bimini colors
+
+- Shared Java, codex/montrose-bimini-colors from origin/main b2e72b0. All 273
+  moored boats receive a stable berth-based canvas palette, independent of the
+  six hull models. Neighboring slips differ. Eight reference-inspired colors:
+  cream, navy, blue, burgundy, green, tan, charcoal and teal. Hulls/cabins, physics,
+  mooring positions and heading interpolation retain their existing behavior.
+- Added rigid aft-cockpit canvas and stainless bows to the offline boat models.
+  Rebuilt all 192 albedo/RGB-receiver and geometry normal/height frames together.
+  Explicit fabric faces generate occluded overlays; cabins, booms and rigging
+  clear the fabric behind them. No RGB-derived normal/material masks.
+- New frame pack has 1536 small 52x32 RGBA cells: 9.75 MiB decoded, versus
+  96 MiB for eight complete 128x128 boat families. An initial 64x48 crop
+  consumed 18 MiB; measured opaque bounds allowed trimming to (38,64)..(90,96)
+  without losing a pixel. The native day fixture's texture residency fell from
+  166,108,740 to 157,457,988 bytes under the existing 167,772,160-byte budget.
+  Both samples had zero texture evictions and zero resident lamp-kernel fallbacks.
+- Shared scene manifest prepares canvas alongside the existing hulls/normals.
+  Existing native cache retirement applies on level/time changes. One extra
+  sprite per visible resting boat, two during the existing heading dissolve;
+  no runtime tint generation, new native primitive, or gameplay-time allocation.
+  Canvas uses shared time-of-day grading and the rebaked surface-light normals.
+- Asset checks: 229,736 visible canvas pixels across all palettes; identical
+  alpha between colors, registered silhouette containment for every heading,
+  nonempty frames and fixed small dimensions. Day/dusk/night palette boards and
+  actual shared-renderer harbor views reviewed in ignored out/bimini-*.
+- Reviewed iPhone17Pro/iOS26.5 Metal simulator native day and night appearances;
+  final trimmed day sample (60 frames after 30 warmup): draw p50 18.00ms / p95
+  18.51ms, frame interval p50 33.32ms / p95 33.54ms, zero evictions. Other builds
+  were running on this host; this is not a controlled before/after speed claim
+  or a physical-iPhone frame-rate guarantee. Captures: out/ios-profile/bimini-*.
+- All-heading shoreline regression: 4,350,443 production hull/cargo pixels and
+  38,121 cached training-wall pixels passed. Final full-check/native-parity and
+  Android installation results follow below.
+- Full check.sh and Android profile APK build passed: 491,037 moored-boat
+  placement/tether/color assertions; 125,913 packed surface-height checks and
+  192 exact normal/base silhouette registrations; asset, terrain, chart and
+  Vulkan transport checks passed. Final JVM/J2ObjC replay/drawing parity is
+  d3251964:2:1350; reviewed the changed draw trace before updating its baseline.
+- Final default-dusk Metal fixture also reviewed: draw p50 18.34ms / p95 18.73ms,
+  interval p50 20.91ms / p95 33.36ms. Bimini colors remain subdued near warm dock
+  lamps; no physical-iPhone validation is claimed for this round.
+- Android APK installed successfully with the existing debug key. The first
+  profiling launch raced an existing activity; a clean retry completed and its
+  native pixels were reviewed. Pixel11Pro Vulkan, frozen day fixture, 60 samples
+  after 30 warmup: draw p50 11.31ms / p95 13.50ms; actual SurfaceFlinger presentation
+  p50 16.65ms / p95 24.98ms (60 gaps). Sample decode_ms, frame_builds and
+  frame_evictions were all zero; complete rotation preparation was ready.
+  Capture: out/profiles/bimini-final-retry. This short frozen sample does not
+  establish animated performance. Normal app launch succeeded COLD/1148ms;
+  restored the prior display timeout of 300000ms.

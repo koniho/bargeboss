@@ -18,8 +18,9 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.GenerateSurface
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check tools/BargeEquipmentAssetCheck.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BargeEquipmentAssetCheck
 # Geometric normal maps must preserve every registered boat silhouette.
-javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check desktop/com/bargeboss/game/*.java tools/NormalBoatReview.java
+javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check desktop/com/bargeboss/game/*.java tools/NormalBoatReview.java tools/MontroseReview.java tools/BiminiReview.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.NormalBoatReview
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BiminiReview
 
 # Fixed Indiana shore modules must stay dry and within the geometry budget.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/IndianaShoreTilesTest.java

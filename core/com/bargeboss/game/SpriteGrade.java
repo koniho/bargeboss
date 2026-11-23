@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class SpriteGrade {
     private SpriteGrade() {}
     public static boolean applies(int atlas) {
-        return atlas==SpriteAtlas.MOORED_BOATS || atlas==SpriteAtlas.TEACHER_TUG || atlas==SpriteAtlas.MARINA || atlas==SpriteAtlas.NORTH_QUAY || atlas==SpriteAtlas.SOUTH_QUAY
+        return atlas==SpriteAtlas.MOORED_BIMINI || atlas==SpriteAtlas.MOORED_BOATS || atlas==SpriteAtlas.TEACHER_TUG || atlas==SpriteAtlas.MARINA || atlas==SpriteAtlas.NORTH_QUAY || atlas==SpriteAtlas.SOUTH_QUAY
                 || atlas==SpriteAtlas.SCENERY || atlas==SpriteAtlas.PIERS || atlas==SpriteAtlas.BRIDGE
                 || atlas==SpriteAtlas.TITLE_HARBOR || atlas==SpriteAtlas.TITLE_LAND
                 || atlas==SpriteAtlas.STATIC_HARBOR || atlas==SpriteAtlas.TUTORIAL_SCENERY

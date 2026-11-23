@@ -8,9 +8,9 @@ import java.util.*;
 /** Offline rigid-model sprite bake. Geometry rotates before the shared isometric projection. */
 public final class BakeMooredBoats {
     static final int CELL=128;
-    static class Face {float[] xyz;int color;float depth;Face(float[] p,int c){xyz=p;color=c;}}
+    static class Face {float[] xyz;int color;boolean fabric;float depth;Face(float[] p,int c){xyz=p;color=c;}}
     static ArrayList<Face> faces;static float angle;
-    private static boolean materialExport;
+    private static boolean materialExport,fabric;
     /** Export rigid geometry; flatten the legacy top/side palette into unlit materials. */
     public static void materialModel(int kind,java.util.function.BiConsumer<double[][],Integer> sink){
         ArrayList<Face> oldFaces=faces;float oldAngle=angle;boolean oldExport=materialExport;
@@ -22,7 +22,7 @@ public final class BakeMooredBoats {
             }
         }finally{faces=oldFaces;angle=oldAngle;materialExport=oldExport;}
     }
-    static void face(int color,float... p){Face f=new Face(p,color);for(int i=0;i<p.length;i+=3){float x=p[i],y=p[i+1];p[i]=x*(float)Math.cos(angle)-y*(float)Math.sin(angle);p[i+1]=x*(float)Math.sin(angle)+y*(float)Math.cos(angle);f.depth+=p[i+1]-p[i]+p[i+2]*.9f;}f.depth/=p.length/3;faces.add(f);}
+    static void face(int color,float... p){Face f=new Face(p,color);f.fabric=fabric;for(int i=0;i<p.length;i+=3){float x=p[i],y=p[i+1];p[i]=x*(float)Math.cos(angle)-y*(float)Math.sin(angle);p[i+1]=x*(float)Math.sin(angle)+y*(float)Math.cos(angle);f.depth+=p[i+1]-p[i]+p[i+2]*.9f;}f.depth/=p.length/3;faces.add(f);}
     static void box(float x,float y,float z,float l,float w,float h,int top,int side){
         if(materialExport)side=top;
         face(side,x,y,z,x+l,y,z,x+l,y,z+h,x,y,z+h);face(side,x+l,y,z,x+l,y+w,z,x+l,y+w,z+h,x+l,y,z+h);
@@ -47,6 +47,12 @@ public final class BakeMooredBoats {
             face(0xff46515b,l*.09f,0,43,-l*.43f,0,4,-l*.43f+.45f,0,4,l*.09f+.35f,0,43);
             face(0xff46515b,l*.09f,0,43,l*.48f,0,4,l*.48f+.45f,0,4,l*.09f+.35f,0,43);
         }
+        // Aft cockpit canvas on stainless bows; rigid geometry, never a rotated bitmap.
+        for(int end=0;end<2;end++)for(int side=-1;side<=1;side+=2)
+            box(l*(-.34f+end*.25f),side*w*.34f-.2f,4,.4f,.4f,5.1f,0xff697573,0xff48555b);
+        fabric=true;
+        box(-l*.36f,-w*.37f,9.1f,l*.30f,w*.74f,.45f,0xff747878,0xff525959);
+        fabric=false;
         for(int side=-1;side<=1;side+=2)for(int i=0;i<3;i++)box(-l*.26f+i*l*.23f,side*w*.45f-.65f,1.5f,1.8f,1.3f,2.8f,0xff4b555a,0xff2b373e);
         for(int end=-1;end<=1;end+=2)box(end*l*.38f-.9f,-.6f,3.7f,1.8f,1.2f,.5f,0xff68706e,0xff39464c);
     }
@@ -71,5 +77,28 @@ public final class BakeMooredBoats {
     public static void main(String[] args)throws Exception{BufferedImage sheet=new BufferedImage(CELL*MooredBoats.COLUMNS,CELL*60,BufferedImage.TYPE_INT_ARGB);Graphics2D g=sheet.createGraphics();g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         for(int layer=0;layer<5;layer++)for(int kind=0;kind<6;kind++)for(int view=0;view<MooredBoats.ORIENTATIONS;view++){angle=view*(float)(Math.PI*2/MooredBoats.ORIENTATIONS);faces=new ArrayList<Face>();model(kind);faces.sort((a,b)->Float.compare(a.depth,b.depth));int frame=layer*MooredBoats.BASE_FRAMES+kind*MooredBoats.ORIENTATIONS+view,ox=frame%MooredBoats.COLUMNS*CELL,oy=frame/MooredBoats.COLUMNS*CELL;g.translate(ox,oy);
             for(Face f:faces){Path2D path=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)path.moveTo(sx,sy);else path.lineTo(sx,sy);}path.closePath();int rgb=f.color;int value=Math.min(255,(((rgb>>16)&255)+((rgb>>8)&255)+(rgb&255)));if(layer==4){float[] q=f.xyz;float ux=q[3]-q[0],uy=q[4]-q[1],uz=q[5]-q[2],vx=q[6]-q[0],vy=q[7]-q[1],vz=q[8]-q[2];float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);g.setPaint(new SurfacePaint(nx/n,ny/n,nz/n,q[0],q[1],q[2]));}else g.setColor(layer==0?new Color(((rgb>>16)&255)/2,((rgb>>8)&255)/2,(rgb&255)/2,255):new Color(layer==1?value:0,layer==2?value:0,layer==3?value:0,255));g.fill(path);}g.translate(-ox,-oy);
-        }g.dispose();ImageIO.write(sheet.getSubimage(0,0,CELL*16,CELL*48),"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(sheet.getSubimage(0,CELL*48,CELL*16,CELL*12),"png",new File("assets/sprites/montrose-moored-normals-v1.png"));System.out.println("Baked 192 model headings with dark base and RGB receiving layers");}
+        }g.dispose();ImageIO.write(sheet.getSubimage(0,0,CELL*16,CELL*48),"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(sheet.getSubimage(0,CELL*48,CELL*16,CELL*12),"png",new File("assets/sprites/montrose-moored-normals-v1.png"));bakeCanvas();System.out.println("Baked 192 model headings, registered normals and 8 canvas liveries");}
+    static Path2D path(Face f){Path2D p=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)p.moveTo(sx,sy);else p.lineTo(sx,sy);}p.closePath();return p;}
+    static void bakeCanvas()throws Exception{
+        File dir=new File("assets/sprites/frames/montrose-bimini-v1");dir.mkdirs();
+        for(int kind=0;kind<6;kind++)for(int view=0;view<32;view++){
+            angle=view*(float)(Math.PI*2/32);faces=new ArrayList<Face>();model(kind);faces.sort((a,b)->Float.compare(a.depth,b.depth));
+            for(int palette=0;palette<BiminiArt.COLORS;palette++){
+                BufferedImage cell=new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB);Graphics2D g=cell.createGraphics();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                for(Face f:faces){
+                    if(f.fabric){g.setComposite(AlphaComposite.SrcOver);int rgb=BiminiArt.color(palette);float shade=f.color==0xff747878?1:.72f;
+                        g.setColor(new Color(Math.round(((rgb>>16)&255)*shade),Math.round(((rgb>>8)&255)*shade),Math.round((rgb&255)*shade)));}
+                    else g.setComposite(AlphaComposite.Clear);
+                    g.fill(path(f));
+                }g.dispose();
+                for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++)if((cell.getRGB(x,y)>>>24)!=0 &&
+                        (x<BiminiArt.LEFT || x>=BiminiArt.LEFT+BiminiArt.WIDTH || y<BiminiArt.TOP || y>=BiminiArt.TOP+BiminiArt.HEIGHT))
+                    throw new AssertionError("Canvas crop clips heading "+kind+":"+view);
+                int frame=BiminiArt.frame(palette,kind*32+view);
+                ImageIO.write(cell.getSubimage(BiminiArt.LEFT,BiminiArt.TOP,BiminiArt.WIDTH,BiminiArt.HEIGHT),"png",new File(dir,frame+".png"));
+            }
+        }
+    }
+
 }

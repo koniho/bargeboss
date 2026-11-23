@@ -21,6 +21,15 @@ public final class MooredBoatsTest {
             check(Physics.length(b.x-MontroseHarbor.SLIP_X,b.y-MontroseHarbor.SLIP_Y)>50,"mission bay reserved");
         }
         for(boolean present:kinds)check(present,"each boat design placed");
+        boolean[][] palettes=new boolean[6][BiminiArt.COLORS];
+        for(MooredBoats.Berth b:MooredBoats.BERTHS){
+            check(b.bimini>=0 && b.bimini<BiminiArt.COLORS,"valid canvas palette");palettes[b.kind][b.bimini]=true;
+            for(MooredBoats.Berth next:MooredBoats.BERTHS)if(b.row>=0 && next.row==b.row && next.side==b.side && next.station==b.station+30)
+                check(b.bimini!=next.bimini,"neighboring slips have different canvas");
+        }
+        for(boolean[] colors:palettes){int count=0;for(boolean present:colors)if(present)count++;check(count>=4,"canvas colors vary independently of hull design");}
+        boolean prepared=false;for(int atlas:LevelAssets.challenge(Challenges.MONTROSE).preparationAtlases())if(atlas==SpriteAtlas.MOORED_BIMINI)prepared=true;
+        check(prepared,"canvas frames prepared before scene drawing");
         Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();
         Game replay=new Game();replay.selectChallenge(Challenges.MONTROSE);replay.reset();
         float moved=0,turned=0;

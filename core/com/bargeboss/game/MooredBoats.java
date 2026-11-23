@@ -9,8 +9,9 @@ public final class MooredBoats {
         public final int frame,kind;
         final float[] hull;
         int row=-1,station,side;
-        Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by){
-            this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
+        public final int bimini;
+        Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by,int bimini){
+            this.bimini=bimini;this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
             length=length(kind);width=width(kind);frame=kind*ORIENTATIONS+(Math.round(angle*ORIENTATIONS/(2*(float)Math.PI))+ORIENTATIONS)%ORIENTATIONS;
             float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);hull=new float[8];
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*length*.48f,v=(i==0||i==3?-1:1)*width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}
@@ -32,7 +33,7 @@ public final class MooredBoats {
                 float ax=MontroseHarbor.mapX(px-dx*15)+c*10,ay=MontroseHarbor.mapY(py-dy*15)+s*10;
                 float finger=(row<2?42:row<6?28:32)*MontroseHarbor.MAP_SCALE-14;
                 float bx=ax+c*finger,by=ay+s*finger;
-                Berth b=new Berth(x,y,a,orientation,kind,ax,ay,bx,by);boolean valid=true;
+                Berth b=new Berth(x,y,a,orientation,kind,ax,ay,bx,by,BiminiArt.palette(row,(int)(at/30),side));boolean valid=true;
                 for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(b.hull[i],b.hull[i+1]))valid=false;
                 b.row=row;b.station=(int)at;b.side=side;
                 if(valid)out.add(b);
@@ -40,7 +41,7 @@ public final class MooredBoats {
         }
         for(float[] star:MontroseHarbor.STAR_CENTERS)for(int arm=0;arm<8;arm++){
             int kind=(arm+(int)star[0])%6;if(kind<0)kind+=6;float a=angle(30+arm),c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a),near=arm*(float)Math.PI/4,nc=(float)StrictMath.cos(near),ns=(float)StrictMath.sin(near);
-            Berth berth=new Berth(star[0]+c*59,star[1]+s*59,a,30+arm,kind,star[0]+nc*31,star[1]+ns*31,star[0]+nc*59,star[1]+ns*59);
+            Berth berth=new Berth(star[0]+c*59,star[1]+s*59,a,30+arm,kind,star[0]+nc*31,star[1]+ns*31,star[0]+nc*59,star[1]+ns*59,BiminiArt.palette((int)star[0],arm,1));
             boolean valid=true;for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(berth.hull[i],berth.hull[i+1]))valid=false;
             if(valid)out.add(berth);
         }
@@ -67,7 +68,9 @@ public final class MooredBoats {
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}
         }
-        dissolve(p,base+a,base+next,x,y,size,mix,1);
+        dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
+        dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
+                x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
         if(detail<=.001f)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         for(int n=0;n<lights.count;n++){
@@ -78,12 +81,12 @@ public final class MooredBoats {
     }
     /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
      * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */
-    private static void dissolve(Painter p,int a,int b,float x,float y,float size,float mix,float alpha){
-        if(mix<.001f){p.sprite(SpriteAtlas.MOORED_BOATS,a,x,y,size,size,0,alpha);return;}
-        if(mix>.999f){p.sprite(SpriteAtlas.MOORED_BOATS,b,x,y,size,size,0,alpha);return;}
+    private static void dissolve(Painter p,int atlas,int a,int b,float x,float y,float width,float height,float mix,float alpha){
+        if(mix<.001f){p.sprite(atlas,a,x,y,width,height,0,alpha);return;}
+        if(mix>.999f){p.sprite(atlas,b,x,y,width,height,0,alpha);return;}
         float second=alpha*mix,first=alpha*(1-mix)/(1-second);
-        p.sprite(SpriteAtlas.MOORED_BOATS,a,x,y,size,size,0,first);
-        p.sprite(SpriteAtlas.MOORED_BOATS,b,x,y,size,size,0,second);
+        p.sprite(atlas,a,x,y,width,height,0,first);
+        p.sprite(atlas,b,x,y,width,height,0,second);
     }
     static boolean occupied(float x,float y){for(Berth b:BERTHS)if(Math.abs(x-b.x)<b.length && Math.abs(y-b.y)<b.length && PolygonWater.contains(b.hull,x,y))return true;return false;}
     private MooredBoats(){}
