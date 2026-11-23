@@ -5651,3 +5651,24 @@ launch restored after capture; screen timeout restored to300000ms.
   budget check, not proof of sustained 60 FPS during moving rescue gameplay.
   Worker touch reactions are covered by shared tests, not a manual device run;
   iOS was not exercised here.
+
+### 2026-11-22 — Continuous 3D swimmers and widening fire hose (shared Java)
+- Montrose swimmers now use continuous shoulder/elbow transforms, individual
+  idle/distress/secured cycles and true water-plane clipping. One bounded scratch
+  mesh per rescue; cull before model work. At most 32 mesh calls plus three small
+  water-motion calls per visible swimmer. No runtime pose texture preparation.
+- 9,600 consecutive model poses tested; existing rescue rules remain unchanged.
+  Agent counting-painter estimate for all 20: 0.08–0.20 ms/frame, excluding native
+  raster/GPU. See docs/performance/swimmer-3d.md; actual renderer poses reviewed.
+- Removed obsolete SWIMMERS atlas from level preparation after auditing core
+  callers; retained legacy source assets. Bimini and steam preparation preserved.
+- Hose splash stamps grow with accumulated horizontal flight distance: 2.5 near
+  nozzle to 13 at 210 units, versus previous constant 4. Same particle/draw budget,
+  no extra layers; increased shore clip extent to contain wider stamps. Aim,
+  collision and extinguishing rules unchanged; visual width is not a new hit radius.
+- Combined full check.sh/Android build passed: 2,810 core assertions, 9,600
+  swimmer poses, asset/shoreline regressions and native Vulkan encoding checks.
+  Canonical replay now 18dd8e26:2:1350. Reviewed shared widening-spray preview and
+  actual Android tutorial-firefight/montrose-swimmers screenshots in out/.
+  Installed successfully and restored normal launch. These frozen device views
+  validate pixels, not sustained animation frame rate; iOS not exercised.

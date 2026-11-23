@@ -14,7 +14,7 @@ final class LevelAssetsTest {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
             check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?5:0),"Level prepares its permanent scenery family");
-            check(preparation.length==plan.rotationAtlases().length+scenery.length+(Challenges.kind(id)==Challenges.MONTROSE?4:3),"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length+3,"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
             for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");
             Game game=new Game();game.challengeId=id;game.reset();
@@ -23,7 +23,7 @@ final class LevelAssetsTest {
             check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Menu prepares upcoming selected level");
             if(id==Challenges.RAFT_RESCUE || id==Challenges.SWIMMER_RESCUE){
                 check(includes(plan,SpriteAtlas.TUG) && includes(plan,SpriteAtlas.YACHT),"Rescue retains yacht rotations from earlier job");
-                if(id==Challenges.SWIMMER_RESCUE)check(preparation[preparation.length-4]==SpriteAtlas.SWIMMERS,"Swimmer atlas warmed before active draws");
+                if(id==Challenges.SWIMMER_RESCUE)check(java.util.Arrays.stream(preparation).noneMatch(a -> a==SpriteAtlas.SWIMMERS),"3D swimmers need no legacy atlas");
                 continue;
             }
             if(Challenges.kind(id)==Challenges.MONTROSE){

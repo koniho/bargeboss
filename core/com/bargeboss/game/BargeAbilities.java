@@ -10,6 +10,7 @@ public final class BargeAbilities {
     private float aimX,aimY;
     private final float[] x=new float[CAPACITY],y=new float[CAPACITY],z=new float[CAPACITY],vx=new float[CAPACITY],vy=new float[CAPACITY],vz=new float[CAPACITY];
     private final boolean[] rocket=new boolean[CAPACITY],flash=new boolean[CAPACITY];
+    private final float[] travel=new float[CAPACITY];
     private final int[] age=new int[CAPACITY];
     private final int[] life=new int[CAPACITY],color=new int[CAPACITY];
     public void reset(){selected=null;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
@@ -90,7 +91,8 @@ public final class BargeAbilities {
             if(g.visualTicks%6==0)g.smoke.equipment(g,selected,-24,6,30.5f);
         }
         for(int i=0;i<CAPACITY;i++)if(life[i]>0){
-            life[i]--;age[i]++;if(flash[i])continue;x[i]+=vx[i]/60;y[i]+=vy[i]/60;z[i]+=vz[i]/60;vz[i]-=80f/60;
+            life[i]--;age[i]++;if(flash[i])continue;if(color[i]==0xffb9e9f4)travel[i]+=Physics.length(vx[i],vy[i])/60;
+            x[i]+=vx[i]/60;y[i]+=vy[i]/60;z[i]+=vz[i]/60;vz[i]-=80f/60;
             if(color[i]==0xffb9e9f4 && z[i]>=GroundArt.LAND_RISE-2 && z[i]<=GroundArt.LAND_RISE+23 && g.crew.hit(g,x[i],y[i],vx[i],vy[i]))life[i]=0;
             if(life[i]>0 && color[i]==0xffb9e9f4 && z[i]<=GroundArt.LAND_RISE && g.tutorial!=null
                     && g.tutorial.fireworks.waterHit(x[i],y[i]))life[i]=0;
@@ -116,19 +118,19 @@ public final class BargeAbilities {
         }
         emit(px,py,pz,0,0,0,28,tint);flash[(next-1)%CAPACITY]=true;
     }
-    private void emit(float xx,float yy,float zz,float dx,float dy,float dz,int ticks,int tint){int i=next++%CAPACITY;rocket[i]=flash[i]=false;age[i]=0;x[i]=xx;y[i]=yy;z[i]=zz;vx[i]=dx;vy[i]=dy;vz[i]=dz;life[i]=ticks;color[i]=tint;}
+    private void emit(float xx,float yy,float zz,float dx,float dy,float dz,int ticks,int tint){int i=next++%CAPACITY;rocket[i]=flash[i]=false;age[i]=0;travel[i]=0;x[i]=xx;y[i]=yy;z[i]=zz;vx[i]=dx;vy[i]=dy;vz[i]=dz;life[i]=ticks;color[i]=tint;}
     boolean alive(int i){return life[i]>0;}
     float depth(Game g,int i){return g.layout.camera.screenY(x[i],y[i]);}
     void drawParticle(Game g,Painter p,int i){
         if(life[i]<=0)return;RiverCamera c=g.layout.camera;
         float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i])-z[i]*ArticulatedModel.Z_SCALE*c.scale;
         if(sx< -120 || sx>g.layout.width+120 || sy< -120 || sy>g.layout.height+120)return;
-        float fade=Math.min(1,life[i]/24f),size=(color[i]==0xffb9e9f4?4:11)*c.scale;
+        float fade=Math.min(1,life[i]/24f),size=(color[i]==0xffb9e9f4?2.5f+Math.min(210,travel[i])*.05f:11)*c.scale;
         float tail=Math.min(age[i]/60f,rocket[i]?.34f:.28f);
         float lift=z[i]*ArticulatedModel.Z_SCALE,px=x[i]+RiverCamera.riseX(lift),py=y[i]+RiverCamera.riseY(lift);
         float tz=z[i]-vz[i]*tail-40*tail*tail;
         float tx=x[i]-vx[i]*tail+RiverCamera.riseX(tz*ArticulatedModel.Z_SCALE),ty=y[i]-vy[i]*tail+RiverCamera.riseY(tz*ArticulatedModel.Z_SCALE);
-        float extent=flash[i]?120:18;
+        float extent=flash[i]?120:color[i]==0xffb9e9f4?40:18;
         float[] clip=ShoreOcclusion.region(g,c,Math.min(px,tx)-extent,Math.min(py,ty)-extent,Math.max(px,tx)+extent,Math.max(py,ty)+extent,depth(g,i));
         if(clip.length>0)p.pushClipOutside(clip);
         try{
