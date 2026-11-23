@@ -20,7 +20,7 @@ final class LevelAssetsTest {
             Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
-            check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Menu prepares upcoming selected level");
+            check(LevelAssets.upcoming(game)==LevelAssets.menu(),"Menu keeps stable title assets across selections");
             if(id==Challenges.RAFT_RESCUE || id==Challenges.SWIMMER_RESCUE){
                 check(includes(plan,SpriteAtlas.TUG) && includes(plan,SpriteAtlas.YACHT),"Rescue retains yacht rotations from earlier job");
                 if(id==Challenges.SWIMMER_RESCUE)check(java.util.Arrays.stream(preparation).noneMatch(a -> a==SpriteAtlas.SWIMMERS),"3D swimmers need no legacy atlas");

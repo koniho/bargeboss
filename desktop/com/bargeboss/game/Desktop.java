@@ -61,7 +61,7 @@ public final class Desktop extends JPanel {
         updateViewport();
         g.translate(viewport.x,viewport.y); g.scale(viewport.scale,viewport.scale);
         g.clip(new java.awt.geom.Rectangle2D.Float(0,0,viewport.logicalWidth(),viewport.logicalHeight())); g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        Renderer.draw(game,new DesktopPainter(g)); g.dispose();
+        game.render(new DesktopPainter(g)); g.dispose();
         frames.rendered(game);
     }
     public static void main(String[] args) {

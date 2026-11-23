@@ -30,7 +30,10 @@ development phone's measurements, not guarantees for every device/backend.
   worker must release the startup clock barrier and permit demand loading.
   hosts only prepare the supplied list; they must not infer requirements from
   visible objects or choose different sprites. Replace obsolete preparation on a
-  level change and unpin old-only frames. Keep shared frames reusable.
+  level change and unpin old-only frames. Keep shared frames reusable. Title and
+  harbor-selection menus retain a stable convoy manifest: browsing must not retire
+  title artwork or prepare a different full level on every card tap. Departure
+  switches to the selected level manifest before gameplay.
 - Prepare expensive static content before it becomes visible. Account for likely
   camera movement and zoom/density changes. Split preparation into bounded work,
   or prebuild during loading. Raster workers need private drawing state; bitmap-only

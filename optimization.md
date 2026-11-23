@@ -6406,3 +6406,34 @@ launch restored after capture; screen timeout restored to300000ms.
 - Signal checks, full Android build/checks and iOS simulator build passed. Native
   replay parity remains 310d2a08:2:1350. No connected Android device for installation
   or physical mix/performance validation; no frame-time improvement is claimed.
+
+## 2026-11-23: responsive menu selection and stable title preparation
+
+- Shared/Android code trace: `LevelAssets.upcoming` changed its plan whenever a
+  harbor card changed `challengeId`. Android `prepareRotations` then retired
+  old-only crops/source images and started preparing the newly selected full
+  gameplay set. The title convoy still needs its industrial cargo, so browsing
+  to Montrose could evict artwork that the title immediately needed again.
+  This identifies avoidable cache churn; no before/after latency percentile is
+  claimed from code inspection.
+- Shared menus now use one stable convoy manifest, independent of the highlighted
+  harbor. Set Sail switches to the complete location-specific plan, preserving
+  all-heading and future-phase prefetch. No cache-size increase or native-specific
+  selection rules. All hosts consume the same manifest.
+- Shared menu/reply feedback uses one bounded vector overlay and a 120 ms deferred
+  pointer release, with explicit redraw demand even while paused. No texture
+  generation, worker, or gameplay work occurs in rendering. A late callback is
+  capped so it cannot consume the entire acknowledgement in one update.
+- Regression checks cover manifest identity across locations, departure selection,
+  delayed commit, duplicate release, lifecycle cancellation and dialogue replies.
+  Shared renderer title/settings/dialogue captures reviewed in out/menu-feedback.
+  Build/device validation recorded below when complete.
+- Device follow-up: initial pulse restarted its brightness envelope on finger
+  release, producing a second flash after a held press. Release now samples the
+  current brightness and fades monotonically from there; a regression asserts
+  continuity at release and decreasing brightness on the following UI tick.
+- Final validation: full shared/asset checks and Android native encoding/build
+  passed; canonical replay remains 310d2a08:2:1350. Updated APK installed and
+  cold-launched successfully. Native harbor menu was visually reviewed before
+  the release-envelope correction; final continuity is covered by the new shared
+  regression. No measured device input-latency distribution or iOS-device test.

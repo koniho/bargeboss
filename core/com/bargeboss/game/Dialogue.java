@@ -34,7 +34,7 @@ public final class Dialogue {
         int rows=(count()+1)/2;
         return new Layout.Box(left+(i%2)*(width+16),g.layout.height-32-rows*62+(i/2)*62,width,50);
     }
-    private int hit(Game g,float x,float y){
+    int hit(Game g,float x,float y){
         for(int i=0;i<count();i++){
             Layout.Box b=choiceBox(g,i);
             if(b.contains(x,y)){

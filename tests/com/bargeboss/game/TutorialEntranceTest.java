@@ -29,6 +29,7 @@ public final class TutorialEntranceTest {
         root.pointerDown(4,b.centerX(),b.centerY());root.pointerUp(5,b.centerX(),b.centerY());
         check(g.dialogue.result()<0,"another finger cannot commit");
         root.pointerUp(4,b.centerX(),b.centerY());
+        check(g.dialogue.result()<0,"reply pulse precedes commit");ReplayInput.finishMenu(root);
         check(g.dialogue.result()==answer && RadioAudio.sequence(g)==2,"release selects one answer and transmits");
         for(int i=0;i<185;i++)root.step();
         check(!g.conversation() && g.tug==tug && g.teacherBoat()==teacher,"reply hands off same continuous scene");
@@ -38,12 +39,12 @@ public final class TutorialEntranceTest {
         for(int i=0;i<20;i++)root.step();
         Layout.Box fourth=g.dialogue.choiceBox(g,3);root.pointerDown(9,fourth.centerX(),fourth.centerY());g.background();
         root.pointerUp(9,fourth.centerX(),fourth.centerY());check(g.dialogue.result()<0,"background cancels pending reply");g.pause();
-        root.pointerDown(9,fourth.centerX(),fourth.centerY());root.pointerUp(9,fourth.centerX(),fourth.centerY());check(g.dialogue.result()==3,"fourth choice works outside arrival");
+        root.pointerDown(9,fourth.centerX(),fourth.centerY());root.pointerUp(9,fourth.centerX(),fourth.centerY());ReplayInput.finishMenu(root);check(g.dialogue.result()==3,"fourth choice works outside arrival");
         for(int count=1;count<=2;count++){
             String[] choices=count==1?new String[]{"ROGER"}:new String[]{"ROGER","STAND BY"};
             g.dialogue.show(g,"DISPATCH","RADIO CHECK","HOW DO YOU COPY?",choices);
             for(int i=0;i<20;i++)root.step();
-            Layout.Box choice=g.dialogue.choiceBox(g,count-1);root.pointerDown(10,choice.centerX(),choice.centerY());root.pointerUp(10,choice.centerX(),choice.centerY());
+            Layout.Box choice=g.dialogue.choiceBox(g,count-1);root.pointerDown(10,choice.centerX(),choice.centerY());root.pointerUp(10,choice.centerX(),choice.centerY());ReplayInput.finishMenu(root);
             check(g.dialogue.result()==count-1,"one/two choices use the same release routing");
         }
         for(int frame=0;frame<32;frame++)check(SpriteAtlas.pivotX(SpriteAtlas.TEACHER_TUG,frame)==TugArt.pivotX(frame) && SpriteAtlas.pivotY(SpriteAtlas.TEACHER_TUG,frame)==TugArt.pivotY(frame),"teacher preserves all registered poses");

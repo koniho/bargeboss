@@ -17,6 +17,8 @@ public final class LevelAssets {
         public int rotationFrames(){int count=0;for(int atlas:rotations)count+=SpriteAtlas.count(atlas);return count;}
     }
     // The continuous tutorial uses coal loads throughout, including its later tow-train steps.
+    private static final Plan MENU=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);
+    public static Plan menu(){return MENU;}
     private static final Plan TUTORIAL=new Plan(SpriteAtlas.FIREWORKS,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TEACHER_TUG,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);
     private static final Plan MONTROSE=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT,SpriteAtlas.BARGE);
     private static final Plan[] CHALLENGES=new Plan[Challenges.COUNT];
@@ -36,6 +38,6 @@ public final class LevelAssets {
     private LevelAssets(){}
     public static Plan tutorial(){return TUTORIAL;}
     public static Plan challenge(int id){return CHALLENGES[Challenges.valid(id)?id:0];}
-    /** Menu selection warms the upcoming challenge; practice gets its own complete manifest. */
-    public static Plan upcoming(Game root){Game game=root.activeGame();return game.tutorial!=null?TUTORIAL:challenge(game.challengeId);}
+    /** Menus retain a stable title convoy; only departure prepares a location manifest. */
+    public static Plan upcoming(Game root){Game game=root.activeGame();return game.mode==Game.TITLE || game.mode==Game.CHALLENGES || game.mode==Game.SETTINGS && game.tutorial==null?MENU:game.tutorial!=null?TUTORIAL:challenge(game.challengeId);}
 }

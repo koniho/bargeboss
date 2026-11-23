@@ -10,7 +10,7 @@ public final class CanalRadioTest {
         check(b.contactable(g),"bridge house is visible and available at staging point");
         root.pointerDown(73,b.houseX(g),b.houseY(g));root.pointerUp(73,b.houseX(g),b.houseY(g));
     }
-    private static void answer(Game root,int choice){Game g=root.activeGame();check(g.dialogue.ready(),"operator waits for a real reply");Layout.Box b=g.dialogue.choiceBox(g,choice);root.pointerDown(81,b.centerX(),b.centerY());root.pointerUp(81,b.centerX(),b.centerY());}
+    private static void answer(Game root,int choice){Game g=root.activeGame();check(g.dialogue.ready(),"operator waits for a real reply");Layout.Box b=g.dialogue.choiceBox(g,choice);root.pointerDown(81,b.centerX(),b.centerY());root.pointerUp(81,b.centerX(),b.centerY());ReplayInput.finishMenu(root);}
     public static void run(){
         for(float width:new float[]{960,1333,1600}){
             Game root=scene(width),g=root.activeGame();TutorialCanalBridge b=g.tutorial.canal;

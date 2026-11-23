@@ -105,7 +105,7 @@ public final class Parity implements Painter {
     private static void radio(Parity p){
         Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
         for(int tick=0;tick<460;tick++){
-            if(tick==280){Layout.Box box=g.dialogue.choiceBox(g,1);root.pointerDown(77,box.centerX(),box.centerY());root.pointerUp(77,box.centerX(),box.centerY());}
+            if(tick==280){Layout.Box box=g.dialogue.choiceBox(g,1);root.pointerDown(77,box.centerX(),box.centerY());root.pointerUp(77,box.centerX(),box.centerY());ReplayInput.finishMenu(root);}
             root.step();p.value(g.tug.x);p.value(g.teacherBoat().x);p.value(g.teacherBoat().vx);
             p.add(RadioAudio.sequence(root));p.add(RadioAudio.cue(root));p.add(g.dialogue.result());
             if(tick==100 || tick==270 || tick==281 || tick==400 || tick==459)Renderer.draw(root,p);
@@ -180,7 +180,7 @@ public final class Parity implements Painter {
         for(int i=0;i<410;i++) g.step();
         Renderer.draw(g,p); p.add(g.feeders[0].blockedTicks);
     }
-    private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); }
+    private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); ReplayInput.finishMenu(root); }
     private static void tutorial(Parity p) {
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN);
         for(int i=0;i<16000;i++) {

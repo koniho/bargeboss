@@ -20,7 +20,7 @@ public final class WeatherTest {
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){throw new AssertionError("no weather textures");}
     }
     private static Trace draw(Game g){Trace t=new Trace();WeatherView.backgroundFog(g,t);WeatherView.draw(g,t);return t;}
-    private static void tap(Game g,float x,float y){g.pointerDown(93,x,y);g.pointerUp(93,x,y);}
+    private static void tap(Game g,float x,float y){g.pointerDown(93,x,y);g.pointerUp(93,x,y);ReplayInput.finishMenu(g);}
     public static void run(){
         Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();
         Trace clear=draw(g);check(clear.lines+clear.rects+clear.materials==0,"clear weather costs no primitives");
@@ -62,7 +62,7 @@ public final class WeatherTest {
         g.settings.resetWeather();g.settings.developerWaves=true;tap(g,30,90);
         tap(g,250,196);check(g.settings.rainLevel()==1,"rain control");
         tap(g,250,228);check(g.settings.lightningLevel()==1,"lightning control");
-        g.pointerDown(93,250,196);g.pointerCancel(93);g.pointerUp(93,250,196);check(g.settings.rainLevel()==1,"cancel weather tap");
+        g.pointerDown(93,250,196);g.pointerCancel(93);g.pointerUp(93,250,196);ReplayInput.finishMenu(g);check(g.settings.rainLevel()==1,"cancel weather tap");
         tap(g,250,260);check(g.settings.fogLevel()==1,"fog control");
         tap(g,60,330);g.visualTicks+=4;check(WeatherView.flash(g)==1,"test flash peaks after four ticks");
         check(!g.pointer,"weather taps never steer");tap(g,200,330);

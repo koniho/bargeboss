@@ -17,6 +17,12 @@ public final class WaveControls {
         if(y>=278 && y<=306)return x<65?14:x>229?15:6;
         return y>=310?(x<147?11:5):6;
     }
+    Layout.Box feedbackBox(Game g,float x,float y){
+        if(!visible(g))return null;int action=hit(x,y);if(action<0 || action==6)return null;
+        if(action==0)return new Layout.Box(12,76,270,36);
+        if(action==11 || action==5)return new Layout.Box(action==11?12:147,310,135,44);
+        return new Layout.Box(x<65?12:229,118+(int)((y-118)/32)*32,53,28);
+    }
     boolean down(Game g,int id,float x,float y){if(!visible(g)||hit(x,y)<0)return false;if(pointer<0){pointer=id;pressed=hit(x,y);}return true;}
     boolean owns(int id){return pointer==id;}
     boolean up(Game g,int id,float x,float y){if(!owns(id))return false;

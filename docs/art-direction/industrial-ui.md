@@ -91,3 +91,25 @@ Cache padding includes italic sidebearings, parentheses and lowercase descenders
 Regeneration/license instructions live beside each retained source font in
 assets/fonts. `tools/TypographyReview.java` exports the shared-renderer specimen;
 `tools/UiStyleReview.java` exports menu/gameplay review frames to out/ui-type-v3.
+
+## Tap acknowledgement (2026-11-23)
+
+All pointer-driven menu selections, settings switches, developer controls and
+radio replies use shared `MenuFeedback`: a small translucent gold color pulse
+starts on contact, and a successful release keeps the current panel visible for
+seven fixed 60 Hz UI ticks (about 120 ms) before dispatching the original action. Heavy level initialization runs
+after that acknowledgement. This is a UI clock, independent of paused gameplay;
+`FrameGate` tracks its revision so static menus redraw through the pulse.
+Release captures the current pulse brightness and fades from that value; it must
+never restart the attack. Duplicate releases cannot dispatch twice. Drag-away, Back and lifecycle input
+cancellation clear pending actions. Continuous sliders and steering remain live.
+Direct world/replay down/up APIs retain their existing immediate semantics;
+real host pointer routing uses the acknowledgement. Tests using `ReplayInput.tap`
+finish the UI interval explicitly without advancing world simulation.
+
+`tools/MenuFeedbackReview.java` captures actual title, settings and reply pulses.
+Keep the pulse translucent so text remains readable; do not add sounds or new
+per-frame textures for this feedback.
+New discrete menu controls must register their actual screen-space hit bounds
+with `MenuFeedback.target` (or their panel's `feedbackBox`). Keep action routing
+in the original shared input handler; the feedback layer only defers its release.

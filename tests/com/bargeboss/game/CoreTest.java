@@ -24,6 +24,7 @@ public final class CoreTest {
         CameraCoverageTest.run();
         EngineAudioTest.run();
         AudioSettingsTest.run();
+        MenuFeedbackTest.run();
         SoundEffectsTest.run();
         FireAudioVisualTest.run();
         FlameArtTest.run();

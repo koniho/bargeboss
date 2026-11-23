@@ -75,6 +75,7 @@ public final class Game {
     public float guideX, guideY, pushX=-1, pushY;
     public boolean pushBlocked;
     public Tutorial tutorial;
+    final MenuFeedback menuFeedback=new MenuFeedback();
     public final Dialogue dialogue=new Dialogue();
     public final SoundEffects sounds=new SoundEffects();
     public final EngineHaptics engineHaptics=new EngineHaptics();
@@ -396,7 +397,7 @@ public final class Game {
         if(Challenges.calumet(id))test.voyage.developerJob(test,id);
         practice=test;returnToShift=false;
     }
-    public void render(Painter painter) { Renderer.draw(this,painter); developerPanel.draw(this,painter); }
+    public void render(Painter painter) { Renderer.draw(this,painter); developerPanel.draw(this,painter); activeGame().menuFeedback.draw(painter);if(practice!=null)menuFeedback.draw(painter); }
     public String status() {
         if(practice!=null) return practice.status();
         String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==SETTINGS?"Settings":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
@@ -469,6 +470,7 @@ public final class Game {
     }
     public float engineRumble(){Game g=activeGame();return g.engineHaptics.strength(g);}
     public void cancelInputs() {
+        menuFeedback.cancel();
         developerPanel.cancel();
         rescue.aiming=-1;waveControls.cancel();abilities.cancel();towRelease.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
@@ -478,8 +480,10 @@ public final class Game {
     }
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
-        if(developerPanel.down(this,id,x,y))return;
+        if(menuFeedback.busy())return;
+        if(developerPanel.down(this,id,x,y)){menuFeedback.down(this,id,x,y);return;}
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
+        menuFeedback.down(this,id,x,y);
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
         if(abilities.down(this,id,x,y))return;
@@ -515,6 +519,8 @@ public final class Game {
         if(pointer) mapPointer=id;
     }
     public void pointerMove(int id,float x,float y) {
+        if(menuFeedback.busy())return;
+        menuFeedback.move(id,x,y);
         if(developerPanel.move(this,id))return;
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(abilities.move(this,id,x,y))return;
@@ -532,6 +538,7 @@ public final class Game {
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
+        if(menuFeedback.release(id,x,y))return;
         if(developerPanel.up(this,id,x,y))return;
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(abilities.up(this,id,x,y))return;
@@ -555,6 +562,7 @@ public final class Game {
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
+        menuFeedback.cancel(id);
         developerPanel.cancel();
         if(practice!=null) { practice.pointerCancel(id); return; }
         if(waveControls.owns(id)){waveControls.cancel();return;}
@@ -566,7 +574,7 @@ public final class Game {
         if(pinchZoom.up(id))return;
         if(id==mapPointer) { cancel(); mapPointer=-1; }
     }
-    private void finishPractice() {
+    void finishPractice() {
         if(practice==null) return;
         // Explicit title navigation also discards a suspended voyage, instead of
         // following the tutorial's usual return-to-shift/completion behavior.
@@ -677,9 +685,10 @@ public final class Game {
     }
 
     public float holdProgress() { return pointer && held!=-1?Math.min(1,pressTicks/12f):0; }
-    public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
+    public void background() { menuFeedback.cancel();if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
     /** Host Back/Escape actions share navigation and input cancellation. */
     public void back() {
+        menuFeedback.cancel();
         if(developerPanel.back())return;
         if(practice!=null){practice.back();return;}
         if(mode==PLAY || mode==PAUSE){pause();return;}
@@ -886,8 +895,9 @@ public final class Game {
     }
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */
     public void advance(double seconds) {
+        menuFeedback.advance(this,seconds);
         if(developerPanel.open)return;
-        if(practice!=null) { practice.advance(seconds); return; }
+        if(practice!=null) { practice.advance(seconds); finishPractice(); return; }
         if(Double.isNaN(seconds) || seconds<=0) return;
         if(mode!=PLAY) {
             accumulator=0;

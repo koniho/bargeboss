@@ -19,6 +19,16 @@ public final class DeveloperPanel {
         if(y>=218 && y<426){int row=(int)((y-218)/52);return row<jobs(g).length?20+row:-1;}
         return y>=444 && g.activeGame().tutorial!=null?1:-1;
     }
+    Layout.Box feedbackBox(Game g,float x,float y){
+        if(!enabled(g) || hit(g,x,y)<0)return null;
+        if(!open)return new Layout.Box(12,16,160,36);
+        float left=(g.layout.width-700)/2;int action=hit(g,x,y);
+        if(action==0)return new Layout.Box(left+600,108,88,36);
+        if(action==2 || action==3)return new Layout.Box(left+(action==2?16:356),158,328,44);
+        if(action>=30 && action<42)return new Layout.Box(left+((action%2)==0?16:630),218+((action-30)/2)*36,54,32);
+        if(action>=50)return new Layout.Box(left+(action==50?16:356),448,328,40);
+        return new Layout.Box(left+16,action==1?448:218+(action-20)*52,668,action==1?40:46);
+    }
     private int[] jobs(Game g){return g.activeGame().tutorial!=null?new int[0]:Challenges.locationJobs(g.activeGame().challengeId);}
     boolean down(Game g,int id,float x,float y){
         if(!enabled(g))return false;int action=hit(g,x,y);

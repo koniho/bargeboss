@@ -14,7 +14,14 @@ public final class ReplayInput {
         g.montroseArrival.clear();g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
         g.dialogue.close(g);g.mission.setup(g);return g;
     }
-    public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
+    public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); finishMenu(g); }
+    static void finishMenu(Game root){
+        for(int i=0;i<12 && (root.menuFeedback.busy() || root.activeGame().menuFeedback.busy());i++){
+            root.menuFeedback.advance(root,1.0/60);
+            if(root.activeGame()!=root)root.activeGame().menuFeedback.advance(root.activeGame(),1.0/60);
+        }
+        root.finishPractice();
+    }
     public static void tap(Game g,Layout.Box box) {
         if(box==Layout.LEARN && g.mode==Game.TITLE && g.activeGame()==g){
             tap(g,Layout.CHALLENGES);tap(g,Layout.TRAINING_HARBOR);tap(g,Layout.CHALLENGE_START);return;
@@ -278,7 +285,7 @@ public final class ReplayInput {
     public static void tutorial(Game root) {
         Game g=root.activeGame();
         if(g.tutorial.entering){
-            if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);root.pointerDown(991,b.centerX(),b.centerY());root.pointerUp(991,b.centerX(),b.centerY());}
+            if(g.dialogue.ready()){Layout.Box b=g.dialogue.choiceBox(g,0);root.pointerDown(991,b.centerX(),b.centerY());root.pointerUp(991,b.centerX(),b.centerY());finishMenu(root);}
             return;
         }
         if(g.tutorial.instructorRadio.teach){InstructorRadio radio=g.tutorial.instructorRadio;tap(root,radio.x(g),radio.y(g));return;}
