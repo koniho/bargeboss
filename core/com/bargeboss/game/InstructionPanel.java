@@ -123,7 +123,7 @@ final class InstructionPanel {
     /** Keep bridge radio callouts below the fixed expanded instruction plate. */
     static float radioY(Game g,float x,float y){return x>=g.layout.width-590 && y>=0 && y<228?228:y;}
     void draw(Game g,Painter p){
-        float width=g.tutorial!=null?544:432;
+        float width=g.tutorial!=null || g.montroseStage()?544:432;
         float x=g.layout.width-width-18,y=68;
         paint(p,x,y,width);
         Content shown=content==null?TutorialView.instructionContent(g):content;

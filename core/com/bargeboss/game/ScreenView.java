@@ -11,9 +11,10 @@ public final class ScreenView {
     private static void headingCenter(Painter p,String s,float x,float y,float size,float width,int c){Lettering.centerHeading(p,s,x,y,Math.min(size,width/Math.max(1,Lettering.headingWidth(s,1))),c);}
     public static void hud(Game g,Painter p) {
         float width=Math.min(720,g.layout.width-32),x=(g.layout.width-width)*.5f;
-        String title=g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
+        String title=g.montroseArrival.active()?"MONTROSE HARBOR":g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
         String subtitle;
-        if(g.tutorial!=null) {
+        if(g.montroseArrival.active())subtitle="ARRIVING FROM LAKE MICHIGAN";
+        else if(g.tutorial!=null) {
             subtitle=g.tutorial.entering?"DOCKSIDE RADIO / CHANNEL 08":"CAPTAIN TRAINING";
             if(g.trainingChannel())subtitle+=" / GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1);
         } else if(g.lockStage()) {

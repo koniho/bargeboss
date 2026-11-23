@@ -74,7 +74,7 @@ public final class OverviewMapPixelTest {
         for(int stage=0;stage<4;stage++)for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT})for(float level:new float[]{0,1f/3,1}) {
             Game g=new Game();
             if(stage==0)ReplayInput.controlFixture(g);
-            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.dialogue.close(g);}
+            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.montroseArrival.clear();g.dialogue.close(g);}
             g.settings.setJoystickSide(side);
             Layout.Box slider=OverviewMap.sliderBounds(g),map=OverviewMap.bounds(g);
             ReplayInput.tap(g,slider.x+24+(slider.w-48)*level,slider.centerY());

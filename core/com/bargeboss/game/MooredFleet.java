@@ -2,11 +2,11 @@ package com.bargeboss.game;
 
 /** Per-game damped, finite berth tethers. Shared fixed steps own all movement. */
 public final class MooredFleet {
-    static final float REACH=2.5f,YAW=.065f;
+    static final float REACH=4f,YAW=.10f;
     static final class FloatBoat {
         final MooredBoats.Berth berth;final float[] hull=new float[8];final boolean roomy;
         float x,y,vx,vy,yaw,spin,heave,wakeHeave;
-        FloatBoat(MooredBoats.Berth b){berth=b;x=b.x;y=b.y;updateHull();boolean room=true;for(int corner=0;corner<8;corner+=2)for(int n=0;n<16;n++){double a=n*StrictMath.PI/8;if(!MontroseHarbor.contains(hull[corner]+5*(float)StrictMath.cos(a),hull[corner+1]+5*(float)StrictMath.sin(a)))room=false;}roomy=room;}
+        FloatBoat(MooredBoats.Berth b){berth=b;x=b.x;y=b.y;updateHull();boolean room=true;for(int corner=0;corner<8;corner+=2)for(int n=0;n<16;n++){double a=n*StrictMath.PI/8;if(!MontroseHarbor.contains(hull[corner]+9*(float)StrictMath.cos(a),hull[corner+1]+9*(float)StrictMath.sin(a)))room=false;}roomy=room;}
         void updateHull(){float a=berth.angle+yaw,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*berth.length*.48f,v=(i==0||i==3?-1:1)*berth.width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}}
         boolean clear(){for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(hull[i],hull[i+1]))return false;return true;}
@@ -26,13 +26,16 @@ public final class MooredFleet {
     public void step(Game g){if(!g.montroseStage())return;
         for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
             g.water.buoyForce(g,b.x,b.y,force);
+            // Amplify only propagated wake motion, leaving sheltered idle water calm.
+            float seaX=SeaWaves.value(g,b.x,b.y,g.visualTicks,1)*1.4f,seaY=SeaWaves.value(g,b.x,b.y,g.visualTicks,2)*1.4f;
+            force[0]=seaX+(force[0]-seaX)*3;force[1]=seaY+(force[1]-seaY)*3;
             float spring=.45f+.9f*Math.max(0,Physics.length(dx,dy)-REACH*.55f);
             b.vx+=(force[0]*1.6f-dx*spring-b.vx*.95f)*Physics.DT;b.vy+=(force[1]*1.6f-dy*spring-b.vy*.95f)*Physics.DT;
             b.x+=b.vx*Physics.DT;b.y+=b.vy*Physics.DT;
             b.spin+=((force[0]-force[1])*.035f-b.yaw*.8f-b.spin*1.2f)*Physics.DT;b.yaw+=b.spin*Physics.DT;
             float height=g.water.height(g,b.x,b.y,g.visualTicks,null);
             float sea=SeaWaves.value(g,b.x,b.y,g.visualTicks,0);
-            b.wakeHeave+=((height-sea)*.55f-b.wakeHeave)*.12f;b.heave=sea+b.wakeHeave;
+            b.wakeHeave+=((height-sea)*1.35f-b.wakeHeave)*.12f;b.heave=sea+b.wakeHeave;
             b.constrain();
         }
         for(int i=1;i<order.length;i++){int value=order[i],j=i-1;FloatBoat b=boats[value];while(j>=0 && boats[order[j]].y-boats[order[j]].x>b.y-b.x){order[j+1]=order[j];j--;}order[j+1]=value;}

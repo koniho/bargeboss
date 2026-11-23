@@ -55,7 +55,7 @@ final class OverviewMapTest {
     private static void zoomControls(){
         for(int stage=0;stage<4;stage++) {
             Game g=new Game();if(stage==0)ReplayInput.controlFixture(g);
-            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.dialogue.close(g);}
+            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.montroseArrival.clear();g.dialogue.close(g);}
             OverviewMap.Chart c=OverviewMap.chart(g);
             Layout.Box slider=OverviewMap.sliderBounds(g);
             RiverCamera camera=g.layout.camera;
@@ -87,7 +87,7 @@ final class OverviewMapTest {
             check(!g.overview.active && !g.pointer,"background cancels slider capture");
             g.pause();g.pointerDown(10,slider.centerX(),slider.centerY());g.pointerCancel(10);
             check(!g.overview.active && !g.pointer,"touch cancel releases slider");
-            g.reset();g.dialogue.close(g);check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
+            g.reset();g.montroseArrival.clear();g.dialogue.close(g);check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
         }
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);
         for(int lesson=Tutorial.MOVE;lesson<Tutorial.MAP;lesson++){practice.tutorial.lesson=lesson;check(!OverviewMap.visible(practice),"map hidden before map lesson");Layout.Box hidden=OverviewMap.sliderBounds(practice);check(!OverviewMap.sliderHit(practice,hidden.centerX(),hidden.centerY()),"hidden slider cannot capture touch");}

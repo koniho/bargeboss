@@ -6,18 +6,21 @@ public final class Buoys {
         public final float anchorX,anchorY,radius,mass,reach;
         public float x,y,vx,vy,roll,rollVelocity;
         int contactTicks;
+        boolean yielding;float contactBob;
         public float waterX(){return x;}
         public float waterY(){return y;}
-        Buoy(float x,float y,float size){
-            anchorX=this.x=x;anchorY=this.y=y;radius=size*.27f;mass=size*.014f;reach=size*.55f;
+        Buoy(float x,float y,float size){this(x,y,size,false);}
+        Buoy(float x,float y,float size,boolean yielding){
+            this.yielding=yielding;anchorX=this.x=x;anchorY=this.y=y;radius=size*.27f;mass=size*.014f;reach=yielding?30:size*.55f;
         }
     }
     private Buoy[] floats=new Buoy[0];
     private final float[] force=new float[2];
     public void reset(Game g){
         floats=new Buoy[NavigationLights.count(g)];
-        for(int i=0;i<floats.length;i++)if(!NavigationLights.land(g,i))
-            floats[i]=new Buoy(NavigationLights.anchorX(g,i),NavigationLights.anchorY(g,i),NavigationLights.size(g,i));
+        for(int i=0;i<floats.length;i++)if(!NavigationLights.land(g,i)){
+            floats[i]=new Buoy(NavigationLights.anchorX(g,i),NavigationLights.anchorY(g,i),NavigationLights.size(g,i),g.montroseStage() && i>=2);
+        }
     }
     /** Uninitialized preview/stage fixtures fall back to anchors without mutating during drawing. */
     public Buoy get(Game g,int i){
@@ -32,7 +35,7 @@ public final class Buoys {
             if(get(g,i)==null){reset(g);break;}
         }
         for(Buoy b:floats)if(b!=null){
-            if(b.contactTicks>0)b.contactTicks--;
+            if(b.contactTicks>0)b.contactTicks--;b.contactBob*=.92f;
             g.water.buoyForce(g,b.x,b.y,force);
             float dx=b.x-b.anchorX,dy=b.y-b.anchorY,d=Physics.length(dx,dy);
             // Slack chain gives way easily, then loads progressively before its finite limit.
@@ -63,7 +66,7 @@ public final class Buoys {
         out[0]=x;out[1]=y;
         float dx=x-g.tug.x,dy=y-g.tug.y,length2=dx*dx+dy*dy;
         if(length2<1)return;
-        for(Buoy b:floats)if(b!=null){
+        for(Buoy b:floats)if(b!=null && !b.yielding){
             float t=Physics.clamp(((b.x-g.tug.x)*dx+(b.y-g.tug.y)*dy)/length2,0,1);
             float clearance=g.tug.half+g.tug.radius+b.radius+4;
             if(Physics.length(g.tug.x+dx*t-b.x,g.tug.y+dy*t-b.y)>=clearance)continue;
@@ -93,8 +96,9 @@ public final class Buoys {
     }
     private static void constrain(Game g,Buoy b){
         float dx=b.x-b.anchorX,dy=b.y-b.anchorY,d=Physics.length(dx,dy);
-        if(d>b.reach){
-            float nx=dx/d,ny=dy/d;b.x=b.anchorX+nx*b.reach;b.y=b.anchorY+ny*b.reach;
+        float reach=b.reach;
+        if(d>reach){
+            float nx=dx/d,ny=dy/d;b.x=b.anchorX+nx*reach;b.y=b.anchorY+ny*reach;
             float outward=b.vx*nx+b.vy*ny;
             if(outward>0){b.vx-=outward*nx;b.vy-=outward*ny;}
         }
@@ -112,10 +116,21 @@ public final class Buoys {
             }
         }
     }
+    /** Mooring balls yield completely: no position, velocity or torque writes to the vessel. */
+    private static void yieldingContact(Game g,Buoy b,Body body){
+        for(int disc=0;disc<3;disc++){float hx=body.discX(disc),hy=body.discY(disc),dx=b.x-hx,dy=b.y-hy,d=Physics.length(dx,dy),radius=body.radius+b.radius;
+            if(d>=radius)continue;float nx=d>.001f?dx/d:-(float)StrictMath.sin(body.angle),ny=d>.001f?dy/d:(float)StrictMath.cos(body.angle);
+            float speed=Math.max(0,body.vx*nx+body.vy*ny-b.vx*nx-b.vy*ny);
+            g.splashes.contact(body,b,hx+nx*body.radius,hy+ny*body.radius,body.vx,body.vy,b.vx,b.vy,speed);
+            b.x=hx+nx*(radius+.1f);b.y=hy+ny*(radius+.1f);b.vx+=nx*Math.min(12,speed);b.vy+=ny*Math.min(12,speed);
+            b.rollVelocity=Physics.clamp(b.rollVelocity+(nx+ny)*.5f,-1.8f,1.8f);b.contactBob=Math.min(1.5f,b.contactBob+.45f);
+        }
+    }
     /** Disc contact transfers linear impulse and torque; a taut tether transfers resistance to the hull. */
     static void contact(Game g,Buoy b,Body body,boolean fixed){
         if(body==null || !body.active || Math.abs(body.x-b.x)>body.half+body.radius+b.radius
                 || Math.abs(body.y-b.y)>body.half+body.radius+b.radius)return;
+        if(b.yielding){yieldingContact(g,b,body);return;}
         boolean touched=false;
         for(int disc=0;disc<3;disc++){
             float hx=body.discX(disc),hy=body.discY(disc),dx=b.x-hx,dy=b.y-hy;

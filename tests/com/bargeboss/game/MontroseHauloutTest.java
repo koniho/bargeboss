@@ -5,11 +5,11 @@ public final class MontroseHauloutTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
     public static Game voyage(boolean log){
-        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();Body boat=g.cargo[0],tug=g.tug;
+        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.montroseArrival.clear();g.mission.setup(g);MontroseDockmaster.dispatch(g);Body boat=g.cargo[0],tug=g.tug;
         check(g.challengeId==Challenges.HAULOUT && boat.cruiser,"Montrose opens on disabled cruiser job");
         check(Physics.length(tug.x-MontroseHarbor.SLIP_X,tug.y-MontroseHarbor.SLIP_Y)<200,"Tug starts beside large yacht slip");
         check(g.dialogue.dockmasterConversation() && g.radio.transmitter()==RadioAudio.DOCKMASTER,"Dockmaster dispatches opening mission");
-        check(g.dialogue.content().header.equals("DOCKMASTER / MONTROSE") && g.dialogue.content().waiting,"Role label and waiting star, no personal name");
+        check(g.dialogue.content().header.equals("GAVIN / MONTROSE DOCKMASTER") && g.dialogue.content().waiting,"Named dockmaster and waiting star");
         int initialScore=g.score;
         for(int i=0;i<30;i++)g.step();check(g.dialogue.ready() && g.score==initialScore,"Waiting for reply does not complete job");
         for(int tick=0;tick<6000 && !boat.deliveryRecorded;tick++){
@@ -30,7 +30,7 @@ public final class MontroseHauloutTest {
         for(int y=100;y<200;y+=10)check(!MontroseHarbor.openWater(MontroseHaulout.X,MontroseHarbor.mapY(y)),"Connected hardstand behind well");
         Body b=new Body(77,2,MontroseHaulout.X,MontroseHaulout.Y,MontroseHaulout.ANGLE,true,true);
         check(MontroseHaulout.fits(b),"Cruiser fits inside well");b.angle=0;check(!MontroseHaulout.fits(b),"Sideways hull cannot pass alignment check");
-        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.dialogue.close(g);b=g.cargo[0];b.awaitingPickup=false;b.x=MontroseHaulout.X;b.y=MontroseHaulout.Y;
+        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.montroseArrival.clear();g.dialogue.close(g);b=g.cargo[0];b.awaitingPickup=false;b.x=MontroseHaulout.X;b.y=MontroseHaulout.Y;
         for(int i=0;i<180;i++)g.step();check(!b.deliveryRecorded && !g.haulout.warping,"No haulout credit without towing and releasing");
         voyage(false);System.out.println(checks+" haulout survey, radio, public tow, handoff and continuity checks passed");
     }

@@ -16,8 +16,8 @@ public final class MooredBoatsTest {
         for(MooredBoats.Berth b:MooredBoats.BERTHS){kinds[b.kind]=true;check(b.y-b.x>=previous,"depth order");previous=b.y-b.x;
             check(b.frame>=0 && b.frame<SpriteAtlas.count(SpriteAtlas.MOORED_BOATS),"atlas range");
             for(int i=0;i<8;i+=2)check(MontroseHarbor.contains(b.hull[i],b.hull[i+1]),"dry hull corner");
-            check(!MontroseHarbor.contains(b.ax,b.ay),"stern line must attach to dock");
-            check(!MontroseHarbor.contains(b.bx,b.by),"bow line must attach to dock");
+            check(b.mooring>=0 || !MontroseHarbor.contains(b.ax,b.ay),"stern line must attach to dock");
+            check(b.mooring>=0 || !MontroseHarbor.contains(b.bx,b.by),"bow line must attach to dock");
             check(Physics.length(b.x-MontroseHarbor.SLIP_X,b.y-MontroseHarbor.SLIP_Y)>50,"mission bay reserved");
         }
         for(boolean present:kinds)check(present,"each boat design placed");

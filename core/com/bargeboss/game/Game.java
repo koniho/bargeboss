@@ -43,6 +43,7 @@ public final class Game {
     public MontroseRescue rescue=new MontroseRescue();
     public CalumetVoyage voyage=new CalumetVoyage();
     public boolean montroseComplete;
+    final MontroseArrival montroseArrival=new MontroseArrival();
     private int montroseJobScore;
     public Body trafficBoat;
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
@@ -77,7 +78,7 @@ public final class Game {
     public final EngineHaptics engineHaptics=new EngineHaptics();
     public final RadioAudio radio=new RadioAudio(sounds);
     public Body teacherBoat(){return tutorial==null || tutorial.arrival==null?null:tutorial.arrival.teacher;}
-    public boolean conversation(){return dialogue.active || MontroseHaulout.active(this) && haulout.radio.waiting() || tutorial!=null && (tutorial.entering || tutorial.instructorRadio.phase!=0);}
+    public boolean conversation(){return montroseArrival.active() || dialogue.active || MontroseHaulout.active(this) && haulout.radio.waiting() || tutorial!=null && (tutorial.entering || tutorial.instructorRadio.phase!=0);}
     public static final int HAPTIC_TICK=1, HAPTIC_CONTACT=2, HAPTIC_IMPACT=3, HAPTIC_SUCCESS=4;
     public boolean hapticsEnabled=true;
     private int hapticPending, hapticCooldown, contactCooldown, contactId=-1, mapPointer=-1;
@@ -197,6 +198,7 @@ public final class Game {
         RiverCamera c=layout.camera;
         layout=new Layout(width,height,c.worldTop,c.worldRight,c.zoom);
         if(tutorial!=null) fitTutorialCamera();
+        if(montroseArrival.active())montroseArrival.camera(this);
         if(practice!=null) practice.configureCanvas(width,height);
     }
     public boolean trainingChannel() { return tutorial!=null && tutorial.lesson==Tutorial.CHANNEL; }
@@ -288,6 +290,7 @@ public final class Game {
                 layout.height*(practiceView?.59f:.52f));
     }
     private void updateCamera() {
+        if(montroseArrival.active()){montroseArrival.camera(this);return;}
         RiverCamera c=layout.camera;
         if(pinchZoom.active())return;
         if(ropeDragging || towAiming || ropePhase!=0 || MontroseRescue.swimmers(this) && (rescue.aiming>=0 || rescue.flying>=0)){cameraZoomHoldTicks=90;return;}
@@ -403,6 +406,7 @@ public final class Game {
     void resetPracticeYard(){reset(true);}
     private void reset(boolean practiceYard) {
         if(trainingSelected && !practiceYard){startTutorial();return;}
+        boolean locationArrival=developerStart<0;montroseArrival.clear();
         stageLighting=LightingProfile.preset(nextLighting);abilities.reset();
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
@@ -433,7 +437,7 @@ public final class Game {
         buoys=new Buoys();buoys.reset(this);mooredFleet=new MooredFleet();mooredFleet.reset(this);splashes=new CollisionSplashes();
         ShorelineView.prepare(this);
         DockView.prepare(this);
-        if(montroseStage())MontroseDockmaster.dispatch(this);
+        if(montroseStage()){if(locationArrival)montroseArrival.start(this);else MontroseDockmaster.dispatch(this);}
     }
     void addCargo(int berth, float x, float y) {
         for(int i=0;i<cargo.length;i++) if(cargo[i]==null || !cargo[i].active) {
@@ -880,6 +884,9 @@ public final class Game {
         crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
+        if(montroseStage() && montroseArrival.active()){
+            montroseArrival.step(this);water.step(this);mooredFleet.step(this);smoke.step(this);buildingFades.step(this);return;
+        }
         if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);
         if(tutorial!=null){tutorial.fireworks.step(this);tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){

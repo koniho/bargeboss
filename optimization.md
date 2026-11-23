@@ -6055,3 +6055,34 @@ launch restored after capture; screen timeout restored to300000ms.
   1536 registered canopy frames and octahedral normal coverage. Replay is
   47b7cc4d:2:1350. Reviewed the full32-heading sprite contact sheet. Built,
   installed and launched Android; iOS hardware validation remains deferred.
+
+### 2026-11-23 — Montrose arrival, Gavin and wake-reactive moorings
+- Added a six-second deterministic south-to-north arrival toward the inlet.
+  Tug movement and camera pan use the same fixed-step phase; scene effects stay
+  alive while objectives/input wait. Welcome from Gavin precedes first dispatch;
+  reply hands off without repositioning the tug. Developer mission fixtures can
+  bypass arrival; added a montrose-arrival profiling scene.
+- Generated/packed a six-frame Gavin portrait with registered shoulder pivots,
+  transparent padding and level-scoped preparation. Reuses shared radio audio,
+  panel, inward-facing portrait and choice controls. No native gameplay fork.
+- Added three sprite sailboats on existing western mooring balls with bow lines.
+  Amplified propagated-wake force3x and bob response from .55 to1.35, preserving
+  baseline sea motion and finite berth constraints. No extra wake traversal;
+  ambient subtraction uses the inexpensive analytic sea field.
+- Montrose mooring balls yield to collision without writing vessel position,
+  velocity or torque. They bob/dip and spring back; other navigation floats
+  retain normal collision behavior. Ball tethers allow slack for displacement.
+- Targeted arrival/path/resize/pause/input, radio/portrait, all-heading sprite,
+  one-way buoy contact, recovery and real passing-wake tests passed. Full build,
+  scene review and native profiling follow below.
+- Core/asset checks passed with replay31e4f200:2:1350. Updated existing control
+  and map pixel fixtures to explicitly bypass the new modal arrival; reran the
+  affected map pixels and remaining asset/portrait checks, then built native
+  Android from those checked sources. Native encoder/clip checks passed.
+- Android arrival capture20261123-010621 (420 frames, no warmup): draw p50/p95
+  6.682/13.264ms, intervals16.664/22.126ms. Mooring-field capture010700
+  (180 frames after120 warmup): draw5.628/7.382ms, intervals16.678/21.426ms.
+  These are different scenes, not an A/B speedup claim or locked60 presentation.
+  Reviewed native welcome portrait, inlet composition and sprite sailboat field.
+- Installed and launched Android. iOS hardware and native Canvas fallback remain
+  untested. Review copies registered in Photos/BargeBoss (MediaStore18153–18156).

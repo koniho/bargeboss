@@ -11,7 +11,7 @@ public final class ReplayInput {
     /** Isolated later Montrose job; production entry starts with the haulout. */
     static Game montroseJob(int id){
         Game g=new Game();g.challengeId=Challenges.MONTROSE;g.reset();
-        g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        g.montroseArrival.clear();g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
         g.dialogue.close(g);g.mission.setup(g);return g;
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }

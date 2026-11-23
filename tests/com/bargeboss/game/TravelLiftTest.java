@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class TravelLiftTest {
     private static int checks;
     private static void check(boolean ok,String why){checks++;if(!ok)throw new AssertionError(why);}
-    static Game scene(){Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.dialogue.close(g);return g;}
+    static Game scene(){Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.montroseArrival.clear();g.mission.setup(g);g.dialogue.close(g);return g;}
     static void call(Game g){ReplayInput.tap(g,TravelLiftRadio.x(g),TravelLiftRadio.y(g));check(g.haulout.radio.waiting(),"Tap transmits request and waits for operator");for(int i=0;i<65;i++)g.step();check(g.dialogue.ready(),"Operator offers a selectable radio response");}
     static void reply(Game g,int choice){Layout.Box b=g.dialogue.choiceBox(g,choice);ReplayInput.tap(g,b.centerX(),b.centerY());for(int i=0;i<40;i++)g.step();}
     public static void run(){

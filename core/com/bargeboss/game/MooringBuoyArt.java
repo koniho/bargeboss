@@ -35,8 +35,11 @@ final class MooringBuoyArt {
     }
     private MooringBuoyArt(){}
     static void draw(Game g,Painter p,float wx,float wy,float size){
+        draw(g,p,wx,wy,size,0);
+    }
+    static void draw(Game g,Painter p,float wx,float wy,float size,float contactBob){
         RiverCamera c=g.layout.camera;float radius=size*.27f,scale=radius*c.scale;
-        float heave=g.water.height(g,wx,wy,g.visualTicks,null),x=c.screenX(wx,wy),y=c.screenY(wx,wy)-heave*c.scale;
+        float heave=g.water.height(g,wx,wy,g.visualTicks,null)-contactBob,x=c.screenX(wx,wy),y=c.screenY(wx,wy)-heave*c.scale;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         p.pushClipOutside(ShoreOcclusion.region(g,c,wx-size,wy-size,wx+size,wy+size,c.screenY(wx,wy)));
         try{for(Face f:FACES){float[] q=f.screen;

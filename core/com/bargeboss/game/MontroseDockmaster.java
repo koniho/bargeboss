@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Montrose dispatch voice. The reference name is deliberately absent from player copy. */
+/** Gavin, Montrose dockmaster: welcome and contiguous job dispatch. */
 public final class MontroseDockmaster {
     private MontroseDockmaster(){}
     public static void dispatch(Game g){
@@ -24,6 +24,6 @@ public final class MontroseDockmaster {
                 reply="COPY. KEEPING THE HULL CLEAR.";break;
             default:return;
         }
-        g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"DOCKMASTER / MONTROSE",title,detail,reply);
+        g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",title,detail,reply);
     }
 }

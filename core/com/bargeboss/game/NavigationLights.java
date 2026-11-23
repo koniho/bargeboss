@@ -97,7 +97,7 @@ public final class NavigationLights {
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;
         if(land(g,i)){LandMarkerArt.draw(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));return;}
-        if(mooring(g,i)){MooringBuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i));return;}
+        if(mooring(g,i)){Buoys.Buoy b=g.buoys.get(g,i);MooringBuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),b==null?0:b.contactBob);return;}
         BuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),frame(g,i),color(g,i),power(g,i),practice(g,i)?practiceIndex(g,i)+1:0,roll(g,i));
     }
 }

@@ -8,7 +8,7 @@ public final class MooredBoats {
         public final float x,y,angle,length,width,ax,ay,bx,by;
         public final int frame,kind;
         final float[] hull;
-        int row=-1,station,side;
+        int row=-1,station,side,mooring=-1;
         public final int bimini;
         Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by,int bimini){
             this.bimini=bimini;this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
@@ -45,6 +45,9 @@ public final class MooredBoats {
             boolean valid=true;for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(berth.hull[i],berth.hull[i+1]))valid=false;
             if(valid)out.add(berth);
         }
+        int[] balls={1,9,17};
+        for(int i=0;i<balls.length;i++){float[] ball=MontroseHarbor.MOORINGS[balls[i]];int kind=3+i;
+            Berth b=new Berth(ball[0],ball[1]+length(kind)*.5f+15,-(float)Math.PI/2,0,kind,ball[0],ball[1],ball[0],ball[1],0);b.mooring=balls[i];out.add(b);}
         out.sort((a,b)->Float.compare(a.y-a.x,b.y-b.x));return out.toArray(new Berth[out.size()]);
     }
     public static int count(Game g){return g.montroseStage()?g.mooredFleet.boats.length:0;}
@@ -67,6 +70,13 @@ public final class MooredBoats {
             if(rippleClip.length>0)p.pushClipOutside(rippleClip);
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}
+        }
+        if(b.mooring>=0){
+            int ball=b.mooring+2;float bx=NavigationLights.x(g,ball),by=NavigationLights.y(g,ball);
+            float tipX=wx+(float)StrictMath.cos(angle)*b.length*.45f,tipY=wy+(float)StrictMath.sin(angle)*b.length*.45f;
+            float sx=c.screenX(tipX,tipY),sy=c.screenY(tipX,tipY)-(heave+2)*c.scale,ex=c.screenX(bx,by),ey=c.screenY(bx,by)-c.scale;
+            p.line(sx,sy,(sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,.8f*c.scale,0x998d9c99);
+            p.line((sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,ex,ey,.8f*c.scale,0x998d9c99);
         }
         dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
         dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),

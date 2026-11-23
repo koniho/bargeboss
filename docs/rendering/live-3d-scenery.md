@@ -109,3 +109,12 @@ the material. BoatMaterialTest checks lamp reception and normal response;
 VertexShadePixelTest checks color/alpha interpolation, and VulkanEncodingTest
 checks premultiplied vertex transport. This is procedural shading, not a painted
 texture replacement or proof of native iOS visual parity.
+
+### Production rollback, 2026-11-23
+
+The user rejected the live marina/active cruiser appearance. Production now
+uses sprites at every zoom, with no HarborBoatModel preparation at stage start.
+The live helpers and material studies are retained for offline comparison only.
+Do not reactivate them without a new art review. Boat sprite depth and registered
+canvas/normal layers are now baked with a supersampled per-pixel depth buffer;
+never restore average-face sorting for overlapping roofs and hulls.
