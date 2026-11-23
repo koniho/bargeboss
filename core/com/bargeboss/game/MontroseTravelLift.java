@@ -77,17 +77,23 @@ public final class MontroseTravelLift {
     }
     static void drawRange(Game g,Painter p,float min,float max,float[] shore){
         Rig rig=g.haulout.rig;if(rig==null)return;
+        boolean suspension=rig.pose.overlapsDepth(min,max);
+        if(!suspension && !FAR_POSE.overlapsDepth(min,max) && !NEAR_POSE.overlapsDepth(min,max) && !TOP_POSE.overlapsDepth(min,max))return;
         // Disjoint X slabs: far chassis x>=36, rig |x|<=28, near chassis x<=-36.
         // Header undersides sit above every moving block and are drawn last.
         FAR.drawRange(g,p,FAR_POSE,min,max);
-        p.pushClipOutside(shore);
+        // Vertical cords share the webbing's XY/depth bounds. Do not install a
+        // potentially large shore mask for unrelated particle/vessel slices.
+        if(suspension){
+        if(shore.length>0)p.pushClipOutside(shore);
         try{STRAPS.drawRange(g,p,rig.pose,min,max);
         for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2){
             float[] a=rig.anchor(side*26,end*24,4);float depth=a[1]-a[0];if(depth<=min || depth>max)continue;
             RiverCamera c=g.layout.camera;float sx=c.screenX(a[0],a[1]),sy=c.screenY(a[0],a[1]);
             p.line(sx,sy-(MontroseHarbor.LAND_RISE+71*SCALE*ArticulatedModel.Z_SCALE)*c.scale,sx,sy-a[2]*ArticulatedModel.Z_SCALE*c.scale,Math.max(.6f,.8f*c.scale),0xff6b746f);
         }
-        }finally{p.popClip();}
+        }finally{if(shore.length>0)p.popClip();}
+        }
         NEAR.drawRange(g,p,NEAR_POSE,min,max);TOP.drawRange(g,p,TOP_POSE,min,max);
     }
 }

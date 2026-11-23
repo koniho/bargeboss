@@ -7,7 +7,36 @@ public final class TravelLiftTest {
     static Game scene(){Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.montroseArrival.clear();g.mission.setup(g);g.dialogue.close(g);return g;}
     static void call(Game g){ReplayInput.tap(g,TravelLiftRadio.x(g),TravelLiftRadio.y(g));check(g.haulout.radio.waiting(),"Tap transmits request and waits for operator");for(int i=0;i<65;i++)g.step();check(g.dialogue.ready(),"Operator offers a selectable radio response");}
     static void reply(Game g,int choice){Layout.Box b=g.dialogue.choiceBox(g,choice);ReplayInput.tap(g,b.centerX(),b.centerY());for(int i=0;i<40;i++)g.step();}
+    private static final class Clips implements Painter {
+        int pushes,pops,draws;
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){draws++;}
+        public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){draws++;}
+        public void pushClipOutside(float[] triangles){pushes++;}
+        public void popClip(){pops++;}
+        public void rect(float x,float y,float w,float h,int color){draws++;}
+        public void circle(float x,float y,float r,int color){draws++;}
+        public void poly(float[] xy,int color){draws++;}
+        public void line(float x,float y,float xx,float yy,float w,int color){draws++;}
+    }
+    private static void emptySlices(){
+        Game g=scene();float depth=MontroseTravelLift.Y-MontroseTravelLift.X;
+        g.layout=Layout.focused(960,600,MontroseTravelLift.X,MontroseTravelLift.Y,2.4f,480,400);
+        float[] shore=MontroseTravelLift.shore(g);check(shore.length>0,"lift fixture has foreground shore mask");
+        for(int phase=0;phase<=240;phase++){
+            g.haulout.rig.update(phase/240f);Clips empty=new Clips();
+            MontroseTravelLift.drawRange(g,empty,depth-900,depth-800,shore);
+            MontroseTravelLift.drawRange(g,empty,depth+800,depth+900,shore);
+            check(empty.pushes==0 && empty.pops==0 && empty.draws==0,"empty lift slices never install masks");
+            for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2){
+                float[] a=g.haulout.rig.anchor(side*26,end*24,4);float d=a[1]-a[0];
+                check(g.haulout.rig.pose.overlapsDepth(d-.1f,d+.1f),"every hoist cord lies within suspension depth bounds");
+            }
+        }
+        Clips full=new Clips();MontroseTravelLift.drawRange(g,full,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY,shore);
+        check(full.pushes>0 && full.pushes==full.pops && full.draws>0,"nonempty suspension preserves balanced shoreline clipping");
+    }
     public static void run(){
+        emptySlices();
         Game g=scene();for(int i=0;i<300;i++)g.step();check(g.haulout.liftTicks==0,"No motion without explicit radio authorization");
         float x=TravelLiftRadio.x(g),y=TravelLiftRadio.y(g);g.pointerDown(9,x,y);g.pointerCancel(9);g.pointerUp(9,x,y);check(!g.haulout.radio.waiting(),"Canceled press cannot call");
         g.pointerDown(9,x,y);g.pointerMove(9,x+100,y);g.pointerUp(9,x,y);check(!g.haulout.radio.waiting(),"Drag away cancels call");

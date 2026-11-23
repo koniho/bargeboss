@@ -759,3 +759,9 @@ After tow, release, push and settled alignment, the lift automatically hoists fo
 180 fixed ticks. The vessel rises with the exact sling phase after taking up
 slack; water reflections/ripples stop when airborne. The boat stays retained and
 secured in the lift. Award/next dispatch occur once, after the hoist completes.
+
+Reject empty machinery depth intervals before installing any caller-owned clip.
+The lift's vertical hoist cords lie inside the sling pose's XY/depth bounds, so
+its cached `Pose.overlapsDepth` can gate the whole clipped suspension pass.
+Chassis/overhead passes retain their independent ranges. Extra particle slices
+must not cause repeated shoreline mask construction/submission for an empty lift.

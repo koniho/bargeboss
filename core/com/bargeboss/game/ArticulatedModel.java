@@ -231,6 +231,8 @@ public final class ArticulatedModel {
         private boolean prepared;
         private int polygonCount;
         private float depthMin=Float.POSITIVE_INFINITY,depthMax=Float.NEGATIVE_INFINITY;
+        /** Reject empty depth slices before caller-owned clip or lighting setup. */
+        public boolean overlapsDepth(float min,float max){return depthMax>min && depthMin<=max;}
         private Poly[] transformed;
         private float[][] partRanges;
         private int[] partOrder;
@@ -360,7 +362,7 @@ public final class ArticulatedModel {
     private Stats drawRange(Game g,Painter p,Pose pose,float min,float max,FaceLighting lighting) {
         Stats stats=new Stats();stats.sourceFaces=faces.length;
         // Particle depth cursors visit many empty intervals: geometry cannot contribute here.
-        if(pose.depthMax<=min || pose.depthMin>max)return stats;
+        if(!pose.overlapsDepth(min,max))return stats;
         float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
             if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}

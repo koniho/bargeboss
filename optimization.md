@@ -6227,3 +6227,17 @@ launch restored after capture; screen timeout restored to300000ms.
   foam particles increase slice visits and amplify this unrelated clipping cost.
   Next fix: reject empty lift intervals BEFORE pushing the mask; preserve exact
   rope/shore overlap and continuous poses.
+- Lift follow-up: exposed cached Pose.overlapsDepth for pre-clip rejection. Empty
+  whole-lift intervals now return before render setup; intervals with only chassis
+  or header geometry never install the suspension shore mask. Hoist cord anchors
+  are tested inside live sling depth bounds at every one of240 travel ticks.
+  No rigid transforms, silhouette, depth order or nonempty mask geometry changed.
+- Targeted lift tests passed1970 checks. Desktop lowered/raised lift frames each
+  match the pre-change renderer at all999750 pixels. Removing empty clip commands
+  intentionally changes the drawing trace signature to270142dc:2:1350; canonical
+  delivery/score and simulation remain unchanged. Updated the reviewed baseline.
+- Lift-depth Android capture032425 completed180/180 frames: simulation median
+  2.169ms/p953.157; draw12.112/14.800; interval16.773/19.145. Compared with the
+  matched paired-water scene031213 (draw20.531/23.256, interval23.873/28.037),
+  eliminating empty lift masks removes about8ms median drawing cost. Full checks
+  and Android build passed. Not a guaranteed60fps tail; p95 remains19.145ms.

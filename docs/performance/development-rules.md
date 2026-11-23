@@ -176,3 +176,17 @@ hints displace it. Android adopts ready worker results at frame start within the
 existing layer budget, without evicting visible layers for speculation. Track
 background builds during camera movement: repeated builds of nearby unchanged
 content waste CPU even if they never appear as synchronous build time.
+
+### Wake sampling and caller-owned machinery clips
+
+Share ambient phase/slope and wake visibility work across vector components at
+exactly the same location/time. Keep post-integration height samples separate.
+Use a conservative maintained wake-reach bound to reject distant receivers before
+scanning packets; extend it on emission and rebuild as packets age. Preserve
+packet accumulation order and retain scalar-oracle tests, including replacement,
+expiry, shore blocking and whole-vessel replay.
+
+Depth rejection inside a model is too late if its caller has already installed
+a large clipping mask. Query cached pose depth bounds before clip setup. Repeated
+particle slices must not install masks for machinery absent from that slice.
+Include attached cords/anchors in that proof and test the full motion range.
