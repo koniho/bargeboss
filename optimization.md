@@ -6155,3 +6155,38 @@ launch restored after capture; screen timeout restored to300000ms.
   p95 17.764ms, advance p95 4.206ms, draw p95 9.403ms. Native frame reviewed:
   red racing hull at reserved star berth, lit and coherent with nearby sprites.
   Short scenario validation only; full marina traversal remains unprofiled.
+
+### 2026-11-23 — pedestal lighting and multi-tow investigation
+- Production MooredBoats.draw calls MooredBoatLight.lights, selecting up to four
+  nearby sources. Pedestals contribute warm0xffffd68d at radius90 and energy
+  .16*brightness; normalSprite applies registered hull normals/heights. SceneDetail
+  reduces receiver strength at distance/overview. Separate bimini art does not have
+  its own normal receiver map. No lighting change made in this investigation.
+- Android Vulkan ART sampling, completed180/180 samples after120 warmup:
+  out/profiles/20261123-025752-montrose-storm-return-replay. No trace overflow or
+  unmatched transitions. Inclusive main-thread sampled CPU: MooredFleet.step14.99%,
+  WaterSurface.value10.43%, SeaWaves.value8.70%, VesselShoreLight.draw6.51%,
+  WaterSurface.draw5.78%. These overlap; never sum inclusive percentages.
+  Important fixture limitation: one connected cruiser nearly stationary (speed
+  .64–1.50), NOT a moving two-boat tow. This identifies baseline hot paths, not
+  the cause of the user's multi-tow slowdown. Tracing timings are not benchmarks.
+- Temporary JVM component probe out/TowCostProbe.java (output tow-cost-probe.log):
+  real throttle/tow solver,180 ticks in marina at survey1100,550;1 vs2 connected
+  cruisers produced47 vs69 active wake packets and53.7 vs46.1 tug speed. Warm
+  MooredFleet.step costs .64–.68ms vs .70–.73ms, compared with .50–.52ms after
+  clearing wake ages. Active-body wave forces .015–.018ms vs .037–.048ms.
+  Component probes mutate their local fixture, not end-to-end equivalent runs;
+  JVM figures do NOT establish Android speed or explain severe frame drops.
+- Found repeated work: fleet runs in both motion substeps; each boat separately
+  samples water X/Y flow and height, then evaluates ambient components again to
+  separate/amplify wake motion. WaterSurface.value scans all192 packet slots per
+  component, with shoreline visibility samples for contributing wakes. Candidate:
+  share multi-component samples and spatial wake candidates while preserving
+  sample coordinates, update cadence, integration order and visual motion.
+- REJECTED foam A/B: captures025833(exclusion32)/025858(normal) completed matching
+  ticks121–300, but profileSkipFoam is implemented only by CanvasPainter, NOT
+  VulkanPainter.waterFoam. The active Vulkan1 path bypasses the switch. Similar
+  draw p95 6.199/6.242ms proves nothing about foam cost. Fix the backend diagnostic
+  and add an actively moving1/2-tow native fixture before drawing conclusions.
+- No runtime change or asset reduction. Current APK remains installed; reviewed
+  native capture and restored normal launch/display timeout. No iOS measurement.
