@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Restrained in-world rescue cues and bounded, depth-sorted swimmer sprites. */
+/** Restrained in-world rescue cues and bounded, depth-sorted continuous 3-D swimmers. */
 public final class MontroseRescueView {
     private MontroseRescueView(){}
     public static void water(Game g,Painter p){
@@ -19,6 +19,7 @@ public final class MontroseRescueView {
         if(MontroseRescue.swimmers(g)){
             MontroseRescue r=g.rescue;
             for(int i=0;i<MontroseRescue.PEOPLE;i++){
+                SwimmerModel.water(g,p,i);
                 float radius=r.state[i]==0?3.5f:4.5f;int color=r.flash[i]>0?0xb866d9b1:r.state[i]==0?0x447bc2c8:0x446bafad;
                 SoftCue.ring(p,r.x[i],r.y[i],radius,1,color,.6f);
             }
@@ -40,9 +41,8 @@ public final class MontroseRescueView {
             if(i==20){float t=r.flightTicks/(float)MontroseRescue.THROW_TICKS,up=5+60*t*(1-t);Painter plane=new RiverPainter(ScreenView.offset(p,0,-up*c.scale),c);
                 plane.circle(wx,wy,4,0xffd68d43);plane.circle(wx,wy,2.2f,0xff18313b);
             }else{
-                // Sprite registration is shared; the parent agent supplies this authored sheet.
-                int frame=i%4+(r.state[i]==1?8:((g.visualTicks/36+i)%2)*4);
-                p.sprite(SpriteAtlas.SWIMMERS,frame,x,y-.4f*c.scale*(float)StrictMath.sin(g.visualTicks*.05+i),11*c.scale,11*c.scale,0,1);
+                if(r.state[i]!=0){Painter plane=new RiverPainter(p,c);plane.circle(wx,wy,3.4f,0xffe9a344);plane.circle(wx,wy,2.25f,0xff203c43);}
+                r.swimmerModel.draw(g,p,i);
             }
         }finally{p.popClip();}
     }

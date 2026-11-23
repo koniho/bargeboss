@@ -2,6 +2,7 @@ package com.bargeboss.game;
 
 /** Bounded fixed-step Montrose rescue rules; shared by every native host. */
 public final class MontroseRescue {
+    final SwimmerModel swimmerModel=new SwimmerModel();
     public static final int PEOPLE=20,THROW_TICKS=36;
     public static final float THROW_RANGE=135;
     public boolean rafted,closeCamera;
