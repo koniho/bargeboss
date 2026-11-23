@@ -56,7 +56,7 @@ public final class NavigationLights {
     public static float x(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorX(g,i):b.x;}
     public static float y(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorY(g,i):b.y;}
     private static float roll(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?0:b.roll;}
-    public static int color(Game g,int i){if(g.calumetStage() || g.indianaStage())return markers(g)[i][3]>0?RED:GREEN;return mooring(g,i)?0xffdedcc3:practice(g,i)?YELLOW:i%2==1?RED:GREEN;}
+    public static int color(Game g,int i){if(g.calumetStage() || g.indianaStage())return markers(g)[i][3]>0?RED:GREEN;return mooring(g,i)?MooringBuoyArt.WHITE:practice(g,i)?YELLOW:i%2==1?RED:GREEN;}
     public static float depth(Game g,int i){return g.layout.camera.screenY(x(g,i),y(g,i));}
     public static boolean visible(Game g,int i){
         RiverCamera c=g.layout.camera;float px=c.screenX(x(g,i),y(g,i)),py=c.screenY(x(g,i),y(g,i)),pad=95*c.scale;
@@ -78,7 +78,7 @@ public final class NavigationLights {
         Painter water=new WaterEffectsPainter(g,world);
         for(int i=0;i<count(g);i++)if(visible(g,i) && (!land(g,i) || g.montroseStage())){
             float wx=x(g,i),wy=y(g,i),power=power(g,i);
-            if(!land(g,i))BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
+            if(!land(g,i) && !mooring(g,i))BuoyArt.shadows(g,canvas,wx,wy,size(g,i),frame(g,i),roll(g,i));
             if(power<=0)continue;
             int rgb=color(g,i)&0xffffff;float radius=practice(g,i)?29:17;
             for(int shell=4;shell>=1;shell--)water.circle(wx,wy,radius*shell/4,((int)(power*(7+(4-shell)*3))<<24)|rgb);
@@ -98,6 +98,7 @@ public final class NavigationLights {
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;
         if(land(g,i)){LandMarkerArt.draw(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));return;}
+        if(mooring(g,i)){MooringBuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i));return;}
         BuoyArt.draw(g,canvas,x(g,i),y(g,i),size(g,i),frame(g,i),color(g,i),power(g,i),practice(g,i)?practiceIndex(g,i)+1:0,roll(g,i));
     }
 }

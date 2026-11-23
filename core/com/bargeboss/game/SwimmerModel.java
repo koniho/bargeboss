@@ -14,11 +14,13 @@ public final class SwimmerModel {
     private static final float[] OX={1,.70710678f,0,-.70710678f,-1,-.70710678f,0,.70710678f};
     private static final float[] OY={0,.70710678f,1,.70710678f,0,-.70710678f,-1,-.70710678f};
     private static final int[] SKIN={0xffd99c73,0xff98674e,0xffe2b28b,0xffbb825d};
+    private LightingProfile lighting;private MooredBoatLight.Lights lights;
     private int count;private float cosine,sine,wx,wy,bob;private RiverCamera camera;
     static float phase(int ticks,int id){return ticks*.075f+id*2.399963f;}
     static float bob(int ticks,int id){return .32f*(float)StrictMath.sin(phase(ticks,id)*.67f);}
     public void draw(Game g,Painter p,int id){
         MontroseRescue r=g.rescue;camera=g.layout.camera;wx=r.x[id];wy=r.y[id];bob=bob(g.visualTicks,id);count=0;
+        lighting=g.lighting();lights=MooredBoatLight.lights(g,wx,wy,0);
         float phase=phase(g.visualTicks,id),wave=(float)StrictMath.sin(phase),other=(float)StrictMath.sin(phase+1.7f);
         float relief=r.state[id]==0?0:Math.min(1,(60-r.flash[id])/30f);
         // Gentle heading changes retain a stable rescue/hit anchor. Different phases avoid synchronized crowds.
@@ -68,12 +70,15 @@ public final class SwimmerModel {
             if(n<3)continue;
             float[] q=xy[count];float d=0;
             for(int k=0;k<n;k++){float[] v=clipped[k];q[k*2]=camera.screenX(wx+v[0],wy+v[1]);q[k*2+1]=camera.screenY(wx+v[0],wy+v[1])-v[2]*camera.scale;d+=(-v[0]+v[1])+v[2]*.816497f;}
-            if((q[2]-q[0])*(q[5]-q[1])-(q[3]-q[1])*(q[4]-q[0])>=0)continue;
+            if((q[2]-q[0])*(q[5]-q[1])-(q[3]-q[1])*(q[4]-q[0])<=0)continue;
             float[] a=vertices[face[0]],b=vertices[face[1]],c=vertices[face[2]];
-            float ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+            float ux=b[0]-a[0],uy=b[1]-a[1],uz=(b[2]-a[2])/ArticulatedModel.Z_SCALE,vx=c[0]-a[0],vy=c[1]-a[1],vz=(c[2]-a[2])/ArticulatedModel.Z_SCALE;
             float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
-            float light=.64f+.36f*Math.max(0,(-nx*.3f-ny*.4f+nz*.866f)/(float)StrictMath.sqrt(nx*nx+ny*ny+nz*nz));
-            colors[count]=0xff000000|((int)(((color>>16)&255)*light)<<16)|((int)(((color>>8)&255)*light)<<8)|(int)((color&255)*light);
+            float length=(float)StrictMath.sqrt(nx*nx+ny*ny+nz*nz),cx=0,cy=0,cz=0;
+            for(int k=0;k<n;k++){cx+=clipped[k][0];cy+=clipped[k][1];cz+=clipped[k][2];}
+            // The original skeleton uses projected-height units. Convert to physical Z for lights/normals.
+            colors[count]=MarinaSurfaceLight.shade(lighting,lights,color,cx/n,cy/n,cz/n/ArticulatedModel.Z_SCALE,
+                    nx/length,ny/length,nz/length);
             size[count]=n;depth[count++]=d/n;
         }
     }

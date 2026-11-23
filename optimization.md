@@ -5672,3 +5672,65 @@ launch restored after capture; screen timeout restored to300000ms.
   actual Android tutorial-firefight/montrose-swimmers screenshots in out/.
   Installed successfully and restored normal launch. These frozen device views
   validate pixels, not sustained animation frame rate; iOS not exercised.
+
+## 2026-11-22 — White 3-D moorings and swimmer light reception
+
+- Shared Java, codex/montrose-white-mooring-buoys from origin/main13ae074.
+  The 26 western-basin mooring cans previously reused the yellow lantern buoy
+  sprite at size10. They now use small white convex 3-D floats, with the same
+  anchor positions, 2.7-world-unit collision radius, mooring slack and wave heave.
+  Entrance navigation beacons and training buoys retain their existing art/rules.
+- Buoy topology is constructed once: twelve sides and four latitude bands,
+  water-plane cutoff, precomputed physical normals/centroids and projection.
+  The sphere is rotationally symmetric; no sampled roll poses or per-tick BSP.
+  View culling and shore clipping precede/contain live drawing. No new textures,
+  atlases, persistent pose caches or emissive lantern/glow/long tower shadows.
+- MarinaSurfaceLight shades actual face albedo from shared ambient/sun profiles
+  and at most four existing nearby pedestal, beacon and vessel light sources.
+  Colored Lambert response uses world normals, physical heights and distance
+  falloff. Gather sources once per visible receiver, then shade its faces.
+- Swimmers use the same receiver. Their existing projected-height Z is converted
+  to physical Z for normals and source distance, preserving projected geometry.
+  Fixed the reversed projection winding test so outward visible surfaces and
+  head/cap tops remain. Animation, skin/suit colors, rescue hit anchors and rules
+  are unchanged. The 9,600 consecutive-pose checks pass at max49 mesh calls/person.
+- MarinaReceiverTest checks normal-facing/backface response, red-only source
+  contribution, finite reach, time-of-day grading, and actual buoy/swimmer face
+  colors changing under a nearby tug without changing mesh coordinates. Full
+  Java/native replay and drawing parity passed at b152a63a:2:1350.
+- Shared day/dusk buoy views and swimmer pose/scene exports reviewed. Production
+  all-heading shoreline regression passed: 4,350,443 hull/cargo pixels plus
+  38,121 training-wall pixels. Output remains in ignored out/.
+- Native Metal simulator daylight mooring-field sample: draw p50 6.10ms / p95
+  6.36ms, interval p50 16.67ms / p95 16.68ms (30 warmup,60 measured). Reviewed
+  white shaded 3-D floats. First lit review placements obscured a buoy with the
+  tug; swimmer replay input also drove into a swimmer. Corrected these debug-only
+  fixtures to park beside the receivers and advance real simulation without
+  control input. Both fixtures stay collision-free for 300 shared ticks. No
+  production collision/rescue rule was changed to accommodate a review fixture.
+- Final iPhone17Pro/iOS26.5 Metal simulator replay captures reviewed: buoy field
+  with warm/red vessel-light response on the near-side facets, and swimmers with
+  lit skin/caps/arms near the tug and dim faces farther away. Both advance real
+  animation/physics with neutral controls (30 warmup,60 measured). Moorings:
+  draw p50 7.80ms / p95 8.01ms, interval p50 16.67ms / p95 17.13ms. Swimmers:
+  draw p50 9.37ms / p95 9.65ms, interval p50 16.67ms / p95 18.06ms. Zero texture
+  evictions, zero resident-layer fallbacks, no pending preparation at capture end.
+  These short simulator samples are not sustained physical-iPhone performance
+  claims. Captures: out/ios-profile/{moorings-lit-final,swimmers-lit-final}.
+- Full final check.sh/Android profile build passed: 2,810 core assertions, 491,037
+  moored-boat assertions, 9,600 swimmer poses, new receiver tests, source asset,
+  terrain/chart and Vulkan encoding/clip checks. Re-ran the all-heading shoreline
+  pixels on the final compiled sources; both Montrose and training-wall counts
+  passed. Native/JVM parity remains b152a63a:2:1350; the baseline change reflects
+  the reviewed receiver drawing, with delivery count/score unchanged.
+- Final Pixel11Pro Vulkan replay captures reviewed after installing the debug APK.
+  Warm/red light reaches the near buoy facets and swimmer skin/caps/arms; distant
+  receivers retain cool night shading. Each sample used 30 warmup/60 measured
+  frames. Moorings: draw median 5.72ms / p95 8.93ms; SurfaceFlinger presentation
+  gaps median 16.65ms / p95 16.69ms (58 gaps). Swimmers: draw median 10.15ms /
+  p95 12.66ms; presentation gaps median 16.65ms / p95 16.71ms (59 gaps).
+  Both measured windows had zero frame cache builds, evictions and decode time,
+  with rotation preparation ready throughout. These short samples establish
+  native appearance and frame delivery, not sustained thermal performance.
+  Captures: out/profiles/{moorings-lit-retry,swimmers-lit-final}. Restored the
+  phone's previous display timeout (2147483647ms) after the device check.

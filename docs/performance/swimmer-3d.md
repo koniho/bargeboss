@@ -50,3 +50,25 @@ integration validation. Root agent owns the Android build/install round. Remove
 SWIMMERS from level preparation only once all remaining sprite callers are audited;
 the legacy source asset need not be deleted. Future swimmer actions should extend
 this skeleton/state input, keeping clipping and effects on the same world anchor.
+
+## Surface lighting follow-up
+
+Swimmer faces now use geometry-derived world normals and face centroids with the
+shared day/dawn/dusk/night profile. A bounded set of four nearby marina/vessel
+sources is collected once per visible swimmer. `MarinaSurfaceLight` adds colored,
+distance-attenuated Lambert lighting to the scene's ambient/sunlit albedo, and is
+also used by Montrose's white 3-D mooring floats. Back faces reject incoming light.
+No emission or full-body tint is used as a substitute for surface response.
+
+The skeleton's original vertical coordinates are projected-height units; receiver
+centroids and normals convert these to physical Z to match the source heights.
+Corrected the projection winding test so visible outward faces, including head
+and cap tops, are retained. The 9,600 continuous-pose checks still pass; the new
+maximum is 49 mesh calls per swimmer. Geometry, animation and hit anchors remain
+independent of source positions and time-of-day changes.
+
+`MarinaReceiverTest` covers source color, finite light reach, backface rejection,
+ambient grading, deterministic redraws and actual buoy/swimmer mesh lighting from
+a nearby tug without geometry changes. Native lit fixtures are
+`montrose-moorings-lit` and `montrose-swimmers-lit`; performance/device evidence is
+recorded in `optimization.md` after the combined validation round.
