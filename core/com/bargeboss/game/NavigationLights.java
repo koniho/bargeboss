@@ -11,11 +11,10 @@ public final class NavigationLights {
         public float markerX(boolean red){return x+(red?1:-1)*-dy*halfWidth;}
         public float markerY(boolean red){return y+(red?1:-1)*dx*halfWidth;}
     }
-    // Bridge approaches use the bridge's own signals; separate towers intersect the spans.
+    // One tutorial pair marks entry from driving basin into the winding canal.
+    // Foundations sit on the banks; towing passages use their bridge signals.
     private static final Entrance[] PRACTICE={
-        new Entrance("TRAIN CHANNEL ENTRANCE",300,TrainingChannel.TOW_BASIN_TOP-26,0,-1,48),
-        new Entrance("TRAIN CHANNEL EXIT",300,TrainingChannel.NARROW_EXIT+26,0,-1,48),
-        new Entrance("PRACTICE HARBOR ENTRANCE",TrainingChannel.BASIN_LEFT-12,650,1,0,94)
+        new Entrance("WINDING CANAL ENTRANCE",TrainingChannel.MIN+12,TrainingChannel.Y[0],1,0,94)
     };
     // Fixed east/red and west/green towers at the two official map breakwater tips.
     // Returning vector is perpendicular to their slightly diagonal entrance line.

@@ -5893,3 +5893,19 @@ launch restored after capture; screen timeout restored to300000ms.
   tutorial lock/bridge geometry. Preserved both test registrations and performance
   records. Full check.sh, assets and Android Vulkan build passed; JVM/J2ObjC
   parity passed at 979d9449:2:1350, with delivery count/score unchanged.
+
+### 2026-11-22 — Tutorial beacon cleanup
+- Replaced three tutorial entrance pairs with a single fixed pair at the driving
+  basin's winding-canal mouth. Removed towing-passage and outer-entry beacons;
+  bridge signals and the two yellow figure-eight buoys remain. Shared marker
+  enumeration removes the obsolete sprites, shadows, glows and map marks.
+- Lateral-side, dry-foundation, lighting and buoy-index checks passed (751
+  assertions). Replay signature 2d6ac041:2:1350; no new assets or caches.
+- Full check.sh/Android build passed. Reviewed the actual shared renderer at the
+  canal mouth: both towers clear the moving span and sit on dry foundations.
+  Installed and launched Android; no physical iOS validation in this round.
+- A concurrent main push (edc577e) reduced tutorial beacons to the winding-canal
+  entrance. Preserved that update too. Rechecked the 751 navigation-light checks,
+  scenery receivers, replay, Android encoding/build and JVM/J2ObjC parity at
+  1a5d076f:2:1350. Installed and launched the final combined APK; restored the
+  saved 300000ms phone timeout. Earlier full shared/asset checks remain applicable.
