@@ -6,6 +6,7 @@ import javax.sound.sampled.*;
 final class RadioSound {
     private final Clip[] clips=new Clip[SoundEffects.COUNT];
     private final Clip[] loops=new Clip[EngineAudio.LAYERS];
+    private final MusicStream music=new MusicStream();
     private Game active;
     private int sequence;
     RadioSound(){
@@ -46,14 +47,16 @@ final class RadioSound {
         }
     }
     void update(Game root){
-        if(active!=root.activeGame()){stop();active=root.activeGame();sequence=0;}
+        music.gain(MusicAudio.gain(root));
+        if(active!=root.activeGame()){silence();active=root.activeGame();sequence=0;}
         int next=SoundEffects.sequence(root);
-        if(active.mode!=Game.PLAY){sequence=next;stop();return;}
+        if(active.mode!=Game.PLAY){sequence=next;silence();return;}
         loops(root);
         for(Clip clip:clips)volume(clip,SoundEffects.gain(root));
         if(next==sequence)return;sequence=next;
         if(SoundEffects.audible(root)){int cue=SoundEffects.cue(root);for(int i=0;i<clips.length;i++)if(clips[i]!=null && SoundEffects.interrupts(cue,i))clips[i].stop();Clip clip=clips[cue];if(clip!=null){clip.setFramePosition(0);clip.start();}}
     }
-    void stop(){for(Clip c:clips)if(c!=null)c.stop();for(Clip c:loops)if(c!=null)c.stop();}
-    void close(){for(Clip c:clips)if(c!=null)c.close();for(Clip c:loops)if(c!=null)c.close();}
+    private void silence(){for(Clip c:clips)if(c!=null)c.stop();for(Clip c:loops)if(c!=null)c.stop();}
+    void stop(){silence();music.gain(0);}
+    void close(){music.close();for(Clip c:clips)if(c!=null)c.close();for(Clip c:loops)if(c!=null)c.close();}
 }

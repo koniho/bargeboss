@@ -3,6 +3,7 @@
 #import "com/bargeboss/game/EngineAudio.h"
 #import "com/bargeboss/game/Game.h"
 #import "com/bargeboss/game/SoundEffects.h"
+#import "com/bargeboss/game/MusicAudio.h"
 
 @implementation BBEngineSound {
     AVAudioEngine *_engine;
@@ -12,7 +13,8 @@
     NSArray<AVAudioPlayer *> *_radio;
     BBGame *_radioGame;
     jint _radioSequence;
-    BOOL _playing,_interrupted,_failed;
+    AVAudioPlayer *_music;
+    BOOL _playing,_interrupted,_failed,_sessionActive;
 }
 - (instancetype)init {
     if((self=[super init])) {
@@ -39,6 +41,9 @@
             AVAudioPlayer *clip=[[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
             if(clip){clip.volume=.85f;[clip prepareToPlay];[radio addObject:clip];}
         }
+        NSURL *musicURL=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBMusicAudio asset]]];
+        _music=[[AVAudioPlayer alloc] initWithContentsOfURL:musicURL error:nil];
+        _music.numberOfLoops=-1;[_music prepareToPlay];
         _radio=radio;
         _players=players;_rates=rates;_buffers=buffers;[_engine prepare];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(interruption:) name:AVAudioSessionInterruptionNotification object:nil];
@@ -51,13 +56,27 @@
 }
 - (void)update:(BBGame *)game {
     BBGame *active=[game activeGame];
-    if(active!=_radioGame){[self stop];_radioGame=active;_radioSequence=0;}
-    if(![BBEngineAudio audibleWithBBGame:game]){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];[self stop];_interrupted=NO;return;}
-    if(_failed || _interrupted)return;
-    if(!_playing){
-        NSError *error=nil;
+    if(active!=_radioGame){[self silence];_radioGame=active;_radioSequence=0;}
+    if(_interrupted){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];return;}
+    BOOL effectsAudible=[BBEngineAudio audibleWithBBGame:game] && !_failed;
+    float musicGain=[BBMusicAudio gainWithBBGame:game];
+    if(!effectsAudible && (musicGain<=0 || !_music)){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];[self stop];return;}
+    NSError *error=nil;
+    if(!_sessionActive){
         AVAudioSession *session=AVAudioSession.sharedInstance;
-        if(![session setCategory:AVAudioSessionCategoryAmbient error:&error] || ![session setActive:YES error:&error] || ![_engine startAndReturnError:&error]){NSLog(@"Engine audio start failed: %@",error);_interrupted=YES;return;}
+        if(![session setCategory:AVAudioSessionCategoryAmbient error:&error] || ![session setActive:YES error:&error]){NSLog(@"Audio session failed: %@",error);return;}
+        _sessionActive=YES;
+    }
+    _music.volume=musicGain;
+    if(musicGain>0){if(!_music.playing){
+        BOOL started=[_music play];
+#if BB_IOS_PROFILE
+        NSLog(@"BargeBossMusic started=%d gain=%.3f position=%.3f duration=%.3f",started,musicGain,_music.currentTime,_music.duration);
+#endif
+    }}else [_music pause];
+    if(!effectsAudible){_radioSequence=[BBSoundEffects sequenceWithBBGame:game];[self silence];return;}
+    if(!_playing){
+        if(![_engine startAndReturnError:&error]){NSLog(@"Engine audio start failed: %@",error);_failed=YES;return;}
         for(int i=0;i<BBEngineAudio_LAYERS;i++){
             _players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];
             _rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];
@@ -78,12 +97,16 @@
     }
     for(int i=0;i<BBEngineAudio_LAYERS;i++){_players[i].volume=[BBEngineAudio gainWithBBGame:game withInt:i];_rates[i].rate=[BBEngineAudio rateWithBBGame:game withInt:i];}
 }
-- (void)stop {
+- (void)silence {
     for(AVAudioPlayer *clip in _radio)[clip stop];
     if(!_playing)return;
     for(AVAudioPlayerNode *player in _players)[player stop];
     [_engine pause];_playing=NO;
-    [AVAudioSession.sharedInstance setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
+}
+- (void)stop {
+    [self silence];[_music pause];
+    if(_sessionActive)[AVAudioSession.sharedInstance setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
+    _sessionActive=NO;
 }
 - (void)dealloc {[NSNotificationCenter.defaultCenter removeObserver:self];[self stop];}
 @end

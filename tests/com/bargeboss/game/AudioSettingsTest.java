@@ -18,6 +18,19 @@ public final class AudioSettingsTest {
             restored.restoreProgress(save);restored.restoreProgress("BBG2\n"+g.career.save()+"\n2\n"+invalid);
             check(restored.saveProgress().equals(save),"malformed audio leaves the entire save unchanged");
         }
+        Game music=new Game();float base=MusicAudio.gain(music);
+        check(base>0 && base<.3f,"ambient music starts quietly on title");
+        music.settings.setMusicLevel(50);check(Math.abs(MusicAudio.gain(music)-base*.5f)<.00001f,"music level scales its own bus");
+        music.settings.toggleSoundMute();check(Math.abs(MusicAudio.gain(music)-base*.5f)<.00001f,"sound mute leaves music alone");
+        music.settings.toggleMusicMute();check(MusicAudio.gain(music)==0,"music mute silences its bus");
+        music.settings.toggleMusicMute();music.mode=Game.PLAY;music.radio.transmit(RadioAudio.TEACHER);
+        check(Math.abs(MusicAudio.gain(music)-base*.5f)<.00001f,"muted radio does not duck music");
+        music.settings.toggleSoundMute();
+        check(Math.abs(MusicAudio.gain(music)-base*.5f*.25f)<.00001f,"audible radio ducks music");
+        for(int tick=0;tick<54;tick++)music.sounds.step();
+        check(Math.abs(MusicAudio.gain(music)-base*.5f)<.00001f,"music returns after radio");
+        music.openSettings();check(MusicAudio.gain(music)>0,"music keeps playing while adjusting settings");
+        music.startTutorial();check(MusicAudio.gain(music)==MusicAudio.gain(music.activeGame()),"practice uses the same soundtrack preferences");
         g.reset();g.mode=Game.PLAY;g.tug.engineLoad=1;
         g.settings.setSoundLevel(100);float engine=EngineAudio.gain(g,1),effect=SoundEffects.gain(g);
         g.settings.setSoundLevel(40);

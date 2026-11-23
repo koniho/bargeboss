@@ -32,7 +32,7 @@ public final class Desktop extends JPanel {
         addComponentListener(new ComponentAdapter() { public void componentResized(ComponentEvent e) { updateViewport();requestRedraw(); } });
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"),"pause");
         getActionMap().put("pause",new AbstractAction() { public void actionPerformed(ActionEvent e) { game.back();requestRedraw(); } });
-        new Timer(8,e->{ prepareLighting();long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); radio.update(game); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
+        new Timer(8,e->{ prepareLighting();long now=System.nanoTime(); game.advance((now-last)/1e9); game.pollHaptic(); if(SwingUtilities.getWindowAncestor(this)!=null && SwingUtilities.getWindowAncestor(this).isFocused())radio.update(game); saveProgress(false); last=now; if(frames.needsFrame(game)) repaint(); }).start();
     }
     private void prepareLighting(){
         LevelAssets.Plan plan=LevelAssets.upcoming(game);LightingProfile profile=game.activeGame().lighting();

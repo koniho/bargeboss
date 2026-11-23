@@ -12,10 +12,11 @@ simulation or haptics. Android, iOS and desktop consume the shared gains; native
 hosts update playing effects as well as new events. Muted events are consumed
 without replaying them later.
 
-There is currently no music track or music playback adapter. The Music controls
-persist an independent preference, exposed through GameSettings.musicGain() for
-future soundtrack playback. The panel states that no music track is present.
-No music assets or new background audio are introduced by this change.
+Music plays “A Long Way” by SergePavkinMusic across gameplay and menus, with
+native looping and an independent shared gain. It pauses on music mute or host
+background/focus loss and resumes from its current position. Audible radio calls
+duck the music; muting Sound leaves it unchanged. See ambient-music-v1.md for
+permission, preparation and host buffering details.
 
 Game.saveProgress() now writes BBG2 with the career, joystick preference and audio
 preferences. BBG1 and bare career saves remain readable with full-volume defaults.

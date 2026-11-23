@@ -6376,3 +6376,22 @@ launch restored after capture; screen timeout restored to300000ms.
   p50 16.657 ms/p95 23.424 ms, no frame/layer builds, evictions or cold decoding.
   This is a short frozen-scene renderer check, not sustained live-play evidence.
   Capture: out/profiles/20261123-073032-training-spotlight-freeze. iOS untested.
+
+## 2026-11-23: collision Foley and ambient soundtrack transport
+
+- Shared Java selects three pre-baked Reitanna thunk pitches by closing speed;
+  native hosts keep their existing bounded one-shot pools. No per-impact decoding
+  or runtime pitch processing. Variants match the audition files byte-for-byte,
+  last 0.351/0.417/0.496 s and have unclipped, zero-edge PCM.
+- Added user-licensed full-length ambient music, independent of Sound mute/level.
+  The portable stereo PCM asset is about 46 MiB on disk. Android passes an asset
+  file descriptor to asynchronously prepared MediaPlayer; iOS passes a file URL
+  to AVAudioPlayer. No soundtrack-sized Java/core buffer. Native framework-private
+  buffering was not measured. Desktop streams with an 8 KiB transfer buffer and
+  requests a 16 KiB SourceDataLine buffer on a daemon; UI/render code never reads
+  soundtrack data. Desktop background updates no longer restart stopped audio.
+- Full shared checks, Android build/native encoding checks and JVM/J2ObjC parity
+  passed (310d2a08:2:1350). iOS simulator logged successful 273.084 s track playback
+  and resume at 10.716 s after mute/unmute. No renderer primitive or cache changes.
+  No phone connected for install or physical mix/performance validation; no claim
+  of improved frame intervals, full-song loop audition or native buffer profiling.

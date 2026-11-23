@@ -18,8 +18,12 @@ public final class SoundEffectsTest {
         check(SoundEffects.sequence(g)==sequence && SoundEffects.cue(g)==0,"radio takes priority over collisions");
         for(int i=0;i<30;i++)g.sounds.step();g.sounds.impact(100);
         check(SoundEffects.cue(g)==4,"collision can play after radio grace period");
-        for(int i=0;i<30;i++)g.sounds.step();g.sounds.impact(100,true);
-        check(SoundEffects.cue(g)==SoundEffects.TUG_THUD,"even a hard tug-to-tug hit uses the muffled fender thud");
+        for(float speed:new float[]{3,29.9f,30,64.9f,65,100}){
+            Game tugs=new Game();tugs.resetPracticeYard();tugs.mode=Game.PLAY;
+            Body other=new Body(0,-1,330,500,0);
+            tugs.splashes.contact(tugs.tug,other,300,500,speed,0,0,0,speed);tugs.splashes.step(tugs);
+            check(SoundEffects.cue(tugs)==(speed<30?SoundEffects.BUMP:speed<65?SoundEffects.THUD:SoundEffects.CRUNCH),"tug collisions use the same strength-based pitch tiers");
+        }
         for(int i=0;i<30;i++)g.sounds.step();g.sounds.splash(.3f);
         check(SoundEffects.cue(g)==SoundEffects.SPLASH_SMALL,"small spray return uses light splash");
         for(int i=0;i<30;i++)g.sounds.step();g.sounds.splash(.9f);
@@ -54,7 +58,7 @@ public final class SoundEffectsTest {
         check(!SoundEffects.audible(hit),"late host must drop an impact older than 100 ms of simulation");
         for(int t=0;t<150;t++){hit.sounds.step();hit.splashes.step(hit);}
         check(SoundEffects.sequence(hit)==1,"falling collision spray never emits delayed static or another hit");
-        check(SoundEffects.asset(SoundEffects.BUMP).endsWith("chunk-light-v1.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("chunk-heavy-v1.wav"),"collision manifest uses damped wooden chunks");
+        check(SoundEffects.asset(SoundEffects.BUMP).endsWith("thunk-light-v1.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("thunk-heavy-v1.wav"),"collision manifest uses Reitanna thunk variants");
         // Exercise the actual tutorial seawall solver at gentle driving speed, not an injected sound.
         Game wall=new Game();wall.resetPracticeYard();wall.mode=Game.PLAY;
         wall.tug.x=-1600;wall.tug.y=TrainingChannel.BASIN_TOP+wall.tug.half+wall.tug.radius-.5f;

@@ -19,10 +19,9 @@ public final class SoundEffects {
         if(value<2 && cue==COMPLETE && age==0)pendingComplete=120;
         cue=value;sequence++;age=0;
     }
-    void impact(float speed){impact(speed,false);}
-    void impact(float speed,boolean tugContact){
+    void impact(float speed){
         if(!Float.isFinite(speed) || speed<3 || cooldown>0 || cue<2 && age<30)return;
-        impactAge=0;emit(tugContact?TUG_THUD:speed<30?BUMP:speed<65?THUD:CRUNCH);cooldown=18;
+        impactAge=0;emit(speed<30?BUMP:speed<65?THUD:CRUNCH);cooldown=18;
     }
     /** Real launch transient, emitted with the rocket; never interrupt instructor speech. */
     void firework(){
@@ -52,6 +51,6 @@ public final class SoundEffects {
     /** Drop stale contact events instead of replaying a late bump after host recovery. */
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && gain(root)>0 && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD || fireworkCue(g.sounds.cue)?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-chunk-light-v1.wav","audio/collision-chunk-medium-v1.wav","audio/collision-chunk-heavy-v1.wav","audio/fender-medium-kenney-v2.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-thunk-light-v1.wav","audio/collision-thunk-medium-v1.wav","audio/collision-thunk-heavy-v1.wav","audio/collision-thunk-medium-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav"}[cue];
     }
 }

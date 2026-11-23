@@ -91,3 +91,22 @@ normalization, fades; burst C has a modest pitch change; fire/steam compressed
 and seam-crossfaded for looping. No endorsement implied. Retained sources and
 reproducible edits: docs/audio/fireworks-fire-v2.md and
  tools/prepare-fireworks-fire-audio.py.
+
+Reitanna collision thunks v1 (2026-11-23)
+collision-thunk-light-v1.wav, collision-thunk-medium-v1.wav,
+collision-thunk-heavy-v1.wav: edited thunk.wav by Reitanna, CC0 1.0 Universal.
+https://freesound.org/people/Reitanna/sounds/323725/
+https://creativecommons.org/publicdomain/zero/1.0/
+Changes: onset trim, original/-3/-6 semitone resampling, gain staging, edge fades.
+Source, hash and reproducible processing: docs/audio/reitanna-thunks-v1.md and
+ tools/prepare-reitanna-thunks.py.
+
+A Long Way by SergePavkinMusic, track 166385 (2026-11-23)
+a-long-way-v1.wav: full-length soundtrack, supplied by the user.
+https://pixabay.com/music/build-up-scenes-a-long-way-166385/
+The user explicitly confirmed separate permission for game use on 2026-11-23,
+after being shown the artist's app restriction. This track is not CC0 and is not
+relicensed under the repository's code license. No standalone redistribution right
+is asserted. Source, permission record, hash and preparation: docs/audio/ambient-music-v1.md.
+Changes: PCM conversion, 1-second opening fade, 2-second closing fade. Shared game
+mix reduces gain and ducks under audible radio. No endorsement implied.

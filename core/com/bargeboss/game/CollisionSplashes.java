@@ -10,7 +10,6 @@ public final class CollisionSplashes {
             vx=new float[CAPACITY*STAMPS],vy=new float[CAPACITY*STAMPS],vz=new float[CAPACITY*STAMPS];
     private int cursor;
     private float peakImpact;
-    private boolean peakTugs;
     public int emitted;
     public CollisionSplashes(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     /** Contact velocities include angular motion and are captured BEFORE the collision impulse.
@@ -18,7 +17,7 @@ public final class CollisionSplashes {
     public void contact(Watercraft a,Watercraft b,float px,float py,float ax,float ay,float bx,float by,float closing){
         if(closing<3 || !Float.isFinite(closing) || !Float.isFinite(px) || !Float.isFinite(py))return;
         // Audio severity must not be discarded by the visual spray cooldown.
-        if(closing>peakImpact){peakImpact=closing;peakTugs=tug(a) && tug(b);}
+        if(closing>peakImpact)peakImpact=closing;
         for(int i=0;i<CAPACITY;i++)if(age[i]<COOLDOWN && (first[i]==a && second[i]==b || first[i]==b && second[i]==a))return;
         float aa=ax*ax+ay*ay,bb=bx*bx+by*by;
         boolean reverse=b!=null && (bb>aa || bb==aa && (b.waterX()<a.waterX() || b.waterX()==a.waterX() && b.waterY()<a.waterY()));
@@ -36,13 +35,12 @@ public final class CollisionSplashes {
             vz[j]=(23+power[i]*48)*(.65f+.35f*((k*5+2)%7)/6f);
         }
     }
-    private static boolean tug(Watercraft craft){return craft instanceof Body && ((Body)craft).berth<0 && !((Body)craft).yacht && !((Body)craft).cruiser;}
     float impactOn(Watercraft craft){
         float peak=0;for(int i=0;i<CAPACITY;i++)if(age[i]==0 && (first[i]==craft || second[i]==craft))peak=Math.max(peak,power[i]*70);return peak;
     }
     /** Age at 60 real ticks, independent of the two motion/collision substeps and visibility. */
     public void step(Game g){
-        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact,peakTugs);peakImpact=0;peakTugs=false;
+        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact);peakImpact=0;
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE){
             age[i]++;
             if(age[i]>=LIFE){first[i]=second[i]=null;continue;}

@@ -137,7 +137,7 @@ public final class ScreenView {
         text(p,g.hapticsEnabled?"ON":"OFF",631,221,11,g.hapticsEnabled?GOLD:MUTED);
         p.line(212,266,736,266,1,PilotGlass.TRACK);
         audioRow(p,"SOUND","ENGINE, RADIO AND EFFECTS",Layout.SOUND_LEVEL,Layout.SOUND_MUTE,g.settings.soundLevel(),g.settings.soundMuted());
-        audioRow(p,"MUSIC","NO MUSIC TRACK YET",Layout.MUSIC_LEVEL,Layout.MUSIC_MUTE,g.settings.musicLevel(),g.settings.musicMuted());
+        audioRow(p,"MUSIC","AMBIENT SOUNDTRACK",Layout.MUSIC_LEVEL,Layout.MUSIC_MUTE,g.settings.musicLevel(),g.settings.musicMuted());
         button(g,p,Layout.SETTINGS_BACK,"DONE",true);
     }
     private static void audioRow(Painter p,String label,String detail,Layout.Box slider,Layout.Box mute,int level,boolean muted){
