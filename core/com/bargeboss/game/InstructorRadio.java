@@ -1,6 +1,6 @@
 package com.bargeboss.game;
 
-/** Tap-to-call instructor, with an explicit reply before skipping an exercise. */
+/** Tap-to-call instructor, with an explicit reply before skipping a complete training phase. */
 final class InstructorRadio {
     boolean taught,teach;
     int phase,ticks;
@@ -39,8 +39,8 @@ final class InstructorRadio {
         if(phase==0)return teach;
         ticks++;
         if(phase==1 && ticks>=45){
-            phase=2;ticks=0;g.dialogue.show(g,"INSTRUCTOR / GREEN TUG","NEED TO MOVE ON, CAPTAIN?",
-                    "YOU CAN RADIO ME TO SKIP ANY STEP.","KEEP PRACTICING.","SKIP THIS STEP.");
+            phase=2;ticks=0;g.dialogue.show(g,"INSTRUCTOR / GREEN TUG","SKIP THE "+g.tutorial.phaseName()+" PHASE?",
+                    g.tutorial.skipDetail(),"KEEP PRACTICING.","SKIP ALL "+g.tutorial.phaseName()+".");
         }else if(phase==2){
             if(g.dialogue.result()<0){ticks=0;return true;}
             if(ticks>=24){
@@ -55,7 +55,7 @@ final class InstructorRadio {
         if(phase==1)return new InstructionPanel.Content("instructor-call","CALLING THE INSTRUCTOR","INSTRUCTOR, PRACTICE TUG CALLING.",
                 "WAITING FOR YOUR REPLY...",-1,0,"YOU / CHANNEL 08","RADIO / TX",true);
         if(teach)return new InstructionPanel.Content("learn-instructor-radio","TAP MY GREEN TUG","TAP THE INSTRUCTOR'S BOAT TO RADIO ME.",
-                "ASK TO SKIP A STEP WHEN YOU'RE READY.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO / CH 08",true);
+                "ASK TO SKIP A WHOLE TRAINING PHASE.",-1,0,"INSTRUCTOR / GREEN TUG","RADIO / CH 08",true);
         return null;
     }
     void cue(Game g,Painter p){

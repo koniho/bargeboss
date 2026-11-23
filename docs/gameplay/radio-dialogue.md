@@ -82,3 +82,20 @@ The physical slip uses the same authoritative water rectangles/boundary for
 collision, ground clipping, shore rendering and chart outlines. Progress never
 replaces the hulls or teleports between lessons. `NavigationPracticeTest` covers
 real wall-contact failure, exit/retry, required slider interaction and arrival.
+
+## Whole-phase skipping
+
+The instructor's skip confirmation names the entire current phase and its next
+phase. Keep Practicing preserves the exercise. Confirming skip advances as follows:
+
+| Current lessons | Next phase |
+| --- | --- |
+| Driving: MOVE through CHANNEL (throttle, figures, slip, map, canal) | CONNECT: towing |
+| Towing: CONNECT through RELEASE (single load, pushing, berth, convoy, train) | SHOW: barge abilities |
+| Barge abilities: SHOW through EXTINGUISH (fireworks, rescue tow, firefighting) | DONE |
+
+An explicit skip may prepare the next phase's prerequisite scene, including open
+bridges and cargo placements. Normal earned progression stays continuous.
+Skipping does not award lesson praise. Skipping abilities stops active equipment,
+fire/sizzle loops and pending relief dialogue; it does not leave a fire running
+behind the completed tutorial. Reset still restarts the current exercise.

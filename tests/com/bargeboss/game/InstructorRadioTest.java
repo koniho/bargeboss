@@ -17,16 +17,18 @@ public final class InstructorRadioTest {
             call(root);check(radio.taught && g.tutorial.helm.phase==0,"experienced player can call during first throttle exercise");
             reply(root,0);check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==0,"keep practicing preserves current exercise");
             call(root);int tick=radio.ticks;g.pause();ticks(root,60);check(radio.ticks==tick,"pause freezes instructor conversation");g.pause();
-            reply(root,1);check(g.tutorial.lesson==Tutorial.MOVE && g.tutorial.helm.phase==0 && g.tutorial.helm.pace==1,"skip advances from gentle to stronger throttle");
-            call(root);reply(root,1);check(g.tutorial.helm.phase==1,"next skip advances to turning");
-            for(int phase=2;phase<=4;phase++){call(root);reply(root,1);check(g.tutorial.helm.phase==phase,"helm skip preserves next exercise prerequisites");}
-            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.FIGURE_EIGHT,"skip rendezvous prepares figure eights");
-            for(int lesson=Tutorial.FIGURE_EIGHT;lesson<Tutorial.DONE;lesson++){
-                if(lesson==Tutorial.PULL)continue;
-                check(g.tutorial.lesson==lesson && g.teacherBoat()!=null,"instructor remains available after skipping");
-                call(root);reply(root,1);check(g.tutorial.lesson==(lesson==Tutorial.CONNECT?Tutorial.CASTOFF:lesson+1),"one accepted reply advances to the next active lesson, skipping the retired placement checkpoint");
-                if(g.tutorial.lesson==Tutorial.TRAIN)check(Tutorial.chain(g),"skipping link prepares a usable single-file tow");
-                if(g.tutorial.lesson==Tutorial.CONNECT)check(g.passages.passable(0),"skipping canal prepares open passage and harbor cargo");
+            reply(root,1);check(g.tutorial.lesson==Tutorial.CONNECT,"skip driving goes directly to towing");
+            check(g.passages.passable(0) && g.cargo[0]!=null,"towing starts with open canal and cargo ready");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.SHOW,"skip towing prepares abilities");
+            check(g.tow.loadCount(g.tug)==0 && g.cargo[0].ability==BargeAbilities.FIREWORKS && !g.tutorial.fireworks.launched,"abilities starts with released fireworks barges ready to activate");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.DONE && !g.dialogue.active,"skip abilities finishes training");
+            for(int lesson=Tutorial.MOVE;lesson<Tutorial.DONE;lesson++){
+                g.tutorial.lesson=lesson;g.tutorial.setup(g);
+                int expected=lesson<Tutorial.CONNECT?Tutorial.CONNECT:lesson<Tutorial.SHOW?Tutorial.SHOW:Tutorial.DONE;
+                call(root);check(g.dialogue.content().title.contains(g.tutorial.phaseName()),"confirmation names the entire phase");reply(root,1);
+                check(g.tutorial.lesson==expected,"skip from every sublesson reaches next phase boundary");
+                check(!g.tutorial.feedback.active(),"skipping does not claim earned lesson praise");
+                if(expected==Tutorial.DONE){ticks(root,360);check(!g.dialogue.active && g.tutorial.fireworks.heat==0 && g.tutorial.fireworks.sizzle==0,"skipped fire cannot restart radio or ambience");}
             }
             root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);g=root.activeGame();
             for(int i=0;i<1000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}

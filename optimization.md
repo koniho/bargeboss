@@ -5487,3 +5487,21 @@ launch restored after capture; screen timeout restored to300000ms.
 - Replay baseline be9f8d0c:2:1350 reflects sprite draws and staggered smoke emission.
 - Measured frozen samples: draw p50 11.15ms / p95 12.28ms; frame interval p50
   16.62ms / p95 18.46ms; zero frame texture builds or evictions after warmup.
+
+### 2026-11-22 — whole-phase tutorial skipping (shared Java)
+
+- Instructor confirmation now names driving/towing/barge abilities and describes
+  the destination. Skip targets CONNECT, SHOW or DONE from every sublesson; no
+  more throttle-substep or individual-lesson advancement. Existing setup prepares
+  next-phase bridges/cargo; normal progression remains unchanged.
+- Ending skips reset active abilities/fire/radio state, preventing stranded roar,
+  sizzle or a late relief conversation. Suppressed earned praise for skipped work.
+- Public tap/reply regressions pass at 960 and 1333 widths from every lesson,
+  including keep-practicing, pause, cancellation and all three phase boundaries.
+  No new runtime assets, textures or draw calls. Replay a2e3cf27:2:1350 reflects
+  the revised radio wording; full build/install validation follows.
+- Complete Android build/checks passed, including 265 instructor-radio assertions,
+  continuous tutorial replay, asset contracts, shoreline regressions and native
+  encoder/clip checks. Shared-renderer 960-wide phase confirmation reviewed in
+  out/skip-phase-{0,6,18}.png. APK installed successfully and normal cold launch
+  completed. Native touch was not manually exercised; no iOS device validation.

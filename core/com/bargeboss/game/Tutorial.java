@@ -13,6 +13,7 @@ public final class Tutorial {
     final FireworksLesson fireworks=new FireworksLesson();
     public boolean firstTowParked;
     private int firstOrbitDirection,outsideTicks;
+    private boolean skippedPhase;
     public boolean reverseArmed;
     public float reverseTargetX,reverseTargetY;
     public int bridgeCrossed,trainCrossed;
@@ -117,11 +118,19 @@ public final class Tutorial {
         if(hadTeacher && arrival==null){arrival=new TutorialArrival();arrival.observe(g);}
         g.fitTutorialCamera();
     }
-    /** Explicit radio skip prepares the next exercise, including its prerequisite tow state. */
+    int nextPhase(){return lesson<CONNECT?CONNECT:lesson<SHOW?SHOW:DONE;}
+    String phaseName(){return lesson<CONNECT?"DRIVING":lesson<SHOW?"TOWING":"BARGE ABILITIES";}
+    String skipDetail(){return lesson<CONNECT?"NEXT: CONNECT AND HANDLE A TOW.":lesson<SHOW?"NEXT: FIREWORKS AND FIREFIGHTING.":"THIS WILL FINISH CAPTAIN TRAINING.";}
+    /** Explicit phase skip prepares the next phase's complete prerequisite scene. */
     void skip(Game g){
-        g.cancelInputs();
-        if(lesson==MOVE && helm.phase<HelmPractice.RENDEZVOUS){helm.skip(g);return;}
-        if(lesson<DONE){lesson++;if(lesson<DONE)setup(g);else g.dialogue.close(g);}
+        if(lesson>=DONE)return;
+        g.cancelInputs();skippedPhase=true;lesson=nextPhase();
+        if(lesson<DONE)setup(g);
+        else {
+            // Do not leave an active fire/audio loop or reopen the relief dialogue on DONE.
+            g.dialogue.close(g);instructorRadio.reset();feedback.reset();
+            fireworks.reset();g.abilities.reset();g.selected=-1;
+        }
         g.haptic(Game.HAPTIC_SUCCESS);
     }
     private static void park(Body b) {
@@ -130,8 +139,8 @@ public final class Tutorial {
     }
     private static void success(Game g){g.sounds.complete();g.haptic(Game.HAPTIC_SUCCESS);}
     public void update(Game g) {
-        feedback.sample(g);int before=lesson;
-        updateLesson(g);feedback.completed(g,before,lesson);
+        skippedPhase=false;feedback.sample(g);int before=lesson;
+        updateLesson(g);if(!skippedPhase)feedback.completed(g,before,lesson);
     }
     private void updateLesson(Game g) {
         if(instructorRadio.step(g)){
