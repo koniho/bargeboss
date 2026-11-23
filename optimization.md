@@ -6329,3 +6329,28 @@ launch restored after capture; screen timeout restored to300000ms.
   encountered showing=true, inputRestricted=true keyguard and was stopped. No
   keyguard settings changed. An unlocked complete device capture remains needed;
   the short incomplete sample does not establish a sustained frame-rate claim.
+
+## 2026-11-23 — Montrose startup freeze after rescue manifest expansion
+- Device reproduction logged "Rotation set exceeds frame cache budget" after the
+  rescue hull expanded Montrose preparation. All scenery preparation IDs were
+  treated as permanently pinned, consuming the entire 160 MiB cropped cache.
+- Android MainActivity reset its previous-frame clock whenever readiness was
+  false, even after the worker exited with a failure. Thus a recoverable loading
+  error permanently prevented Game.advance from receiving elapsed time.
+- Wait/reset the clock only while preparation is actually running. Failed
+  preparation now proceeds through existing demand loading instead of freezing.
+  Reserve pins for shared SpriteAtlas.rotationAtlas families; scenery is still
+  prefetched but participates in bounded LRU eviction. Keep the 160 MiB budget.
+- Validation follows below; initial profile capture was interrupted when another
+  phone application became foreground, so it is not timing evidence.
+- Validation: build-android.sh passed shared gameplay/replay, source assets,
+  material/pixel checks and Vulkan encoding; APK installed. Native normal-budget
+  arrival completed all 450 capture frames, prepared 3,604 frames with readiness
+  true, and moved the tug from Y=950 to Y=560/Gavin welcome. With deliberately
+  insufficient 8 MiB storage, preparation correctly failed (readiness false), but
+  all 450 capture frames still completed and tug reached Y=560/Gavin welcome.
+  This explicitly verifies failure cannot keep resetting the simulation clock.
+  Evidence: out/montrose-fixed-arrival.csv and montrose-fallback-arrival.csv.
+- Added complete Montrose preparation/rotation-retention assertions to optional
+  AndroidRotationReview and enabled the arrival fixture in profile-android.sh.
+  Shared gameplay and iOS rendering rules are unchanged.

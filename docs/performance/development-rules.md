@@ -25,6 +25,9 @@ development phone's measurements, not guarantees for every device/backend.
 - Declare upcoming assets in shared `LevelAssets.Plan` manifests, including future
   feeder deliveries and later tutorial phases. Expand each listed watercraft into
   every heading/effect variant with `SpriteAtlas.rotationAtlases(sources)`. Native
+  Pin gameplay rotation families, not every prefetched scenery atlas. Scenery
+  must remain evictable within the bounded frame cache. A failed preparation
+  worker must release the startup clock barrier and permit demand loading.
   hosts only prepare the supplied list; they must not infer requirements from
   visible objects or choose different sprites. Replace obsolete preparation on a
   level change and unpin old-only frames. Keep shared frames reusable.

@@ -97,6 +97,15 @@ final class AndroidRotationReview {
             scoped.beginFrame();
             for(int id:tutorial)for(int f=0;f<SpriteAtlas.count(id);f++)scoped.profileFrameImage(id,f);
             require(stats.frameBuilds==0,"Current level frames were evicted");
+            // A level's complete preparation list includes evictable scenery as well
+            // as reserved rotations. Montrose previously overflowed and froze arrival.
+            LevelAssets.Plan marina=LevelAssets.challenge(Challenges.MONTROSE);
+            scoped.prepareRotations(marina.preparationAtlases());scoped.profileAwaitRotations(30000);
+            require(scoped.profileRotationsReady(),"Full Montrose scenery/rescue manifest must finish");
+            require(scoped.profileFrameBytes()<=scoped.profileFrameBudget(),"Montrose exceeds bounded cache");
+            scoped.beginFrame();
+            for(int id:marina.rotationAtlases())for(int f=0;f<SpriteAtlas.count(id);f++)scoped.profileFrameImage(id,f);
+            require(stats.frameBuilds==0,"Scenery preparation evicted Montrose gameplay rotations");
             try(FileWriter report=new FileWriter(new File(directory,"rotation-levels.txt"))) {
                 report.write("tutorial_frames="+LevelAssets.tutorial().rotationFrames()+" tutorial_bytes="+tutorialBytes+" calumet_frames="+LevelAssets.challenge(0).rotationFrames()+" unused_cargo=not_loaded rapid_switch=passed previous_level_released=passed current_level_rebuilds=0\n");
             }
