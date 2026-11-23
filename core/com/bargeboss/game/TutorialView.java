@@ -126,9 +126,10 @@ public final class TutorialView {
                     ControlView.ring(g,river,FireworksLesson.TOW_X,FireworksLesson.TOW_Y,50+pulse,1,ControlView.GREEN,3);
                 }else ControlView.arrow(g,river,equipment.x,equipment.y,g.tug.x,g.tug.y,ControlView.BLUE);
             }
-            if(t.lesson==Tutorial.EXTINGUISH){
-                float x=g.layout.camera.screenX(FireworksLesson.X,FireworksLesson.Y),y=g.layout.camera.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*g.layout.camera.scale;
-                SoftCue.ring(p,x,y,34,1-t.fireworks.heat/(float)FireworksLesson.HEAT,SoftCue.CYAN,3);
+            if(t.lesson==Tutorial.EXTINGUISH)for(int pile=0;pile<FireworksLesson.PILES;pile++){
+                if(t.fireworks.heat(pile)==0)continue;
+                float x=g.layout.camera.screenX(FireworksLesson.x(pile),FireworksLesson.y(pile)),y=g.layout.camera.screenY(FireworksLesson.x(pile),FireworksLesson.y(pile))-GroundArt.LAND_RISE*g.layout.camera.scale;
+                SoftCue.ring(p,x,y,34,1-t.fireworks.heat(pile)/(float)FireworksLesson.PILE_HEAT,SoftCue.CYAN,3);
             }
             return;
         }

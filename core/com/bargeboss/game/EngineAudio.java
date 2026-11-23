@@ -12,10 +12,14 @@ public final class EngineAudio {
         if(layer>=FIRE){
             Game g=root.activeGame();if(g.tutorial==null || g.tug==null)return 0;
             FireworksLesson f=g.tutorial.fireworks;
-            float distance=Physics.length(g.tug.x-FireworksLesson.X,g.tug.y-FireworksLesson.Y);
-            float near=Physics.clamp(1-distance/800,0,1);near*=near;
-            float power=layer==FIRE?(f.heat>0?.55f*(.3f+.7f*f.heat/FireworksLesson.HEAT):0):.65f*Physics.clamp(f.sizzle/12f,0,1);
-            return near*power*SoundEffects.ambienceGain(root);
+            float mix=0;
+            for(int pile=0;pile<FireworksLesson.PILES;pile++){
+                float distance=Physics.length(g.tug.x-FireworksLesson.x(pile),g.tug.y-FireworksLesson.y(pile));
+                float near=Physics.clamp(1-distance/800,0,1);near*=near;
+                float power=layer==FIRE?(f.heat(pile)>0?.55f*(.3f+.7f*f.heat(pile)/FireworksLesson.PILE_HEAT):0):.65f*Physics.clamp(f.sizzle(pile)/12f,0,1);
+                mix=Math.max(mix,near*power);
+            }
+            return mix*SoundEffects.ambienceGain(root);
         }
         float load=load(root),work=Physics.clamp((load-.12f)/.88f,0,1);
         work=work*work*(3-2*work);

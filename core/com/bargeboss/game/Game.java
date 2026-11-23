@@ -262,12 +262,12 @@ public final class Game {
         RiverCamera base=RiverCamera.DEFAULT;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         boolean fireResponse=tutorial!=null && tutorial.fireworks.heat>0 && tutorial.lesson==Tutorial.EXTINGUISH;
-        int count=load==null?1:docking || fireResponse?3:2;
+        int count=load==null?1:fireResponse?2+FireworksLesson.PILES:docking?3:2;
         for(int i=0;i<count+cargo.length;i++) {
             Body train=i>=count?cargo[i-count]:null;
             if(i>=count && (train==null || train==load || !tow.connected(train,tug)))continue;
-            float wx=i>=count?train.x:i==0?tug.x:i==1?load.x:fireResponse?FireworksLesson.X:bollardX(load);
-            float wy=i>=count?train.y:i==0?tug.y:i==1?load.y:fireResponse?FireworksLesson.Y: bollardY(load);
+            float wx=i>=count?train.x:i==0?tug.x:i==1?load.x:fireResponse?FireworksLesson.x(i-2):bollardX(load);
+            float wy=i>=count?train.y:i==0?tug.y:i==1?load.y:fireResponse?FireworksLesson.y(i-2): bollardY(load);
             float x=base.screenX(wx,wy)/base.scale,y=base.screenY(wx,wy)/base.scale;
             minX=Math.min(minX,x-48);maxX=Math.max(maxX,x+48);
             minY=Math.min(minY,y-78);maxY=Math.max(maxY,y+36);

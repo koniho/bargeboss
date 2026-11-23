@@ -10,18 +10,20 @@ final class FlameArt {
     static float x(int i){return FireworksLesson.X+X[i];}
     static float y(int i){return FireworksLesson.Y+Y[i];}
     static float phase(int tick,int i){return Math.floorMod(tick+OFFSET[i],PERIOD[i])*FRAMES/(float)PERIOD[i];}
-    static float strength(Game g){return .35f+.65f*g.tutorial.fireworks.heat/FireworksLesson.HEAT;}
+    static float strength(Game g,int pile){return .35f+.65f*g.tutorial.fireworks.heat(pile)/FireworksLesson.PILE_HEAT;}
     static void step(Game g){
         if(g.tutorial.fireworks.heat<=0)return;
-        for(int i=0;i<INSTANCES;i++)if(Math.floorMod(g.visualTicks+i*3,16)==0)
-            g.smoke.shore(x(i),y(i),GroundArt.LAND_RISE+SIZE[i]*.42f*strength(g),.8f);
+        for(int pile=0;pile<FireworksLesson.PILES;pile++)if(g.tutorial.fireworks.heat(pile)>0)
+            for(int i=0;i<INSTANCES;i++)if(Math.floorMod(g.visualTicks+i*3+pile*7,16)==0)
+                g.smoke.shore(x(i),y(i)+FireworksLesson.y(pile)-FireworksLesson.Y,GroundArt.LAND_RISE+SIZE[i]*.42f*strength(g,pile),.8f);
     }
-    static void draw(Game g,Painter p){
-        RiverCamera c=g.layout.camera;float strength=strength(g);
+    static void draw(Game g,Painter p){draw(g,p,0);}
+    static void draw(Game g,Painter p,int pile){
+        RiverCamera c=g.layout.camera;float strength=strength(g,pile);
         for(int i=0;i<INSTANCES;i++){
-            float phase=phase(g.visualTicks,i),size=SIZE[i]*strength*c.scale;int frame=(int)phase;
-            p.spriteBlend(SpriteAtlas.FLAME,frame,(frame+1)%FRAMES,c.screenX(x(i),y(i)),
-                    c.screenY(x(i),y(i))-GroundArt.LAND_RISE*c.scale,size,size,0,phase-frame,ALPHA[i]);
+            float phase=phase(g.visualTicks+pile*31,i),size=SIZE[i]*strength*c.scale;int frame=(int)phase;
+            p.spriteBlend(SpriteAtlas.FLAME,frame,(frame+1)%FRAMES,c.screenX(x(i),y(i)+FireworksLesson.y(pile)-FireworksLesson.Y),
+                    c.screenY(x(i),y(i)+FireworksLesson.y(pile)-FireworksLesson.Y)-GroundArt.LAND_RISE*c.scale,size,size,0,phase-frame,ALPHA[i]);
         }
     }
     private FlameArt(){}

@@ -51,3 +51,11 @@ cycling orange/amber/yellow with 210-world-unit receiver radius. Its glow, timbe
 lighting and water reflection are separate from the sprite. No lamps or machinery.
 Heat scales flame height/smoke rise; zero heat stops flames, light and new smoke,
 while existing smoke continues drifting. Rendering never advances these states.
+
+## Two-pile reuse
+
+The tutorial now places piles at (448,-1160) and (448,-1280). Each reuses all five
+local anchors and the same atlas, with the second pile offset 31 animation ticks
+and seven smoke ticks. Heat, smoke emission, sizzle, glow and extinction are
+independent. Each pile casts its existing timber shadow; flame sprites remain
+non-shadow-casting. No new generated artwork is needed.

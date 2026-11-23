@@ -3,11 +3,12 @@ package com.bargeboss.game;
 /** Permanent dry-quay timber stack; shared shaded timber faces, fixed isometric geometry. */
 final class FirewoodPile {
     static final float X=FireworksLesson.X+15,Y=FireworksLesson.Y;
-    private static final ArticulatedModel[] MODELS={build(false),build(true)};
-    private static final ArticulatedModel.Pose[] POSES={MODELS[0].pose(0),MODELS[1].pose(0)};
-    static void prepare(){for(int i=0;i<2;i++)MODELS[i].prepare(POSES[i]);}
+    private static final ArticulatedModel[] MODELS={build(false,0),build(true,0),build(false,1),build(true,1)};
+    private static final ArticulatedModel.Pose[] POSES={MODELS[0].pose(0),MODELS[1].pose(0),MODELS[2].pose(0),MODELS[3].pose(0)};
+    static void prepare(){for(int i=0;i<MODELS.length;i++)MODELS[i].prepare(POSES[i]);}
     private FirewoodPile(){}
-    private static ArticulatedModel build(boolean charred){
+    private static ArticulatedModel build(boolean charred,int pile){
+        float X=FireworksLesson.x(pile)+15,Y=FireworksLesson.y(pile);
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();
         int root=b.node("firewood.stack",-1,X,Y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,0,0);
         // Pallet sleepers keep the tall stack visually grounded on the dock apron.
@@ -28,11 +29,12 @@ final class FirewoodPile {
         }
         return b.build();
     }
-    static void draw(Game g,Painter p){
+    static void draw(Game g,Painter p,int pile){
+        float X=FireworksLesson.x(pile)+15,Y=FireworksLesson.y(pile);
         RiverCamera c=g.layout.camera;
         Painter top=new RiverPainter(GroundArt.raisedCanvas(g,p),c);
         top.poly(new float[]{X-27,Y-39,X+29,Y-39,X+33,Y+42,X-25,Y+42},0x59030910);
-        int state=g.tutorial.fireworks.ignited?1:0;
-        MODELS[state].drawLit(g,p,POSES[state],new FireLight(g));
+        int state=pile*2+(g.tutorial.fireworks.ignited?1:0);
+        MODELS[state].drawLit(g,p,POSES[state],new FireLight(g,pile));
     }
 }

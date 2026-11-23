@@ -251,7 +251,8 @@ public final class ReplayInput {
         float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);
         if(!fire){tap(root,x,y);return;}
         if(g.abilities.owner<0)root.pointerDown(88,x,y);
-        root.pointerMove(88,g.layout.camera.screenX(FireworksLesson.X,FireworksLesson.Y),g.layout.camera.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*g.layout.camera.scale);
+        int pile=g.tutorial.fireworks.targetPile();
+        root.pointerMove(88,g.layout.camera.screenX(FireworksLesson.x(pile),FireworksLesson.y(pile)),g.layout.camera.screenY(FireworksLesson.x(pile),FireworksLesson.y(pile))-GroundArt.LAND_RISE*g.layout.camera.scale);
     }
     public static void tutorial(Game root) {
         Game g=root.activeGame();

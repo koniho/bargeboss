@@ -5505,3 +5505,30 @@ launch restored after capture; screen timeout restored to300000ms.
   encoder/clip checks. Shared-renderer 960-wide phase confirmation reviewed in
   out/skip-phase-{0,6,18}.png. APK installed successfully and normal cold launch
   completed. Native touch was not manually exercised; no iOS device validation.
+
+### 2026-11-22 — two independent firefighting piles (shared Java)
+
+- Added a second dry-quay timber pile 120 world units along the shore. Each has
+  240 water-impact heat, its own steam/sizzle, flame phases, five smoke outlets,
+  color-varying light and water reflection. The first extinguished pile stays
+  charred; both must be out before relief dialogue/completion. Hose aiming and
+  target rings resolve each pile independently. Camera fitting includes both.
+- Each pile is independently depth-sorted with shore/craft. Both timber models
+  are prepared during tutorial setup. The same 16 flame textures and existing
+  two audio loops are reused: no added texture assets or native voice count.
+  Roar/sizzle take the strongest distance-weighted source, avoiding doubled gain.
+- Ten total smoke emitters produce 37.5 puffs/sec at full burn in the existing
+  384-puff pool (eight-second lifetime). No new particle allocation; bounded
+  oldest-puff replacement still applies when scenery and craft emit heavily.
+- Public-input two-fire rescue replay, wrong-aim rejection, independent heat,
+  individual light shutdown, dry ground/reachability, smoke anchors and reset
+  checks pass. Shared renderer previews out/two-fires-burning.png and
+  out/two-fires-one-out.png reviewed; targets remain distinct and UI stays above.
+- Full Android build/checks passed, including shared tutorial replay, assets,
+  shoreline pixels and native Vulkan encoding/clipping. APK installed and native
+  two-pile view reviewed (out/two-fires-native.png); normal launch restored.
+- Short native frozen two-fire profile: 60 measured frames after 30 warmup,
+  draw p50 10.11ms / p95 11.87ms, interval p50 14.70ms / p95 23.86ms,
+  zero frame texture builds/evictions. Retained out/two-fires-freeze.csv. This
+  frozen sample is not an animated FPS guarantee or controlled A/B comparison.
+  iOS not device-tested. Reviewed replay baseline c8abde0:2:1350.

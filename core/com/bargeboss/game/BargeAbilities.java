@@ -44,9 +44,11 @@ public final class BargeAbilities {
     public boolean move(Game g,int id,float px,float py){
         if(owner!=id)return false;
         if(selected.ability==FIRE && pressed==0){aimX=g.layout.camera.worldX(px,py);aimY=g.layout.camera.worldY(px,py);
-            if(g.tutorial!=null && g.tutorial.fireworks.heat>0){
-                RiverCamera c=g.layout.camera;float fx=c.screenX(FireworksLesson.X,FireworksLesson.Y),fy=c.screenY(FireworksLesson.X,FireworksLesson.Y)-GroundArt.LAND_RISE*c.scale;
-                if(Math.abs(px-fx)<38*c.scale && py>fy-65*c.scale && py<fy+20*c.scale){aimX=FireworksLesson.X;aimY=FireworksLesson.Y;}
+            if(g.tutorial!=null && g.tutorial.fireworks.heat>0)for(int pile=0;pile<FireworksLesson.PILES;pile++){
+                if(g.tutorial.fireworks.heat(pile)==0)continue;
+                float x=FireworksLesson.x(pile),y=FireworksLesson.y(pile);
+                RiverCamera c=g.layout.camera;float fx=c.screenX(x,y),fy=c.screenY(x,y)-GroundArt.LAND_RISE*c.scale;
+                if(Math.abs(px-fx)<38*c.scale && py>fy-65*c.scale && py<fy+20*c.scale){aimX=x;aimY=y;break;}
             }}
         return true;
     }

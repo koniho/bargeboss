@@ -16,7 +16,7 @@ public final class FireAudioVisualTest {
             check(SoundEffects.interrupts(incoming,playing)==(incoming==playing || incoming<9 || playing<9),"bounded shared overlap priority");
         FireworksLesson f=g.tutorial.fireworks;g.tug.x=FireworksLesson.X-100;g.tug.y=FireworksLesson.Y;
         check(EngineAudio.gain(g,EngineAudio.FIRE)==0 && EngineAudio.gain(g,EngineAudio.SIZZLE)==0,"no imaginary fire audio");
-        f.ignited=true;f.heat=FireworksLesson.HEAT;
+        f.ignite();
         float roar=EngineAudio.gain(g,EngineAudio.FIRE);check(roar>0,"burning timber has local roar");
         check(!f.waterHit(0,0) && EngineAudio.gain(g,EngineAudio.SIZZLE)==0,"missed spray cannot sizzle");
         check(f.waterHit(FireworksLesson.X,FireworksLesson.Y) && EngineAudio.gain(g,EngineAudio.SIZZLE)>0,"real water hit activates sizzle");

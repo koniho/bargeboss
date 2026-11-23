@@ -29,6 +29,17 @@ public final class FireworksLessonTest {
         check(g.tutorial.lesson==Tutorial.DONE && g.tutorial.fireworks.done && g.tutorial.fireworks.heat==0,"aimed simulated water hits are required to finish");
         check(g.cargo[0]==first && g.cargo[2]==second && g.cargo[3]==fire,"finale preserves all three original specialty barges");
         steps(g,200);check(g.tutorial.fireworks.steam==0,"completion steam expires even on DONE");
+        g=fixture(Tutorial.EXTINGUISH);FireworksLesson fires=g.tutorial.fireworks;
+        for(int pile=0;pile<FireworksLesson.PILES;pile++){
+            check(!TrainingChannel.contains(FireworksLesson.x(pile)+15,FireworksLesson.y(pile)),"each timber pile sits on the dry quay");
+            check(Physics.length(FireworksLesson.x(pile)-FireworksLesson.TOW_X,FireworksLesson.y(pile)-FireworksLesson.TOW_Y)<200,"both fires are within nozzle reach from the marked water");
+        }
+        for(int i=0;i<FireworksLesson.PILE_HEAT;i++)check(fires.waterHit(FireworksLesson.x(0),FireworksLesson.y(0)),"first pile accepts independent water impacts");
+        check(!fires.done && fires.remaining()==1 && fires.heat(1)==FireworksLesson.PILE_HEAT,"one extinguished pile cannot finish the lesson or cool its neighbor");
+        check(FireLight.energy(g,0)==0 && FireLight.energy(g,1)>0,"each fire light follows its own heat");
+        check(!fires.waterHit(FireworksLesson.x(0),FireworksLesson.y(0)),"spent pile cannot absorb more credit");
+        for(int i=0;i<FireworksLesson.PILE_HEAT;i++)fires.waterHit(FireworksLesson.x(1),FireworksLesson.y(1));
+        check(fires.done && fires.heat==0 && fires.remaining()==0,"both piles are required for completion");
         g=fixture(Tutorial.SHOW);g.tutorial.fireworks.launched(g,g.cargo[0]);steps(g,30);int ticks=g.tutorial.fireworks.showTicks;g.background();steps(g,200);
         check(g.tutorial.fireworks.showTicks==ticks,"background freezes fireworks ignition timer");
         g.mode=Game.PLAY;g.tutorial.setup(g);check(!g.tutorial.fireworks.launched && !g.tutorial.fireworks.done,"reset clears mishap and completion");

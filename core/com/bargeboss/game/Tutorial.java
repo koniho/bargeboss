@@ -106,7 +106,7 @@ public final class Tutorial {
             }
             if(lesson>=RELEASE){g.tug.y=-1350;towPractice.y=-1250;g.cargo[2].y=-1140;trainCrossed=3;}
             if(lesson>=SHOW){g.tow.release(g);fireworks.reset();}
-            if(lesson>=FIRE_TOW){fireworks.launched=fireworks.ignited=true;fireworks.heat=FireworksLesson.HEAT;}
+            if(lesson>=FIRE_TOW){fireworks.launched=true;fireworks.ignite();}
             if(lesson==EXTINGUISH){g.cargo[3].x=FireworksLesson.TOW_X;g.cargo[3].y=FireworksLesson.TOW_Y;park(g.cargo[3]);g.tug.x=FireworksLesson.TOW_X;g.tug.y=FireworksLesson.TOW_Y+110;g.tow.attach(g,g.cargo[3]);}
             reconfigureRelease=g.towReleases;rememberTow(g);
             actionTicks=g.towReleases;
