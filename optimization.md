@@ -5817,3 +5817,55 @@ launch restored after capture; screen timeout restored to300000ms.
   out/hose-impact-native.png; shared previews also cover bare quay. Restored
   normal launch. Selection behavior verified by shared input tests; no physical
   iOS or sustained frame-time profiling in this round.
+
+### 2026-11-22 — Shared land scenery surface lighting
+- Worktree codex/land-scenery-lighting from a88f775. All ArticulatedModel faces
+  now receive world-space point lights, including procedural surface materials.
+  SurfaceMaterial.LIT carries the already-graded face color through every host;
+  Canvas/Vulkan/Metal strip the flag only when choosing the original material
+  shader. Reference/desktop/Core Graphics use the same supplied color. UVs,
+  alpha, wetness, BSP depth slices, building fades and emissive lenses survive.
+- SceneryLighting owns one bounded thread-local frame snapshot (2,048 sources,
+  2,048 spatial hash heads, 256-unit cells). Nine nearby cell queries per face,
+  no per-face source collection/allocations or new textures. Production refreshes
+  once per frame. Normals and centroids use physical XYZ; slicing uses the
+  original face centroid so particle/rope depth cuts do not shift illumination.
+- Sources include vessels/instructor/feeders/traffic, dock lamps, navigation
+  beacons, exact moving bridge/crane/lock anchors, yard equipment, building
+  windows and fire. Offscreen bridges are rejected before live light transforms.
+  Worker arm/leg/lean transforms supply real face normals. Yard vehicles/benches,
+  marina pedestal bodies and limestone revetment also receive surface lighting.
+- Shared bridge/crew night previews reviewed: red signals illuminate steel,
+  warm house lamps reach foundations, and nearby fires light shore spectators.
+  Added normal/backface/physical-height, alpha, textured/flat receiver, geometry
+  stability, emissive exclusion and Vulkan prelit-material encoding checks.
+  Native verification and final timings follow below.
+- Full shared/asset checks passed (2,810 core assertions; 491,037 moored-boat
+  checks), including all 9,600 swimmer poses and new scenery/material checks.
+  All-heading shoreline regression passed: 2,404,075 production hull/cargo pixels
+  and 38,121 cached training-wall pixels. JVM/J2ObjC parity: 7f559138:2:1350.
+  Android packaging initially stopped in the new host-only encoding test because
+  its resource-less Vulkan test object cannot call the native host profile setter.
+  Set the test object's profile field directly; all 24 prelit material/preset
+  combinations, existing 2,526,477 encoding fields and clip tests then passed.
+- Final iPhone17Pro/iOS26.5 Metal simulator pixels reviewed for moving bridge
+  houses/steel and animated shore workers. Replay (30 warmup,90 measured): bridge
+  draw median/p95 11.75/12.19ms, intervals 16.66/17.24ms; workers draw 8.71/10.73ms,
+  intervals 16.66/17.25ms, with one 41.41ms draw / 66.70ms interval. That isolated
+  spike is not attributed by these samples. End metadata reported no pending
+  preparation/resident-layer fallbacks, but cumulative 1,490/1,629 texture
+  evictions and 25/31 direct-layer fallbacks. This is not a sustained-device or
+  no-cache-churn claim. A fixed bridge pixel view also passed (draw 6.00/6.66ms).
+  Captures: out/ios-profile/land-{bridge-final,workers-final,bridge-pixels}.
+- Pixel11Pro Vulkan build installed and native bridge/crew/rock screenshots
+  reviewed. Moving bridge A/B then B/A, identical scene/zoom1.7,30 warmup/120
+  measured: lights-on draw median/p95 10.07/12.03ms then 9.64/11.98ms; lights-off
+  8.96/10.42ms then 9.25/12.16ms. Observed median lighting cost 0.39–1.11ms.
+  All four presentation medians were 16.65–16.66ms, with p95 25.00–33.31ms;
+  timing tails occur with the pass disabled too. No locked-60FPS claim.
+- Lit worker replay draw median/p95 7.91/10.21ms; presentation 16.65/25.02ms.
+  Frozen Montrose limestone view draw 8.09/9.57ms; presentation 16.65/16.69ms
+  (30 warmup/60 measured). Measured Android windows had no frame builds,
+  frame evictions or source decode time. Native Vulkan remained active.
+  Evidence in out/profiles/land-*. Normal app cold launch succeeded after
+  profiling; restored the phone's saved 300000ms display timeout.

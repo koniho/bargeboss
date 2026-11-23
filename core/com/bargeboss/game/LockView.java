@@ -92,6 +92,15 @@ public final class LockView {
         RiverCamera c=g.layout.camera;
         p.line(c.screenX(x,y),c.screenY(x,y)-z*ArticulatedModel.Z_SCALE*c.scale,c.screenX(xx,yy),c.screenY(xx,yy)-zz*ArticulatedModel.Z_SCALE*c.scale,width*c.scale,color);
     }
+    static void lights(Game g,SceneryLighting out){
+        for(int i=0;i<2;i++){ArticulatedModel m=model(i,opening(g.lock,i));ArticulatedModel.Pose pose=m.pose(0);float y=gateY(i);
+            int color=passable(g.lock,i)?0xff8fe4a2:0xffff5945;
+            for(int side=0;side<2;side++){
+                out.add(side==0?Physics.LEFT-10:Physics.RIGHT+10,y+12,54,125,.5f,color);
+                float[] a=pose.point(m.nodeId(side==0?"left-leaf":"right-leaf"),LockDoors.LENGTH-6,0,32);out.add(a[0],a[1],a[2],100,.5f,0xffffc779);
+            }
+        }
+    }
     private static void lamp(Game g,Painter p,ArticulatedModel.Pose pose,int node,float x,float y,float z,int color,float strength,int seed){
         float[] xyz=pose.point(node,x,y,z);if(pose.occluded(xyz))return;
         RiverCamera c=g.layout.camera;float sx=c.screenX(xyz[0],xyz[1]),sy=c.screenY(xyz[0],xyz[1])-xyz[2]*ArticulatedModel.Z_SCALE*c.scale;

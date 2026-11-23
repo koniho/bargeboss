@@ -283,14 +283,15 @@ public final class ArticulatedModel {
         if(stats.visibleFaces==0)return stats;
         prepare(pose);
         stats.fragments=pose.fragments;
+        FaceLighting scene=SceneryLighting.get(g);
         p.beginSurfaceBatch();
         try {
-            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node],lighting);stats.drawnFaces++;}}}
+            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node],scene,lighting,f.cx,f.cy,f.cz);stats.drawnFaces++;}}}
         } finally {p.endSurfaceBatch();}
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax;int motionIndex;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz;int motionIndex;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
@@ -299,25 +300,23 @@ public final class ArticulatedModel {
         Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
         /** Geometry-derived bounds refresh only when a rigid pose changes, never per slice. */
         void depthBounds(){
-            depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;
-            for(int i=0;i<xyz.length;i+=3){float depth=xyz[i+1]-xyz[i];depthMin=Math.min(depthMin,depth);depthMax=Math.max(depthMax,depth);}
+            depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;cx=cy=cz=0;
+            for(int i=0;i<xyz.length;i+=3){cx+=xyz[i];cy+=xyz[i+1];cz+=xyz[i+2];float depth=xyz[i+1]-xyz[i];depthMin=Math.min(depthMin,depth);depthMax=Math.max(depthMax,depth);}
+            int count=xyz.length/3;cx/=count;cy/=count;cz/=count;
         }
-        void paint(Painter p,RiverCamera c,float alpha,FaceLighting lighting) {
+        void paint(Painter p,RiverCamera c,float alpha,FaceLighting scene,FaceLighting lighting,float x,float y,float z) {
             float[] xy=new float[xyz.length/3*2];for(int i=0,j=0;i<xyz.length;i+=3,j+=2){xy[j]=c.screenX(xyz[i],xyz[i+1]);xy[j+1]=c.screenY(xyz[i],xyz[i+1])-xyz[i+2]*Z_SCALE*c.scale;}
             float light=p.lighting().face(nx,ny,nz);
             int r=(int)((color>>16&255)*light),g=(int)((color>>8&255)*light),b=(int)((color&255)*light);
             int shaded=((int)(255*alpha)<<24)|(r<<16)|(g<<8)|b;
             if(material!=SurfaceMaterial.EMISSIVE)shaded=SceneLighting.scale(shaded,p.lighting().sunColor>>16&255,p.lighting().sunColor>>8&255,p.lighting().sunColor&255);
-            if(material<0){
-                int ambient=material==SurfaceMaterial.EMISSIVE?shaded:p.lighting().scenery(shaded);
-                if(lighting!=null && material!=SurfaceMaterial.EMISSIVE){
-                    float x=0,y=0,z=0;int count=xyz.length/3;
-                    for(int i=0;i<xyz.length;i+=3){x+=xyz[i];y+=xyz[i+1];z+=xyz[i+2];}
-                    ambient=lighting.shade(ambient,color,x/count,y/count,z/count,nx,ny,nz);
-                }
-                p.poly(xy,ambient);
+            int ambient=material==SurfaceMaterial.EMISSIVE?shaded:material<0?p.lighting().scenery(shaded):p.lighting().surface(shaded,material);
+            if(material!=SurfaceMaterial.EMISSIVE){
+                ambient=scene.shade(ambient,color,x,y,z,nx,ny,nz);
+                if(lighting!=null)ambient=lighting.shade(ambient,color,x,y,z,nx,ny,nz);
             }
-            else p.surfacePolygon(xy,uv,material,shaded,material==SurfaceMaterial.CONCRETE?.12f:.04f);
+            if(material<0)p.poly(xy,ambient);
+            else p.surfacePolygon(xy,uv,material|SurfaceMaterial.LIT,ambient,material==SurfaceMaterial.CONCRETE?.12f:.04f);
         }
     }
     /** Plane splits resolve crossing truss/deck faces, including the lifted poses. */

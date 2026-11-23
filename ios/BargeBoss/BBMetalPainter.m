@@ -302,7 +302,7 @@ static vector_float4 BBColor(jint argb) {
     if(material==BBSurfaceMaterial_EMISSIVE){[self polyWithFloatArray:xy withInt:argb];return;}
     int n=xy->size_/2;vector_float4 color=BBColor([self.lightingProfile surfaceWithInt:argb withInt:material]);
     if(n<3 || xy->size_!=uv->size_ || color.w<=0)return;self.surfacePatches++;
-    uint32_t kind=14+material;
+    uint32_t kind=14+[BBSurfaceMaterial baseWithInt:material];
     // BSP fragments and shore faces are convex, with matching stable UV vertices.
     for(int i=1;i<n-1;i++) {
         int indices[3]={0,i,i+1};BBVertex v[3];

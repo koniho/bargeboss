@@ -15,7 +15,7 @@ public final class SurfaceMaterialTest {
         public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
             if(fail)throw new IllegalStateException("Synthetic drawing failure");
             check(xy.length==uv.length && xy.length>=6 && xy.length%2==0,"surface vertices pair with UVs");
-            check(material>=SurfaceMaterial.RUST && material<=SurfaceMaterial.CORRUGATED,"known shared material");
+            check(SurfaceMaterial.base(material)>=SurfaceMaterial.RUST && SurfaceMaterial.base(material)<=SurfaceMaterial.CORRUGATED,"known shared material");
             check(Float.isFinite(wetness) && wetness>=0 && wetness<=1,"bounded shared wetness");
             faces++;vertices+=xy.length/2;this.color=color;this.wetness=wetness;firstX=xy[0];firstY=xy[1];lastUV=uv.clone();
             uvFaces.add(Arrays.toString(uv));

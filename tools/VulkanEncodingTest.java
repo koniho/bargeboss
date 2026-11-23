@@ -39,8 +39,20 @@ public class VulkanEncodingTest {
   }
   System.out.println(checked+" thin ripple zoom/winding cases retain both triangles");
  }
+ static void litSurfaces()throws Exception{
+  Painter p=make(VulkanPainter.class);float[] xy={0,0,10,0,10,10,0,10};int color=0x80806040;
+  for(int preset=0;preset<4;preset++)for(int material=0;material<=SurfaceMaterial.CORRUGATED;material++){
+   start(p);Field profile=p.getClass().getDeclaredField("lightingProfile");profile.setAccessible(true);profile.set(p,LightingProfile.preset(preset));p.surfacePolygon(xy,xy,material|SurfaceMaterial.LIT,color,.3f);
+   float[] v=(float[])read(p,"vertices");float alpha=128/255f;
+   for(int k=0;k<(Integer)read(p,"used");k+=16){
+    if(v[k+8]!=14+material || v[k+4]!=(128/255f)*alpha || v[k+5]!=(96/255f)*alpha || v[k+6]!=(64/255f)*alpha || v[k+7]!=alpha || v[k+9]!=.3f)
+     throw new AssertionError("Prelit surface texture/color/opacity/wetness encoding");
+   }
+  }
+  System.out.println("24 prelit Vulkan material/preset combinations preserve texture and supplied color");
+ }
  public static void main(String[] args)throws Exception{
-  thinPolygons();
+  thinPolygons();litSurfaces();
   String[] expected={"daacc2aa3615cefaec1fc3b98118e8e00be33629cc243ab31be1b46f8a4dc2ea",
    "0e7092c8057cd60ff2f1dfcca91800fdfef50a57f3e843b34ba7b89497a67857",
    "06c5caf79fd850d4d1ae7db836be455780c0676f0c8aa98ec3d839e47eee0276"};

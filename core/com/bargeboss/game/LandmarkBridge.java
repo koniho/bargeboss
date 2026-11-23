@@ -175,6 +175,14 @@ final class LandmarkBridge {
             p.poly(q,soft==0?0x16060e17:0x05060e17);
         }
     }
+    void lights(Game g,SceneryLighting out,float amount,boolean passable){
+        if(!visible(g))return;
+        ArticulatedModel.Pose movingPose=pose(amount);
+        for(int i=0;i<lamps.length;i++){Lamp lamp=lamps[i];ArticulatedModel.Pose owner=lamp.moving?movingPose:fixedPose;
+            float[] at=owner.point(lamp.node,lamp.x,lamp.y,lamp.z);
+            out.add(at[0],at[1],at[2],lamp.signal?65:140,(lamp.signal?.28f:.65f)*SceneryEffects.intensity(g.visualTicks,i*.79f),lamp.signal?(passable?0xff7ee2aa:0xffff6850):0xffffbd79);
+        }
+    }
     void draw(Game g,Painter p,float amount,boolean passable){
         drawRange(g,p,amount,passable,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);
     }

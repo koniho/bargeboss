@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
@@ -25,6 +25,13 @@ public final class ProfileScenario {
     public static void prepare(Game root,String name,float width,float height) {
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
+        if(name.startsWith("land-")){
+            boolean bridge=name.equals("land-bridge-lit");prepare(root,bridge?"canal-opening":"tutorial-firefight",width,height);
+            Game g=root.activeGame();g.changeLighting(3);g.abilities.cancel();
+            if(bridge){LandmarkBridge b=g.passages.bridges[0];g.layout=Layout.focused(width,height,b.x,b.y,1.7f,width*.5f,height*.65f);}
+            else {float[] a=new float[2];TrainingYardCrew.position(TrainingYardCrew.count()-4,a);g.layout=Layout.focused(width,height,a[0],a[1],2.2f,width*.5f,height*.58f);}
+            RECEIVERS.put(root,Boolean.TRUE);return;
+        }
         if(name.equals("seawall-audio")){
             root.configureCanvas(width,height);root.resetPracticeYard();
             root.tug.x=-1600;root.tug.y=TrainingChannel.BASIN_TOP+root.tug.half+root.tug.radius+16;

@@ -10,7 +10,7 @@ public final class Renderer {
         if(g.mode==Game.SETTINGS){ScreenView.settings(g,p);return;}
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
-        try {WorldArrows.begin(g);
+        try {WorldArrows.begin(g);SceneryLighting.begin(g);
         if(g.calumetStage())CalumetRiverView.draw(g,p);
         else if(g.indianaStage())IndianaView.draw(g,p);
         else if(g.montroseStage())MontroseView.draw(g,p);

@@ -149,7 +149,7 @@ public final class CoreTest {
         TravelLiftTest.run();MontroseHauloutTest.run();MontroseTest.run();
         MontroseRescueTest.run();
         SwimmerModelTest.run();
-        MarinaReceiverTest.run();
+        MarinaReceiverTest.run();SceneryReceiverTest.run();
         DeveloperPanelTest.run();
         MontroseGeometryTest.run();
         MontroseShoreTest.run();
@@ -195,7 +195,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("e77efb62:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("7f559138:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

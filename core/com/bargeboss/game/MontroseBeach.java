@@ -90,6 +90,9 @@ final class MontroseBeach {
         }
         return b.build();
     }
+    static void lights(SceneryLighting out){
+        for(int i=-2;i<=2;i++){float[] a=POSES[0].point(0,i*25,58*.5f+1.6f,29*.55f);out.add(a[0],a[1],a[2],65,.12f,0xffffc36d);}
+    }
     static float depth(Game g,int id){return g.layout.camera.screenY(MontroseHarbor.mapX(PLACES[id][0]),MontroseHarbor.mapY(PLACES[id][1]));}
     static void landmark(Game g,Painter p,int id){
         RiverCamera c=g.layout.camera;float wx=MontroseHarbor.mapX(PLACES[id][0]),wy=MontroseHarbor.mapY(PLACES[id][1]),x=c.screenX(wx,wy),y=c.screenY(wx,wy)-MontroseHarbor.LAND_RISE*c.scale,pad=220*c.scale;

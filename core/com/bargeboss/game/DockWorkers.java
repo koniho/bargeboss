@@ -73,7 +73,7 @@ public final class DockWorkers {
         RiverCamera c=g.layout.camera;
         // Continuous shoulder rotation; boot vertices never depend on animation time.
         for(Face face:FACES) {
-            float[] xy=face.projected;
+            float[] xy=face.projected,xyz=face.transformed;
             for(int i=0,j=0;i<face.xyz.length;i+=3,j+=2) {
                 float x=face.xyz[i],y=face.xyz[i+1],z=face.xyz[i+2];
                 if(face.arm!=0){float motion=face.arm<0?left:right;float cosine=(float)StrictMath.cos(motion),sine=(float)StrictMath.sin(motion);float dx=x-face.arm*3.1f,dz=z-15;
@@ -82,14 +82,16 @@ public final class DockWorkers {
                     if(face.arm>0 && !Float.isNaN(point)){float ax=x-3.1f,ay=y;x=3.1f+ax*(float)StrictMath.cos(point)-ay*(float)StrictMath.sin(point);y=ax*(float)StrictMath.sin(point)+ay*(float)StrictMath.cos(point);}}
                 if(face.arm==0 && z<=9 && stride!=0){float swing=x<0?stride:-stride,dy=y,dz=z-9;y=dy*(float)StrictMath.cos(swing)-dz*(float)StrictMath.sin(swing);z=9+dy*(float)StrictMath.sin(swing)+dz*(float)StrictMath.cos(swing)+.4f;}
                 if(face.arm!=0 || face.xyz[2]>=9){float tilt=lean*.2f,dx=x,dz=z-9;x=dx*(float)StrictMath.cos(tilt)+dz*(float)StrictMath.sin(tilt);z=9-dx*(float)StrictMath.sin(tilt)+dz*(float)StrictMath.cos(tilt);}
+                xyz[i]=wx+x;xyz[i+1]=wy+y;xyz[i+2]=(GroundArt.LAND_RISE+z)/ArticulatedModel.Z_SCALE;
                 xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(GroundArt.LAND_RISE+z)*c.scale;
             }
-            if(face.material<0)p.poly(xy,p.lighting().scenery(face.color));else p.surfacePolygon(xy,face.uv,face.material,face.color,0);
+            int lit=SceneryLighting.polygon(g,xyz,face.color,face.material);
+            if(face.material<0)p.poly(xy,lit);else p.surfacePolygon(xy,face.uv,face.material|SurfaceMaterial.LIT,lit,0);
         }
     }
     private static final class Face {
-        final float[] xyz,uv,projected;final int color,material,arm;
-        Face(float[] v,int c,int m,int a){xyz=v;color=c;material=m;arm=a;uv=new float[v.length/3*2];projected=new float[uv.length];for(int i=0,j=0;i<v.length;i+=3,j+=2){uv[j]=v[i]+v[i+1];uv[j+1]=v[i+2];}}
+        final float[] xyz,uv,projected,transformed;final int color,material,arm;
+        Face(float[] v,int c,int m,int a){xyz=v;transformed=new float[v.length];color=c;material=m;arm=a;uv=new float[v.length/3*2];projected=new float[uv.length];for(int i=0,j=0;i<v.length;i+=3,j+=2){uv[j]=v[i]+v[i+1];uv[j+1]=v[i+2];}}
     }
     private static Face[] mesh() {
         ArrayList<Face> f=new ArrayList<Face>();

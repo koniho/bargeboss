@@ -20,8 +20,8 @@ public final class MarinaPedestals {
     private MarinaPedestals(){}
 
     private static final class Face {
-        final float[] projected;final int color;final boolean luminous;
-        Face(float[] xyz,int color,boolean luminous){this.color=color;this.luminous=luminous;projected=new float[8];
+        final float[] projected,xyz;final int color;final boolean luminous;
+        Face(float[] xyz,int color,boolean luminous){this.xyz=xyz;this.color=color;this.luminous=luminous;projected=new float[8];
             for(int i=0;i<4;i++){projected[2*i]=RiverCamera.Q*(xyz[3*i]+xyz[3*i+1]);
                 projected[2*i+1]=RiverCamera.Q*RiverCamera.DEPTH*(xyz[3*i+1]-xyz[3*i])-ArticulatedModel.Z_SCALE*xyz[3*i+2];}
         }
@@ -34,6 +34,7 @@ public final class MarinaPedestals {
             box(out,source[2],source[3],1.8f,12,14,true,false);
             box(out,source[2],source[3],2.3f,14,14.8f,false,true);
             faces=out.toArray(new Face[out.size()]);
+            for(Face f:faces)for(int i=0;i<f.xyz.length;i+=3){f.xyz[i]+=x;f.xyz[i+1]+=y;}
         }
     }
     /** Rotate local rigid points before camera projection; no painted bitmap rotation. */
@@ -64,7 +65,7 @@ public final class MarinaPedestals {
         if(!visible(g,x,y,25*s))return;
         float power=energy(g,f);float[] q=SCREEN.get();
         for(Face face:f.faces){for(int i=0;i<8;i+=2){q[i]=x+face.projected[i]*s;q[i+1]=y+face.projected[i+1]*s;}
-            int color=face.luminous?((int)(225+30*power)<<24)|(face.color&0xffffff):face.color;canvas.poly(q,color);
+            int color=face.luminous?((int)(225+30*power)<<24)|(face.color&0xffffff):SceneryLighting.polygon(g,face.xyz,face.color,-1);canvas.poly(q,color);
         }
         MontroseShoreArt.starSign(g,canvas,f.x,f.y);
         float halo=1+.04f*(float)StrictMath.sin(g.visualTicks*.016+f.phase),scale=s*.65f*halo;

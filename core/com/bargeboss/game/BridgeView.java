@@ -3,6 +3,12 @@ package com.bargeboss.game;
 /** Projection of the common articulated bridge; shared bridge rules remain authoritative. */
 public final class BridgeView {
     private BridgeView() {}
+    static void lights(Game g,SceneryLighting out){
+        ArticulatedModel.Pose pose=BridgeModel.MODEL.pose(g.bridge.lift());
+        for(int i=0;i<BridgeModel.LIGHTS.length;i++){BridgeModel.Light lamp=BridgeModel.LIGHTS[i];float[] a=pose.point(lamp.node,lamp.x,lamp.y,lamp.z);
+            out.add(a[0],a[1],a[2],140,.65f*SceneryEffects.intensity(g.visualTicks,i*1.27f),lamp.kind==BridgeModel.SIGNAL?(g.bridge.passable()?0xff8fe4a2:0xffff5945):lamp.color);
+        }
+    }
     public static void draw(Game g,Painter canvas) {
         RiverCamera c=g.layout.camera;
         float centerX=c.screenX(300,Bridge.Y),centerY=c.screenY(300,Bridge.Y);

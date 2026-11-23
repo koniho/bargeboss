@@ -61,6 +61,12 @@ public final class IndianaView {
         if(type==1)IndianaDetails.mill(b,root,x>1000 || y>1300);
         return b.build();
     }
+    static void lights(SceneryLighting out){
+        for(Landmark l:LANDMARKS){
+            if(l.type==0){float[] a=l.pose.point(0,0,-14,115);out.add(a[0],a[1],a[2],180,.65f,0xff59c58a);}
+            if(l.type==2)for(int side=-1;side<=1;side+=2)for(int i=-2;i<=2;i++){float[] a=l.pose.point(0,i*10,side*24,49);out.add(a[0],a[1],a[2],65,.1f,0xffffc36d);}
+        }
+    }
     static int count(Game g){return g.indianaStage()?LANDMARKS.length:0;}
     static float depth(Game g,int i){return g.layout.camera.screenY(LANDMARKS[i].x,LANDMARKS[i].y);}
     static void landmark(Game g,Painter p,int i){Landmark a=LANDMARKS[i];a.model.draw(g,p,a.pose);

@@ -62,6 +62,12 @@ public final class DockView {
     }
     static float depth(Game g,int id){int n=g.dockCranes.length,dock=id%n;CargoTransfer.Pose s=new CargoTransfer.Pose(g,g.dockCranes[dock],dock);
         return g.layout.camera.screenY(id<n?s.hookX():s.x,id<n?s.hookY():s.y)+(id<n?.04f:.02f);}
+    static void lights(Game g,SceneryLighting out){
+        for(int dock:visible(g)){Crane c=g.dockCranes[dock];CargoTransfer.Pose s=new CargoTransfer.Pose(g,c,dock);ArticulatedModel.Pose pose=c.motion.pose(s.phase);
+            float pulse=s.tick>0 && s.tick<Game.UNLOAD_TICKS?.82f+.18f*(float)StrictMath.sin(g.visualTicks*.065f):.8f;
+            for(HarborCrane.Lamp lamp:HarborCrane.CARGO_LIGHTS){float[] at=pose.point(c.model.nodeId(lamp.parent),lamp.x,lamp.y,lamp.z);out.add(at[0],at[1],at[2],145,.55f*pulse*SceneryEffects.intensity(g.visualTicks,at[0]*.013f),0xffffc66e);}
+        }
+    }
     static void drawRange(Game g,Painter p,int dock,CargoTransfer.Pose s,float min,float max){
         if(s.maxDepth<=min || s.minDepth>max)return;
         Crane crane=g.dockCranes[dock];ArticulatedModel.Pose pose=crane.motion.pose(s.phase);crane.model.drawRange(g,p,pose,min,max);

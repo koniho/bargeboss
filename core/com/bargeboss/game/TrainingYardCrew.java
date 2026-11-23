@@ -45,9 +45,9 @@ final class TrainingYardCrew {
         if(finale(id)){DockWorkers.drawWorker(g,p,id+6,x,y,.12f+.09f*(float)StrictMath.sin(g.visualTicks*.025+id));return;}
         float bx=SITES[id][0],by=SITES[id][1];
         // Pallet sorting and bench maintenance alternate along the workshops.
-        YardActivity.box(p,c,bx,by-12,22,12,0,3,0xff6b5a41,0xff443d32);
-        YardActivity.box(p,c,bx,by-12,18,10,3,id%2==0?7:11,0xff66716c,0xff3c4849);
-        if(id%2==0)YardActivity.box(p,c,bx-6,by-12,5,8,10,4,0xffa17e4c,0xff655036);
+        YardActivity.box(g,p,c,bx,by-12,22,12,0,3,0xff6b5a41,0xff443d32);
+        YardActivity.box(g,p,c,bx,by-12,18,10,3,id%2==0?7:11,0xff66716c,0xff3c4849);
+        if(id%2==0)YardActivity.box(g,p,c,bx-6,by-12,5,8,10,4,0xffa17e4c,0xff655036);
         DockWorkers.drawWorker(g,p,id+6,x,y,motion(id,g.visualTicks));
         if(g.crew.ticks[id+6]>0)return;
         float z=13+3*(float)StrictMath.sin(g.visualTicks*.09+id);

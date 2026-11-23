@@ -592,15 +592,15 @@ public final class CanvasPainter implements Painter {
     }
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness) {
         if(recordingSurfaceMesh && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
-            surfaceMesh.add(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness);return;
+            surfaceMesh.add(canvas,xy,uv,SurfaceMaterial.base(material),lightingProfile.surface(color,material),wetness);return;
         }
         if(liveSurfaceDepth>0 && !profileFlatSurfaces && material!=SurfaceMaterial.EMISSIVE && (color>>>24)==255){
-            liveSurfaceMesh.add(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness);return;
+            liveSurfaceMesh.add(canvas,xy,uv,SurfaceMaterial.base(material),lightingProfile.surface(color,material),wetness);return;
         }
         flushSurfaceMesh();
         if(material==SurfaceMaterial.EMISSIVE){poly(xy,color);return;}
         if((color>>>24)==0)return;
-        if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,material,lightingProfile.surface(color,material),wetness))
+        if(profileFlatSurfaces || waterFoamShader==null || !canvas.isHardwareAccelerated() || !waterFoamShader.surface(canvas,xy,uv,SurfaceMaterial.base(material),lightingProfile.surface(color,material),wetness))
             Painter.super.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color) { flushSurfaceMesh();

@@ -16,7 +16,7 @@ public final class LightingProfile {
     public String key(){return this==DUSK?SceneLighting.VERSION:"lighting-v1-"+id;}
     public int scenery(int color){return SceneLighting.scale(color,red,green,blue);}
     public int surface(int color,int material){
-        if(material==SurfaceMaterial.EMISSIVE)return color;
+        if(material==SurfaceMaterial.EMISSIVE || material>=0 && (material&SurfaceMaterial.LIT)!=0)return color;
         if(this==DUSK)return SceneLighting.surfaceColor(color,material);
         if(material==SurfaceMaterial.WOOD)return SceneLighting.scale(color,red*3/4,green*3/4,blue*3/4);
         return scenery(color);

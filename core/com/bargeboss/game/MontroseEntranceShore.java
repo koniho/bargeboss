@@ -10,11 +10,12 @@ public final class MontroseEntranceShore {
     private static final ThreadLocal<float[][]> SCREEN=new ThreadLocal<float[][]>(){protected float[][] initialValue(){return new float[][]{new float[6],new float[8],new float[12]};}};
     private static final int[] QUAD_TRIANGLES={0,2,4,0,4,6};
     private static final class Rock {
-        final float[][] faces,projected,uv;final float[] bounds,screenBounds;final int[] colors;final float wetness;
-        Rock(float[][] faces,int color,float wetness){this.faces=faces;this.wetness=wetness;projected=new float[faces.length][];uv=new float[faces.length][];colors=new int[faces.length];
+        final float[][] faces,projected,uv,physical;final float[] bounds,screenBounds;final int[] colors;final float wetness;
+        Rock(float[][] faces,int color,float wetness){this.faces=faces;this.wetness=wetness;physical=new float[faces.length][];projected=new float[faces.length][];uv=new float[faces.length][];colors=new int[faces.length];
             float l=Float.MAX_VALUE,t=l,r=-l,b=-l,sl=l,st=l,sr=-l,sb=-l;
             for(int index=0;index<faces.length;index++){float[] f=faces[index];projected[index]=new float[f.length/3*2];uv[index]=new float[projected[index].length];
                 for(int i=0,j=0;i<f.length;i+=3,j+=2){l=Math.min(l,f[i]);t=Math.min(t,f[i+1]);r=Math.max(r,f[i]);b=Math.max(b,f[i+1]);float x=RiverCamera.Q*(f[i]+f[i+1]),y=RiverCamera.Q*RiverCamera.DEPTH*(f[i+1]-f[i])-f[i+2];projected[index][j]=x;projected[index][j+1]=y;uv[index][j]=f[i];uv[index][j+1]=f[i+1]+f[i+2];sl=Math.min(sl,x);sr=Math.max(sr,x);st=Math.min(st,y);sb=Math.max(sb,y);}
+                physical[index]=f.clone();for(int k=2;k<f.length;k+=3)physical[index][k]/=ArticulatedModel.Z_SCALE;
                 float shade=.78f+(index%4)*.07f;colors[index]=0xff000000|((int)(((color>>16)&255)*shade)<<16)|((int)(((color>>8)&255)*shade)<<8)|(int)((color&255)*shade);
             }bounds=new float[]{l,t,r,b};screenBounds=new float[]{sl,st,sr,sb};}
     }
@@ -62,7 +63,7 @@ public final class MontroseEntranceShore {
     static boolean geometryWithinShore(){for(Rock rock:ROCKS)for(float[] f:rock.faces)for(int i=0;i<f.length;i+=3)if(MontroseHarbor.openWater(f[i],f[i+1]) || f[i+2]>MontroseHarbor.LAND_RISE || f[i+2]<0)return false;return true;}
     static void rocks(Game g,Painter p){RiverCamera c=g.layout.camera;float originX=c.screenX(0,0),originY=c.screenY(0,0),scale=c.scale;float[][] scratch=SCREEN.get();
         for(Rock rock:ROCKS){float[] b=rock.screenBounds;if(originX+b[2]*scale<0 || originX+b[0]*scale>g.layout.width || originY+b[3]*scale<0 || originY+b[1]*scale>g.layout.height)continue;
-            for(int face=0;face<rock.projected.length;face++){float[] source=rock.projected[face],xy=scratch[source.length==6?0:source.length==8?1:2];for(int i=0;i<source.length;i+=2){xy[i]=originX+source[i]*scale;xy[i+1]=originY+source[i+1]*scale;}p.surfacePolygon(xy,rock.uv[face],SurfaceMaterial.CONCRETE,rock.colors[face],rock.wetness);}
+            for(int face=0;face<rock.projected.length;face++){float[] source=rock.projected[face],xy=scratch[source.length==6?0:source.length==8?1:2];for(int i=0;i<source.length;i+=2){xy[i]=originX+source[i]*scale;xy[i+1]=originY+source[i+1]*scale;}p.surfacePolygon(xy,rock.uv[face],SurfaceMaterial.CONCRETE|SurfaceMaterial.LIT,SceneryLighting.polygon(g,rock.physical[face],rock.colors[face],SurfaceMaterial.CONCRETE),rock.wetness);}
         }
     }
     /** Retain the exact collision footprint and receiver elevation of the green pier. */
