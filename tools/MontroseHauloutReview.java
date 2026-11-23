@@ -5,7 +5,7 @@ public final class MontroseHauloutReview {
     public static void main(String[] args)throws Exception{
         Game g=new Game();g.configureCanvas(1333,750);g.selectChallenge(Challenges.MONTROSE);g.reset();
         for(int i=0;i<24;i++)g.step();DialogueReview.capture(g,"montrose-dockmaster");
-        g.dialogue.close(g);g.layout=Layout.focused(1333,750,MontroseHaulout.X,MontroseHarbor.mapY(255),2.4f,666,420);
+        g.montroseArrival.clear();g.dialogue.close(g);g.layout=Layout.focused(1333,750,MontroseHaulout.X,MontroseHarbor.mapY(255),2.4f,666,420);
         DialogueReview.capture(g,"montrose-haulout-dusk");
         g.haulout.requested=true;
         for(int tick=1;tick<=240;tick++){

@@ -35,8 +35,8 @@ public final class MooredBoatsTest {
         float moved=0,turned=0;
         for(int tick=0;tick<600;tick++){g.visualTicks=replay.visualTicks=tick;g.mooredFleet.step(g);replay.mooredFleet.step(replay);
             for(int i=0;i<g.mooredFleet.boats.length;i++){MooredFleet.FloatBoat b=g.mooredFleet.boats[i],same=replay.mooredFleet.boats[i];
-                check(Physics.length(b.x-b.berth.x,b.y-b.berth.y)<=MooredFleet.REACH+.001f,"finite mooring reach");
-                check(Math.abs(b.yaw)<=MooredFleet.YAW+.001f && b.clear(),"yaw bounded and hull on water");
+                check(b.swinging()?b.bowDistance()<=20.001f:Physics.length(b.x-b.berth.x,b.y-b.berth.y)<=MooredFleet.REACH+.001f,"finite mooring reach");
+                check((b.swinging() || Math.abs(b.yaw)<=MooredFleet.YAW+.001f) && b.clear(),"yaw bounded and hull on water");
                 check(b.x==same.x && b.y==same.y && b.yaw==same.yaw,"deterministic tether simulation");
                 moved=Math.max(moved,Physics.length(b.x-b.berth.x,b.y-b.berth.y));turned=Math.max(turned,Math.abs(b.yaw));
             }

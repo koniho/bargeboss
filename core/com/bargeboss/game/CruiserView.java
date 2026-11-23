@@ -5,9 +5,9 @@ final class CruiserView {
     static void draw(Game g,Painter world,Body b){
         RiverPainter river=world instanceof RiverPainter?(RiverPainter)world:null;
         if(river==null)return;
-        RiverCamera c=river.camera;Painter p=river.canvas();float heave=WaterSurface.lift(g,b);
+        RiverCamera c=river.camera;Painter p=river.canvas();float rise=g.haulout.vesselRise(b),heave=rise>0?rise:WaterSurface.lift(g,b);
         float[] water=ShoreOcclusion.vessel(g,c,b,true);p.pushClipOutside(water);
-        try{VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,38,16,b.speed(),false);}finally{p.popClip();}
+        try{if(rise<=0){VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,38,16,b.speed(),false);}}finally{p.popClip();}
         float heading=b.angle*32/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int base=(b.berth%2)*32,a=base+Math.floorMod((int)whole,32),next=base+Math.floorMod((int)whole+1,32);
         float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y)-heave*c.scale,size=MooredBoats.CELL_WORLD*c.scale;

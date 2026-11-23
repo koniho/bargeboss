@@ -29,3 +29,26 @@ never advance motion or use wall-clock randomness.
 
 Tests: MontroseArrivalTest, MooringActivityTest, MooredBoatsTest,
 MontroseBuoyContactTest. Review exports: tools/MontroseArrivalReview.java.
+
+## Beach trip and Chas (2026-11-23)
+
+Sequence: haulout → beach exploration → raft rescue → yacht tow → swimmers.
+Gavin's exploration invitation follows the completed lift cycle. Guidance uses
+harbor fairway/inlet/offshore waypoints; the emergency is position-triggered east
+of the headland (survey x>2250,y<550), not a timeout at the lift. No teleport.
+The crew transmission introduces Chas aboard Rumrunner 2 with Never Wetter rafted
+alongside, three kids aboard, weather turning and both batteries drained by music.
+Player replies include snark or reassurance, followed by a practical rescue plan.
+Reply transmissions finish before the crew responds. Existing legacy mission IDs
+and rewards stay unchanged; delivered boats retain their actor slots.
+
+The raft is outside/past the Wilson Avenue light/horn at survey2350,-1530. Shared
+pointer bounds now follow the full playable boundary, including the beach extension;
+legacy hardcoded bounds silently prevented lasso/taps north of the old marina.
+Developer mission selection begins directly with Chas's call. Normal arrival still
+opens with Gavin's welcome. No unrequested weather preset override is applied.
+
+Single-point sailboat moorings constrain the bow to a20-unit slack radius around
+the moving ball, applying tension torque and damping. Unlike two-line dock berths,
+they can swing through full headings. Ball contacts remain one-way; vessel hulls
+remain solid. Fixed-step force/torque and heading-selected sprites are shared.

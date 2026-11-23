@@ -6,7 +6,11 @@ public final class MontroseHaulout {
             APPROACH_Y=MontroseHarbor.mapY(310),ANGLE=-(float)Math.PI/2;
     public static final int LOWER_TICKS=240;
     public boolean towed,warping,requested,blocked,pushed;
-    public int liftTicks;
+    public int liftTicks,hoistTicks;
+    public static final int HOIST_TICKS=180;
+    private Body liftedBoat;
+    public boolean hoisting(){return liftedBoat!=null && hoistTicks<HOIST_TICKS;}
+    public float vesselRise(Body b){return b==liftedBoat?Math.max(0,64*MontroseTravelLift.SCALE*.65f*hoistTicks/HOIST_TICKS-9)*ArticulatedModel.Z_SCALE:0;}
     public final TravelLiftRadio radio=new TravelLiftRadio();
     public final TravelLiftEffects effects=new TravelLiftEffects();
     MontroseTravelLift.Rig rig;
@@ -39,16 +43,29 @@ public final class MontroseHaulout {
         g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+35,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
     public String status(){
+        if(liftedBoat!=null)return hoisting()?"HOISTING / KEEP CLEAR OF THE LIFT":"BOAT SECURED / HAULOUT COMPLETE";
         if(!requested)return "TAP TRAVEL LIFT TO RADIO / KEEP THE WELL CLEAR";
         if(!lowered())return blocked?"LIFT STOPPED / CLEAR ALL BOATS FROM THE WELL":"LOWERING STRAPS / STAY OUT OF THE WELL";
         if(!towed)return "STRAPS DOWN / TOW THE DISABLED BOAT TO THE LIFT";
         return warping?"DOCK CREW SECURING BOAT":"RELEASE TOW / HOLD BOAT AND PUSH INTO STRAPS";
     }
     public static boolean fits(Body b){
-        for(int i=0;i<3;i++)if(Math.abs(b.discX(i)-X)+b.radius>27 || Math.abs(b.discY(i)-Y)+b.radius>45)return false;
+        for(int i=0;i<3;i++)if(Math.abs(b.discX(i)-X)+b.radius>27*MontroseTravelLift.SCALE || Math.abs(b.discY(i)-Y)+b.radius>45*MontroseTravelLift.SCALE)return false;
         return Math.abs(StrictMath.cos(b.angle))<.22f;
     }
     public void step(Game g){
+        if(liftedBoat!=null){
+            Body b=liftedBoat;b.x=b.tiedX;b.y=b.tiedY;b.angle=b.tiedAngle;b.vx=b.vy=b.spin=0;
+            if(hoistTicks<HOIST_TICKS){
+                hoistTicks++;rig.update(1-.65f*hoistTicks/HOIST_TICKS);
+                if(hoistTicks%10==0)MontroseTravelLift.exhaust(g);
+                if(hoistTicks==HOIST_TICKS){
+                    b.deliveryRecorded=true;g.delivered=1;g.score+=1200;g.celebrationTicks=90;g.celebrationPoints=1200;g.celebrationX=b.x;g.celebrationY=b.y;
+                    g.haptic(Game.HAPTIC_SUCCESS);g.tell("BOAT LIFTED CLEAR / HAULOUT COMPLETE");
+                }
+            }
+            return;
+        }
         if(requested && !lowered()){
             boolean occupied=!clear(g);
             if(occupied && !blocked){g.tell("DOCKMASTER: STOPPING LIFT. CLEAR THE WELL.");g.radio.receiveDockmaster();}
@@ -75,9 +92,8 @@ public final class MontroseHaulout {
         }
         if(warping && fits(b) && distance<4 && b.speed()<3 && Math.abs(b.spin)<.1f && g.tow.incoming(b)==null)settled++;else settled=0;
         if(settled==60){
-            b.deliveryRecorded=true;b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;
-            g.delivered=1;g.score+=1200;g.celebrationTicks=90;g.celebrationPoints=1200;g.celebrationX=b.x;g.celebrationY=b.y;
-            g.haptic(Game.HAPTIC_SUCCESS);g.tell("DISABLED BOAT SAFE IN THE HAULOUT WELL");
+            liftedBoat=b;b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;b.vx=b.vy=b.spin=0;
+            g.cancelInputs();g.tell("DOCKMASTER: STRAPS SECURE. LIFTING NOW!");g.radio.receiveDockmaster();
         }
     }
     public static void cue(Game g,Painter p){

@@ -278,3 +278,12 @@ registration, 32/64 review viewers and 32/64 guide-projected effect metadata.
 Quarter frame IDs are local0..15; global frame is quarter*16+local. Guide angles
 and pixels are checked against the original full64 guide. One shared scale and
 per-frame translation remain allowed; per-frame shape stretching remains banned.
+
+## 2026-11-23 — Chas portrait from a user likeness
+
+Use the supplied photo only for recognizable traits and an accepted portrait for
+style. A six-frame3×2 request retained cap/glasses/beard/shirt consistently. Verify
+alpha rather than trusting the image tool's brown checker/backing preview: the
+source corners are transparent. Generalized `PackGavinPortrait` to accept paths;
+one uniform scale and measured shoulder baseline kept all Chas frame bases at
+95.5,182. PortraitRegistrationReview confirms no displayed base movement.

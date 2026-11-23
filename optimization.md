@@ -6086,3 +6086,29 @@ launch restored after capture; screen timeout restored to300000ms.
   Reviewed native welcome portrait, inlet composition and sprite sailboat field.
 - Installed and launched Android. iOS hardware and native Canvas fallback remain
   untested. Review copies registered in Photos/BargeBoss (MediaStore18153–18156).
+
+### 2026-11-23 — Montrose lift, swinging moorings and Chas
+- Screenshot010937 showed lowered sling pixels crossing the foreground quay.
+  Removed the lift-center depth cutoff from its bounded solid-shore mask; wall
+  geometry already existed, but the cutoff excluded relevant wall sections.
+  Scaled rigid geometry/pivots/travel and actual coastal footprint0.75 together.
+- Added automatic180-tick hoist after successful settled handoff. Reuses prepared
+  Motion topology and live buffers; no pose table or per-frame BSP rebuild.
+  Shared renderer review confirms smaller footprint and solid foreground wall.
+- Single-point ball moorings now apply bow tension/torque and allow full heading
+  swings. Two-line dock berth limits remain unchanged. Uses existing wake sample;
+  no extra global effect traversal. One-way ball/tug behavior retained.
+- Added beach-trip position trigger and Chas's branching distress dialogue, named
+  boats beyond the horn, registered six-frame portrait, and level-scoped preload.
+  Fixed obsolete Montrose pointer bounds that excluded the beach extension.
+  Chas uses existing CB clips and vessel radio animation, no new native logic.
+- Targeted mooring, radio branches, expanded-area public raft/lasso input and
+  continuous lift tests passed. Full check/build/native validation follows.
+- Full shared/asset checks passed with replay2bc0352:2:1350. Android native
+  encoder/clip regressions passed; built, installed and launched the debug APK.
+  Chas shoulder-registration review passes across all six poses. Review copies
+  registered in Photos/BargeBoss (Chas18159–18160). iOS device checks deferred.
+- Native haulout capture014957 was interrupted by a foreground app switch:
+ 178/180 requested frames and the final screenshot showed Termux. Rejected this
+ run for performance conclusions/native visual acceptance; desktop shared-renderer
+ reviews are valid. Installation/launch succeeded. Retest the final boat round.

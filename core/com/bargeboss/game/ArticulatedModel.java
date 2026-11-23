@@ -208,6 +208,19 @@ public final class ArticulatedModel {
         }
         public void materialPolygon(int node,int color,int material,float... xyz){faces.add(new Face(node,color,material,xyz.clone()));}
         public void polygon(int node,int color,float... xyz){faces.add(new Face(node,color,-1,xyz.clone()));}
+        /** Author-time uniform scaling, including child pivots and continuous travel. */
+        public ArticulatedModel buildScaled(float scale,float x,float y,float z){
+            if(!(scale>0) || !Float.isFinite(scale))throw new IllegalArgumentException("Invalid model scale");
+            Node[] scaled=new Node[nodes.size()];
+            for(int i=0;i<scaled.length;i++){Node n=nodes.get(i);boolean root=n.parent<0;
+                scaled[i]=new Node(n.id,n.parent,root?x+(n.x-x)*scale:n.x*scale,
+                    root?y+(n.y-y)*scale:n.y*scale,root?z+(n.z-z)*scale:n.z*scale,
+                    n.yaw,n.pitchRate,n.moveX*scale,n.moveY*scale,n.moveZ*scale);}
+            Face[] geometry=new Face[faces.size()];
+            for(int i=0;i<geometry.length;i++){Face f=faces.get(i);float[] xyz=f.xyz.clone();
+                for(int j=0;j<xyz.length;j++)xyz[j]*=scale;geometry[i]=new Face(f.node,f.color,f.material,xyz);}
+            return new ArticulatedModel(scaled,geometry);
+        }
         public ArticulatedModel build() {return new ArticulatedModel(nodes.toArray(new Node[nodes.size()]),faces.toArray(new Face[faces.size()]));}
     }
     public final class Pose {

@@ -15,7 +15,9 @@ public final class MooringActivityTest {
   g.tug.x=target.x+60;g.tug.y=target.y;g.tug.angle=0;g.tug.vx=60;g.tug.wakeTrailTicks=7;g.water.step(g);g.tug.x+=500;g.tug.vx=0;
   float peak=0,moved=0;for(int i=0;i<240;i++){g.visualTicks++;g.water.step(g);g.mooredFleet.step(g);peak=Math.max(peak,Math.abs(target.wakeHeave));moved=Math.max(moved,Physics.length(target.x-target.berth.x,target.y-target.berth.y));}
   check(peak>.1f && moved>.1f,"passing wake visibly bobs and displaces moored sailboat");
-  check(target.clear() && moved<=MooredFleet.REACH+.001f,"stronger wake stays tethered and clear");
+  check(target.clear() && target.bowDistance()<=20.001f,"stronger wake stays tethered and clear");
+  target.spin=.65f;for(int i=0;i<90;i++)g.mooredFleet.step(g);
+  check(Math.abs(target.yaw)>.1f && target.bowDistance()<=20.001f && target.clear(),"single bow mooring allows broad rotation while staying tethered");
   System.out.println("Three mooring sailboats, one-way collision, anchor recovery and amplified wake response passed");
  }
  public static void main(String[] args){run();}

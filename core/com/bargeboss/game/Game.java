@@ -147,7 +147,7 @@ public final class Game {
     public boolean berthEnabled(int berth) { return calumetStage()?voyage.berthEnabled(berth):MontroseRescue.cruisers(this)?berth>=0 && berth<2:indianaStage()?berth==0:montroseStage()?berth==2:tutorial!=null?berth==2:!lockStage() && (orderStage() || berth==2 || berth==1); }
     public char berthLetter(int berth) { return tutorial!=null?'A':orderStage()?(berth==2?'A':berth==0?'B':'C'):berth==1?'B':'A'; }
     public float dockY(int berth) { if(MontroseHaulout.active(this))return MontroseHaulout.Y;return calumetStage()?voyage.dockY(voyage.destination(berth)):MontroseRescue.cruisers(this)?MontroseRescue.berth(berth).y:indianaStage()?IndianaHarbor.DOCK_Y:montroseStage()?MontroseHarbor.SLIP_Y:orderStage()?PhysicalBerths.dockY(challengeId,berth):Challenges.kind(challengeId)==Challenges.TWO_BANKS && tutorial==null && berth==2?290:DOCK_Y[berth]; }
-    public float channelTop() { return calumetStage()?CalumetRiver.MIN_Y:indianaStage()?IndianaHarbor.MIN_Y:montroseStage()?-1600:TrainingChannel.TOW_END; }
+    public float channelTop() { return calumetStage()?CalumetRiver.MIN_Y:indianaStage()?IndianaHarbor.MIN_Y:montroseStage()?MontroseHarbor.PLAY_BOUNDS[1]:TrainingChannel.TOW_END; }
     /** Kept as a score-age scale for legacy previews; cargo never expires. */
     public int contractSeconds() { return 68; }
     public int feedInterval() { return 14*60; }
@@ -687,7 +687,7 @@ public final class Game {
     private boolean worldTouch(float x,float y) {
         if(calumetStage())return x>=CalumetRiver.MIN_X && x<=CalumetRiver.MAX_X && y>=CalumetRiver.MIN_Y && y<=CalumetRiver.MAX_Y;
         if(indianaStage())return x>=IndianaHarbor.MIN_X && x<=IndianaHarbor.MAX_X && y>=IndianaHarbor.MIN_Y && y<=IndianaHarbor.MAX_Y;
-        if(montroseStage())return x>=-900 && x<=2700 && y>=-1600 && y<=1100;
+        if(montroseStage())return x>=MontroseHarbor.PLAY_BOUNDS[0] && x<=MontroseHarbor.PLAY_BOUNDS[2] && y>=MontroseHarbor.PLAY_BOUNDS[1] && y<=MontroseHarbor.PLAY_BOUNDS[5];
         return x>=(TrainingChannel.ENTRY_LEFT-40)
                 && x<=CalumetMap.EAST+40
                 && y>=channelTop()-67 && y<=RiverPainter.WORLD_BOTTOM;
@@ -887,6 +887,7 @@ public final class Game {
         if(montroseStage() && montroseArrival.active()){
             montroseArrival.step(this);water.step(this);mooredFleet.step(this);smoke.step(this);buildingFades.step(this);return;
         }
+        if(montroseStage())rescue.radioStep(this);
         if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);
         if(tutorial!=null){tutorial.fireworks.step(this);tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){
@@ -970,17 +971,18 @@ public final class Game {
         if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;
+            challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;
+        }else if(challengeId==Challenges.RAFT_RESCUE){
+            for(int i=0;i<2;i++){Body boat=cargo[i];cargo[i]=null;int slot=cargo.length-1;while(slot>1 && cargo[slot]!=null)slot--;cargo[slot]=boat;}
             challengeId=Challenges.MONTROSE;mission=new MontroseHarbor();
             cargo[0]=new Body(nextId++,2,MontroseHarbor.mapX(453),MontroseHarbor.mapY(1417),-(float)Math.PI/2,true);
             cargo[0].awaitingPickup=true;cargo[0].tiedX=cargo[0].x;cargo[0].tiedY=cargo[0].y;cargo[0].tiedAngle=cargo[0].angle;
-            delivered=0;montroseJobScore=score;cancelInputs();MontroseDockmaster.dispatch(this);tell(goalStatus());return;
-        }
-        if(challengeId==Challenges.MONTROSE){
-            // Preserve the actual docked yacht; rescue code owns only its two new actor slots.
+        }else{
             Body yacht=cargo[0];cargo[0]=null;int slot=cargo.length-1;while(slot>1 && cargo[slot]!=null)slot--;
-            if(slot<=1)throw new IllegalStateException("No retained yacht slot");cargo[slot]=yacht;challengeId=Challenges.RAFT_RESCUE;
-        }else challengeId=Challenges.SWIMMER_RESCUE;
-        delivered=0;montroseJobScore=score;cancelInputs();rescue=new MontroseRescue();rescue.setupContinuation(this);MontroseDockmaster.dispatch(this);tell(goalStatus());
+            if(slot<=1)throw new IllegalStateException("No retained yacht slot");cargo[slot]=yacht;challengeId=Challenges.SWIMMER_RESCUE;
+            rescue=new MontroseRescue();rescue.setupContinuation(this);
+        }
+        delivered=0;montroseJobScore=score;cancelInputs();MontroseDockmaster.dispatch(this);tell(goalStatus());
     }
     /** Rope flight, catch and recoil are real-time events, independent of 2x boat motion. */
     private void updateRope() {

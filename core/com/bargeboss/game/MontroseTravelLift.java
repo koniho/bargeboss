@@ -2,6 +2,7 @@ package com.bargeboss.game;
 
 /** Rigid frame partitions surround two broad webbing slings and exact hoist anchors. */
 public final class MontroseTravelLift {
+    public static final float SCALE=.75f;
     public static final float X=MontroseHaulout.X,Y=MontroseHaulout.Y;
     private static final int BLUE=0xff407985,DARK=0xff263d43,CREAM=0xffc9c6a6;
     private static final ArticulatedModel FAR=side(1),NEAR=side(-1),TOP=top();
@@ -11,12 +12,16 @@ public final class MontroseTravelLift {
     private static final float[] EXHAUST=NEAR_POSE.point(NEAR.nodeId("travelift-exhaust"),0,0,0);
     private static final float[][] APRON={quad(1015,90,1105,205),quad(1015,205,1040,275),quad(1080,205,1105,275)};
     private MontroseTravelLift(){}
-    private static float[] quad(float l,float t,float r,float b){return new float[]{MontroseHarbor.mapX(l),MontroseHarbor.mapY(t),MontroseHarbor.mapX(r),MontroseHarbor.mapY(t),MontroseHarbor.mapX(r),MontroseHarbor.mapY(b),MontroseHarbor.mapX(l),MontroseHarbor.mapY(b)};}
+    static float planX(float x){return 1060+(x-1060)*SCALE;}
+    static float planY(float y){return 240+(y-240)*SCALE;}
+    static float worldX(float x){return MontroseHarbor.mapX(planX(x));}
+    static float worldY(float y){return MontroseHarbor.mapY(planY(y));}
+    private static float[] quad(float l,float t,float r,float b){return new float[]{worldX(l),worldY(t),worldX(r),worldY(t),worldX(r),worldY(b),worldX(l),worldY(b)};}
     static final class Rig {
         final ArticulatedModel.Motion motion=STRAPS.motion(STRAP_ROOT,0,1,0);
         ArticulatedModel.Pose pose=motion.pose(0);
         void update(float amount){pose=motion.pose(amount);}
-        float[] anchor(float x,float y,float z){return pose.point(STRAP_ROOT,x,y,z);}
+        float[] anchor(float x,float y,float z){return pose.point(STRAP_ROOT,x*SCALE,y*SCALE,z*SCALE);}
     }
     private static ArticulatedModel side(int side){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();float x=side*45;
@@ -35,14 +40,14 @@ public final class MontroseTravelLift {
             b.beam(root,-51,-2,31,-51,-2,44,2.3f,0xff444d4c,SurfaceMaterial.STEEL);
             b.node("travelift-exhaust",root,-51,-2,44,0,0);
         }
-        return b.build();
+        return b.buildScaled(SCALE,X,Y,MontroseHarbor.LAND_RISE/ArticulatedModel.Z_SCALE);
     }
     private static ArticulatedModel top(){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();int root=b.node("travelift-overhead",-1,X,Y,MontroseHarbor.LAND_RISE/ArticulatedModel.Z_SCALE,0,0);
         for(int side=-1;side<=1;side+=2){b.box(root,side*45,0,68,7,76,9,BLUE,SurfaceMaterial.STEEL);
             for(int end=-1;end<=1;end+=2)b.box(root,side*26,end*24,73,9,12,5,CREAM,SurfaceMaterial.STEEL);}
         for(int end=-1;end<=1;end+=2)b.box(root,0,end*30,69,88,8,10,BLUE,SurfaceMaterial.STEEL);
-        return b.build();
+        return b.buildScaled(SCALE,X,Y,MontroseHarbor.LAND_RISE/ArticulatedModel.Z_SCALE);
     }
     private static ArticulatedModel straps(){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();
@@ -55,7 +60,7 @@ public final class MontroseTravelLift {
             for(int side=-1;side<=1;side+=2){b.box(root,side*26,y,2,4,9,5,CREAM,SurfaceMaterial.STEEL);
                 b.box(root,side*26,y,4,2,6,1,0xff485252,SurfaceMaterial.STEEL);}
         }
-        return b.build();
+        return b.buildScaled(SCALE,X,Y,MontroseHarbor.LAND_RISE/ArticulatedModel.Z_SCALE);
     }
     public static void prepare(){FAR.prepare(FAR_POSE);NEAR.prepare(NEAR_POSE);TOP.prepare(TOP_POSE);}
     static float[] exhaust(){return EXHAUST.clone();}
@@ -64,18 +69,18 @@ public final class MontroseTravelLift {
         for(float[] q:APRON)MontroseShoreArt.surface(p,g.layout.camera,q,MontroseHarbor.LAND_RISE,SurfaceMaterial.CONCRETE,0xff73796f,.08f);
         RiverCamera c=g.layout.camera;
         Painter ground=new RiverPainter(ScreenView.offset(p,0,-MontroseHarbor.LAND_RISE*c.scale),c);
-        for(int side=-1;side<=1;side+=2){float x=X+side*38;
-            ground.line(x,MontroseHarbor.mapY(212),x,MontroseHarbor.mapY(272),1.5f,0xffc4a65e);
-            for(int i=0;i<5;i++){float y=MontroseHarbor.mapY(135+i*11);ground.line(X+side*42,y,X+side*54,y-8,2,0xffa59b67);}
+        for(int side=-1;side<=1;side+=2){float x=X+side*38*SCALE;
+            ground.line(x,worldY(212),x,worldY(272),1.5f,0xffc4a65e);
+            for(int i=0;i<5;i++){float y=worldY(135+i*11);ground.line(X+side*42*SCALE,y,X+side*54*SCALE,y-8*SCALE,2,0xffa59b67);}
         }
         // Connected yard access and marked service space, without world-space HUD lettering.
-        ground.line(X-54,MontroseHarbor.mapY(98),X+54,MontroseHarbor.mapY(98),1.4f,0xffb5ad87);
+        ground.line(X-54*SCALE,worldY(98),X+54*SCALE,worldY(98),1.4f,0xffb5ad87);
     }
     static float[] shore(Game g){
         if(!g.montroseStage())return ShoreOcclusion.EMPTY;
         RiverCamera c=g.layout.camera;float sx=c.screenX(X,Y),sy=c.screenY(X,Y),pad=180*c.scale;
         if(sx+pad<0 || sx-pad>g.layout.width || sy+pad<0 || sy-pad>g.layout.height)return ShoreOcclusion.EMPTY;
-        return ShoreOcclusion.region(g,c,X-80,Y-80,X+80,Y+80,c.screenY(X,Y-24));
+        return ShoreOcclusion.region(g,c,X-80,Y-80,X+80,Y+80,Float.NEGATIVE_INFINITY);
     }
     static void drawRange(Game g,Painter p,float min,float max,float[] shore){
         Rig rig=g.haulout.rig;if(rig==null)return;
@@ -87,7 +92,7 @@ public final class MontroseTravelLift {
         for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2){
             float[] a=rig.anchor(side*26,end*24,4);float depth=a[1]-a[0];if(depth<=min || depth>max)continue;
             RiverCamera c=g.layout.camera;float sx=c.screenX(a[0],a[1]),sy=c.screenY(a[0],a[1]);
-            p.line(sx,sy-(MontroseHarbor.LAND_RISE+71*ArticulatedModel.Z_SCALE)*c.scale,sx,sy-a[2]*ArticulatedModel.Z_SCALE*c.scale,Math.max(.6f,.8f*c.scale),0xff6b746f);
+            p.line(sx,sy-(MontroseHarbor.LAND_RISE+71*SCALE*ArticulatedModel.Z_SCALE)*c.scale,sx,sy-a[2]*ArticulatedModel.Z_SCALE*c.scale,Math.max(.6f,.8f*c.scale),0xff6b746f);
         }
         }finally{p.popClip();}
         NEAR.drawRange(g,p,NEAR_POSE,min,max);TOP.drawRange(g,p,TOP_POSE,min,max);

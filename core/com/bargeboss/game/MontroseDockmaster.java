@@ -4,6 +4,9 @@ package com.bargeboss.game;
 public final class MontroseDockmaster {
     private MontroseDockmaster(){}
     public static void dispatch(Game g){
+        if(g.rescue.touring){g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",
+            "NICE WORK! GET TO KNOW THE AREA.","HEAD OUT AND CHECK OUT THE BEACH. KEEP YOUR RADIO ON.","COPY. A LITTLE SIGHTSEEING.");return;}
+        if(g.challengeId==Challenges.RAFT_RESCUE){g.rescue.distress(g);return;}
         String title,detail,reply;
         switch(g.challengeId){
             case Challenges.HAULOUT:

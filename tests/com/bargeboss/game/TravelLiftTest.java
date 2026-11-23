@@ -37,9 +37,9 @@ public final class TravelLiftTest {
         MontroseTravelLift.Rig rig=new MontroseTravelLift.Rig();ArticulatedModel.Pose live=rig.pose;int fragments=rig.motion.fragmentCount();float z=rig.anchor(0,0,0)[2];
         for(int tick=1;tick<=240;tick++){float amount=tick/240f;rig.update(amount);float[] a=rig.anchor(-26,24,0),c=rig.anchor(26,24,0);
             check(rig.pose==live && rig.motion.fragmentCount()==fragments,"Topology and live pose storage remain bounded");
-            check(Math.abs(c[0]-a[0]-52)<.001f && Math.abs(c[2]-a[2])<.001f,"Sling width and hoist alignment stay rigid");
-            check(Math.abs(z-a[2]-64/240f)<.001f,"Webbing moves continuously every tick");z=a[2];}
-        for(float amount:new float[]{.12345f,.501f,.499f,1,0}){rig.update(amount);float[] a=rig.anchor(14,-24,-12),c=MontroseTravelLift.STRAPS.pose(amount).point(MontroseTravelLift.STRAP_ROOT,14,-24,-12);
+            check(Math.abs(c[0]-a[0]-52*MontroseTravelLift.SCALE)<.001f && Math.abs(c[2]-a[2])<.001f,"Sling width and hoist alignment stay rigid");
+            check(Math.abs(z-a[2]-64*MontroseTravelLift.SCALE/240f)<.001f,"Webbing moves continuously every tick");z=a[2];}
+        for(float amount:new float[]{.12345f,.501f,.499f,1,0}){rig.update(amount);float[] a=rig.anchor(14,-24,-12),c=MontroseTravelLift.STRAPS.pose(amount).point(MontroseTravelLift.STRAP_ROOT,14*MontroseTravelLift.SCALE,-24*MontroseTravelLift.SCALE,-12*MontroseTravelLift.SCALE);
             for(int i=0;i<3;i++)check(Math.abs(a[i]-c[i])<.001f,"Live anchor matches exact transform including reversal");}
         g=scene();g.haulout.requested=true;for(int i=0;i<120;i++)g.step();check(g.haulout.effects.emitted==0 && g.haulout.effects.exhaustPuffs==12,"Smoke starts with motor; ripples wait for water contact");
         phase=g.haulout.liftTicks;g.background();for(int i=0;i<90;i++)g.advance(1f/60);check(g.haulout.liftTicks==phase,"Background pause cannot advance mechanism");

@@ -13,12 +13,12 @@ final class TravelLiftEffects {
     void lowering(Game g,float before,float after){
         if(after<=before)return;
         if(g.haulout.liftTicks%10==0){MontroseTravelLift.exhaust(g);exhaustPuffs++;}
-        float now=g.haulout.rig.anchor(0,0,0)[2],prior=now+64*(after-before);
+        float now=g.haulout.rig.anchor(0,0,0)[2],prior=now+64*MontroseTravelLift.SCALE*(after-before);
         for(int end=-1;end<=1;end+=2){float yy=g.haulout.rig.anchor(0,end*24,0)[1];
             float surface=g.water.height(g,MontroseHaulout.X,yy,g.visualTicks,null)/ArticulatedModel.Z_SCALE;
-            if(prior-12>surface && now-12<=surface)for(int i=-1;i<=1;i++)ripple(MontroseHaulout.X+i*11,yy);
-            if(now>surface && now-12<surface && g.haulout.liftTicks%12==0){
-                float at=14+12*(surface-(now-12))/12;
+            if(prior-12*MontroseTravelLift.SCALE>surface && now-12*MontroseTravelLift.SCALE<=surface)for(int i=-1;i<=1;i++)ripple(MontroseHaulout.X+i*11*MontroseTravelLift.SCALE,yy);
+            if(now>surface && now-12*MontroseTravelLift.SCALE<surface && g.haulout.liftTicks%12==0){
+                float at=14*MontroseTravelLift.SCALE+surface-(now-12*MontroseTravelLift.SCALE);
                 ripple(MontroseHaulout.X-at,yy);ripple(MontroseHaulout.X+at,yy);
             }
         }

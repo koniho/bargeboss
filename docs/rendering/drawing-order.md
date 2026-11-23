@@ -743,3 +743,19 @@ partitioned with shared `ClipUnion.disjoint` before submission; pops restore the
 captured geometry and coverage budget exactly. Never allow stencil saturation:
 that would break nested clip restoration. Reference/older hosts retain their
 existing capability and disjoint fallback.
+
+### Montrose travel lift (2026-11-23)
+
+The frame, moving slings, hoist anchors, exhaust and actual coast/apron footprint
+use a0.75 author-time scale about the well center and raised ground datum. Scale
+rigid geometry and travel together; never scale only the projected drawing.
+The lowered webbing uses the complete local solid-shore cutout, including wall
+faces, with no center-depth cutoff. A single cutoff at the lift center omitted
+foreground-wall portions under diagonal/submerged straps. Chassis and overhead
+members retain their normal exact-depth merge. Generate the local cutout once
+per frame in BridgeLayers, not once per depth slice.
+
+After tow, release, push and settled alignment, the lift automatically hoists for
+180 fixed ticks. The vessel rises with the exact sling phase after taking up
+slack; water reflections/ripples stop when airborne. The boat stays retained and
+secured in the lift. Award/next dispatch occur once, after the hoist completes.

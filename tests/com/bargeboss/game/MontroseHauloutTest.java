@@ -17,16 +17,16 @@ public final class MontroseHauloutTest {
             if(log && tick%300==0)System.out.println(tick+" tug="+MontroseHarbor.planX(tug.x)+","+MontroseHarbor.planY(tug.y)+" boat="+MontroseHarbor.planX(boat.x)+","+MontroseHarbor.planY(boat.y)+" lift="+g.haulout.liftTicks+" pushed="+g.haulout.pushed+" tow="+g.tow.count()+" warp="+g.haulout.warping+" speed="+boat.speed()+" hull="+g.hull);
         }
         check(boat.deliveryRecorded && g.haulout.lowered() && g.haulout.pushed && g.haulout.towed && g.haulout.warping,"Public radio, tow, release and physical push complete crew handoff");
-        check(g.challengeId==Challenges.MONTROSE && g.tug==tug && g.hull==100,"Safe haulout continues voyage without relocating tug");
+        check(g.challengeId==Challenges.RAFT_RESCUE && g.rescue.touring && g.tug==tug && g.hull==100,"Safe haulout continues voyage without relocating tug");
         check(g.cargo[g.cargo.length-1]==boat && boat.active && boat.awaitingPickup,"Crew secures and retains disabled boat");
         check(g.career.bestStars(Challenges.HAULOUT)==3 && g.score==1200,"Dedicated save slot and once-only haulout reward");
-        check(g.cargo[0].awaitingPickup,"Next yacht waits at the inlet while the tug travels there");
-        check(g.dialogue.dockmasterConversation() && g.dialogue.content().title.contains("YACHT"),"Next mission calls out over radio");
+        check(g.cargo[0].awaitingPickup,"Raft waits beyond the horn during exploration");
+        check(g.dialogue.dockmasterConversation() && g.dialogue.content().title.contains("KNOW THE AREA"),"Next mission calls out over radio");
         return g;
     }
     public static void run(){
-        for(float x:new float[]{1030,1090})for(float y:new float[]{220,260})check(!MontroseHarbor.openWater(MontroseHarbor.mapX(x),MontroseHarbor.mapY(y)),"Four travel-lift wheels have solid land");
-        for(int y=210;y<=340;y+=10)check(MontroseHarbor.contains(MontroseHaulout.X,MontroseHarbor.mapY(y)),"Well mouth and centerline remain navigable");
+        for(float x:new float[]{1037.5f,1082.5f})for(float y:new float[]{225,255})check(!MontroseHarbor.openWater(MontroseHarbor.mapX(x),MontroseHarbor.mapY(y)),"Four travel-lift wheels have solid land");
+        for(int y=220;y<=340;y+=10)check(MontroseHarbor.contains(MontroseHaulout.X,MontroseHarbor.mapY(y)),"Well mouth and centerline remain navigable");
         for(int y=100;y<200;y+=10)check(!MontroseHarbor.openWater(MontroseHaulout.X,MontroseHarbor.mapY(y)),"Connected hardstand behind well");
         Body b=new Body(77,2,MontroseHaulout.X,MontroseHaulout.Y,MontroseHaulout.ANGLE,true,true);
         check(MontroseHaulout.fits(b),"Cruiser fits inside well");b.angle=0;check(!MontroseHaulout.fits(b),"Sideways hull cannot pass alignment check");
