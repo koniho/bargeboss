@@ -89,33 +89,20 @@ public final class ControlView {
         float distance=Physics.length(xx-x,yy-y); int count=Math.max(1,(int)(distance/12));
         for(int i=1;i<count;i++) { float t=(float)i/count; SoftCue.dot(p,x+(xx-x)*t,y+(yy-y)*t,1.5f,color); }
     }
-    static boolean assistPush(Game g){return g.pushing && !g.manualSteering && g.workingCargo()!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0;}
+    static boolean assistPush(Game g){return g.pushing && g.workingCargo()!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0;}
     public static void draw(Game g,Painter p) {
         int color=color(g);
         Body b=g.workingCargo();
-        if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0 && !g.canTie(b)) {
+        if(b!=null && !g.ropeDragging && !g.towAiming && g.tow.count()==0 && (g.pushing || !g.canTie(b))) {
             if(!g.pushing) ring(g,p,b.x,b.y,46,g.holdProgress(),AMBER,5);
-            else if(assistPush(g)) {
-                if(g.control!=Game.WAITING_BRIDGE && g.control!=Game.DOCKING)
-                    arrow(p,b.x+g.pushX*46,b.y+g.pushY*46,b.x+g.pushX*108,b.y+g.pushY*108,SoftCue.animated(g,color));
-            } else {
-                float bx=g.dockX(b),by=g.dockY(b);
-                if(!b.deliveryRecorded && g.berthEnabled(b.berth))ring(g,p,bx,by,48,1,Game.COLORS[b.berth],2);
-                if(g.control==Game.ALIGNING || (g.control==Game.STEERING && !Physics.touching(g.tug,b,3))) {
-                    path(p,g.tug.x,g.tug.y,g.guideX,g.guideY,AMBER);
-                    ring(g,p,g.guideX,g.guideY,15,1,AMBER,2);
-                    label(p,"APPROACH",g.guideX,g.guideY+26,AMBER);
-                }
-                if(g.control!=Game.DOCKING && g.control!=Game.WAITING_BRIDGE) arrow(g,p,b.x+g.pushX*46,b.y+g.pushY*46,
-                        Physics.clamp(b.x+g.pushX*108,Physics.LEFT+5,Physics.RIGHT-5),Physics.clamp(b.y+g.pushY*108,g.channelTop()+5,Physics.BOTTOM-5),color);
-                dragRing(g,p,PURPLE);
-                if(g.control==Game.WAITING_BRIDGE) label(p,"WAIT FOR GREEN",b.x,b.y-67,AMBER);
-                if(g.control==Game.DOCKING) {
-                    ring(g,p,b.x,b.y,51,Math.min(1,b.dockTime/1.2f),GREEN,5);
-                    label(p,"SETTLING",b.x,b.y-67,GREEN);
-                }
+            else if(g.pushBlocked) {
+                // One open red stop mark beyond the requested leading edge; no normal push overlay.
+                float reach=b.radius+b.half*Math.abs(g.pushX*(float)StrictMath.cos(b.angle)+g.pushY*(float)StrictMath.sin(b.angle))+12;
+                float x=b.x+g.pushX*reach,y=b.y+g.pushY*reach;
+                SoftCue.line(p,x-g.pushY*15,y+g.pushX*15,x+g.pushY*15,y-g.pushX*15,4,SoftCue.animated(g,SoftCue.RED));
             }
         }
+
         // Hull bloom identifies the tug; avoid a second permanent circle over it.
 
         if(g.control==Game.COASTING && !g.reversing && g.driveDirection()>=0) {
@@ -130,18 +117,5 @@ public final class ControlView {
         }
         TowView.draw(g,p);
         if(!g.trainingChannel()) MooringView.draw(g,p);
-    }
-    private static void dragRing(Game g,Painter p,int color) {
-        ring(g,p,g.downX,g.downY,42,1,0x99eee7d4,1.5f);
-        SoftCue.dot(p,g.downX,g.downY,3,SoftCue.animated(g,PAPER));
-        float dx=g.pointerX-g.downX,dy=g.pointerY-g.downY,len=Physics.length(dx,dy);
-        float scale=Math.min(1,90/Math.max(1,len));
-        if(len>8) {
-            SoftCue.line(p,g.downX,g.downY,g.downX+dx*scale,g.downY+dy*scale,2,SoftCue.animated(g,color));
-            SoftCue.dot(p,g.downX+dx*scale,g.downY+dy*scale,5,SoftCue.animated(g,color));
-        }
-    }
-    private static void label(Painter p,String text,float x,float y,int color) {
-        if(!(p instanceof RiverPainter))Lettering.center(p,text,x,y,10,color);
     }
 }

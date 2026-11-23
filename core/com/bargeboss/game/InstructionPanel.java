@@ -126,7 +126,7 @@ final class InstructionPanel {
         float width=g.tutorial!=null || g.montroseStage()?544:432;
         float x=g.layout.width-width-18,y=68;
         paint(p,x,y,width);
-        Content shown=content==null?TutorialView.instructionContent(g):content;
+        Content shown=content==null && g.tutorial!=null?TutorialView.instructionContent(g):content;
         if(shown==null || hidden())return;
         boolean wipe=phase==CLEAR || phase==REVEAL;
         if(wipe){

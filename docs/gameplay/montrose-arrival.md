@@ -76,3 +76,18 @@ rendering, heave and orbital forces. Conditions hold when stopped/unhooked and
 remain through later jobs; reset clears mission progression. Pause freezes the
 clock. Developer weather/time controls explicitly override automatic behavior.
 Rain/fog retain existing fixed submission caps and use no new weather textures.
+
+### Raft rescue radio and destinations
+
+Chas captains Never Wetter; Alex captains Rumrunner 2. After the player reaches
+and cuts the raft loose, Chas assigns Rumrunner 2 to C-38 and Never Wetter to
+C-22. Suppress the destination-slip highlights in the world and chart until that
+release; remote taps cannot reveal them.
+
+Under tow, the two captains exchange nonmodal, bounded radio calls. Chas leads
+an absurd observation and Alex replies after a short pause; longer quiet intervals
+separate exchanges. Each call uses its captain's portrait and its vessel's radio
+animation, without interrupting throttle or navigation. Alex offers energy drinks
+when Rumrunner 2 is delivered. Chas offers Fireball after Never Wetter's arrival.
+Queue both thanks even for simultaneous arrivals and finish them before Gavin's
+next job. Arrival messages outrank idle banter; a reset discards the queue.

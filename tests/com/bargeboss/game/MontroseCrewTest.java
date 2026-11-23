@@ -11,7 +11,7 @@ public final class MontroseCrewTest {
    for(int i=0;i<120;i++)g.step();check(!g.dialogue.active && g.rescue.touring,"Idle at lift cannot trigger distress");
    g.tug.x=MontroseHarbor.mapX(2370);g.tug.y=MontroseHarbor.mapY(500);g.step();
    check(g.dialogue.crewConversation() && !g.rescue.touring,"Chas interrupts the trip outside the headland");
-   check(g.dialogue.content().title.contains("THREE KIDS") && g.radio.transmitting(g,g.cargo[0]),"Children aboard and source boat radio animation");
+   check(g.dialogue.content().title.contains("THREE KIDS") && g.radio.transmitting(g,g.cargo[1]),"Children aboard and source boat radio animation");
    check(SpeakerPortrait.atlas(g,g.dialogue.content().header)==SpriteAtlas.CHAS_PORTRAIT,"Chas uses his own portrait");
    answer(g,choice);check(g.dialogue.content().title.contains("BATTERIES") && g.dialogue.content().first.contains("MUSIC"),"Both batteries drained by music");
    answer(g,choice);check(g.dialogue.content().first.contains("HORN"),"Crew gives lighthouse location");answer(g,0);

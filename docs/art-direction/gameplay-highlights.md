@@ -159,3 +159,10 @@ space calls at least twelve seconds apart, and yield to conversations and earned
 coaching. After suppression, wait for a player reply before completing the finale.
 Bridge approach framing favors the left side for the player, leaving room for the
 bridge house and radio on the right; preserve aiming projection freezes and bounds.
+
+Push assist: while a player is holding or dragging a load to push, do not draw
+command arrows, approach paths/targets, or drag-origin rings. A single breathing
+red stop stroke outside the leading hull edge indicates an obstructed requested
+push direction. Initial hold progress, tutorial demonstrations before engagement,
+berth readiness and lasso feedback retain their own meanings. Test clearance in
+shared simulation; never mutate physics or scan scenery during drawing.

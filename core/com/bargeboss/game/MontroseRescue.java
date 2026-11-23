@@ -3,6 +3,8 @@ package com.bargeboss.game;
 /** Bounded fixed-step Montrose rescue rules; shared by every native host. */
 public final class MontroseRescue {
     final SwimmerModel swimmerModel=new SwimmerModel();
+    final ChasRadio radio=new ChasRadio();
+    boolean slipsRevealed(){return !rafted && !touring;}
     public static final int PEOPLE=20,THROW_TICKS=36;
     public static final float THROW_RANGE=135;
     public boolean rafted,closeCamera;
@@ -10,20 +12,21 @@ public final class MontroseRescue {
     static final float RAFT_X=MontroseHarbor.mapX(2350),RAFT_Y=MontroseHarbor.mapY(-1530);
     static String name(int slot){return slot==0?"RUMRUNNER 2":"NEVER WETTER";}
     void distress(Game g){g.montroseWeather.evening=true;g.montroseWeather.storm=true;touring=false;radioPhase=1;replyTicks=0;
-        g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / RUMRUNNER 2","HELP! THREE KIDS ABOARD!",
+        g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / NEVER WETTER","HELP! THREE KIDS ABOARD!",
             "RUMRUNNER 2 AND NEVER WETTER. WEATHER'S TURNING!",
             "WHY ARE YOU OUT THERE IN THIS WEATHER?","STAY CALM, CHAS. WHAT HAPPENED?");
     }
     void radioStep(Game g){
+        radio.step(g);
         if(!g.dialogue.crewConversation() || g.dialogue.result()<0)return;
         if(replyTicks++==0)replyChoice=g.dialogue.result();
         if(replyTicks<36)return;replyTicks=0;
         if(radioPhase==1){radioPhase=2;
-            g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / RUMRUNNER 2","BOTH BATTERIES ARE DEAD!",
+            g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / NEVER WETTER","BOTH BATTERIES ARE DEAD!",
                 "THE MUSIC WAS TOO LOUD! THE KIDS ARE SCARED!",
                 "GREAT SOUND SYSTEM. TERRIBLE LIFE PLAN.","LIFE JACKETS ON. I'M COMING TO GET YOU.");
         }else if(radioPhase==2){radioPhase=3;
-            g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / RUMRUNNER 2",replyChoice==0?"YES! BAD PLAYLIST! PLEASE HURRY!":"JACKETS ON! PLEASE HURRY!",
+            g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / NEVER WETTER",replyChoice==0?"YES! BAD PLAYLIST! PLEASE HURRY!":"JACKETS ON! PLEASE HURRY!",
                 "JUST PAST THE HORN, BY THE LIGHTHOUSE. BOTH BOATS!",
                 "STAY ABOARD. I'LL SPLIT THE RAFT AND TOW YOU HOME.");
         }else {g.dialogue.close(g);radioPhase=0;g.tell("RESCUE RUMRUNNER 2 AND NEVER WETTER / RETURN TO DOCK C");}
@@ -73,7 +76,7 @@ public final class MontroseRescue {
         Body a=g.cargo[0],b=g.cargo[1];float mx=(a.x+b.x)*.5f,my=(a.y+b.y)*.5f;
         if(Physics.length(px-mx,py-my)>35)return false;
         if(Physics.length(g.tug.x-mx,g.tug.y-my)>125){g.tell("GET CLOSER TO RELEASE THE RAFT LINE");return true;}
-        rafted=false;g.haptic(Game.HAPTIC_SUCCESS);g.tell("RAFT LINE RELEASED / TOW EACH CRUISER HOME");return true;
+        rafted=false;radio.cutLoose();g.haptic(Game.HAPTIC_SUCCESS);g.tell("RAFT LINE RELEASED / TOW EACH CRUISER HOME");return true;
     }
     public int swimmerAt(Game g,float px,float py){if(!swimmers(g)||failed||flying>=0)return -1;
         int best=-1;float distance=18;
@@ -116,7 +119,7 @@ public final class MontroseRescue {
                 }
                 if(!rafted && towed[i] && fits(b) && b.speed()<5 && Math.abs(b.spin)<.12f && g.tow.incoming(b)==null)settled[i]++;else settled[i]=0;
                 if(settled[i]==60){b.deliveryRecorded=true;b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;
-                    g.delivered++;g.score+=1200;g.haptic(Game.HAPTIC_SUCCESS);g.tell("CRUISER SAFE / DOCK "+slip(i));}
+                    radio.delivered(i);g.delivered++;g.score+=1200;g.haptic(Game.HAPTIC_SUCCESS);g.tell("CRUISER SAFE / DOCK "+slip(i));}
             }return;
         }
         float nearest=Float.MAX_VALUE;

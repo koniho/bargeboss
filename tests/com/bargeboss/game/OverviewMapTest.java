@@ -42,8 +42,10 @@ final class OverviewMapTest {
         int reverse=arrows(g,new Ink());g.control=Game.IDLE;g.reversing=false;check(reverse==arrows(g,new Ink()),"reverse adds no velocity heading arrow");
         g=new Game();ReplayInput.controlFixture(g);Body b=g.cargo[0];b.x=300;b.y=600;g.down(b.x,b.y);for(int i=0;i<12;i++)g.step();
         check(ControlView.assistPush(g),"fixture engages push assist");g.pushX=1;g.pushY=0;g.control=Game.PUSHING;
-        Ink assist=new Ink();check(arrows(g,assist)==1 && assist.lines==9,"only one feathered command arrow during assist");
-        check(Math.abs(assist.x-(b.x+46))<.001f && Math.abs(assist.xx-(b.x+108))<.001f && assist.y==assist.yy,"arrow follows commanded vector without world-bound clipping");
+        g.pushBlocked=false;Ink assist=new Ink();check(arrows(g,assist)==0 && assist.lines==0,"clear assist adds no command arrow or approach path");
+        g.manualSteering=true;Ink manual=new Ink();check(arrows(g,manual)==0 && manual.lines==0,"manual push also has no drag ring or command arrow");
+        g.pushBlocked=true;Ink blocked=new Ink();ControlView.draw(g,blocked);check(blocked.lines>0,"blocked push shows a stop mark");
+        g.pushBlocked=false;g.manualSteering=false;
         Ink other=new Ink();ControlView.arrow(g,other,0,0,30,30,ControlView.BLUE);check(other.lines==0,"other guidance arrows suppressed during assist");
         g=new Game();ReplayInput.controlFixture(g);int tick=g.ticks;float tx=g.tug.x,ty=g.tug.y;
         OverviewMap.draw(g,new Ink());check(g.ticks==tick && g.tug.x==tx && g.tug.y==ty,"map rendering leaves gameplay unchanged");

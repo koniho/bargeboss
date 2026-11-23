@@ -13,10 +13,10 @@ final class LevelAssetsTest {
         for(int id=0;id<Challenges.COUNT;id++) {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
-            check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?8:0),"Level prepares its permanent scenery family");
+            check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?9:0),"Level prepares its permanent scenery family");
             check(preparation.length==plan.rotationAtlases().length+scenery.length+3,"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
-            for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");
+            for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.ALEX_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");
             Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;

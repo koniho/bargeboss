@@ -9,7 +9,7 @@ public final class MontroseRescueView {
                 SoftCue.line(p,a.x,a.y+dy,b.x,b.y+dy,1.5f,0xcdbda67b);}
                 SoftCue.caption(p,"RELEASE RAFT LINE",(a.x+b.x)*.5f,(a.y+b.y)*.5f+32,8,VisualStyle.GOLD);
             }
-            for(int i=0;i<2;i++){MooredBoats.Berth b=MontroseRescue.berth(i);Body boat=g.cargo[i];
+            if(g.rescue.slipsRevealed())for(int i=0;i<2;i++){MooredBoats.Berth b=MontroseRescue.berth(i);Body boat=g.cargo[i];
                 float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);int color=SoftCue.animated(g,boat.deliveryRecorded?0x9965d5b8:0xbbe8c567);
                 for(int side=-1;side<=1;side+=2)for(int end=-1;end<=1;end+=2){float x=b.x+c*end*24-s*side*12,y=b.y+s*end*24+c*side*12;
                     SoftCue.line(p,x,y,x-c*end*10,y-s*end*10,1,color);SoftCue.line(p,x,y,x+s*side*6,y-c*side*6,1,color);}

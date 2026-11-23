@@ -82,7 +82,7 @@ public final class OverviewMap {
         local.pushClipOutside(OUTSIDE);
         try {
         local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
-        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
+        for(int i=0;i<3;i++)if(g.berthEnabled(i) && (!MontroseRescue.cruisers(g) || g.rescue.slipsRevealed()) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.x,b.y),y=mapY(g,b.x,b.y);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }

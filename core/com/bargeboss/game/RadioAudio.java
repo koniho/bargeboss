@@ -6,14 +6,16 @@ public final class RadioAudio {
     private final SoundEffects sounds;
     RadioAudio(SoundEffects sounds){this.sounds=sounds;}
     private int sequence,cue,age=1000,transmitter;
+    private Body crewBoat;
     public void transmit(int cue){if(cue<0 || cue>=COUNT)throw new IllegalArgumentException("Unknown radio cue");this.cue=cue;transmitter=cue;sequence++;age=0;sounds.emit(cue);}
     public void receiveBridge(){transmit(TEACHER);transmitter=BRIDGE;}
     public void receiveDockmaster(){transmit(TEACHER);transmitter=DOCKMASTER;}
-    public void receiveCrew(){transmit(TEACHER);transmitter=CREW;}
+    public void receiveCrew(){receiveCrew(null);}
+    public void receiveCrew(Body boat){transmit(TEACHER);transmitter=CREW;crewBoat=boat;}
     public int transmitter(){return transmitter;}
     public void step(){if(age<1000)age++;}
     public float progress(){return Physics.clamp(age/(cue==TEACHER?54f:30f),0,1);}
-    public boolean transmitting(Game g,Body boat){if(transmitter==CREW)return progress()<1 && boat==g.cargo[0];return progress()<1 && sequence>0 && transmitter!=BRIDGE && transmitter!=DOCKMASTER && boat==(cue==TEACHER?g.teacherBoat():g.tug);}
+    public boolean transmitting(Game g,Body boat){if(transmitter==CREW)return progress()<1 && boat==(crewBoat==null?g.cargo[0]:crewBoat);return progress()<1 && sequence>0 && transmitter!=BRIDGE && transmitter!=DOCKMASTER && boat==(cue==TEACHER?g.teacherBoat():g.tug);}
     public static int sequence(Game root){return root.activeGame().radio.sequence;}
     public static int cue(Game root){return root.activeGame().radio.cue;}
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && g.radio.age<30;}

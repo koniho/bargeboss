@@ -20,7 +20,7 @@ public final class Dialogue {
         for(String answer:answers)if(answer==null || answer.trim().isEmpty())throw new IllegalArgumentException("Empty choice");
         g.cancelInputs();active=true;speakerKind=transmitter;this.speaker=speaker;title=prompt;first=detail;second="SELECT A REPLY TO TRANSMIT.";
         choices=answers.clone();result=-1;ticks=0;revision++;cancel();panel.reset();
-        panel.step(content());if(transmitter==RadioAudio.CREW)g.radio.receiveCrew();else if(transmitter==RadioAudio.DOCKMASTER)g.radio.receiveDockmaster();else if(transmitter==RadioAudio.BRIDGE)g.radio.receiveBridge();else g.radio.transmit(RadioAudio.TEACHER);
+        panel.step(content());if(transmitter==RadioAudio.CREW)g.radio.receiveCrew(g.cargo[1]);else if(transmitter==RadioAudio.DOCKMASTER)g.radio.receiveDockmaster();else if(transmitter==RadioAudio.BRIDGE)g.radio.receiveBridge();else g.radio.transmit(RadioAudio.TEACHER);
     }
     public void close(Game g){active=false;cancel();g.cancelInputs();}
     public void cancel(){pointer=pressed=-1;}

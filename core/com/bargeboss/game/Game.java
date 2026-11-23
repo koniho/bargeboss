@@ -72,6 +72,7 @@ public final class Game {
     // must not reclassify the same steering finger as a towline throw.
     private boolean cargoPushGesture;
     public float guideX, guideY, pushX=-1, pushY;
+    public boolean pushBlocked;
     public Tutorial tutorial;
     public final Dialogue dialogue=new Dialogue();
     public final SoundEffects sounds=new SoundEffects();
@@ -969,6 +970,7 @@ public final class Game {
     }
     private void advanceMontroseJob(){
         if(montroseComplete || delivered<quota() || goalFailed())return;
+        if(challengeId==Challenges.RAFT_RESCUE && rescue.radio.pendingThanks())return;
         int before=career.rank();career.record(challengeId,Challenges.stars(challengeId,delivered,lost,hull),score-montroseJobScore);rankPromoted|=career.rank()>before;
         if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
         if(challengeId==Challenges.HAULOUT){
@@ -1023,7 +1025,7 @@ public final class Game {
                 navigating=false;control=tug.speed()>3?COASTING:IDLE;
                 tug.vx*=.985f;tug.vy*=.985f;tug.spin*=.985f;
             }
-        } else if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) pushCargo(cargo[held]);
+        } else if(pushing && held>=0 && cargo[held]!=null && cargo[held].active) { pushCargo(cargo[held]); pushBlocked=PushFeedback.blocked(this,cargo[held]); }
         else {
             navigating=false;
             float drag=.985f;

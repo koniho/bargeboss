@@ -6264,3 +6264,23 @@ launch restored after capture; screen timeout restored to300000ms.
   cable/block/slings in front of the back quay, with near-quay low-webbing hiding.
   Final native/device visual accepted; normal game relaunched. Earlier matched
   performance improvement remains the valid timing evidence; iOS unmeasured.
+
+## 2026-11-23 — shared push feedback and Montrose rescue radio
+- Removed active-push direction arrows, tug approach dots/target and drag rings.
+  Shared short clearance probes (nine maximum, ten world units each) supply one
+  obstruction stop mark. No extra raster layers or render-time geometry scans.
+- Rescue chatter is one bounded instruction panel; eight static linesets,
+  two delivery bits, and one assignment flag. No actors, wakes or new world
+  lighting. Slip cues stay hidden until physical raft release.
+- Added Alex's six frame-sized 192px portrait cells to Montrose-only preparation.
+  Shoulder anchors validated; no full-sheet runtime texture. Chas/Alex receive
+  source-specific radio animations and separate delivery thanks.
+- Fixed non-tutorial panel's null tutorial-content fallback during first draw.
+- Validation in progress; no new device frame-time improvement claimed here.
+- Checked: complete Android build/check suite passed, including source-specific
+  crew dialogue, moving-tow exchanges, simultaneous delivery queue, clearance
+  warnings, frame registration and all-heading shore pixels/native encoder.
+  Reviewed actual renderer Alex arrival, Chas assignments and clear/blocked push
+  frames. Canonical drawing trace e79b5ea1:2:1350 reflects removed push cues,
+  hidden early slip targets and corrected crew identity; replay score unchanged.
+  Android build installed in this round; iOS/device parity not run.
