@@ -266,7 +266,9 @@ public final class Game {
         RiverCamera base=RiverCamera.DEFAULT;
         float minX=Float.MAX_VALUE,minY=Float.MAX_VALUE,maxX=-Float.MAX_VALUE,maxY=-Float.MAX_VALUE;
         boolean fireResponse=tutorial!=null && tutorial.fireworks.heat>0 && tutorial.lesson==Tutorial.EXTINGUISH;
-        int count=load==null?1:fireResponse?2+FireworksLesson.PILES:docking?3:2;
+        // Yachts and haulout boats use slip/crew handoff, never the generic quay bollard.
+        boolean frameTiePoint=docking && !load.yacht && load.voyageJob!=Challenges.HAULOUT;
+        int count=load==null?1:fireResponse?2+FireworksLesson.PILES:frameTiePoint?3:2;
         for(int i=0;i<count+cargo.length;i++) {
             Body train=i>=count?cargo[i-count]:null;
             if(i>=count && (train==null || train==load || !tow.connected(train,tug)))continue;

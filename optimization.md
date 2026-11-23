@@ -5909,3 +5909,22 @@ launch restored after capture; screen timeout restored to300000ms.
   scenery receivers, replay, Android encoding/build and JVM/J2ObjC parity at
   1a5d076f:2:1350. Installed and launched the final combined APK; restored the
   saved 300000ms phone timeout. Earlier full shared/asset checks remain applicable.
+
+### 2026-11-22 — Montrose castoff camera framing
+- Reproduced excessive zoom-out after public towline release beside the haulout
+  well. Docking framing included the generic quay bollard, far from the marina
+  work site, despite yachts/haulout boats never using that tie-up mechanic.
+- Retained close docking behavior but fit only the local hulls for those boats.
+  Ordinary barge bollards, lasso-flight freeze and steering holds are unchanged.
+- New public-release regression fails before the fix and passes afterward at
+  readable zoom with player on screen after 360 ticks. Stage camera checks: 48.
+  Replay 47b7cc4d:2:1350; no additional per-frame work, assets or caches.
+- Full shared/asset/native Android build passed. Actual shared-renderer castoff
+  preview settles at zoom 2.6577 with both local vessels readable. Android
+  installed/launched; castoff behavior tested via shared input replay, not a
+  physical iOS run.
+- Latest user screenshot (Screenshot_20261122-223153.png) also shows soft marina
+  hulls compared with tug/docks. BakeMooredBoats exports 128px cells (2048x6144
+  atlas); runtime enlarges them and dissolves adjacent yaw frames. This is a
+  separate art-resolution issue. Prefer higher-resolution close-view bakes with
+  bounded frame caches and distant LOD, not disabling filtering globally.
