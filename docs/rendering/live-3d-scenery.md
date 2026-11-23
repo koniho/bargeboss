@@ -91,3 +91,21 @@ within 180–210 world units of the player. Smaller/distant boats keep existing
 sprites and their cache behavior. At full live weight, no color/canvas/normal
 sprites are submitted. Both paths retain separate water ripples. The parked
 fleet has no emissive lamps or smoke. Sailboats have no canopy in either path.
+
+Live marina hulls use shared `BoatMaterial` vertex lighting:
+wrapped diffuse, smooth hull normals, a broad low-strength highlight and soft
+waterline shading. Cabin bevels catch light without a hard outline. Nearby dock
+pedestals, harbor beacons and active vessel lights remain receivers' sources;
+never replace this with an unlit stylistic tint. Positions and normals use the
+same continuous rigid transform. Original-face vertices share cached colors
+within each draw, including BSP fragments, and water clipping interpolates
+premultiplied color. Cabins, fabric and small metal parts retain dynamic face lighting to bound cost.
+
+`Painter.shadedTriangle` carries shared colors to native interpolation on Vulkan,
+Canvas and Metal. Java2D uses a barycentric paint; Core Graphics uses the bounded
+16-triangle shared approximation. This reference fallback is not pixel-identical
+to hardware interpolation. No texture atlas or offscreen surface is created for
+the material. BoatMaterialTest checks lamp reception and normal response;
+VertexShadePixelTest checks color/alpha interpolation, and VulkanEncodingTest
+checks premultiplied vertex transport. This is procedural shading, not a painted
+texture replacement or proof of native iOS visual parity.

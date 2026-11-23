@@ -5979,3 +5979,35 @@ launch restored after capture; screen timeout restored to300000ms.
 - Day/dusk review renders copied to Pictures/BargeBoss and MediaStore verified
   (18144/18145). Current boat materials remain flat face shading: the requested
   softer painted look needs a subsequent smooth-normal/material shader pass.
+
+### 2026-11-22 — live marina boat material lighting (shared / Android)
+- Replaced flat paint/hull faces with interpolated shared vertex colors: smooth
+  hull normals, wrapped diffuse, restrained highlights, waterline shading and
+  beveled cabin roofs. Existing dock, beacon and vessel light sources remain
+  active; transformed positions/normals govern reception.
+- BSP topology stays cached; per-source vertex colors are reused across fragments
+  within each draw. Vulkan uses its existing compact color vertex pipeline;
+  no material textures, new shader variants or offscreen layers are allocated.
+- Added lamp-facing/away reception, waterline and premultiplied-alpha checks,
+  Java2D gradient pixel checks and Vulkan color-transport checks. Desktop dusk
+  review shows localized warm dock illumination. Native results follow below.
+- Metal interpolation and a bounded Core Graphics reference fallback are included;
+  native iOS build/device validation remains deferred. Reference tessellation is
+  approximate, not a pixel-parity claim.
+- First device capture 20261122-234830 reported draw 27.299/28.673 ms
+  (p50/p95), but overlapped the desktop shoreline regression: it is not a valid
+  isolated comparison with the prior round. Sampling capture 234909 identified
+  BoatMaterial.shade at 15.06% inclusive main CPU. Reduced smooth interpolation
+  to curved hulls; cabins/fittings retain dynamic face lighting and roof bevels.
+  Replaced hot float min/max clamps in the hull evaluator with bounded branches.
+  Final validation/profile follows after all host checks finish.
+- Final isolated Vulkan capture 20261122-235456: 180 frames after 120 warmup,
+  draw p50/p95 13.756/14.610 ms, frame intervals 17.076/18.803 ms, advance
+  2.199/2.533 ms. No claim of locked 60 FPS; prior flat-model capture was
+  12.740/13.916 ms drawing, from an earlier run rather than same-build A/B.
+- Full shared/asset checks, gradient pixels, 774 continuous heading cases and
+  Vulkan encoding/clip checks passed. Shoreline regression passed 1,756,523
+  production hull/cargo assertions; replay is 2c6ab9ab:2:1350. Reviewed final
+  native screenshot for illuminated hulls and shore clipping. Installed Android.
+- Final day/dusk review copies refreshed in Photos/BargeBoss (MediaStore
+  18148/18149). iOS hardware and Canvas fallback pixels were not validated.

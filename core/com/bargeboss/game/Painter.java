@@ -40,6 +40,10 @@ public interface Painter {
     default void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
         poly(new float[]{ax,ay,bx,by,cx,cy,dx,dy},color);
     }
+    /** Linear, premultiplied vertex-color interpolation; geometry and shading stay shared. */
+    default void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){
+        TriangleShade.reference(this,ax,ay,ac,bx,by,bc,cx,cy,cc);
+    }
     /** Ordered surface scope. Hosts may batch opaque faces; flush before other
      * primitives, clipping changes and scope exit. No geometry/order change. */
     default void beginSurfaceBatch() {}

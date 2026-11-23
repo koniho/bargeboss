@@ -77,7 +77,7 @@ public final class MooredBoats {
         if(detail<=.001f && live<=0)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         if(live>0){
-            LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=b.bimini;shade.alpha=live;
+            LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=b.bimini;shade.alpha=live;shade.length=b.length;shade.width=b.width;
             float reach=b.length*.65f+6;
             float[] shore=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,c.screenY(wx,wy),p.supportsUnionClips());
             if(shore.length>0)p.pushClipOutside(shore);
@@ -96,8 +96,19 @@ public final class MooredBoats {
         return SceneDetail.fade(length*g.layout.camera.scale,48,72)*(1-SceneDetail.fade(Physics.length(x-g.tug.x,y-g.tug.y),180,210));
     }
     private static final ThreadLocal<LiveLight> LIVE_LIGHT=new ThreadLocal<LiveLight>(){protected LiveLight initialValue(){return new LiveLight();}};
-    private static final class LiveLight implements ArticulatedModel.FaceLighting {
-        LightingProfile profile;MooredBoatLight.Lights lights;int palette;float alpha;
+    private static final class LiveLight implements ArticulatedModel.VertexLighting {
+        LightingProfile profile;MooredBoatLight.Lights lights;int palette;float alpha,length,width;
+        public boolean smooth(int material){return material==BoatMaterial.HULL;}
+        public int vertex(int material,int albedo,float x,float y,float z,float nx,float ny,float nz,float[] m){
+            if(material==BoatMaterial.HULL){
+                nx=x/(length*length*.25f);ny=y/(width*width*.25f);nz=.012f;
+                float inv=1/(float)StrictMath.sqrt(nx*nx+ny*ny+nz*nz);nx*=inv;ny*=inv;nz*=inv;
+            }
+            float xx=m[0]*x+m[1]*y+m[2]*z,yy=m[3]*x+m[4]*y+m[5]*z,zz=m[6]*x+m[7]*y+m[8]*z;
+            float normalX=m[0]*nx+m[1]*ny+m[2]*nz,normalY=m[3]*nx+m[4]*ny+m[5]*nz,normalZ=m[6]*nx+m[7]*ny+m[8]*nz;
+            int rgb=BoatMaterial.shade(profile,lights,material,albedo,xx,yy,zz,normalX,normalY,normalZ,1+.014f*(float)StrictMath.sin(x*.27f+y*.41f+z*.31f));
+            return ((int)(255*alpha)<<24)|(rgb&0xffffff);
+        }
         public int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz){
             if(albedo==HarborBoatModel.FABRIC)albedo=BiminiArt.color(palette);
             int rgb=MarinaSurfaceLight.shade(profile,lights,albedo,x,y,z,nx,ny,nz);

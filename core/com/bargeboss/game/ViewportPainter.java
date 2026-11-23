@@ -23,6 +23,7 @@ public final class ViewportPainter implements Painter {
         // One logical pixel retains antialiased coverage just outside an edge.
         return right>=-1 && bottom>=-1 && left<=width+1 && top<=height+1;
     }
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){if(visible(Math.min(ax,Math.min(bx,cx)),Math.min(ay,Math.min(by,cy)),Math.max(ax,Math.max(bx,cx)),Math.max(ay,Math.max(by,cy))))target.shadedTriangle(ax,ay,ac,bx,by,bc,cx,cy,cc);}
     public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
         if((color>>>24)!=0 && visible(Math.min(Math.min(ax,bx),Math.min(cx,dx)),Math.min(Math.min(ay,by),Math.min(cy,dy)),
                 Math.max(Math.max(ax,bx),Math.max(cx,dx)),Math.max(Math.max(ay,by),Math.max(cy,dy))))

@@ -21,6 +21,8 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BargeEquipmentA
 javac -Xlint:-options --release 8 -encoding UTF-8 -cp build/check -d build/check desktop/com/bargeboss/game/*.java tools/NormalBoatReview.java tools/MontroseReview.java tools/BiminiReview.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.NormalBoatReview
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BiminiReview
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/VertexShadePixelTest.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.VertexShadePixelTest
 
 # Fixed Indiana shore modules must stay dry and within the geometry budget.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/IndianaShoreTilesTest.java

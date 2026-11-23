@@ -271,6 +271,7 @@ public final class ScreenView {
         Transform(Painter p,float x,float y,float scale,float shear) { this.p=p; this.x=x; this.y=y; this.scale=scale; this.shear=shear; }
         private float tx(float xx,float yy) { return x+(xx+shear*yy)*scale; }
         private float ty(float yy) { return y+yy*scale; }
+        public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){p.shadedTriangle(tx(ax,ay),ty(ay),ac,tx(bx,by),ty(by),bc,tx(cx,cy),ty(cy),cc);}
         public void pushClipOutside(float[] a) {
             float[] b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=tx(a[i],a[i+1]);b[i+1]=ty(a[i+1]);}p.pushClipOutside(b);
         }

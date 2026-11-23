@@ -18,6 +18,7 @@ public final class Parity implements Painter {
     public void popClip(){mark("clipRestore");add(9);}
     public void rect(float x,float y,float w,float h,int c) { mark("rect"); add(1); value(x); value(y); value(w); value(h); add(c); }
     public void circle(float x,float y,float r,int c) { mark("circle"); add(2); value(x); value(y); value(r); add(c); }
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){mark("shadedTriangle");add(10);value(ax);value(ay);add(ac);value(bx);value(by);add(bc);value(cx);value(cy);add(cc);}
     public void poly(float[] xy,int c) { mark("poly"); add(3); for(float f:xy) value(f); add(c); }
     public void line(float x,float y,float xx,float yy,float w,int c) { mark("line"); add(4); value(x); value(y); value(xx); value(yy); value(w); add(c); }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {

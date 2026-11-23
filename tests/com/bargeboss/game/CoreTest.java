@@ -188,14 +188,14 @@ public final class CoreTest {
         SceneryEffectsTest.run();
         FactoryActivityTest.run();
         ShadowActivityTest.run();
-        StageCameraTest.run();LiveHarborBoatsTest.run();
+        StageCameraTest.run();LiveHarborBoatsTest.run();BoatMaterialTest.run();
         LockTest.run();
         LockDoorCollisionTest.run();
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("98c0ecc6:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("2c6ab9ab:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

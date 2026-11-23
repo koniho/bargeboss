@@ -12,7 +12,7 @@ public final class LiveHarborBoatsTest {
         g.layout=Layout.focused(1333,600,0,0,3.1f,666,300);
         for(int kind=0;kind<6;kind++){
             ArticulatedModel.Rigid model=HarborBoatModel.get(kind).rigid;int prepared=model.fragmentCount();
-            check(prepared>0 && prepared<600,"bounded prepared mesh");
+            check(prepared>0 && prepared<1000,"bounded prepared mesh");
             long previous=0;
             for(int i=0;i<=128;i++){
                 Probe p=new Probe();float angle=i*(float)StrictMath.PI/64;

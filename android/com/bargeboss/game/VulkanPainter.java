@@ -125,6 +125,11 @@ final class VulkanPainter implements Painter,AutoCloseable {
         vertex(xy[b*2],xy[b*2+1],0,0,color,1,0,0,0,0,0,0,0);
         vertex(xy[c*2],xy[c*2+1],0,0,color,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);
     }
+    private void colorVertex(float x,float y,int c){float a=(c>>>24)/255f;vertices[used++]=x;vertices[used++]=y;vertices[used++]=(c>>16&255)/255f*a;vertices[used++]=(c>>8&255)/255f*a;vertices[used++]=(c&255)/255f*a;vertices[used++]=a;}
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){
+        int first=used;if(!recording){space(18);colorVertex(ax,ay,ac);colorVertex(bx,by,bc);colorVertex(cx,cy,cc);batch(first,3,0,0,5);}
+        else{vertex(ax,ay,0,0,ac,1,0,0,0,0,0,0,0);vertex(bx,by,0,0,bc,1,0,0,0,0,0,0,0);vertex(cx,cy,0,0,cc,1,0,0,0,0,0,0,0);batch(first,3,0,0,0);}
+    }
     private final float[] convexScratch=new float[8];
     public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
         if((color>>>24)==0)return;
