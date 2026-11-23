@@ -252,6 +252,7 @@ public final class CanvasPainter implements Painter {
     public void profileFlatSurfaces(boolean enabled){profileFlatSurfaces=enabled;}
     /** Developer-only effect isolation; default production appearance is unchanged. */
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
+    boolean profileFoamSkipped(){return profileSkipFoam;}
     private RetainedSurfaces retainedSurfaces;
     private boolean retainSurfaces=true,surfaceMeshes,recordingSurfaceMesh;
     private SurfaceMesh surfaceMesh,liveSurfaceMesh;
@@ -501,8 +502,9 @@ public final class CanvasPainter implements Painter {
                         Iterator<Map.Entry<Long,Bitmap>> entries=frameImages.entrySet().iterator();
                         while(frameBytes+bytes>frameBudget && entries.hasNext()) {
                             Map.Entry<Long,Bitmap> entry=entries.next();
-                            // Complete rotation sets survive unrelated scenery pressure.
-                            if(pinnedAtlases.contains((int)(entry.getKey()>>>32)))continue;
+                            // Preparation also includes scenery: warm it, but only reserve
+                            // gameplay rotations against unrelated scenery pressure.
+                            if(pinnedAtlases.contains((int)(entry.getKey()>>>32)) && SpriteAtlas.rotationAtlas((int)(entry.getKey()>>>32)))continue;
                             frameBytes-=entry.getValue().getAllocationByteCount();entries.remove();
                             if(!background && profile!=null)profile.frameEvictions++;
                         }
@@ -633,6 +635,11 @@ public final class CanvasPainter implements Painter {
         else Painter.super.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
     public void bind(Canvas canvas) { this.canvas=canvas; }
+    private final float[] shadeXY=new float[6];private final int[] shadeColors=new int[3];
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){
+        flushSurfaceMesh();shadeXY[0]=ax;shadeXY[1]=ay;shadeXY[2]=bx;shadeXY[3]=by;shadeXY[4]=cx;shadeXY[5]=cy;shadeColors[0]=ac;shadeColors[1]=bc;shadeColors[2]=cc;
+        paint.setColor(0xffffffff);canvas.drawVertices(Canvas.VertexMode.TRIANGLES,6,shadeXY,0,null,0,shadeColors,0,null,0,0,paint);
+    }
     public void rect(float x,float y,float w,float h,int c) { flushSurfaceMesh(); paint.setColor(c); canvas.drawRect(x,y,x+w,y+h,paint); }
     public void circle(float x,float y,float r,int c) { flushSurfaceMesh(); if(profile!=null)profile.circles++;paint.setColor(c); canvas.drawCircle(x,y,r,paint); }
     public void poly(float[] xy,int c) { flushSurfaceMesh();

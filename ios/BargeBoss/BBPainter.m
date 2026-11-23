@@ -1,5 +1,6 @@
 #import "com/bargeboss/game/ShorelineMaterial.h"
 #import "BBPainter.h"
+#import "com/bargeboss/game/TriangleShade.h"
 #import "com/bargeboss/game/LightingProfile.h"
 #import "com/bargeboss/game/SceneLighting.h"
 #import "com/bargeboss/game/VesselShoreLight.h"
@@ -401,6 +402,9 @@ static UIImage *BBDecodedSource(UIImage *source,NSString *key) {
 }
 - (void)circleWithFloat:(jfloat)x withFloat:(jfloat)y withFloat:(jfloat)radius withInt:(jint)c {
     [self color:c]; CGContextFillEllipseInRect(self.context,CGRectMake(x-radius,y-radius,radius*2,radius*2));
+}
+- (void)shadedTriangleWithFloat:(jfloat)ax withFloat:(jfloat)ay withInt:(jint)ac withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)bc withFloat:(jfloat)cx withFloat:(jfloat)cy withInt:(jint)cc {
+    [BBTriangleShade referenceWithBBPainter:self withFloat:ax withFloat:ay withInt:ac withFloat:bx withFloat:by withInt:bc withFloat:cx withFloat:cy withInt:cc];
 }
 - (void)convexQuadWithFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)cx withFloat:(jfloat)cy withFloat:(jfloat)dx withFloat:(jfloat)dy withInt:(jint)c {
     [self color:c];CGContextBeginPath(self.context);CGContextMoveToPoint(self.context,ax,ay);

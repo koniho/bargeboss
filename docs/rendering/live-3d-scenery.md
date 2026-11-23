@@ -75,3 +75,55 @@ save work. Refresh bounds for every new rigid transform and every clipped face.
 `tools/BridgeDepthReview.java` compares exact primitive/UV/color order against
 a separately compiled previous implementation. The first comparison covered
 4715 intervals and185215 commands with identical raw-float hashes.
+
+## Marina fleet
+
+`HarborBoatModel` prepares six single-part local BSPs at Montrose setup.
+`ArticulatedModel.Rigid` traverses those BSPs with the inverse continuous viewing
+vector and projects yaw/pitch/roll into reusable thread-local buffers. It does
+not build a pose table or split topology during drawing. Normals and registered
+cleat/fender anchors use the hull coordinate system (+X bow, +Z up). Water-plane
+clipping removes geometry below the moving surface during rocking; foreground
+shore clips remain active. Hull movement belongs to MooredFleet's fixed step.
+
+MooredBoats blends to live geometry at 48–72 logical pixels of hull length,
+within 180–210 world units of the player. Smaller/distant boats keep existing
+sprites and their cache behavior. At full live weight, no color/canvas/normal
+sprites are submitted. Both paths retain separate water ripples. The parked
+fleet has no emissive lamps or smoke. Sailboats have no canopy in either path.
+
+Live marina hulls use shared `BoatMaterial` vertex lighting:
+wrapped diffuse, smooth hull normals, a broad low-strength highlight and soft
+waterline shading. Cabin bevels catch light without a hard outline. Nearby dock
+pedestals, harbor beacons and active vessel lights remain receivers' sources;
+never replace this with an unlit stylistic tint. Positions and normals use the
+same continuous rigid transform. Original-face vertices share cached colors
+within each draw, including BSP fragments, and water clipping interpolates
+premultiplied color. Cabins, fabric and small metal parts retain dynamic face lighting to bound cost.
+
+`Painter.shadedTriangle` carries shared colors to native interpolation on Vulkan,
+Canvas and Metal. Java2D uses a barycentric paint; Core Graphics uses the bounded
+16-triangle shared approximation. This reference fallback is not pixel-identical
+to hardware interpolation. No texture atlas or offscreen surface is created for
+the material. BoatMaterialTest checks lamp reception and normal response;
+VertexShadePixelTest checks color/alpha interpolation, and VulkanEncodingTest
+checks premultiplied vertex transport. This is procedural shading, not a painted
+texture replacement or proof of native iOS visual parity.
+
+### Production rollback, 2026-11-23
+
+The user rejected the live marina/active cruiser appearance. Production now
+uses sprites at every zoom, with no HarborBoatModel preparation at stage start.
+The live helpers and material studies are retained for offline comparison only.
+Do not reactivate them without a new art review. Boat sprite depth and registered
+canvas/normal layers are now baked with a supersampled per-pixel depth buffer;
+never restore average-face sorting for overlapping roofs and hulls.
+
+Prepared assemblies that only translate can use `ArticulatedModel.Translation`.
+It reuses prepared face order and vertex buffers, and moves matrices, geometry,
+plane offsets and projected/world bounds together. The source must keep topology,
+face ordering and orientation fixed; this is not a rotation or deformation cache.
+The travel-lift frame uses immutable prepared sources; its vertical slings use
+stable-order live hoist sources. Each rig owns its translated output, so neither
+a shared model nor another game instance is moved. Exhaust and ropes follow the
+same translated anchors. Evaluate offsets in simulation, never in draw calls.

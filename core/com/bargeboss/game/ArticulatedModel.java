@@ -63,6 +63,87 @@ public final class ArticulatedModel {
             return live;
         }
     }
+    /** Translation of prepared geometry preserves BSP order and reuses all vertex storage.
+     * Source topology/order must remain fixed (static assembly or pure translating hoist). */
+    public Translation translation(Pose source){prepare(source);return new Translation(source);}
+    public final class Translation {
+        private final Pose source,live;
+        private Translation(Pose source){this.source=source;live=new Pose(source);}
+        public Pose pose(float x,float y,float z){live.translate(source,x,y,z);return live;}
+    }
+    /** Prepared single-part geometry for freely moving vessels. No pose/BSP rebuilds. */
+    public Rigid rigid(){return new Rigid();}
+    public final class Rigid {
+        private final Branch tree;
+        private final int fragments,maxVertices,vertexCount;
+        private final ThreadLocal<RigidDraw> drawing=new ThreadLocal<RigidDraw>(){
+            protected RigidDraw initialValue(){return new RigidDraw(maxVertices,faces.length,vertexCount);}
+        };
+        private Rigid(){
+            if(nodes.length!=1 || nodes[0].x!=0 || nodes[0].y!=0 || nodes[0].z!=0 || nodes[0].yaw!=0)
+                throw new IllegalArgumentException("Rigid fleet model requires one identity root");
+            Branch built=null;Stats stats=new Stats();
+            int source=0;for(Face f:faces){Poly p=new Poly(f.xyz,f.uv,0,f.color,f.material);p.sourceIndex=source++;if(built==null)built=new Branch(p);else built.insert(p,stats);}
+            tree=built;ArrayList<Poly> all=new ArrayList<Poly>();tree.flatten(all);fragments=all.size();
+            int max=0;java.util.HashMap<String,Integer> ids=new java.util.HashMap<String,Integer>();
+            for(Poly p:all){max=Math.max(max,p.xyz.length/3);p.vertexIds=new int[p.xyz.length/3];
+                for(int i=0;i<p.vertexIds.length;i++){int at=i*3;String key=p.sourceIndex+":"+Float.floatToIntBits(p.xyz[at])+":"+Float.floatToIntBits(p.xyz[at+1])+":"+Float.floatToIntBits(p.xyz[at+2]);Integer id=ids.get(key);if(id==null){id=ids.size();ids.put(key,id);}p.vertexIds[i]=id;}}
+            maxVertices=max;vertexCount=ids.size();
+        }
+        public int fragmentCount(){return fragments;}
+        public void draw(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll,FaceLighting light){
+            draw(g,p,x,y,heave,yaw,pitch,roll,light,true);
+        }
+        /** Freely moving equipment above water: full solid geometry and world-space scene lights. */
+        public void drawSolid(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll){
+            draw(g,p,x,y,heave,yaw,pitch,roll,null,false);
+        }
+        private void draw(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll,FaceLighting light,boolean clipWater){
+            RigidDraw d=drawing.get();d.game=g;d.clipWater=clipWater;d.p=p;d.c=g.layout.camera;d.light=light;d.wx=x;d.wy=y;d.heave=heave;java.util.Arrays.fill(d.shadeReady,false);java.util.Arrays.fill(d.vertexReady,false);
+            float ca=(float)StrictMath.cos(yaw),sa=(float)StrictMath.sin(yaw),cp=(float)StrictMath.cos(pitch),sp=(float)StrictMath.sin(pitch),cr=(float)StrictMath.cos(roll),sr=(float)StrictMath.sin(roll);
+            float[] m=d.m;
+            m[0]=ca*cp;m[1]=ca*sp*sr-sa*cr;m[2]=ca*sp*cr+sa*sr;
+            m[3]=sa*cp;m[4]=sa*sp*sr+ca*cr;m[5]=sa*sp*cr-ca*sr;
+            m[6]=-sp;m[7]=cp*sr;m[8]=cp*cr;
+            d.vx=-m[0]+m[3]+m[6];d.vy=-m[1]+m[4]+m[7];d.vz=-m[2]+m[5]+m[8];
+            d.visit(tree);
+        }
+    }
+    private static final class RigidDraw {
+        final float[] m=new float[9],vertices,clipped;final float[][] screens;final boolean[] shadeReady,vertexReady;final int[] shades,vertexShades,colors,clippedColors;
+        Game game;boolean clipWater;Painter p;RiverCamera c;FaceLighting light;float wx,wy,heave,vx,vy,vz;
+        RigidDraw(int max,int sources,int verticesCount){vertexReady=new boolean[verticesCount];vertexShades=new int[verticesCount];colors=new int[max];clippedColors=new int[max+2];shadeReady=new boolean[sources];shades=new int[sources];vertices=new float[max*3];clipped=new float[(max+2)*3];screens=new float[max+3][];for(int i=3;i<screens.length;i++)screens[i]=new float[i*2];}
+        void visit(Branch node){
+            boolean front=node.plane.nx*vx+node.plane.ny*vy+node.plane.nz*vz>0;
+            Branch far=front?node.back:node.front,near=front?node.front:node.back;
+            if(far!=null)visit(far);
+            for(Poly f:node.coplanar)if(f.nx*vx+f.ny*vy+f.nz*vz>EPS)paint(f);
+            if(near!=null)visit(near);
+        }
+        void paint(Poly f){
+            int n=f.xyz.length/3;VertexLighting smooth=light instanceof VertexLighting && ((VertexLighting)light).smooth(f.material)?(VertexLighting)light:null;
+            for(int i=0;i<n;i++){int j=i*3;float x=f.xyz[j],y=f.xyz[j+1],z=f.xyz[j+2];
+                if(smooth!=null){int id=f.vertexIds[i];if(!vertexReady[id]){vertexShades[id]=smooth.vertex(f.material,f.color,x,y,z,f.nx,f.ny,f.nz,m);vertexReady[id]=true;}colors[i]=vertexShades[id];}
+                vertices[j]=m[0]*x+m[1]*y+m[2]*z;vertices[j+1]=m[3]*x+m[4]*y+m[5]*z;vertices[j+2]=m[6]*x+m[7]*y+m[8]*z;}
+            // Continuous rocking intersects the water plane instead of exposing the underside.
+            int count=0;
+            for(int i=0;i<n;i++){int a=i*3,b=((i+1)%n)*3;float az=vertices[a+2],bz=vertices[b+2];
+                if(!clipWater || az>=0){for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k];if(smooth!=null)clippedColors[count]=colors[i];count++;}
+                if(clipWater && (az<0)!=(bz<0)){float t=az/(az-bz);for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k]+t*(vertices[b+k]-vertices[a+k]);if(smooth!=null)clippedColors[count]=TriangleShade.mix(colors[i],colors[(i+1)%n],t);count++;}}
+            if(count<3)return;
+            int source=f.sourceIndex;
+            if(smooth==null && !shadeReady[source]){
+                float nx=m[0]*f.nx+m[1]*f.ny+m[2]*f.nz,ny=m[3]*f.nx+m[4]*f.ny+m[5]*f.nz,nz=m[6]*f.nx+m[7]*f.ny+m[8]*f.nz;
+                float x=m[0]*f.sourceX+m[1]*f.sourceY+m[2]*f.sourceZ,y=m[3]*f.sourceX+m[4]*f.sourceY+m[5]*f.sourceZ,z=m[6]*f.sourceX+m[7]*f.sourceY+m[8]*f.sourceZ;
+                shades[source]=clipWater?light.shade(f.color,f.color,x,y,z,nx,ny,nz):SceneryLighting.face(game,f.color,f.material,wx+x,wy+y,z+heave/Z_SCALE,nx,ny,nz);shadeReady[source]=true;
+            }
+            int color=shades[source];
+            for(int i=0;i<count;i++){int j=i*3;float xx=clipped[j],yy=clipped[j+1],zz=clipped[j+2];clipped[j]=c.screenX(wx+xx,wy+yy);clipped[j+1]=c.screenY(wx+xx,wy+yy)-(zz*Z_SCALE+heave)*c.scale;}
+            if(smooth!=null){for(int i=1;i<count-1;i++)p.shadedTriangle(clipped[0],clipped[1],clippedColors[0],clipped[i*3],clipped[i*3+1],clippedColors[i],clipped[(i+1)*3],clipped[(i+1)*3+1],clippedColors[i+1]);}
+            else if(count==4)p.convexQuad(clipped[0],clipped[1],clipped[3],clipped[4],clipped[6],clipped[7],clipped[9],clipped[10],color);
+            else {float[] screen=screens[count];for(int i=0;i<count;i++){screen[i*2]=clipped[i*3];screen[i*2+1]=clipped[i*3+1];}p.poly(screen,color);}
+        }
+    }
     private static final class Node {
         final String id;final int parent;final float x,y,z,yaw,pitchRate,moveX,moveY,moveZ;
         Node(String id,int p,float x,float y,float z,float yaw,float rate,float mx,float my,float mz) {this.id=id;parent=p;this.x=x;this.y=y;this.z=z;this.yaw=yaw;pitchRate=rate;moveX=mx;moveY=my;moveZ=mz;}
@@ -140,6 +221,21 @@ public final class ArticulatedModel {
             int[][] indices={{3,2,1,0},{4,5,6,7},{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7}};
             for(int[] f:indices) {float[] v=new float[12];for(int j=0;j<4;j++)for(int k=0;k<3;k++)v[j*3+k]=p[f[j]][k];faces.add(new Face(node,color,material,v));}
         }
+        public void materialPolygon(int node,int color,int material,float... xyz){faces.add(new Face(node,color,material,xyz.clone()));}
+        public void polygon(int node,int color,float... xyz){faces.add(new Face(node,color,-1,xyz.clone()));}
+        /** Author-time uniform scaling, including child pivots and continuous travel. */
+        public ArticulatedModel buildScaled(float scale,float x,float y,float z){
+            if(!(scale>0) || !Float.isFinite(scale))throw new IllegalArgumentException("Invalid model scale");
+            Node[] scaled=new Node[nodes.size()];
+            for(int i=0;i<scaled.length;i++){Node n=nodes.get(i);boolean root=n.parent<0;
+                scaled[i]=new Node(n.id,n.parent,root?x+(n.x-x)*scale:n.x*scale,
+                    root?y+(n.y-y)*scale:n.y*scale,root?z+(n.z-z)*scale:n.z*scale,
+                    n.yaw,n.pitchRate,n.moveX*scale,n.moveY*scale,n.moveZ*scale);}
+            Face[] geometry=new Face[faces.size()];
+            for(int i=0;i<geometry.length;i++){Face f=faces.get(i);float[] xyz=f.xyz.clone();
+                for(int j=0;j<xyz.length;j++)xyz[j]*=scale;geometry[i]=new Face(f.node,f.color,f.material,xyz);}
+            return new ArticulatedModel(scaled,geometry);
+        }
         public ArticulatedModel build() {return new ArticulatedModel(nodes.toArray(new Node[nodes.size()]),faces.toArray(new Face[faces.size()]));}
     }
     public final class Pose {
@@ -150,10 +246,33 @@ public final class ArticulatedModel {
         private boolean prepared;
         private int polygonCount;
         private float depthMin=Float.POSITIVE_INFINITY,depthMax=Float.NEGATIVE_INFINITY;
+        /** Reject empty depth slices before caller-owned clip or lighting setup. */
+        public boolean overlapsDepth(float min,float max){return depthMax>min && depthMin<=max;}
         private Poly[] transformed;
         private float[][] partRanges;
         private int[] partOrder;
         private int fragments;
+        private Pose(Pose source){
+            polygonCount=source.polygonCount;polygons=new Poly[polygonCount];prepared=true;fragments=source.fragments;
+            for(int i=0;i<polygonCount;i++){Poly f=source.polygons[i];polygons[i]=new Poly(new float[f.xyz.length],f.uv,f);}
+            translate(source,0,0,0);
+        }
+        private void translate(Pose source,float dx,float dy,float dz){
+            if(source.polygonCount!=polygonCount)throw new IllegalStateException("Translation requires stable prepared topology");
+            depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
+            for(int n=0;n<nodes.length;n++){
+                System.arraycopy(source.matrix[n],0,matrix[n],0,12);matrix[n][3]+=dx;matrix[n][7]+=dy;matrix[n][11]+=dz;
+                if(worldBounds[n]!=null)for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}
+                if(projectedBounds[n]!=null){projectedBounds[n][0]=projectedBounds[n][1]=Float.POSITIVE_INFINITY;projectedBounds[n][2]=projectedBounds[n][3]=Float.NEGATIVE_INFINITY;}
+            }
+            for(int i=0;i<polygonCount;i++){
+                Poly f=source.polygons[i],out=polygons[i];
+                if(f.node!=out.node || f.xyz.length!=out.xyz.length)throw new IllegalStateException("Translation source order changed");
+                out.nx=f.nx;out.ny=f.ny;out.nz=f.nz;
+                for(int j=0;j<f.xyz.length;j+=3){out.xyz[j]=f.xyz[j]+dx;out.xyz[j+1]=f.xyz[j+1]+dy;out.xyz[j+2]=f.xyz[j+2]+dz;bounds(out.node,out.xyz[j],out.xyz[j+1],out.xyz[j+2]);}
+                out.d=f.d+out.nx*dx+out.ny*dy+out.nz*dz;out.depthBounds();depthMin=Math.min(depthMin,out.depthMin);depthMax=Math.max(depthMax,out.depthMax);
+            }
+        }
         private Pose(Motion motion){
             polygons=new Poly[motion.count];transformed=new Poly[motion.count];partOrder=new int[motion.parts.length];partRanges=new float[motion.parts.length][2];
             for(Part part:motion.parts)for(Poly source:part.fragments)transformed[source.motionIndex]=new Poly(new float[source.xyz.length],source.uv,source);
@@ -267,6 +386,10 @@ public final class ArticulatedModel {
         pose.polygons=ordered.toArray(new Poly[ordered.size()]);pose.polygonCount=pose.polygons.length;pose.fragments=build.fragments;pose.prepared=true;
     }
     /** Opt-in material response for rigid scenery, evaluated on the prepared face geometry. */
+    public interface VertexLighting extends FaceLighting {
+        boolean smooth(int material);
+        int vertex(int material,int albedo,float x,float y,float z,float nx,float ny,float nz,float[] rotation);
+    }
     public interface FaceLighting {int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz);}
     public Stats drawLit(Game g,Painter p,Pose pose,FaceLighting lighting){return drawRange(g,p,pose,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY,lighting);}
     public Stats draw(Game g,Painter p,Pose pose) {return drawRange(g,p,pose,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);}
@@ -275,7 +398,7 @@ public final class ArticulatedModel {
     private Stats drawRange(Game g,Painter p,Pose pose,float min,float max,FaceLighting lighting) {
         Stats stats=new Stats();stats.sourceFaces=faces.length;
         // Particle depth cursors visit many empty intervals: geometry cannot contribute here.
-        if(pose.depthMax<=min || pose.depthMin>max)return stats;
+        if(!pose.overlapsDepth(min,max))return stats;
         float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
         for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
             if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
@@ -291,13 +414,13 @@ public final class ArticulatedModel {
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz;int motionIndex;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz,sourceX,sourceY,sourceZ;int motionIndex,sourceIndex;int[] vertexIds;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
-            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];depthBounds();
+            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];depthBounds();sourceX=cx;sourceY=cy;sourceZ=cz;
         }
-        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
+        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;sourceIndex=original.sourceIndex;sourceX=original.sourceX;sourceY=original.sourceY;sourceZ=original.sourceZ;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
         /** Geometry-derived bounds refresh only when a rigid pose changes, never per slice. */
         void depthBounds(){
             depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;cx=cy=cz=0;

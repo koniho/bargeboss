@@ -8,6 +8,7 @@ mkdir -p ios/build/parity/generated ios/build/parity/classes
 find core -name '*.java' | sort > ios/build/parity/sources.txt
 echo tests/com/bargeboss/game/Parity.java >> ios/build/parity/sources.txt
 echo tests/com/bargeboss/game/ReplayInput.java >> ios/build/parity/sources.txt
+echo tests/com/bargeboss/game/RescueBargeTest.java >> ios/build/parity/sources.txt
 javac -d ios/build/parity/classes @ios/build/parity/sources.txt
 java -cp ios/build/parity/classes com.bargeboss.game.Parity > ios/build/parity/java.txt
 "$J2OBJC_HOME/j2objc" --prefixes ios/prefixes.properties -sourcepath core:tests -d ios/build/parity/generated @ios/build/parity/sources.txt

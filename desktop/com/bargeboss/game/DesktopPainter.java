@@ -288,6 +288,11 @@ public final class DesktopPainter implements Painter {
     private void color(int c) { g.setColor(new Color(c,true)); }
     public void rect(float x,float y,float w,float h,int c) { color(c); g.fill(new Rectangle2D.Float(x,y,w,h)); }
     public void circle(float x,float y,float r,int c) { color(c); g.fill(new Ellipse2D.Float(x-r,y-r,r*2,r*2)); }
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){
+        if(Math.abs((bx-ax)*(cy-ay)-(by-ay)*(cx-ax))<.00001f)return;
+        Path2D path=new Path2D.Float();path.moveTo(ax,ay);path.lineTo(bx,by);path.lineTo(cx,cy);path.closePath();
+        g.setPaint(new TrianglePaint(ax,ay,ac,bx,by,bc,cx,cy,cc));g.fill(path);
+    }
     public void poly(float[] xy,int c) {
         color(c); Path2D.Float path=new Path2D.Float(); path.moveTo(xy[0],xy[1]);
         for(int i=2;i<xy.length;i+=2) path.lineTo(xy[i],xy[i+1]); path.closePath(); g.fill(path);

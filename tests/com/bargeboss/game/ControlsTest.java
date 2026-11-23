@@ -152,7 +152,7 @@ public final class ControlsTest {
             g.tug.x=camera.worldX(sx,sy);g.tug.y=camera.worldY(sx,sy);
             boolean enabled=g.hapticsEnabled;
             g.pointerDown(0,sx,sy);
-            check(g.pointer && !g.holdingTug(),"old top-button area does not intercept world touch or drive tug");
+            check(g.pointer && !g.joystick.active && !g.navigating,"old top-button area routes tug ability touch without starting drive");
             g.pointerUp(0,sx,sy);
             check(g.mode==Game.PLAY && g.hapticsEnabled==enabled,"removed buttons cannot pause, open settings or toggle haptics");
         }

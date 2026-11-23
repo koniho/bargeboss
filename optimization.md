@@ -5909,3 +5909,470 @@ launch restored after capture; screen timeout restored to300000ms.
   scenery receivers, replay, Android encoding/build and JVM/J2ObjC parity at
   1a5d076f:2:1350. Installed and launched the final combined APK; restored the
   saved 300000ms phone timeout. Earlier full shared/asset checks remain applicable.
+
+### 2026-11-22 — Montrose castoff camera framing
+- Reproduced excessive zoom-out after public towline release beside the haulout
+  well. Docking framing included the generic quay bollard, far from the marina
+  work site, despite yachts/haulout boats never using that tie-up mechanic.
+- Retained close docking behavior but fit only the local hulls for those boats.
+  Ordinary barge bollards, lasso-flight freeze and steering holds are unchanged.
+- New public-release regression fails before the fix and passes afterward at
+  readable zoom with player on screen after 360 ticks. Stage camera checks: 48.
+  Replay 47b7cc4d:2:1350; no additional per-frame work, assets or caches.
+- Full shared/asset/native Android build passed. Actual shared-renderer castoff
+  preview settles at zoom 2.6577 with both local vessels readable. Android
+  installed/launched; castoff behavior tested via shared input replay, not a
+  physical iOS run.
+- Latest user screenshot (Screenshot_20261122-223153.png) also shows soft marina
+  hulls compared with tug/docks. BakeMooredBoats exports 128px cells (2048x6144
+  atlas); runtime enlarges them and dissolves adjacent yaw frames. This is a
+  separate art-resolution issue. Prefer higher-resolution close-view bakes with
+  bounded frame caches and distant LOD, not disabling filtering globally.
+
+### 2026-11-22 — Live close-view marina boats
+- Android baseline, montrose-haulout live, 120 warmup +180 measured frames:
+  draw p50/p95 13.904/16.037 ms; end-to-end 17.185/20.852 ms. Capture:
+  out/profiles/20261122-224923-montrose-haulout-live. No cold decoding/evictions.
+- Added six prepared local BSP models, continuous rigid projection and real
+  face-normal lighting. Thread-local geometry scratch is bounded by prepared
+  fragment size, with no dynamic BSP rebuild or heading table. Geometry clips
+  at the water plane and against foreground land. Nearby/full-size hulls use
+  live geometry; distant/small hulls retain sprite LOD and normal lighting.
+- Removed sailboat canopies/supports in both live geometry and all sprite poses;
+  regenerated registered normals/canvas masks. Added 774-heading continuity,
+  normalized normals, bounded topology, LOD and render-purity checks.
+- First native live-model pass regressed: draw 23.643/27.050 ms and intervals
+  28.913/33.810 ms (p50/p95), capture 20261122-225628-montrose-haulout-live.
+  Thirty boats qualified, including a broad dual-path transition. Before shipping,
+  narrowed distance fade to 180–210 and cached lighting once per original face
+  per draw, not once per BSP fragment. Original-face centers keep highlights
+  stable across topology traversal. Added exclusion 512 and profiling script
+  BARGEBOSS_PROFILE_EXCLUDE for same-build sprite/live comparisons.
+- Same-build A/B after face-light reuse: sprites draw 14.090/16.167 ms, interval
+  17.436/20.055; models draw 18.364/22.203, interval 22.306/27.314 (p50/p95).
+  Captures 20261122-230347 and 230405. A sampling trace then identified actual
+  overhead: ShoreOcclusion/MontroseHarbor.shore 31.29% inclusive CPU,
+  MontroseHarbor.disjoint 28.55%, MooredBoats.draw total 38.99%. This is hotspot
+  attribution, not exact isolated invocation timing. Trace capture 230704.
+- Vulkan's existing counting stencil was advertising no union support, forcing
+  redundant CPU polygon subtraction for each mask. Enabled union capability
+  with conservative 8-bit overlap budgeting and an exact shared disjoint fallback
+  for extreme masks. Added 64-deep/1000-duplicate overflow/restoration checks.
+  Kept the 180–210 live range; did not ship the proposed shorter 140–180 range.
+- Initial union guard was too conservative: triangle count sent large already-
+  sparse water masks back to ClipUnion (55.05% sampled CPU in trace 231649).
+  Replaced it with conservative X/Y interval-overlap bounds using reusable
+  sorted buffers. Added a 1000-separated-triangle fast-path test while retaining
+  the 1000-overlap/64-level overflow test. Full shared/asset checks and 4,350,443
+  Montrose shoreline pixels had passed; this follow-up is native encoder only,
+  so rebuilt APK/native checks without repeating unchanged shared checks.
+- Final same-build native A/B (180 sample frames after 120 warmup): sprites
+  draw p50/p95 10.079/11.076 ms, intervals 16.604/25.431; live models draw
+  12.740/13.916 ms, intervals 16.206/21.852. Captures 20261122-231957 and
+  232011. Live geometry adds about 2.66 ms median drawing; the prior large
+  regression was mask preparation. Long frames remain; these are application
+  intervals, not a claim of perfectly locked GPU presentation at 60 FPS.
+- Full shared checks, regenerated normal/canvas registration, Android build,
+  native overflow/restore checks, and all-heading Montrose shoreline pixel
+  regression passed. Reviewed native Vulkan scene for shoreline/boat occlusion.
+  Replay 98c0ecc6:2:1350. Installed on Android; iOS hardware was not tested.
+- Day/dusk review renders copied to Pictures/BargeBoss and MediaStore verified
+  (18144/18145). Current boat materials remain flat face shading: the requested
+  softer painted look needs a subsequent smooth-normal/material shader pass.
+
+### 2026-11-22 — live marina boat material lighting (shared / Android)
+- Replaced flat paint/hull faces with interpolated shared vertex colors: smooth
+  hull normals, wrapped diffuse, restrained highlights, waterline shading and
+  beveled cabin roofs. Existing dock, beacon and vessel light sources remain
+  active; transformed positions/normals govern reception.
+- BSP topology stays cached; per-source vertex colors are reused across fragments
+  within each draw. Vulkan uses its existing compact color vertex pipeline;
+  no material textures, new shader variants or offscreen layers are allocated.
+- Added lamp-facing/away reception, waterline and premultiplied-alpha checks,
+  Java2D gradient pixel checks and Vulkan color-transport checks. Desktop dusk
+  review shows localized warm dock illumination. Native results follow below.
+- Metal interpolation and a bounded Core Graphics reference fallback are included;
+  native iOS build/device validation remains deferred. Reference tessellation is
+  approximate, not a pixel-parity claim.
+- First device capture 20261122-234830 reported draw 27.299/28.673 ms
+  (p50/p95), but overlapped the desktop shoreline regression: it is not a valid
+  isolated comparison with the prior round. Sampling capture 234909 identified
+  BoatMaterial.shade at 15.06% inclusive main CPU. Reduced smooth interpolation
+  to curved hulls; cabins/fittings retain dynamic face lighting and roof bevels.
+  Replaced hot float min/max clamps in the hull evaluator with bounded branches.
+  Final validation/profile follows after all host checks finish.
+- Final isolated Vulkan capture 20261122-235456: 180 frames after 120 warmup,
+  draw p50/p95 13.756/14.610 ms, frame intervals 17.076/18.803 ms, advance
+  2.199/2.533 ms. No claim of locked 60 FPS; prior flat-model capture was
+  12.740/13.916 ms drawing, from an earlier run rather than same-build A/B.
+- Full shared/asset checks, gradient pixels, 774 continuous heading cases and
+  Vulkan encoding/clip checks passed. Shoreline regression passed 1,756,523
+  production hull/cargo assertions; replay is 2c6ab9ab:2:1350. Reviewed final
+  native screenshot for illuminated hulls and shore clipping. Installed Android.
+- Final day/dusk review copies refreshed in Photos/BargeBoss (MediaStore
+  18148/18149). iOS hardware and Canvas fallback pixels were not validated.
+
+### 2026-11-23 — boat color parity and active cruiser geometry
+- Compared shared-rendered models with the painted tug/yacht at matched headings
+  and day/dusk profiles (docs/art-studies/live-boat-color). Found scenery grading
+  was imposing a blue cast on live vessels; replaced only vessel grading and
+  restored distinct ivory paint, tan decks and navy glass. Dynamic point lights
+  remain. No new textures, per-pixel raster preparation or geometry complexity.
+- Extracted reusable live hull draw; close rescue/haulout cruisers now use it,
+  with the existing size/distance sprite LOD. The separate 80-ft yacht remains
+  accepted sprite art pending a properly finished model. Added close/wide route
+  tests across cruiser headings and palette-preservation assertions.
+- Native measurements and validation follow after the build finishes.
+- Full shared/asset suite and Android encoder checks passed; replay
+  22a7ae77:2:1350. Added 64 close cruiser heading routes plus distant fallback
+  verification. All-heading shoreline regression: 1,756,523 production
+  hull/cargo pixels plus 38,121 training terrain pixels. Reviewed Android Vulkan
+  capture for palette, light reception and the live active cruiser.
+- Same-build device captures (180 samples, 120 warmup): 20261123-000743 live
+  draw p50/p95 17.513/18.511 ms; intervals 21.813/24.674 ms. 000828 with
+  exclusion512 (all live marina and active cruiser models disabled) draw
+  11.753/12.767 ms; intervals 16.641/19.880 ms. Live model rendering remains
+  material frame cost, not locked60; the difference includes all models, not
+  isolated color-grading or the one active cruiser. No CPU raster/texture builds
+  were introduced by the color pass. Record this as remaining optimization work.
+- Installed and launched Android; iOS hardware/Canvas fallback pixels untested.
+  Before/after review sheets saved in Photos/BargeBoss and MediaStore verified
+  at18150/18151. Canonical PNGs and reproduction tool are tracked in the repo.
+
+### 2026-11-23 — restore sprite boats / correct bimini occlusion
+- User rejected live boat appearance. Restored sprite-only moored and active
+  cruiser routes and removed live mesh preparation/roll-pitch work from fleet
+  setup. Kept the independent Vulkan union-clip optimization. Experimental model
+  helpers remain only for offline comparison, not production rendering.
+- Found average-depth painter sorting in the offline boat bake incorrectly
+  erasing canvas behind hull/deck faces. Replaced it with a 2x supersampled
+  per-pixel depth buffer. Base, receiver bands, octahedral normals/heights and
+  canvas now share exact visible-face ownership; canvas remains a final sprite
+  overlay. Sailboats retain the requested no-bimini correction.
+- Added sprite-only route checks and canopy-center coverage checks across every
+  motorboat heading. Validation and device results follow.
+- Full shared/asset/Android checks passed, including all96 motorboat roof centers,
+  1536 registered canopy frames and octahedral normal coverage. Replay is
+  47b7cc4d:2:1350. Reviewed the full32-heading sprite contact sheet. Built,
+  installed and launched Android; iOS hardware validation remains deferred.
+
+### 2026-11-23 — Montrose arrival, Gavin and wake-reactive moorings
+- Added a six-second deterministic south-to-north arrival toward the inlet.
+  Tug movement and camera pan use the same fixed-step phase; scene effects stay
+  alive while objectives/input wait. Welcome from Gavin precedes first dispatch;
+  reply hands off without repositioning the tug. Developer mission fixtures can
+  bypass arrival; added a montrose-arrival profiling scene.
+- Generated/packed a six-frame Gavin portrait with registered shoulder pivots,
+  transparent padding and level-scoped preparation. Reuses shared radio audio,
+  panel, inward-facing portrait and choice controls. No native gameplay fork.
+- Added three sprite sailboats on existing western mooring balls with bow lines.
+  Amplified propagated-wake force3x and bob response from .55 to1.35, preserving
+  baseline sea motion and finite berth constraints. No extra wake traversal;
+  ambient subtraction uses the inexpensive analytic sea field.
+- Montrose mooring balls yield to collision without writing vessel position,
+  velocity or torque. They bob/dip and spring back; other navigation floats
+  retain normal collision behavior. Ball tethers allow slack for displacement.
+- Targeted arrival/path/resize/pause/input, radio/portrait, all-heading sprite,
+  one-way buoy contact, recovery and real passing-wake tests passed. Full build,
+  scene review and native profiling follow below.
+- Core/asset checks passed with replay31e4f200:2:1350. Updated existing control
+  and map pixel fixtures to explicitly bypass the new modal arrival; reran the
+  affected map pixels and remaining asset/portrait checks, then built native
+  Android from those checked sources. Native encoder/clip checks passed.
+- Android arrival capture20261123-010621 (420 frames, no warmup): draw p50/p95
+  6.682/13.264ms, intervals16.664/22.126ms. Mooring-field capture010700
+  (180 frames after120 warmup): draw5.628/7.382ms, intervals16.678/21.426ms.
+  These are different scenes, not an A/B speedup claim or locked60 presentation.
+  Reviewed native welcome portrait, inlet composition and sprite sailboat field.
+- Installed and launched Android. iOS hardware and native Canvas fallback remain
+  untested. Review copies registered in Photos/BargeBoss (MediaStore18153–18156).
+
+### 2026-11-23 — Montrose lift, swinging moorings and Chas
+- Screenshot010937 showed lowered sling pixels crossing the foreground quay.
+  Removed the lift-center depth cutoff from its bounded solid-shore mask; wall
+  geometry already existed, but the cutoff excluded relevant wall sections.
+  Scaled rigid geometry/pivots/travel and actual coastal footprint0.75 together.
+- Added automatic180-tick hoist after successful settled handoff. Reuses prepared
+  Motion topology and live buffers; no pose table or per-frame BSP rebuild.
+  Shared renderer review confirms smaller footprint and solid foreground wall.
+- Single-point ball moorings now apply bow tension/torque and allow full heading
+  swings. Two-line dock berth limits remain unchanged. Uses existing wake sample;
+  no extra global effect traversal. One-way ball/tug behavior retained.
+- Added beach-trip position trigger and Chas's branching distress dialogue, named
+  boats beyond the horn, registered six-frame portrait, and level-scoped preload.
+  Fixed obsolete Montrose pointer bounds that excluded the beach extension.
+  Chas uses existing CB clips and vessel radio animation, no new native logic.
+- Targeted mooring, radio branches, expanded-area public raft/lasso input and
+  continuous lift tests passed. Full check/build/native validation follows.
+- Full shared/asset checks passed with replay2bc0352:2:1350. Android native
+  encoder/clip regressions passed; built, installed and launched the debug APK.
+  Chas shoulder-registration review passes across all six poses. Review copies
+  registered in Photos/BargeBoss (Chas18159–18160). iOS device checks deferred.
+- Native haulout capture014957 was interrupted by a foreground app switch:
+ 178/180 requested frames and the final screenshot showed Termux. Rejected this
+ run for performance conclusions/native visual acceptance; desktop shared-renderer
+ reviews are valid. Installation/launch succeeded. Retest the final boat round.
+
+### 2026-11-23 — racing pickup and gradual rescue storm
+- Ain't Broke is an offline-baked32-pose mission hull; no live3-D boats restored.
+  Appends32 geometric normal cells and128 color/receiver cells while preserving
+  the existing192 poses. Keeps legacy canvas stride192; adds64 frame-sized shadow
+  masks and a level-scoped preparation hint. Source texture/material maps stay
+  offline; no per-frame raster/material generation. Approximate added decoded
+  frame capacity:8MiB color/bands +2MiB normals +4MiB shadow masks, before host
+  residency/eviction. Existing cache budgets unchanged; not a residency claim.
+- Farthest star-dock reservation, larger collision capsule, public tow pickup and
+  full lift fit tested. Larger hull exposed early push-assist settling12 units
+  from target before it fit, plus full-length reach assumptions on side pushes.
+  Haulout assist now aligns outside the mouth, projects hull reach and only
+  settles when the complete hull fits. Locked lifted boats cannot reattach tow.
+- Removed the lift-yard yellow markings. Every Montrose entry now explicitly
+  selects dusk; developer lighting still overrides after entry.
+- Native lighting-profile replacement retires all textures/terrain preparation.
+  Do NOT interpolate these immutable snapshots every frame. New30-second nightfall
+  grade draws behind vessels/local lamps with one bounded background wash, keeping
+  the same dusk cache identity. It does not move the sun or fully replace the
+  material preset; the limitation is intentional and documented.
+- Chas's call ramps initial rain/fog over10 seconds;60 seconds of actual moving
+  rescue tow ramps to heavy rain and2× waves/fog. Same sea multiplier drives
+  drawing/heave/orbital forces. Rain identities fade in continuously; fog/streak
+  caps unchanged. Paused/control-only frames cannot advance tow progress.
+- Added fixed-step ramp/cache-identity, pause/manual override, placement/pickup,
+ 32-pose color/normal/material registration and shadow freshness checks. Developer
+  hooks now include montrose-chas, montrose-racer and montrose-storm-return.
+  Native build and final capture results follow.
+- Final validation: full `check.sh` and Android Vulkan build passed; replay
+  `e43d47db:2:1350`. Reviewed actual renderer racer at dock, all32 headings,
+  lowered/raised lift (no yellow yard stripes), and before/after storm. Review
+  images scanned into Photos, MediaStore18169–18171. Installed with existing key.
+- Android storm-return capture completed60/60 samples after60 warmup frames:
+  interval p50 16.623ms / p95 27.832ms; advance p95 5.852ms, draw p95 8.406ms;
+  zero measured decode/cache-build/eviction events. Native screenshot confirms
+  fog, rain, readable lit vessels and connected tow. A picture-in-picture video
+  was visible, so this short capture is NOT a clean performance comparison or
+  sustained60fps claim. iOS device pixels/performance were not measured.
+- Racer Android capture also completed60/60 samples: interval p50 16.642ms /
+  p95 17.764ms, advance p95 4.206ms, draw p95 9.403ms. Native frame reviewed:
+  red racing hull at reserved star berth, lit and coherent with nearby sprites.
+  Short scenario validation only; full marina traversal remains unprofiled.
+
+### 2026-11-23 — pedestal lighting and multi-tow investigation
+- Production MooredBoats.draw calls MooredBoatLight.lights, selecting up to four
+  nearby sources. Pedestals contribute warm0xffffd68d at radius90 and energy
+  .16*brightness; normalSprite applies registered hull normals/heights. SceneDetail
+  reduces receiver strength at distance/overview. Separate bimini art does not have
+  its own normal receiver map. No lighting change made in this investigation.
+- Android Vulkan ART sampling, completed180/180 samples after120 warmup:
+  out/profiles/20261123-025752-montrose-storm-return-replay. No trace overflow or
+  unmatched transitions. Inclusive main-thread sampled CPU: MooredFleet.step14.99%,
+  WaterSurface.value10.43%, SeaWaves.value8.70%, VesselShoreLight.draw6.51%,
+  WaterSurface.draw5.78%. These overlap; never sum inclusive percentages.
+  Important fixture limitation: one connected cruiser nearly stationary (speed
+  .64–1.50), NOT a moving two-boat tow. This identifies baseline hot paths, not
+  the cause of the user's multi-tow slowdown. Tracing timings are not benchmarks.
+- Temporary JVM component probe out/TowCostProbe.java (output tow-cost-probe.log):
+  real throttle/tow solver,180 ticks in marina at survey1100,550;1 vs2 connected
+  cruisers produced47 vs69 active wake packets and53.7 vs46.1 tug speed. Warm
+  MooredFleet.step costs .64–.68ms vs .70–.73ms, compared with .50–.52ms after
+  clearing wake ages. Active-body wave forces .015–.018ms vs .037–.048ms.
+  Component probes mutate their local fixture, not end-to-end equivalent runs;
+  JVM figures do NOT establish Android speed or explain severe frame drops.
+- Found repeated work: fleet runs in both motion substeps; each boat separately
+  samples water X/Y flow and height, then evaluates ambient components again to
+  separate/amplify wake motion. WaterSurface.value scans all192 packet slots per
+  component, with shoreline visibility samples for contributing wakes. Candidate:
+  share multi-component samples and spatial wake candidates while preserving
+  sample coordinates, update cadence, integration order and visual motion.
+- REJECTED foam A/B: captures025833(exclusion32)/025858(normal) completed matching
+  ticks121–300, but profileSkipFoam is implemented only by CanvasPainter, NOT
+  VulkanPainter.waterFoam. The active Vulkan1 path bypasses the switch. Similar
+  draw p95 6.199/6.242ms proves nothing about foam cost. Fix the backend diagnostic
+  and add an actively moving1/2-tow native fixture before drawing conclusions.
+- No runtime change or asset reduction. Current APK remains installed; reviewed
+  native capture and restored normal launch/display timeout. No iOS measurement.
+
+### 2026-11-23 — paired water sampling and wake reach rejection
+- Shared Java now evaluates X/Y ambient phase/slope once and shares each wake's
+  fan/shore visibility calculation between flow components. Moored receivers reuse
+  the returned ambient X/Y when amplifying wakes. Height stays sampled AFTER
+  position integration, as before; both motion substeps remain unchanged.
+- Added a conservative aggregate live-wake bound, maintained in the existing age
+  loop and extended immediately on emission. Samples beyond all packets skip the
+  pool; nearby samples preserve original packet order and scalar float arithmetic.
+  Two world units of padding protect boundary rounding. No spatial quantization,
+  reduced update rate, shorter wakes or effect-density changes.
+- Added a retained scalar oracle (`water.referenceSampling`) and bit-exact checks
+  for both flow components, ambient values, shoreline-blocked wakes, heading and
+  intensity changes, aged/replaced packets, plus a moving two-tow fleet replay.
+  Reference mode is only enabled by explicit developer extras; production is paired.
+- Fixed foam exclusion transport: Vulkan waterFoam now honors the same debug-only
+  Canvas resource flag. Default drawing is unchanged. Added montrose-tow-one/two
+  fixtures with actual held throttle and normal tow solver; the second cruiser
+  stays anchored in the one-tow fixture. Native validation and timings follow.
+- Full shared/asset/native encoder checks passed;349101 new exact assertions,
+  unchanged replay e43d47db:2:1350. Android built and installed with existing key.
+- Valid reverse-order device pair, same1320.3539x600 view/ticks121–300/two tows:
+  optimized031213 advance median2.137ms/p953.195, draw20.531/23.256,
+  interval23.873/28.037; scalar031234 advance8.571/12.053,
+  draw22.876/24.735, interval33.436/37.806. About75% lower simulation median.
+  All recorded state rows match. Final native screenshots are identical across
+  2,602,800 pixels. First reference031053 had a different startup safe-area width
+  (1243.3334); reject its frame/drawing/pixel comparison to031113, despite matching
+  physics. No locked60fps claim: rendering remains over budget.
+- Fixed foam-off run031311: draw median20.684/p9523.149ms vs optimized20.531/23.256;
+  little effect from omitting submission. Same shared preparation remains active.
+- Complete ART trace031332, no overflow: lift drawRange27.97% inclusive sampled
+  CPU, clip push28.16%, wake drawCrests11.05%. Lift installs a large shore mask
+  for EVERY depth slice even when neither sling nor cord contributes. Extra tow
+  foam particles increase slice visits and amplify this unrelated clipping cost.
+  Next fix: reject empty lift intervals BEFORE pushing the mask; preserve exact
+  rope/shore overlap and continuous poses.
+- Lift follow-up: exposed cached Pose.overlapsDepth for pre-clip rejection. Empty
+  whole-lift intervals now return before render setup; intervals with only chassis
+  or header geometry never install the suspension shore mask. Hoist cord anchors
+  are tested inside live sling depth bounds at every one of240 travel ticks.
+  No rigid transforms, silhouette, depth order or nonempty mask geometry changed.
+- Targeted lift tests passed1970 checks. Desktop lowered/raised lift frames each
+  match the pre-change renderer at all999750 pixels. Removing empty clip commands
+  intentionally changes the drawing trace signature to270142dc:2:1350; canonical
+  delivery/score and simulation remain unchanged. Updated the reviewed baseline.
+- Lift-depth Android capture032425 completed180/180 frames: simulation median
+  2.169ms/p953.157; draw12.112/14.800; interval16.773/19.145. Compared with the
+  matched paired-water scene031213 (draw20.531/23.256, interval23.873/28.037),
+  eliminating empty lift masks removes about8ms median drawing cost. Full checks
+  and Android build passed. Not a guaranteed60fps tail; p95 remains19.145ms.
+- User screenshot032111 shows a separate visual bug: all-shore sling mask also
+  clipped vertical hoist cables against the BACK quay. Cables now use four
+  anchor-specific depth masks prepared once in BridgeLayers; sling mask remains
+  unchanged. Per-cord ordering and near-quay hiding are preserved. Added high-line
+  visibility/low-line occlusion checks; reviewed lowered/raised actual renderer.
+  Canonical trace remains270142dc:2:1350 (its rescue views do not expose the lift).
+- Device water-contact review033058 exposed far attachment blocks still hidden by
+  the broad sling mask. Split the front/rear U-shaped slings into two continuous
+  rigid assemblies; each reuses its far-cable depth mask. No additional mask
+  generation, pose quantization or per-slice rebuilding. The original full pose
+  remains the shared attachment oracle; all split anchors tested at every tick.
+  Reviewed the contact-phase preview: blocks now remain connected to the cables,
+  while the near apron still covers the low webbing. No score/physics change.
+- Before this final sling correction, final two-tow capture033112 retained the
+  gain: median interval16.833ms/p9519.140, draw12.899/15.152, advance2.127/3.112.
+- Final sling build passed all checks,5169 lift assertions and unchanged canonical
+  270142dc:2:1350; installed with existing key. Initial033847 device capture was
+  obscured by Android notification shade; reject it as visual evidence.033902
+  viewport changed to1407.5471x600; do not use it for matched timing claims.
+- Clean final native review033959 (30/30 frozen frames) confirms connected far
+  cable/block/slings in front of the back quay, with near-quay low-webbing hiding.
+  Final native/device visual accepted; normal game relaunched. Earlier matched
+  performance improvement remains the valid timing evidence; iOS unmeasured.
+
+## 2026-11-23 — shared push feedback and Montrose rescue radio
+- Removed active-push direction arrows, tug approach dots/target and drag rings.
+  Shared short clearance probes (nine maximum, ten world units each) supply one
+  obstruction stop mark. No extra raster layers or render-time geometry scans.
+- Rescue chatter is one bounded instruction panel; eight static linesets,
+  two delivery bits, and one assignment flag. No actors, wakes or new world
+  lighting. Slip cues stay hidden until physical raft release.
+- Added Alex's six frame-sized 192px portrait cells to Montrose-only preparation.
+  Shoulder anchors validated; no full-sheet runtime texture. Chas/Alex receive
+  source-specific radio animations and separate delivery thanks.
+- Fixed non-tutorial panel's null tutorial-content fallback during first draw.
+- Validation in progress; no new device frame-time improvement claimed here.
+- Checked: complete Android build/check suite passed, including source-specific
+  crew dialogue, moving-tow exchanges, simultaneous delivery queue, clearance
+  warnings, frame registration and all-heading shore pixels/native encoder.
+  Reviewed actual renderer Alex arrival, Chas assignments and clear/blocked push
+  frames. Canonical drawing trace e79b5ea1:2:1350 reflects removed push cues,
+  hidden early slip targets and corrected crew identity; replay score unchanged.
+  Android build installed in this round; iOS/device parity not run.
+
+## 2026-11-23 — continuous travel-lift yard cycle (shared/Android)
+- Carrier continues after the haulout mission hands off to the raft rescue. Six
+  seconds eased drive inland, five seconds yard handling, six seconds empty return;
+  delivered hull remains parked on land, and rig ends at the well with raised straps.
+- Added prepared rigid translation: reuse polygon/vertex storage, preserve BSP
+  ordering under pure translation, update bounds, normals/plane offsets and node
+  anchors together. Stable-topology assertion prevents misuse for changing meshes.
+  No quantized poses or per-tick BSP rebuilds. All lift components and exhaust share
+  offset; depth slice rejection and per-cable shore masks move with the rig.
+- Carried/parked hulls no longer collide with water-level docks/vessels. Only hulls
+  raised at least to land height bypass ground-waterline cutouts; ordinary boats
+  retain foreground shore occlusion. Lifted hulls retain scene lights and depth.
+- New shared cycle regression tests every travel tick, immutable topology/storage,
+  attachment alignment, retained yard hull, exact return, next-job continuation,
+  pause behavior and once-only reward. Native `montrose-lift-carry` profile hook.
+- Validation in progress; native timing and final pixel review pending.
+
+## 2026-11-23 — rescue equipment and directional spotlight (shared/Android)
+- Added shore crew casts/hauling, bounded rescue ring pool (32), swimmer approach,
+  flotation, boarding and delayed casualty animation. Rigid topology is prepared
+  at mission setup, never rebuilt for rotations. Rescue preparation includes the
+  accepted barge hull/effects: 832 rotation frames.
+- Visual inspection found Rigid.draw clipped airborne rings at local water Z and
+  expected receiver-local lighting. Added explicit drawSolid with complete solid
+  geometry and world-space face lighting. Existing hull behavior is unchanged.
+- Spotlight uses normal/surface/shore lighting and a bounded water mesh. Painted
+  receivers use offline registered frame packs capped at 256px, about 2.6 MiB
+  compressed for the catalog. Upcoming-level manifests include used receivers.
+  No per-aim raster preparation, full-screen mask or terrain cache invalidation.
+- Painted scenery samples the cone at its anchor, without full-scene spotlight
+  shadows. Geometry uses surface normals. This is a documented quality boundary.
+- Shared checks, Android installation and native timing results follow below.
+  No iOS timing or device parity claim.
+- Validation: full build-android.sh checks passed, including shared core replay
+  d664ebb2:2:1350, assets, directional derivatives and Vulkan encoding. Separate
+  haulout regression passed 1,707,371 production hull/cargo shoreline assertions
+  over all legacy and 64-equipment headings. Reviewed shared-renderer spotlight
+  on/off, airborne rings, boarding, hurt state, shore crew casts and lift travel.
+- Android APK installed successfully and profile activity launched. Capture
+  out/profiles/20261123-044539-montrose-swimmers-live was interrupted by phone
+  locking (175/360 sample frames); reject it for performance conclusions. Retry
+  encountered showing=true, inputRestricted=true keyguard and was stopped. No
+  keyguard settings changed. An unlocked complete device capture remains needed;
+  the short incomplete sample does not establish a sustained frame-rate claim.
+
+## 2026-11-23 — Montrose startup freeze after rescue manifest expansion
+- Device reproduction logged "Rotation set exceeds frame cache budget" after the
+  rescue hull expanded Montrose preparation. All scenery preparation IDs were
+  treated as permanently pinned, consuming the entire 160 MiB cropped cache.
+- Android MainActivity reset its previous-frame clock whenever readiness was
+  false, even after the worker exited with a failure. Thus a recoverable loading
+  error permanently prevented Game.advance from receiving elapsed time.
+- Wait/reset the clock only while preparation is actually running. Failed
+  preparation now proceeds through existing demand loading instead of freezing.
+  Reserve pins for shared SpriteAtlas.rotationAtlas families; scenery is still
+  prefetched but participates in bounded LRU eviction. Keep the 160 MiB budget.
+- Validation follows below; initial profile capture was interrupted when another
+  phone application became foreground, so it is not timing evidence.
+- Validation: build-android.sh passed shared gameplay/replay, source assets,
+  material/pixel checks and Vulkan encoding; APK installed. Native normal-budget
+  arrival completed all 450 capture frames, prepared 3,604 frames with readiness
+  true, and moved the tug from Y=950 to Y=560/Gavin welcome. With deliberately
+  insufficient 8 MiB storage, preparation correctly failed (readiness false), but
+  all 450 capture frames still completed and tug reached Y=560/Gavin welcome.
+  This explicitly verifies failure cannot keep resetting the simulation clock.
+  Evidence: out/montrose-fixed-arrival.csv and montrose-fallback-arrival.csv.
+- Added complete Montrose preparation/rotation-retention assertions to optional
+  AndroidRotationReview and enabled the arrival fixture in profile-android.sh.
+  Shared gameplay and iOS rendering rules are unchanged.
+
+## 2026-11-23 — visible downward searchlight in training and geographic levels
+- Screenshot 071928 showed an active searchlight control and lit objects but no
+  cone. Training, Calumet and Indiana call WaveView.surface directly; the cone
+  was only called by WaveView.draw. Moved it into the common surface pass before
+  the water-detail early return, fixing all locations and low-detail water.
+- Reduced fixed world reach to 320 (roughly half the supplied landscape view at
+  close zoom). Added a faint volume descending from the registered mast to the
+  water footprint. Five boundary rays find shore contact independently instead
+  of erasing a whole wedge when one coarse endpoint crosses land.
+- Cost is bounded at 160 shared shaded triangles when enabled, five short shore
+  marches, no raster caches or new native primitives. Land, boats and UI retain
+  their normal later drawing order. Shared regression verifies training/low-detail
+  visibility, exact lamp origin, finite geometry and approximate screen reach.
+- Actual renderer review and final device/build results follow below.
+- Validation: full Android build/checks passed with replay ea542145:2:1350.
+  Actual shared-renderer normal/low-detail training images reviewed; Android APK
+  installed and native cone/pool pixels reviewed in training-spotlight fixture.
+  Complete 120-sample freeze capture: draw p50 6.916 ms/p95 8.980 ms; frame interval
+  p50 16.657 ms/p95 23.424 ms, no frame/layer builds, evictions or cold decoding.
+  This is a short frozen-scene renderer check, not sustained live-play evidence.
+  Capture: out/profiles/20261123-073032-training-spotlight-freeze. iOS untested.

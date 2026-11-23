@@ -82,7 +82,7 @@ public final class OverviewMap {
         local.pushClipOutside(OUTSIDE);
         try {
         local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
-        for(int i=0;i<3;i++)if(g.berthEnabled(i) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
+        for(int i=0;i<3;i++)if(g.berthEnabled(i) && (!MontroseRescue.cruisers(g) || g.rescue.slipsRevealed()) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.x,b.y),y=mapY(g,b.x,b.y);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }
@@ -92,7 +92,7 @@ public final class OverviewMap {
         if(g.tutorial!=null && (g.tutorial.lesson==Tutorial.SLIP || g.tutorial.lesson==Tutorial.MAP))target(g,local,g.tutorial.navigation.targetX(g),g.tutorial.navigation.targetY(g),TARGET);
         if(g.calumetStage() && g.voyage.job==2)target(g,local,g.voyage.gateX(),g.voyage.gateY(),TARGET);
         if(g.lockStage())target(g,local,300,g.lock.phase==Lock.READY?Lock.ENTRY_Y+85:g.lock.phase==Lock.EXIT?Lock.EXIT_Y-120:(Lock.ENTRY_Y+Lock.EXIT_Y)*.5f,TARGET);
-        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]==0)local.circle(mapX(g,g.rescue.x[i],g.rescue.y[i]),mapY(g,g.rescue.x[i],g.rescue.y[i]),1.7f,TARGET);
+        if(MontroseRescue.swimmers(g))for(int i=0;i<MontroseRescue.PEOPLE;i++)if(g.rescue.state[i]<4 && g.rescue.found[i])local.circle(mapX(g,g.rescue.x[i],g.rescue.y[i]),mapY(g,g.rescue.x[i],g.rescue.y[i]),1.7f,TARGET);
         if(g.tutorial!=null)for(int i=0;i<g.passages.bridges.length;i++){
             LandmarkBridge b=g.passages.bridges[i];int ink=g.passages.passable(i)?0x9995d7d1:0xbbffc170;
             local.line(mapX(g,b.x-b.dx*b.left,b.y-b.dy*b.left),mapY(g,b.x-b.dx*b.left,b.y-b.dy*b.left),

@@ -47,6 +47,8 @@ public final class SurfaceLighting {
         for(Body b:g.cargo)if(b!=null && b.active)vessel(g,weights,x,y,b,receiver);
         if(g.lockStage())for(int side=0;side<2;side++)for(int gate=0;gate<2;gate++)
             add(weights,x,y,side==0?Physics.LEFT:Physics.RIGHT,LockView.gateY(gate),32,125,.65f);
+        if(receiver!=g.tug)add(weights,x,y,g.tug.x,g.tug.y,TugSpotlight.HEIGHT,TugSpotlight.RANGE,
+                TugSpotlight.POWER*g.spotlight.cone(g,x,y));
         // Bound overlapping lamps together; never flash white where pools overlap.
         float total=0;for(float w:weights)total+=w;
         if(total>1)for(int i=0;i<4;i++)weights[i]/=total;

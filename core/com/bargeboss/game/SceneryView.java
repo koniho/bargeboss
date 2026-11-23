@@ -59,6 +59,7 @@ public final class SceneryView {
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
         float alpha=SceneryOcclusion.buildingOpacity(g,p,SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,worldX,worldY,0,StaticHarborArt.WORLD_SIZE);
         p.sprite(SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,x,y,size,size,0,alpha);
+        SpotlightArt.draw(g,p,SpriteAtlas.STATIC_HARBOR,StaticHarborArt.WAREHOUSE,worldX,worldY,x,y,size,size,alpha);
         StaticHarborArt.lights(p,x,y,size,alpha,g.visualTicks);
     }
     public static void bridge(Game g,Painter p) {

@@ -18,6 +18,8 @@ public final class VesselShoreLight {
         try {draw(g,p,true);} finally {p.popClip();}
     }
     private static void draw(Game g,Painter p,boolean walls){
+        if(g.spotlight.on)lamp(g,p,g.tug.x,g.tug.y,TugSpotlight.HEIGHT,TugSpotlight.RANGE,
+                TugSpotlight.COLOR,.65f,g.spotlight.angle(g),TugSpotlight.FIXTURE,walls);
         vessel(g,p,g.tug,walls);
         if(g.teacherBoat()!=null)vessel(g,p,g.teacherBoat(),walls);
         for(Body b:g.cargo)if(b!=null && b.active)vessel(g,p,b,walls);
@@ -35,6 +37,7 @@ public final class VesselShoreLight {
     }
     /** Illumination uses direction to the receiver, never lamp visibility from the camera. */
     static float sector(float angle,int fixture,float dx,float dy){
+        if(fixture==TugSpotlight.FIXTURE)return TugSpotlight.sector(angle,dx,dy);
         if(fixture<0 || fixture==VesselNavigationLights.ANCHOR)return 1;
         float bearing=Physics.angle((float)StrictMath.atan2(dy,dx)-angle),edge;
         if(fixture==VesselNavigationLights.PORT)edge=Math.min(bearing+(float)Math.PI*.625f,-bearing);

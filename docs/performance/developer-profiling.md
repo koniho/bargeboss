@@ -383,3 +383,24 @@ and match tick, tug position and zoom columns before comparing timings.
 `montrose-dispatch` captures the opening Dockmaster call and waiting reply.
 `montrose-haulout` frames the N–M well and travel lift; use replay mode to
 exercise the shared public-input tow and crew handoff. Both use production art.
+
+### Moving Montrose tow comparison
+
+`montrose-tow-one` and `montrose-tow-two` start in the marina fairway and drive
+west using the public throttle and normal tow solver. Use `replay`,120 warmup
+frames and180 measured frames; these fixtures are validated through tick300.
+Both include the same two cruisers; one remains anchored in the one-tow case.
+Use `BARGEBOSS_PROFILE_ZOOM=2.4` to hold the same view during each run. Check zoom,
+position, tow count and tick columns before comparing runs.
+
+`BARGEBOSS_PROFILE_REFERENCE_WATER=true` passes `bb_reference_water` to select the
+retained scalar sampling oracle. Default false uses paired wave/wake sampling and
+conservative wake bounds. Compare the SAME tow fixture in both modes, then
+repeat in reverse order. Reference mode does not reduce any effects or alter the
+intended simulation. Both modes maintain wake bounds, so comparison isolates
+sampling rather than the small bounds-maintenance overhead.
+
+`BARGEBOSS_PROFILE_EXCLUDE=32` now suppresses waterFoam submission on Vulkan as
+well as Canvas. It still retains shared effect preparation/clipping. Earlier
+Vulkan measurements with this bit did not omit foam and are invalid A/B evidence.
+The flag removes ambient foam as well as wake foam; it is not a wake-only timing.

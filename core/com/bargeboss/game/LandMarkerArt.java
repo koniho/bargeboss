@@ -29,6 +29,7 @@ public final class LandMarkerArt {
         if(g.montroseStage()){MontroseBeaconArt.draw(g,p,color==NavigationLights.RED?MontroseBeaconArt.EAST:MontroseBeaconArt.WEST);return;}
         float x=screenX(g,wx,wy),y=screenY(g,wx,wy),size=SIZE*g.layout.camera.scale;
         p.sprite(SpriteAtlas.LAND_MARKER,frame,x,y,size,size,0,1);
+        SpotlightArt.draw(g,p,SpriteAtlas.LAND_MARKER,frame,wx,wy,x,y,size,size,1);
         float lx=x+(LAMP_X-PIVOT_X)*size,ly=y+(LAMP_Y-PIVOT_Y)*size;
         SceneryEffects.glow(p,lx,ly,size*.15f,color,power,g.visualTicks,wx*.013f);
         if(power>0){p.circle(lx,ly,size*.032f,SoftCue.alpha(color,.75f*power));p.circle(lx,ly,size*.012f,SoftCue.alpha(0xfffff5dc,power));}

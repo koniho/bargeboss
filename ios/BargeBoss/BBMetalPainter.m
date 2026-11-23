@@ -452,6 +452,10 @@ static vector_float4 BBColor(jint argb) {
     [self triangle:(vector_float2){xx+nx,yy+ny} b:(vector_float2){xx-nx,yy-ny} c:(vector_float2){x-nx,y-ny} color:color mode:0];
     [self circleWithFloat:x withFloat:y withFloat:width/2 withInt:c];[self circleWithFloat:xx withFloat:yy withFloat:width/2 withInt:c];
 }
+- (void)shadedTriangleWithFloat:(jfloat)ax withFloat:(jfloat)ay withInt:(jint)ac withFloat:(jfloat)bx withFloat:(jfloat)by withInt:(jint)bc withFloat:(jfloat)cx withFloat:(jfloat)cy withInt:(jint)cc {
+    BBVertex vertices[]={{{ax,ay},{0,0},BBColor(ac)},{{bx,by},{0,0},BBColor(bc)},{{cx,cy},{0,0},BBColor(cc)}};
+    [self append:vertices count:3 texture:self.white mode:0];
+}
 - (void)convexQuadWithFloat:(jfloat)ax withFloat:(jfloat)ay withFloat:(jfloat)bx withFloat:(jfloat)by withFloat:(jfloat)cx withFloat:(jfloat)cy withFloat:(jfloat)dx withFloat:(jfloat)dy withInt:(jint)argb {
     vector_float4 color=BBColor(argb);if(color.w<=0)return;
     vector_float2 a={ax,ay},b={bx,by},c={cx,cy},d={dx,dy};

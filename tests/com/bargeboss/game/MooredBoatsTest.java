@@ -16,8 +16,8 @@ public final class MooredBoatsTest {
         for(MooredBoats.Berth b:MooredBoats.BERTHS){kinds[b.kind]=true;check(b.y-b.x>=previous,"depth order");previous=b.y-b.x;
             check(b.frame>=0 && b.frame<SpriteAtlas.count(SpriteAtlas.MOORED_BOATS),"atlas range");
             for(int i=0;i<8;i+=2)check(MontroseHarbor.contains(b.hull[i],b.hull[i+1]),"dry hull corner");
-            check(!MontroseHarbor.contains(b.ax,b.ay),"stern line must attach to dock");
-            check(!MontroseHarbor.contains(b.bx,b.by),"bow line must attach to dock");
+            check(b.mooring>=0 || !MontroseHarbor.contains(b.ax,b.ay),"stern line must attach to dock");
+            check(b.mooring>=0 || !MontroseHarbor.contains(b.bx,b.by),"bow line must attach to dock");
             check(Physics.length(b.x-MontroseHarbor.SLIP_X,b.y-MontroseHarbor.SLIP_Y)>50,"mission bay reserved");
         }
         for(boolean present:kinds)check(present,"each boat design placed");
@@ -35,8 +35,8 @@ public final class MooredBoatsTest {
         float moved=0,turned=0;
         for(int tick=0;tick<600;tick++){g.visualTicks=replay.visualTicks=tick;g.mooredFleet.step(g);replay.mooredFleet.step(replay);
             for(int i=0;i<g.mooredFleet.boats.length;i++){MooredFleet.FloatBoat b=g.mooredFleet.boats[i],same=replay.mooredFleet.boats[i];
-                check(Physics.length(b.x-b.berth.x,b.y-b.berth.y)<=MooredFleet.REACH+.001f,"finite mooring reach");
-                check(Math.abs(b.yaw)<=MooredFleet.YAW+.001f && b.clear(),"yaw bounded and hull on water");
+                check(b.swinging()?b.bowDistance()<=20.001f:Physics.length(b.x-b.berth.x,b.y-b.berth.y)<=MooredFleet.REACH+.001f,"finite mooring reach");
+                check((b.swinging() || Math.abs(b.yaw)<=MooredFleet.YAW+.001f) && b.clear(),"yaw bounded and hull on water");
                 check(b.x==same.x && b.y==same.y && b.yaw==same.yaw,"deterministic tether simulation");
                 moved=Math.max(moved,Physics.length(b.x-b.berth.x,b.y-b.berth.y));turned=Math.max(turned,Math.abs(b.yaw));
             }

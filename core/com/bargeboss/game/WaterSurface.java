@@ -8,6 +8,24 @@ public final class WaterSurface {
     private final Body[] source=new Body[CAPACITY];
     public final VesselFoam foam=new VesselFoam();
     private int cursor;
+    /** Diagnostic/reference path; default uses bit-equivalent paired sampling. */
+    public boolean referenceSampling;
+    private final float[] flowScratch=new float[4];
+    private boolean wakeBoundsReady;
+    private float wakeLeft,wakeTop,wakeRight,wakeBottom;
+    /** Conservative aggregate bound, updated in the existing age loop and on emission.
+     * It only rejects impossible samples; near samples retain the exact packet order. */
+    private void includeWake(int i){
+        float reach=wakeRadius(age[i])+WAKE_WIDTH+2;
+        wakeLeft=Math.min(wakeLeft,x[i]-reach);wakeRight=Math.max(wakeRight,x[i]+reach);
+        wakeTop=Math.min(wakeTop,y[i]-reach);wakeBottom=Math.max(wakeBottom,y[i]+reach);
+    }
+    private boolean outsideWakes(float x,float y){return wakeBoundsReady && (x<wakeLeft || x>wakeRight || y<wakeTop || y>wakeBottom);}
+    void rebuildWakeBounds(){
+        wakeLeft=wakeTop=Float.POSITIVE_INFINITY;wakeRight=wakeBottom=Float.NEGATIVE_INFINITY;
+        for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE)includeWake(i);
+        wakeBoundsReady=true;
+    }
     private final WaterClip surfaceClip=new WaterClip();
     final WaterClip ambientClip=new WaterClip();
     public int emitted,pulses;
@@ -41,6 +59,7 @@ public final class WaterSurface {
     /** Height in sprite-rise units; orbital flow in world units/second. */
     public float value(Game g,float wx,float wy,float tick,Body ignore,int component){
         float sea=SeaWaves.value(g,wx,wy,tick,component),total=g.montroseStage()?0:sea;
+        if(!referenceSampling && outsideWakes(wx,wy))return g.montroseStage()?sea:Physics.clamp(total,component==0?-6:-12,component==0?6:12);
         for(int i=0;i<CAPACITY;i++){
             float h=wake(g,i,wx,wy,ignore)*1.2f;if(h==0)continue;
             if(component==0)total+=h;
@@ -51,9 +70,28 @@ public final class WaterSurface {
                 :Physics.clamp(total,component==0?-6:-12,component==0?6:12);
     }
     public float height(Game g,float wx,float wy,float tick,Body ignore){return value(g,wx,wy,tick,ignore,0);}
+    /** Total X/Y flow followed by ambient X/Y; caller owns reusable four-float storage. */
+    void flow(Game g,float wx,float wy,float tick,Body ignore,float[] out){
+        if(referenceSampling){
+            out[0]=value(g,wx,wy,tick,ignore,1);out[1]=value(g,wx,wy,tick,ignore,2);
+            out[2]=SeaWaves.value(g,wx,wy,tick,1);out[3]=SeaWaves.value(g,wx,wy,tick,2);return;
+        }
+        SeaWaves.flow(g,wx,wy,tick,out);
+        float seaX=out[0],seaY=out[1];boolean marina=g.montroseStage();
+        float sx=marina?0:seaX,sy=marina?0:seaY;
+        if(!outsideWakes(wx,wy))for(int i=0;i<CAPACITY;i++){
+            float h=wake(g,i,wx,wy,ignore)*1.2f;if(h==0)continue;
+            float dx=wx-x[i],dy=wy-y[i],d=Physics.length(dx,dy);
+            sx+=h*(WAKE_SPEED/Physics.DT)*(float)StrictMath.PI/WAKE_WIDTH*dx/d;
+            sy+=h*(WAKE_SPEED/Physics.DT)*(float)StrictMath.PI/WAKE_WIDTH*dy/d;
+        }
+        out[0]=marina?seaX+Physics.clamp(sx,-8,8):Physics.clamp(sx,-12,12);
+        out[1]=marina?seaY+Physics.clamp(sy,-8,8):Physics.clamp(sy,-12,12);
+        out[2]=seaX;out[3]=seaY;
+    }
     public void buoyForce(Game g,float wx,float wy,float[] out){
-        out[0]=value(g,wx,wy,g.visualTicks,null,1)*1.4f;
-        out[1]=value(g,wx,wy,g.visualTicks,null,2)*1.4f;
+        flow(g,wx,wy,g.visualTicks,null,flowScratch);
+        out[0]=flowScratch[0]*1.4f;out[1]=flowScratch[1]*1.4f;
     }
     /** Four hull samples share the wave phase. No direct position/heading edits. */
     public void affect(Game g,Body b){
@@ -63,7 +101,8 @@ public final class WaterSurface {
         for(int i=0;i<4;i++){
             float along=i<2?(i==0?b.half:-b.half):0,across=i<2?0:(i==2?b.radius:-b.radius);
             float rx=c*along-s*across,ry=s*along+c*across;
-            float ux=value(g,b.x+rx,b.y+ry,g.visualTicks,b,1),uy=value(g,b.x+rx,b.y+ry,g.visualTicks,b,2);
+            flow(g,b.x+rx,b.y+ry,g.visualTicks,b,flowScratch);
+            float ux=flowScratch[0],uy=flowScratch[1];
             // Existing hull drag still handles still-water resistance. Add only its wave contribution.
             float forward=ux*c+uy*s,side=-ux*s+uy*c;
             float fx=.22f*forward*c-1.2f*side*s,fy=.22f*forward*s+1.2f*side*c;
@@ -76,7 +115,9 @@ public final class WaterSurface {
     public void step(Game g) { advanceWakes();floatBoats(g); }
     public void advanceWakes(){
         foam.step();
-        for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) age[i]++;
+        wakeLeft=wakeTop=Float.POSITIVE_INFINITY;wakeRight=wakeBottom=Float.NEGATIVE_INFINITY;
+        for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE){age[i]++;if(age[i]<LIFE)includeWake(i);}
+        wakeBoundsReady=true;
     }
     public void floatBoats(Game g){
         floatBoat(g,g.tug);
@@ -130,6 +171,7 @@ public final class WaterSurface {
         float stern=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(angle-b.angle));
         x[i]=b.x-(float)StrictMath.cos(angle)*stern;y[i]=b.y-(float)StrictMath.sin(angle)*stern;
         strength[i]=intensity*Math.min(1,b.speed()/50)*(b.berth>=0?1.15f:.9f);emitted++;
+        if(wakeBoundsReady)includeWake(i);
     }
     public static float lift(Game g,Body b) {
         if(b.floatingInitialized) return b.heave;

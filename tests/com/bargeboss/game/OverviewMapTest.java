@@ -42,8 +42,10 @@ final class OverviewMapTest {
         int reverse=arrows(g,new Ink());g.control=Game.IDLE;g.reversing=false;check(reverse==arrows(g,new Ink()),"reverse adds no velocity heading arrow");
         g=new Game();ReplayInput.controlFixture(g);Body b=g.cargo[0];b.x=300;b.y=600;g.down(b.x,b.y);for(int i=0;i<12;i++)g.step();
         check(ControlView.assistPush(g),"fixture engages push assist");g.pushX=1;g.pushY=0;g.control=Game.PUSHING;
-        Ink assist=new Ink();check(arrows(g,assist)==1 && assist.lines==9,"only one feathered command arrow during assist");
-        check(Math.abs(assist.x-(b.x+46))<.001f && Math.abs(assist.xx-(b.x+108))<.001f && assist.y==assist.yy,"arrow follows commanded vector without world-bound clipping");
+        g.pushBlocked=false;Ink assist=new Ink();check(arrows(g,assist)==0 && assist.lines==0,"clear assist adds no command arrow or approach path");
+        g.manualSteering=true;Ink manual=new Ink();check(arrows(g,manual)==0 && manual.lines==0,"manual push also has no drag ring or command arrow");
+        g.pushBlocked=true;Ink blocked=new Ink();ControlView.draw(g,blocked);check(blocked.lines>0,"blocked push shows a stop mark");
+        g.pushBlocked=false;g.manualSteering=false;
         Ink other=new Ink();ControlView.arrow(g,other,0,0,30,30,ControlView.BLUE);check(other.lines==0,"other guidance arrows suppressed during assist");
         g=new Game();ReplayInput.controlFixture(g);int tick=g.ticks;float tx=g.tug.x,ty=g.tug.y;
         OverviewMap.draw(g,new Ink());check(g.ticks==tick && g.tug.x==tx && g.tug.y==ty,"map rendering leaves gameplay unchanged");
@@ -55,7 +57,7 @@ final class OverviewMapTest {
     private static void zoomControls(){
         for(int stage=0;stage<4;stage++) {
             Game g=new Game();if(stage==0)ReplayInput.controlFixture(g);
-            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.dialogue.close(g);}
+            else {g.challengeId=stage==1?Challenges.MONTROSE:stage==2?Challenges.INDIANA:0;g.reset();g.montroseArrival.clear();g.dialogue.close(g);}
             OverviewMap.Chart c=OverviewMap.chart(g);
             Layout.Box slider=OverviewMap.sliderBounds(g);
             RiverCamera camera=g.layout.camera;
@@ -87,7 +89,7 @@ final class OverviewMapTest {
             check(!g.overview.active && !g.pointer,"background cancels slider capture");
             g.pause();g.pointerDown(10,slider.centerX(),slider.centerY());g.pointerCancel(10);
             check(!g.overview.active && !g.pointer,"touch cancel releases slider");
-            g.reset();g.dialogue.close(g);check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
+            g.reset();g.montroseArrival.clear();g.dialogue.close(g);check(Math.abs(g.overview.zoom()-1)<.001f,"new voyage resets map zoom");
         }
         Game root=new Game();root.startTutorial();Game practice=root.activeGame();practice.tutorial.setup(practice);
         for(int lesson=Tutorial.MOVE;lesson<Tutorial.MAP;lesson++){practice.tutorial.lesson=lesson;check(!OverviewMap.visible(practice),"map hidden before map lesson");Layout.Box hidden=OverviewMap.sliderBounds(practice);check(!OverviewMap.sliderHit(practice,hidden.centerX(),hidden.centerY()),"hidden slider cannot capture touch");}

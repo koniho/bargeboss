@@ -23,7 +23,7 @@ public final class SeaWaves {
     static float bendSlope(float v,int wave){return .12f*(float)StrictMath.cos(v*.012+wave*1.7)+.135f*(float)StrictMath.cos(v*.027+wave);}
     /** Paired orbital components share phase/cosine work; identical to value components 3 and 4. */
     static void montroseDisplacement(Game g,float x,float y,float tick,float[] result){
-        float e=exposure(x,y)*g.settings.waveIntensity(),sx=0,sy=0;
+        float e=exposure(x,y)*g.montroseWeather.waves(g),sx=0,sy=0;
         if(e!=0)for(int i=0;i<2;i++){
             float dx=directionX(g,i),dy=directionY(g,i),v=-dy*x+dx*y;
             float phase=K[i]*(dx*x+dy*y-bend(v,i))-OMEGA[i]*tick*Physics.DT;
@@ -37,7 +37,7 @@ public final class SeaWaves {
         final float intensity;
         final float[] dx=new float[2],dy=new float[2],time=new float[2];
         Surface(Game g,float tick){
-            intensity=g.settings.waveIntensity();
+            intensity=g.montroseWeather.waves(g);
             for(int i=0;i<2;i++){dx[i]=directionX(g,i);dy[i]=directionY(g,i);time[i]=OMEGA[i]*tick*Physics.DT;}
         }
         float height(float x,float y){
@@ -63,7 +63,7 @@ public final class SeaWaves {
     }
     static float value(Game g,float x,float y,float tick,int component){
         boolean montrose=g.montroseStage();
-        float exposure=montrose?exposure(x,y)*g.settings.waveIntensity():1;
+        float exposure=montrose?exposure(x,y)*g.montroseWeather.waves(g):1;
         if(exposure==0)return 0;
         float sum=0;
         for(int i=0;i<2;i++){
@@ -86,11 +86,30 @@ public final class SeaWaves {
         }
         return sum;
     }
+    /** Paired flow: preserve scalar component arithmetic while sharing phase and slope. */
+    static void flow(Game g,float x,float y,float tick,float[] out){
+        boolean montrose=g.montroseStage();
+        float exposure=montrose?exposure(x,y)*g.montroseWeather.waves(g):1;
+        float sx=0,sy=0;
+        if(exposure!=0)for(int i=0;i<2;i++){
+            float dx,dy,k,omega,amplitude;
+            if(montrose){dx=directionX(g,i);dy=directionY(g,i);k=K[i];omega=OMEGA[i];amplitude=AMPLITUDE[i]*exposure;}
+            else {float kx=i==0?.017f:-.013f,ky=i==0?.009f:.021f;
+                k=Physics.length(kx,ky);dx=-kx/k;dy=-ky/k;omega=(i==0?.048f:.031f)/Physics.DT;amplitude=i==0?.65f:.22f;}
+            float v=-dy*x+dx*y;
+            float phase=k*(dx*x+dy*y-(montrose?bend(v,i):0))-omega*tick*Physics.DT;
+            float h=amplitude*(float)StrictMath.sin(phase);
+            if(montrose){float slope=bendSlope(v,i),nx=dx+dy*slope,ny=dy-dx*slope,len=Physics.length(nx,ny);dx=nx/len;dy=ny/len;}
+            else h=-h;
+            sx+=h*omega*dx;sy+=h*omega*dy;
+        }
+        out[0]=sx;out[1]=sy;
+    }
     /** View-bounded crest strips use exactly the phase used by value(). Shared shore clip is active. */
     static void draw(Game g,Painter p){
         if(!g.montroseStage() || !(p instanceof RiverPainter))return;
         RiverCamera c=((RiverPainter)p).camera;
-        if(g.settings.waveIntensity()==0)return;
+        if(g.montroseWeather.waves(g)==0)return;
         for(int wave=0;wave<2;wave++){
             float dx=directionX(g,wave),dy=directionY(g,wave),lo=Float.MAX_VALUE,hi=-lo,left=lo,right=-lo;
             for(int corner=0;corner<4;corner++){
@@ -122,9 +141,9 @@ public final class SeaWaves {
                         float broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
                         if(broken<.03f)continue;
                         float curve=bend(v+segment,wave)-bend(v,wave);
-                        float width=4+3*g.settings.waveIntensity();
+                        float width=4+3*g.montroseWeather.waves(g);
                         WavePatch.foam(g,p,x,y,dx*curve-dy*segment,dy*curve+dx*segment,dx*width,dy*width,
-                                WaterFoam.phase(g.visualTicks,crest),5,e*broken*(wave==0?.14f:.06f)*Math.min(2,g.settings.waveIntensity())*weight);
+                                WaterFoam.phase(g.visualTicks,crest),5,e*broken*(wave==0?.14f:.06f)*Math.min(2,g.montroseWeather.waves(g))*weight);
                     }
                 }
             }

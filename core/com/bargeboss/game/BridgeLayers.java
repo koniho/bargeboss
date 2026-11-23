@@ -2,7 +2,7 @@ package com.bargeboss.game;
 /** One bounded frame-local cursor through bridge geometry and the shared depth stream. */
 final class BridgeLayers {
     private final Game game;private final Painter painter;private float previous=Float.NEGATIVE_INFINITY;
-    private final float[] liftShore;
+    private final MontroseTravelLift.Clips liftShore;
     private final int[] cranes;private final CargoTransfer.Pose[] cranePoses;
     BridgeLayers(Game g,Painter p){game=g;painter=p;cranes=DockView.visible(g);cranePoses=new CargoTransfer.Pose[cranes.length];
         liftShore=MontroseTravelLift.shore(g);

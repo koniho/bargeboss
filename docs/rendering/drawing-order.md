@@ -730,3 +730,48 @@ examples and success effects) before the instruction panel. The panel background
 text, wipe/shimmer and portrait form one screen-space overlay above these cues.
 Early exits from lesson guidance must not skip this final panel pass. Arrival and
 completion panels keep their existing lifecycle; do not draw the panel twice.
+
+### Vulkan union masks
+
+Vulkan's stencil uses increment/decrement counts and draws color only at zero.
+It can therefore consume overlapping mask triangles directly. The encoder now
+advertises union clips, avoiding per-vessel polygon subtraction on the CPU.
+Each push conservatively bounds overlap using sorted triangle-bound intervals
+on both screen axes, plus a reserved count for every remaining stack level.
+Large sparse masks therefore stay on the fast path. A mask exceeding that 8-bit budget is
+partitioned with shared `ClipUnion.disjoint` before submission; pops restore the
+captured geometry and coverage budget exactly. Never allow stencil saturation:
+that would break nested clip restoration. Reference/older hosts retain their
+existing capability and disjoint fallback.
+
+### Montrose travel lift (2026-11-23)
+
+The frame, moving slings, hoist anchors, exhaust and actual coast/apron footprint
+use a0.75 author-time scale about the well center and raised ground datum. Scale
+rigid geometry and travel together; never scale only the projected drawing.
+The two lowered slings use separate local solid-shore cutouts, including wall
+faces, with a foreground cutoff at each sling’s far attachment. A single cutoff
+at the lift center omitted foreground-wall portions under submerged straps; a
+full all-shore mask wrongly erased the far attachment blocks. Chassis and overhead
+members retain their normal exact-depth merge. Generate the local cutout once
+per frame in BridgeLayers, not once per depth slice.
+
+After tow, release, push and settled alignment, the lift automatically hoists for
+180 fixed ticks. The vessel rises with the exact sling phase after taking up
+slack; water reflections/ripples stop when airborne. The boat stays retained and
+secured in the lift. Award/next dispatch occur once, after the hoist completes.
+
+Reject empty machinery depth intervals before installing any caller-owned clip.
+The lift's vertical hoist cords lie inside the sling pose's XY/depth bounds, so
+its cached `Pose.overlapsDepth` can gate the whole clipped suspension pass.
+Chassis/overhead passes retain their independent ranges. Extra particle slices
+must not cause repeated shoreline mask construction/submission for an empty lift.
+
+Vertical hoist cables must NOT use one all-shore mask shared with the webbing. Prepare a separate
+mask for each of the four cables at its exact attachment's unraised ground depth.
+This excludes only shore in front of that cable: elevated cable pixels remain
+visible over the far quay, while the near quay still hides low cable segments.
+Each front/rear sling is a separate continuously transformed rigid assembly and
+uses its own far-cable mask, retaining the foreground quay over the low webbing.
+BridgeLayers prepares the four anchors/masks once per frame; depth slices only
+submit the relevant sling or cord.

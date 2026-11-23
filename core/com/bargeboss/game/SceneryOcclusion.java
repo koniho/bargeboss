@@ -226,6 +226,7 @@ public final class SceneryOcclusion implements Painter {
     }
     public void rect(float x,float y,float w,float h,int c){target.rect(x,y,w,h,c);}
     public void circle(float x,float y,float r,int c){target.circle(x,y,r,c);}
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){target.shadedTriangle(ax,ay,ac,bx,by,bc,cx,cy,cc);}
     public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){target.convexQuad(ax,ay,bx,by,cx,cy,dx,dy,color);}
     public void poly(float[] xy,int c){target.poly(xy,c);}
     public void polygons(float[][] xy,int count,int c){target.polygons(xy,count,c);}

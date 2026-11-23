@@ -18,6 +18,7 @@ public final class Parity implements Painter {
     public void popClip(){mark("clipRestore");add(9);}
     public void rect(float x,float y,float w,float h,int c) { mark("rect"); add(1); value(x); value(y); value(w); value(h); add(c); }
     public void circle(float x,float y,float r,int c) { mark("circle"); add(2); value(x); value(y); value(r); add(c); }
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){mark("shadedTriangle");add(10);value(ax);value(ay);add(ac);value(bx);value(by);add(bc);value(cx);value(cy);add(cc);}
     public void poly(float[] xy,int c) { mark("poly"); add(3); for(float f:xy) value(f); add(c); }
     public void line(float x,float y,float xx,float yy,float w,int c) { mark("line"); add(4); value(x); value(y); value(xx); value(yy); value(w); add(c); }
     public void sprite(int atlas,int frame,float cx,float cy,float width,float height,float rotation,float alpha) {
@@ -151,9 +152,20 @@ public final class Parity implements Painter {
         Game g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);Renderer.draw(g,p);
         float x=(g.cargo[0].x+g.cargo[1].x)*.5f,y=g.cargo[0].y;
         ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.add(g.rescue.rafted?1:0);Renderer.draw(g,p);
-        g=ReplayInput.montroseJob(Challenges.SWIMMER_RESCUE);
-        for(int i=0;i<4000 && g.mode==Game.PLAY;i++){ReplayInput.work(g);g.step();if(i%60==0){p.add(g.delivered);p.add(g.rescue.flying);p.value(g.tug.x);p.value(g.tug.y);p.value(g.layout.camera.zoom);Renderer.draw(g,p);}}
-        if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
+        // Isolate the new free-aim rescue lifecycle from navigation; trace real public
+        // fling input, fixed-step swimming, flotation and climbing for every survivor.
+        g=RescueBargeTest.scene();g.rescue.barge.towed=true;Body barge=g.rescue.barge.boat;
+        g.spotlight.aim(g,(float)StrictMath.atan2(barge.y-g.tug.y,barge.x-g.tug.x));
+        for(int person=0;person<MontroseRescue.PEOPLE;person++){
+            g.rescue.x[person]=barge.x;g.rescue.y[person]=barge.y-100;g.rescue.found[person]=true;
+            RescueBargeTest.fling(g,g.rescue.x[person]+12,g.rescue.y[person]);
+            for(int i=0;i<1600 && g.rescue.state[person]!=4;i++){
+                RescueBargeTest.ticks(g,1);
+                if(i%180==0){p.add(g.rescue.state[person]);p.value(g.rescue.x[person]);p.value(g.rescue.y[person]);Renderer.draw(g,p);}
+            }
+            if(g.rescue.state[person]!=4)throw new IllegalStateException("Swimmer did not board");
+        }
+        g.step();if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
         p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {

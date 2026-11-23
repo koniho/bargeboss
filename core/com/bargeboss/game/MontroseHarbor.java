@@ -12,7 +12,7 @@ public final class MontroseHarbor {
     public static final float SLIP_X=mapX(1015),SLIP_Y=mapY(422),SLIP_ANGLE=-1.726f;
     // Ordered survey-image landmarks, traced from the official 1824x1368 dock map.
     // Harbor trace retained; northern beach/breakwater is a representative Maps reference extension.
-    private static final float[] COAST_MAP={210,1600,225,1368,242,1210,257,1050,255,980,238,932,205,891,155,843,111,769,84,691,76,620,83,551,108,479,146,410,194,359,255,323,332,296,455,277,650,248,820,220,1000,188,1015,185,1015,275,1040,275,1040,205,1080,205,1080,275,1105,275,1105,168,1185,153,1350,130,1440,125,1515,137,1585,165,1645,203,1695,252,1725,308,1736,365,1726,424,1703,479,1664,543,1623,599,1563,663,1494,730,1423,794,1348,851,1264,907,1176,949,1090,970,1005,977,930,973,853,955,779,928,716,894,653,853,596,811,554,783,527,777,498,783,469,800,441,824,419,855,405,894,401,935,409,981,426,1023,452,1064,491,1100,546,1128,634,1151,763,1180,910,1208,1049,1230,1150,1234,1256,1210,1360,1166,1468,1101,1567,1023,1665,925,1747,824,1824,700,1935,530,2050,370,2180,160,2185,-80,2155,-330,2140,-580,2180,-860,2240,-1150,2290,-1370,2285,-1440,2240,-1490,2180,-1500,2125,-1470,2095,-1410,2115,-1350,2133,-1360,2118,-1410,2140,-1450,2183,-1472,2228,-1465,2260,-1428,2263,-1375,2210,-1160,2150,-870,2107,-610,2070,-570,1990,-552,1870,-560,1710,-595,1520,-660,1320,-750,1100,-860,860,-1000,620,-1160,370,-1350,100,-1590,-200,-1900};
+    private static final float[] COAST_MAP={210,1600,225,1368,242,1210,257,1050,255,980,238,932,205,891,155,843,111,769,84,691,76,620,83,551,108,479,146,410,194,359,255,323,332,296,455,277,650,248,820,220,1000,188,1026.25f,198.75f,1026.25f,266.25f,1045.0f,266.25f,1045.0f,213.75f,1075.0f,213.75f,1075.0f,266.25f,1093.75f,266.25f,1093.75f,186.0f,1185,153,1350,130,1440,125,1515,137,1585,165,1645,203,1695,252,1725,308,1736,365,1726,424,1703,479,1664,543,1623,599,1563,663,1494,730,1423,794,1348,851,1264,907,1176,949,1090,970,1005,977,930,973,853,955,779,928,716,894,653,853,596,811,554,783,527,777,498,783,469,800,441,824,419,855,405,894,401,935,409,981,426,1023,452,1064,491,1100,546,1128,634,1151,763,1180,910,1208,1049,1230,1150,1234,1256,1210,1360,1166,1468,1101,1567,1023,1665,925,1747,824,1824,700,1935,530,2050,370,2180,160,2185,-80,2155,-330,2140,-580,2180,-860,2240,-1150,2290,-1370,2285,-1440,2240,-1490,2180,-1500,2125,-1470,2095,-1410,2115,-1350,2133,-1360,2118,-1410,2140,-1450,2183,-1472,2228,-1465,2260,-1428,2263,-1375,2210,-1160,2150,-870,2107,-610,2070,-570,1990,-552,1870,-560,1710,-595,1520,-660,1320,-750,1100,-860,860,-1000,620,-1160,370,-1350,100,-1590,-200,-1900};
     public static final float[] COAST=world(COAST_MAP),WATER_POLYGON=water(),LAND_POLYGON=land();
     private static final RayIndex WATER_RAYS=new RayIndex(WATER_POLYGON);
     public static final float[][] WATER_TRIANGLES=PolygonWater.triangles(WATER_POLYGON),LAND_TRIANGLES=PolygonWater.triangles(LAND_POLYGON);
@@ -176,7 +176,7 @@ public final class MontroseHarbor {
         float e=b.half+b.radius;float[] region={b.x-e,b.y-e,b.x+e,b.y+e};
         for(int i=0;i<DOCKS.length;i++)if(PolygonWater.overlaps(region,DOCK_BOUNDS[i]))impact=Math.max(impact,PolygonWater.collide(b,DOCKS[i],false,splashes));
     }return impact;}
-    public static float collide(Game g,Body b,CollisionSplashes splashes){float hit=collide(b,splashes);return Math.max(hit,g.mooredFleet.collide(b,splashes));}
+    public static float collide(Game g,Body b,CollisionSplashes splashes){if(g.haulout.inLift(b))return 0;float hit=collide(b,splashes);return Math.max(hit,g.mooredFleet.collide(b,splashes));}
     public static boolean fits(Body b){float c=(float)StrictMath.cos(SLIP_ANGLE),s=(float)StrictMath.sin(SLIP_ANGLE);
         for(int i=0;i<3;i++){float dx=b.discX(i)-SLIP_X,dy=b.discY(i)-SLIP_Y;if(Math.abs(dx*c+dy*s)+b.radius>100 || Math.abs(-dx*s+dy*c)+b.radius>40)return false;}
         return Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.23f;
@@ -290,7 +290,7 @@ public final class MontroseHarbor {
         }
         float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);System.arraycopy(steps,0,result,land.length+dock.length,steps.length);System.arraycopy(access,0,result,land.length+dock.length+steps.length,access.length);int at=land.length+dock.length+steps.length+access.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
-        if(!union)return disjoint(result);
+        if(!union)return ClipUnion.disjoint(result);
         // Nonzero winding includes overlapping receivers without re-triangulating their union.
         for(int i=0;i<result.length;i+=6)if(PolygonWater.cross(result[i],result[i+1],result[i+2],result[i+3],result[i+4],result[i+5])<0){
             float x=result[i+2],y=result[i+3];result[i+2]=result[i+4];result[i+3]=result[i+5];result[i+4]=x;result[i+5]=y;
@@ -299,34 +299,6 @@ public final class MontroseHarbor {
     }
     /** Painter's even-odd native cutout requires nonoverlapping holes. Dock junctions and
      * raised receivers overlap, so retain their union as disjoint convex pieces before fanning. */
-    private static float[] disjoint(float[] triangles){
-        java.util.ArrayList<float[]> pieces=new java.util.ArrayList<float[]>(),blockers=new java.util.ArrayList<float[]>(),boxes=new java.util.ArrayList<float[]>();
-        for(int at=0;at<triangles.length;at+=6){
-            float[] source={triangles[at],triangles[at+1],triangles[at+2],triangles[at+3],triangles[at+4],triangles[at+5]};
-            if(!solid(source))continue;float[] box=PolygonWater.bounds(source);
-            java.util.ArrayList<float[]> pending=new java.util.ArrayList<float[]>();pending.add(source);
-            for(int i=0;i<blockers.size() && !pending.isEmpty();i++){
-                if(!PolygonWater.overlaps(box,boxes.get(i)))continue;
-                java.util.ArrayList<float[]> next=new java.util.ArrayList<float[]>();
-                for(float[] candidate:pending){
-                    if(!PolygonWater.overlaps(PolygonWater.bounds(candidate),boxes.get(i))){next.add(candidate);continue;}
-                    PolygonWater.subtract(candidate,blockers.get(i),next);
-                }
-                for(int j=next.size()-1;j>=0;j--)if(!solid(next.get(j)))next.remove(j);
-                pending=next;
-            }
-            for(float[] candidate:pending)if(solid(candidate))pieces.add(candidate);
-            blockers.add(source);boxes.add(box);
-        }
-        int count=0;for(float[] piece:pieces)count+=(piece.length/2-2)*6;float[] result=new float[count];int at=0;
-        for(float[] p:pieces)for(int i=2;i<p.length-2;i+=2){result[at++]=p[0];result[at++]=p[1];result[at++]=p[i];result[at++]=p[i+1];result[at++]=p[i+2];result[at++]=p[i+3];}
-        return result;
-    }
-    private static boolean solid(float[] p){
-        if(p.length<6)return false;double area=0;
-        for(int i=2;i<p.length-2;i+=2)area+=(double)(p[i]-p[0])*(p[i+3]-p[1])-(double)(p[i+2]-p[0])*(p[i+1]-p[1]);
-        return Math.abs(area)>.0001;
-    }
     public void setup(Game g){
         if(MontroseHaulout.active(g)){g.haulout.setup(g);return;}
         if(MontroseRescue.active(g)){g.rescue.setup(g);return;}
@@ -339,19 +311,37 @@ public final class MontroseHarbor {
         if(MontroseRescue.active(g))return g.rescue.status(g);
         if(!wasTowed)return "DRAG FROM YACHT TO TUG / RELEASE TO LINK";
         if(!entered)return "TOW THROUGH THE RED AND GREEN INLET";
+        if(warping)return lineCrew.caught()?"DOCK CREW HAULING IN / KEEP CLEAR":"CREW THROWING LINES / RELEASE THE HELM";
         if(settledTicks>0)return "HOLD STEADY IN THE SLIP";
-        return "TOW INTO THE GLOWING SLIP / SLOW TO DOCK";
+        return "TOW TO THE GLOWING SLIP / RELEASE FOR DOCK CREW";
     }
+    final DockLineCrew lineCrew=new DockLineCrew(false);
+    boolean warping;
     public void step(Game g){
+        lineCrew.step();
         if(MontroseHaulout.active(g)){g.haulout.step(g);return;}
         if(MontroseRescue.active(g)){g.rescue.step(g);return;}
         Body b=g.cargo[0];if(b==null || !b.active || b.deliveryRecorded)return;
         boolean towing=g.tow.connected(b,g.tug);
         if(towing)wasTowed=true;
         if(towing && planY(b.y)<1050)entered=true;
-        if(entered && fits(b) && b.speed()<6 && Math.abs(b.spin)<.12f)settledTicks++;else settledTicks=0;
+        float distance=Physics.length(b.x-SLIP_X,b.y-SLIP_Y);
+        if(entered && wasTowed && !warping && !towing && distance<95 && b.speed()<28
+                && Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.5f && clear(b.x,b.y,SLIP_X,SLIP_Y)){
+            warping=true;lineCrew.start(b);b.awaitingPickup=false;g.tell("DOCK CREW: LINES COMING OVER. WE HAVE YOU!");g.radio.receiveDockmaster();
+        }
+        if(warping){
+            if(towing){warping=false;lineCrew.finish();}
+            else if(lineCrew.caught()){
+                float speed=Math.min(16,distance*.8f),denom=Math.max(1,distance);
+                b.vx=(SLIP_X-b.x)/denom*speed;b.vy=(SLIP_Y-b.y)/denom*speed;
+                float heading=SLIP_ANGLE;if(Math.abs(Physics.angle(heading-b.angle))>Math.PI/2)heading+=(float)Math.PI;
+                b.spin=Physics.clamp(Physics.angle(heading-b.angle)*.8f,-.3f,.3f);
+            }else{b.vx*=.92f;b.vy*=.92f;b.spin*=.9f;}
+        }
+        if(entered && !towing && (!warping || lineCrew.caught()) && fits(b) && b.speed()<6 && Math.abs(b.spin)<.12f)settledTicks++;else settledTicks=0;
         if(settledTicks==90){
-            b.deliveryRecorded=true;g.delivered=1;g.score+=1200;g.celebrationTicks=90;
+            lineCrew.finish();b.deliveryRecorded=true;g.delivered=1;g.score+=1200;g.celebrationTicks=90;
             g.celebrationX=b.x;g.celebrationY=b.y;g.celebrationPoints=1200;
             g.haptic(Game.HAPTIC_SUCCESS);g.tell("YACHT SAFELY IN ITS SLIP");
         }

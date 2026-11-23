@@ -113,7 +113,9 @@ public final class MainActivity extends Activity {
                 painter.lighting(lighting);painter.prepareRotations(plan.preparationAtlases());
                 if(changed)try{painter.profileAwaitRotations(0);last=0;}catch(InterruptedException e){Thread.currentThread().interrupt();}
             }
-            if(game.activeGame().mode==Game.PLAY && !painter.profileRotationsReady())try{painter.profileAwaitRotations(0);last=0;}catch(InterruptedException e){Thread.currentThread().interrupt();}
+            // Failure leaves readiness false permanently. Only a live worker may
+            // hold the clock; otherwise demand loading must allow play to advance.
+            if(game.activeGame().mode==Game.PLAY && painter.profileRotationWorking())try{painter.profileAwaitRotations(0);last=0;}catch(InterruptedException e){Thread.currentThread().interrupt();}
         }
         void saveProgress(boolean flush) {
             if(developer!=null)return;

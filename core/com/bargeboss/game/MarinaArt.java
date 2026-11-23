@@ -21,9 +21,10 @@ public final class MarinaArt {
      * The affine origin is the unchanged ground pivot. Shadow masks remain unsheared.
      * Uses shared visual ticks only; drawing neither advances time nor allocates images. */
     public static void drawAnimated(Game g,Painter canvas,RiverCamera c,int frame,float x,float y,float size,int stableSeed){
-        if(!tree(frame)){draw(canvas,c,frame,x,y,size);return;}
+        if(!tree(frame)){draw(canvas,c,frame,x,y,size);SpotlightArt.draw(g,canvas,SpriteAtlas.MARINA,frame,x,y,c.screenX(x,y),c.screenY(x,y),size*c.scale,size*c.scale,1);return;}
         float s=size*c.scale;
         canvas.spriteAffine(SpriteAtlas.MARINA,frame,c.screenX(x,y),c.screenY(x,y),s,0,sway(g.visualTicks,frame,stableSeed)*s,s,1);
+        float power=SpotlightArt.power(g,x,y);if(power>.005f)canvas.spriteAffine(SpotlightArt.receiver(SpriteAtlas.MARINA),frame,c.screenX(x,y),c.screenY(x,y),s,0,sway(g.visualTicks,frame,stableSeed)*s,s,power);
     }
     static float sway(int visualTicks,int frame,int stableSeed){
         if(!tree(frame))return 0;

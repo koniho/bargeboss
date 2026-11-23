@@ -23,7 +23,9 @@ final class VulkanPainter implements Painter,AutoCloseable {
     private ByteBuffer vertexBuffer=ByteBuffer.allocateDirect(vertices.length*4).order(ByteOrder.nativeOrder());
     private ByteBuffer commandBuffer=ByteBuffer.allocateDirect(commands.length*4).order(ByteOrder.nativeOrder());
     private final int[] clipFirst=new int[64],clipCount=new int[64];
-    private int clipDepth;
+    private int clipDepth,clipCoverageTotal;
+    private final int[] clipCoverage=new int[64];
+    private float[] clipStarts=new float[512],clipEnds=new float[512];
     private boolean preparingLayers;
     private final LinkedHashMap<Long,Image> images=new LinkedHashMap<Long,Image>(64,.75f,true);
     private final IdentityHashMap<Bitmap,Image> bitmapImages=new IdentityHashMap<Bitmap,Image>();
@@ -47,7 +49,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
         synchronized(VulkanPainter.class){if(!loaded){System.loadLibrary("bargeboss_vulkan");loaded=true;}}
         nativeHandle=create(surface,assets,experimentFlags);
     }
-    void start(float w,float h){width=w;height=h;used=commandUsed=0;clipDepth=0;preparingLayers=false;referenced.clear();}
+    void start(float w,float h){width=w;height=h;used=commandUsed=0;clipDepth=clipCoverageTotal=0;preparingLayers=false;referenced.clear();}
     private LightingProfile lightingProfile=LightingProfile.DUSK;
     public LightingProfile lighting(){return lightingProfile;}
     public void lighting(LightingProfile next){
@@ -123,6 +125,11 @@ final class VulkanPainter implements Painter,AutoCloseable {
         vertex(xy[b*2],xy[b*2+1],0,0,color,1,0,0,0,0,0,0,0);
         vertex(xy[c*2],xy[c*2+1],0,0,color,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);
     }
+    private void colorVertex(float x,float y,int c){float a=(c>>>24)/255f;vertices[used++]=x;vertices[used++]=y;vertices[used++]=(c>>16&255)/255f*a;vertices[used++]=(c>>8&255)/255f*a;vertices[used++]=(c&255)/255f*a;vertices[used++]=a;}
+    public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){
+        int first=used;if(!recording){space(18);colorVertex(ax,ay,ac);colorVertex(bx,by,bc);colorVertex(cx,cy,cc);batch(first,3,0,0,5);}
+        else{vertex(ax,ay,0,0,ac,1,0,0,0,0,0,0,0);vertex(bx,by,0,0,bc,1,0,0,0,0,0,0,0);vertex(cx,cy,0,0,cc,1,0,0,0,0,0,0,0);batch(first,3,0,0,0);}
+    }
     private final float[] convexScratch=new float[8];
     public void convexQuad(float ax,float ay,float bx,float by,float cx,float cy,float dx,float dy,int color){
         if((color>>>24)==0)return;
@@ -139,12 +146,34 @@ final class VulkanPainter implements Painter,AutoCloseable {
         while(remaining>=3 && guard-->0){boolean found=false;for(int i=0;i<remaining;i++){int a=index[(i+remaining-1)%remaining],b=index[i],c=index[(i+1)%remaining];if(cross(xy,a,b,c)*sign<=0)continue;boolean inside=false;for(int j=0;j<remaining;j++){int k=index[j];if(k!=a&&k!=b&&k!=c&&cross(xy,a,b,k)*sign>=0&&cross(xy,b,c,k)*sign>=0&&cross(xy,c,a,k)*sign>=0){inside=true;break;}}if(inside)continue;triangle(xy,a,b,c,color,0);System.arraycopy(index,i+1,index,i,remaining-i-1);remaining--;found=true;break;}if(!found)break;}
     }
     private static float cross(float[] p,int a,int b,int c){return (p[b*2]-p[a*2])*(p[c*2+1]-p[a*2+1])-(p[b*2+1]-p[a*2+1])*(p[c*2]-p[a*2]);}
-    public boolean supportsUnionClips(){return false;}
+    public boolean supportsUnionClips(){return true;}
     // Native commands already merge adjacent compatible primitives.
     public boolean prefersPolygonBatches(){return false;}
     private void mask(float[] triangles,int mode){for(int i=0;i+5<triangles.length;i+=6){int first=used;for(int j=0;j<6;j+=2)vertex(triangles[i+j],triangles[i+j+1],0,0,0xffffffff,1,0,0,0,0,0,0,0);batch(first,3,0,0,mode);}}
+    /** Maximum overlap of triangle bounds along either axis conservatively bounds
+     * actual pixel coverage, without confusing a large disjoint map with overlaps. */
+    private int clipOverlapBound(float[] triangles){
+        int n=triangles.length/6;if(n<=32)return n;
+        if(clipStarts.length<n){clipStarts=new float[n];clipEnds=new float[n];}
+        int bound=n;
+        for(int axis=0;axis<2;axis++){
+            for(int i=0;i<n;i++){int at=i*6+axis;float a=triangles[at],b=triangles[at+2],c=triangles[at+4];clipStarts[i]=Math.min(a,Math.min(b,c));clipEnds[i]=Math.max(a,Math.max(b,c));}
+            Arrays.sort(clipStarts,0,n);Arrays.sort(clipEnds,0,n);
+            int end=0,max=0;
+            for(int start=0;start<n;start++){while(end<n && clipEnds[end]<clipStarts[start])end++;max=Math.max(max,start-end+1);}
+            bound=Math.min(bound,max);
+        }
+        return bound;
+    }
     public void pushClipOutside(float[] triangles){
         if(clipDepth>=clipFirst.length)throw new IllegalStateException("Clip nesting limit");
+        // Stencil counts overlapping triangles, not parity. Reserve one count for
+        // every remaining nesting level; extreme masks take the exact disjoint path.
+        int coverage=clipOverlapBound(triangles);
+        if(clipCoverageTotal+coverage>255-(clipFirst.length-clipDepth)){
+            triangles=ClipUnion.disjoint(triangles);coverage=triangles.length==0?0:1;
+        }
+        clipCoverage[clipDepth]=coverage;clipCoverageTotal+=coverage;
         int first=used;batch(first,0,0,0,3);mask(triangles,1);
         clipFirst[clipDepth]=first;clipCount[clipDepth++]=(used-first)/STRIDE;
     }
@@ -153,11 +182,11 @@ final class VulkanPainter implements Painter,AutoCloseable {
         // Vertex storage is append-only until present: replay the captured mask,
         // even if the caller has since changed its source array. Nested scopes
         // retain distinct ranges; retained meshes relocate both references.
-        --clipDepth;batch(clipFirst[clipDepth],clipCount[clipDepth],0,0,2);
+        --clipDepth;clipCoverageTotal-=clipCoverage[clipDepth];batch(clipFirst[clipDepth],clipCount[clipDepth],0,0,2);
         batch(used,0,0,0,4);
     }
     private void patch(float x,float y,float ax,float ay,float bx,float by,int color,float alpha,int kind,float phase,float detail){quad(x-(ax+bx)*.5f,y-(ay+by)*.5f,ax,ay,bx,by,color,alpha,0,kind,phase,detail,0,0,1,1,0,0,0,0);}
-    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){patch(x,y,ax,ay,bx,by,0xffe5fcf7,alpha,kind>=8?kind+24:kind+2,phase,0);}
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){if(resources!=null && resources.profileFoamSkipped())return;patch(x,y,ax,ay,bx,by,0xffe5fcf7,alpha,kind>=8?kind+24:kind+2,phase,0);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){patch(x,y,ax,ay,bx,by,color,1,8,phase,0);}
     public void smokePuff(float x,float y,float radius,float phase,int color){patch(x,y,2*radius,0,0,2*radius,color,1,9,phase,0);}
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){patch(x,y,ax,ay,bx,by,color,1,11+kind,amount,detail);}

@@ -3,12 +3,12 @@ package com.bargeboss.game;
 /** Unlit marina receivers. All motion comes from the per-game tether simulation. */
 public final class MooredBoats {
     public static final float CELL_WORLD=96;
-    public static final int ORIENTATIONS=32,BASE_FRAMES=192,FRAMES=768,COLUMNS=16,ROWS=48;
+    public static final int ORIENTATIONS=32,BASE_FRAMES=224,FRAMES=896,COLUMNS=16,ROWS=56;
     public static final class Berth {
         public final float x,y,angle,length,width,ax,ay,bx,by;
         public final int frame,kind;
         final float[] hull;
-        int row=-1,station,side;
+        int row=-1,station,side,mooring=-1,star=-1,arm=-1;
         public final int bimini;
         Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by,int bimini){
             this.bimini=bimini;this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
@@ -17,8 +17,8 @@ public final class MooredBoats {
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*length*.48f,v=(i==0||i==3?-1:1)*width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}
         }
     }
-    public static float length(int kind){return new float[]{39,44,47,40,46,49}[kind];}
-    public static float width(int kind){return kind>=3?13:16;}
+    public static float length(int kind){return new float[]{39,44,47,40,46,49,56}[kind];}
+    public static float width(int kind){return kind==6?14:kind>=3?13:16;}
     public static float angle(int orientation){if(orientation>=30)return (orientation-30+.5f)*(float)Math.PI/4;float[] r=MontroseHarbor.berthRows()[orientation/2];return (float)StrictMath.atan2(r[3]-r[1],r[2]-r[0])+(orientation%2==0?-1:1)*(float)Math.PI/2;}
     public static final Berth[] BERTHS=make();
     private static Berth[] make(){java.util.ArrayList<Berth> out=new java.util.ArrayList<Berth>();float[][] rows=MontroseHarbor.berthRows();
@@ -39,12 +39,17 @@ public final class MooredBoats {
                 if(valid)out.add(b);
             }
         }
-        for(float[] star:MontroseHarbor.STAR_CENTERS)for(int arm=0;arm<8;arm++){
+        for(int starIndex=0;starIndex<MontroseHarbor.STAR_CENTERS.length;starIndex++)for(int arm=0;arm<8;arm++){
+            float[] star=MontroseHarbor.STAR_CENTERS[starIndex];
             int kind=(arm+(int)star[0])%6;if(kind<0)kind+=6;float a=angle(30+arm),c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a),near=arm*(float)Math.PI/4,nc=(float)StrictMath.cos(near),ns=(float)StrictMath.sin(near);
             Berth berth=new Berth(star[0]+c*59,star[1]+s*59,a,30+arm,kind,star[0]+nc*31,star[1]+ns*31,star[0]+nc*59,star[1]+ns*59,BiminiArt.palette((int)star[0],arm,1));
             boolean valid=true;for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(berth.hull[i],berth.hull[i+1]))valid=false;
+            berth.star=starIndex;berth.arm=arm;
             if(valid)out.add(berth);
         }
+        int[] balls={1,9,17};
+        for(int i=0;i<balls.length;i++){float[] ball=MontroseHarbor.MOORINGS[balls[i]];int kind=3+i;
+            Berth b=new Berth(ball[0],ball[1]+length(kind)*.5f+15,-(float)Math.PI/2,0,kind,ball[0],ball[1],ball[0],ball[1],0);b.mooring=balls[i];out.add(b);}
         out.sort((a,b)->Float.compare(a.y-a.x,b.y-b.x));return out.toArray(new Berth[out.size()]);
     }
     public static int count(Game g){return g.montroseStage()?g.mooredFleet.boats.length:0;}
@@ -68,6 +73,13 @@ public final class MooredBoats {
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}
         }
+        if(b.mooring>=0){
+            int ball=b.mooring+2;float bx=NavigationLights.x(g,ball),by=NavigationLights.y(g,ball);
+            float tipX=wx+(float)StrictMath.cos(angle)*b.length*.45f,tipY=wy+(float)StrictMath.sin(angle)*b.length*.45f;
+            float sx=c.screenX(tipX,tipY),sy=c.screenY(tipX,tipY)-(heave+2)*c.scale,ex=c.screenX(bx,by),ey=c.screenY(bx,by)-c.scale;
+            p.line(sx,sy,(sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,.8f*c.scale,0x998d9c99);
+            p.line((sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,ex,ey,.8f*c.scale,0x998d9c99);
+        }
         dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
         dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
                 x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
@@ -79,6 +91,36 @@ public final class MooredBoats {
             if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
         }
     }
+    // Offline comparison helpers only. Production boats always use sprites.
+    static float liveWeight(Game g,float length,float x,float y){
+        if((g.renderExclusions&RenderExclusions.LIVE_MARINA_BOATS)!=0)return 0;
+        return SceneDetail.fade(length*g.layout.camera.scale,48,72)*(1-SceneDetail.fade(Physics.length(x-g.tug.x,y-g.tug.y),180,210));
+    }
+    static void drawHull(Game g,Painter p,int kind,int palette,float x,float y,float heave,float angle,float pitch,float roll,float alpha,MooredBoatLight.Lights lights){
+        LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=palette;shade.alpha=alpha;shade.length=length(kind);shade.width=width(kind);
+        HarborBoatModel.get(kind).rigid.draw(g,p,x,y,heave,angle,pitch,roll,shade);
+    }
+    private static final ThreadLocal<LiveLight> LIVE_LIGHT=new ThreadLocal<LiveLight>(){protected LiveLight initialValue(){return new LiveLight();}};
+    private static final class LiveLight implements ArticulatedModel.VertexLighting {
+        LightingProfile profile;MooredBoatLight.Lights lights;int palette;float alpha,length,width;
+        public boolean smooth(int material){return material==BoatMaterial.HULL;}
+        public int vertex(int material,int albedo,float x,float y,float z,float nx,float ny,float nz,float[] m){
+            if(material==BoatMaterial.HULL){
+                nx=x/(length*length*.25f);ny=y/(width*width*.25f);nz=.012f;
+                float inv=1/(float)StrictMath.sqrt(nx*nx+ny*ny+nz*nz);nx*=inv;ny*=inv;nz*=inv;
+            }
+            float xx=m[0]*x+m[1]*y+m[2]*z,yy=m[3]*x+m[4]*y+m[5]*z,zz=m[6]*x+m[7]*y+m[8]*z;
+            float normalX=m[0]*nx+m[1]*ny+m[2]*nz,normalY=m[3]*nx+m[4]*ny+m[5]*nz,normalZ=m[6]*nx+m[7]*ny+m[8]*nz;
+            int rgb=BoatMaterial.shade(profile,lights,material,albedo,xx,yy,zz,normalX,normalY,normalZ,1+.014f*(float)StrictMath.sin(x*.27f+y*.41f+z*.31f));
+            return ((int)(255*alpha)<<24)|(rgb&0xffffff);
+        }
+        public int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz){
+            if(albedo==HarborBoatModel.FABRIC)albedo=BiminiArt.color(palette);
+            int rgb=MarinaSurfaceLight.vessel(profile,lights,albedo,x,y,z,nx,ny,nz);
+            return ((int)(255*alpha)<<24)|(rgb&0xffffff);
+        }
+    }
+
     /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
      * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */
     private static void dissolve(Painter p,int atlas,int a,int b,float x,float y,float width,float height,float mix,float alpha){

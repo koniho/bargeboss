@@ -11,9 +11,11 @@ public final class ScreenView {
     private static void headingCenter(Painter p,String s,float x,float y,float size,float width,int c){Lettering.centerHeading(p,s,x,y,Math.min(size,width/Math.max(1,Lettering.headingWidth(s,1))),c);}
     public static void hud(Game g,Painter p) {
         float width=Math.min(720,g.layout.width-32),x=(g.layout.width-width)*.5f;
-        String title=g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
+        String title=g.montroseArrival.active()?"MONTROSE HARBOR":g.montroseStage() && g.rescue.touring?"EXPLORE MONTROSE":g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
         String subtitle;
-        if(g.tutorial!=null) {
+        if(g.montroseArrival.active())subtitle="ARRIVING FROM LAKE MICHIGAN";
+        else if(g.montroseStage() && g.rescue.touring)subtitle=g.goalStatus();
+        else if(g.tutorial!=null) {
             subtitle=g.tutorial.entering?"DOCKSIDE RADIO / CHANNEL 08":"CAPTAIN TRAINING";
             if(g.trainingChannel())subtitle+=" / GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1);
         } else if(g.lockStage()) {
@@ -284,6 +286,7 @@ public final class ScreenView {
         Transform(Painter p,float x,float y,float scale,float shear) { this.p=p; this.x=x; this.y=y; this.scale=scale; this.shear=shear; }
         private float tx(float xx,float yy) { return x+(xx+shear*yy)*scale; }
         private float ty(float yy) { return y+yy*scale; }
+        public void shadedTriangle(float ax,float ay,int ac,float bx,float by,int bc,float cx,float cy,int cc){p.shadedTriangle(tx(ax,ay),ty(ay),ac,tx(bx,by),ty(by),bc,tx(cx,cy),ty(cy),cc);}
         public void pushClipOutside(float[] a) {
             float[] b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=tx(a[i],a[i+1]);b[i+1]=ty(a[i+1]);}p.pushClipOutside(b);
         }

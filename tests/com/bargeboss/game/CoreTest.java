@@ -147,8 +147,8 @@ public final class CoreTest {
         VesselLightingTest.run();
         SurfaceLightingTest.run();
         LevelAssetsTest.run();
-        TravelLiftTest.run();MontroseHauloutTest.run();MontroseTest.run();
-        MontroseRescueTest.run();
+        TravelLiftTest.run();TravelLiftCycleTest.run();HauloutCaptureTest.run();DockLineCrewTest.run();SpotlightTest.run();SpotlightWaterTest.run();MontroseHauloutTest.run();MontroseTest.run();
+        MontroseRescueTest.run();MontroseCrewTest.run();ChasRadioTest.run();PushFeedbackTest.run();MontroseWeatherTest.run();WaterFlowTest.run();RacingBoatTest.run();
         SwimmerModelTest.run();
         MarinaReceiverTest.run();SceneryReceiverTest.run();
         DeveloperPanelTest.run();
@@ -189,14 +189,14 @@ public final class CoreTest {
         SceneryEffectsTest.run();
         FactoryActivityTest.run();
         ShadowActivityTest.run();
-        StageCameraTest.run();
+        StageCameraTest.run();SpriteBoatRoutingTest.run();MontroseArrivalTest.run();MooringActivityTest.run();BoatMaterialTest.run();
         LockTest.run();
         LockDoorCollisionTest.run();
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("5cd83624:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("251251ba:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

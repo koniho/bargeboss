@@ -11,7 +11,7 @@ public final class ReplayInput {
     /** Isolated later Montrose job; production entry starts with the haulout. */
     static Game montroseJob(int id){
         Game g=new Game();g.challengeId=Challenges.MONTROSE;g.reset();
-        g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        g.montroseArrival.clear();g.challengeId=id;for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
         g.dialogue.close(g);g.mission.setup(g);return g;
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
@@ -130,15 +130,21 @@ public final class ReplayInput {
         throttle(g,dx/len*52,dy/len*52);
     }
     private static void swimmerRescue(Game g){
-        if(g.rescue.flying>=0 || g.rescue.cooldown>0)return;
-        int target=-1;for(int col=0;col<10 && target<0;col++)for(int row=0;row<2;row++){int i=col+row*10;if(g.rescue.state[i]==0){target=i;break;}}
+        RescueBarge r=g.rescue.barge;Body b=r.boat;if(b==null)return;
+        if(!r.towed){down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;}
+        int target=-1;float nearest=Float.MAX_VALUE;
+        for(int i=0;i<20;i++)if(g.rescue.state[i]==0){float d=Physics.length(b.x-g.rescue.x[i],b.y-g.rescue.y[i]);if(d<nearest){nearest=d;target=i;}}
         if(target<0)return;
-        float x=g.rescue.x[target],y=650+(target%10)*3;
-        float dx=x-g.tug.x,dy=y-g.tug.y,len=Physics.length(dx,dy);
-        if(len>18){if(!g.pointer)throttleDown(g);throttle(g,dx/len*55,dy/len*55);return;}
-        if(g.pointer)up(g,g.pointerX,g.pointerY);
-        if(g.tug.speed()>3)return;
-        down(g,g.rescue.x[target],g.rescue.y[target]);up(g,g.rescue.x[target],g.rescue.y[target]);
+        float x=g.rescue.x[target],y=g.rescue.y[target];g.spotlight.aim(g,(float)StrictMath.atan2(y-g.tug.y,x-g.tug.x));
+        if(nearest<190 && b.speed()<20){if(g.pointer)up(g,g.pointerX,g.pointerY);if(r.cooldown==0)flingRescue(g,x,y);return;}
+        if(!g.tow.connected(b,g.tug)){down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;}
+        drive(g,x,y+140);
+    }
+    private static void flingRescue(Game g,float x,float y){
+        Body b=g.rescue.barge.boat;if(g.abilities.selected!=b){down(g,b.x,b.y);up(g,b.x,b.y);return;}
+        float cx=g.abilities.buttonX(g,0),cy=g.abilities.buttonY(g),dx=x-b.x,dy=y-b.y;
+        RiverCamera c=g.layout.camera;float sx=c.screenX(dx,dy)-c.screenX(0,0),sy=c.screenY(dx,dy)-c.screenY(0,0),len=Math.max(1,Physics.length(sx,sy)),drag=Physics.length(dx,dy)/210*60;
+        g.pointerDown(8,cx,cy);g.pointerMove(8,cx+sx/len*drag,cy+sy/len*drag);g.pointerUp(8,cx+sx/len*drag,cy+sy/len*drag);
     }
     private static void haulout(Game g){
         Body b=g.cargo[0];
@@ -162,6 +168,10 @@ public final class ReplayInput {
     }
     private static void marinaTow(Game g) {
         Body b=g.cargo[0];
+        if(g.mission.warping){if(g.pointer)up(g,g.pointerX,g.pointerY);return;}
+        if(g.tow.connected(b,g.tug) && g.mission.entered && Physics.length(b.x-MontroseHarbor.SLIP_X,b.y-MontroseHarbor.SLIP_Y)<85 && b.speed()<28){
+            if(g.pointer)up(g,g.pointerX,g.pointerY);down(g,b.x,b.y);up(g,b.x,b.y);return;
+        }
         if(!g.tow.connected(b,g.tug)){
             if(g.pointer)up(g,g.pointerX,g.pointerY);
             down(g,b.x,b.y);move(g,g.tug.x,g.tug.y);up(g,g.tug.x,g.tug.y);return;

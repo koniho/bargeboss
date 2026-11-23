@@ -7,6 +7,7 @@ public final class BargeEquipment {
     public static boolean family(int atlas){return atlas>=62 && atlas<=67;}
     public static String file(int atlas){String name=atlas%2==0?"fireworks":"fire";return atlas<64?name+"-deck-v1-64.png":atlas<66?"shadow-"+name+"-deck-v1.png":"surface-shade-"+name+"-v2.png";}
     public static void draw(Game g,Painter p,Body b,float x,float y,float size){
+        if(b.ability==BargeAbilities.RESCUE){RescueDeck.draw(g,p,b);return;}
         int atlas=b.ability==BargeAbilities.FIRE?SpriteAtlas.FIRE_BARGE:SpriteAtlas.FIREWORKS;
         SpriteAtlas.draw(p,atlas,b.angle,x,y,size,size,1);
         SurfaceLighting.directional(g,p,atlas,b.angle,x,y,size,1,b);

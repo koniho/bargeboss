@@ -1,0 +1,112 @@
+# Montrose arrival and mooring activity
+
+Normal location entry starts south of the inlet, source-plan (453,1500), heading
+north (-world Y). Over360 fixed60-Hz ticks the tug advances to (453,1240), while
+the camera pans north from source-planY1540 to1190. Both ease through one shared
+phase. Input and objective clocks wait; water, smoke and moored-fleet motion
+continue. Pause stops the sequence and resize preserves its phase. The tug's
+velocity and engine load reach zero for the radio hold, avoiding stale wakes.
+
+The first reception is Gavin: “WELCOME TO MONTROSE HARBOR, CAPTAIN!” After the
+player replies, he dispatches the haulout job. The tug remains at the inlet;
+there is no teleport to the travel lift. Later jobs retain their contiguous
+location flow. Developer mission selection bypasses the arrival. Profiling
+scenario `montrose-arrival` exercises it; existing work-area fixtures clear it.
+Gavin uses the shared portrait/radio panel and level-scoped portrait preparation.
+
+Three additional sailboats use existing western-field mooring balls1,9,17
+(zero-based mooring IDs, distinct from entrance markers). Each has a bow pennant
+to its moving ball. They remain normal solid moored boats. Only the balls yield
+without pushing back on vessels: collision never changes the tug's position,
+linear velocity or angular velocity. They dip, displace and spring back with
+30 units of slack. Standard channel/navigation floats retain physical response.
+
+Moored boats amplify propagated wake orbital force3x, while keeping the ambient
+sea unchanged. Wake heave response is1.35 rather than0.55. Tethers limit movement
+to4 units and yaw to0.10 radians; tighter berths retain shoreline clearance.
+Ball contact splash and displacement remain simulation-owned; render calls
+never advance motion or use wall-clock randomness.
+
+Tests: MontroseArrivalTest, MooringActivityTest, MooredBoatsTest,
+MontroseBuoyContactTest. Review exports: tools/MontroseArrivalReview.java.
+
+## Beach trip and Chas (2026-11-23)
+
+Sequence: haulout → beach exploration → raft rescue → yacht tow → swimmers.
+Gavin's exploration invitation follows the completed lift cycle. Guidance uses
+harbor fairway/inlet/offshore waypoints; the emergency is position-triggered east
+of the headland (survey x>2250,y<550), not a timeout at the lift. No teleport.
+The crew transmission introduces Chas aboard Rumrunner 2 with Never Wetter rafted
+alongside, three kids aboard, weather turning and both batteries drained by music.
+Player replies include snark or reassurance, followed by a practical rescue plan.
+Reply transmissions finish before the crew responds. Existing legacy mission IDs
+and rewards stay unchanged; delivered boats retain their actor slots.
+
+The raft is outside/past the Wilson Avenue light/horn at survey2350,-1530. Shared
+pointer bounds now follow the full playable boundary, including the beach extension;
+legacy hardcoded bounds silently prevented lasso/taps north of the old marina.
+Developer mission selection begins directly with Chas's call. Normal arrival still
+opens with Gavin's welcome. No unrequested weather preset override is applied.
+
+Single-point sailboat moorings constrain the bow to a20-unit slack radius around
+the moving ball, applying tension torque and damping. Unlike two-line dock berths,
+they can swing through full headings. Ball contacts remain one-way; vessel hulls
+remain solid. Fixed-step force/torque and heading-selected sprites are shared.
+
+## Ain't Broke and weather progression
+
+The opening tow is the large red offshore racer Ain't Broke at star dock S, the
+star center farthest from the N-M haulout (computed from surveyed centers). Its
+southwest-facing berth is reserved from ambient fleet population. The larger
+capsule and physical pickup clear the dock fingers. Push assist lines up outside
+the narrowed well; hull-projected reach supports side pushes. It must fit fully
+before near-target settling starts, preventing the larger bow from stopping short.
+Boats already secured to the operating lift cannot accept new tow links.
+
+Every Montrose entry starts at dusk. After the lift finishes, a30-second background
+nightfall grade deepens the water and shore before vessels and local lights draw.
+This is a continuous scene-composition grade, not a switch between native bitmap
+lighting caches or a moving astronomical sun. Vessel colors and UI stay readable.
+No sky is visible in the gameplay camera; title art is unchanged.
+
+Chas's distress call introduces light rain and haze over10 seconds. Accumulating
+60 seconds of moving, connected rescue tow ramps rain from0.35 to3 (heavy), fog
+from1 to2 and sea-wave amplitude from1× to2×. Waves use the same multiplier for
+rendering, heave and orbital forces. Conditions hold when stopped/unhooked and
+remain through later jobs; reset clears mission progression. Pause freezes the
+clock. Developer weather/time controls explicitly override automatic behavior.
+Rain/fog retain existing fixed submission caps and use no new weather textures.
+
+### Raft rescue radio and destinations
+
+Chas captains Never Wetter; Alex captains Rumrunner 2. After the player reaches
+and cuts the raft loose, Chas assigns Rumrunner 2 to C-38 and Never Wetter to
+C-22. Suppress the destination-slip highlights in the world and chart until that
+release; remote taps cannot reveal them.
+
+Under tow, the two captains exchange nonmodal, bounded radio calls. Chas leads
+an absurd observation and Alex replies after a short pause; longer quiet intervals
+separate exchanges. Each call uses its captain's portrait and its vessel's radio
+animation, without interrupting throttle or navigation. Alex offers energy drinks
+when Rumrunner 2 is delivered. Chas offers Fireball after Never Wetter's arrival.
+Queue both thanks even for simultaneous arrivals and finish them before Gavin's
+next job. Arrival messages outrank idle banter; a reset discards the queue.
+
+After the haulout hoist, the lift drives inland for six seconds, holds for five
+seconds to set the boat on the yard, then returns empty over six seconds. This
+continues during the next Montrose job. The delivered boat stays visible ashore;
+the lift parks at the well with raised straps, ready for another call. Background
+pause stops the cycle. Returning does not re-award the delivery.
+
+Lift and yacht-slip crews cast two lines after the released boat reaches the
+capture area, then haul it into position. Lift capture allows modest speed and
+heading error; a fast, tethered or badly aligned boat is not captured.
+
+The storm swimmer mission supplies a rescue barge at the marina. Tow it offshore;
+tap the tug to steer its searchlight relative to the bow. Swimmers begin hidden
+and are scattered offshore. Select the rescue barge and fling its ability control
+to throw a physical ring near a swimmer. A nearby swimmer approaches the ring,
+floats back to the barge and climbs aboard while it is moving slowly. Rescue
+credit occurs only aboard. Misses float temporarily; they do not home in.
+Running over a swimmer triggers a brief hurt/flailing flash, disappearance, then
+mission failure rather than an immediate invisible casualty.

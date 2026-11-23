@@ -28,6 +28,7 @@ public final class TutorialSceneryArt {
         if(left+size<0 || left>g.layout.width || top+size<0 || top>g.layout.height) return;
         float alpha=frame==SHED?g.buildingFades.opacity(SpriteAtlas.TUTORIAL_SCENERY,frame,wx,wy):1;
         p.sprite(SpriteAtlas.TUTORIAL_SCENERY,frame,x,y,size,size,0,alpha);
+        SpotlightArt.draw(g,p,SpriteAtlas.TUTORIAL_SCENERY,frame,wx,wy,x,y,size,size,alpha);
         if(frame==SHED) {
             for(int i=0;i<4;i++) {
                 float sx=x+(LX[i]-PX[frame])*size,sy=y+(LY[i]-PY[frame])*size;

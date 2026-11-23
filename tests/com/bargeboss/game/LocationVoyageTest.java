@@ -48,18 +48,18 @@ public final class LocationVoyageTest {
         int stars=g.career.totalStars();g.voyage.step(g);check(g.career.totalStars()==stars,"completed voyage cannot farm repeated rewards");
     }
     private static void montrose(){
-        Game g=ReplayInput.montroseJob(Challenges.MONTROSE);Body yacht=g.cargo[0],tug=g.tug;
-        yacht.deliveryRecorded=true;yacht.awaitingPickup=true;yacht.tiedX=yacht.x;yacht.tiedY=yacht.y;yacht.tiedAngle=yacht.angle;
-        g.delivered=1;g.ticks=500;g.visualTicks=500;float x=tug.x,y=tug.y;g.step();
-        check(g.challengeId==Challenges.RAFT_RESCUE && g.mode==Game.PLAY,"yacht mission continues into cruiser rescue");
+        Game g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);Body tug=g.tug,first=g.cargo[0],second=g.cargo[1];
+        first.deliveryRecorded=second.deliveryRecorded=true;g.delivered=2;g.ticks=500;g.visualTicks=500;float x=tug.x,y=tug.y;g.step();
+        check(g.challengeId==Challenges.MONTROSE && g.mode==Game.PLAY,"cruiser rescue continues into yacht tow");
         check(g.tug==tug && Physics.length(tug.x-x,tug.y-y)<1 && g.ticks==501,"Montrose transition preserves tug and simulation clock");
-        boolean retained=false;for(Body c:g.cargo)if(c==yacht)retained=true;check(retained && yacht.active,"delivered yacht remains afloat after cruiser spawn");
-        Body first=g.cargo[0],second=g.cargo[1];check(first.cruiser && second.cruiser,"two new rescue actors use their own cargo slots");
-        first.deliveryRecorded=second.deliveryRecorded=true;g.delivered=2;g.step();
-        check(g.challengeId==Challenges.SWIMMER_RESCUE && g.mode==Game.PLAY,"cruisers continue into swimmer rescue on same scene");
-        check(g.cargo[0]==first && g.cargo[1]==second && yacht.active,"all delivered watercraft survive later Montrose job");
+        Body yacht=g.cargo[0];check(yacht.yacht && !yacht.cruiser,"new yacht uses its own actor slot");
+        yacht.deliveryRecorded=true;yacht.awaitingPickup=true;yacht.tiedX=yacht.x;yacht.tiedY=yacht.y;yacht.tiedAngle=yacht.angle;
+        g.delivered=1;g.step();
+        check(g.challengeId==Challenges.SWIMMER_RESCUE && g.mode==Game.PLAY,"yacht continues into swimmer rescue on same scene");
+        boolean a=false,b=false,c=false;for(Body boat:g.cargo){a|=boat==first;b|=boat==second;c|=boat==yacht;}
+        check(a && b && c && yacht.active,"all delivered watercraft survive later Montrose job");
         check(g.rescue.x[0]!=0 && g.delivered==0,"new job initializes only its swimmer objectives and counter");
-        for(int i=0;i<MontroseRescue.PEOPLE;i++)g.rescue.state[i]=1;g.delivered=20;g.step();
+        for(int i=0;i<MontroseRescue.PEOPLE;i++)g.rescue.state[i]=4;g.delivered=20;g.step();
         check(g.montroseComplete && g.mode==Game.FINISH,"only final Montrose job reaches finish screen");
         check(g.career.bestStars(4)==3 && g.career.bestStars(6)==3 && g.career.bestStars(7)==3,"each legacy Montrose reward keeps its existing save slot");
     }

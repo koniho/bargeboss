@@ -72,6 +72,7 @@ public final class CalumetArt {
         if(x+w<0 || x-w>g.layout.width || y+h<0 || y-h>g.layout.height)return;
         float alpha=atlas==SpriteAtlas.STEELWORKS?g.buildingFades.opacity(atlas,frame,v[2],v[3]):1;
         p.sprite(atlas,frame,x,y,w,h,0,alpha);
+        SpotlightArt.draw(g,p,atlas,frame,v[2],v[3],x,y,w,h,alpha);
         if(atlas==SpriteAtlas.STEELWORKS){
             float left=x-w*.5f,top=y-h*.75f*.81f;
             SceneryEffects.compactGlow(p,left+w*.48f,top+h*.75f*.66f,5*c.scale,0xffff9a32,alpha,g.visualTicks,v[2]*.01f);

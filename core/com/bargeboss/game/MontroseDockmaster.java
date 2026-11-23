@@ -1,18 +1,21 @@
 package com.bargeboss.game;
 
-/** Montrose dispatch voice. The reference name is deliberately absent from player copy. */
+/** Gavin, Montrose dockmaster: welcome and contiguous job dispatch. */
 public final class MontroseDockmaster {
     private MontroseDockmaster(){}
     public static void dispatch(Game g){
+        if(g.rescue.touring){g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",
+            "NICE WORK! GET TO KNOW THE AREA.","HEAD OUT AND CHECK OUT THE BEACH. KEEP YOUR RADIO ON.","COPY. A LITTLE SIGHTSEEING.");return;}
+        if(g.challengeId==Challenges.RAFT_RESCUE){g.rescue.distress(g);return;}
         String title,detail,reply;
         switch(g.challengeId){
             case Challenges.HAULOUT:
-                title="A BOAT HAS LOST POWER";
-                detail="TAP THE N-M LIFT TO RADIO. CLEAR THE WELL FIRST.";
+                title="AIN'T BROKE HAS BROKEN DOWN";
+                detail="RED RACER AT STAR DOCK S. RADIO THE N-M LIFT FIRST.";
                 reply="COPY. TAKING THE TOW.";break;
             case Challenges.MONTROSE:
                 title="NEXT CALL: YACHT AT THE INLET";
-                detail="CREW HAS THE HAULOUT. BRING THE YACHT TO DOCK N.";
+                detail="THE CREW IS SAFE. BRING THE YACHT TO DOCK N.";
                 reply="COPY. HEADING TO THE INLET.";break;
             case Challenges.RAFT_RESCUE:
                 title="TWO CRUISERS NEED A HAND";
@@ -20,10 +23,10 @@ public final class MontroseDockmaster {
                 reply="COPY. TWO TOWS TO DOCK C.";break;
             case Challenges.SWIMMER_RESCUE:
                 title="PEOPLE IN THE WATER";
-                detail="20 OFF THE SOUTH SEAWALL. SLOW DOWN AND THROW BUOYS.";
-                reply="COPY. KEEPING THE HULL CLEAR.";break;
+                detail="STORM RESCUE. TOW THE RESCUE BARGE. SEARCH OFF THE BEACH.";
+                reply="COPY. SEARCHLIGHT ON. BRINGING RINGS AND THE RESCUE BARGE.";break;
             default:return;
         }
-        g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"DOCKMASTER / MONTROSE",title,detail,reply);
+        g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",title,detail,reply);
     }
 }

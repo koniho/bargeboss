@@ -70,6 +70,10 @@ public final class DockWorkers {
         drawPose(g,p,wx,wy,motion,motion,0,0,Float.NaN);
     }
     private static void drawPose(Game g,Painter p,float wx,float wy,float left,float right,float stride,float lean,float point){
+        drawPose(g,p,wx,wy,left,right,stride,lean,point,GroundArt.LAND_RISE);
+    }
+    static void dockhand(Game g,Painter p,float x,float y,float rise,float arm,float lean){drawPose(g,p,x,y,arm,arm,0,lean,Float.NaN,rise);}
+    private static void drawPose(Game g,Painter p,float wx,float wy,float left,float right,float stride,float lean,float point,float rise){
         RiverCamera c=g.layout.camera;
         // Continuous shoulder rotation; boot vertices never depend on animation time.
         for(Face face:FACES) {
@@ -82,8 +86,8 @@ public final class DockWorkers {
                     if(face.arm>0 && !Float.isNaN(point)){float ax=x-3.1f,ay=y;x=3.1f+ax*(float)StrictMath.cos(point)-ay*(float)StrictMath.sin(point);y=ax*(float)StrictMath.sin(point)+ay*(float)StrictMath.cos(point);}}
                 if(face.arm==0 && z<=9 && stride!=0){float swing=x<0?stride:-stride,dy=y,dz=z-9;y=dy*(float)StrictMath.cos(swing)-dz*(float)StrictMath.sin(swing);z=9+dy*(float)StrictMath.sin(swing)+dz*(float)StrictMath.cos(swing)+.4f;}
                 if(face.arm!=0 || face.xyz[2]>=9){float tilt=lean*.2f,dx=x,dz=z-9;x=dx*(float)StrictMath.cos(tilt)+dz*(float)StrictMath.sin(tilt);z=9-dx*(float)StrictMath.sin(tilt)+dz*(float)StrictMath.cos(tilt);}
-                xyz[i]=wx+x;xyz[i+1]=wy+y;xyz[i+2]=(GroundArt.LAND_RISE+z)/ArticulatedModel.Z_SCALE;
-                xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(GroundArt.LAND_RISE+z)*c.scale;
+                xyz[i]=wx+x;xyz[i+1]=wy+y;xyz[i+2]=(rise+z)/ArticulatedModel.Z_SCALE;
+                xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(rise+z)*c.scale;
             }
             int lit=SceneryLighting.polygon(g,xyz,face.color,face.material);
             if(face.material<0)p.poly(xy,lit);else p.surfacePolygon(xy,face.uv,face.material|SurfaceMaterial.LIT,lit,0);

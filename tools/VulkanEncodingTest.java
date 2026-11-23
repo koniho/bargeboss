@@ -51,7 +51,15 @@ public class VulkanEncodingTest {
   }
   System.out.println("24 prelit Vulkan material/preset combinations preserve texture and supplied color");
  }
+ static void shadedColors()throws Exception{
+  Painter p=make(VulkanPainter.class);start(p);p.shadedTriangle(1,2,0x80ff0000,3,4,0xff00ff00,5,6,0x000000ff);
+  float[] v=(float[])read(p,"vertices");if((Integer)read(p,"used")!=18)throw new AssertionError("gradient must retain compact vertex stride");
+  float alpha=128/255f;
+  if(v[0]!=1||v[1]!=2||v[2]!=alpha||v[3]!=0||v[4]!=0||v[5]!=alpha||v[8]!=0||v[9]!=1||v[10]!=0||v[11]!=1||v[14]!=0||v[15]!=0||v[16]!=0||v[17]!=0)throw new AssertionError("premultiplied gradient encoding");
+  System.out.println("Native gradient colors preserve per-vertex alpha and compact encoding");
+ }
  public static void main(String[] args)throws Exception{
+  shadedColors();
   thinPolygons();litSurfaces();
   String[] expected={"daacc2aa3615cefaec1fc3b98118e8e00be33629cc243ab31be1b46f8a4dc2ea",
    "0e7092c8057cd60ff2f1dfcca91800fdfef50a57f3e843b34ba7b89497a67857",

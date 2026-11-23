@@ -9,7 +9,7 @@ public final class NormalBoatReview {
         BufferedImage sheet=ImageIO.read(new File("assets/sprites/montrose-moored-normals-v1.png"));
         BufferedImage base=ImageIO.read(new File("assets/sprites/montrose-moored-boats-v1.png"));
         int checks=0;
-        for(int f=0;f<192;f++)for(int y=0;y<128;y++)for(int x=0;x<128;x++){
+        for(int f=0;f<MooredBoats.BASE_FRAMES;f++)for(int y=0;y<128;y++)for(int x=0;x<128;x++){
             int sx=f%16*128+x,sy=f/16*128+y,n=sheet.getRGB(sx,sy),b=base.getRGB(sx,sy);
             if((n>>>24)!=(b>>>24))throw new AssertionError("normal silhouette mismatch "+f);
             if((n>>>24)>250){if((n&255)>205)throw new AssertionError("height outside model");checks++;}
@@ -44,6 +44,6 @@ public final class NormalBoatReview {
         float near=BoatSurfaceLight.response(0xff808000,.5f,.7f,0,0,13,90);
         float far=BoatSurfaceLight.response(0xff808000,.5f+24*RiverCamera.Q/96,.7f-24*RiverCamera.Q*RiverCamera.DEPTH/96,0,0,13,90);
         if(near<far*1.5f)throw new AssertionError("surface distance ignored");
-        System.out.println(checks+" packed surface-height checks and 192 exact silhouette registrations passed");
+        System.out.println(checks+" packed surface-height checks and 224 exact silhouette registrations passed");
     }
 }
