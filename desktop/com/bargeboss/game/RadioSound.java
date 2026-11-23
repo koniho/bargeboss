@@ -21,6 +21,14 @@ final class RadioSound {
             }
         }catch(Exception e){System.err.println("Audio unavailable: "+e.getMessage());return null;}
     }
+    private static void volume(Clip clip,float gain){
+        if(clip==null)return;
+        if(gain<=0){clip.stop();return;}
+        if(clip.isControlSupported(FloatControl.Type.MASTER_GAIN)){
+            FloatControl control=(FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
+            control.setValue(Math.max(control.getMinimum(),Math.min(control.getMaximum(),20*(float)Math.log10(gain))));
+        }
+    }
     private void loops(Game root){
         for(int i=0;i<loops.length;i++){
             float gain=EngineAudio.gain(root,i);Clip c=loops[i];
@@ -42,6 +50,7 @@ final class RadioSound {
         int next=SoundEffects.sequence(root);
         if(active.mode!=Game.PLAY){sequence=next;stop();return;}
         loops(root);
+        for(Clip clip:clips)volume(clip,SoundEffects.gain(root));
         if(next==sequence)return;sequence=next;
         if(SoundEffects.audible(root)){int cue=SoundEffects.cue(root);for(int i=0;i<clips.length;i++)if(clips[i]!=null && SoundEffects.interrupts(cue,i))clips[i].stop();Clip clip=clips[cue];if(clip!=null){clip.setFramePosition(0);clip.start();}}
     }

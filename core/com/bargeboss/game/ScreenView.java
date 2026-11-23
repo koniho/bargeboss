@@ -116,11 +116,11 @@ public final class ScreenView {
     }
     public static void settings(Game g,Painter p) {
         p.rect(0,0,g.layout.width,g.layout.height,NAVY);p=menu(g,p);
-        PilotGlass.panel(p,180,96,600,436,0xf0101c30);
-        heading(p,"YOUR CONTROLS",212,124,28,524,PAPER);
-        text(p,"MAKE THE HELM COMFORTABLE",212,162,10,MUTED);
-        heading(p,"THROTTLE SIDE",212,202,17,265,PAPER);
-        text(p,"CHOOSE YOUR DRIVING HAND",212,228,10,MUTED);
+        PilotGlass.panel(p,180,44,600,490,0xf0101c30);
+        heading(p,"SETTINGS",212,68,28,524,PAPER);
+        text(p,"MAKE THE HELM COMFORTABLE",212,108,10,MUTED);
+        heading(p,"THROTTLE SIDE",212,143,17,265,PAPER);
+        text(p,"CHOOSE YOUR DRIVING HAND",212,169,10,MUTED);
         boolean left=g.settings.joystickSide()==GameSettings.LEFT;
         Layout.Box[] sides={Layout.JOYSTICK_LEFT,Layout.JOYSTICK_RIGHT};
         for(int i=0;i<2;i++){
@@ -128,13 +128,26 @@ public final class ScreenView {
             PilotGlass.segment(p,b.x,b.y,b.w,b.h,selected);
             center(p,i==0?"LEFT":"RIGHT",b.centerX()+5,b.y+20,14,selected?GOLD:PAPER);
         }
-        p.line(212,264,736,264,1,PilotGlass.TRACK);
-        heading(p,"HAPTIC FEEDBACK",212,292,17,390,PAPER);
-        text(p,"FEEL CONTACTS AND CONTROL CUES",212,319,10,MUTED);
-        PilotGlass.toggle(p,672,292,g.hapticsEnabled);
-        text(p,g.hapticsEnabled?"ON":"OFF",631,301,11,g.hapticsEnabled?GOLD:MUTED);
-        text(p,"THROTTLE TO DRIVE. HOLD CARGO TO ASSIST.",212,375,11,MUTED);
+        p.line(212,196,736,196,1,PilotGlass.TRACK);
+        heading(p,"HAPTIC FEEDBACK",212,212,17,390,PAPER);
+        text(p,"FEEL CONTACTS AND CONTROL CUES",212,239,10,MUTED);
+        PilotGlass.toggle(p,672,212,g.hapticsEnabled);
+        text(p,g.hapticsEnabled?"ON":"OFF",631,221,11,g.hapticsEnabled?GOLD:MUTED);
+        p.line(212,266,736,266,1,PilotGlass.TRACK);
+        audioRow(p,"SOUND","ENGINE, RADIO AND EFFECTS",Layout.SOUND_LEVEL,Layout.SOUND_MUTE,g.settings.soundLevel(),g.settings.soundMuted());
+        audioRow(p,"MUSIC","NO MUSIC TRACK YET",Layout.MUSIC_LEVEL,Layout.MUSIC_MUTE,g.settings.musicLevel(),g.settings.musicMuted());
         button(g,p,Layout.SETTINGS_BACK,"DONE",true);
+    }
+    private static void audioRow(Painter p,String label,String detail,Layout.Box slider,Layout.Box mute,int level,boolean muted){
+        heading(p,label,212,slider.y+5,17,200,PAPER);
+        text(p,detail,212,slider.y+32,10,MUTED);
+        float x=slider.x+12,y=slider.centerY(),width=slider.w-24,thumb=x+width*level/100f;
+        int color=muted?MUTED:GOLD;
+        p.line(x,y,x+width,y,4,PilotGlass.TRACK);p.line(x,y,thumb,y,4,color);
+        p.circle(thumb,y,8,color);
+        center(p,level+"%",slider.centerX(),slider.y+48,11,color);
+        PilotGlass.segment(p,mute.x,mute.y,mute.w,mute.h,muted);
+        center(p,muted?"UNMUTE":"MUTE",mute.centerX()+(muted?7:0),mute.y+18,11,muted?GOLD:PAPER);
     }
     public static void pause(Game g,Painter p) {
         p=menu(g,p);

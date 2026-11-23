@@ -112,7 +112,7 @@ public final class Game {
     public final WaveControls waveControls=new WaveControls();
     public final Joystick joystick=new Joystick();
     public final OverviewMap overview=new OverviewMap();
-    private int settingsReturnMode=TITLE;
+    private int settingsReturnMode=TITLE,settingsSlider;
     public int challengeId,earnedStars,challengePage;
     public boolean rankPromoted;
     public Game() { reset(); mode=TITLE; }
@@ -174,15 +174,22 @@ public final class Game {
     public int feederDrops() { int count=0;for(Feeder f:feeders) count+=f.drops;return count; }
     public void restoreProgress(String value) {
         if(value==null || value.length()>64+Challenges.COUNT*24)return;
-        String progress=value;int side=GameSettings.LEFT;
-        if(value.startsWith("BBG1\n")) {
+        String progress=value;int side=GameSettings.LEFT;int[] audio={100,0,100,0};
+        if(value.startsWith("BBG1\n") || value.startsWith("BBG2\n")) {
             String[] parts=value.split("\n",-1);
-            if(parts.length!=3 || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
+            if(parts.length!=(value.startsWith("BBG2\n")?4:3) || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
             progress=parts[1];side=parts[2].charAt(0)-'0';
+            if(parts.length==4){
+                String[] values=parts[3].split(",",-1);if(values.length!=4)return;
+                for(int i=0;i<4;i++){
+                    try{audio[i]=Integer.parseInt(values[i]);}catch(NumberFormatException e){return;}
+                    if(audio[i]<0 || audio[i]>(i%2==0?100:1))return;
+                }
+            }
         }
-        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);}
+        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);settings.restoreAudio(audio);}
     }
-    public String saveProgress() { return "BBG1\n"+career.save()+"\n"+settings.joystickSide(); }
+    public String saveProgress() { return "BBG2\n"+career.save()+"\n"+settings.joystickSide()+"\n"+settings.audioSave(); }
     public int progressVersion() { return career.version()+settings.version(); }
     public void openSettings(){if(mode==SETTINGS)return;settingsReturnMode=mode;cancelInputs();accumulator=visualAccumulator=0;mode=SETTINGS;}
     public boolean selectChallenge(int id) {
@@ -570,7 +577,7 @@ public final class Game {
         if(practice!=null) { practice.cancel(); return; }
         if(pushing || joystick.active) { navigating=false; reversing=false; control=COASTING; }
         pinchZoom.cancelTouches();joystick.cancel();driveDirection=0;rescue.aiming=-1;
-        pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
+        settingsSlider=0;pointer=false; mapPointer=-1; mapInRiver=false; cargoPushGesture=false; pushing=false; ropeDragging=false; towAiming=false; towAimBody=null; navigating=false; held=-1; pressTicks=0; manualSteering=false;
     }
     public boolean holdingTug() { return pointer && held==-2; }
     public boolean canTie(Body b) { return ropePhase==0 && tieEligible(b); }
@@ -693,7 +700,13 @@ public final class Game {
             if(!worldTouch(x,y)) return;
         } else if(x<0 || x>layout.width || y<0 || y>layout.height) return;
         pointer=true; driveDirection=0; tapCandidate=true; cargoPushGesture=false; mapInRiver=river; pointerX=downX=x; pointerY=downY=y; pressTicks=0; held=-1;
-        if(!river) return;
+        if(!river) {
+            if(mode==SETTINGS){
+                settingsSlider=tapped(Layout.MUSIC_LEVEL,x,y)?1:tapped(Layout.SOUND_LEVEL,x,y)?2:0;
+                adjustAudioSlider(x);
+            }
+            return;
+        }
         if(tug.lineAttached && overTiePoint(tug,x,y)){held=-3;return;}
         if(MontroseRescue.swimmers(this)){int swimmer=rescue.swimmerAt(this,x,y);if(swimmer>=0){rescue.aiming=swimmer;return;}}
         // Pick the nearest eligible hull before classifying the gesture. A
@@ -718,10 +731,17 @@ public final class Game {
         }
     }
 
+    private void adjustAudioSlider(float x){
+        if(settingsSlider==0)return;
+        Layout.Box b=layout.box(settingsSlider==1?Layout.MUSIC_LEVEL:Layout.SOUND_LEVEL);
+        int level=Math.round(Physics.clamp((x-b.x-12)/(b.w-24),0,1)*100);
+        if(settingsSlider==1)settings.setMusicLevel(level);else settings.setSoundLevel(level);
+    }
     public void move(float x,float y) {
         if(practice!=null) { practice.move(x,y); return; }
         if(pointer) {
             pointerX=x; pointerY=y;
+            if(mode==SETTINGS){adjustAudioSlider(x);return;}
             if(!mapInRiver) return;
             float distance=Physics.length(x-downX,y-downY);
             if(distance>22) tapCandidate=false;
@@ -754,6 +774,7 @@ public final class Game {
             return;
         }
         if(!pointer) return;
+        if(mode==SETTINGS && settingsSlider!=0){adjustAudioSlider(x);cancel();return;}
         if(mapInRiver && MontroseRescue.swimmers(this) && rescue.aiming>=0){rescue.release(this,x,y);cancel();return;}
         if(mapInRiver && tapCandidate && MontroseRescue.cruisers(this) && rescue.tapRaft(this,x,y)){cancel();return;}
         if(mapInRiver && held==-3){if(tapCandidate && overTiePoint(tug,x,y))SlipMooring.release(this);cancel();return;}
@@ -794,6 +815,8 @@ public final class Game {
             if(tap) {
                 if(tapped(Layout.JOYSTICK_LEFT,x,y))settings.setJoystickSide(GameSettings.LEFT);
                 else if(tapped(Layout.JOYSTICK_RIGHT,x,y))settings.setJoystickSide(GameSettings.RIGHT);
+                else if(tapped(Layout.MUSIC_MUTE,x,y))settings.toggleMusicMute();
+                else if(tapped(Layout.SOUND_MUTE,x,y))settings.toggleSoundMute();
                 else if(tapped(Layout.HAPTICS,x,y)) {
                     hapticsEnabled=!hapticsEnabled;hapticPending=0;
                     if(hapticsEnabled)haptic(HAPTIC_TICK);

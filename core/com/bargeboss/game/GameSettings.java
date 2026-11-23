@@ -4,6 +4,20 @@ package com.bargeboss.game;
 public final class GameSettings {
     public static final int OFF=0,LEFT=1,RIGHT=2;
     private int side=LEFT,version;
+    private int musicLevel=100,soundLevel=100;
+    private boolean musicMuted,soundMuted;
+    public int musicLevel(){return musicLevel;}
+    public int soundLevel(){return soundLevel;}
+    public boolean musicMuted(){return musicMuted;}
+    public boolean soundMuted(){return soundMuted;}
+    public float musicGain(){return musicMuted?0:musicLevel*.01f;}
+    public float soundGain(){return soundMuted?0:soundLevel*.01f;}
+    public void setMusicLevel(int value){value=Math.max(0,Math.min(100,value));if(value!=musicLevel){musicLevel=value;version++;}}
+    public void setSoundLevel(int value){value=Math.max(0,Math.min(100,value));if(value!=soundLevel){soundLevel=value;version++;}}
+    public void toggleMusicMute(){musicMuted=!musicMuted;version++;}
+    public void toggleSoundMute(){soundMuted=!soundMuted;version++;}
+    String audioSave(){return musicLevel+","+(musicMuted?1:0)+","+soundLevel+","+(soundMuted?1:0);}
+    void restoreAudio(int[] values){musicLevel=values[0];musicMuted=values[1]==1;soundLevel=values[2];soundMuted=values[3]==1;}
     public boolean developerWaves,developerTools;
     /** Render-only diagnostic: 0 solid water, 1 vessel effects, 2 all detail. Never persisted. */
     public int waterDetail=2;

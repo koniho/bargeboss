@@ -116,7 +116,12 @@ public final class Parity implements Painter {
         for(int side:new int[]{GameSettings.LEFT,GameSettings.RIGHT}) {
             g.activeGame().openSettings();
             ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:Layout.JOYSTICK_RIGHT);
-            Renderer.draw(g,p);p.add(filenameHash(g.saveProgress()));ReplayInput.tap(g,Layout.SETTINGS_BACK);
+            ReplayInput.tap(g,Layout.SOUND_LEVEL);ReplayInput.tap(g,Layout.SOUND_MUTE);
+            ReplayInput.tap(g,Layout.MUSIC_LEVEL);ReplayInput.tap(g,Layout.MUSIC_MUTE);
+            Renderer.draw(g,p);p.add(filenameHash(g.saveProgress()));
+            Game saved=new Game();saved.restoreProgress(g.saveProgress());p.add(filenameHash(saved.saveProgress()));
+            p.value(saved.settings.soundGain());p.value(saved.settings.musicGain());
+            ReplayInput.tap(g,Layout.SETTINGS_BACK);
             Game active=g.activeGame();float x=Joystick.centerX(active),y=Joystick.centerY(active);
             g.pointerDown(4,x,y);g.pointerMove(4,x+28,y-28);
             for(int tick=0;tick<30;tick++){g.step();p.value(active.tug.x);p.value(active.tug.y);p.value(active.tug.angle);}

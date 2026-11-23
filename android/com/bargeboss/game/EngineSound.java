@@ -42,11 +42,13 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
             if(streams[i]==0)streams[i]=pool.play(sounds[i],gain,gain,1,-1,rate);
             else{pool.setVolume(streams[i],gain,gain);pool.setRate(streams[i],rate);}
         }
+        float effectGain=SoundEffects.gain(game);
+        for(int stream:effects)if(stream!=0)pool.setVolume(stream,effectGain,effectGain);
         int sequence=SoundEffects.sequence(game);
         if(sequence!=radioSequence){radioSequence=sequence;if(SoundEffects.audible(game)){
             int cue=SoundEffects.cue(game);
             for(int i=0;i<effects.length;i++)if(SoundEffects.interrupts(cue,i) && effects[i]!=0){pool.stop(effects[i]);effects[i]=0;}
-            int radioStream=effects[cue]=pool.play(sounds[EngineAudio.LAYERS+cue],.85f,.85f,2,0,1);
+            int radioStream=effects[cue]=pool.play(sounds[EngineAudio.LAYERS+cue],effectGain,effectGain,2,0,1);
             if(trace)android.util.Log.i("BargeBossAudio","cue="+SoundEffects.cue(game)+" stream="+radioStream+" tick="+active.ticks+" asset="+SoundEffects.asset(SoundEffects.cue(game)));
         }}
     }

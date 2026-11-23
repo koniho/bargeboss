@@ -66,6 +66,7 @@
         }
         _playing=YES;
     }
+    for(AVAudioPlayer *clip in _radio)clip.volume=[BBSoundEffects gainWithBBGame:game];
     jint sequence=[BBSoundEffects sequenceWithBBGame:game];
     if(sequence!=_radioSequence){
         _radioSequence=sequence;

@@ -25,8 +25,10 @@ Pause, cancellation, resize, reset and backgrounding clear its state.
 Settings pauses simulation and Back restores the previous screen. Practice shares
 player settings with its parent, but keeps its own career progress. Native hosts
 continue storing the opaque Game.saveProgress() string on progressVersion changes.
-The BBG1 wrapper contains the existing BB1 career snapshot plus joystick side;
-legacy BB1 saves load with a left joystick. Saved BBG1 Off (0) migrates to Left;
+The BBG2 wrapper contains the existing BB1 career snapshot, joystick side and
+independent music/sound levels and mute flags. BBG1 saves preserve joystick side
+and default audio to 100% unmuted; legacy BB1 saves also load with a left joystick.
+Saved Off (0) migrates to Left;
 there is no Off button because that would leave no manual driving control. Invalid wrappers are ignored atomically.
 No native gameplay or input rule is added.
 

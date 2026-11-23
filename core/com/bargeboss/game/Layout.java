@@ -5,9 +5,11 @@ public final class Layout {
     public static final int WIDTH=960, HEIGHT=600, HEADER_HEIGHT=80, FOOTER_TOP=520;
     public static final float STATUS_CENTER_X=300, STATUS_LABEL_Y=530, STATUS_HINT_Y=552;
     public static final Box SETTINGS=new Box(682,10,94,60),
-            JOYSTICK_LEFT=new Box(500,196,112,54),JOYSTICK_RIGHT=new Box(624,196,112,54),
-            SETTINGS_BACK=new Box(212,428,524,64);
-    public static final Box HAPTICS=new Box(212,280,524,64);
+            JOYSTICK_LEFT=new Box(500,136,112,54),JOYSTICK_RIGHT=new Box(624,136,112,54),
+            SETTINGS_BACK=new Box(212,450,524,56);
+    public static final Box HAPTICS=new Box(212,202,524,56);
+    public static final Box SOUND_LEVEL=new Box(420,278,236,48), MUSIC_LEVEL=new Box(420,358,236,48),
+            SOUND_MUTE=new Box(668,278,80,48), MUSIC_MUTE=new Box(668,358,80,48);
     public static final Box HELP=new Box(722,534,102,50),
             PRACTICE=new Box(834,534,110,50);
     public static final Box TRAINING_HARBOR=new Box(60,444,840,54);
