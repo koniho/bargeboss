@@ -5770,3 +5770,28 @@ launch restored after capture; screen timeout restored to300000ms.
   JVM/J2ObjC parity passed with delivery count/score unchanged.
 - Full check.sh and Android Vulkan build passed, including 2,810 core assertions,
   491,037 moored-boat assertions, receiver/model tests and native encoding checks.
+### 2026-11-22 — Equipment controls replace chart HUD
+- Shared ten-tick smoothstep crossfade swaps chart/zoom slider for fire aim pad or
+  fireworks Launch button. Only transition frames draw both; fully selected
+  equipment skips chart preparation/drawing. Existing OpacityPainter/primitives,
+  no new textures, layers or particle capacity. No return-map button: same-hull
+  short tap deselects. Selection persists until deselected or hull becomes inactive.
+- Input uses fixed HUD bounds before world hull/rope routing. Chart zoom cannot
+  receive touches during either transition. Fire aim unprojects pad direction;
+  displacement controls 40–210-unit reach independent of camera zoom. Independent
+  pointer allows simultaneous throttle and nozzle use. Render never advances fades.
+- Focused checks passed: abilities/cooldown/cancel, both HUD sides, crossfade and
+  reversal, inactive hull, chart exclusion, drive+aim, world tow priority, and full
+  fireworks/fire rescue completion using the new aim-pad gestures.
+- Actual shared renderer reviewed in out/ability-{fire-panel,fireworks-panel,
+  map-crossfade}.png. Native validation follows in this round.
+- Full control replay exposed an overlap with tutorial DONE's Continue button;
+  equipment input/drawing now yields to the completion UI. ControlsTest and the
+  complete firefighting replay pass with the new HUD gestures.
+- Integrated incoming ab7252e marina surface-light receivers, preserving their
+  tests and performance entries. Combined canonical drawing 9795765b:2:1350.
+- Full check.sh/Android Vulkan build passed (2,810 core assertions plus asset,
+  shoreline, receiver/model and native encoding checks). Installed successfully;
+  actual Android fire-panel screenshot reviewed at out/ability-panel-native.png.
+  Restored normal launch. Fireworks and transition pixels reviewed through the
+  shared desktop renderer; no physical iOS or sustained-FPS claim for this round.

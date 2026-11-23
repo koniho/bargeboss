@@ -11,7 +11,7 @@ water rectangles, collision outline, retaining walls, ground cutouts and chart a
 After the player clears the narrow channel and uncouples both fireworks barges:
 
 1. The instructor congratulates the captain and requests a tiny victory display.
-   Tap the fireworks barge, then its single rocket button. Merely arriving or
+   Tap the fireworks barge, then Launch in the chart replacement panel. Merely arriving or
    waiting cannot complete this stage; earlier equipment use does not count.
 2. A large gold/cyan/red display launches. A stray ember follows an arc to the
    dock at(448,-1160), igniting it140 simulation ticks after activation.
@@ -19,8 +19,8 @@ After the player clears the narrow channel and uncouples both fireworks barges:
    separate fire barge through the winding south canal. Connect it to the tug and tow it into the target near
    (330,-1230), returning through both bends. Guidance follows the canal and the
    camera stays local during retrieval; existing boats are not teleported at a lesson boundary.
-4. Hold the fire barge's nozzle button and drag toward the flames. Aiming at the
-   visible flames resolves to the elevated dock target; nozzle range remains210
+4. Hold the fire barge's HUD aim pad, drag toward the flames and adjust reach with
+   drag distance. The nozzle range remains210
    world units. Simulated water particles remove fire heat on impact. Wrong aim,
    out-of-range spray, selection alone and idle time earn no extinguishing credit.
 5. The fire shrinks, turns to steam, and the instructor declares that we have

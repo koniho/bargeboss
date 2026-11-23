@@ -1,27 +1,34 @@
 # Specialized barge abilities
 
 Body.ability identifies equipment independently of cargo destination and tow
-slot. The tutorial's original first hull stays ordinary; the persistent pair
-beyond the first called bridge carries fireworks and Memphis-inspired fire
-pumps. The collection basin is now 700 units between bridges (y400 to -300).
+slot. The tutorial's original first hull stays ordinary; both barges in the
+train lesson carry fireworks. A separate Memphis-inspired fire barge waits in
+the southern basin. The collection basin is now 700 units between bridges (y400 to -300).
 The later train channel and exit basin move upstream by 500 units.
 
 Short press (<12 simulation ticks without drag/push) on an equipped barge
-reveals a pilot-glass equipment icon. A separate tap on the starburst launches
-a three-second sequence, with a four-second retrigger cooldown. The action
-does not change tow topology. A connected equipped barge also reveals a
-broken-line icon: tap that to release its incoming line. Ordinary barges retain
-tap-to-release. Hold/drag on hull still means assisted push or lasso; holding an
-equipment icon owns a separate pointer and cannot become a hull gesture.
+selects it. The chart and zoom slider crossfade to equipment controls over ten
+fixed ticks (about 0.17 seconds). Tap the same barge again to deselect; there is
+no Back to Map button and no selection timeout. A lost/inactive barge also returns
+the chart. Reselecting during a fade reverses from the current opacity.
 
-Hold the fire nozzle icon for 12 ticks and drag to aim in world coordinates.
-Two continuously rotating monitor barrels emit detached ballistic water stamps.
-Release, cancel, pause/background, reset or scene change stops pumping. Pump
-exhaust originates at its own local XYZ stack, never the tug's sprite anchor.
-This is usable spray equipment; fire targets and extinguishing missions have
-not been added in this round.
+The equipment panel occupies the chart's HUD space, opposite the configured
+throttle side. Fireworks use one Launch button, with a three-second sequence and
+four-second retrigger cooldown. The fire monitor uses a circular aiming pad:
+hold for 12 ticks to pump, drag in the desired on-screen direction, and drag
+farther from center for more reach (40–210 world units). Direction is unprojected
+through the shared camera; camera zoom does not change the control's reach.
+The center initially pumps forward. Release stops water. A second finger can
+operate the hose while the throttle remains held.
 
-Particles are fixed-step, deterministic and bounded to 192 slots. Rockets rise
+HUD input never falls through to vessels or chart zoom while equipment occupies
+the slot, including the short fade-out. Hull gestures outside that slot retain
+assisted pushing and lasso priority. Equipment actions never alter tow topology;
+tap the towline itself to disconnect. Pause/background, reset and switching or
+deselecting equipment cancel a held nozzle. Two rotating monitor barrels emit
+ballistic water stamps; real water impacts extinguish the tutorial's two piles.
+
+Particles are fixed-step, deterministic and bounded to 320 slots. Rockets rise
 before spawning bursts. Airborne effects merge with collision spray using
 waterplane depth and shore occlusion. Native hosts own neither selection nor
 ability state. Upcoming tutorial assets explicitly prewarm both equipment

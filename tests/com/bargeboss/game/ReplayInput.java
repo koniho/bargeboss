@@ -245,6 +245,13 @@ public final class ReplayInput {
         if(radio.contactable(g)){if(g.pointer)up(root,g.pointerX,g.pointerY);tap(root,radio.houseX(g,index),radio.houseY(g,index));return true;}
         drive(g,300,g.passages.bridges[index].y+100);return true;
     }
+    static void hoseAim(Game root,int id,float wx,float wy){
+        Game g=root.activeGame();Body b=g.abilities.selected;RiverCamera c=g.layout.camera;
+        float dx=c.screenX(wx,wy)-c.screenX(b.x,b.y),dy=c.screenY(wx,wy)-c.screenY(b.x,b.y);
+        float distance=Math.max(.001f,Physics.length(dx,dy));
+        float reach=Math.min(210,Physics.length(wx-b.x,wy-b.y))/210*BargeAbilities.AIM_RADIUS;
+        root.pointerMove(id,g.abilities.buttonX(g,0)+dx/distance*reach,g.abilities.buttonY(g)+dy/distance*reach);
+    }
     static void abilityLesson(Game root){
         Game g=root.activeGame();boolean fire=g.tutorial.lesson==Tutorial.EXTINGUISH;
         Body b=fire?g.cargo[3]:g.cargo[0];
@@ -256,7 +263,7 @@ public final class ReplayInput {
         if(!fire){tap(root,x,y);return;}
         if(g.abilities.owner<0)root.pointerDown(88,x,y);
         int pile=g.tutorial.fireworks.targetPile();
-        root.pointerMove(88,g.layout.camera.screenX(FireworksLesson.x(pile),FireworksLesson.y(pile)),g.layout.camera.screenY(FireworksLesson.x(pile),FireworksLesson.y(pile))-GroundArt.LAND_RISE*g.layout.camera.scale);
+        hoseAim(root,88,FireworksLesson.x(pile),FireworksLesson.y(pile));
     }
     public static void tutorial(Game root) {
         Game g=root.activeGame();

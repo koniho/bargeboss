@@ -17,8 +17,8 @@ public final class TowPriorityTest {
         Game g=fixture();Body first=g.cargo[0];first.ability=BargeAbilities.FIREWORKS;g.abilities.reveal(g,first);
         float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);
         Body spare=new Body(2,2,g.layout.camera.worldX(x,y),g.layout.camera.worldY(x,y),0);g.cargo[1]=spare;
-        check(Physics.length(g.abilities.buttonX(g,0)-x,g.abilities.buttonY(g)-y)>25,"ability button moves aside instead of covering a hull");
-        g.pointerDown(44,x,y);check(g.heldCargo()==spare && g.abilities.owner==-1,"barge under an ability icon owns its drag");g.pointerCancel(44);
+        check(Physics.length(g.abilities.buttonX(g,0)-x,g.abilities.buttonY(g)-y)<.01f,"ability control stays fixed in HUD when hull passes behind");
+        g.pointerDown(44,x,y);check(g.heldCargo()==null && g.abilities.owner==44,"fixed HUD control owns touch above underlying barge");g.pointerCancel(44);
         g=fixture();g.tow.attach(g,g.cargo[0]);Towline line=g.tow.incoming(g.cargo[0]);
         x=TowRelease.point(g,line,.5f,true);y=TowRelease.point(g,line,.5f,false);
         spare=new Body(2,2,g.layout.camera.worldX(x,y),g.layout.camera.worldY(x,y),0);g.cargo[1]=spare;

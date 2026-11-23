@@ -22,7 +22,7 @@ public final class FireworksLessonTest {
         check(g.tutorial.lesson==Tutorial.EXTINGUISH && Tutorial.direct(g,fire),"public rope gesture and towing collect the separate fire barge");
         ReplayInput.down(g,fire.x,fire.y);ReplayInput.up(g,fire.x,fire.y);
         float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);g.pointerDown(88,x,y);
-        g.pointerMove(88,g.layout.camera.screenX(fire.x-130,fire.y),g.layout.camera.screenY(fire.x-130,fire.y));
+        ReplayInput.hoseAim(g,88,fire.x-130,fire.y);
         steps(g,200);check(g.abilities.spraying && g.tutorial.fireworks.heat==FireworksLesson.HEAT,"spraying away from flames earns no credit");
         g.pointerCancel(88);check(!g.abilities.spraying,"cancel stops water emission");
         for(int i=0;i<1400 && g.tutorial.lesson!=Tutorial.DONE;i++){ReplayInput.tutorial(g);g.step();}

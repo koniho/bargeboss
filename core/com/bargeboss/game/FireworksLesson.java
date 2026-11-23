@@ -53,8 +53,8 @@ final class FireworksLesson {
         boolean fire=g.tutorial.lesson>=Tutorial.FIRE_TOW;
         boolean collect=g.tutorial.lesson==Tutorial.FIRE_TOW;
         String title=fire?"THAT WAS NOT THE TINY BUTTON.":launched?"PERHAPS A LITTLE TOO FESTIVE...":"YOU PASSED! CUE THE FIREWORKS.";
-        String first=fire?"SMALL UPDATE: WE LIT BOTH WOODPILES.":launched?"I SAID CONFETTI. THAT IS A SMALL SUN.":"TAP THE FIREWORKS BARGE, THEN ITS ROCKET.";
-        String second=collect?(Tutorial.direct(g,g.cargo[3])?"TOW THE FIRE BARGE INTO THE MARKED WATER.":"FETCH THE FIRE BARGE THROUGH THE SOUTH CANAL."):fire?(remaining()==1?"ONE PILE OUT! SPRAY THE OTHER ONE.":"HOLD THE NOZZLE. SPRAY BOTH WOODPILES."):launched?"WHO PARKED ALL THAT FIREWOOD THERE?":"A TINY VICTORY DISPLAY. YOU HAVE EARNED IT.";
+        String first=fire?"SMALL UPDATE: WE LIT BOTH WOODPILES.":launched?"I SAID CONFETTI. THAT IS A SMALL SUN.":"TAP THE FIREWORKS BARGE, THEN TAP LAUNCH.";
+        String second=collect?(Tutorial.direct(g,g.cargo[3])?"TOW THE FIRE BARGE INTO THE MARKED WATER.":"FETCH THE FIRE BARGE THROUGH THE SOUTH CANAL."):fire?(remaining()==1?"ONE PILE OUT! SPRAY THE OTHER ONE.":"USE THE AIM PAD. SPRAY BOTH WOODPILES."):launched?"WHO PARKED ALL THAT FIREWOOD THERE?":"A TINY VICTORY DISPLAY. YOU HAVE EARNED IT.";
         InstructionPanel.Content radio=rescueRadio.content(g,second);if(radio!=null)return radio;
         return new InstructionPanel.Content("fireworks-lesson-"+g.tutorial.lesson+":"+launched,title,first,second,-1,fire?1-heat/(float)HEAT:0,"INSTRUCTOR / CHANNEL 08",fire?"FIRE RESPONSE":"EQUIPMENT PRACTICE");
     }

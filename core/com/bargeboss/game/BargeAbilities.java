@@ -7,52 +7,55 @@ public final class BargeAbilities {
     public int owner=-1,heldTicks,visibleTicks,launches;
     public boolean spraying;
     private int pressed=-1,next,screenFlash;
-    private float aimX,aimY;
+    private float aimX,aimY,stickX,stickY,blend;
+    private Body panelBody;
+    static final float AIM_RADIUS=60;
     private final float[] x=new float[CAPACITY],y=new float[CAPACITY],z=new float[CAPACITY],vx=new float[CAPACITY],vy=new float[CAPACITY],vz=new float[CAPACITY];
     private final boolean[] rocket=new boolean[CAPACITY],flash=new boolean[CAPACITY];
     private final float[] travel=new float[CAPACITY];
     private final int[] age=new int[CAPACITY];
     private final int[] life=new int[CAPACITY],color=new int[CAPACITY];
-    public void reset(){selected=null;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
+    public void reset(){selected=panelBody=null;blend=0;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
     public void cancel(){owner=-1;pressed=-1;spraying=false;heldTicks=0;}
     public boolean reveal(Game g,Body b){
         if(b==null || !b.active || b.ability==NONE)return false;
-        selected=b;visibleTicks=600;g.haptic(Game.HAPTIC_TICK);return true;
+        if(selected==b){selected=null;visibleTicks=0;cancel();g.haptic(Game.HAPTIC_TICK);return true;}
+        cancel();selected=panelBody=b;visibleTicks=600;g.overview.cancelTouch();g.haptic(Game.HAPTIC_TICK);return true;
     }
     public float buttonX(Game g,int button){return buttonPoint(g,true);}
     public float buttonY(Game g){return buttonPoint(g,false);}
     private float buttonPoint(Game g,boolean horizontal){
-        float sx=g.layout.camera.screenX(selected.x,selected.y),sy=g.layout.camera.screenY(selected.x,selected.y)-82*g.layout.camera.scale;
-        float x=Physics.clamp(sx,78,g.layout.width-78),y=Physics.clamp(sy,110,g.layout.height-110);
-        // Floating actions must not cover another hull's primary drag surface.
-        for(int i=0;i<9;i++){
-            int column=i%3,row=i/3;
-            float xx=Physics.clamp(sx+(column==0?0:column==1?-68:68),78,g.layout.width-78);
-            float yy=Physics.clamp(sy-row*60,110,g.layout.height-110);
-            if(!g.cargoTouch(xx,yy) && !g.cargoTouch(xx-20,yy) && !g.cargoTouch(xx+20,yy)
-                    && !g.cargoTouch(xx,yy-20) && !g.cargoTouch(xx,yy+20))return horizontal?xx:yy;
-        }
-        return horizontal?x:y;
+        Layout.Box box=OverviewMap.bounds(g);return horizontal?box.centerX():box.y+102;
     }
-    private boolean visible(Game g){return g.mode==Game.PLAY && !g.conversation() && selected!=null && selected.active && visibleTicks>0;}
-    private boolean hit(Game g,float px,float py,int button){return Math.abs(px-buttonX(g,button))<=24 && Math.abs(py-buttonY(g))<=24;}
+    float opacity(){return blend*blend*(3-2*blend);}
+    boolean replacesMap(){return selected!=null || blend>0;}
+    private boolean available(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson<Tutorial.DONE);}
+    private boolean visible(Game g){return available(g) && !g.conversation() && selected!=null && selected.active;}
+    private boolean hit(Game g,float px,float py,int button){return selected!=null && selected.ability==FIREWORKS?Math.abs(px-buttonX(g,0))<=68 && Math.abs(py-buttonY(g))<=62:Physics.length(px-buttonX(g,0),py-buttonY(g))<=AIM_RADIUS+10;}
     public boolean down(Game g,int id,float px,float py){
-        if(!visible(g) || owner!=-1 || g.pointer)return false;
-        int which=hit(g,px,py,0)?0:-1;
-        if(which<0)return false;
-        owner=id;pressed=which;heldTicks=0;aimX=selected.x+(float)StrictMath.cos(selected.angle)*180;aimY=selected.y+(float)StrictMath.sin(selected.angle)*180;visibleTicks=600;return true;
+        if(!available(g) || g.conversation() || !replacesMap())return false;
+        Layout.Box box=OverviewMap.bounds(g);
+        if(px<box.x || px>box.x+box.w || py<box.y || py>g.layout.height-4)return false;
+        // This is HUD space even when a vessel happens to pass behind it.
+        if(owner!=-1 || !visible(g) || !hit(g,px,py,0))return true;
+        owner=id;pressed=0;heldTicks=0;stickX=stickY=0;
+        aimX=selected.x+(float)StrictMath.cos(selected.angle)*180;
+        aimY=selected.y+(float)StrictMath.sin(selected.angle)*180;
+        if(selected.ability==FIRE)aim(g,px,py);
+        return true;
+    }
+    private void aim(Game g,float px,float py){
+        float dx=px-buttonX(g,0),dy=py-buttonY(g),len=Physics.length(dx,dy);
+        if(len<4)return;
+        float limited=Math.min(AIM_RADIUS,len);stickX=dx/len*limited;stickY=dy/len*limited;
+        RiverCamera c=g.layout.camera;float cx=buttonX(g,0),cy=buttonY(g);
+        float wx=c.worldX(cx+dx,cy+dy)-c.worldX(cx,cy),wy=c.worldY(cx+dx,cy+dy)-c.worldY(cx,cy);
+        float world=Math.max(.001f,Physics.length(wx,wy)),range=Physics.clamp(limited/AIM_RADIUS*210,40,210);
+        aimX=selected.x+wx/world*range;aimY=selected.y+wy/world*range;
     }
     public boolean move(Game g,int id,float px,float py){
         if(owner!=id)return false;
-        if(selected.ability==FIRE && pressed==0){aimX=g.layout.camera.worldX(px,py);aimY=g.layout.camera.worldY(px,py);
-            if(g.tutorial!=null && g.tutorial.fireworks.heat>0)for(int pile=0;pile<FireworksLesson.PILES;pile++){
-                if(g.tutorial.fireworks.heat(pile)==0)continue;
-                float x=FireworksLesson.x(pile),y=FireworksLesson.y(pile);
-                RiverCamera c=g.layout.camera;float fx=c.screenX(x,y),fy=c.screenY(x,y)-GroundArt.LAND_RISE*c.scale;
-                if(Math.abs(px-fx)<38*c.scale && py>fy-65*c.scale && py<fy+20*c.scale){aimX=x;aimY=y;break;}
-            }
-            int worker=g.crew.aim(g,px,py);if(worker>=0){aimX=g.crew.x(worker);aimY=g.crew.y(worker);}
-        }
+        if(selected!=null && selected.ability==FIRE)aim(g,px,py);
         return true;
     }
     public boolean up(Game g,int id,float px,float py){
@@ -64,8 +67,10 @@ public final class BargeAbilities {
     }
     public void step(Game g){
         if(screenFlash>0)screenFlash--;
-        if(visibleTicks>0 && owner==-1)visibleTicks--;
-        if(selected!=null && !selected.active){selected=null;cancel();}
+        if(selected!=null && selected.active)visibleTicks=600;
+        blend=Physics.clamp(blend+(selected!=null && selected.active?.1f:-.1f),0,1);
+        if(selected!=null && !selected.active){selected=null;visibleTicks=0;cancel();}
+        if(blend==0 && selected==null)panelBody=null;
         if(owner!=-1){heldTicks++;spraying=pressed==0 && selected!=null && selected.ability==FIRE && heldTicks>=12;}
         for(Body b:g.cargo)if(b!=null && b.active){
             if(b.abilityCooldown>0)b.abilityCooldown--;
@@ -80,6 +85,7 @@ public final class BargeAbilities {
             }
         }
         if(spraying && selected!=null){
+            if(Physics.length(stickX,stickY)>=4)aim(g,buttonX(g,0)+stickX,buttonY(g)+stickY);
             float dx=aimX-selected.x,dy=aimY-selected.y,len=Math.max(1,Physics.length(dx,dy));
             float range=Physics.clamp(len,40,210),flight=.9f;
             float targetX=selected.x+dx/len*range,targetY=selected.y+dy/len*range;
@@ -156,15 +162,33 @@ public final class BargeAbilities {
             }
         }finally{if(clip.length>0)p.popClip();}
     }
+    /** Map and equipment share the same HUD slot; only the ten-tick transition draws both. */
+    public void drawMap(Game g,Painter p){
+        float alpha=1-opacity();if(alpha<=0)return;
+        OverviewMap.draw(g,alpha>=1?p:new OpacityPainter(p,alpha));
+    }
     public void drawUI(Game g,Painter p){
-        if(!visible(g))return;
-        for(int button=0;button<1;button++){
-            float cx=buttonX(g,button),cy=buttonY(g);PilotGlass.button(p,cx-23,cy-23,46,46,button==0);
-            int ink=PilotGlass.buttonText(button==0);
-            int tint=selected.abilityCooldown>0 && button==0?0xff695b3b:ink;
-            int icon=selected.ability==FIRE?ArcadeIcons.WATER:ArcadeIcons.FIREWORK;
-            float pulse=button==0 && selected.abilityCooldown<=0?1+.055f*(float)StrictMath.sin(g.visualTicks*.1):1;
-            ArcadeIcons.draw(p,icon,cx,cy,.85f*pulse,tint);
+        if(!available(g) || g.conversation() || panelBody==null || blend<=0)return;
+        p=new OpacityPainter(p,opacity());Layout.Box box=OverviewMap.bounds(g);
+        float cx=buttonX(g,0),cy=buttonY(g);boolean fire=panelBody.ability==FIRE;
+        PilotGlass.panel(p,box.x,box.y,box.w,g.layout.height-4-box.y,PilotGlass.FILL);
+        Lettering.center(p,fire?"FIRE MONITOR":"FIREWORKS",cx,box.y+12,13,PilotGlass.TEXT);
+        if(fire){
+            SoftCue.ring(p,cx,cy,AIM_RADIUS,2.4f,0xcc28e7ff,1);
+            SoftCue.ring(p,cx,cy,22,1,0x4059b8c8,1);
+            for(int i=0;i<4;i++){double a=i*StrictMath.PI/2;float dx=(float)StrictMath.cos(a),dy=(float)StrictMath.sin(a);p.line(cx+dx*51,cy+dy*51,cx+dx*60,cy+dy*60,2,0xaa28e7ff);}
+            float sx=owner>=0?stickX:0,sy=owner>=0?stickY:0;
+            p.line(cx,cy,cx+sx,cy+sy,3,0xb828e7ff);
+            p.circle(cx+sx,cy+sy,15,owner>=0?PilotGlass.AMBER:0xff224052);
+            ArcadeIcons.draw(p,ArcadeIcons.WATER,cx+sx,cy+sy,.55f,owner>=0?PilotGlass.NAVY:PilotGlass.TEXT);
+            Lettering.center(p,"HOLD + DRAG TO AIM",cx,box.y+174,9,PilotGlass.TEXT);
+            Lettering.center(p,"DRAG FARTHER FOR REACH",cx,box.y+194,7,PilotGlass.MUTED);
+        }else{
+            boolean ready=panelBody.abilityCooldown==0;
+            PilotGlass.button(p,cx-68,cy-62,136,124,ready);
+            ArcadeIcons.draw(p,ArcadeIcons.FIREWORK,cx,cy-8,1.65f,ready?PilotGlass.NAVY:PilotGlass.MUTED);
+            Lettering.center(p,ready?"LAUNCH":"RELOADING",cx,cy+37,12,ready?PilotGlass.NAVY:PilotGlass.MUTED);
+            Lettering.center(p,"TAP TO CELEBRATE",cx,box.y+184,9,PilotGlass.TEXT);
         }
     }
 }

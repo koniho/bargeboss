@@ -26,7 +26,7 @@ public final class OverviewMap {
         zoom=MIN_ZOOM*(float)StrictMath.pow(maxZoom(g)/MIN_ZOOM,level);
     }
     static Layout.Box sliderBounds(Game g){Layout.Box map=bounds(g);return new Layout.Box(map.x,g.layout.height-48,map.w,44);}
-    static boolean sliderHit(Game g,float x,float y){return visible(g) && sliderBounds(g).contains(x,y);}
+    static boolean sliderHit(Game g,float x,float y){return visible(g) && !g.abilities.replacesMap() && sliderBounds(g).contains(x,y);}
     // Center on each axis only while the enlarged play area covers the viewport.
     // A shorter axis retains its top/left alignment instead of introducing a gap.
     private static float offset(float player,float span,float view){

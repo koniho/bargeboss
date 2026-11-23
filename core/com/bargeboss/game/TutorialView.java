@@ -47,7 +47,7 @@ public final class TutorialView {
             second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% / CROSS THROUGH THE MIDDLE";
         if(g.abilities.selected!=null && g.abilities.visibleTicks>0){
             Body equipment=g.abilities.selected;
-            return new InstructionPanel.Content("ability-"+equipment.ability,"BARGE EQUIPMENT",equipment.ability==BargeAbilities.FIREWORKS?"TAP THE STARBURST TO LAUNCH FIREWORKS.":"HOLD THE NOZZLE ICON, DRAG TO AIM.","TAP THE TOWLINE ITSELF TO DISCONNECT.",t.lesson,0);
+            return new InstructionPanel.Content("ability-"+equipment.ability,"BARGE EQUIPMENT",equipment.ability==BargeAbilities.FIREWORKS?"TAP LAUNCH IN THE EQUIPMENT PANEL.":"HOLD THE AIM PAD. DRAG TO AIM AND SET REACH.","TAP THE TOWLINE ITSELF TO DISCONNECT.",t.lesson,0);
         }
         if(t.lesson==Tutorial.DOUBLE && t.firstTowParked && g.passages.passable(TutorialTowBridges.ENTRY))second="SHORT TAP FOR ABILITIES. DRAG TO LINK.";
         String key=t.lesson+":"+title+":"+approach+":"+wrongTug+":"+t.reverseArmed;

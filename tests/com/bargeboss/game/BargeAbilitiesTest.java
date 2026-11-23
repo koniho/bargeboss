@@ -21,7 +21,7 @@ public final class BargeAbilitiesTest {
         Body fire=g.cargo[3];ReplayInput.down(g,fire.x,fire.y);ReplayInput.up(g,fire.x,fire.y);
         check(g.abilities.selected==fire,"fire equipment selects independently: selected="+(g.abilities.selected==null?-1:g.abilities.selected.id)+" fire="+fire.id+" screen="+g.layout.camera.screenX(fire.x,fire.y)+","+g.layout.camera.screenY(fire.x,fire.y)+" tug="+g.tug.x+","+g.tug.y);x=g.abilities.buttonX(g,0);y=g.abilities.buttonY(g);
         g.pointerDown(77,x,y);steps(g,14);check(g.abilities.spraying && !g.pointer,"hold owns equipment without starting vessel drag");
-        float tx=g.layout.camera.screenX(fire.x-150,fire.y+30),ty=g.layout.camera.screenY(fire.x-150,fire.y+30);g.pointerMove(77,tx,ty);g.step();
+        ReplayInput.hoseAim(g,77,fire.x-150,fire.y+30);g.step();
         check(Math.abs(Physics.angle(fire.abilityAim-(float)StrictMath.atan2(30,-150)))<.05f,"screen drag aims in world space");
         g.pointerCancel(77);check(!g.abilities.spraying && g.abilities.owner==-1,"cancel immediately stops spray");
         x=g.abilities.buttonX(g,0);y=g.abilities.buttonY(g);g.pointerDown(78,x,y);steps(g,14);g.background();check(!g.abilities.spraying && g.abilities.owner==-1,"background cancels held nozzle");

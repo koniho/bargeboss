@@ -465,10 +465,10 @@ public final class Game {
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
-        // A visible hull touch starts a vessel gesture, even beneath a floating
-        // ability button or a nearby rope's generous tap area.
+        if(abilities.down(this,id,x,y))return;
+        // Outside the HUD, a visible hull owns its gesture even beneath a nearby
+        // rope's generous tap area.
         boolean hullTouch=cargoTouch(x,y);
-        if(!hullTouch && abilities.down(this,id,x,y))return;
         if(!hullTouch && towRelease.down(this,id,x,y))return;
         if(OverviewMap.sliderHit(this,x,y)) {
             // A second finger may zoom while the existing drive touch remains held.
