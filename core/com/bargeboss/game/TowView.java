@@ -37,7 +37,7 @@ public final class TowView {
         final boolean[] mooring;
         int flightTip=-1;
         public Segments(Game g) {
-            game=g;int used=0,capacity=Towline.CAPACITY+g.cargo.length+1;
+            game=g;int used=0,capacity=Towline.CAPACITY+g.cargo.length+1+(g.montroseStage()?4:0);
             x=new float[capacity*25+33];y=new float[x.length];height=new float[x.length];strand=new float[x.length];
             order=new int[capacity*24+32];points=new int[order.length];colors=new int[order.length];mooring=new boolean[order.length];
             for(int link=0;link<Towline.CAPACITY;link++) {
@@ -86,6 +86,11 @@ public final class TowView {
                 }
                 for(int i=0;i<32;i++){points[used]=base+i;colors[used]=RopeMaterial.COLOR;mooring[used]=!g.ropeToTug;used++;}
                 flightTip=base+31;
+            }
+            if(g.montroseStage()){
+                int crewBase=(Towline.CAPACITY+g.cargo.length+1)*25;
+                used=g.haulout.lineCrew.append(g,this,used,crewBase);
+                used=g.mission.lineCrew.append(g,this,used,crewBase+50);
             }
             count=used;
             for(int i=0;i<count;i++) {

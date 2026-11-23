@@ -74,6 +74,8 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
             if(sector[i]>=0)e*=VesselShoreLight.sector(heading[i],sector[i],-dx,-dy);
             red+=e*(color[i]>>16&255)/255f;green+=e*(color[i]>>8&255)/255f;blue+=e*(color[i]&255)/255f;
         }
+        float beam=game.spotlight.face(game,px,py,pz,nx,ny,nz);
+        red+=beam;green+=beam*.93f;blue+=beam*.77f;
         return ambient&0xff000000|Math.min(255,(ambient>>16&255)+Math.round((albedo>>16&255)*red))<<16
             |Math.min(255,(ambient>>8&255)+Math.round((albedo>>8&255)*green))<<8|Math.min(255,(ambient&255)+Math.round((albedo&255)*blue));
     }

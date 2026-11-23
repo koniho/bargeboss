@@ -10,8 +10,8 @@ final class LocationLandmarks {
             while(j>0 && depth(g,ids[j-1])>d){ids[j]=ids[j-1];j--;}ids[j]=id;
         }return ids;
     }
-    static int base(Game g){return g.montroseStage()?MontroseBeach.COUNT:g.calumetStage()?CalumetRiverView.count(g):IndianaView.count(g);}
+    static int base(Game g){return g.montroseStage()?MontroseBeach.COUNT+4:g.calumetStage()?CalumetRiverView.count(g):IndianaView.count(g);}
     static int count(Game g){return base(g)+(g.calumetStage() || g.indianaStage()?6:0);}
-    static float depth(Game g,int i){if(i>=base(g))return DockWorkers.depth(g,i-base(g));return g.montroseStage()?MontroseBeach.depth(g,i):g.calumetStage()?CalumetRiverView.depth(g,i):IndianaView.depth(g,i);}
-    static void draw(Game g,Painter p,int i){if(i>=base(g)){int id=i-base(g);if(g.berthDisplayEnabled(id/2))DockWorkers.draw(g,p,id);return;}if(g.montroseStage())MontroseBeach.landmark(g,p,i);else if(g.calumetStage())CalumetRiverView.landmark(g,p,i);else IndianaView.landmark(g,p,i);}
+    static float depth(Game g,int i){if(g.montroseStage() && i>=MontroseBeach.COUNT)return DockLineCrew.depth(g,i-MontroseBeach.COUNT);if(i>=base(g))return DockWorkers.depth(g,i-base(g));return g.montroseStage()?MontroseBeach.depth(g,i):g.calumetStage()?CalumetRiverView.depth(g,i):IndianaView.depth(g,i);}
+    static void draw(Game g,Painter p,int i){if(g.montroseStage() && i>=MontroseBeach.COUNT){DockLineCrew.draw(g,p,i-MontroseBeach.COUNT);return;}if(i>=base(g)){int id=i-base(g);if(g.berthDisplayEnabled(id/2))DockWorkers.draw(g,p,id);return;}if(g.montroseStage())MontroseBeach.landmark(g,p,i);else if(g.calumetStage())CalumetRiverView.landmark(g,p,i);else IndianaView.landmark(g,p,i);}
 }

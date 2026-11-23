@@ -52,6 +52,7 @@ public final class Game {
     public float celebrationX,celebrationY,impactX,impactY;
     public int noticeTicks, damageCooldown, nextId=1;
     public String notice="WELCOME TO THE RIVER";
+    public final TugSpotlight spotlight=new TugSpotlight();
     public final BargeAbilities abilities=new BargeAbilities();
     final TowRelease towRelease=new TowRelease();
     public float targetX, targetY, pointerX, pointerY, downX, downY;
@@ -409,7 +410,7 @@ public final class Game {
     private void reset(boolean practiceYard) {
         if(trainingSelected && !practiceYard){startTutorial();return;}
         boolean locationArrival=developerStart<0;montroseArrival.clear();
-        stageLighting=LightingProfile.preset(nextLighting);abilities.reset();
+        stageLighting=LightingProfile.preset(nextLighting);abilities.reset();spotlight.reset();
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
         if(developerStart>=0){challengeId=developerStart;developerStart=-1;}
@@ -715,7 +716,7 @@ public final class Game {
             if(distance<closest){closest=distance;cargoHit=i;}
         }
         if(tug.hit(x,y,8) && Physics.length(x-tug.x,y-tug.y)<=closest) {
-            if(canTie(tug)){held=-2;ropeDragging=canTie(tug);reversing=false;control=HOLDING;haptic(HAPTIC_TICK);}
+            held=-2;if(canTie(tug)){ropeDragging=canTie(tug);reversing=false;control=HOLDING;haptic(HAPTIC_TICK);}
             return;
         }
         if(cargoHit>=0) {
@@ -766,7 +767,7 @@ public final class Game {
         if(mapInRiver && MontroseRescue.swimmers(this) && rescue.aiming>=0){rescue.release(this,x,y);cancel();return;}
         if(mapInRiver && tapCandidate && MontroseRescue.cruisers(this) && rescue.tapRaft(this,x,y)){cancel();return;}
         if(mapInRiver && held==-3){if(tapCandidate && overTiePoint(tug,x,y))SlipMooring.release(this);cancel();return;}
-        if(mapInRiver && tapCandidate && pressTicks<12 && !pushing && Physics.length(x-downX,y-downY)<22 && abilities.reveal(this,heldCargo())){cancel();return;}
+        if(mapInRiver && tapCandidate && pressTicks<12 && !pushing && Physics.length(x-downX,y-downY)<22 && abilities.reveal(this,heldVessel())){cancel();return;}
         if(mapInRiver && tow.incoming(heldCargo())!=null && heldCargo().ability==BargeAbilities.NONE
                 && tapCandidate && Physics.length(x-downX,y-downY)<22) {
             if(pressTicks<=18) releaseTow(heldCargo());
@@ -948,7 +949,7 @@ public final class Game {
             }
         }
         tow.prune(this);
-        if(montroseStage())mission.step(this);
+        if(montroseStage()){mission.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
         if(tutorial!=null) tutorial.update(this);
         else {
             if(calumetStage())voyage.step(this);
@@ -1042,9 +1043,9 @@ public final class Game {
         for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else Physics.integrate(b); if(calumetStage())damage(CalumetRiver.collide(b,splashes));else if(indianaStage())damage(IndianaHarbor.collide(b,splashes));else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,b,splashes));damage(passages.collide(b,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
-                Body a=cargo[i]; if(a==null || !a.active) continue;
+                Body a=cargo[i]; if(a==null || !a.active || haulout.inLift(a)) continue;
                 damage(Physics.collide(tug,a,splashes));
-                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null) damage(Physics.collide(a,cargo[j],splashes));
+                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null && !haulout.inLift(cargo[j])) damage(Physics.collide(a,cargo[j],splashes));
             }
         }
         if(teacherBoat()!=null){

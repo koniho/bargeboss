@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"montrose-tow-one","montrose-tow-two","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"montrose-tow-one","montrose-tow-two","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> MARINA_TOWS=new java.util.WeakHashMap<Game,Boolean>();
@@ -105,11 +105,15 @@ public final class ProfileScenario {
         }
         if(name.equals("montrose-raft") || name.equals("montrose-swimmers") || name.equals("montrose-swimmers-lit")){
             root.challengeId=Challenges.MONTROSE;root.reset();root.montroseArrival.clear();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.dialogue.close(root);
-            if(name.startsWith("montrose-swimmers")){root.tug.x=660;root.tug.y=640;root.tug.angle=0;root.layout=Layout.focused(width,height,660,590,3.6f,width*.5f,height*.52f);}
-            if(name.equals("montrose-swimmers-lit")){
-                root.changeLighting(3);float x=root.rescue.x[15],y=root.rescue.y[15];root.visualTicks=50;
-                root.tug.x=x+35;root.tug.y=y+35;RECEIVERS.put(root,true);
-                root.layout=Layout.focused(width,height,x,y,4,width*.5f,height*.42f);
+            if(name.startsWith("montrose-swimmers")){
+                Body barge=root.rescue.barge.boat;barge.x=MontroseHarbor.mapX(1300);barge.y=MontroseHarbor.mapY(-1600);barge.angle=0;barge.awaitingPickup=false;
+                root.tug.x=barge.x-90;root.tug.y=barge.y+100;root.tug.angle=-.9f;root.rescue.barge.towed=true;
+                root.spotlight.aim(root,-.9f);
+                for(int i=0;i<MontroseRescue.PEOPLE;i++){root.rescue.found[i]=true;
+                    if(i<12){root.rescue.state[i]=4;root.delivered++;}
+                    else{root.rescue.x[i]=barge.x+40+(i-12)*16;root.rescue.y[i]=barge.y-100;}}
+                root.rescue.barge.step(root);root.rescue.barge.launch(root,root.rescue.x[12],root.rescue.y[12]);
+                root.layout=Layout.focused(width,height,barge.x,barge.y-30,2.8f,width*.48f,height*.55f);
             }
             return;
         }
@@ -140,6 +144,12 @@ public final class ProfileScenario {
                 if(name.startsWith("montrose-lift-")){
                     for(int i=0;i<150 && !root.haulout.requested;i++){ReplayInput.work(root);root.step();}
                     if(name.equals("montrose-lift-water"))while(root.haulout.liftTicks<175)root.step();
+                    if(name.equals("montrose-lift-carry")){
+                        root.dialogue.close(root);root.haulout.liftTicks=MontroseHaulout.LOWER_TICKS;root.haulout.rig.update(1);
+                        Body boat=root.cargo[0];boat.x=boat.tiedX=MontroseHaulout.X;boat.y=boat.tiedY=MontroseHaulout.Y;boat.angle=boat.tiedAngle=MontroseHaulout.ANGLE;boat.vx=boat.vy=boat.spin=0;
+                        root.haulout.towed=root.haulout.pushed=root.haulout.warping=true;root.haulout.settled=59;root.haulout.lineCrew.start(boat);root.haulout.lineCrew.age=DockLineCrew.CATCH;root.haulout.step(root);
+                        for(int i=0;i<MontroseHaulout.HOIST_TICKS;i++)root.haulout.step(root);root.step();root.dialogue.close(root);
+                    }
                 }
                 root.layout=Layout.focused(width,height,MontroseHaulout.X,MontroseHarbor.mapY(240),2.4f,width*.5f,height*.56f);return;
             }

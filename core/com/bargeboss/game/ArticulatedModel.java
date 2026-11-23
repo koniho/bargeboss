@@ -63,6 +63,14 @@ public final class ArticulatedModel {
             return live;
         }
     }
+    /** Translation of prepared geometry preserves BSP order and reuses all vertex storage.
+     * Source topology/order must remain fixed (static assembly or pure translating hoist). */
+    public Translation translation(Pose source){prepare(source);return new Translation(source);}
+    public final class Translation {
+        private final Pose source,live;
+        private Translation(Pose source){this.source=source;live=new Pose(source);}
+        public Pose pose(float x,float y,float z){live.translate(source,x,y,z);return live;}
+    }
     /** Prepared single-part geometry for freely moving vessels. No pose/BSP rebuilds. */
     public Rigid rigid(){return new Rigid();}
     public final class Rigid {
@@ -84,7 +92,14 @@ public final class ArticulatedModel {
         }
         public int fragmentCount(){return fragments;}
         public void draw(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll,FaceLighting light){
-            RigidDraw d=drawing.get();d.p=p;d.c=g.layout.camera;d.light=light;d.wx=x;d.wy=y;d.heave=heave;java.util.Arrays.fill(d.shadeReady,false);java.util.Arrays.fill(d.vertexReady,false);
+            draw(g,p,x,y,heave,yaw,pitch,roll,light,true);
+        }
+        /** Freely moving equipment above water: full solid geometry and world-space scene lights. */
+        public void drawSolid(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll){
+            draw(g,p,x,y,heave,yaw,pitch,roll,null,false);
+        }
+        private void draw(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll,FaceLighting light,boolean clipWater){
+            RigidDraw d=drawing.get();d.game=g;d.clipWater=clipWater;d.p=p;d.c=g.layout.camera;d.light=light;d.wx=x;d.wy=y;d.heave=heave;java.util.Arrays.fill(d.shadeReady,false);java.util.Arrays.fill(d.vertexReady,false);
             float ca=(float)StrictMath.cos(yaw),sa=(float)StrictMath.sin(yaw),cp=(float)StrictMath.cos(pitch),sp=(float)StrictMath.sin(pitch),cr=(float)StrictMath.cos(roll),sr=(float)StrictMath.sin(roll);
             float[] m=d.m;
             m[0]=ca*cp;m[1]=ca*sp*sr-sa*cr;m[2]=ca*sp*cr+sa*sr;
@@ -96,7 +111,7 @@ public final class ArticulatedModel {
     }
     private static final class RigidDraw {
         final float[] m=new float[9],vertices,clipped;final float[][] screens;final boolean[] shadeReady,vertexReady;final int[] shades,vertexShades,colors,clippedColors;
-        Painter p;RiverCamera c;FaceLighting light;float wx,wy,heave,vx,vy,vz;
+        Game game;boolean clipWater;Painter p;RiverCamera c;FaceLighting light;float wx,wy,heave,vx,vy,vz;
         RigidDraw(int max,int sources,int verticesCount){vertexReady=new boolean[verticesCount];vertexShades=new int[verticesCount];colors=new int[max];clippedColors=new int[max+2];shadeReady=new boolean[sources];shades=new int[sources];vertices=new float[max*3];clipped=new float[(max+2)*3];screens=new float[max+3][];for(int i=3;i<screens.length;i++)screens[i]=new float[i*2];}
         void visit(Branch node){
             boolean front=node.plane.nx*vx+node.plane.ny*vy+node.plane.nz*vz>0;
@@ -113,14 +128,14 @@ public final class ArticulatedModel {
             // Continuous rocking intersects the water plane instead of exposing the underside.
             int count=0;
             for(int i=0;i<n;i++){int a=i*3,b=((i+1)%n)*3;float az=vertices[a+2],bz=vertices[b+2];
-                if(az>=0){for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k];if(smooth!=null)clippedColors[count]=colors[i];count++;}
-                if((az<0)!=(bz<0)){float t=az/(az-bz);for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k]+t*(vertices[b+k]-vertices[a+k]);if(smooth!=null)clippedColors[count]=TriangleShade.mix(colors[i],colors[(i+1)%n],t);count++;}}
+                if(!clipWater || az>=0){for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k];if(smooth!=null)clippedColors[count]=colors[i];count++;}
+                if(clipWater && (az<0)!=(bz<0)){float t=az/(az-bz);for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k]+t*(vertices[b+k]-vertices[a+k]);if(smooth!=null)clippedColors[count]=TriangleShade.mix(colors[i],colors[(i+1)%n],t);count++;}}
             if(count<3)return;
             int source=f.sourceIndex;
             if(smooth==null && !shadeReady[source]){
                 float nx=m[0]*f.nx+m[1]*f.ny+m[2]*f.nz,ny=m[3]*f.nx+m[4]*f.ny+m[5]*f.nz,nz=m[6]*f.nx+m[7]*f.ny+m[8]*f.nz;
                 float x=m[0]*f.sourceX+m[1]*f.sourceY+m[2]*f.sourceZ,y=m[3]*f.sourceX+m[4]*f.sourceY+m[5]*f.sourceZ,z=m[6]*f.sourceX+m[7]*f.sourceY+m[8]*f.sourceZ;
-                shades[source]=light.shade(f.color,f.color,x,y,z,nx,ny,nz);shadeReady[source]=true;
+                shades[source]=clipWater?light.shade(f.color,f.color,x,y,z,nx,ny,nz):SceneryLighting.face(game,f.color,f.material,wx+x,wy+y,z+heave/Z_SCALE,nx,ny,nz);shadeReady[source]=true;
             }
             int color=shades[source];
             for(int i=0;i<count;i++){int j=i*3;float xx=clipped[j],yy=clipped[j+1],zz=clipped[j+2];clipped[j]=c.screenX(wx+xx,wy+yy);clipped[j+1]=c.screenY(wx+xx,wy+yy)-(zz*Z_SCALE+heave)*c.scale;}
@@ -237,6 +252,27 @@ public final class ArticulatedModel {
         private float[][] partRanges;
         private int[] partOrder;
         private int fragments;
+        private Pose(Pose source){
+            polygonCount=source.polygonCount;polygons=new Poly[polygonCount];prepared=true;fragments=source.fragments;
+            for(int i=0;i<polygonCount;i++){Poly f=source.polygons[i];polygons[i]=new Poly(new float[f.xyz.length],f.uv,f);}
+            translate(source,0,0,0);
+        }
+        private void translate(Pose source,float dx,float dy,float dz){
+            if(source.polygonCount!=polygonCount)throw new IllegalStateException("Translation requires stable prepared topology");
+            depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
+            for(int n=0;n<nodes.length;n++){
+                System.arraycopy(source.matrix[n],0,matrix[n],0,12);matrix[n][3]+=dx;matrix[n][7]+=dy;matrix[n][11]+=dz;
+                if(worldBounds[n]!=null)for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}
+                if(projectedBounds[n]!=null){projectedBounds[n][0]=projectedBounds[n][1]=Float.POSITIVE_INFINITY;projectedBounds[n][2]=projectedBounds[n][3]=Float.NEGATIVE_INFINITY;}
+            }
+            for(int i=0;i<polygonCount;i++){
+                Poly f=source.polygons[i],out=polygons[i];
+                if(f.node!=out.node || f.xyz.length!=out.xyz.length)throw new IllegalStateException("Translation source order changed");
+                out.nx=f.nx;out.ny=f.ny;out.nz=f.nz;
+                for(int j=0;j<f.xyz.length;j+=3){out.xyz[j]=f.xyz[j]+dx;out.xyz[j+1]=f.xyz[j+1]+dy;out.xyz[j+2]=f.xyz[j+2]+dz;bounds(out.node,out.xyz[j],out.xyz[j+1],out.xyz[j+2]);}
+                out.d=f.d+out.nx*dx+out.ny*dy+out.nz*dz;out.depthBounds();depthMin=Math.min(depthMin,out.depthMin);depthMax=Math.max(depthMax,out.depthMax);
+            }
+        }
         private Pose(Motion motion){
             polygons=new Poly[motion.count];transformed=new Poly[motion.count];partOrder=new int[motion.parts.length];partRanges=new float[motion.parts.length][2];
             for(Part part:motion.parts)for(Poly source:part.fragments)transformed[source.motionIndex]=new Poly(new float[source.xyz.length],source.uv,source);

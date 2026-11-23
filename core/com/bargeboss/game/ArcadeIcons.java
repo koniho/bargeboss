@@ -2,9 +2,15 @@ package com.bargeboss.game;
 
 /** Small authored silhouettes: bold functional shapes with cream/gold UI ink. */
 final class ArcadeIcons {
-    static final int FIREWORK=0,WATER=1,UNLINK=2,RADIO=3;
+    static final int FIREWORK=0,WATER=1,UNLINK=2,RADIO=3,SPOTLIGHT=4,RING=5;
     static void draw(Painter p,int kind,float x,float y,float s,int ink){
-        if(kind==RADIO){
+        if(kind==RING){
+            p.circle(x,y,12*s,ink);p.circle(x,y,7*s,PilotGlass.TRACK);
+            for(int i=0;i<4;i++){double a=i*StrictMath.PI/2;p.line(x+8*s*(float)StrictMath.cos(a),y+8*s*(float)StrictMath.sin(a),x+12*s*(float)StrictMath.cos(a),y+12*s*(float)StrictMath.sin(a),3*s,PilotGlass.TEXT);}
+        }else if(kind==SPOTLIGHT){
+            p.poly(new float[]{x-11*s,y-6*s,x-2*s,y-6*s,x+4*s,y-10*s,x+4*s,y+10*s,x-2*s,y+6*s,x-11*s,y+6*s},ink);
+            for(int i=-1;i<=1;i++)p.line(x+8*s,y+i*5*s,x+16*s,y+i*10*s,2*s,ink);
+        }else if(kind==RADIO){
             p.rect(x-8*s,y-5*s,16*s,13*s,ink);
             p.rect(x-5*s,y-2*s,7*s,3*s,PilotGlass.TRACK);
             p.line(x+5*s,y-5*s,x+9*s,y-14*s,2*s,ink);

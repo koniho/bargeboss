@@ -84,8 +84,9 @@ public final class HarborView {
             destination(g,canvas,working?g.dockX(target):target.x,working?g.dockY(target):target.y,working?"DELIVERY BERTH":"COLLECT BARGE");return;
         }
         if(MontroseRescue.swimmers(g)){
-            int nearest=-1;float distance=Float.MAX_VALUE;for(int i=0;i<20;i++)if(g.rescue.state[i]==0){float d=Physics.length(g.tug.x-g.rescue.x[i],g.tug.y-g.rescue.y[i]);if(d<distance){nearest=i;distance=d;}}
-            if(nearest>=0)destination(g,canvas,g.rescue.x[nearest],g.rescue.y[nearest],"THROW RESCUE BUOYS");return;
+            if(!g.rescue.barge.towed){Body rescue=g.rescue.barge.boat;destination(g,canvas,rescue.x,rescue.y,"TOW RESCUE BARGE");return;}
+            int nearest=-1;float distance=Float.MAX_VALUE;for(int i=0;i<20;i++)if(g.rescue.state[i]<4 && g.rescue.found[i]){float d=Physics.length(g.tug.x-g.rescue.x[i],g.tug.y-g.rescue.y[i]);if(d<distance){nearest=i;distance=d;}}
+            if(nearest>=0)destination(g,canvas,g.rescue.x[nearest],g.rescue.y[nearest],"FLING RINGS FROM RESCUE BARGE");else destination(g,canvas,MontroseHarbor.mapX(1350),MontroseHarbor.mapY(-1530),"SEARCH OFFSHORE / USE SPOTLIGHT");return;
         }
         if(g.montroseStage() && g.rescue.touring){float[] target=g.rescue.tourTarget(g);destination(g,canvas,target[0],target[1],"EXPLORE / TOWARD THE BEACH");return;}
         if(MontroseRescue.cruisers(g)){

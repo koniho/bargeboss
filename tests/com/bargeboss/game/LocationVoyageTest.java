@@ -59,7 +59,7 @@ public final class LocationVoyageTest {
         boolean a=false,b=false,c=false;for(Body boat:g.cargo){a|=boat==first;b|=boat==second;c|=boat==yacht;}
         check(a && b && c && yacht.active,"all delivered watercraft survive later Montrose job");
         check(g.rescue.x[0]!=0 && g.delivered==0,"new job initializes only its swimmer objectives and counter");
-        for(int i=0;i<MontroseRescue.PEOPLE;i++)g.rescue.state[i]=1;g.delivered=20;g.step();
+        for(int i=0;i<MontroseRescue.PEOPLE;i++)g.rescue.state[i]=4;g.delivered=20;g.step();
         check(g.montroseComplete && g.mode==Game.FINISH,"only final Montrose job reaches finish screen");
         check(g.career.bestStars(4)==3 && g.career.bestStars(6)==3 && g.career.bestStars(7)==3,"each legacy Montrose reward keeps its existing save slot");
     }

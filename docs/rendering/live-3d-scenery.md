@@ -118,3 +118,12 @@ The live helpers and material studies are retained for offline comparison only.
 Do not reactivate them without a new art review. Boat sprite depth and registered
 canvas/normal layers are now baked with a supersampled per-pixel depth buffer;
 never restore average-face sorting for overlapping roofs and hulls.
+
+Prepared assemblies that only translate can use `ArticulatedModel.Translation`.
+It reuses prepared face order and vertex buffers, and moves matrices, geometry,
+plane offsets and projected/world bounds together. The source must keep topology,
+face ordering and orientation fixed; this is not a rotation or deformation cache.
+The travel-lift frame uses immutable prepared sources; its vertical slings use
+stable-order live hoist sources. Each rig owns its translated output, so neither
+a shared model nor another game instance is moved. Exhaust and ropes follow the
+same translated anchors. Evaluate offsets in simulation, never in draw calls.

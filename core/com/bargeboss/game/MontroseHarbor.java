@@ -176,7 +176,7 @@ public final class MontroseHarbor {
         float e=b.half+b.radius;float[] region={b.x-e,b.y-e,b.x+e,b.y+e};
         for(int i=0;i<DOCKS.length;i++)if(PolygonWater.overlaps(region,DOCK_BOUNDS[i]))impact=Math.max(impact,PolygonWater.collide(b,DOCKS[i],false,splashes));
     }return impact;}
-    public static float collide(Game g,Body b,CollisionSplashes splashes){float hit=collide(b,splashes);return Math.max(hit,g.mooredFleet.collide(b,splashes));}
+    public static float collide(Game g,Body b,CollisionSplashes splashes){if(g.haulout.inLift(b))return 0;float hit=collide(b,splashes);return Math.max(hit,g.mooredFleet.collide(b,splashes));}
     public static boolean fits(Body b){float c=(float)StrictMath.cos(SLIP_ANGLE),s=(float)StrictMath.sin(SLIP_ANGLE);
         for(int i=0;i<3;i++){float dx=b.discX(i)-SLIP_X,dy=b.discY(i)-SLIP_Y;if(Math.abs(dx*c+dy*s)+b.radius>100 || Math.abs(-dx*s+dy*c)+b.radius>40)return false;}
         return Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.23f;
@@ -311,19 +311,37 @@ public final class MontroseHarbor {
         if(MontroseRescue.active(g))return g.rescue.status(g);
         if(!wasTowed)return "DRAG FROM YACHT TO TUG / RELEASE TO LINK";
         if(!entered)return "TOW THROUGH THE RED AND GREEN INLET";
+        if(warping)return lineCrew.caught()?"DOCK CREW HAULING IN / KEEP CLEAR":"CREW THROWING LINES / RELEASE THE HELM";
         if(settledTicks>0)return "HOLD STEADY IN THE SLIP";
-        return "TOW INTO THE GLOWING SLIP / SLOW TO DOCK";
+        return "TOW TO THE GLOWING SLIP / RELEASE FOR DOCK CREW";
     }
+    final DockLineCrew lineCrew=new DockLineCrew(false);
+    boolean warping;
     public void step(Game g){
+        lineCrew.step();
         if(MontroseHaulout.active(g)){g.haulout.step(g);return;}
         if(MontroseRescue.active(g)){g.rescue.step(g);return;}
         Body b=g.cargo[0];if(b==null || !b.active || b.deliveryRecorded)return;
         boolean towing=g.tow.connected(b,g.tug);
         if(towing)wasTowed=true;
         if(towing && planY(b.y)<1050)entered=true;
-        if(entered && fits(b) && b.speed()<6 && Math.abs(b.spin)<.12f)settledTicks++;else settledTicks=0;
+        float distance=Physics.length(b.x-SLIP_X,b.y-SLIP_Y);
+        if(entered && wasTowed && !warping && !towing && distance<95 && b.speed()<28
+                && Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.5f && clear(b.x,b.y,SLIP_X,SLIP_Y)){
+            warping=true;lineCrew.start(b);b.awaitingPickup=false;g.tell("DOCK CREW: LINES COMING OVER. WE HAVE YOU!");g.radio.receiveDockmaster();
+        }
+        if(warping){
+            if(towing){warping=false;lineCrew.finish();}
+            else if(lineCrew.caught()){
+                float speed=Math.min(16,distance*.8f),denom=Math.max(1,distance);
+                b.vx=(SLIP_X-b.x)/denom*speed;b.vy=(SLIP_Y-b.y)/denom*speed;
+                float heading=SLIP_ANGLE;if(Math.abs(Physics.angle(heading-b.angle))>Math.PI/2)heading+=(float)Math.PI;
+                b.spin=Physics.clamp(Physics.angle(heading-b.angle)*.8f,-.3f,.3f);
+            }else{b.vx*=.92f;b.vy*=.92f;b.spin*=.9f;}
+        }
+        if(entered && !towing && (!warping || lineCrew.caught()) && fits(b) && b.speed()<6 && Math.abs(b.spin)<.12f)settledTicks++;else settledTicks=0;
         if(settledTicks==90){
-            b.deliveryRecorded=true;g.delivered=1;g.score+=1200;g.celebrationTicks=90;
+            lineCrew.finish();b.deliveryRecorded=true;g.delivered=1;g.score+=1200;g.celebrationTicks=90;
             g.celebrationX=b.x;g.celebrationY=b.y;g.celebrationPoints=1200;
             g.haptic(Game.HAPTIC_SUCCESS);g.tell("YACHT SAFELY IN ITS SLIP");
         }

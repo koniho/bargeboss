@@ -147,9 +147,20 @@ public final class Parity implements Painter {
         Game g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);Renderer.draw(g,p);
         float x=(g.cargo[0].x+g.cargo[1].x)*.5f,y=g.cargo[0].y;
         ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.add(g.rescue.rafted?1:0);Renderer.draw(g,p);
-        g=ReplayInput.montroseJob(Challenges.SWIMMER_RESCUE);
-        for(int i=0;i<4000 && g.mode==Game.PLAY;i++){ReplayInput.work(g);g.step();if(i%60==0){p.add(g.delivered);p.add(g.rescue.flying);p.value(g.tug.x);p.value(g.tug.y);p.value(g.layout.camera.zoom);Renderer.draw(g,p);}}
-        if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
+        // Isolate the new free-aim rescue lifecycle from navigation; trace real public
+        // fling input, fixed-step swimming, flotation and climbing for every survivor.
+        g=RescueBargeTest.scene();g.rescue.barge.towed=true;Body barge=g.rescue.barge.boat;
+        g.spotlight.aim(g,(float)StrictMath.atan2(barge.y-g.tug.y,barge.x-g.tug.x));
+        for(int person=0;person<MontroseRescue.PEOPLE;person++){
+            g.rescue.x[person]=barge.x;g.rescue.y[person]=barge.y-100;g.rescue.found[person]=true;
+            RescueBargeTest.fling(g,g.rescue.x[person]+12,g.rescue.y[person]);
+            for(int i=0;i<1600 && g.rescue.state[person]!=4;i++){
+                RescueBargeTest.ticks(g,1);
+                if(i%180==0){p.add(g.rescue.state[person]);p.value(g.rescue.x[person]);p.value(g.rescue.y[person]);Renderer.draw(g,p);}
+            }
+            if(g.rescue.state[person]!=4)throw new IllegalStateException("Swimmer did not board");
+        }
+        g.step();if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
         p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {

@@ -23,6 +23,7 @@ public final class ChimneyArt {
         float outletX=x+(SX[frame]-PX[frame])*size,outletY=y+(SY[frame]-PY[frame])*size;
         float alpha=1;
         p.sprite(SpriteAtlas.CHIMNEYS,frame,x,y,size,size,0,alpha);
+        SpotlightArt.draw(g,p,SpriteAtlas.CHIMNEYS,frame,wx,wy,x,y,size,size,alpha);
         SceneryEffects.glow(p,x+(LX[frame]-PX[frame])*size,y+(LY[frame]-PY[frame])*size,
                 size*.016f,0xffffb34f,alpha,g.visualTicks,frame*1.73f+wx*.011f+wy*.007f);
         SceneryEffects.smoke(p,outletX,outletY,(frame==0?3.6f:5.1f)*c.scale,c.scale,alpha,

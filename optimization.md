@@ -6284,3 +6284,48 @@ launch restored after capture; screen timeout restored to300000ms.
   frames. Canonical drawing trace e79b5ea1:2:1350 reflects removed push cues,
   hidden early slip targets and corrected crew identity; replay score unchanged.
   Android build installed in this round; iOS/device parity not run.
+
+## 2026-11-23 — continuous travel-lift yard cycle (shared/Android)
+- Carrier continues after the haulout mission hands off to the raft rescue. Six
+  seconds eased drive inland, five seconds yard handling, six seconds empty return;
+  delivered hull remains parked on land, and rig ends at the well with raised straps.
+- Added prepared rigid translation: reuse polygon/vertex storage, preserve BSP
+  ordering under pure translation, update bounds, normals/plane offsets and node
+  anchors together. Stable-topology assertion prevents misuse for changing meshes.
+  No quantized poses or per-tick BSP rebuilds. All lift components and exhaust share
+  offset; depth slice rejection and per-cable shore masks move with the rig.
+- Carried/parked hulls no longer collide with water-level docks/vessels. Only hulls
+  raised at least to land height bypass ground-waterline cutouts; ordinary boats
+  retain foreground shore occlusion. Lifted hulls retain scene lights and depth.
+- New shared cycle regression tests every travel tick, immutable topology/storage,
+  attachment alignment, retained yard hull, exact return, next-job continuation,
+  pause behavior and once-only reward. Native `montrose-lift-carry` profile hook.
+- Validation in progress; native timing and final pixel review pending.
+
+## 2026-11-23 — rescue equipment and directional spotlight (shared/Android)
+- Added shore crew casts/hauling, bounded rescue ring pool (32), swimmer approach,
+  flotation, boarding and delayed casualty animation. Rigid topology is prepared
+  at mission setup, never rebuilt for rotations. Rescue preparation includes the
+  accepted barge hull/effects: 832 rotation frames.
+- Visual inspection found Rigid.draw clipped airborne rings at local water Z and
+  expected receiver-local lighting. Added explicit drawSolid with complete solid
+  geometry and world-space face lighting. Existing hull behavior is unchanged.
+- Spotlight uses normal/surface/shore lighting and a bounded water mesh. Painted
+  receivers use offline registered frame packs capped at 256px, about 2.6 MiB
+  compressed for the catalog. Upcoming-level manifests include used receivers.
+  No per-aim raster preparation, full-screen mask or terrain cache invalidation.
+- Painted scenery samples the cone at its anchor, without full-scene spotlight
+  shadows. Geometry uses surface normals. This is a documented quality boundary.
+- Shared checks, Android installation and native timing results follow below.
+  No iOS timing or device parity claim.
+- Validation: full build-android.sh checks passed, including shared core replay
+  d664ebb2:2:1350, assets, directional derivatives and Vulkan encoding. Separate
+  haulout regression passed 1,707,371 production hull/cargo shoreline assertions
+  over all legacy and 64-equipment headings. Reviewed shared-renderer spotlight
+  on/off, airborne rings, boarding, hurt state, shore crew casts and lift travel.
+- Android APK installed successfully and profile activity launched. Capture
+  out/profiles/20261123-044539-montrose-swimmers-live was interrupted by phone
+  locking (175/360 sample frames); reject it for performance conclusions. Retry
+  encountered showing=true, inputRestricted=true keyguard and was stopped. No
+  keyguard settings changed. An unlocked complete device capture remains needed;
+  the short incomplete sample does not establish a sustained frame-rate claim.

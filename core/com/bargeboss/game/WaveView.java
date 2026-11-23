@@ -15,7 +15,7 @@ public final class WaveView {
     /** World-anchored detail moves with the river during camera follow and zoom. */
     public static void draw(Game g,Painter canvas) {
         canvas.rect(0,0,g.layout.width,g.layout.height,canvas.lighting().water);
-        surface(g,canvas);
+        surface(g,canvas);g.spotlight.water(g,canvas);
     }
     /** Wave detail without clearing a scene that has already drawn its land/water mask. */
     public static void surface(Game g,Painter canvas) {

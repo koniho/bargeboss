@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Shared, pointer-owned equipment actions. Selection never alters tow topology. */
 public final class BargeAbilities {
-    public static final int NONE=0,FIREWORKS=1,FIRE=2,CAPACITY=320;
+    public static final int NONE=0,FIREWORKS=1,FIRE=2,RESCUE=3,CAPACITY=320;
     public Body selected;
     public int owner=-1,heldTicks,visibleTicks,launches;
     public boolean spraying;
@@ -19,9 +19,9 @@ public final class BargeAbilities {
     void deselect(){selected=null;visibleTicks=0;cancel();}
     public void cancel(){owner=-1;pressed=-1;spraying=false;heldTicks=0;}
     public boolean reveal(Game g,Body b){
-        if(b==null || !b.active || b.ability==NONE)return false;
-        if(selected==b){deselect();g.haptic(Game.HAPTIC_TICK);return true;}
-        cancel();selected=panelBody=b;visibleTicks=600;g.overview.cancelTouch();g.haptic(Game.HAPTIC_TICK);return true;
+        if(b==null || !b.active || b.ability==NONE && b!=g.tug)return false;
+        if(selected==b){if(b==g.tug)g.spotlight.on=false;deselect();g.haptic(Game.HAPTIC_TICK);return true;}
+        cancel();if(b==g.tug)g.spotlight.on=true;selected=panelBody=b;visibleTicks=600;g.overview.cancelTouch();g.haptic(Game.HAPTIC_TICK);return true;
     }
     public float buttonX(Game g,int button){return buttonPoint(g,true);}
     public float buttonY(Game g){return buttonPoint(g,false);}
@@ -42,7 +42,7 @@ public final class BargeAbilities {
         owner=id;pressed=0;heldTicks=0;stickX=stickY=0;
         aimX=selected.x+(float)StrictMath.cos(selected.angle)*180;
         aimY=selected.y+(float)StrictMath.sin(selected.angle)*180;
-        if(selected.ability==FIRE)aim(g,px,py);
+        if((selected.ability==FIRE || selected.ability==RESCUE || selected==g.tug))aim(g,px,py);
         return true;
     }
     private void aim(Game g,float px,float py){
@@ -53,14 +53,18 @@ public final class BargeAbilities {
         float wx=c.worldX(cx+dx,cy+dy)-c.worldX(cx,cy),wy=c.worldY(cx+dx,cy+dy)-c.worldY(cx,cy);
         float world=Math.max(.001f,Physics.length(wx,wy)),range=Physics.clamp(limited/AIM_RADIUS*210,40,210);
         aimX=selected.x+wx/world*range;aimY=selected.y+wy/world*range;
+        if(selected==g.tug)g.spotlight.aim(g,(float)StrictMath.atan2(wy,wx));
     }
     public boolean move(Game g,int id,float px,float py){
         if(owner!=id)return false;
-        if(selected!=null && selected.ability==FIRE)aim(g,px,py);
+        if(selected!=null && (selected.ability==FIRE || selected.ability==RESCUE || selected==g.tug))aim(g,px,py);
         return true;
     }
     public boolean up(Game g,int id,float px,float py){
         if(owner!=id)return false;
+        if(selected!=null && selected.ability==RESCUE && Physics.length(stickX,stickY)>10){
+            if(!g.rescue.barge.launch(g,aimX,aimY))g.tell("TOW RESCUE BARGE / SLOW DOWN / FLING INTO OPEN WATER");
+        }
         if(selected!=null && selected.active && heldTicks<=18 && hit(g,px,py,pressed)){
             if(selected.ability==FIREWORKS && selected.abilityCooldown==0){selected.abilityTicks=180;selected.abilityCooldown=240;launches++;if(g.tutorial!=null)g.tutorial.fireworks.launched(g,selected);g.haptic(Game.HAPTIC_SUCCESS);}
         }
@@ -203,19 +207,21 @@ public final class BargeAbilities {
     public void drawUI(Game g,Painter p){
         if(!available(g) || g.conversation() || panelBody==null || blend<=0)return;
         p=new OpacityPainter(p,opacity());Layout.Box box=OverviewMap.bounds(g);
-        float cx=buttonX(g,0),cy=buttonY(g);boolean fire=panelBody.ability==FIRE;
+        float cx=buttonX(g,0),cy=buttonY(g);boolean spot=panelBody==g.tug,rescue=panelBody.ability==RESCUE,fire=panelBody.ability==FIRE || spot || rescue;
         PilotGlass.panel(p,box.x,box.y,box.w,g.layout.height-4-box.y,PilotGlass.FILL);
-        Lettering.center(p,fire?"FIRE MONITOR":"FIREWORKS",cx,box.y+12,13,PilotGlass.TEXT);
+        Lettering.center(p,spot?"SEARCHLIGHT":rescue?"RESCUE RINGS":fire?"FIRE MONITOR":"FIREWORKS",cx,box.y+12,13,PilotGlass.TEXT);
         if(fire){
             SoftCue.ring(p,cx,cy,AIM_RADIUS,2.4f,0xcc28e7ff,1);
             SoftCue.ring(p,cx,cy,22,1,0x4059b8c8,1);
             for(int i=0;i<4;i++){double a=i*StrictMath.PI/2;float dx=(float)StrictMath.cos(a),dy=(float)StrictMath.sin(a);p.line(cx+dx*51,cy+dy*51,cx+dx*60,cy+dy*60,2,0xaa28e7ff);}
             float sx=owner>=0?stickX:0,sy=owner>=0?stickY:0;
+            if(spot && owner<0){RiverCamera c=g.layout.camera;float wx=(float)StrictMath.cos(g.spotlight.angle(g)),wy=(float)StrictMath.sin(g.spotlight.angle(g));
+                sx=c.screenX(wx,wy)-c.screenX(0,0);sy=c.screenY(wx,wy)-c.screenY(0,0);float len=Math.max(.001f,Physics.length(sx,sy));sx=sx/len*45;sy=sy/len*45;}
             p.line(cx,cy,cx+sx,cy+sy,3,0xb828e7ff);
             p.circle(cx+sx,cy+sy,15,owner>=0?PilotGlass.AMBER:0xff224052);
-            ArcadeIcons.draw(p,ArcadeIcons.WATER,cx+sx,cy+sy,.55f,owner>=0?PilotGlass.NAVY:PilotGlass.TEXT);
-            Lettering.center(p,"HOLD + DRAG TO AIM",cx,box.y+174,9,PilotGlass.TEXT);
-            Lettering.center(p,"DRAG FARTHER FOR REACH",cx,box.y+194,7,PilotGlass.MUTED);
+            ArcadeIcons.draw(p,spot?ArcadeIcons.SPOTLIGHT:rescue?ArcadeIcons.RING:ArcadeIcons.WATER,cx+sx,cy+sy,.55f,owner>=0?PilotGlass.NAVY:PilotGlass.TEXT);
+            Lettering.center(p,rescue?"FLING + RELEASE TO THROW":"HOLD + DRAG TO AIM",cx,box.y+174,9,PilotGlass.TEXT);
+            Lettering.center(p,spot?"TAP TUG AGAIN TO SWITCH OFF":rescue?"AIM NEAR SWIMMERS / HOLD TO BOARD":"DRAG FARTHER FOR REACH",cx,box.y+194,7,PilotGlass.MUTED);
         }else{
             boolean ready=panelBody.abilityCooldown==0;
             PilotGlass.button(p,cx-68,cy-62,136,124,ready);

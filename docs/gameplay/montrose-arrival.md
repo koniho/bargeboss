@@ -91,3 +91,22 @@ animation, without interrupting throttle or navigation. Alex offers energy drink
 when Rumrunner 2 is delivered. Chas offers Fireball after Never Wetter's arrival.
 Queue both thanks even for simultaneous arrivals and finish them before Gavin's
 next job. Arrival messages outrank idle banter; a reset discards the queue.
+
+After the haulout hoist, the lift drives inland for six seconds, holds for five
+seconds to set the boat on the yard, then returns empty over six seconds. This
+continues during the next Montrose job. The delivered boat stays visible ashore;
+the lift parks at the well with raised straps, ready for another call. Background
+pause stops the cycle. Returning does not re-award the delivery.
+
+Lift and yacht-slip crews cast two lines after the released boat reaches the
+capture area, then haul it into position. Lift capture allows modest speed and
+heading error; a fast, tethered or badly aligned boat is not captured.
+
+The storm swimmer mission supplies a rescue barge at the marina. Tow it offshore;
+tap the tug to steer its searchlight relative to the bow. Swimmers begin hidden
+and are scattered offshore. Select the rescue barge and fling its ability control
+to throw a physical ring near a swimmer. A nearby swimmer approaches the ring,
+floats back to the barge and climbs aboard while it is moving slowly. Rescue
+credit occurs only aboard. Misses float temporarily; they do not home in.
+Running over a swimmer triggers a brief hurt/flailing flash, disappearance, then
+mission failure rather than an immediate invisible casualty.

@@ -19,6 +19,7 @@ public final class MontroseRescueView {
         if(MontroseRescue.swimmers(g)){
             MontroseRescue r=g.rescue;
             for(int i=0;i<MontroseRescue.PEOPLE;i++){
+                if(!r.found[i] || r.state[i]>=3)continue;
                 SwimmerModel.water(g,p,i);
                 float radius=r.state[i]==0?3.5f:4.5f;int color=r.flash[i]>0?0xb866d9b1:r.state[i]==0?0x447bc2c8:0x446bafad;
                 SoftCue.ring(p,r.x[i],r.y[i],radius,1,color,.6f);
@@ -26,24 +27,20 @@ public final class MontroseRescueView {
             if(r.aiming>=0){int i=r.aiming;SoftCue.ring(p,r.x[i],r.y[i],11,1,0xbbdfc274,1.1f);}
         }
     }
-    public static int[] ordered(Game g){if(!MontroseRescue.swimmers(g))return new int[0];int[] ids=new int[MontroseRescue.PEOPLE+1];int count=MontroseRescue.PEOPLE+(g.rescue.flying>=0?1:0);
-        for(int i=0;i<count;i++){ids[i]=i;for(int j=i;j>0 && depth(g,ids[j])<depth(g,ids[j-1]);j--){int n=ids[j];ids[j]=ids[j-1];ids[j-1]=n;}}
+    public static int[] ordered(Game g){
+        if(!MontroseRescue.swimmers(g))return new int[0];MontroseRescue r=g.rescue;
+        int[] ids=new int[MontroseRescue.PEOPLE+RescueBarge.RINGS];int count=0;
+        for(int i=0;i<MontroseRescue.PEOPLE;i++)if(r.found[i] && r.state[i]!=4 && r.state[i]!=6)ids[count++]=i;
+        for(int i=0;i<RescueBarge.RINGS;i++)if(r.barge.phase[i]>0)ids[count++]=MontroseRescue.PEOPLE+i;
+        for(int i=1;i<count;i++)for(int j=i;j>0 && depth(g,ids[j])<depth(g,ids[j-1]);j--){int n=ids[j];ids[j]=ids[j-1];ids[j-1]=n;}
         return java.util.Arrays.copyOf(ids,count);
     }
-    private static float flightX(MontroseRescue r){float t=r.flightTicks/(float)MontroseRescue.THROW_TICKS;return r.fromX+(r.toX-r.fromX)*t;}
-    private static float flightY(MontroseRescue r){float t=r.flightTicks/(float)MontroseRescue.THROW_TICKS;return r.fromY+(r.toY-r.fromY)*t;}
-    public static float depth(Game g,int i){MontroseRescue r=g.rescue;return g.layout.camera.screenY(i==20?flightX(r):r.x[i],i==20?flightY(r):r.y[i]);}
+    public static float depth(Game g,int i){MontroseRescue r=g.rescue;return g.layout.camera.screenY(i>=20?r.barge.x[i-20]:r.x[i],i>=20?r.barge.y[i-20]:r.y[i]);}
     public static void draw(Game g,Painter p,int i){MontroseRescue r=g.rescue;RiverCamera c=g.layout.camera;
-        float wx=i==20?flightX(r):r.x[i],wy=i==20?flightY(r):r.y[i],x=c.screenX(wx,wy),y=c.screenY(wx,wy);
-        if(x< -40 || x>g.layout.width+40 || y< -40 || y>g.layout.height+40)return;
-        float[] clip=ShoreOcclusion.region(g,c,wx-22,wy-22,wx+22,wy+22,c.screenY(wx,wy));p.pushClipOutside(clip);
-        try{
-            if(i==20){float t=r.flightTicks/(float)MontroseRescue.THROW_TICKS,up=5+60*t*(1-t);Painter plane=new RiverPainter(ScreenView.offset(p,0,-up*c.scale),c);
-                plane.circle(wx,wy,4,0xffd68d43);plane.circle(wx,wy,2.2f,0xff18313b);
-            }else{
-                if(r.state[i]!=0){Painter plane=new RiverPainter(p,c);plane.circle(wx,wy,3.4f,0xffe9a344);plane.circle(wx,wy,2.25f,0xff203c43);}
-                r.swimmerModel.draw(g,p,i);
-            }
-        }finally{p.popClip();}
+        float wx=i>=20?r.barge.x[i-20]:r.x[i],wy=i>=20?r.barge.y[i-20]:r.y[i],x=c.screenX(wx,wy),y=c.screenY(wx,wy);
+        if(x< -60 || x>g.layout.width+60 || y< -100 || y>g.layout.height+100)return;
+        if(i>=20){r.barge.drawRing(g,p,i-20);return;}
+        if(r.state[i]==5 && r.barge.timer[i]%10<5)p=new OpacityPainter(p,.3f);
+        r.swimmerModel.draw(g,p,i);
     }
 }

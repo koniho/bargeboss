@@ -20,10 +20,16 @@ public final class MontroseTravelLift {
     private static float[] quad(float l,float t,float r,float b){return new float[]{worldX(l),worldY(t),worldX(r),worldY(t),worldX(r),worldY(b),worldX(l),worldY(b)};}
     static final class Rig {
         final ArticulatedModel.Motion motion=STRAPS.motion(STRAP_ROOT,0,1,0);
-        ArticulatedModel.Pose pose=motion.pose(0);
+        final ArticulatedModel.Translation straps=STRAPS.translation(motion.pose(0));
+        ArticulatedModel.Pose pose=straps.pose(0,0,0);
         final ArticulatedModel.Motion[] slingMotion={SLINGS[0].motion(SLINGS[0].nodeId("travelift-webbing"),0,1,0),SLINGS[1].motion(SLINGS[1].nodeId("travelift-webbing"),0,1,0)};
-        final ArticulatedModel.Pose[] slingPose={slingMotion[0].pose(0),slingMotion[1].pose(0)};
-        void update(float amount){pose=motion.pose(amount);for(int i=0;i<2;i++)slingPose[i]=slingMotion[i].pose(amount);}
+        final ArticulatedModel.Translation[] slingShift={SLINGS[0].translation(slingMotion[0].pose(0)),SLINGS[1].translation(slingMotion[1].pose(0))};
+        final ArticulatedModel.Pose[] slingPose={slingShift[0].pose(0,0,0),slingShift[1].pose(0,0,0)};
+        final ArticulatedModel.Translation far=FAR.translation(FAR_POSE),near=NEAR.translation(NEAR_POSE),top=TOP.translation(TOP_POSE);
+        ArticulatedModel.Pose farPose=far.pose(0,0,0),nearPose=near.pose(0,0,0),topPose=top.pose(0,0,0);
+        float offsetY,amount;
+        void update(float value){amount=value;motion.pose(value);pose=straps.pose(0,offsetY,0);for(int i=0;i<2;i++){slingMotion[i].pose(value);slingPose[i]=slingShift[i].pose(0,offsetY,0);}}
+        void travel(float y){if(y==offsetY)return;offsetY=y;farPose=far.pose(0,y,0);nearPose=near.pose(0,y,0);topPose=top.pose(0,y,0);update(amount);}
         float[] anchor(float x,float y,float z){return pose.point(STRAP_ROOT,x*SCALE,y*SCALE,z*SCALE);}
     }
     private static ArticulatedModel side(int side){
@@ -67,7 +73,7 @@ public final class MontroseTravelLift {
     }
     public static void prepare(){FAR.prepare(FAR_POSE);NEAR.prepare(NEAR_POSE);TOP.prepare(TOP_POSE);}
     static float[] exhaust(){return EXHAUST.clone();}
-    static void exhaust(Game g){g.smoke.shore(EXHAUST[0],EXHAUST[1],EXHAUST[2]*ArticulatedModel.Z_SCALE,.65f);}
+    static void exhaust(Game g){g.smoke.shore(EXHAUST[0],EXHAUST[1]+(g.haulout.rig==null?0:g.haulout.rig.offsetY),EXHAUST[2]*ArticulatedModel.Z_SCALE,.65f);}
     public static void apron(Game g,Painter p){
         for(float[] q:APRON)MontroseShoreArt.surface(p,g.layout.camera,q,MontroseHarbor.LAND_RISE,SurfaceMaterial.CONCRETE,0xff73796f,.08f);
 
@@ -80,13 +86,13 @@ public final class MontroseTravelLift {
     }
     static Clips shore(Game g){
         Clips clips=new Clips();if(!g.montroseStage() || g.haulout.rig==null)return clips;
-        RiverCamera c=g.layout.camera;float sx=c.screenX(X,Y),sy=c.screenY(X,Y),pad=180*c.scale;
+        RiverCamera c=g.layout.camera;float y=Y+g.haulout.rig.offsetY,sx=c.screenX(X,y),sy=c.screenY(X,y),pad=180*c.scale;
         if(sx+pad<0 || sx-pad>g.layout.width || sy+pad<0 || sy-pad>g.layout.height)return clips;
         int i=0;for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2){
             float[] a=g.haulout.rig.anchor(side*26,end*24,4);clips.anchors[i]=a;
             // A quay BEHIND this upright cable cannot cover its elevated pixels.
             // Foreground quay tops/walls still hide the lower part of the cable.
-            clips.cords[i]=ShoreOcclusion.region(g,c,X-80,Y-80,X+80,Y+80,c.screenY(a[0],a[1]));i++;
+            clips.cords[i]=ShoreOcclusion.region(g,c,X-80,y-80,X+80,y+80,c.screenY(a[0],a[1]));i++;
         }
         // Each U-shaped sling lies wholly inside the well. Its far attachment
         // supplies a conservative foreground cutoff; the opposite quay stays
@@ -97,10 +103,10 @@ public final class MontroseTravelLift {
     static void drawRange(Game g,Painter p,float min,float max,Clips shore){
         Rig rig=g.haulout.rig;if(rig==null)return;
         boolean suspension=rig.pose.overlapsDepth(min,max);
-        if(!suspension && !FAR_POSE.overlapsDepth(min,max) && !NEAR_POSE.overlapsDepth(min,max) && !TOP_POSE.overlapsDepth(min,max))return;
+        if(!suspension && !rig.farPose.overlapsDepth(min,max) && !rig.nearPose.overlapsDepth(min,max) && !rig.topPose.overlapsDepth(min,max))return;
         // Disjoint X slabs: far chassis x>=36, rig |x|<=28, near chassis x<=-36.
         // Header undersides sit above every moving block and are drawn last.
-        FAR.drawRange(g,p,FAR_POSE,min,max);
+        FAR.drawRange(g,p,rig.farPose,min,max);
         // Vertical cords share the webbing's XY/depth bounds. Do not install a
         // potentially large shore mask for unrelated particle/vessel slices.
         if(suspension){
@@ -118,6 +124,6 @@ public final class MontroseTravelLift {
                 finally{if(mask.length>0)p.popClip();}
             }
         }
-        NEAR.drawRange(g,p,NEAR_POSE,min,max);TOP.drawRange(g,p,TOP_POSE,min,max);
+        NEAR.drawRange(g,p,rig.nearPose,min,max);TOP.drawRange(g,p,rig.topPose,min,max);
     }
 }

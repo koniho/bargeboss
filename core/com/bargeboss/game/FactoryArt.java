@@ -46,6 +46,7 @@ public final class FactoryArt {
         if(maxX<0 || minX>g.layout.width || maxY<0 || minY>g.layout.height) return;
         float alpha=g.buildingFades.opacity(SpriteAtlas.FACTORY,i,wx,wy);
         if((g.renderExclusions&RenderExclusions.FACTORY_ART)==0)p.sprite(SpriteAtlas.FACTORY,i,x,y,size,size,0,alpha);
+        SpotlightArt.draw(g,p,SpriteAtlas.FACTORY,i,wx,wy,x,y,size,size,alpha);
         float phase=i*1.71f+wx*.011f+wy*.007f;
         // A source can be visible while its rooftop emitters are completely offscreen.
         // Cull each emitter separately and use fewer layers for the wider travel view.

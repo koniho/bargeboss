@@ -25,6 +25,8 @@ final class MooredBoatLight {
         }
         if(g.montroseStage())for(int id=0;id<3;id++)out.add(MontroseBeaconArt.x(id)-x,MontroseBeaconArt.y(id)-y,
             MontroseBeaconArt.lampZ(id)-z,MontroseBeaconArt.LIGHT_RADIUS,MontroseBeaconArt.LIGHT_ENERGY*MontroseBeaconArt.power(g.visualTicks),MontroseBeaconArt.color(id));
+        out.add(g.tug.x-x,g.tug.y-y,TugSpotlight.HEIGHT-z,TugSpotlight.RANGE,
+                TugSpotlight.POWER*g.spotlight.cone(g,x,y),TugSpotlight.COLOR);
         points(g,out,x,y,z,g.tug);for(Body b:g.cargo)if(b!=null&&b.active)points(g,out,x,y,z,b);return out;
     }
     private static void points(Game g,Lights out,float x,float y,float z,Body b){if(!b.active)return;

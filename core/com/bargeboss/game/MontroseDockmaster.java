@@ -23,8 +23,8 @@ public final class MontroseDockmaster {
                 reply="COPY. TWO TOWS TO DOCK C.";break;
             case Challenges.SWIMMER_RESCUE:
                 title="PEOPLE IN THE WATER";
-                detail="20 OFF THE SOUTH SEAWALL. SLOW DOWN AND THROW BUOYS.";
-                reply="COPY. KEEPING THE HULL CLEAR.";break;
+                detail="STORM RESCUE. TOW THE RESCUE BARGE. SEARCH OFF THE BEACH.";
+                reply="COPY. SEARCHLIGHT ON. BRINGING RINGS AND THE RESCUE BARGE.";break;
             default:return;
         }
         g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",title,detail,reply);

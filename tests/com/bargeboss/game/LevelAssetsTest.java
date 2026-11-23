@@ -13,10 +13,10 @@ final class LevelAssetsTest {
         for(int id=0;id<Challenges.COUNT;id++) {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
-            check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?9:0),"Level prepares its permanent scenery family");
+            check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?11:0),"Level prepares its permanent scenery family");
             check(preparation.length==plan.rotationAtlases().length+scenery.length+3,"Complete preparation includes scenery, rotations, cyclic foam, splashes and ripples");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
-            for(int atlas:scenery)check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.ALEX_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");
+            for(int receiver:scenery){int atlas=SpotlightArt.source(receiver);check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.ALEX_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");}
             Game game=new Game();game.challengeId=id;game.reset();
             check(LevelAssets.upcoming(game)==LevelAssets.challenge(Challenges.stageEntry(id)),"Gameplay manifest matches selected level");
             game.mode=Game.CHALLENGES;
@@ -27,9 +27,9 @@ final class LevelAssetsTest {
                 continue;
             }
             if(Challenges.kind(id)==Challenges.MONTROSE){
-                check(plan.rotationFrames()==544,"Montrose prepares complete tug and yacht families");
+                check(plan.rotationFrames()==832,"Montrose prepares complete tug and yacht families");
                 check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");
-                check(!includes(plan,SpriteAtlas.BARGE) && !includes(plan,SpriteAtlas.BULK),"Marina excludes industrial cargo");continue;
+                check(includes(plan,SpriteAtlas.BARGE) && !includes(plan,SpriteAtlas.BULK),"Marina prepares rescue hull but excludes industrial cargo");continue;
             }
             check(includes(plan,SpriteAtlas.TUG) && includes(plan,SpriteAtlas.BARGE),"Player, feeder and empty hulls prepared");
             check(includes(plan,SpriteAtlas.TUG_GOLD) && includes(plan,SpriteAtlas.BARGE_GOLD) && includes(plan,SpriteAtlas.BARGE_MINT),"Glow states prepared");

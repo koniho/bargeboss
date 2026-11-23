@@ -6,9 +6,9 @@ public final class VesselView {
     public static void draw(Game g,Painter p,Body b,boolean tug) { draw(g,p,b,tug,true); }
     public static void draw(Game g,Painter p,Body b,boolean tug,boolean wake) {
         RiverPainter river=p instanceof RiverPainter?(RiverPainter)p:null;
-        float[] clip=river==null?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,false,river.canvas().supportsUnionClips());
+        float[] clip=river==null || g.haulout.vesselRise(b)>=MontroseHarbor.LAND_RISE?ShoreOcclusion.EMPTY:ShoreOcclusion.vessel(g,river.camera,b,false,river.canvas().supportsUnionClips());
         if(clip.length>0)river.canvas().pushClipOutside(clip);
-        try {if(b.cruiser)CruiserView.draw(g,p,b);else paint(g,p,b,tug,wake);if(tug || g.radio.transmitting(g,b))VesselRadioView.draw(g,p,b);} finally {if(clip.length>0)river.canvas().popClip();}
+        try {if(b.cruiser)CruiserView.draw(g,p,b);else paint(g,p,b,tug,wake);if(tug)g.spotlight.lamp(g,p);if(tug || g.radio.transmitting(g,b))VesselRadioView.draw(g,p,b);} finally {if(clip.length>0)river.canvas().popClip();}
     }
     private static void paint(Game g,Painter p,Body b,boolean tug,boolean wake) {
         int tick=g.visualTicks;

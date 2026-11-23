@@ -4,6 +4,7 @@ package com.bargeboss.game;
 public final class MontroseRescue {
     final SwimmerModel swimmerModel=new SwimmerModel();
     final ChasRadio radio=new ChasRadio();
+    final RescueBarge barge=new RescueBarge();
     boolean slipsRevealed(){return !rafted && !touring;}
     public static final int PEOPLE=20,THROW_TICKS=36;
     public static final float THROW_RANGE=135;
@@ -37,6 +38,7 @@ public final class MontroseRescue {
     public final boolean[] towed=new boolean[2],warping=new boolean[2];
     public final int[] settled=new int[2];
     public final float[] x=new float[PEOPLE],y=new float[PEOPLE];
+    public final boolean[] found=new boolean[PEOPLE];
     public final int[] state=new int[PEOPLE],flash=new int[PEOPLE]; // 0 waiting, 1 buoy secured
     public int aiming=-1,flying=-1,flightTicks,cooldown;
     public float fromX,fromY,toX,toY;
@@ -57,10 +59,15 @@ public final class MontroseRescue {
                 b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;g.cargo[i]=b;}
             if(reposition){g.tug.x=RAFT_X;g.tug.y=RAFT_Y-90;g.tug.angle=-(float)Math.PI/2;}
         }else{
-            // Outside the southern seawall, clear of the entrance and traffic lane.
-            for(int i=0;i<PEOPLE;i++){int col=i%10,row=i/10;
-                x[i]=MontroseHarbor.mapX(800+col*22);y[i]=MontroseHarbor.mapY(1220+col*4+row*20);}
-            if(reposition){g.tug.x=MontroseHarbor.mapX(700);g.tug.y=MontroseHarbor.mapY(1320);g.tug.angle=-.2f;}
+            // Irregular groups and separated stragglers well offshore of Montrose Beach.
+            float[][] scatter={{730,-1680},{786,-1718},{812,-1632},{897,-1695},{1030,-1610},
+                {1084,-1550},{1128,-1644},{1191,-1588},{1288,-1500},{1349,-1457},
+                {1387,-1538},{1476,-1440},{1564,-1368},{1620,-1415},{1689,-1326},
+                {1810,-1280},{1234,-1840},{1508,-1726},{1875,-1548},{2020,-1190}};
+            for(int i=0;i<PEOPLE;i++){x[i]=MontroseHarbor.mapX(scatter[i][0]);y[i]=MontroseHarbor.mapY(scatter[i][1]);}
+            barge.setup(g);g.montroseWeather.evening=g.montroseWeather.storm=true;g.montroseWeather.stormTicks=MontroseWeather.STORM_TICKS;g.montroseWeather.towTicks=MontroseWeather.TOW_TICKS;
+            if(reposition){g.tug.x=barge.boat.x;g.tug.y=barge.boat.y+85;g.tug.angle=-(float)Math.PI/2;}
+
         }
         if(reposition)g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
@@ -69,7 +76,7 @@ public final class MontroseRescue {
         if(cruisers(g))return rafted?"APPROACH / TAP THE RAFT LINE TO SEPARATE":"TOW EACH CRUISER TO DOCK C / RELEASE IN ITS SLIP";
         if(failed)return "SWIMMER STRUCK / RESTART THE RESCUE";
         if(flying>=0)return "BUOY AWAY / KEEP CLEAR OF SWIMMERS";
-        return "TAP A SWIMMER TO THROW A BUOY / KEEP THE HULL CLEAR";
+        return !barge.towed?"TOW THE RESCUE BARGE OFFSHORE / TAP TUG FOR SEARCHLIGHT":"SELECT RESCUE BARGE / FLING RINGS / HOLD STILL FOR BOARDING";
     }
     public boolean tapRaft(Game g,float px,float py){
         if(!cruisers(g)||!rafted)return false;
@@ -78,9 +85,9 @@ public final class MontroseRescue {
         if(Physics.length(g.tug.x-mx,g.tug.y-my)>125){g.tell("GET CLOSER TO RELEASE THE RAFT LINE");return true;}
         rafted=false;radio.cutLoose();g.haptic(Game.HAPTIC_SUCCESS);g.tell("RAFT LINE RELEASED / TOW EACH CRUISER HOME");return true;
     }
-    public int swimmerAt(Game g,float px,float py){if(!swimmers(g)||failed||flying>=0)return -1;
+    public int swimmerAt(Game g,float px,float py){if(!swimmers(g)||failed||barge.boat!=null||flying>=0)return -1;
         int best=-1;float distance=18;
-        for(int i=0;i<PEOPLE;i++)if(state[i]==0){float d=Physics.length(px-x[i],py-y[i]);if(d<distance){distance=d;best=i;}}
+        for(int i=0;i<PEOPLE;i++)if(state[i]==0 && found[i]){float d=Physics.length(px-x[i],py-y[i]);if(d<distance){distance=d;best=i;}}
         return best;
     }
     public void release(Game g,float px,float py){int target=aiming;aiming=-1;if(target<0)return;
@@ -122,13 +129,14 @@ public final class MontroseRescue {
                     radio.delivered(i);g.delivered++;g.score+=1200;g.haptic(Game.HAPTIC_SUCCESS);g.tell("CRUISER SAFE / DOCK "+slip(i));}
             }return;
         }
+        for(int i=0;i<PEOPLE;i++)if(!found[i] && (g.spotlight.illuminates(g,x[i],y[i]) || Physics.length(g.tug.x-x[i],g.tug.y-y[i])<65)){
+            found[i]=true;flash[i]=60;g.haptic(Game.HAPTIC_TICK);g.tell("SWIMMER SPOTTED / APPROACH SLOWLY AND THROW A BUOY");
+        }
         float nearest=Float.MAX_VALUE;
-        for(int i=0;i<PEOPLE;i++){if(flash[i]>0)flash[i]--;if(state[i]==0)nearest=Math.min(nearest,Physics.length(g.tug.x-x[i],g.tug.y-y[i]));}
+        for(int i=0;i<PEOPLE;i++){if(flash[i]>0)flash[i]--;if(state[i]==0 && found[i])nearest=Math.min(nearest,Physics.length(g.tug.x-x[i],g.tug.y-y[i]));}
         if(nearest<240)closeCamera=true;else if(nearest>330)closeCamera=false;
         if(cooldown>0)cooldown--;
         if(failed)return;
-        // Fixed-step hull contact has a small safety margin and a non-graphic failure.
-        for(int i=0;i<PEOPLE;i++)if(g.tug.hit(x[i],y[i],4)){failed=true;g.lost++;g.haptic(Game.HAPTIC_IMPACT);g.tell("SWIMMER STRUCK / RESCUE FAILED");return;}
-        if(flying>=0 && ++flightTicks>=THROW_TICKS){int i=flying;flying=-1;state[i]=1;flash[i]=60;g.delivered++;g.score+=100;cooldown=12;g.haptic(Game.HAPTIC_SUCCESS);g.tell("BUOY SECURED / "+g.delivered+" OF 20 SAFE");}
+        barge.step(g);
     }
 }
