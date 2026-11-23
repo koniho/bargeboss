@@ -4,6 +4,15 @@ public final class MooredBoatsTest {
     static void check(boolean yes,String text){checks++;if(!yes)throw new AssertionError(text);}
     public static void main(String[] args){boolean[] kinds=new boolean[6];float previous=-Float.MAX_VALUE;
         check(MooredBoats.BERTHS.length>150,"populated harbor");
+        // Reference layout: Dock I fingers face southwest, away from the seawall.
+        float dx=-152,dy=-94,len=Physics.length(dx,dy);dx/=len;dy/=len;
+        for(int at=30;at<170;at+=30){
+            float x=1718+dx*at,y=287+dy*at;
+            if(at>=60)check(MontroseHarbor.contains(MontroseHarbor.mapX(x-dy*20),MontroseHarbor.mapY(y+dx*20)),"Dock I seawall side is open water");
+            check(!MontroseHarbor.contains(MontroseHarbor.mapX(x+dy*20),MontroseHarbor.mapY(y-dx*20)),"Dock I harbor-side fingers remain solid");
+        }
+        int dockIBoats=0;for(MooredBoats.Berth b:MooredBoats.BERTHS)if(b.row==14){dockIBoats++;check(b.side==-1,"No boats or mooring lines on Dock I seawall side");}
+        check(dockIBoats>0,"Dock I harbor-side slips stay populated");
         for(MooredBoats.Berth b:MooredBoats.BERTHS){kinds[b.kind]=true;check(b.y-b.x>=previous,"depth order");previous=b.y-b.x;
             check(b.frame>=0 && b.frame<SpriteAtlas.count(SpriteAtlas.MOORED_BOATS),"atlas range");
             for(int i=0;i<8;i+=2)check(MontroseHarbor.contains(b.hull[i],b.hull[i+1]),"dry hull corner");

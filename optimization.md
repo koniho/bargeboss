@@ -5505,3 +5505,28 @@ launch restored after capture; screen timeout restored to300000ms.
   encoder/clip checks. Shared-renderer 960-wide phase confirmation reviewed in
   out/skip-phase-{0,6,18}.png. APK installed successfully and normal cold launch
   completed. Native touch was not manually exercised; no iOS device validation.
+
+## 2026-11-22 — Dock I harbor-side fingers only
+
+- Shared Java, codex/montrose-dock-i from origin/main08e1f7a. User's annotated
+  satellite reference shows an uninterrupted seawall-facing edge on Dock I.
+  Removed its five northeast-facing fingers from the authoritative dock lines;
+  harbor-facing fingers, spine, shore access and central lamps remain.
+- Dock footprints, collisions, water/shore masks and the overhead chart derive
+  from those lines. Berth generation uses the same side rule, so no future NPC
+  or mooring ropes can be placed on the removed side. The existing 273 valid
+  boats remain: the old clearance checks had already rejected the shore-side
+  berths. No new runtime art, textures, caches or drawing primitives.
+- Added independent water/solid probes at the affected finger stations and NPC
+  side assertions. 490,553 moored-boat placement/tether/light checks pass.
+  4,350,443 all-heading production hull/cargo shoreline pixel checks pass,
+  plus 38,121 training-wall pixels. JVM/J2ObjC trace: 1e7199f0:2:1350.
+- Reviewed the actual shared renderer close view and harbor overview, then the
+  dedicated iPhone17Pro/iOS26.5 Metal simulator fixture montrose-dock-i. The
+  seawall channel is clear, while harbor-side fingers and boats remain visible.
+  Native screenshots/profile are under ignored out/ios-profile/dock-i-corrected.
+  This is visual validation, not a matched performance benchmark.
+- Full check.sh/Android profile build passed, including asset and Vulkan transport
+  checks. Installed APK with the existing debug key (Success); launch returned
+  Status ok / COLD,1088ms. Restored the prior timeout2147483647ms. Android gestures
+  and physical-iPhone pixels were not exercised; visual development used simulator.

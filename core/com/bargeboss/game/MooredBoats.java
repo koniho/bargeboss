@@ -23,6 +23,7 @@ public final class MooredBoats {
     private static Berth[] make(){java.util.ArrayList<Berth> out=new java.util.ArrayList<Berth>();float[][] rows=MontroseHarbor.berthRows();
         for(int row=0;row<rows.length;row++){float[] r=rows[row];float dx=r[2]-r[0],dy=r[3]-r[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
             for(float at=45;at+15<len-8;at+=30)for(int side=-1;side<=1;side+=2){
+                if(!MontroseHarbor.fingerSide(row,side))continue;
                 float px=r[0]+dx*at,py=r[1]+dy*at;
                 if(row==1 && side==-1 && py>285)continue; // Mission yacht and its approach remain clear.
                 int kind=(row*7+(int)(at/30)*3+(side==1?2:0))%6,orientation=row*2+(side==1?1:0);
