@@ -11,15 +11,16 @@ public final class BargeAbilities {
     private Body panelBody;
     static final float AIM_RADIUS=60;
     private final float[] x=new float[CAPACITY],y=new float[CAPACITY],z=new float[CAPACITY],vx=new float[CAPACITY],vy=new float[CAPACITY],vz=new float[CAPACITY];
-    private final boolean[] rocket=new boolean[CAPACITY],flash=new boolean[CAPACITY];
-    private final float[] travel=new float[CAPACITY];
+    private final boolean[] rocket=new boolean[CAPACITY],flash=new boolean[CAPACITY],impact=new boolean[CAPACITY];
+    private final float[] travel=new float[CAPACITY],impactFloor=new float[CAPACITY];
     private final int[] age=new int[CAPACITY];
     private final int[] life=new int[CAPACITY],color=new int[CAPACITY];
     public void reset(){selected=panelBody=null;blend=0;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
+    void deselect(){selected=null;visibleTicks=0;cancel();}
     public void cancel(){owner=-1;pressed=-1;spraying=false;heldTicks=0;}
     public boolean reveal(Game g,Body b){
         if(b==null || !b.active || b.ability==NONE)return false;
-        if(selected==b){selected=null;visibleTicks=0;cancel();g.haptic(Game.HAPTIC_TICK);return true;}
+        if(selected==b){deselect();g.haptic(Game.HAPTIC_TICK);return true;}
         cancel();selected=panelBody=b;visibleTicks=600;g.overview.cancelTouch();g.haptic(Game.HAPTIC_TICK);return true;
     }
     public float buttonX(Game g,int button){return buttonPoint(g,true);}
@@ -65,7 +66,20 @@ public final class BargeAbilities {
         }
         cancel();return true;
     }
+    /** Oriented hull footprint plus equipment height; partially visible boats remain selected. */
+    boolean inView(Game g,Body b){
+        RiverCamera c=g.layout.camera;float cs=(float)StrictMath.cos(b.angle),sn=(float)StrictMath.sin(b.angle);
+        float minX=Float.MAX_VALUE,minY=minX,maxX=-minX,maxY=-minX;
+        for(int i=0;i<4;i++){
+            float along=(i<2?-1:1)*(b.half+b.radius),across=(i%2==0?-1:1)*b.radius;
+            float x=c.screenX(b.x+cs*along-sn*across,b.y+sn*along+cs*across);
+            float y=c.screenY(b.x+cs*along-sn*across,b.y+sn*along+cs*across);
+            minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+        }
+        return maxX>=0 && minX<=g.layout.width && maxY>=0 && minY-55*c.scale<=g.layout.height;
+    }
     public void step(Game g){
+        if(selected!=null && (!selected.active || !inView(g,selected)))deselect();
         if(screenFlash>0)screenFlash--;
         if(selected!=null && selected.active)visibleTicks=600;
         blend=Physics.clamp(blend+(selected!=null && selected.active?.1f:-.1f),0,1);
@@ -97,11 +111,23 @@ public final class BargeAbilities {
             if(g.visualTicks%6==0)g.smoke.equipment(g,selected,-24,6,30.5f);
         }
         for(int i=0;i<CAPACITY;i++)if(life[i]>0){
-            life[i]--;age[i]++;if(flash[i])continue;if(color[i]==0xffb9e9f4)travel[i]+=Physics.length(vx[i],vy[i])/60;
+            life[i]--;age[i]++;if(flash[i])continue;if(color[i]==0xffb9e9f4 && !impact[i])travel[i]+=Physics.length(vx[i],vy[i])/60;
             x[i]+=vx[i]/60;y[i]+=vy[i]/60;z[i]+=vz[i]/60;vz[i]-=80f/60;
-            if(color[i]==0xffb9e9f4 && z[i]>=GroundArt.LAND_RISE-2 && z[i]<=GroundArt.LAND_RISE+23 && g.crew.hit(g,x[i],y[i],vx[i],vy[i]))life[i]=0;
-            if(life[i]>0 && color[i]==0xffb9e9f4 && z[i]<=GroundArt.LAND_RISE && g.tutorial!=null
-                    && g.tutorial.fireworks.waterHit(x[i],y[i]))life[i]=0;
+            if(!impact[i] && color[i]==0xffb9e9f4 && z[i]>=GroundArt.LAND_RISE-2 && z[i]<=GroundArt.LAND_RISE+23 && g.crew.hit(g,x[i],y[i],vx[i],vy[i]))life[i]=0;
+            if(life[i]>0 && !impact[i] && color[i]==0xffb9e9f4){
+                float floor=(g.montroseStage() && MontroseHarbor.openWater(x[i],y[i])?MontroseHarbor.DOCK_RISE:GroundArt.LAND_RISE)/ArticulatedModel.Z_SCALE;
+                boolean wood=false;
+                if(g.tutorial!=null && z[i]>=floor && z[i]<=floor+40)for(int pile=0;pile<FireworksLesson.PILES;pile++){
+                    if(Math.abs(x[i]-(FireworksLesson.x(pile)+15))<=27 && Math.abs(y[i]-FireworksLesson.y(pile))<=38){wood=true;break;}
+                }
+                boolean ground=z[i]<=floor && !WaterEffectsPainter.contains(g,x[i],y[i]);
+                if(wood || ground){
+                    if(g.tutorial!=null)g.tutorial.fireworks.waterHit(x[i],y[i]);
+                    impact[i]=true;age[i]=0;life[i]=24;impactFloor[i]=floor;z[i]=Math.max(z[i],floor+.5f);
+                    vx[i]*=.12f;vy[i]*=.12f;vz[i]=15;
+                }
+            }
+            if(impact[i] && z[i]<impactFloor[i])life[i]=0;
             if(z[i]<0)life[i]=0;
             if(life[i]==0 && rocket[i]){rocket[i]=false;explode(x[i],y[i],z[i],color[i]);screenFlash=8;g.sounds.fireworkBurst();}
         }
@@ -124,14 +150,15 @@ public final class BargeAbilities {
         }
         emit(px,py,pz,0,0,0,28,tint);flash[(next-1)%CAPACITY]=true;
     }
-    private void emit(float xx,float yy,float zz,float dx,float dy,float dz,int ticks,int tint){int i=next++%CAPACITY;rocket[i]=flash[i]=false;age[i]=0;travel[i]=0;x[i]=xx;y[i]=yy;z[i]=zz;vx[i]=dx;vy[i]=dy;vz[i]=dz;life[i]=ticks;color[i]=tint;}
+    private void emit(float xx,float yy,float zz,float dx,float dy,float dz,int ticks,int tint){int i=next++%CAPACITY;rocket[i]=flash[i]=impact[i]=false;age[i]=0;travel[i]=0;x[i]=xx;y[i]=yy;z[i]=zz;vx[i]=dx;vy[i]=dy;vz[i]=dz;life[i]=ticks;color[i]=tint;}
+    int impactCount(){int n=0;for(int i=0;i<CAPACITY;i++)if(impact[i] && life[i]>0)n++;return n;}
     boolean alive(int i){return life[i]>0;}
     float depth(Game g,int i){return g.layout.camera.screenY(x[i],y[i]);}
     void drawParticle(Game g,Painter p,int i){
         if(life[i]<=0)return;RiverCamera c=g.layout.camera;
         float sx=c.screenX(x[i],y[i]),sy=c.screenY(x[i],y[i])-z[i]*ArticulatedModel.Z_SCALE*c.scale;
         if(sx< -120 || sx>g.layout.width+120 || sy< -120 || sy>g.layout.height+120)return;
-        float fade=Math.min(1,life[i]/24f),size=(color[i]==0xffb9e9f4?2.5f+Math.min(210,travel[i])*.05f:11)*c.scale;
+        float fade=Math.min(1,life[i]/24f),size=(impact[i]?8+age[i]*.6f:color[i]==0xffb9e9f4?2.5f+Math.min(210,travel[i])*.05f:11)*c.scale;
         float tail=Math.min(age[i]/60f,rocket[i]?.34f:.28f);
         float lift=z[i]*ArticulatedModel.Z_SCALE,px=x[i]+RiverCamera.riseX(lift),py=y[i]+RiverCamera.riseY(lift);
         float tz=z[i]-vz[i]*tail-40*tail*tail;
@@ -140,7 +167,13 @@ public final class BargeAbilities {
         float[] clip=ShoreOcclusion.region(g,c,Math.min(px,tx)-extent,Math.min(py,ty)-extent,Math.max(px,tx)+extent,Math.max(py,ty)+extent,depth(g,i));
         if(clip.length>0)p.pushClipOutside(clip);
         try{
-            if(color[i]==0xffb9e9f4)p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,size*3,0,0,size*2,fade*.6f);
+            if(impact[i]){
+                float dx=c.screenX(x[i]+vx[i],y[i]+vy[i])-c.screenX(x[i],y[i]);
+                float dy=c.screenY(x[i]+vx[i],y[i]+vy[i])-c.screenY(x[i],y[i]);
+                float length=Math.max(.01f,Physics.length(dx,dy));dx/=length;dy/=length;
+                p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,dx*size*2,dy*size*2,-dy*size*2,dx*size*2,fade*.85f);
+            }
+            else if(color[i]==0xffb9e9f4)p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,size*3,0,0,size*2,fade*.6f);
             else if(flash[i]){
                 float t=age[i]/28f,r=(12+100*t)*c.scale;
                 p.material(sx,sy,r*2,0,0,r*2,EffectMaterial.RING,.018f,1,SoftCue.alpha(color[i],(1-t)*.7f));

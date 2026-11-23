@@ -494,6 +494,7 @@ public final class Game {
         if(river && liveButton(x,y)) river=false;
         if(river) beginDown(layout.camera.worldX(x,y),layout.camera.worldY(x,y),true);
         else beginDown(x,y,false);
+        if(!pointer && mode==PLAY && abilities.selected!=null)beginDown(x,y,false);
         if(pointer) mapPointer=id;
     }
     public void pointerMove(int id,float x,float y) {
@@ -785,6 +786,7 @@ public final class Game {
         // rotated endpoint happens to share a button's numerical coordinates.
         if(mapInRiver) {
             if(!pushing && held>=0) tell("HOLD THE CARGO TO LINE UP AND PUSH");
+            else if(held==-1 && tapCandidate && pressTicks<12 && Physics.length(x-downX,y-downY)<22)abilities.deselect();
             cancel(); return;
         }
         boolean tap=Physics.length(x-downX,y-downY)<22;
@@ -839,7 +841,7 @@ public final class Game {
                 cancelInputs();
                 if(tutorial!=null) tutorial.exitRequested=true;
                 else { startTutorial(); return; }
-            }
+            }else if(mode==PLAY && pressTicks<12)abilities.deselect();
         }
         cancel();
     }

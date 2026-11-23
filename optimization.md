@@ -5795,3 +5795,25 @@ launch restored after capture; screen timeout restored to300000ms.
   actual Android fire-panel screenshot reviewed at out/ability-panel-native.png.
   Restored normal launch. Fireworks and transition pixels reviewed through the
   shared desktop renderer; no physical iOS or sustained-FPS claim for this round.
+
+### 2026-11-22 — Hose surface splashes and automatic ability deselection
+- Incoming water particles convert in-place to directional, growing splash stamps
+  when contacting timber volumes or dry surfaces. The same bounded 320-slot pool,
+  atlas and depth/shore clip path are reused; no extra emitter, cache or texture.
+  Impacts cannot repeatedly extinguish or hit workers. They expire after 24 ticks.
+  Contact floors use model-height units, with Montrose floating docks at their
+  actual lower height. Timber remains a collision receiver after charring.
+- Empty short world taps and unused screen areas deselect through existing routing,
+  after active controls/vessel gestures have had priority. Offscreen detection uses
+  the oriented hull footprint plus equipment height; partial visibility preserves
+  selection. Both paths stop held pumping and reuse the existing chart crossfade.
+- Targeted impact/no-impact/expiry, active throttle exclusion, empty tap, partial
+  visibility and offscreen checks passed, plus existing ability and firefighting
+  replay checks. Shared renderer wood/ground snapshots reviewed in out/.
+- Full check.sh/Android Vulkan build passed, including 2,810 core assertions,
+  new hose/selection tests and existing asset/native regressions. Canonical replay
+  e77efb62:2:1350; fire impacts now contact physical timber/ground surfaces.
+- Installed APK and inspected native timber-impact pixels in
+  out/hose-impact-native.png; shared previews also cover bare quay. Restored
+  normal launch. Selection behavior verified by shared input tests; no physical
+  iOS or sustained frame-time profiling in this round.

@@ -34,3 +34,13 @@ waterplane depth and shore occlusion. Native hosts own neither selection nor
 ability state. Upcoming tutorial assets explicitly prewarm both equipment
 families and their shadow/shading derivatives. Desktop screenshots are generated
 by `BargeAbilitiesReview`; touch/lifecycle tests are `BargeAbilitiesTest`.
+
+An unused short tap in the play area also deselects equipment; active HUD, radio,
+vessel and rope targets retain their input priority. A fully offscreen selected
+barge automatically deselects and stops its nozzle. Partial hull/equipment
+visibility keeps selection. Both use the same animated return to the chart.
+
+Water contacts convert existing stream particles into short directional splash
+stamps on timber (including charred wood), quay ground and floating docks.
+Impact stamps do not deal repeated extinguishing credit. Contact steam remains
+separate for burning timber, and both effects use shared depth/shore clipping.
