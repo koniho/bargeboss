@@ -106,6 +106,9 @@ public final class Game {
     /** Selection only affects the next entry, never the live stage or a sibling practice. */
     public void selectLighting(int id){LightingProfile.preset(id);nextLighting=id;}
     public GameSettings settings=new GameSettings();
+    public boolean trainingSelected;
+    public final DeveloperPanel developerPanel=new DeveloperPanel();
+    private int developerStart=-1;
     public final WaveControls waveControls=new WaveControls();
     public final Joystick joystick=new Joystick();
     public final OverviewMap overview=new OverviewMap();
@@ -185,7 +188,7 @@ public final class Game {
     public boolean selectChallenge(int id) {
         id=Challenges.stageEntry(id);
         if(!career.select(id)) return false;
-        challengeId=id;challengePage=Challenges.pageFor(id); return true;
+        trainingSelected=false;challengeId=id;challengePage=Challenges.pageFor(id); return true;
     }
     /** Hosts supply available logical bounds; resizing never advances physics or clocks. */
     public void configureCanvas(float width,float height) {
@@ -368,7 +371,17 @@ public final class Game {
         practice.tutorial.setup(practice);practice.tutorial.enter(practice);practice.fitTutorialCamera();
         practice.tutorial.resumeShift=returnToShift;
     }
-    public void render(Painter painter) { Renderer.draw(this,painter); }
+    /** Debug jumps live in a disposable child; saved career belongs to the root. */
+    public void startDeveloperMission(int id){
+        if(!settings.developerTools || !Challenges.valid(id) || activeGame().tutorial!=null
+                || Challenges.stageEntry(id)!=Challenges.stageEntry(activeGame().challengeId))return;
+        cancelInputs();accumulator=visualAccumulator=0;
+        Game test=new Game();test.settings=settings;test.configureCanvas(layout.width,layout.height);
+        test.selectLighting(activeGame().lighting().id);test.challengeId=id;test.developerStart=id;test.reset();
+        if(Challenges.calumet(id))test.voyage.developerJob(test,id);
+        practice=test;returnToShift=false;
+    }
+    public void render(Painter painter) { Renderer.draw(this,painter); developerPanel.draw(this,painter); }
     public String status() {
         if(practice!=null) return practice.status();
         String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==SETTINGS?"Settings":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
@@ -387,9 +400,11 @@ public final class Game {
      * Never a location-menu entry or persisted career ID. Geographic tests use reset(). */
     void resetPracticeYard(){reset(true);}
     private void reset(boolean practiceYard) {
+        if(trainingSelected && !practiceYard){startTutorial();return;}
         stageLighting=LightingProfile.preset(nextLighting);abilities.reset();
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
+        if(developerStart>=0){challengeId=developerStart;developerStart=-1;}
         dialogue.close(this);practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
@@ -437,6 +452,7 @@ public final class Game {
     }
     public float engineRumble(){Game g=activeGame();return g.engineHaptics.strength(g);}
     public void cancelInputs() {
+        developerPanel.cancel();
         rescue.aiming=-1;waveControls.cancel();abilities.cancel();towRelease.cancel();
         if(practice!=null) { practice.cancelInputs(); return; }
         overview.cancelTouch();
@@ -445,6 +461,7 @@ public final class Game {
     }
     /** Native input is always in landscape canvas coordinates. */
     public void pointerDown(int id,float x,float y) {
+        if(developerPanel.down(this,id,x,y))return;
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
@@ -480,6 +497,7 @@ public final class Game {
         if(pointer) mapPointer=id;
     }
     public void pointerMove(int id,float x,float y) {
+        if(developerPanel.move(this,id))return;
         if(practice!=null) { practice.pointerMove(id,x,y); return; }
         if(abilities.move(this,id,x,y))return;
         if(towRelease.move(id,x,y))return;
@@ -496,6 +514,7 @@ public final class Game {
         if(mapInRiver) move(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else move(x,y);
     }
     public void pointerUp(int id,float x,float y) {
+        if(developerPanel.up(this,id,x,y))return;
         if(practice!=null) { practice.pointerUp(id,x,y); finishPractice(); return; }
         if(abilities.up(this,id,x,y))return;
         if(towRelease.up(this,id,x,y))return;
@@ -518,6 +537,7 @@ public final class Game {
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
+        developerPanel.cancel();
         if(practice!=null) { practice.pointerCancel(id); return; }
         if(waveControls.owns(id)){waveControls.cancel();return;}
         if(abilities.owner==id)abilities.cancel();
@@ -536,10 +556,10 @@ public final class Game {
             hapticsEnabled=practice.hapticsEnabled; practice=null;
             returnToTitle(); return;
         }
-        if(!practice.tutorial.exitRequested) return;
+        if(practice.tutorial==null || !practice.tutorial.exitRequested) return;
         boolean finished=practice.tutorial.lesson==Tutorial.DONE;
         hapticsEnabled=practice.hapticsEnabled; practice=null; accumulator=0;
-        if(returnToShift) mode=PLAY; else if(finished) reset();
+        if(returnToShift) mode=PLAY; else if(finished){if(trainingSelected)returnToTitle();else reset();}
     }
     private void returnToTitle() {
         cancelInputs(); accumulator=visualAccumulator=0;
@@ -642,6 +662,7 @@ public final class Game {
     public void background() { if(practice!=null) { practice.background(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; }
     /** Host Back/Escape actions share navigation and input cancellation. */
     public void back() {
+        if(developerPanel.back())return;
         if(practice!=null){practice.back();return;}
         if(mode==PLAY || mode==PAUSE){pause();return;}
         cancelInputs();accumulator=visualAccumulator=0;
@@ -779,7 +800,6 @@ public final class Game {
             }
             cancel();return;
         }
-        if(tap && LightingChoices.tap(this,x,y)){cancel();return;}
         if(mode==TITLE && tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
         if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
             if(tap && tapped(Layout.START,x,y)) tutorial.exitRequested=true;
@@ -787,10 +807,10 @@ public final class Game {
             if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
             if(tap && tapped(Layout.START,x,y)) mode=PLAY;
         } else if(mode==TITLE) {
-            if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
             if(tap && tapped(Layout.START,x,y)) reset();
             else if(tap && tapped(Layout.CHALLENGES,x,y)) mode=CHALLENGES;
         } else if(mode==CHALLENGES) {
+            if(tap && tapped(Layout.TRAINING_HARBOR,x,y)){trainingSelected=true;cancel();return;}
             if(tap && tapped(Layout.BACK,x,y)) mode=TITLE;
             else if(tap && tapped(Layout.CHALLENGE_PREV_PAGE,x,y)) challengePage=Math.max(0,challengePage-1);
             else if(tap && tapped(Layout.CHALLENGE_NEXT_PAGE,x,y)) challengePage=Math.min(Challenges.pageCount()-1,challengePage+1);
@@ -831,6 +851,7 @@ public final class Game {
     }
     /** Bounded catch-up protects against a stalled host. Hosts must cancel on background. */
     public void advance(double seconds) {
+        if(developerPanel.open)return;
         if(practice!=null) { practice.advance(seconds); return; }
         if(Double.isNaN(seconds) || seconds<=0) return;
         if(mode!=PLAY) {

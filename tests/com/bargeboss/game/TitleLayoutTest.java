@@ -55,17 +55,12 @@ public final class TitleLayoutTest {
     }
     private static void menuFlow(int width,int height){
         Game g=new Game();g.configureCanvas(width,height);
-        Layout.Box[] targets=new Layout.Box[8];
-        targets[0]=g.controlBox(Layout.LEARN);targets[1]=g.controlBox(Layout.START);
-        targets[2]=g.controlBox(Layout.CHALLENGES);targets[3]=g.controlBox(Layout.SETTINGS);
-        for(int i=0;i<4;i++)targets[i+4]=LightingChoices.box(g,i);
+        Layout.Box[] targets={g.controlBox(Layout.START),g.controlBox(Layout.CHALLENGES),g.controlBox(Layout.SETTINGS)};
         for(int i=0;i<targets.length;i++){
             Layout.Box a=targets[i];
             check(a.x>=0 && a.y>=0 && a.x+a.w<=width && a.y+a.h<=height,"title action stays within safe canvas");
             for(int j=i+1;j<targets.length;j++)check(!overlaps(a,targets[j]),"title actions have distinct touch regions");
         }
-        ReplayInput.tap(g,targets[4].centerX(),targets[4].centerY());
-        check(g.mode==Game.TITLE && g.selectedLighting()==0,"time selector changes departure preset without starting");
         ReplayInput.tap(g,Layout.SETTINGS);check(g.mode==Game.SETTINGS,"settings entry opens settings");
         ReplayInput.tap(g,Layout.JOYSTICK_RIGHT);check(g.settings.joystickSide()==GameSettings.RIGHT,"segmented hand choice remains interactive");
         boolean haptics=g.hapticsEnabled;Layout.Box toggle=g.controlBox(Layout.HAPTICS);
@@ -109,7 +104,7 @@ public final class TitleLayoutTest {
             g.mode=Game.TITLE;
             int ticks=g.ticks;float tx=g.tug.x,ty=g.tug.y;TitleView.voyage(g,new Parity());
             check(g.ticks==ticks && g.tug.x==tx && g.tug.y==ty,"title framing cannot move the live player tug");
-            for(Layout.Box button:new Layout.Box[]{Layout.LEARN,Layout.START,Layout.CHALLENGES}) {
+            for(Layout.Box button:new Layout.Box[]{Layout.START,Layout.CHALLENGES}) {
                 Game menu=new Game();menu.configureCanvas(size[0],size[1]);ReplayInput.tap(menu,button);
                 check(button==Layout.LEARN?menu.activeGame()!=menu:button==Layout.START?menu.mode==Game.PLAY:menu.mode==Game.CHALLENGES,"title buttons retain their responsive hit targets");
             }

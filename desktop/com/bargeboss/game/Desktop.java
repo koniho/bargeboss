@@ -16,6 +16,7 @@ public final class Desktop extends JPanel {
     private DesktopProgress progress;
     private int savedVersion,attemptedVersion;
     private Desktop() {
+        game.settings.developerTools=Boolean.getBoolean("bargeboss.dev");
         try {
             progress=new DesktopProgress(java.nio.file.Paths.get(System.getProperty("user.home"),".bargeboss","progress.dat"));
             game.restoreProgress(progress.read());

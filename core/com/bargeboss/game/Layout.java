@@ -10,6 +10,7 @@ public final class Layout {
     public static final Box HAPTICS=new Box(212,280,524,64);
     public static final Box HELP=new Box(722,534,102,50),
             PRACTICE=new Box(834,534,110,50);
+    public static final Box TRAINING_HARBOR=new Box(60,444,840,54);
     public static final Box LEARN=new Box(632,330,276,64), START=new Box(632,410,276,72);
     public static final Box RESUME=new Box(244,256,472,68), RESTART=new Box(244,342,224,56),
             TITLE_SCREEN=new Box(492,342,224,56), AGAIN=new Box(340,450,280,64);
@@ -45,10 +46,10 @@ public final class Layout {
         return new Layout(width,height,148+y-c.worldY(screenX,screenY),460+x-c.worldX(screenX,screenY),zoom);
     }
 
-    /** Title separates left-side training from right-side voyage setup; other menus use centered targets. */
+    /** Title keeps voyage setup on the right; other menus use centered targets. */
     public Box titleBox(Box original) {
         if(original==LEARN)return new Box(48,250+offsetY,310,78);
-        if(original==START)return new Box(width-332,374+offsetY,284,76);
+        if(original==START)return new Box(width-332,294+offsetY,284,76);
         if(original==CHALLENGES)return new Box(width-332,228+offsetY,284,44);
         return box(original);
     }
