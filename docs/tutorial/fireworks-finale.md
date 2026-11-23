@@ -58,3 +58,8 @@ Tow reconfiguration explicitly introduces a narrow passage: two abreast will not
 fit. Disconnect one tug-to-barge line, connect that free barge to the other barge,
 then tow single file and clear the exit with both hulls. Recovery instructions
 retain this reason when one or both towlines are missing.
+
+Equipment instruction prompts begin at SHOW, after both train barges reach the
+celebration basin and are cast off. Selecting equipment earlier must not replace
+bridge, towing or train-reconfiguration coaching. The tutorial's two tow bridges
+remain physical/radio-operated; there are no legacy lock doors between them.

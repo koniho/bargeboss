@@ -282,7 +282,9 @@ remain floating in this scene. Fixed beacons never use building fades.
 ## Lock machinery and water-level cues
 
 The third career level uses two `LockView` gates; the opening bridge remains in
-the tutorial. Each lock gate is an `ArticulatedModel` with fixed bank machinery
+the tutorial. Tutorial passages use `BridgeLayers` only: do not draw legacy
+`BridgeView` or merge `LockView` gates unless their stage is active. Rendering
+and collision must agree about which machinery exists. Each lock gate is an `ArticulatedModel` with fixed bank machinery
 and independently hinged rigid leaves. Their steel faces, braces and top rails
 rotate in XYZ about the bank pivots before projection. Lantern anchors belong
 to their fixed machinery or moving leaf nodes, and model self-occlusion controls

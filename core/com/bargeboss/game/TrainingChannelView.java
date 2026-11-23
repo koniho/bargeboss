@@ -14,7 +14,7 @@ public final class TrainingChannelView {
         NavigationLights.reflections(g,canvas);
         FireLight.reflection(g,p);
         LocationBridges.shadows(g,canvas);
-        LockView.water(g,g.lock,canvas);
+        if(g.lockStage())LockView.water(g,g.lock,canvas);
         FeederView.draw(g,p);
         // Ground is cached; solid lower-bank caps also join the world depth
         // order so they cover hulls without cutting through nearer buildings.
@@ -34,7 +34,7 @@ public final class TrainingChannelView {
         HarborAtmosphere.bankHaze(g,canvas);
         LightingView.quays(g,GroundArt.raisedCanvas(g,canvas));
         factoriesAndVessels(g,canvas);
-        BridgeView.draw(g,canvas);
+        if(g.hasBridge())BridgeView.draw(g,canvas);
         gateIndicator(g,canvas);
         if(g.tutorial!=null){g.tutorial.canal.cue(g,canvas);g.tutorial.towBridges.cue(g,canvas);}
     }
@@ -138,17 +138,17 @@ public final class TrainingChannelView {
             bodies[j+1]=b;
         }
         DockView.shadows(g,canvas);BridgeLayers machinery=new BridgeLayers(g,canvas);
-        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,prop=0,crew=0;int crane=0;int[] cranes=DockView.ordered(g);int[] workers=DockWorkers.ordered(g);int[] splashes=SprayView.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
+        Painter world=new RiverPainter(canvas,c);int boat=0,vehicle=0,shore=0,span=0,mark=0,spray=0,gateIndex=0,gateCount=g.lockStage()?2:0,prop=0,crew=0;int crane=0;int[] cranes=DockView.ordered(g);int[] workers=DockWorkers.ordered(g);int[] splashes=SprayView.ordered(g);int[] lights=NavigationLights.ordered(g);TowView.Segments rope=new TowView.Segments(g);int[] vehicles=YardActivity.visible(g);
         for(int i=0;i<=FACTORY_PLACEMENTS;i++) {
             float next=i<FACTORY_PLACEMENTS?c.screenY(factoryX(i),factoryY(i)):Float.MAX_VALUE;
-            while(crane<cranes.length || boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<2 || prop<CalumetArt.count() || crew<workers.length || WorldArrows.pending()) {
+            while(crane<cranes.length || boat<count || vehicle<vehicles.length || shore<TrainingGroundView.frontCount() || span<rope.count || mark<lights.length || spray<splashes.length || gateIndex<gateCount || prop<CalumetArt.count() || crew<workers.length || WorldArrows.pending()) {
                 float bd=boat<count?c.screenY(bodies[boat].x,bodies[boat].y):Float.MAX_VALUE;
                 float vd=vehicle<vehicles.length?YardActivity.depth(g,vehicles[vehicle]):Float.MAX_VALUE;
                 float sd=shore<TrainingGroundView.frontCount()?TrainingGroundView.frontDepth(g,shore):Float.MAX_VALUE;
                 float rd=span<rope.count?rope.depth(c,span):Float.MAX_VALUE;
                 float ld=mark<lights.length?NavigationLights.depth(g,lights[mark]):Float.MAX_VALUE;
                 float ed=spray<splashes.length?SprayView.depth(g,splashes[spray]):Float.MAX_VALUE;
-                float gd=gateIndex<2?LockView.gateDepth(g,gateIndex):Float.MAX_VALUE;
+                float gd=gateIndex<gateCount?LockView.gateDepth(g,gateIndex):Float.MAX_VALUE;
                 float pd=prop<CalumetArt.count()?CalumetArt.depth(g,prop):Float.MAX_VALUE;
                 float wd=crew<workers.length?DockWorkers.depth(g,workers[crew]):Float.MAX_VALUE;
                 float ad=WorldArrows.depth();
@@ -157,7 +157,7 @@ public final class TrainingChannelView {
                 if(crane<cranes.length && cd<=Math.min(next,Math.min(ad,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd))))))))))){DockView.draw(g,canvas,cranes[crane++]);continue;}
                 if(WorldArrows.pending()&&ad<=Math.min(next,Math.min(wd,Math.min(pd,Math.min(gd,Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))))))){WorldArrows.draw(world);continue;}
                 float other=Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))));
-                if(gd<=other && gd<=pd && gd<=wd && gd<=next){LockView.drawGate(g,g.lock,canvas,gateIndex++);continue;}
+                if(gateIndex<gateCount && gd<=other && gd<=pd && gd<=wd && gd<=next){LockView.drawGate(g,g.lock,canvas,gateIndex++);continue;}
                 if(pd<=other && pd<=wd && pd<=next){CalumetArt.draw(g,canvas,prop++);continue;}
                 if(wd<=other && wd<=next && crew<workers.length){DockWorkers.draw(g,canvas,workers[crew++]);continue;}
                 if(Math.min(ed,Math.min(ld,Math.min(rd,Math.min(sd,Math.min(bd,vd)))))>next)break;

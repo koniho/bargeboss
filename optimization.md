@@ -5869,3 +5869,27 @@ launch restored after capture; screen timeout restored to300000ms.
   frame evictions or source decode time. Native Vulkan remained active.
   Evidence in out/profiles/land-*. Normal app cold launch succeeded after
   profiling; restored the phone's saved 300000ms display timeout.
+
+### 2026-11-22 — Tutorial towing prompts and obsolete lock rendering
+- Equipment selection no longer overrides DOUBLE/BRIDGE/LINK/TRAIN/RELEASE
+  coaching. Removed the early ability hint from double towing; equipment guidance
+  starts at SHOW, after the two-barge passage and castoff goals.
+- TrainingChannelView previously merged two legacy lock leaves unconditionally,
+  despite inactive lock simulation. Lock water effects and depth-merge entries
+  now require an actual lock stage. Retained the real radio-operated bridges.
+  This removes unnecessary lock model work/draws without new caches or assets.
+- Targeted prompt progression and rendered-state checks passed: changing lock
+  phase cannot alter tutorial pixels. Combined replay 9e23edeb:2:1350.
+- Visual review also found the obsolete BridgeView at Y=200 between the
+  passage bridges. Guarded its rendering and teacher collision by hasBridge(),
+  matching player/cargo collision rules. Render regression covers its phase too.
+- Validation: full Android build (including check.sh, asset and native renderer
+  checks) passed. Reviewed shared overview and Android Vulkan barge-bridge
+  fixture: only the intended passage bridges remain and towing coaching is
+  visible. Installed/launched on development phone; iOS not device-tested.
+
+### 2026-11-22 — Land-lighting merge validation
+- Integrated origin/main4db4e69 tutorial coaching timing and removal of obsolete
+  tutorial lock/bridge geometry. Preserved both test registrations and performance
+  records. Full check.sh, assets and Android Vulkan build passed; JVM/J2ObjC
+  parity passed at 979d9449:2:1350, with delivery count/score unchanged.

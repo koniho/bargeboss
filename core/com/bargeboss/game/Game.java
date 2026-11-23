@@ -1038,7 +1038,7 @@ public final class Game {
             float impact=Physics.collide(tug,teacher,splashes);
             for(Body b:cargo)if(b!=null && b.active)impact=Math.max(impact,Physics.collide(b,teacher,splashes));
             if(impact>1)tutorial.arrival.pushed();
-            CalumetMap.collide(teacher,splashes);passages.collide(teacher,splashes);bridge.collide(teacher,splashes);
+            CalumetMap.collide(teacher,splashes);passages.collide(teacher,splashes);if(hasBridge())bridge.collide(teacher,splashes);
         }
         if(tutorial==null) for(Feeder f:feeders) if(f.phase!=Feeder.IDLE) {
             feederContact(f.boat);
