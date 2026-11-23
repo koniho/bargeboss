@@ -76,31 +76,59 @@ public final class BakeMooredBoats {
                     raster.setDataElements(0,0,w,h,pixels);return raster;}};
         }
     }
-    public static void main(String[] args)throws Exception{BufferedImage sheet=new BufferedImage(CELL*MooredBoats.COLUMNS,CELL*60,BufferedImage.TYPE_INT_ARGB);Graphics2D g=sheet.createGraphics();g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        for(int layer=0;layer<5;layer++)for(int kind=0;kind<6;kind++)for(int view=0;view<MooredBoats.ORIENTATIONS;view++){angle=view*(float)(Math.PI*2/MooredBoats.ORIENTATIONS);faces=new ArrayList<Face>();model(kind);faces.sort((a,b)->Float.compare(a.depth,b.depth));int frame=layer*MooredBoats.BASE_FRAMES+kind*MooredBoats.ORIENTATIONS+view,ox=frame%MooredBoats.COLUMNS*CELL,oy=frame/MooredBoats.COLUMNS*CELL;g.translate(ox,oy);
-            for(Face f:faces){Path2D path=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)path.moveTo(sx,sy);else path.lineTo(sx,sy);}path.closePath();int rgb=f.color;int value=Math.min(255,(((rgb>>16)&255)+((rgb>>8)&255)+(rgb&255)));if(layer==4){float[] q=f.xyz;float ux=q[3]-q[0],uy=q[4]-q[1],uz=q[5]-q[2],vx=q[6]-q[0],vy=q[7]-q[1],vz=q[8]-q[2];float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);g.setPaint(new SurfacePaint(nx/n,ny/n,nz/n,q[0],q[1],q[2]));}else g.setColor(layer==0?new Color(((rgb>>16)&255)/2,((rgb>>8)&255)/2,(rgb&255)/2,255):new Color(layer==1?value:0,layer==2?value:0,layer==3?value:0,255));g.fill(path);}g.translate(-ox,-oy);
-        }g.dispose();ImageIO.write(sheet.getSubimage(0,0,CELL*16,CELL*48),"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(sheet.getSubimage(0,CELL*48,CELL*16,CELL*12),"png",new File("assets/sprites/montrose-moored-normals-v1.png"));bakeCanvas();System.out.println("Baked 192 model headings, registered normals and 8 canvas liveries");}
-    static Path2D path(Face f){Path2D p=new Path2D.Float();for(int i=0;i<f.xyz.length;i+=3){float x=f.xyz[i],y=f.xyz[i+1],z=f.xyz[i+2];double sx=CELL*.5+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD,sy=CELL*.7+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-.81649658*z)*CELL/MooredBoats.CELL_WORLD;if(i==0)p.moveTo(sx,sy);else p.lineTo(sx,sy);}p.closePath();return p;}
-    static void bakeCanvas()throws Exception{
-        File dir=new File("assets/sprites/frames/montrose-bimini-v1");dir.mkdirs();
-        for(int kind=0;kind<6;kind++)for(int view=0;view<32;view++){
-            angle=view*(float)(Math.PI*2/32);faces=new ArrayList<Face>();model(kind);faces.sort((a,b)->Float.compare(a.depth,b.depth));
-            for(int palette=0;palette<BiminiArt.COLORS;palette++){
-                BufferedImage cell=new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB);Graphics2D g=cell.createGraphics();
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-                for(Face f:faces){
-                    if(f.fabric){g.setComposite(AlphaComposite.SrcOver);int rgb=BiminiArt.color(palette);float shade=f.color==0xff747878?1:.72f;
-                        g.setColor(new Color(Math.round(((rgb>>16)&255)*shade),Math.round(((rgb>>8)&255)*shade),Math.round((rgb&255)*shade)));}
-                    else g.setComposite(AlphaComposite.Clear);
-                    g.fill(path(f));
-                }g.dispose();
-                for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++)if((cell.getRGB(x,y)>>>24)!=0 &&
-                        (x<BiminiArt.LEFT || x>=BiminiArt.LEFT+BiminiArt.WIDTH || y<BiminiArt.TOP || y>=BiminiArt.TOP+BiminiArt.HEIGHT))
-                    throw new AssertionError("Canvas crop clips heading "+kind+":"+view);
-                int frame=BiminiArt.frame(palette,kind*32+view);
-                ImageIO.write(cell.getSubimage(BiminiArt.LEFT,BiminiArt.TOP,BiminiArt.WIDTH,BiminiArt.HEIGHT),"png",new File(dir,frame+".png"));
+    // Offline supersampled depth buffer: average face order fails when roofs overlap decks.
+    static final int AA=2,RASTER=CELL*AA;
+    static int[] owners;static float[] depths,heights;
+    static void rasterFace(int id,Face f){
+        int n=f.xyz.length/3;float[] sx=new float[n],sy=new float[n],dz=new float[n];
+        for(int i=0;i<n;i++){float x=f.xyz[i*3],y=f.xyz[i*3+1],z=f.xyz[i*3+2];
+            sx[i]=(CELL*.5f+RiverCamera.Q*(x+y)*CELL/MooredBoats.CELL_WORLD)*AA;
+            sy[i]=(CELL*.7f+(RiverCamera.Q*RiverCamera.DEPTH*(y-x)-ArticulatedModel.Z_SCALE*z)*CELL/MooredBoats.CELL_WORLD)*AA;
+            dz[i]=y-x+z;
+        }
+        for(int k=1;k<n-1;k++){
+            int a=0,b=k,c=k+1;float den=(sy[b]-sy[c])*(sx[a]-sx[c])+(sx[c]-sx[b])*(sy[a]-sy[c]);if(Math.abs(den)<.00001f)continue;
+            int minX=Math.max(0,(int)Math.floor(Math.min(sx[a],Math.min(sx[b],sx[c])))),maxX=Math.min(RASTER-1,(int)Math.ceil(Math.max(sx[a],Math.max(sx[b],sx[c]))));
+            int minY=Math.max(0,(int)Math.floor(Math.min(sy[a],Math.min(sy[b],sy[c])))),maxY=Math.min(RASTER-1,(int)Math.ceil(Math.max(sy[a],Math.max(sy[b],sy[c]))));
+            for(int y=minY;y<=maxY;y++)for(int x=minX;x<=maxX;x++){
+                float u=((sy[b]-sy[c])*(x+.5f-sx[c])+(sx[c]-sx[b])*(y+.5f-sy[c]))/den;
+                float v=((sy[c]-sy[a])*(x+.5f-sx[c])+(sx[a]-sx[c])*(y+.5f-sy[c]))/den,w=1-u-v;
+                if(u<-.00001f||v<-.00001f||w<-.00001f)continue;int at=y*RASTER+x;float d=u*dz[a]+v*dz[b]+w*dz[c];
+                if(d>=depths[at]){depths[at]=d;owners[at]=id;heights[at]=u*f.xyz[a*3+2]+v*f.xyz[b*3+2]+w*f.xyz[c*3+2];}
             }
         }
     }
-
+    static BufferedImage resolve(int layer,int palette){
+        int[] colors=new int[faces.size()];
+        for(int id=0;id<faces.size();id++){Face f=faces.get(id);int rgb=f.color;
+            if(layer==5){if(f.fabric){rgb=BiminiArt.color(palette);float shade=f.color==0xff747878?1:.72f;colors[id]=0xff000000|(Math.round((rgb>>16&255)*shade)<<16)|(Math.round((rgb>>8&255)*shade)<<8)|Math.round((rgb&255)*shade);}}
+            else if(layer==4){float[] q=f.xyz;float ux=q[3]-q[0],uy=q[4]-q[1],uz=q[5]-q[2],vx=q[6]-q[0],vy=q[7]-q[1],vz=q[8]-q[2];float nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,n=(float)Math.sqrt(nx*nx+ny*ny+nz*nz);colors[id]=new SurfacePaint(nx/n,ny/n,nz/n,q[0],q[1],q[2]).rg;}
+            else if(layer==0)colors[id]=0xff000000|((rgb>>16&255)/2<<16)|((rgb>>8&255)/2<<8)|(rgb&255)/2;
+            else {int value=Math.min(255,(rgb>>16&255)+(rgb>>8&255)+(rgb&255));colors[id]=0xff000000|value<<(24-layer*8);}
+        }
+        BufferedImage out=new BufferedImage(CELL,CELL,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++){int count=0,r=0,g=0,b=0;
+            for(int yy=0;yy<AA;yy++)for(int xx=0;xx<AA;xx++){int at=(y*AA+yy)*RASTER+x*AA+xx,id=owners[at];if(id<0)continue;int c=colors[id];if(c==0)continue;
+                if(layer==4)c|=Math.max(0,Math.min(255,Math.round(heights[at]*255/64)));count++;r+=c>>16&255;g+=c>>8&255;b+=c&255;}
+            if(count>0)out.setRGB(x,y,(Math.round(count*255f/(AA*AA))<<24)|((r/count)<<16)|((g/count)<<8)|b/count);
+        }return out;
+    }
+    public static void main(String[] args)throws Exception{
+        BufferedImage sheet=new BufferedImage(CELL*16,CELL*48,BufferedImage.TYPE_INT_ARGB),normal=new BufferedImage(CELL*16,CELL*12,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D base=sheet.createGraphics(),norm=normal.createGraphics();File dir=new File("assets/sprites/frames/montrose-bimini-v1");dir.mkdirs();
+        for(int kind=0;kind<6;kind++)for(int view=0;view<32;view++){
+            angle=view*(float)(Math.PI*2/32);faces=new ArrayList<Face>();model(kind);
+            owners=new int[RASTER*RASTER];Arrays.fill(owners,-1);depths=new float[owners.length];Arrays.fill(depths,Float.NEGATIVE_INFINITY);heights=new float[owners.length];
+            for(int i=0;i<faces.size();i++)rasterFace(i,faces.get(i));int pose=kind*32+view;
+            for(int layer=0;layer<4;layer++){int f=layer*192+pose;base.drawImage(resolve(layer,0),f%16*CELL,f/16*CELL,null);}
+            norm.drawImage(resolve(4,0),pose%16*CELL,pose/16*CELL,null);
+            for(int palette=0;palette<BiminiArt.COLORS;palette++){
+                BufferedImage canvas=resolve(5,palette);
+                for(int y=0;y<CELL;y++)for(int x=0;x<CELL;x++)if((canvas.getRGB(x,y)>>>24)!=0 && (x<BiminiArt.LEFT||x>=BiminiArt.LEFT+BiminiArt.WIDTH||y<BiminiArt.TOP||y>=BiminiArt.TOP+BiminiArt.HEIGHT))throw new AssertionError("Canvas crop "+pose);
+                ImageIO.write(canvas.getSubimage(BiminiArt.LEFT,BiminiArt.TOP,BiminiArt.WIDTH,BiminiArt.HEIGHT),"png",new File(dir,BiminiArt.frame(palette,pose)+".png"));
+            }
+        }
+        base.dispose();norm.dispose();ImageIO.write(sheet,"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(normal,"png",new File("assets/sprites/montrose-moored-normals-v1.png"));
+        System.out.println("Baked 192 depth-tested sprite poses and registered normal/canvas layers");
+    }
 }

@@ -68,28 +68,18 @@ public final class MooredBoats {
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}
         }
-        float live=liveWeight(g,b.length,wx,wy);
-        if(live<.999f){
-            dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
-            if(b.kind<3)dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
-                    x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
-        }
-        if(detail<=.001f && live<=0)return;
+        dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
+        dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
+                x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
+        if(detail<=.001f)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
-        if(live>0){
-            float reach=b.length*.65f+6;
-            float[] shore=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,c.screenY(wx,wy),p.supportsUnionClips());
-            if(shore.length>0)p.pushClipOutside(shore);
-            try{drawHull(g,p,b.kind,b.bimini,wx,wy,heave,angle,f==null?0:f.pitch,f==null?0:f.roll,live,lights);}
-            finally{if(shore.length>0)p.popClip();}
-        }
-        if(live>=.999f)return;
         for(int n=0;n<lights.count;n++){
-            float energy=lights.energy[n]*detail*(1-live),second=energy*mix,first=energy*(1-mix)/(1-second);
+            float energy=lights.energy[n]*detail,second=energy*mix,first=energy*(1-mix)/(1-second);
             p.normalSprite(base+a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],first);
             if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
         }
     }
+    // Offline comparison helpers only. Production boats always use sprites.
     static float liveWeight(Game g,float length,float x,float y){
         if((g.renderExclusions&RenderExclusions.LIVE_MARINA_BOATS)!=0)return 0;
         return SceneDetail.fade(length*g.layout.camera.scale,48,72)*(1-SceneDetail.fade(Physics.length(x-g.tug.x,y-g.tug.y),180,210));

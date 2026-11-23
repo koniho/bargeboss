@@ -6038,3 +6038,20 @@ launch restored after capture; screen timeout restored to300000ms.
 - Installed and launched Android; iOS hardware/Canvas fallback pixels untested.
   Before/after review sheets saved in Photos/BargeBoss and MediaStore verified
   at18150/18151. Canonical PNGs and reproduction tool are tracked in the repo.
+
+### 2026-11-23 — restore sprite boats / correct bimini occlusion
+- User rejected live boat appearance. Restored sprite-only moored and active
+  cruiser routes and removed live mesh preparation/roll-pitch work from fleet
+  setup. Kept the independent Vulkan union-clip optimization. Experimental model
+  helpers remain only for offline comparison, not production rendering.
+- Found average-depth painter sorting in the offline boat bake incorrectly
+  erasing canvas behind hull/deck faces. Replaced it with a 2x supersampled
+  per-pixel depth buffer. Base, receiver bands, octahedral normals/heights and
+  canvas now share exact visible-face ownership; canvas remains a final sprite
+  overlay. Sailboats retain the requested no-bimini correction.
+- Added sprite-only route checks and canopy-center coverage checks across every
+  motorboat heading. Validation and device results follow.
+- Full shared/asset/Android checks passed, including all96 motorboat roof centers,
+  1536 registered canopy frames and octahedral normal coverage. Replay is
+  47b7cc4d:2:1350. Reviewed the full32-heading sprite contact sheet. Built,
+  installed and launched Android; iOS hardware validation remains deferred.
