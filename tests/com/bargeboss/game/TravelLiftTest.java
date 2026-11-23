@@ -18,10 +18,33 @@ public final class TravelLiftTest {
         public void poly(float[] xy,int color){draws++;}
         public void line(float x,float y,float xx,float yy,float w,int color){draws++;}
     }
+    private static boolean covered(float[] triangles,float x,float y){
+        for(int i=0;i<triangles.length;i+=6){float[] q={triangles[i],triangles[i+1],triangles[i+2],triangles[i+3],triangles[i+4],triangles[i+5]};if(PolygonWater.contains(q,x,y))return true;}return false;
+    }
+    private static void cableOcclusion(){
+        Game g=scene();g.layout=Layout.focused(960,600,MontroseTravelLift.X,MontroseTravelLift.Y,2.4f,480,400);
+        g.haulout.rig.update(1);MontroseTravelLift.Clips clips=MontroseTravelLift.shore(g);RiverCamera c=g.layout.camera;
+        float[] oldShore=ShoreOcclusion.region(g,c,MontroseTravelLift.X-80,MontroseTravelLift.Y-80,MontroseTravelLift.X+80,MontroseTravelLift.Y+80,Float.NEGATIVE_INFINITY);
+        int retained=0;
+        for(int i=0;i<4;i++){
+            float[] a=clips.anchors[i];int restored=0;
+            for(float z=a[2];z<60;z+=.5f){float x=c.screenX(a[0],a[1]),y=c.screenY(a[0],a[1])-z*ArticulatedModel.Z_SCALE*c.scale;
+                boolean old=covered(oldShore,x,y),now=covered(clips.cords[i],x,y);
+                if(old&&!now)restored++;if(now)retained++;
+                if(z*ArticulatedModel.Z_SCALE>MontroseHarbor.LAND_RISE+.1f)check(!now,"raised cable cannot be hidden by lower quay behind it");
+            }
+            check(restored>0,"each cable restores pixels incorrectly clipped by whole-shore mask");
+        }
+        check(retained>0,"foreground quay still hides lower near cables");
+        g.haulout.rig.update(175/240f);clips=MontroseTravelLift.shore(g);
+        for(int end=0;end<2;end++){float[] a=clips.anchors[end*2+1];
+            check(!covered(clips.slings[end],c.screenX(a[0],a[1]),c.screenY(a[0],a[1])-a[2]*ArticulatedModel.Z_SCALE*c.scale),"far attachment block stays visible at water contact");}
+
+    }
     private static void emptySlices(){
         Game g=scene();float depth=MontroseTravelLift.Y-MontroseTravelLift.X;
         g.layout=Layout.focused(960,600,MontroseTravelLift.X,MontroseTravelLift.Y,2.4f,480,400);
-        float[] shore=MontroseTravelLift.shore(g);check(shore.length>0,"lift fixture has foreground shore mask");
+        MontroseTravelLift.Clips shore=MontroseTravelLift.shore(g);check(shore.slings[0].length+shore.slings[1].length>0,"lift fixture has foreground shore mask");
         for(int phase=0;phase<=240;phase++){
             g.haulout.rig.update(phase/240f);Clips empty=new Clips();
             MontroseTravelLift.drawRange(g,empty,depth-900,depth-800,shore);
@@ -30,13 +53,16 @@ public final class TravelLiftTest {
             for(int end=-1;end<=1;end+=2)for(int side=-1;side<=1;side+=2){
                 float[] a=g.haulout.rig.anchor(side*26,end*24,4);float d=a[1]-a[0];
                 check(g.haulout.rig.pose.overlapsDepth(d-.1f,d+.1f),"every hoist cord lies within suspension depth bounds");
+                float[] split=g.haulout.rig.slingPose[end<0?0:1].point(MontroseTravelLift.STRAP_ROOT,side*26*MontroseTravelLift.SCALE,end*24*MontroseTravelLift.SCALE,4*MontroseTravelLift.SCALE);
+                for(int k=0;k<3;k++)check(split[k]==a[k],"split sling and cable share exact continuous attachment transform");
             }
         }
+        shore=MontroseTravelLift.shore(g);
         Clips full=new Clips();MontroseTravelLift.drawRange(g,full,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY,shore);
         check(full.pushes>0 && full.pushes==full.pops && full.draws>0,"nonempty suspension preserves balanced shoreline clipping");
     }
     public static void run(){
-        emptySlices();
+        emptySlices();cableOcclusion();
         Game g=scene();for(int i=0;i<300;i++)g.step();check(g.haulout.liftTicks==0,"No motion without explicit radio authorization");
         float x=TravelLiftRadio.x(g),y=TravelLiftRadio.y(g);g.pointerDown(9,x,y);g.pointerCancel(9);g.pointerUp(9,x,y);check(!g.haulout.radio.waiting(),"Canceled press cannot call");
         g.pointerDown(9,x,y);g.pointerMove(9,x+100,y);g.pointerUp(9,x,y);check(!g.haulout.radio.waiting(),"Drag away cancels call");

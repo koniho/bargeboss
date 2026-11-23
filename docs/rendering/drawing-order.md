@@ -749,9 +749,10 @@ existing capability and disjoint fallback.
 The frame, moving slings, hoist anchors, exhaust and actual coast/apron footprint
 use a0.75 author-time scale about the well center and raised ground datum. Scale
 rigid geometry and travel together; never scale only the projected drawing.
-The lowered webbing uses the complete local solid-shore cutout, including wall
-faces, with no center-depth cutoff. A single cutoff at the lift center omitted
-foreground-wall portions under diagonal/submerged straps. Chassis and overhead
+The two lowered slings use separate local solid-shore cutouts, including wall
+faces, with a foreground cutoff at each sling’s far attachment. A single cutoff
+at the lift center omitted foreground-wall portions under submerged straps; a
+full all-shore mask wrongly erased the far attachment blocks. Chassis and overhead
 members retain their normal exact-depth merge. Generate the local cutout once
 per frame in BridgeLayers, not once per depth slice.
 
@@ -765,3 +766,12 @@ The lift's vertical hoist cords lie inside the sling pose's XY/depth bounds, so
 its cached `Pose.overlapsDepth` can gate the whole clipped suspension pass.
 Chassis/overhead passes retain their independent ranges. Extra particle slices
 must not cause repeated shoreline mask construction/submission for an empty lift.
+
+Vertical hoist cables must NOT use one all-shore mask shared with the webbing. Prepare a separate
+mask for each of the four cables at its exact attachment's unraised ground depth.
+This excludes only shore in front of that cable: elevated cable pixels remain
+visible over the far quay, while the near quay still hides low cable segments.
+Each front/rear sling is a separate continuously transformed rigid assembly and
+uses its own far-cable mask, retaining the foreground quay over the low webbing.
+BridgeLayers prepares the four anchors/masks once per frame; depth slices only
+submit the relevant sling or cord.

@@ -6241,3 +6241,26 @@ launch restored after capture; screen timeout restored to300000ms.
   matched paired-water scene031213 (draw20.531/23.256, interval23.873/28.037),
   eliminating empty lift masks removes about8ms median drawing cost. Full checks
   and Android build passed. Not a guaranteed60fps tail; p95 remains19.145ms.
+- User screenshot032111 shows a separate visual bug: all-shore sling mask also
+  clipped vertical hoist cables against the BACK quay. Cables now use four
+  anchor-specific depth masks prepared once in BridgeLayers; sling mask remains
+  unchanged. Per-cord ordering and near-quay hiding are preserved. Added high-line
+  visibility/low-line occlusion checks; reviewed lowered/raised actual renderer.
+  Canonical trace remains270142dc:2:1350 (its rescue views do not expose the lift).
+- Device water-contact review033058 exposed far attachment blocks still hidden by
+  the broad sling mask. Split the front/rear U-shaped slings into two continuous
+  rigid assemblies; each reuses its far-cable depth mask. No additional mask
+  generation, pose quantization or per-slice rebuilding. The original full pose
+  remains the shared attachment oracle; all split anchors tested at every tick.
+  Reviewed the contact-phase preview: blocks now remain connected to the cables,
+  while the near apron still covers the low webbing. No score/physics change.
+- Before this final sling correction, final two-tow capture033112 retained the
+  gain: median interval16.833ms/p9519.140, draw12.899/15.152, advance2.127/3.112.
+- Final sling build passed all checks,5169 lift assertions and unchanged canonical
+  270142dc:2:1350; installed with existing key. Initial033847 device capture was
+  obscured by Android notification shade; reject it as visual evidence.033902
+  viewport changed to1407.5471x600; do not use it for matched timing claims.
+- Clean final native review033959 (30/30 frozen frames) confirms connected far
+  cable/block/slings in front of the back quay, with near-quay low-webbing hiding.
+  Final native/device visual accepted; normal game relaunched. Earlier matched
+  performance improvement remains the valid timing evidence; iOS unmeasured.

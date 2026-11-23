@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")/.."
 scene=${1:-barge-push}
 mode=${2:-live}
-case "$scene" in montrose-tow-one|montrose-tow-two|montrose-chas|montrose-storm-return|montrose-racer|montrose-arrival|montrose-moorings-dusk|buoy-complete|montrose-dispatch|montrose-haulout|tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
+case "$scene" in montrose-lift-water|montrose-lift-lowering|montrose-tow-one|montrose-tow-two|montrose-chas|montrose-storm-return|montrose-racer|montrose-arrival|montrose-moorings-dusk|buoy-complete|montrose-dispatch|montrose-haulout|tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
 case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
 bargeboss_reference_water=${BARGEBOSS_PROFILE_REFERENCE_WATER:-false}
 case "$bargeboss_reference_water" in true|false) ;; *) exit 2;; esac
