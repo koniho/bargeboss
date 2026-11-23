@@ -24,6 +24,25 @@ public final class CalumetVoyage {
         startJob(g);
         g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y,Game.TRANSIT_ZOOM,g.layout.width*.5f,g.layout.height*.52f);
     }
+    /** Fresh mission fixture, using the same production cargo handoff rules. */
+    void developerJob(Game g,int selected){
+        for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
+        job=selected==2?1:selected;startJob(g);
+        if(selected==2){for(Body b:g.cargo)if(b!=null){b.deliveryRecorded=true;b.unloadingTicks=180;}job=2;g.tell(status());}
+        Body first=g.cargo[0];
+        if(first!=null){
+            float best=Float.MAX_VALUE;
+            for(float[] at:CalumetRiver.ROUTE){
+                float distance=Physics.length(at[0]-first.x,at[1]-first.y);
+                if(distance<150 || distance>=best)continue;
+                g.tug.x=at[0];g.tug.y=at[1];boolean clear=true;
+                for(Body b:g.cargo)if(b!=null && Physics.touching(g.tug,b,35))clear=false;
+                if(clear){best=distance;g.targetX=at[0];g.targetY=at[1];}
+            }
+            g.tug.x=g.targetX;g.tug.y=g.targetY;
+            g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y,Game.TRANSIT_ZOOM,g.layout.width*.5f,g.layout.height*.52f);
+        }
+    }
     private void startJob(Game g){
         scoreAtStart=g.score;
         if(job==2){/* Reuse any two completed exchange hulls. */}

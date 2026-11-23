@@ -15,7 +15,11 @@ public final class ReplayInput {
         g.dialogue.close(g);g.mission.setup(g);return g;
     }
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); }
-    public static void tap(Game g,Layout.Box box) { box=g.activeGame().controlBox(box); tap(g,box.centerX(),box.centerY()); }
+    public static void tap(Game g,Layout.Box box) {
+        if(box==Layout.LEARN && g.mode==Game.TITLE && g.activeGame()==g){
+            tap(g,Layout.CHALLENGES);tap(g,Layout.TRAINING_HARBOR);tap(g,Layout.CHALLENGE_START);return;
+        }
+        box=g.activeGame().controlBox(box); tap(g,box.centerX(),box.centerY()); }
     public static void down(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerDown(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void move(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerMove(0,camera.screenX(x,y),camera.screenY(x,y)); }
     public static void up(Game g,float x,float y) { RiverCamera camera=g.activeGame().layout.camera; g.pointerUp(0,camera.screenX(x,y),camera.screenY(x,y)); }

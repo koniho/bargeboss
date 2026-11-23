@@ -22,6 +22,10 @@ public final class WaveControls {
     boolean up(Game g,int id,float x,float y){if(!owns(id))return false;
         int action=hit(x,y);if(action==pressed && visible(g)){
             if(action==0)open=!open;
+            adjust(g,action);
+        }cancel();return true;
+    }
+    static void adjust(Game g,int action){
             if(action==1 || action==2)g.settings.adjustWaves(action==1?-1:1);
             if(action==3 || action==4)g.settings.turnWaves(action==3?-1:1);
             if(action==5){g.settings.resetWaves();g.settings.resetWeather();g.changeLighting(LightingProfile.DUSK.id);}
@@ -30,7 +34,6 @@ public final class WaveControls {
             if(action==12 || action==13)g.settings.adjustFog(action==12?-1:1);
             if(action==14 || action==15)g.changeLighting(Math.floorMod(g.lighting().id+(action==14?-1:1),4));
             if(action==11)g.settings.weatherFlashTick=g.visualTicks;
-        }cancel();return true;
     }
     void cancel(){pointer=pressed=-1;}
     void draw(Game g,Painter p){if(!visible(g))return;

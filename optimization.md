@@ -5734,3 +5734,39 @@ launch restored after capture; screen timeout restored to300000ms.
   native appearance and frame delivery, not sustained thermal performance.
   Captures: out/profiles/{moorings-lit-retry,swimmers-lit-final}. Restored the
   phone's previous display timeout (2147483647ms) after the device check.
+
+### 2026-11-22 — Shared developer mission picker
+- Debug host capability enables one shared modal picker. Uses existing lettering
+  and PilotGlass primitives; no new textures or cache families. Closed cost is
+  one small button in developer sessions only; release rendering unchanged.
+- Opening cancels controls and suspends simulation. Mission jumps initialize an
+  isolated child Game, so career saves remain untouched. Production level asset
+  preparation observes activeGame as usual; no all-level asset preload.
+- Targeted checks cover every catalog mission, exact Calumet job, convoy hulls,
+  release gating, modal Back, pointer routing and saved-career isolation.
+- User refinement: picker filters to the active/selected location, without location
+  tabs. Cross-location launches are rejected in shared Game as well as hidden in
+  UI; training offers restart only.
+- Final UI scope: developer affordance exists only in-game; mission and weather/time
+  tabs share one panel. Native hosts enable developerTools, not the old standalone
+  wave affordance. Reuses WaveControls adjustment semantics. Training Harbor is a
+  regular harbor selection; title lighting/learn controls are removed. Updated
+  replay gestures to enter training through actual harbor controls.
+- Full shared/asset/native Android build passed (2,810 core assertions); focused
+  checks also passed after preserving the active time preset across mission jumps.
+  Canonical rendering baseline 6dd8b4fe:2:1350 reflects revised title/harbor flow.
+- Installed and launched on the development phone. Actual taps selected Montrose,
+  opened its in-game picker, jumped from haulout to Swimmer Rescue, and changed
+  dusk to night in the shared weather tab. Then selected Training Harbor through
+  the normal harbor screen and verified the instructor opening conversation.
+  Native screenshots: out/dev-panel-native.png, dev-weather-native.png,
+  training-entry-native.png. Shared title/selector/panel previews also reviewed.
+- No sustained frame-rate claim from these UI checks; iOS not built or exercised.
+
+### 2026-11-22 — Mooring/swimmer lighting merge validation
+- Integrated origin/main0b5fc08 (developer mission/weather panel) with the white
+  3-D mooring/swimmer light receivers. Preserved both test registrations and
+  performance records. The combined drawing baseline is 481fbc62:2:1350;
+  JVM/J2ObjC parity passed with delivery count/score unchanged.
+- Full check.sh and Android Vulkan build passed, including 2,810 core assertions,
+  491,037 moored-boat assertions, receiver/model tests and native encoding checks.

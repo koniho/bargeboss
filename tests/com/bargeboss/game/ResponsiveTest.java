@@ -100,7 +100,7 @@ public final class ResponsiveTest {
         check(practice.joystick.active,"new gesture works after camera resize");
         ReplayInput.up(game,practice.tug.x,practice.tug.y); tap(game,Layout.PRACTICE);
         check(game.activeGame()==game && game.mode==Game.PLAY,"practice exit returns to resized live shift");
-        game.mode=Game.TITLE; tap(game,Layout.LEARN);
+        game.mode=Game.TITLE; ReplayInput.tap(game,Layout.LEARN);
         check(game.activeGame()!=game && game.activeGame().layout.width==game.layout.width && game.activeGame().layout.height==game.layout.height,"title learn target inherits responsive layout");
         game.back();tap(game,Layout.TITLE_SCREEN); check(game.activeGame()==game && game.mode==Game.TITLE,"leaving title practice returns to title");
     }

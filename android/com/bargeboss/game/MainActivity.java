@@ -96,7 +96,7 @@ public final class MainActivity extends Activity {
         private LightingProfile preparedLighting;
         GameView() {
             super(MainActivity.this);
-            game.settings.developerWaves=(getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0;
+            game.settings.developerTools=(getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0;
             setContentDescription("Barge Boss river game. Drag the tug to drive, hold cargo to push, and lasso a bollard to tie up.");
             if(developer==null)try {
                 progress=getSharedPreferences("captain-progress",MODE_PRIVATE);

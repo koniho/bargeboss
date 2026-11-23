@@ -1,0 +1,78 @@
+package com.bargeboss.game;
+
+/** Opt-in host capability; shared layout, routing and isolated mission initialization. */
+public final class DeveloperPanel {
+    boolean open;
+    private boolean environment;
+    private int pointer=-1,pressed=-1;
+    private boolean enabled(Game g){return g.settings.developerTools && (g.activeGame().mode==Game.PLAY || g.activeGame().mode==Game.PAUSE);}
+    private int hit(Game g,float x,float y){
+        if(!open)return x>=12 && x<=172 && y>=16 && y<=52?0:-1;
+        float left=(g.layout.width-700)/2;
+        if(x<left || x>left+700 || y<100 || y>500)return -1;
+        if(y<150)return x>left+600?0:-1;
+        if(y>=158 && y<=202)return x<left+350?2:3;
+        if(environment){
+            if(y>=218 && y<434)return 30+(int)((y-218)/36)*2+(x>left+350?1:0);
+            return y>=444?(x<left+350?50:51):-1;
+        }
+        if(y>=218 && y<426){int row=(int)((y-218)/52);return row<jobs(g).length?20+row:-1;}
+        return y>=444 && g.activeGame().tutorial!=null?1:-1;
+    }
+    private int[] jobs(Game g){return g.activeGame().tutorial!=null?new int[0]:Challenges.locationJobs(g.activeGame().challengeId);}
+    boolean down(Game g,int id,float x,float y){
+        if(!enabled(g))return false;int action=hit(g,x,y);
+        if(!open && action<0)return false;
+        if(pointer<0){g.cancelInputs();pointer=id;pressed=action;}return true;
+    }
+    boolean move(Game g,int id){return enabled(g) && (open || pointer==id);}
+    boolean up(Game g,int id,float x,float y){
+        if(!enabled(g) || (!open && pointer!=id))return false;
+        if(pointer!=id)return true;
+        int action=hit(g,x,y),old=pressed;cancel();
+        if(action!=old)return true;
+        if(action==0)open=!open;
+        else if(action==2 || action==3)environment=action==3;
+        else if(action>=30){
+            Game active=g.activeGame();
+            int[] actions={1,2,3,4,7,8,9,10,12,13,14,15};
+            WaveControls.adjust(active,action==50?11:action==51?5:actions[action-30]);
+        }
+        else if(action>=20){int mission=jobs(g)[action-20];open=false;g.startDeveloperMission(mission);}
+        else if(action==1){open=false;g.startTutorial();}
+        return true;
+    }
+    void cancel(){pointer=pressed=-1;}
+    boolean back(){if(!open)return false;open=false;cancel();return true;}
+    void draw(Game g,Painter p){
+        if(!enabled(g))return;
+        if(!open){button(p,12,16,160,36,"DEV PANEL",false);return;}
+        p.rect(0,0,g.layout.width,g.layout.height,0xb8000814);
+        float x=(g.layout.width-700)/2;
+        PilotGlass.button(p,x,100,700,400,false);
+        Lettering.draw(p,"DEVELOPER / "+(g.activeGame().tutorial!=null?"TRAINING":Challenges.locationTitle(g.activeGame().challengeId)),x+20,120,18,0xfffff0ce);
+        button(p,x+600,108,88,36,"CLOSE",false);
+        button(p,x+16,158,328,44,"MISSIONS",!environment);
+        button(p,x+356,158,328,44,"WEATHER / TIME",environment);
+        if(environment){
+            Game a=g.activeGame();
+            String[] labels={"WAVES "+a.settings.waveIntensity()+"X","DIRECTION "+a.settings.waveBearing()+" DEG","RAIN "+a.settings.rainLevel(),"LIGHTNING "+a.settings.lightningLevel(),"FOG "+a.settings.fogLevel(),"TIME "+a.lighting().name};
+            for(int i=0;i<labels.length;i++){
+                float y=218+i*36;button(p,x+16,y,54,32,"-",false);
+                Lettering.center(p,labels[i],x+350,y+10,13,PilotGlass.TEXT);
+                button(p,x+630,y,54,32,"+",false);
+            }
+            button(p,x+16,448,328,40,"TEST FLASH",false);button(p,x+356,448,328,40,"RESET WEATHER / TIME",false);return;
+        }
+        int[] jobs=jobs(g);
+        for(int i=0;i<jobs.length;i++)button(p,x+16,218+i*52,668,46,title(jobs[i]),false);
+        if(g.activeGame().tutorial!=null)button(p,x+16,448,668,40,"RESTART TUTORIAL",false);
+    }
+    static String title(int id){
+        if(Challenges.calumet(id))return new String[]{"TWO BANKS","BERTH EXCHANGE","BRIDGE CONVOY","BASIN FIVE"}[id];
+        return Challenges.title(id);
+    }
+    private static void button(Painter p,float x,float y,float w,float h,String text,boolean selected){
+        PilotGlass.button(p,x,y,w,h,selected);Lettering.draw(p,text,x+12,y+12,14,PilotGlass.buttonText(selected));
+    }
+}

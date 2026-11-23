@@ -43,20 +43,16 @@ public final class ScreenView {
         TitleView.background(g,p);TitleView.voyage(g,p);titleSettings(g,p);
         p.sprite(SpriteAtlas.TITLE_LOGO,0,230,116,400,200,0,1);
         float x=g.layout.width-356,y=130+g.layout.offsetY;
-        PilotGlass.panel(p,x,y,328,350,0xe8101c30);
+        PilotGlass.panel(p,x,y,328,260,0xe8101c30);
         text(p,"YOUR VOYAGE",x+24,y+21,10,GOLD);
-        String harbor=Challenges.locationTitle(g.challengeId);
+        String harbor=g.trainingSelected?"TRAINING HARBOR":Challenges.locationTitle(g.challengeId);
         heading(p,harbor,x+24,y+49,24,284,PAPER);
-        text(p,goalSummary(g.challengeId),x+24,y+80,Math.min(10,284/Math.max(1,Lettering.width(goalSummary(g.challengeId),1))),MUTED);
+        text(p,g.trainingSelected?"DRIVING / TOWING / BARGE ABILITIES":goalSummary(g.challengeId),x+24,y+80,Math.min(10,284/Math.max(1,Lettering.width(goalSummary(g.challengeId),1))),MUTED);
         Layout.Box choose=g.controlBox(Layout.CHALLENGES);
         PilotGlass.button(p,choose.x,choose.y,choose.w,choose.h,false);
         text(p,"CHOOSE HARBOR",choose.x+16,choose.y+14,14,PAPER);
         PilotGlass.chevron(p,choose.x+choose.w-18,choose.centerY(),1,GOLD);
-        text(p,"TIME OF DAY",x+24,y+167,9,MUTED);LightingChoices.draw(g,p);
         titleAction(p,g.controlBox(Layout.START),"SET SAIL","BEGIN JOBS AT THIS HARBOR",true);
-        Layout.Box learn=g.controlBox(Layout.LEARN);
-        text(p,"FIRST TIME AT THE HELM?",learn.x+2,learn.y-20,10,GOLD);
-        titleAction(p,learn,"LEARN TO DRIVE","GUIDED LESSONS WITH YOUR INSTRUCTOR",false);
         PilotGlass.ribbon(p,28,g.layout.height-58,350,42);
         captainBadge(p,54,g.layout.height-37,.38f,g.career.stripes());
         text(p,g.career.rankTitle(),80,g.layout.height-49,14,PAPER);
@@ -186,7 +182,7 @@ public final class ScreenView {
         text(p,"ONE PLACE. CONNECTED JOBS. SAIL AT YOUR OWN PACE.",60,84,11,MUTED);
         for(int slot=0;slot<Layout.CHALLENGE_CARDS.length;slot++){
             int id=Challenges.menuId(g.challengePage*Challenges.PAGE_SIZE+slot);if(!Challenges.valid(id))continue;
-            Layout.Box b=Layout.CHALLENGE_CARDS[slot];boolean open=g.career.unlocked(id),selected=Challenges.stageEntry(g.challengeId)==id;
+            Layout.Box b=Layout.CHALLENGE_CARDS[slot];boolean open=g.career.unlocked(id),selected=!g.trainingSelected && Challenges.stageEntry(g.challengeId)==id;
             PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xf0202e43:0xe0101c30);
             if(selected)p.rect(b.x+18,b.y,70,3,GOLD);
             text(p,slot==0?"RIVER WORK":slot==1?"MARINA RESCUE":"INDUSTRIAL CANAL",b.x+20,b.y+22,10,GOLD);
@@ -205,8 +201,10 @@ public final class ScreenView {
                 else{text(p,"CHOOSE HARBOR",b.x+20,b.y+241,13,PAPER);PilotGlass.chevron(p,b.x+b.w-24,b.y+249,1,PAPER);}
             }else{text(p,"EARN BRONZE TO UNLOCK",b.x+20,b.y+241,11,MUTED);}
         }
-        center(p,"DEPARTING FROM "+Challenges.locationTitle(g.challengeId),480,439,12,PAPER);
-        text(p,"TIME OF DAY",60,477,10,MUTED);LightingChoices.draw(g,screen);
+        Layout.Box training=Layout.TRAINING_HARBOR;
+        PilotGlass.button(p,training.x,training.y,training.w,training.h,g.trainingSelected);
+        text(p,"TRAINING HARBOR",training.x+20,training.y+12,18,PilotGlass.buttonText(g.trainingSelected));
+        text(p,"DRIVING / TOWING / BARGE ABILITIES",training.x+340,training.y+20,11,PilotGlass.buttonText(g.trainingSelected));
         button(g,p,Layout.BACK,"BACK",false);button(g,p,Layout.CHALLENGE_START,"SET SAIL",true);
         if(Challenges.pageCount()>1){
             if(g.challengePage>0)button(g,p,Layout.CHALLENGE_PREV_PAGE,"PREV",false);

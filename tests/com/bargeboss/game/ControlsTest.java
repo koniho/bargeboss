@@ -110,7 +110,7 @@ public final class ControlsTest {
             seen|=1<<g.tutorial.lesson; ReplayInput.tutorial(root); root.step();
         }
         check(g.tutorial.lesson==Tutorial.DONE && seen==(((1<<Tutorial.DONE)-1)&~(1<<Tutorial.PULL)),"all fourteen lessons require real gestures and unloading: lesson="+g.tutorial.lesson);
-        ReplayInput.tap(root,Layout.START); check(root.activeGame()==root && root.mode==Game.PLAY && root.ticks==0,"completed tutorial starts shift");
+        ReplayInput.tap(root,Layout.START); check(root.activeGame()==root && root.mode==Game.TITLE,"completed training harbor returns to title");
         root=game(); root.score=321; steps(root,12); int ticks=root.ticks; x=root.tug.x; y=root.tug.y;
         ReplayInput.tap(root,Layout.PRACTICE); for(int i=0;i<600 && root.activeGame().tutorial.entering;i++){ReplayInput.tutorial(root);root.step();} ReplayInput.tap(root,Layout.PRACTICE);
         check(root.activeGame()==root && root.mode==Game.PLAY && root.score==321 && root.ticks==ticks && root.tug.x==x && root.tug.y==y,"practice preserves suspended shift");

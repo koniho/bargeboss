@@ -62,7 +62,7 @@
         self.accessibilityLabel=@"Barge Boss river game";
         self.audio=[[BBEngineSound alloc] init];self.rumble=[[BBEngineRumble alloc] init]; self.game=[[BBGame alloc] init]; self.frames=[[BBFrameGate alloc] init]; self.painter=[self createPainter];
         #if BB_IOS_PROFILE
-        self.game->settings_->developerWaves_=YES;
+        self.game->settings_->developerTools_=YES;
         #endif
         @try {
             NSUserDefaults *defaults=NSUserDefaults.standardUserDefaults;

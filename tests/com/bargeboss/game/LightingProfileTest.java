@@ -26,9 +26,8 @@ public final class LightingProfileTest {
                 }
             }
             for(int j=id+1;j<4;j++)check(!SpriteGrade.cacheKey(SpriteAtlas.FACTORY,"same.png",p).equals(SpriteGrade.cacheKey(SpriteAtlas.FACTORY,"same.png",LightingProfile.preset(j))),"profile source identities cannot collide");
-            Game menu=new Game();menu.configureCanvas(1333,600);Layout.Box b=LightingChoices.box(menu,id);
-            menu.pointerDown(4,b.centerX(),b.centerY());menu.pointerUp(4,b.centerX(),b.centerY());
-            check(menu.selectedLighting()==id,"title selection uses real screen taps on wide canvas");
+            Game menu=new Game();menu.selectLighting(id);
+            check(menu.selectedLighting()==id,"programmatic next-entry lighting remains supported");
         }
         int duskBoat=0xff2d3131;
         for(int id=0;id<4;id++){
