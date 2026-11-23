@@ -5835,3 +5835,14 @@ launch restored after capture; screen timeout restored to300000ms.
   checks) passed. Reviewed shared overview and Android Vulkan barge-bridge
   fixture: only the intended passage bridges remain and towing coaching is
   visible. Installed/launched on development phone; iOS not device-tested.
+
+### 2026-11-22 — Tutorial beacon cleanup
+- Replaced three tutorial entrance pairs with a single fixed pair at the driving
+  basin's winding-canal mouth. Removed towing-passage and outer-entry beacons;
+  bridge signals and the two yellow figure-eight buoys remain. Shared marker
+  enumeration removes the obsolete sprites, shadows, glows and map marks.
+- Lateral-side, dry-foundation, lighting and buoy-index checks passed (751
+  assertions). Replay signature 2d6ac041:2:1350; no new assets or caches.
+- Full check.sh/Android build passed. Reviewed the actual shared renderer at the
+  canal mouth: both towers clear the moving span and sit on dry foundations.
+  Installed and launched Android; no physical iOS validation in this round.
