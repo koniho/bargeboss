@@ -30,7 +30,7 @@ loss pause native playback while retaining its position. Changing location does
 not restart the song. Sound mute leaves music running and suppresses radio ducking.
 Looping is native; these transport clocks never feed gameplay or replay state.
 
-Collision Foley is documented separately in reitanna-thunks-v1.md.
+Collision Foley is documented separately in metal-crack-v1.md.
 
 Validation (2026-11-23): full shared checks and Android build passed; JVM/J2ObjC
 replay/drawing signature is 310d2a08:2:1350. Final Android host recompilation and

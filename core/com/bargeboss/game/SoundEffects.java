@@ -51,6 +51,6 @@ public final class SoundEffects {
     /** Drop stale contact events instead of replaying a late bump after host recovery. */
     public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && gain(root)>0 && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD || fireworkCue(g.sounds.cue)?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-thunk-light-v1.wav","audio/collision-thunk-medium-v1.wav","audio/collision-thunk-heavy-v1.wav","audio/collision-thunk-medium-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-metal-crack-light-v1.wav","audio/collision-metal-crack-medium-v1.wav","audio/collision-metal-crack-heavy-v1.wav","audio/collision-metal-crack-medium-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav"}[cue];
     }
 }

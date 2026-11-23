@@ -58,7 +58,7 @@ public final class SoundEffectsTest {
         check(!SoundEffects.audible(hit),"late host must drop an impact older than 100 ms of simulation");
         for(int t=0;t<150;t++){hit.sounds.step();hit.splashes.step(hit);}
         check(SoundEffects.sequence(hit)==1,"falling collision spray never emits delayed static or another hit");
-        check(SoundEffects.asset(SoundEffects.BUMP).endsWith("thunk-light-v1.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("thunk-heavy-v1.wav"),"collision manifest uses Reitanna thunk variants");
+        check(SoundEffects.asset(SoundEffects.BUMP).endsWith("metal-crack-light-v1.wav") && SoundEffects.asset(SoundEffects.CRUNCH).endsWith("metal-crack-heavy-v1.wav"),"collision manifest uses Tutmozis metal-crack variants");
         // Exercise the actual tutorial seawall solver at gentle driving speed, not an injected sound.
         Game wall=new Game();wall.resetPracticeYard();wall.mode=Game.PLAY;
         wall.tug.x=-1600;wall.tug.y=TrainingChannel.BASIN_TOP+wall.tug.half+wall.tug.radius-.5f;

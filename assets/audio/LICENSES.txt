@@ -110,3 +110,14 @@ relicensed under the repository's code license. No standalone redistribution rig
 is asserted. Source, permission record, hash and preparation: docs/audio/ambient-music-v1.md.
 Changes: PCM conversion, 1-second opening fade, 2-second closing fade. Shared game
 mix reduces gain and ducks under audible radio. No endorsement implied.
+
+Tutmozis Metal Crack collision variants v1 (2026-11-23)
+collision-metal-crack-light-v1.wav, collision-metal-crack-medium-v1.wav,
+collision-metal-crack-heavy-v1.wav: edited Metal Crack by Tutmozis, sound 606770.
+https://pixabay.com/sound-effects/film-special-effects-metal-crack-606770/
+Pixabay Content License: https://pixabay.com/service/license-summary/
+Not CC0; not relicensed under the repository's code license.
+Changes: stereo-to-mono averaging, onset trim, original/-3/-6 semitone pitch,
+gain staging and edge fades. Used as part of Barge Boss; no standalone distribution
+right asserted. Source/hash and reproducible edits: docs/audio/metal-crack-v1.md
+and tools/prepare-metal-crack.py.

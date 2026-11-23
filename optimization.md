@@ -6395,3 +6395,14 @@ launch restored after capture; screen timeout restored to300000ms.
   and resume at 10.716 s after mute/unmute. No renderer primitive or cache changes.
   No phone connected for install or physical mix/performance validation; no claim
   of improved frame intervals, full-song loop audition or native buffer profiling.
+
+## 2026-11-23: switch collision source to Tutmozis Metal Crack
+
+- User replaced the thunk source with Metal Crack. Three pre-baked mono PCM16
+  variants retain original/-3/-6-semitone tiers and existing severity routing.
+  Arithmetic channel averaging avoids clipping; no runtime DSP or new voices.
+  Durations 1.012/1.204/1.431 s; each decoded sample is below 127 KiB. Existing
+  startup predecode, radio priority and cooldown remain. Music is unchanged.
+- Signal checks, full Android build/checks and iOS simulator build passed. Native
+  replay parity remains 310d2a08:2:1350. No connected Android device for installation
+  or physical mix/performance validation; no frame-time improvement is claimed.
