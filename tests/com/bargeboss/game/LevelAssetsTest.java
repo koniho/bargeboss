@@ -59,7 +59,7 @@ final class LevelAssetsTest {
         check(bytes==402688,"Both kernel density families remain below 400 KiB");
         resident[0]=null;
         check(LevelAssets.challenge(Challenges.MONTROSE).residentLayers()[0]!=null,"Resident manifest is defensively copied");
-        check(LevelAssets.tutorial().residentLayers().length==0,"Non-marina stages release marina residency");
+        check(LevelAssets.tutorial().residentLayers().length==1 && LevelAssets.tutorial().residentLayers()[0]==SteamPuff.LAYER,"Non-marina stages release marina residency");
         System.out.println(checks+" upcoming-level asset, future cargo, rotation/effect and manifest isolation assertions passed");
     }
 }

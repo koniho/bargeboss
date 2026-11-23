@@ -18,11 +18,11 @@ public final class IndustrialTruckRoadTest {
             reached[n]=true;queue[tail++]=n;
         }}
         check(total>0 && tail==total,"every paved road tile belongs to one contiguous network");
-        check(TrainingYardCrew.count()>=8 && TrainingYardCrew.count()<=24,"bounded active crews serve the workshop district");
+        check(TrainingYardCrew.count()-TrainingYardCrew.spectators()>=8 && TrainingYardCrew.count()-TrainingYardCrew.spectators()<=24,"bounded active crews serve the workshop district");
         float[] worker=new float[2];
         for(int id=0;id<TrainingYardCrew.count();id++){
             TrainingYardCrew.position(id,worker);
-            check(DockWorkers.dry(worker[0],worker[1],22),"entire work site stays on dry land");
+            check(DockWorkers.dry(worker[0],worker[1],TrainingYardCrew.finale(id)?7:22),"crew footprint (including benches where present) stays on dry land");
             check(!IndustrialRoadView.roadClear((int)StrictMath.floor(worker[0]/64),(int)StrictMath.floor(worker[1]/64)),"crew works outside traffic lanes");
             float low=1,high=0;for(int tick=0;tick<360;tick+=7){float v=TrainingYardCrew.motion(id,tick);low=Math.min(low,v);high=Math.max(high,v);}
             check(high-low>.5f,"crew alternates active work with inspection pauses");

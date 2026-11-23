@@ -32,6 +32,7 @@ public final class Game {
     public Buoys buoys=new Buoys();
     public MooredFleet mooredFleet=new MooredFleet();
     public CollisionSplashes splashes=new CollisionSplashes();
+    final ShoreCrewReaction crew=new ShoreCrewReaction();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
     public BuildingFades buildingFades=new BuildingFades();
     DockView.Crane[] dockCranes;
@@ -398,7 +399,7 @@ public final class Game {
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         voyage=new CalumetVoyage();passages=new BridgePassage(this);
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();haulout=new MontroseHaulout();rescue=new MontroseRescue();buildingFades=new BuildingFades();
-        water=new WaterSurface(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
+        water=new WaterSurface(); crew.reset(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;
         damageCooldown=0; accumulator=0; selected=-1;
@@ -851,7 +852,7 @@ public final class Game {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
-        abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
+        crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
         if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);

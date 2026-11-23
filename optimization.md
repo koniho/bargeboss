@@ -5620,3 +5620,34 @@ launch restored after capture; screen timeout restored to300000ms.
   Capture: out/profiles/bimini-final-retry. This short frozen sample does not
   establish animated performance. Normal app launch succeeded COLD/1148ms;
   restored the prior display timeout of 300000ms.
+
+## 2026-11-22 — 3D shore reactions and water-contact steam
+
+- Reused the shared 3D hard-hat worker mesh. Added five spectators on both sides
+  of the finale basin: small idle gestures before launch, raised-arm cheers during
+  fireworks, flailing/pointing at remaining fires, and cheers after suppression.
+  Shoulder, torso and leg transforms are evaluated continuously in shared Java.
+- Hose droplets hit registered worker bodies, triggering recoil and up to 34 world
+  units of retreat, then return. Current positions participate in depth sorting
+  and hose aim projection. Dry-footprint, timber and factory clearance checks
+  validate the entire retreat/return segment. Reactions use 64 bounded slots and
+  cache static bases once per stage reset; no per-droplet ground searches.
+- Water/fire contact emits pale vapor immediately, independently per pile, limited
+  to one puff per four ticks in a 48-slot/70-tick pool. Post-extinction steam remains.
+  Existing smoke fallback ignores arbitrary RGB and deliberately uses soot palettes;
+  reused its soft shape in a separate 40x40 pale SteamPuff layer, prefetched for the
+  tutorial. This avoids dark 'steam' and per-frame raster generation.
+- Updated site tests distinguish spectator body footprints from workshop benches.
+  Targeted tests cover all spectator shore locations, water misses/hits, independent
+  steam throttling, recoil/retreat/return and reset. Actual renderer previews saved
+  as out/shore-crew-{cheer,panic,wet-steam}.png.
+- Integrated incoming origin/main831a240 (Montrose bimini colors) before final
+  validation; retained its LevelAssets additions. Combined replay 191b159b:2:1350.
+- Full shared/asset/native Android checks passed after adding the tutorial steam
+  resident-layer expectation. APK installed and normal launch restored; native
+  out/crew-steam-native.png shows five 3D spectators and white contact steam.
+- Frozen native firefight sample (30 warmup/60 measured): draw p50 13.94ms,
+  p95 15.73ms; frame interval p50 15.62ms, p95 22.23ms. This is a short render
+  budget check, not proof of sustained 60 FPS during moving rescue gameplay.
+  Worker touch reactions are covered by shared tests, not a manual device run;
+  iOS was not exercised here.

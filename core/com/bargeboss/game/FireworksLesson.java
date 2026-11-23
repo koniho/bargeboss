@@ -20,16 +20,18 @@ final class FireworksLesson {
     int targetPile(){return heat(0)>0?0:1;}
     int remaining(){int n=0;for(int h:pileHeat)if(h>0)n++;return n;}
     void ignite(){ignited=true;heat=HEAT;for(int i=0;i<PILES;i++)pileHeat[i]=PILE_HEAT;}
+    final FireSteam contactSteam=new FireSteam();
     final FireRescueRadio rescueRadio=new FireRescueRadio();
     int showTicks,heat,steam,sizzle;
     boolean launched,ignited,done;
     float launchX,launchY;
-    void reset(){for(int i=0;i<PILES;i++)pileHeat[i]=pileSteam[i]=pileSizzle[i]=0;rescueRadio.reset();showTicks=heat=steam=sizzle=0;launched=ignited=done=false;}
+    void reset(){contactSteam.reset();for(int i=0;i<PILES;i++)pileHeat[i]=pileSteam[i]=pileSizzle[i]=0;rescueRadio.reset();showTicks=heat=steam=sizzle=0;launched=ignited=done=false;}
     void launched(Game g,Body b){
         if(g.tutorial.lesson!=Tutorial.SHOW || (b!=g.cargo[0] && b!=g.cargo[2]) || !g.passages.passable(TutorialTowBridges.ENTRY) || launched)return;
         launched=true;launchX=b.x;launchY=b.y;
     }
     void step(Game g){
+        contactSteam.step();
         steam=sizzle=0;for(int i=0;i<PILES;i++){if(pileSteam[i]>0)pileSteam[i]--;if(pileSizzle[i]>0)pileSizzle[i]--;steam=Math.max(steam,pileSteam[i]);sizzle=Math.max(sizzle,pileSizzle[i]);}
         rescueRadio.step(g);
         if(launched && !ignited && ++showTicks>=IGNITION){ignite();g.radio.transmit(RadioAudio.TEACHER);}
@@ -38,7 +40,7 @@ final class FireworksLesson {
     boolean waterHit(float x,float y){
         if(!ignited || done || heat==0)return false;
         for(int i=0;i<PILES;i++)if(pileHeat[i]>0 && Physics.length(x-x(i),y-y(i))<=RADIUS){
-            pileSizzle[i]=sizzle=24;pileHeat[i]--;heat--;
+            contactSteam.hit(i,x,y);pileSizzle[i]=sizzle=24;pileHeat[i]--;heat--;
             if(pileHeat[i]==0)pileSteam[i]=steam=180;
             if(heat==0)done=true;
             return true;
@@ -83,9 +85,11 @@ final class FireworksLesson {
                 float x=sx+((i%7-3)*8+age*.16f*(float)StrictMath.sin(i))*scale,y=sy-age*.8f*scale;
                 p.line(x,y,x-2*scale,y+5*scale,1.8f*scale,SoftCue.alpha(i%2==0?0xffffd329:0xffff692b,(1-t)*strength));
             }
-        }else if(steam>0){
+        }
+        contactSteam.draw(g,p,pile);
+        if(heat==0 && steam>0){
             float t=1-steam/180f;
-            for(int i=0;i<4;i++)p.smokePuff(sx+(i-1.5f)*13*scale-t*22*scale,sy-(8+t*45)*scale,(12+t*15)*scale,i*.8f+t,SoftCue.alpha(0xcce3f5ee,1-t));
+            for(int i=0;i<4;i++)SteamPuff.draw(p,sx+(i-1.5f)*13*scale-t*22*scale,sy-(8+t*45)*scale,(12+t*15)*scale,(1-t)*.8f);
         }
     }
 }

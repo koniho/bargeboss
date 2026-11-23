@@ -5,6 +5,7 @@ import java.util.ArrayList;
 /** Workshop crews occupy reserved dry service plots, never traffic lanes or buildings. */
 final class TrainingYardCrew {
     private static final float[][] SITES=sites();
+    private static final float[][] SPECTATORS={{440,-1090},{440,-1215},{440,-1340},{160,-1150},{160,-1450}};
     private TrainingYardCrew(){}
     private static float[][] sites(){
         ArrayList<float[]> sites=new ArrayList<float[]>();
@@ -31,19 +32,24 @@ final class TrainingYardCrew {
         }
         return sites.toArray(new float[sites.size()][]);
     }
-    static int count(){return SITES.length;}
-    static void position(int id,float[] out){out[0]=SITES[id][0];out[1]=SITES[id][1];}
+    static int count(){return SITES.length+SPECTATORS.length;}
+    static int spectators(){return SPECTATORS.length;}
+    static boolean finale(int id){return id>=SITES.length;}
+    static void position(int id,float[] out){if(finale(id)){out[0]=SPECTATORS[id-SITES.length][0];out[1]=SPECTATORS[id-SITES.length][1];return;}out[0]=SITES[id][0];out[1]=SITES[id][1];}
     static float motion(int id,int ticks){
         float phase=Math.floorMod(ticks+id*97,360)/360f;
         return phase<.7f?.55f+.3f*(float)StrictMath.sin(phase*StrictMath.PI*16):.15f;
     }
     static void draw(Game g,Painter p,int id){
-        float[] at=SITES[id];float x=at[0],y=at[1];RiverCamera c=g.layout.camera;
+        float[] at=new float[2];DockWorkers.position(g,id+6,at);float x=at[0],y=at[1];RiverCamera c=g.layout.camera;
+        if(finale(id)){DockWorkers.drawWorker(g,p,id+6,x,y,.12f+.09f*(float)StrictMath.sin(g.visualTicks*.025+id));return;}
+        float bx=SITES[id][0],by=SITES[id][1];
         // Pallet sorting and bench maintenance alternate along the workshops.
-        YardActivity.box(p,c,x,y-12,22,12,0,3,0xff6b5a41,0xff443d32);
-        YardActivity.box(p,c,x,y-12,18,10,3,id%2==0?7:11,0xff66716c,0xff3c4849);
-        if(id%2==0)YardActivity.box(p,c,x-6,y-12,5,8,10,4,0xffa17e4c,0xff655036);
-        DockWorkers.drawAt(g,p,x,y,motion(id,g.visualTicks));
+        YardActivity.box(p,c,bx,by-12,22,12,0,3,0xff6b5a41,0xff443d32);
+        YardActivity.box(p,c,bx,by-12,18,10,3,id%2==0?7:11,0xff66716c,0xff3c4849);
+        if(id%2==0)YardActivity.box(p,c,bx-6,by-12,5,8,10,4,0xffa17e4c,0xff655036);
+        DockWorkers.drawWorker(g,p,id+6,x,y,motion(id,g.visualTicks));
+        if(g.crew.ticks[id+6]>0)return;
         float z=13+3*(float)StrictMath.sin(g.visualTicks*.09+id);
         p.line(c.screenX(x-3,y-2),c.screenY(x-3,y-2)-(GroundArt.LAND_RISE+z)*c.scale,
                 c.screenX(x-3,y-10),c.screenY(x-3,y-10)-(GroundArt.LAND_RISE+13)*c.scale,1.2f*c.scale,0xffb7b6a3);

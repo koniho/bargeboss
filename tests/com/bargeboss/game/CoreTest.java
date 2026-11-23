@@ -26,6 +26,7 @@ public final class CoreTest {
         SoundEffectsTest.run();
         FireAudioVisualTest.run();
         FlameArtTest.run();
+        ShoreReactionTest.run();
         InstructorRadioTest.run();
         DockCraneTest.run();
         CargoTransferTest.run();
@@ -190,7 +191,7 @@ public final class CoreTest {
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
         // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("d3251964:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("191b159b:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

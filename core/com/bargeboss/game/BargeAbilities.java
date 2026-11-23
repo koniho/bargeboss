@@ -49,7 +49,9 @@ public final class BargeAbilities {
                 float x=FireworksLesson.x(pile),y=FireworksLesson.y(pile);
                 RiverCamera c=g.layout.camera;float fx=c.screenX(x,y),fy=c.screenY(x,y)-GroundArt.LAND_RISE*c.scale;
                 if(Math.abs(px-fx)<38*c.scale && py>fy-65*c.scale && py<fy+20*c.scale){aimX=x;aimY=y;break;}
-            }}
+            }
+            int worker=g.crew.aim(g,px,py);if(worker>=0){aimX=g.crew.x(worker);aimY=g.crew.y(worker);}
+        }
         return true;
     }
     public boolean up(Game g,int id,float px,float py){
@@ -89,7 +91,8 @@ public final class BargeAbilities {
         }
         for(int i=0;i<CAPACITY;i++)if(life[i]>0){
             life[i]--;age[i]++;if(flash[i])continue;x[i]+=vx[i]/60;y[i]+=vy[i]/60;z[i]+=vz[i]/60;vz[i]-=80f/60;
-            if(color[i]==0xffb9e9f4 && z[i]<=GroundArt.LAND_RISE && g.tutorial!=null
+            if(color[i]==0xffb9e9f4 && z[i]>=GroundArt.LAND_RISE-2 && z[i]<=GroundArt.LAND_RISE+23 && g.crew.hit(g,x[i],y[i],vx[i],vy[i]))life[i]=0;
+            if(life[i]>0 && color[i]==0xffb9e9f4 && z[i]<=GroundArt.LAND_RISE && g.tutorial!=null
                     && g.tutorial.fireworks.waterHit(x[i],y[i]))life[i]=0;
             if(z[i]<0)life[i]=0;
             if(life[i]==0 && rocket[i]){rocket[i]=false;explode(x[i],y[i],z[i],color[i]);screenFlash=8;g.sounds.fireworkBurst();}

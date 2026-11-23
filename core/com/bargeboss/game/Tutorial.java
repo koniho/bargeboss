@@ -50,7 +50,7 @@ public final class Tutorial {
         boolean hadTeacher=arrival!=null;instructorRadio.reset();feedback.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
-        towBridges.reset();fireworks.reset();g.abilities.reset();firstTowParked=false;
+        g.crew.reset();towBridges.reset();fireworks.reset();g.abilities.reset();firstTowParked=false;
         canal.reset(lesson>CHANNEL);g.passages=new BridgePassage(g);LocationBridges.prepare(g.passages.bridges);
         if(lesson>CHANNEL)g.passages.position[0]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;

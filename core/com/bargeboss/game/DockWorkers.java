@@ -29,7 +29,8 @@ public final class DockWorkers {
         }
         throw new IllegalStateException("No dry dock apron");
     }
-    static void position(Game g,int id,float[] out){if(id>=6)TrainingYardCrew.position(id-6,out);else shoreAnchor(g,id/2,id%2==0?-60:60,7,out);}
+    static void basePosition(Game g,int id,float[] out){if(id>=6)TrainingYardCrew.position(id-6,out);else shoreAnchor(g,id/2,id%2==0?-60:60,7,out);}
+    static void position(Game g,int id,float[] out){basePosition(g,id,out);out[0]+=g.crew.dx[id];out[1]+=g.crew.dy[id];}
     static float depth(Game g,int id){float[] at=new float[2];position(g,id,at);return g.layout.camera.screenY(at[0],at[1]);}
     static float footY(Game g,int id){return depth(g,id)-GroundArt.LAND_RISE*g.layout.camera.scale;}
     static int[] ordered(Game g) {
@@ -51,19 +52,36 @@ public final class DockWorkers {
     }
     static void draw(Game g,Painter p,int id) {
         if(id>=6){TrainingYardCrew.draw(g,p,id-6);return;}
-        float[] at=new float[2];position(g,id,at);drawAt(g,p,at[0],at[1],gesture(g,id/2,id));
+        float[] at=new float[2];position(g,id,at);drawWorker(g,p,id,at[0],at[1],gesture(g,id/2,id));
+    }
+    static void drawWorker(Game g,Painter p,int id,float x,float y,float idle){
+        int wet=g.crew.ticks[id];
+        if(wet>0){float walk=wet<132 && wet>60?(float)StrictMath.sin(g.visualTicks*.65+id)*.42f:0;
+            drawPose(g,p,x,y,2.4f,2.1f,walk,(wet>132?1.2f:.6f)*g.crew.awayX[id],Float.NaN);return;}
+        if(g.tutorial!=null && id>=6 && TrainingYardCrew.finale(id-6)){
+            FireworksLesson f=g.tutorial.fireworks;
+            if(f.heat>0){int pile=f.targetPile();float angle=(float)StrictMath.atan2(FireworksLesson.y(pile)-y,FireworksLesson.x(pile)-x);
+                drawPose(g,p,x,y,2.4f+.3f*(float)StrictMath.sin(g.visualTicks*.3+id),1.55f,.08f*(float)StrictMath.sin(g.visualTicks*.3),.4f,angle);return;}
+            if(f.launched && !f.ignited || f.done){float cheer=2.55f+.28f*(float)StrictMath.sin(g.visualTicks*.18+id);drawPose(g,p,x,y,cheer,cheer,0,0,Float.NaN);return;}
+        }
+        drawAt(g,p,x,y,idle);
     }
     static void drawAt(Game g,Painter p,float wx,float wy,float motion){
+        drawPose(g,p,wx,wy,motion,motion,0,0,Float.NaN);
+    }
+    private static void drawPose(Game g,Painter p,float wx,float wy,float left,float right,float stride,float lean,float point){
         RiverCamera c=g.layout.camera;
-        float cosine=(float)StrictMath.cos(motion),sine=(float)StrictMath.sin(motion);
         // Continuous shoulder rotation; boot vertices never depend on animation time.
         for(Face face:FACES) {
             float[] xy=face.projected;
             for(int i=0,j=0;i<face.xyz.length;i+=3,j+=2) {
                 float x=face.xyz[i],y=face.xyz[i+1],z=face.xyz[i+2];
-                if(face.arm!=0){float dx=x-face.arm*3.1f,dz=z-15;
+                if(face.arm!=0){float motion=face.arm<0?left:right;float cosine=(float)StrictMath.cos(motion),sine=(float)StrictMath.sin(motion);float dx=x-face.arm*3.1f,dz=z-15;
                     x=face.arm*3.1f+dx*cosine-dz*sine*face.arm;
-                    z=15+dx*sine*face.arm+dz*cosine;}
+                    z=15+dx*sine*face.arm+dz*cosine;
+                    if(face.arm>0 && !Float.isNaN(point)){float ax=x-3.1f,ay=y;x=3.1f+ax*(float)StrictMath.cos(point)-ay*(float)StrictMath.sin(point);y=ax*(float)StrictMath.sin(point)+ay*(float)StrictMath.cos(point);}}
+                if(face.arm==0 && z<=9 && stride!=0){float swing=x<0?stride:-stride,dy=y,dz=z-9;y=dy*(float)StrictMath.cos(swing)-dz*(float)StrictMath.sin(swing);z=9+dy*(float)StrictMath.sin(swing)+dz*(float)StrictMath.cos(swing)+.4f;}
+                if(face.arm!=0 || face.xyz[2]>=9){float tilt=lean*.2f,dx=x,dz=z-9;x=dx*(float)StrictMath.cos(tilt)+dz*(float)StrictMath.sin(tilt);z=9-dx*(float)StrictMath.sin(tilt)+dz*(float)StrictMath.cos(tilt);}
                 xy[j]=c.screenX(wx+x,wy+y);xy[j+1]=c.screenY(wx+x,wy+y)-(GroundArt.LAND_RISE+z)*c.scale;
             }
             if(face.material<0)p.poly(xy,p.lighting().scenery(face.color));else p.surfacePolygon(xy,face.uv,face.material,face.color,0);
