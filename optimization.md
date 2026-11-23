@@ -5532,3 +5532,39 @@ launch restored after capture; screen timeout restored to300000ms.
   zero frame texture builds/evictions. Retained out/two-fires-freeze.csv. This
   frozen sample is not an animated FPS guarantee or controlled A/B comparison.
   iOS not device-tested. Reviewed replay baseline c8abde0:2:1350.
+
+## 2026-11-22 — Dock I harbor-side fingers only
+
+- Shared Java, codex/montrose-dock-i from origin/main08e1f7a. User's annotated
+  satellite reference shows an uninterrupted seawall-facing edge on Dock I.
+  Removed its five northeast-facing fingers from the authoritative dock lines;
+  harbor-facing fingers, spine, shore access and central lamps remain.
+- Dock footprints, collisions, water/shore masks and the overhead chart derive
+  from those lines. Berth generation uses the same side rule, so no future NPC
+  or mooring ropes can be placed on the removed side. The existing 273 valid
+  boats remain: the old clearance checks had already rejected the shore-side
+  berths. No new runtime art, textures, caches or drawing primitives.
+- Added independent water/solid probes at the affected finger stations and NPC
+  side assertions. 490,553 moored-boat placement/tether/light checks pass.
+  4,350,443 all-heading production hull/cargo shoreline pixel checks pass,
+  plus 38,121 training-wall pixels. JVM/J2ObjC trace: 1e7199f0:2:1350.
+- Reviewed the actual shared renderer close view and harbor overview, then the
+  dedicated iPhone17Pro/iOS26.5 Metal simulator fixture montrose-dock-i. The
+  seawall channel is clear, while harbor-side fingers and boats remain visible.
+  Native screenshots/profile are under ignored out/ios-profile/dock-i-corrected.
+  This is visual validation, not a matched performance benchmark.
+- Full check.sh/Android profile build passed, including asset and Vulkan transport
+  checks. Installed APK with the existing debug key (Success); launch returned
+  Status ok / COLD,1088ms. Restored the prior timeout2147483647ms. Android gestures
+  and physical-iPhone pixels were not exercised; visual development used simulator.
+
+### Two-fire integration with incoming Dock I correction
+
+- Push encountered origin/main23a9b68. Preserved the Dock I finger-side/berth rule,
+  its regression checks and developer fixture. Only overlapping append-only log
+  entries and the canonical replay baseline needed reconciliation; retained both
+  logs and recomputed the combined JVM replay as 2f13d669:2:1350.
+- Combined full check/build passed, including Dock I moored-boat regressions and
+  the two-fire tutorial. Reinstalled the merged APK successfully and launched
+  normally; the native fire view was already inspected before this unrelated
+  marina merge. No new iOS/device-parity claim is made for the combined revision.

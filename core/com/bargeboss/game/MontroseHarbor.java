@@ -20,6 +20,9 @@ public final class MontroseHarbor {
     private static final float[][] ROWS_MAP={{823,225,866,503},{951,204,995,485},{1135,174,1180,456},{1230,154,1270,424},{1331,144,1368,356},{1425,131,1453,283},
         {972,969,640,760},{1116,950,748,689},{1258,903,870,625},{1395,836,1018,586},{1525,741,1220,543},
         {1609,617,1404,470},{1673,524,1472,400},{1710,418,1547,303},{1718,287,1566,193}};
+    static final int DOCK_I_ROW=14;
+    /** Dock I has slips only on its harbor-facing side; the seawall channel stays open. */
+    static boolean fingerSide(int row,int side){return row!=DOCK_I_ROW || side==-1;}
     static float[][] berthRows(){return ROWS_MAP;}
     private static final float[][] STARS_MAP={{475,380},{605,350},{490,505},{615,480},{725,450}};
     // Small service floats and land-connected access piers, traced from the north shore.
@@ -109,6 +112,7 @@ public final class MontroseHarbor {
             line(lines,r[0]-(r[2]-r[0])/length*30,r[1]-(r[3]-r[1])/length*30,r[2],r[3],7);
             float dx=r[2]-r[0],dy=r[3]-r[1],len=Physics.length(dx,dy);dx/=len;dy/=len;
             for(float at=30;at<len-8;at+=30)for(int side=-1;side<=1;side+=2){
+                if(!fingerSide(i,side))continue;
                 float x=r[0]+dx*at,y=r[1]+dy*at;
                 // N's lower east-side short fingers become one enlarged 80ft slip.
                 if(i==1 && side==-1 && y>300)continue;
