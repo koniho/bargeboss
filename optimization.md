@@ -5817,3 +5817,21 @@ launch restored after capture; screen timeout restored to300000ms.
   out/hose-impact-native.png; shared previews also cover bare quay. Restored
   normal launch. Selection behavior verified by shared input tests; no physical
   iOS or sustained frame-time profiling in this round.
+
+### 2026-11-22 — Tutorial towing prompts and obsolete lock rendering
+- Equipment selection no longer overrides DOUBLE/BRIDGE/LINK/TRAIN/RELEASE
+  coaching. Removed the early ability hint from double towing; equipment guidance
+  starts at SHOW, after the two-barge passage and castoff goals.
+- TrainingChannelView previously merged two legacy lock leaves unconditionally,
+  despite inactive lock simulation. Lock water effects and depth-merge entries
+  now require an actual lock stage. Retained the real radio-operated bridges.
+  This removes unnecessary lock model work/draws without new caches or assets.
+- Targeted prompt progression and rendered-state checks passed: changing lock
+  phase cannot alter tutorial pixels. Combined replay 9e23edeb:2:1350.
+- Visual review also found the obsolete BridgeView at Y=200 between the
+  passage bridges. Guarded its rendering and teacher collision by hasBridge(),
+  matching player/cargo collision rules. Render regression covers its phase too.
+- Validation: full Android build (including check.sh, asset and native renderer
+  checks) passed. Reviewed shared overview and Android Vulkan barge-bridge
+  fixture: only the intended passage bridges remain and towing coaching is
+  visible. Installed/launched on development phone; iOS not device-tested.

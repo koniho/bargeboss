@@ -45,11 +45,10 @@ public final class TutorialView {
         if(t.lesson==Tutorial.MOVE)return new InstructionPanel.Content("helm-"+t.helm.phase+":"+t.helm.pace,t.helm.title(),t.helm.first(),t.helm.second(),t.lesson,t.helm.phase/5f);
         if(t.lesson==Tutorial.FIGURE_EIGHT || t.lesson==Tutorial.REVERSE)
             second="BUOY "+(Math.min(t.driveMarker,1)+1)+" / 2 - "+(int)(100*t.orbitProgress())+"% / CROSS THROUGH THE MIDDLE";
-        if(g.abilities.selected!=null && g.abilities.visibleTicks>0){
+        if(t.lesson>=Tutorial.SHOW && g.abilities.selected!=null && g.abilities.visibleTicks>0){
             Body equipment=g.abilities.selected;
             return new InstructionPanel.Content("ability-"+equipment.ability,"BARGE EQUIPMENT",equipment.ability==BargeAbilities.FIREWORKS?"TAP LAUNCH IN THE EQUIPMENT PANEL.":"HOLD THE AIM PAD. DRAG TO AIM AND SET REACH.","TAP THE TOWLINE ITSELF TO DISCONNECT.",t.lesson,0);
         }
-        if(t.lesson==Tutorial.DOUBLE && t.firstTowParked && g.passages.passable(TutorialTowBridges.ENTRY))second="SHORT TAP FOR ABILITIES. DRAG TO LINK.";
         String key=t.lesson+":"+title+":"+approach+":"+wrongTug+":"+t.reverseArmed;
         if(t.lesson==Tutorial.LINK)key+=":"+first;
         return new InstructionPanel.Content(key,title,first,second,t.lesson,0);
