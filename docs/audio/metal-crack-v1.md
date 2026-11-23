@@ -11,10 +11,12 @@ as a standalone sound library.
 Original: `sources/tutmozis/metal-crack-606770.mp3`.
 Run `python3 tools/prepare-metal-crack.py` with ffmpeg to regenerate the derivatives.
 Arithmetic stereo averaging avoids downmix gain/clipping. Trim the pre-impact
-lead-in, retain the full metallic decay, and apply 1 ms attack / 15 ms release
-fades. All variants are mono 44.1 kHz PCM16, unclipped, with zero-valued edges.
+lead-in and keep only source seconds 0.058975–0.250000, before the renewed
+impact swell around 0.26 s. Fade the final 40 ms of that source interval before
+pitching; apply 1 ms attack / 15 ms release fades after resampling. The original
+source remains intact. All variants are mono 44.1 kHz PCM16, unclipped, with zero-valued edges.
 
-The strength tiers remain original pitch / −3 / −6 semitones, with gain
+The strength tiers remain −6 / −9 / −12 semitones (each six semitones below its previous pitch), with gain
 0.65 / 0.85 / 1.00. Closing-speed thresholds are unchanged: 3–<30, 30–<65, ≥65.
 These apply to tug-to-tug, other vessels and scenery contacts. Slot 5 also maps
 to the medium variant for compatibility. Radio priority, cooldown, Sound
@@ -23,12 +25,18 @@ The previous thunk sources/derivatives remain archived but are no longer selecte
 
 Source SHA256: 57fdb5d116be9474a3519f7f769e502e871765c2483815a11ecc4d5f3b581129
 
-Generated light/medium/heavy durations are 1.012/1.204/1.431 s, with peaks
-−5.46/−3.13/−1.69 dBFS and 1%-peak onset at 2.0/2.4/2.8 ms. Each decoded sample
-is below 127 KiB, within the existing startup-predecoded one-shot path. No live
+Generated light/medium/heavy durations are 0.270/0.321/0.382 s, with peaks
+−5.43/−3.12/−1.70 dBFS and 1%-peak onset at 2.8/2.6/3.1 ms. Each decoded sample
+is below 34 KiB, within the existing startup-predecoded one-shot path. Pitching
+uses offline rate conversion, so the lower variants have longer tails. No live
 pitch processing, extra voices or renderer changes.
 
-Validation: asset generation assertions, full shared checks, Android packaging
-and native encoding checks, and iOS simulator build passed. JVM/J2ObjC replay and
-drawing parity remains 310d2a08:2:1350. No Android device was connected, so the
-updated APK could not be installed and the new clip was not auditioned on a phone.
+2026-11-23 first-impact revision: inspected the source's 10 ms RMS envelope and
+cut before the second swell. Generator validates format, duration against the
+cut/pitch ratio, nonzero energy, unclipped peaks and zero-valued edges. This is
+waveform validation, not a listening audition.
+
+Validation for this revision: full shared and asset checks, Android build and
+native encoding checks passed (replay 310d2a08:2:1350). Updated APK installed on
+the development phone and launched. Device listening and iOS playback have not
+been auditioned for this revision.
