@@ -290,7 +290,7 @@ public final class MontroseHarbor {
         }
         float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);System.arraycopy(steps,0,result,land.length+dock.length,steps.length);System.arraycopy(access,0,result,land.length+dock.length+steps.length,access.length);int at=land.length+dock.length+steps.length+access.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
-        if(!union)return disjoint(result);
+        if(!union)return ClipUnion.disjoint(result);
         // Nonzero winding includes overlapping receivers without re-triangulating their union.
         for(int i=0;i<result.length;i+=6)if(PolygonWater.cross(result[i],result[i+1],result[i+2],result[i+3],result[i+4],result[i+5])<0){
             float x=result[i+2],y=result[i+3];result[i+2]=result[i+4];result[i+3]=result[i+5];result[i+4]=x;result[i+5]=y;
@@ -299,34 +299,6 @@ public final class MontroseHarbor {
     }
     /** Painter's even-odd native cutout requires nonoverlapping holes. Dock junctions and
      * raised receivers overlap, so retain their union as disjoint convex pieces before fanning. */
-    private static float[] disjoint(float[] triangles){
-        java.util.ArrayList<float[]> pieces=new java.util.ArrayList<float[]>(),blockers=new java.util.ArrayList<float[]>(),boxes=new java.util.ArrayList<float[]>();
-        for(int at=0;at<triangles.length;at+=6){
-            float[] source={triangles[at],triangles[at+1],triangles[at+2],triangles[at+3],triangles[at+4],triangles[at+5]};
-            if(!solid(source))continue;float[] box=PolygonWater.bounds(source);
-            java.util.ArrayList<float[]> pending=new java.util.ArrayList<float[]>();pending.add(source);
-            for(int i=0;i<blockers.size() && !pending.isEmpty();i++){
-                if(!PolygonWater.overlaps(box,boxes.get(i)))continue;
-                java.util.ArrayList<float[]> next=new java.util.ArrayList<float[]>();
-                for(float[] candidate:pending){
-                    if(!PolygonWater.overlaps(PolygonWater.bounds(candidate),boxes.get(i))){next.add(candidate);continue;}
-                    PolygonWater.subtract(candidate,blockers.get(i),next);
-                }
-                for(int j=next.size()-1;j>=0;j--)if(!solid(next.get(j)))next.remove(j);
-                pending=next;
-            }
-            for(float[] candidate:pending)if(solid(candidate))pieces.add(candidate);
-            blockers.add(source);boxes.add(box);
-        }
-        int count=0;for(float[] piece:pieces)count+=(piece.length/2-2)*6;float[] result=new float[count];int at=0;
-        for(float[] p:pieces)for(int i=2;i<p.length-2;i+=2){result[at++]=p[0];result[at++]=p[1];result[at++]=p[i];result[at++]=p[i+1];result[at++]=p[i+2];result[at++]=p[i+3];}
-        return result;
-    }
-    private static boolean solid(float[] p){
-        if(p.length<6)return false;double area=0;
-        for(int i=2;i<p.length-2;i+=2)area+=(double)(p[i]-p[0])*(p[i+3]-p[1])-(double)(p[i+2]-p[0])*(p[i+1]-p[1]);
-        return Math.abs(area)>.0001;
-    }
     public void setup(Game g){
         if(MontroseHaulout.active(g)){g.haulout.setup(g);return;}
         if(MontroseRescue.active(g)){g.rescue.setup(g);return;}

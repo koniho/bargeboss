@@ -6,6 +6,8 @@ scene=${1:-barge-push}
 mode=${2:-live}
 case "$scene" in buoy-complete|montrose-dispatch|montrose-haulout|tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
 case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
+bargeboss_exclude=${BARGEBOSS_PROFILE_EXCLUDE:-0}
+case "$bargeboss_exclude" in *[!0-9]*|'') exit 2;; esac
 bargeboss_frames=${BARGEBOSS_PROFILE_FRAMES:-360}
 bargeboss_warmup=${BARGEBOSS_PROFILE_WARMUP:-120}
 case "$bargeboss_frames:$bargeboss_warmup" in *[!0-9:]*) echo 'Frame counts must be integers' >&2; exit 2;; esac
@@ -48,7 +50,7 @@ printf 'method_trace=%s\nsystem_trace=%s\n' "$trace" "$system_trace" >> "$output
 rish -c "rm -f '$remote/$scene-$mode.csv'"
 rish -c 'input keyevent KEYCODE_WAKEUP'
 rish -c 'dumpsys gfxinfo com.bargeboss.game reset' > "$output/reset.txt" 2>&1
-rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ef bb_camera_zoom $review_zoom --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping --ez bb_rotation_prefetch $rotation_prefetch --ei bb_frame_cache_mib $frame_cache_mib" > "$output/launch.txt" 2>&1
+rish -c "am start -S -W -n com.bargeboss.game/com.bargeboss.game.MainActivity --es bb_scene '$scene' --es bb_mode '$mode' --ef bb_camera_zoom $review_zoom --ei bb_warmup $bargeboss_warmup --ei bb_frames $bargeboss_frames --ei bb_exclude $bargeboss_exclude --ez bb_trace $trace --ez bb_system_trace $system_trace --ez bb_compound_paths $compound_paths --ez bb_frame_textures $frame_textures --ez bb_async_layers $async_layers --ez bb_water_grouping $water_grouping --ez bb_rotation_prefetch $rotation_prefetch --ei bb_frame_cache_mib $frame_cache_mib" > "$output/launch.txt" 2>&1
 started=$(date +%s)
 ready=
 while [ "$(($(date +%s)-started))" -lt 180 ]; do

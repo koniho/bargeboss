@@ -20,7 +20,8 @@ public final class BiminiReview {
                     if(a>0){visible++;int base=hull.getRGB(pose%16*128+x+BiminiArt.LEFT,pose/16*128+y+BiminiArt.TOP)>>>24;
                         if(a>base+2)throw new AssertionError("Canvas outside hull silhouette: "+pose+" "+x+","+y);}
                 }
-                if(visible<15)throw new AssertionError("Missing canvas at heading "+pose);
+                if(pose<96 && visible<15)throw new AssertionError("Missing motorboat canvas at heading "+pose);
+                if(pose>=96 && visible!=0)throw new AssertionError("Sailboats must not have canvas roofs");
                 pixels+=visible;reference=fabric;
             }
         }

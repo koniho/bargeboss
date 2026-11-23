@@ -48,11 +48,13 @@ public final class BakeMooredBoats {
             face(0xff46515b,l*.09f,0,43,l*.48f,0,4,l*.48f+.45f,0,4,l*.09f+.35f,0,43);
         }
         // Aft cockpit canvas on stainless bows; rigid geometry, never a rotated bitmap.
+        if(kind<3){
         for(int end=0;end<2;end++)for(int side=-1;side<=1;side+=2)
             box(l*(-.34f+end*.25f),side*w*.34f-.2f,4,.4f,.4f,5.1f,0xff697573,0xff48555b);
         fabric=true;
         box(-l*.36f,-w*.37f,9.1f,l*.30f,w*.74f,.45f,0xff747878,0xff525959);
         fabric=false;
+        }
         for(int side=-1;side<=1;side+=2)for(int i=0;i<3;i++)box(-l*.26f+i*l*.23f,side*w*.45f-.65f,1.5f,1.8f,1.3f,2.8f,0xff4b555a,0xff2b373e);
         for(int end=-1;end<=1;end+=2)box(end*l*.38f-.9f,-.6f,3.7f,1.8f,1.2f,.5f,0xff68706e,0xff39464c);
     }

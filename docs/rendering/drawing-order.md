@@ -730,3 +730,16 @@ examples and success effects) before the instruction panel. The panel background
 text, wipe/shimmer and portrait form one screen-space overlay above these cues.
 Early exits from lesson guidance must not skip this final panel pass. Arrival and
 completion panels keep their existing lifecycle; do not draw the panel twice.
+
+### Vulkan union masks
+
+Vulkan's stencil uses increment/decrement counts and draws color only at zero.
+It can therefore consume overlapping mask triangles directly. The encoder now
+advertises union clips, avoiding per-vessel polygon subtraction on the CPU.
+Each push conservatively bounds overlap using sorted triangle-bound intervals
+on both screen axes, plus a reserved count for every remaining stack level.
+Large sparse masks therefore stay on the fast path. A mask exceeding that 8-bit budget is
+partitioned with shared `ClipUnion.disjoint` before submission; pops restore the
+captured geometry and coverage budget exactly. Never allow stencil saturation:
+that would break nested clip restoration. Reference/older hosts retain their
+existing capability and disjoint fallback.

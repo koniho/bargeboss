@@ -26,6 +26,20 @@ public final class VulkanClipEncodingTest {
         p.start(960,600);for(int i=0;i<64;i++)p.pushClipOutside(new float[0]);
         rejected=false;try{p.pushClipOutside(new float[0]);}catch(IllegalStateException expected){rejected=true;}if(!rejected)throw new AssertionError("nesting limit lost");
         for(int i=0;i<64;i++)p.popClip();
+        if(!p.supportsUnionClips())throw new AssertionError("counting stencil must support union masks");
+        float[] overlaps=new float[6000];for(int i=0;i<overlaps.length;i+=6){overlaps[i]=0;overlaps[i+1]=0;overlaps[i+2]=100;overlaps[i+3]=0;overlaps[i+4]=0;overlaps[i+5]=100;}
+        p.start(960,600);for(int i=0;i<64;i++){
+            p.pushClipOutside(overlaps);
+            if((Integer)field(p,"clipCoverageTotal")>255)throw new AssertionError("stencil coverage overflow");
+            if(((int[])field(p,"clipCount"))[i]!=3)throw new AssertionError("duplicate mask not reduced to exact single triangle");
+        }
+        for(int i=0;i<64;i++)p.popClip();
+        if((Integer)field(p,"clipCoverageTotal")!=0)throw new AssertionError("coverage was not restored");
+        p.start(960,600);p.pushClipOutside(new float[]{0,0,100,0,0,100,10,10,110,10,10,110});
+        if(((int[])field(p,"clipCount"))[0]!=6)throw new AssertionError("ordinary overlaps should bypass CPU union preparation");p.popClip();
+        float[] tiled=new float[6000];for(int i=0;i<1000;i++){int at=i*6;float x=(i%50)*10,y=(i/50)*10;tiled[at]=x;tiled[at+1]=y;tiled[at+2]=x+5;tiled[at+3]=y;tiled[at+4]=x;tiled[at+5]=y+5;}
+        p.start(960,600);p.pushClipOutside(tiled);
+        if((Integer)field(p,"clipCoverageTotal")!=20)throw new AssertionError("large sparse masks should use overlap bound, not triangle count or CPU partitioning");p.popClip();
         System.out.println("Vulkan clip snapshot, nested ranges, zero-copy restore and depth limits passed");
     }
 }

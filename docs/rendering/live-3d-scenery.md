@@ -75,3 +75,19 @@ save work. Refresh bounds for every new rigid transform and every clipped face.
 `tools/BridgeDepthReview.java` compares exact primitive/UV/color order against
 a separately compiled previous implementation. The first comparison covered
 4715 intervals and185215 commands with identical raw-float hashes.
+
+## Marina fleet
+
+`HarborBoatModel` prepares six single-part local BSPs at Montrose setup.
+`ArticulatedModel.Rigid` traverses those BSPs with the inverse continuous viewing
+vector and projects yaw/pitch/roll into reusable thread-local buffers. It does
+not build a pose table or split topology during drawing. Normals and registered
+cleat/fender anchors use the hull coordinate system (+X bow, +Z up). Water-plane
+clipping removes geometry below the moving surface during rocking; foreground
+shore clips remain active. Hull movement belongs to MooredFleet's fixed step.
+
+MooredBoats blends to live geometry at 48–72 logical pixels of hull length,
+within 180–210 world units of the player. Smaller/distant boats keep existing
+sprites and their cache behavior. At full live weight, no color/canvas/normal
+sprites are submitted. Both paths retain separate water ripples. The parked
+fleet has no emissive lamps or smoke. Sailboats have no canopy in either path.

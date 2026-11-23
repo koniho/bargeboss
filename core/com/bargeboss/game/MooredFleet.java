@@ -5,7 +5,7 @@ public final class MooredFleet {
     static final float REACH=2.5f,YAW=.065f;
     static final class FloatBoat {
         final MooredBoats.Berth berth;final float[] hull=new float[8];final boolean roomy;
-        float x,y,vx,vy,yaw,spin,heave,wakeHeave;
+        float x,y,vx,vy,yaw,spin,heave,wakeHeave,roll,pitch;
         FloatBoat(MooredBoats.Berth b){berth=b;x=b.x;y=b.y;updateHull();boolean room=true;for(int corner=0;corner<8;corner+=2)for(int n=0;n<16;n++){double a=n*StrictMath.PI/8;if(!MontroseHarbor.contains(hull[corner]+5*(float)StrictMath.cos(a),hull[corner+1]+5*(float)StrictMath.sin(a)))room=false;}roomy=room;}
         void updateHull(){float a=berth.angle+yaw,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*berth.length*.48f,v=(i==0||i==3?-1:1)*berth.width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}}
@@ -19,6 +19,7 @@ public final class MooredFleet {
     }
     FloatBoat[] boats=new FloatBoat[0];int[] order=new int[0];private final float[] force=new float[2];
     public void reset(Game g){java.util.ArrayList<FloatBoat> list=new java.util.ArrayList<FloatBoat>();
+        if(g.montroseStage())HarborBoatModel.prepare();
         if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b))list.add(new FloatBoat(b));
         boats=list.toArray(new FloatBoat[list.size()]);order=new int[boats.length];for(int i=0;i<order.length;i++)order[i]=i;
     }
@@ -33,6 +34,8 @@ public final class MooredFleet {
             float height=g.water.height(g,b.x,b.y,g.visualTicks,null);
             float sea=SeaWaves.value(g,b.x,b.y,g.visualTicks,0);
             b.wakeHeave+=((height-sea)*.55f-b.wakeHeave)*.12f;b.heave=sea+b.wakeHeave;
+            b.roll+=(Physics.clamp((force[0]-force[1])*.018f,-.035f,.035f)-b.roll)*.08f;
+            b.pitch+=(Physics.clamp((force[0]+force[1])*.01f,-.025f,.025f)-b.pitch)*.08f;
             b.constrain();
         }
         for(int i=1;i<order.length;i++){int value=order[i],j=i-1;FloatBoat b=boats[value];while(j>=0 && boats[order[j]].y-boats[order[j]].x>b.y-b.x){order[j+1]=order[j];j--;}order[j+1]=value;}

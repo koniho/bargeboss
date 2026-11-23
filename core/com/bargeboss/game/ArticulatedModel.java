@@ -63,6 +63,67 @@ public final class ArticulatedModel {
             return live;
         }
     }
+    /** Prepared single-part geometry for freely moving vessels. No pose/BSP rebuilds. */
+    public Rigid rigid(){return new Rigid();}
+    public final class Rigid {
+        private final Branch tree;
+        private final int fragments,maxVertices;
+        private final ThreadLocal<RigidDraw> drawing=new ThreadLocal<RigidDraw>(){
+            protected RigidDraw initialValue(){return new RigidDraw(maxVertices,faces.length);}
+        };
+        private Rigid(){
+            if(nodes.length!=1 || nodes[0].x!=0 || nodes[0].y!=0 || nodes[0].z!=0 || nodes[0].yaw!=0)
+                throw new IllegalArgumentException("Rigid fleet model requires one identity root");
+            Branch built=null;Stats stats=new Stats();
+            int source=0;for(Face f:faces){Poly p=new Poly(f.xyz,f.uv,0,f.color,f.material);p.sourceIndex=source++;if(built==null)built=new Branch(p);else built.insert(p,stats);}
+            tree=built;ArrayList<Poly> all=new ArrayList<Poly>();tree.flatten(all);fragments=all.size();
+            int max=0;for(Poly p:all)max=Math.max(max,p.xyz.length/3);maxVertices=max;
+        }
+        public int fragmentCount(){return fragments;}
+        public void draw(Game g,Painter p,float x,float y,float heave,float yaw,float pitch,float roll,FaceLighting light){
+            RigidDraw d=drawing.get();d.p=p;d.c=g.layout.camera;d.light=light;d.wx=x;d.wy=y;d.heave=heave;java.util.Arrays.fill(d.shadeReady,false);
+            float ca=(float)StrictMath.cos(yaw),sa=(float)StrictMath.sin(yaw),cp=(float)StrictMath.cos(pitch),sp=(float)StrictMath.sin(pitch),cr=(float)StrictMath.cos(roll),sr=(float)StrictMath.sin(roll);
+            float[] m=d.m;
+            m[0]=ca*cp;m[1]=ca*sp*sr-sa*cr;m[2]=ca*sp*cr+sa*sr;
+            m[3]=sa*cp;m[4]=sa*sp*sr+ca*cr;m[5]=sa*sp*cr-ca*sr;
+            m[6]=-sp;m[7]=cp*sr;m[8]=cp*cr;
+            d.vx=-m[0]+m[3]+m[6];d.vy=-m[1]+m[4]+m[7];d.vz=-m[2]+m[5]+m[8];
+            d.visit(tree);
+        }
+    }
+    private static final class RigidDraw {
+        final float[] m=new float[9],vertices,clipped;final float[][] screens;final boolean[] shadeReady;final int[] shades;
+        Painter p;RiverCamera c;FaceLighting light;float wx,wy,heave,vx,vy,vz;
+        RigidDraw(int max,int sources){shadeReady=new boolean[sources];shades=new int[sources];vertices=new float[max*3];clipped=new float[(max+2)*3];screens=new float[max+3][];for(int i=3;i<screens.length;i++)screens[i]=new float[i*2];}
+        void visit(Branch node){
+            boolean front=node.plane.nx*vx+node.plane.ny*vy+node.plane.nz*vz>0;
+            Branch far=front?node.back:node.front,near=front?node.front:node.back;
+            if(far!=null)visit(far);
+            for(Poly f:node.coplanar)if(f.nx*vx+f.ny*vy+f.nz*vz>EPS)paint(f);
+            if(near!=null)visit(near);
+        }
+        void paint(Poly f){
+            int n=f.xyz.length/3;
+            for(int i=0;i<n;i++){int j=i*3;float x=f.xyz[j],y=f.xyz[j+1],z=f.xyz[j+2];
+                vertices[j]=m[0]*x+m[1]*y+m[2]*z;vertices[j+1]=m[3]*x+m[4]*y+m[5]*z;vertices[j+2]=m[6]*x+m[7]*y+m[8]*z;}
+            // Continuous rocking intersects the water plane instead of exposing the underside.
+            int count=0;
+            for(int i=0;i<n;i++){int a=i*3,b=((i+1)%n)*3;float az=vertices[a+2],bz=vertices[b+2];
+                if(az>=0){for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k];count++;}
+                if((az<0)!=(bz<0)){float t=az/(az-bz);for(int k=0;k<3;k++)clipped[count*3+k]=vertices[a+k]+t*(vertices[b+k]-vertices[a+k]);count++;}}
+            if(count<3)return;
+            int source=f.sourceIndex;
+            if(!shadeReady[source]){
+                float nx=m[0]*f.nx+m[1]*f.ny+m[2]*f.nz,ny=m[3]*f.nx+m[4]*f.ny+m[5]*f.nz,nz=m[6]*f.nx+m[7]*f.ny+m[8]*f.nz;
+                float x=m[0]*f.sourceX+m[1]*f.sourceY+m[2]*f.sourceZ,y=m[3]*f.sourceX+m[4]*f.sourceY+m[5]*f.sourceZ,z=m[6]*f.sourceX+m[7]*f.sourceY+m[8]*f.sourceZ;
+                shades[source]=light.shade(f.color,f.color,x,y,z,nx,ny,nz);shadeReady[source]=true;
+            }
+            int color=shades[source];
+            for(int i=0;i<count;i++){int j=i*3;float xx=clipped[j],yy=clipped[j+1],zz=clipped[j+2];clipped[j]=c.screenX(wx+xx,wy+yy);clipped[j+1]=c.screenY(wx+xx,wy+yy)-(zz*Z_SCALE+heave)*c.scale;}
+            if(count==4)p.convexQuad(clipped[0],clipped[1],clipped[3],clipped[4],clipped[6],clipped[7],clipped[9],clipped[10],color);
+            else {float[] screen=screens[count];for(int i=0;i<count;i++){screen[i*2]=clipped[i*3];screen[i*2+1]=clipped[i*3+1];}p.poly(screen,color);}
+        }
+    }
     private static final class Node {
         final String id;final int parent;final float x,y,z,yaw,pitchRate,moveX,moveY,moveZ;
         Node(String id,int p,float x,float y,float z,float yaw,float rate,float mx,float my,float mz) {this.id=id;parent=p;this.x=x;this.y=y;this.z=z;this.yaw=yaw;pitchRate=rate;moveX=mx;moveY=my;moveZ=mz;}
@@ -140,6 +201,7 @@ public final class ArticulatedModel {
             int[][] indices={{3,2,1,0},{4,5,6,7},{0,1,5,4},{1,2,6,5},{2,3,7,6},{3,0,4,7}};
             for(int[] f:indices) {float[] v=new float[12];for(int j=0;j<4;j++)for(int k=0;k<3;k++)v[j*3+k]=p[f[j]][k];faces.add(new Face(node,color,material,v));}
         }
+        public void polygon(int node,int color,float... xyz){faces.add(new Face(node,color,-1,xyz.clone()));}
         public ArticulatedModel build() {return new ArticulatedModel(nodes.toArray(new Node[nodes.size()]),faces.toArray(new Face[faces.size()]));}
     }
     public final class Pose {
@@ -291,13 +353,13 @@ public final class ArticulatedModel {
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz;int motionIndex;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz,sourceX,sourceY,sourceZ;int motionIndex,sourceIndex;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
-            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];depthBounds();
+            nx=x/len;ny=y/len;nz=z/len;d=nx*p[0]+ny*p[1]+nz*p[2];depthBounds();sourceX=cx;sourceY=cy;sourceZ=cz;
         }
-        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
+        Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;sourceIndex=original.sourceIndex;sourceX=original.sourceX;sourceY=original.sourceY;sourceZ=original.sourceZ;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
         /** Geometry-derived bounds refresh only when a rigid pose changes, never per slice. */
         void depthBounds(){
             depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;cx=cy=cz=0;

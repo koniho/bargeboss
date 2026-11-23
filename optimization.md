@@ -5928,3 +5928,54 @@ launch restored after capture; screen timeout restored to300000ms.
   atlas); runtime enlarges them and dissolves adjacent yaw frames. This is a
   separate art-resolution issue. Prefer higher-resolution close-view bakes with
   bounded frame caches and distant LOD, not disabling filtering globally.
+
+### 2026-11-22 — Live close-view marina boats
+- Android baseline, montrose-haulout live, 120 warmup +180 measured frames:
+  draw p50/p95 13.904/16.037 ms; end-to-end 17.185/20.852 ms. Capture:
+  out/profiles/20261122-224923-montrose-haulout-live. No cold decoding/evictions.
+- Added six prepared local BSP models, continuous rigid projection and real
+  face-normal lighting. Thread-local geometry scratch is bounded by prepared
+  fragment size, with no dynamic BSP rebuild or heading table. Geometry clips
+  at the water plane and against foreground land. Nearby/full-size hulls use
+  live geometry; distant/small hulls retain sprite LOD and normal lighting.
+- Removed sailboat canopies/supports in both live geometry and all sprite poses;
+  regenerated registered normals/canvas masks. Added 774-heading continuity,
+  normalized normals, bounded topology, LOD and render-purity checks.
+- First native live-model pass regressed: draw 23.643/27.050 ms and intervals
+  28.913/33.810 ms (p50/p95), capture 20261122-225628-montrose-haulout-live.
+  Thirty boats qualified, including a broad dual-path transition. Before shipping,
+  narrowed distance fade to 180–210 and cached lighting once per original face
+  per draw, not once per BSP fragment. Original-face centers keep highlights
+  stable across topology traversal. Added exclusion 512 and profiling script
+  BARGEBOSS_PROFILE_EXCLUDE for same-build sprite/live comparisons.
+- Same-build A/B after face-light reuse: sprites draw 14.090/16.167 ms, interval
+  17.436/20.055; models draw 18.364/22.203, interval 22.306/27.314 (p50/p95).
+  Captures 20261122-230347 and 230405. A sampling trace then identified actual
+  overhead: ShoreOcclusion/MontroseHarbor.shore 31.29% inclusive CPU,
+  MontroseHarbor.disjoint 28.55%, MooredBoats.draw total 38.99%. This is hotspot
+  attribution, not exact isolated invocation timing. Trace capture 230704.
+- Vulkan's existing counting stencil was advertising no union support, forcing
+  redundant CPU polygon subtraction for each mask. Enabled union capability
+  with conservative 8-bit overlap budgeting and an exact shared disjoint fallback
+  for extreme masks. Added 64-deep/1000-duplicate overflow/restoration checks.
+  Kept the 180–210 live range; did not ship the proposed shorter 140–180 range.
+- Initial union guard was too conservative: triangle count sent large already-
+  sparse water masks back to ClipUnion (55.05% sampled CPU in trace 231649).
+  Replaced it with conservative X/Y interval-overlap bounds using reusable
+  sorted buffers. Added a 1000-separated-triangle fast-path test while retaining
+  the 1000-overlap/64-level overflow test. Full shared/asset checks and 4,350,443
+  Montrose shoreline pixels had passed; this follow-up is native encoder only,
+  so rebuilt APK/native checks without repeating unchanged shared checks.
+- Final same-build native A/B (180 sample frames after 120 warmup): sprites
+  draw p50/p95 10.079/11.076 ms, intervals 16.604/25.431; live models draw
+  12.740/13.916 ms, intervals 16.206/21.852. Captures 20261122-231957 and
+  232011. Live geometry adds about 2.66 ms median drawing; the prior large
+  regression was mask preparation. Long frames remain; these are application
+  intervals, not a claim of perfectly locked GPU presentation at 60 FPS.
+- Full shared checks, regenerated normal/canvas registration, Android build,
+  native overflow/restore checks, and all-heading Montrose shoreline pixel
+  regression passed. Reviewed native Vulkan scene for shoreline/boat occlusion.
+  Replay 98c0ecc6:2:1350. Installed on Android; iOS hardware was not tested.
+- Day/dusk review renders copied to Pictures/BargeBoss and MediaStore verified
+  (18144/18145). Current boat materials remain flat face shading: the requested
+  softer painted look needs a subsequent smooth-normal/material shader pass.

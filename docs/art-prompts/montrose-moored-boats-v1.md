@@ -22,3 +22,16 @@ The baker also exports geometric normal cells; see
 [normal-map generation](montrose-moored-normals-v1.md). All layers are rasterized
 in local cell coordinates before atlas placement to keep antialiased silhouettes
 identical across rows. The existing RGB layers remain the older-host fallback.
+
+2026-11-22: removed bimini roofs and support bows from all three sailboat
+families, at every heading. Motorboat canvas is unchanged. Regenerated the
+color/receiving atlas, normals and registered canvas masks through the existing
+rigid Java baker. Sailboat canvas cells are intentionally transparent, and the
+runtime skips their canvas submissions. This is a deterministic model edit;
+no AI image generation was used.
+
+Nearby hulls now use HarborBoatModel's prepared live geometry. Local dimensions,
+waterline pivot, mast and cockpit layout match the sprite source; live models
+add a foredeck hatch, sheer trim and stronger glazing. Their lights, smokestacks
+and tire collections are explicitly empty. Stable cleat and fender anchor IDs
+are in shared Java. Idle hulls receive marina lighting but emit none.

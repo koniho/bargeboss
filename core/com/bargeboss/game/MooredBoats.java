@@ -68,17 +68,43 @@ public final class MooredBoats {
             try{VesselRipples.draw(g,new RiverPainter(p,c),b.frame+(int)b.x,wx,wy,angle,b.length,b.width,0,true,detail);}
             finally{if(rippleClip.length>0)p.popClip();}
         }
-        dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
-        dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
-                x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
-        if(detail<=.001f)return;
+        float live=liveWeight(g,b.length,wx,wy);
+        if(live<.999f){
+            dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
+            if(b.kind<3)dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
+                    x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
+        }
+        if(detail<=.001f && live<=0)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
+        if(live>0){
+            LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=b.bimini;shade.alpha=live;
+            float reach=b.length*.65f+6;
+            float[] shore=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,c.screenY(wx,wy),p.supportsUnionClips());
+            if(shore.length>0)p.pushClipOutside(shore);
+            try{HarborBoatModel.get(b.kind).rigid.draw(g,p,wx,wy,heave,angle,f==null?0:f.pitch,f==null?0:f.roll,shade);}
+            finally{if(shore.length>0)p.popClip();}
+        }
+        if(live>=.999f)return;
         for(int n=0;n<lights.count;n++){
-            float energy=lights.energy[n]*detail,second=energy*mix,first=energy*(1-mix)/(1-second);
+            float energy=lights.energy[n]*detail*(1-live),second=energy*mix,first=energy*(1-mix)/(1-second);
             p.normalSprite(base+a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],first);
             if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
         }
     }
+    static float liveWeight(Game g,float length,float x,float y){
+        if((g.renderExclusions&RenderExclusions.LIVE_MARINA_BOATS)!=0)return 0;
+        return SceneDetail.fade(length*g.layout.camera.scale,48,72)*(1-SceneDetail.fade(Physics.length(x-g.tug.x,y-g.tug.y),180,210));
+    }
+    private static final ThreadLocal<LiveLight> LIVE_LIGHT=new ThreadLocal<LiveLight>(){protected LiveLight initialValue(){return new LiveLight();}};
+    private static final class LiveLight implements ArticulatedModel.FaceLighting {
+        LightingProfile profile;MooredBoatLight.Lights lights;int palette;float alpha;
+        public int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz){
+            if(albedo==HarborBoatModel.FABRIC)albedo=BiminiArt.color(palette);
+            int rgb=MarinaSurfaceLight.shade(profile,lights,albedo,x,y,z,nx,ny,nz);
+            return ((int)(255*alpha)<<24)|(rgb&0xffffff);
+        }
+    }
+
     /** Opaque-overlap dissolve avoids an offscreen additive layer per channel/boat.
      * Adjacent silhouettes can retain a narrow outgoing edge until the next heading. */
     private static void dissolve(Painter p,int atlas,int a,int b,float x,float y,float width,float height,float mix,float alpha){
