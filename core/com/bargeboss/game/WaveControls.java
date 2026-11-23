@@ -26,6 +26,7 @@ public final class WaveControls {
         }cancel();return true;
     }
     static void adjust(Game g,int action){
+            if(action>=1 && action<=13 && action!=6)g.montroseWeather.manualWeather=true;
             if(action==1 || action==2)g.settings.adjustWaves(action==1?-1:1);
             if(action==3 || action==4)g.settings.turnWaves(action==3?-1:1);
             if(action==5){g.settings.resetWaves();g.settings.resetWeather();g.changeLighting(LightingProfile.DUSK.id);}
@@ -45,7 +46,7 @@ public final class WaveControls {
         row(p,182,"RAIN "+RAIN[g.settings.rainLevel()],78,11);
         row(p,214,"LIGHTNING "+LIGHTNING[g.settings.lightningLevel()],66,10);
         row(p,246,"FOG "+FOG[g.settings.fogLevel()],78,11);
-        row(p,278,"TIME "+g.lighting().name,78,11);
+        row(p,278,"TIME "+(g.montroseWeather.night()>0?"DUSK > NIGHT":g.lighting().name),78,11);
         Lettering.draw(p,"TEST FLASH",24,335,10,0xff92aeb9);
         Lettering.draw(p,"RESET ALL",166,335,10,0xff92aeb9);
     }

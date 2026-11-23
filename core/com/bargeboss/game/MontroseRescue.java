@@ -9,7 +9,7 @@ public final class MontroseRescue {
     boolean touring;private int tourLeg;private int radioPhase,replyTicks,replyChoice;
     static final float RAFT_X=MontroseHarbor.mapX(2350),RAFT_Y=MontroseHarbor.mapY(-1530);
     static String name(int slot){return slot==0?"RUMRUNNER 2":"NEVER WETTER";}
-    void distress(Game g){touring=false;radioPhase=1;replyTicks=0;
+    void distress(Game g){g.montroseWeather.evening=true;g.montroseWeather.storm=true;touring=false;radioPhase=1;replyTicks=0;
         g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / RUMRUNNER 2","HELP! THREE KIDS ABOARD!",
             "RUMRUNNER 2 AND NEVER WETTER. WEATHER'S TURNING!",
             "WHY ARE YOU OUT THERE IN THIS WEATHER?","STAY CALM, CHAS. WHAT HAPPENED?");

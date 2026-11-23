@@ -42,7 +42,7 @@ public final class BiminiReview {
                 p.sprite(SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(color,frame),x,y,180*BiminiArt.WIDTH/128f,180*BiminiArt.HEIGHT/128f,0,1);
             }
             g.dispose();ImageIO.write(board,"png",new File("out/bimini-palette-"+light+".png"));
-            Game game=new Game();game.selectChallenge(Challenges.MONTROSE);game.selectLighting(light);game.reset();game.configureCanvas(1440,900);game.dialogue.close(game);
+            Game game=new Game();game.selectChallenge(Challenges.MONTROSE);game.selectLighting(light);game.reset();game.changeLighting(light);game.configureCanvas(1440,900);game.dialogue.close(game);
             game.layout=Layout.focused(1440,900,MontroseHarbor.mapX(1080),MontroseHarbor.mapY(920),2.6f,720,468);
             MontroseReview.capture(game,"bimini-harbor-"+light);
         }

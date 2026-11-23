@@ -3,12 +3,12 @@ package com.bargeboss.game;
 /** Unlit marina receivers. All motion comes from the per-game tether simulation. */
 public final class MooredBoats {
     public static final float CELL_WORLD=96;
-    public static final int ORIENTATIONS=32,BASE_FRAMES=192,FRAMES=768,COLUMNS=16,ROWS=48;
+    public static final int ORIENTATIONS=32,BASE_FRAMES=224,FRAMES=896,COLUMNS=16,ROWS=56;
     public static final class Berth {
         public final float x,y,angle,length,width,ax,ay,bx,by;
         public final int frame,kind;
         final float[] hull;
-        int row=-1,station,side,mooring=-1;
+        int row=-1,station,side,mooring=-1,star=-1,arm=-1;
         public final int bimini;
         Berth(float x,float y,float angle,int orientation,int kind,float ax,float ay,float bx,float by,int bimini){
             this.bimini=bimini;this.x=x;this.y=y;this.angle=angle;this.kind=kind;this.ax=ax;this.ay=ay;this.bx=bx;this.by=by;
@@ -17,8 +17,8 @@ public final class MooredBoats {
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*length*.48f,v=(i==0||i==3?-1:1)*width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}
         }
     }
-    public static float length(int kind){return new float[]{39,44,47,40,46,49}[kind];}
-    public static float width(int kind){return kind>=3?13:16;}
+    public static float length(int kind){return new float[]{39,44,47,40,46,49,56}[kind];}
+    public static float width(int kind){return kind==6?14:kind>=3?13:16;}
     public static float angle(int orientation){if(orientation>=30)return (orientation-30+.5f)*(float)Math.PI/4;float[] r=MontroseHarbor.berthRows()[orientation/2];return (float)StrictMath.atan2(r[3]-r[1],r[2]-r[0])+(orientation%2==0?-1:1)*(float)Math.PI/2;}
     public static final Berth[] BERTHS=make();
     private static Berth[] make(){java.util.ArrayList<Berth> out=new java.util.ArrayList<Berth>();float[][] rows=MontroseHarbor.berthRows();
@@ -39,10 +39,12 @@ public final class MooredBoats {
                 if(valid)out.add(b);
             }
         }
-        for(float[] star:MontroseHarbor.STAR_CENTERS)for(int arm=0;arm<8;arm++){
+        for(int starIndex=0;starIndex<MontroseHarbor.STAR_CENTERS.length;starIndex++)for(int arm=0;arm<8;arm++){
+            float[] star=MontroseHarbor.STAR_CENTERS[starIndex];
             int kind=(arm+(int)star[0])%6;if(kind<0)kind+=6;float a=angle(30+arm),c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a),near=arm*(float)Math.PI/4,nc=(float)StrictMath.cos(near),ns=(float)StrictMath.sin(near);
             Berth berth=new Berth(star[0]+c*59,star[1]+s*59,a,30+arm,kind,star[0]+nc*31,star[1]+ns*31,star[0]+nc*59,star[1]+ns*59,BiminiArt.palette((int)star[0],arm,1));
             boolean valid=true;for(int i=0;i<8;i+=2)if(!MontroseHarbor.contains(berth.hull[i],berth.hull[i+1]))valid=false;
+            berth.star=starIndex;berth.arm=arm;
             if(valid)out.add(berth);
         }
         int[] balls={1,9,17};

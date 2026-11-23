@@ -52,3 +52,27 @@ Single-point sailboat moorings constrain the bow to a20-unit slack radius around
 the moving ball, applying tension torque and damping. Unlike two-line dock berths,
 they can swing through full headings. Ball contacts remain one-way; vessel hulls
 remain solid. Fixed-step force/torque and heading-selected sprites are shared.
+
+## Ain't Broke and weather progression
+
+The opening tow is the large red offshore racer Ain't Broke at star dock S, the
+star center farthest from the N-M haulout (computed from surveyed centers). Its
+southwest-facing berth is reserved from ambient fleet population. The larger
+capsule and physical pickup clear the dock fingers. Push assist lines up outside
+the narrowed well; hull-projected reach supports side pushes. It must fit fully
+before near-target settling starts, preventing the larger bow from stopping short.
+Boats already secured to the operating lift cannot accept new tow links.
+
+Every Montrose entry starts at dusk. After the lift finishes, a30-second background
+nightfall grade deepens the water and shore before vessels and local lights draw.
+This is a continuous scene-composition grade, not a switch between native bitmap
+lighting caches or a moving astronomical sun. Vessel colors and UI stay readable.
+No sky is visible in the gameplay camera; title art is unchanged.
+
+Chas's distress call introduces light rain and haze over10 seconds. Accumulating
+60 seconds of moving, connected rescue tow ramps rain from0.35 to3 (heavy), fog
+from1 to2 and sea-wave amplitude from1× to2×. Waves use the same multiplier for
+rendering, heave and orbital forces. Conditions hold when stopped/unhooked and
+remain through later jobs; reset clears mission progression. Pause freezes the
+clock. Developer weather/time controls explicitly override automatic behavior.
+Rain/fog retain existing fixed submission caps and use no new weather textures.

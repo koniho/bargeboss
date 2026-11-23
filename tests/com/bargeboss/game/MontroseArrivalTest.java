@@ -18,7 +18,7 @@ public final class MontroseArrivalTest {
   check(g.radio.transmitter()==RadioAudio.DOCKMASTER && SpeakerPortrait.atlas(g,g.dialogue.content().header)==SpriteAtlas.GAVIN_PORTRAIT,"Gavin portrait and radio reception");
   check(g.tug.speed()==0 && g.tug.engineLoad==0,"radio hold does not leave stale wake velocity");
   for(int i=0;i<40;i++)g.step();ReplayInput.tap(g,g.dialogue.choiceBox(g,0).centerX(),g.dialogue.choiceBox(g,0).centerY());g.step();
-  check(!g.montroseArrival.active() && g.dialogue.content().title.equals("A BOAT HAS LOST POWER"),"welcome hands off to first job");
+  check(!g.montroseArrival.active() && g.dialogue.content().title.equals("AIN'T BROKE HAS BROKEN DOWN"),"welcome hands off to first job");
   g.montroseArrival.start(g);g.challengeId=0;g.reset();check(!g.montroseArrival.active(),"other levels clear arrival state");
   System.out.println("Montrose northbound arrival, hull clearance, resize/pause/input, welcome and Gavin dispatch checks passed");
  }

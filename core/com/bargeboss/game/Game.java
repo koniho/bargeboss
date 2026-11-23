@@ -98,12 +98,13 @@ public final class Game {
 
     public Layout layout=Layout.DEFAULT;
     public final Career career=new Career();
+    final MontroseWeather montroseWeather=new MontroseWeather();
     private LightingProfile stageLighting=LightingProfile.DUSK;
     private int nextLighting=2;
     public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES?LightingProfile.DUSK:stageLighting;}
     public int selectedLighting(){return nextLighting;}
     /** Explicit live control replaces only this stage snapshot; hosts rebuild before advancing. */
-    public void changeLighting(int id){stageLighting=LightingProfile.preset(id);nextLighting=id;}
+    public void changeLighting(int id){montroseWeather.manualLighting=true;stageLighting=LightingProfile.preset(id);nextLighting=id;}
     /** Selection only affects the next entry, never the live stage or a sibling practice. */
     public void selectLighting(int id){LightingProfile.preset(id);nextLighting=id;}
     public GameSettings settings=new GameSettings();
@@ -411,6 +412,7 @@ public final class Game {
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
         if(developerStart>=0){challengeId=developerStart;developerStart=-1;}
+        montroseWeather.reset();if(Challenges.stageEntry(challengeId)==Challenges.MONTROSE){stageLighting=LightingProfile.DUSK;nextLighting=LightingProfile.DUSK.id;}
         dialogue.close(this);practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
@@ -881,7 +883,7 @@ public final class Game {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
-        crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
+        montroseWeather.step(this);crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
         if(montroseStage() && montroseArrival.active()){
@@ -971,7 +973,7 @@ public final class Game {
         if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;
-            challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;
+            challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;montroseWeather.evening=true;
         }else if(challengeId==Challenges.RAFT_RESCUE){
             for(int i=0;i<2;i++){Body boat=cargo[i];cargo[i]=null;int slot=cargo.length-1;while(slot>1 && cargo[slot]!=null)slot--;cargo[slot]=boat;}
             challengeId=Challenges.MONTROSE;mission=new MontroseHarbor();
@@ -1148,6 +1150,14 @@ public final class Game {
         float dragX=pointerX-downX, dragY=pointerY-downY;
         boolean steering=manualSteering;
         if(steering) { gx=b.x+dragX*2; gy=b.y+dragY*2; }
+        if(MontroseHaulout.active(this) && !steering){
+            float error=Physics.angle(MontroseHaulout.ANGLE-b.angle);
+            if(error>Math.PI/2)error-=(float)Math.PI;if(error<-Math.PI/2)error+=(float)Math.PI;
+            b.spin+=Physics.clamp(error*1.8f-b.spin*1.5f,-1.2f,1.2f)*Physics.DT;
+            if(Math.abs(b.x-gx)<12 && Math.abs(error)<.18f)haulout.approachAligned=true;
+            if(Math.abs(b.x-gx)>16 && b.y>gy+55)haulout.approachAligned=false;
+            if(!haulout.approachAligned)gy=Math.max(gy+95,b.y);
+        }
         boolean waitingBridge=!steering && bridgeStage() && !bridge.passable() && bridge.separates(b.y,gy);
         if(waitingBridge) { gx=300;gy=Bridge.Y+(b.y>Bridge.Y?90:-90); }
         if(waitingBridge && Physics.length(gx-b.x,gy-b.y)<22) {
@@ -1165,7 +1175,7 @@ public final class Game {
         if(MontroseHaulout.active(this) && !steering && distance<65){
             // Ease the physical push inside the narrow well, then let the crew align it.
             b.vx*=.97f;b.vy*=.97f;tug.vx*=.96f;tug.vy*=.96f;
-            if(distance<12){
+            if(distance<12 && inDock(b)){
                 float error=Physics.angle(MontroseHaulout.ANGLE-b.angle);
                 if(error>Math.PI/2)error-=(float)Math.PI;if(error<-Math.PI/2)error+=(float)Math.PI;
                 b.vx*=.8f;b.vy*=.8f;tug.vx*=.8f;tug.vy*=.8f;
@@ -1189,6 +1199,7 @@ public final class Game {
         float along=(tug.x-b.x)*nx+(tug.y-b.y)*ny;
         float side=(tug.x-b.x)*(-ny)+(tug.y-b.y)*nx;
         float reach=b.half+b.radius+tug.half+tug.radius-2;
+        if(MontroseHaulout.active(this))reach=b.radius+b.half*Math.abs((float)StrictMath.cos(b.angle-StrictMath.atan2(ny,nx)))+tug.half+tug.radius-2;
         if(along>-reach*.6f || Math.abs(side)>24) {
             // Route around a hull before approaching its stern; never push from the wrong side.
             float sideSign=side>=0?1:-1;
@@ -1206,7 +1217,7 @@ public final class Game {
             control=steering?STEERING:!Physics.touching(tug,b,3)?ALIGNING:inDock(b)?DOCKING:PUSHING;
             navigateToLoad(b.x+nx*26,b.y+ny*26,Math.min(76,18+distance*.85f));
             // A broad fender steadies the contact, while collisions still supply linear momentum.
-            float heading=MontroseHaulout.active(this) && distance<90?MontroseHaulout.ANGLE:(float)StrictMath.atan2(ny,nx);
+            float heading=MontroseHaulout.active(this)?MontroseHaulout.ANGLE:(float)StrictMath.atan2(ny,nx);
             // Both barge ends can lead. A contact deflection must not trigger a half-turn in a slip.
             float keelError=Physics.angle(heading-b.angle);
             if(keelError>Math.PI/2)keelError-=(float)Math.PI;

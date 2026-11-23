@@ -67,14 +67,7 @@ public final class MontroseTravelLift {
     static void exhaust(Game g){g.smoke.shore(EXHAUST[0],EXHAUST[1],EXHAUST[2]*ArticulatedModel.Z_SCALE,.65f);}
     public static void apron(Game g,Painter p){
         for(float[] q:APRON)MontroseShoreArt.surface(p,g.layout.camera,q,MontroseHarbor.LAND_RISE,SurfaceMaterial.CONCRETE,0xff73796f,.08f);
-        RiverCamera c=g.layout.camera;
-        Painter ground=new RiverPainter(ScreenView.offset(p,0,-MontroseHarbor.LAND_RISE*c.scale),c);
-        for(int side=-1;side<=1;side+=2){float x=X+side*38*SCALE;
-            ground.line(x,worldY(212),x,worldY(272),1.5f,0xffc4a65e);
-            for(int i=0;i<5;i++){float y=worldY(135+i*11);ground.line(X+side*42*SCALE,y,X+side*54*SCALE,y-8*SCALE,2,0xffa59b67);}
-        }
-        // Connected yard access and marked service space, without world-space HUD lettering.
-        ground.line(X-54*SCALE,worldY(98),X+54*SCALE,worldY(98),1.4f,0xffb5ad87);
+
     }
     static float[] shore(Game g){
         if(!g.montroseStage())return ShoreOcclusion.EMPTY;

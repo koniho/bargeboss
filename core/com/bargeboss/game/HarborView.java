@@ -93,7 +93,7 @@ public final class HarborView {
             if(target!=null){boolean tow=g.rescue.towed[target.berth];destination(g,canvas,tow?g.dockX(target.berth):target.x,tow?g.dockY(target.berth):target.y,g.rescue.rafted?"RELEASE RAFT LINE":tow?"DOCK "+MontroseRescue.slip(target.berth):"ATTACH TOWLINE");}return;
         }
         if(g.montroseArrival.active())return;
-        if(MontroseHaulout.active(g)){Body boat=g.cargo[0];boolean towed=g.haulout.towed;boolean lift=!g.haulout.lowered();destination(g,canvas,lift||towed?MontroseHaulout.X:boat.x,lift?MontroseHaulout.Y:towed?MontroseHaulout.APPROACH_Y:boat.y,!g.haulout.lowered()?"RADIO TRAVELIFT":towed?"HAULOUT / PUSH BOAT IN":"DISABLED BOAT");return;}
+        if(MontroseHaulout.active(g)){Body boat=g.cargo[0];boolean towed=g.haulout.towed;boolean lift=!g.haulout.lowered();destination(g,canvas,lift||towed?MontroseHaulout.X:boat.x,lift?MontroseHaulout.Y:towed?MontroseHaulout.APPROACH_Y:boat.y,!g.haulout.lowered()?"RADIO TRAVELIFT":towed?"HAULOUT / PUSH BOAT IN":"AIN'T BROKE / STAR DOCK S");return;}
         if(g.montroseStage()){Body yacht=g.cargo[0];boolean attached=g.mission.wasTowed;destination(g,canvas,attached?MontroseHarbor.SLIP_X:yacht.x,attached?MontroseHarbor.SLIP_Y:yacht.y,attached?"YACHT SLIP":"ATTACH TOWLINE");return;}
         if(g.lockStage()) {
             if(g.ropeDragging || g.ropePhase!=0)return;

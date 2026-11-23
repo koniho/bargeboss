@@ -5,7 +5,7 @@ public final class MontroseHaulout {
     public static final float X=MontroseHarbor.mapX(1060),Y=MontroseHarbor.mapY(240),
             APPROACH_Y=MontroseHarbor.mapY(310),ANGLE=-(float)Math.PI/2;
     public static final int LOWER_TICKS=240;
-    public boolean towed,warping,requested,blocked,pushed;
+    public boolean towed,warping,requested,blocked,pushed,approachAligned;
     public int liftTicks,hoistTicks;
     public static final int HOIST_TICKS=180;
     private Body liftedBoat;
@@ -34,11 +34,20 @@ public final class MontroseHaulout {
         return true;
     }
     public int settled;
+    static MooredBoats.Berth pickupBerth(){
+        int star=0;float far=-1;for(int i=0;i<MontroseHarbor.STAR_CENTERS.length;i++){float[] p=MontroseHarbor.STAR_CENTERS[i];float d=Physics.length(p[0]-X,p[1]-Y);if(d>far){far=d;star=i;}}
+        for(MooredBoats.Berth b:MooredBoats.BERTHS)if(b.star==star && b.arm==3)return b;
+        throw new IllegalStateException("Missing farthest-star haulout berth");
+    }
+    static boolean reserved(MooredBoats.Berth b){return b==pickupBerth();}
+    boolean inLift(Body b){return b!=null && b==liftedBoat;}
+
     public static boolean active(Game g){return g.tutorial==null && g.challengeId==Challenges.HAULOUT;}
     public void setup(Game g){
         rig=new MontroseTravelLift.Rig();
         g.tug.x=MontroseHarbor.mapX(1090);g.tug.y=MontroseHarbor.mapY(350);g.tug.angle=ANGLE;
-        Body b=new Body(g.nextId++,2,MontroseHarbor.mapX(1090),MontroseHarbor.mapY(410),ANGLE,true,true);
+        MooredBoats.Berth berth=pickupBerth();float extra=(56-berth.length)*.5f;
+        Body b=new Body(g.nextId++,2,berth.x+(float)StrictMath.cos(berth.angle)*extra,berth.y+(float)StrictMath.sin(berth.angle)*extra,berth.angle,true,true,true);
         b.voyageJob=Challenges.HAULOUT;b.awaitingPickup=true;b.tiedX=b.x;b.tiedY=b.y;b.tiedAngle=b.angle;g.cargo[0]=b;
         g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+35,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
@@ -46,7 +55,7 @@ public final class MontroseHaulout {
         if(liftedBoat!=null)return hoisting()?"HOISTING / KEEP CLEAR OF THE LIFT":"BOAT SECURED / HAULOUT COMPLETE";
         if(!requested)return "TAP TRAVEL LIFT TO RADIO / KEEP THE WELL CLEAR";
         if(!lowered())return blocked?"LIFT STOPPED / CLEAR ALL BOATS FROM THE WELL":"LOWERING STRAPS / STAY OUT OF THE WELL";
-        if(!towed)return "STRAPS DOWN / TOW THE DISABLED BOAT TO THE LIFT";
+        if(!towed)return "STRAPS DOWN / TOW AIN'T BROKE FROM STAR DOCK S";
         return warping?"DOCK CREW SECURING BOAT":"RELEASE TOW / HOLD BOAT AND PUSH INTO STRAPS";
     }
     public static boolean fits(Body b){

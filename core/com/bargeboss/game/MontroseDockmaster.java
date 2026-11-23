@@ -10,12 +10,12 @@ public final class MontroseDockmaster {
         String title,detail,reply;
         switch(g.challengeId){
             case Challenges.HAULOUT:
-                title="A BOAT HAS LOST POWER";
-                detail="TAP THE N-M LIFT TO RADIO. CLEAR THE WELL FIRST.";
+                title="AIN'T BROKE HAS BROKEN DOWN";
+                detail="RED RACER AT STAR DOCK S. RADIO THE N-M LIFT FIRST.";
                 reply="COPY. TAKING THE TOW.";break;
             case Challenges.MONTROSE:
                 title="NEXT CALL: YACHT AT THE INLET";
-                detail="CREW HAS THE HAULOUT. BRING THE YACHT TO DOCK N.";
+                detail="THE CREW IS SAFE. BRING THE YACHT TO DOCK N.";
                 reply="COPY. HEADING TO THE INLET.";break;
             case Challenges.RAFT_RESCUE:
                 title="TWO CRUISERS NEED A HAND";

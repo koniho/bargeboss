@@ -6112,3 +6112,46 @@ launch restored after capture; screen timeout restored to300000ms.
  178/180 requested frames and the final screenshot showed Termux. Rejected this
  run for performance conclusions/native visual acceptance; desktop shared-renderer
  reviews are valid. Installation/launch succeeded. Retest the final boat round.
+
+### 2026-11-23 — racing pickup and gradual rescue storm
+- Ain't Broke is an offline-baked32-pose mission hull; no live3-D boats restored.
+  Appends32 geometric normal cells and128 color/receiver cells while preserving
+  the existing192 poses. Keeps legacy canvas stride192; adds64 frame-sized shadow
+  masks and a level-scoped preparation hint. Source texture/material maps stay
+  offline; no per-frame raster/material generation. Approximate added decoded
+  frame capacity:8MiB color/bands +2MiB normals +4MiB shadow masks, before host
+  residency/eviction. Existing cache budgets unchanged; not a residency claim.
+- Farthest star-dock reservation, larger collision capsule, public tow pickup and
+  full lift fit tested. Larger hull exposed early push-assist settling12 units
+  from target before it fit, plus full-length reach assumptions on side pushes.
+  Haulout assist now aligns outside the mouth, projects hull reach and only
+  settles when the complete hull fits. Locked lifted boats cannot reattach tow.
+- Removed the lift-yard yellow markings. Every Montrose entry now explicitly
+  selects dusk; developer lighting still overrides after entry.
+- Native lighting-profile replacement retires all textures/terrain preparation.
+  Do NOT interpolate these immutable snapshots every frame. New30-second nightfall
+  grade draws behind vessels/local lamps with one bounded background wash, keeping
+  the same dusk cache identity. It does not move the sun or fully replace the
+  material preset; the limitation is intentional and documented.
+- Chas's call ramps initial rain/fog over10 seconds;60 seconds of actual moving
+  rescue tow ramps to heavy rain and2× waves/fog. Same sea multiplier drives
+  drawing/heave/orbital forces. Rain identities fade in continuously; fog/streak
+  caps unchanged. Paused/control-only frames cannot advance tow progress.
+- Added fixed-step ramp/cache-identity, pause/manual override, placement/pickup,
+ 32-pose color/normal/material registration and shadow freshness checks. Developer
+  hooks now include montrose-chas, montrose-racer and montrose-storm-return.
+  Native build and final capture results follow.
+- Final validation: full `check.sh` and Android Vulkan build passed; replay
+  `e43d47db:2:1350`. Reviewed actual renderer racer at dock, all32 headings,
+  lowered/raised lift (no yellow yard stripes), and before/after storm. Review
+  images scanned into Photos, MediaStore18169–18171. Installed with existing key.
+- Android storm-return capture completed60/60 samples after60 warmup frames:
+  interval p50 16.623ms / p95 27.832ms; advance p95 5.852ms, draw p95 8.406ms;
+  zero measured decode/cache-build/eviction events. Native screenshot confirms
+  fog, rain, readable lit vessels and connected tow. A picture-in-picture video
+  was visible, so this short capture is NOT a clean performance comparison or
+  sustained60fps claim. iOS device pixels/performance were not measured.
+- Racer Android capture also completed60/60 samples: interval p50 16.642ms /
+  p95 17.764ms, advance p95 4.206ms, draw p95 9.403ms. Native frame reviewed:
+  red racing hull at reserved star berth, lit and coherent with nearby sprites.
+  Short scenario validation only; full marina traversal remains unprofiled.

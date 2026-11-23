@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     static float circleX(){return IndianaHarbor.START_X;}
@@ -83,8 +83,16 @@ public final class ProfileScenario {
             root.layout=Layout.focused(width,height,300,500,3.2f,width*.5f,height*.58f);
             if(root.splashes.emitted==0)throw new AssertionError("Impact fixture missed contact");return;
         }
+        if(name.equals("montrose-chas") || name.equals("montrose-storm-return")){
+            root.challengeId=Challenges.MONTROSE;root.reset();root.montroseArrival.clear();root.challengeId=Challenges.RAFT_RESCUE;
+            for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.rescue.distress(root);
+            if(name.equals("montrose-storm-return")){root.dialogue.close(root);root.rescue.rafted=false;
+                root.montroseWeather.eveningTicks=MontroseWeather.EVENING_TICKS;root.montroseWeather.stormTicks=MontroseWeather.STORM_TICKS;root.montroseWeather.towTicks=MontroseWeather.TOW_TICKS;
+                root.tow.attach(root,root.cargo[0],root.tug);}
+            root.layout=Layout.focused(width,height,MontroseRescue.RAFT_X-70,MontroseRescue.RAFT_Y+20,2.4f,width*.5f,height*.55f);return;
+        }
         if(name.equals("montrose-raft") || name.equals("montrose-swimmers") || name.equals("montrose-swimmers-lit")){
-            root.challengeId=Challenges.MONTROSE;root.reset();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.dialogue.close(root);
+            root.challengeId=Challenges.MONTROSE;root.reset();root.montroseArrival.clear();root.challengeId=name.equals("montrose-raft")?Challenges.RAFT_RESCUE:Challenges.SWIMMER_RESCUE;for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.dialogue.close(root);
             if(name.startsWith("montrose-swimmers")){root.tug.x=660;root.tug.y=640;root.tug.angle=0;root.layout=Layout.focused(width,height,660,590,3.6f,width*.5f,height*.52f);}
             if(name.equals("montrose-swimmers-lit")){
                 root.changeLighting(3);float x=root.rescue.x[15],y=root.rescue.y[15];root.visualTicks=50;
@@ -99,6 +107,8 @@ public final class ProfileScenario {
             root.montroseArrival.clear();root.mission.setup(root);
             if(name.equals("montrose-dispatch")){MontroseDockmaster.dispatch(root);for(int i=0;i<24;i++)root.step();return;}
             root.dialogue.close(root);
+            if(name.equals("montrose-racer")){Body b=root.cargo[0];root.tug.x=b.x-50;root.tug.y=b.y+70;
+                root.layout=Layout.focused(width,height,b.x,b.y,3.5f,width*.5f,height*.55f);return;}
             if(name.startsWith("montrose-moorings-")){
                 root.tug.x=MontroseHarbor.mapX(350);root.tug.y=MontroseHarbor.mapY(650);
                 root.changeLighting(name.endsWith("day")?1:name.endsWith("lit")?3:2);
