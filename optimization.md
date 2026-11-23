@@ -6190,3 +6190,40 @@ launch restored after capture; screen timeout restored to300000ms.
   and add an actively moving1/2-tow native fixture before drawing conclusions.
 - No runtime change or asset reduction. Current APK remains installed; reviewed
   native capture and restored normal launch/display timeout. No iOS measurement.
+
+### 2026-11-23 — paired water sampling and wake reach rejection
+- Shared Java now evaluates X/Y ambient phase/slope once and shares each wake's
+  fan/shore visibility calculation between flow components. Moored receivers reuse
+  the returned ambient X/Y when amplifying wakes. Height stays sampled AFTER
+  position integration, as before; both motion substeps remain unchanged.
+- Added a conservative aggregate live-wake bound, maintained in the existing age
+  loop and extended immediately on emission. Samples beyond all packets skip the
+  pool; nearby samples preserve original packet order and scalar float arithmetic.
+  Two world units of padding protect boundary rounding. No spatial quantization,
+  reduced update rate, shorter wakes or effect-density changes.
+- Added a retained scalar oracle (`water.referenceSampling`) and bit-exact checks
+  for both flow components, ambient values, shoreline-blocked wakes, heading and
+  intensity changes, aged/replaced packets, plus a moving two-tow fleet replay.
+  Reference mode is only enabled by explicit developer extras; production is paired.
+- Fixed foam exclusion transport: Vulkan waterFoam now honors the same debug-only
+  Canvas resource flag. Default drawing is unchanged. Added montrose-tow-one/two
+  fixtures with actual held throttle and normal tow solver; the second cruiser
+  stays anchored in the one-tow fixture. Native validation and timings follow.
+- Full shared/asset/native encoder checks passed;349101 new exact assertions,
+  unchanged replay e43d47db:2:1350. Android built and installed with existing key.
+- Valid reverse-order device pair, same1320.3539x600 view/ticks121–300/two tows:
+  optimized031213 advance median2.137ms/p953.195, draw20.531/23.256,
+  interval23.873/28.037; scalar031234 advance8.571/12.053,
+  draw22.876/24.735, interval33.436/37.806. About75% lower simulation median.
+  All recorded state rows match. Final native screenshots are identical across
+  2,602,800 pixels. First reference031053 had a different startup safe-area width
+  (1243.3334); reject its frame/drawing/pixel comparison to031113, despite matching
+  physics. No locked60fps claim: rendering remains over budget.
+- Fixed foam-off run031311: draw median20.684/p9523.149ms vs optimized20.531/23.256;
+  little effect from omitting submission. Same shared preparation remains active.
+- Complete ART trace031332, no overflow: lift drawRange27.97% inclusive sampled
+  CPU, clip push28.16%, wake drawCrests11.05%. Lift installs a large shore mask
+  for EVERY depth slice even when neither sling nor cord contributes. Extra tow
+  foam particles increase slice visits and amplify this unrelated clipping cost.
+  Next fix: reject empty lift intervals BEFORE pushing the mask; preserve exact
+  rope/shore overlap and continuous poses.

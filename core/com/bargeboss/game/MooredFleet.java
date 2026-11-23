@@ -28,7 +28,7 @@ public final class MooredFleet {
             if(!clear()){x=berth.x;y=berth.y;yaw=vx=vy=spin=0;updateHull();}
         }
     }
-    FloatBoat[] boats=new FloatBoat[0];int[] order=new int[0];private final float[] force=new float[2];
+    FloatBoat[] boats=new FloatBoat[0];int[] order=new int[0];private final float[] force=new float[4];
     public void reset(Game g){java.util.ArrayList<FloatBoat> list=new java.util.ArrayList<FloatBoat>();
         if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b) && !MontroseHaulout.reserved(b))list.add(new FloatBoat(b));
         boats=list.toArray(new FloatBoat[list.size()]);order=new int[boats.length];for(int i=0;i<order.length;i++)order[i]=i;
@@ -36,9 +36,10 @@ public final class MooredFleet {
     FloatBoat sorted(int i){return i<order.length?boats[order[i]]:null;}
     public void step(Game g){if(!g.montroseStage())return;
         for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
-            g.water.buoyForce(g,b.x,b.y,force);
+            g.water.flow(g,b.x,b.y,g.visualTicks,null,force);
+            force[0]*=1.4f;force[1]*=1.4f;
             // Amplify only propagated wake motion, leaving sheltered idle water calm.
-            float seaX=SeaWaves.value(g,b.x,b.y,g.visualTicks,1)*1.4f,seaY=SeaWaves.value(g,b.x,b.y,g.visualTicks,2)*1.4f;
+            float seaX=force[2]*1.4f,seaY=force[3]*1.4f;
             force[0]=seaX+(force[0]-seaX)*3;force[1]=seaY+(force[1]-seaY)*3;
             if(b.swinging()){
                 Buoys.Buoy ball=g.buoys.get(g,b.berth.mooring+2);b.anchorX=ball==null?b.berth.ax:ball.x;b.anchorY=ball==null?b.berth.ay:ball.y;

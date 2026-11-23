@@ -252,6 +252,7 @@ public final class CanvasPainter implements Painter {
     public void profileFlatSurfaces(boolean enabled){profileFlatSurfaces=enabled;}
     /** Developer-only effect isolation; default production appearance is unchanged. */
     public void profileSkipFoam(boolean enabled){profileSkipFoam=enabled;}
+    boolean profileFoamSkipped(){return profileSkipFoam;}
     private RetainedSurfaces retainedSurfaces;
     private boolean retainSurfaces=true,surfaceMeshes,recordingSurfaceMesh;
     private SurfaceMesh surfaceMesh,liveSurfaceMesh;

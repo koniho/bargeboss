@@ -186,7 +186,7 @@ final class VulkanPainter implements Painter,AutoCloseable {
         batch(used,0,0,0,4);
     }
     private void patch(float x,float y,float ax,float ay,float bx,float by,int color,float alpha,int kind,float phase,float detail){quad(x-(ax+bx)*.5f,y-(ay+by)*.5f,ax,ay,bx,by,color,alpha,0,kind,phase,detail,0,0,1,1,0,0,0,0);}
-    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){patch(x,y,ax,ay,bx,by,0xffe5fcf7,alpha,kind>=8?kind+24:kind+2,phase,0);}
+    public void waterFoam(float x,float y,float ax,float ay,float bx,float by,float phase,int kind,float alpha){if(resources!=null && resources.profileFoamSkipped())return;patch(x,y,ax,ay,bx,by,0xffe5fcf7,alpha,kind>=8?kind+24:kind+2,phase,0);}
     public void waterReflection(float x,float y,float ax,float ay,float bx,float by,float phase,int color){patch(x,y,ax,ay,bx,by,color,1,8,phase,0);}
     public void smokePuff(float x,float y,float radius,float phase,int color){patch(x,y,2*radius,0,0,2*radius,color,1,9,phase,0);}
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){patch(x,y,ax,ay,bx,by,color,1,11+kind,amount,detail);}

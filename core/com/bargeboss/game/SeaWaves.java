@@ -86,6 +86,25 @@ public final class SeaWaves {
         }
         return sum;
     }
+    /** Paired flow: preserve scalar component arithmetic while sharing phase and slope. */
+    static void flow(Game g,float x,float y,float tick,float[] out){
+        boolean montrose=g.montroseStage();
+        float exposure=montrose?exposure(x,y)*g.montroseWeather.waves(g):1;
+        float sx=0,sy=0;
+        if(exposure!=0)for(int i=0;i<2;i++){
+            float dx,dy,k,omega,amplitude;
+            if(montrose){dx=directionX(g,i);dy=directionY(g,i);k=K[i];omega=OMEGA[i];amplitude=AMPLITUDE[i]*exposure;}
+            else {float kx=i==0?.017f:-.013f,ky=i==0?.009f:.021f;
+                k=Physics.length(kx,ky);dx=-kx/k;dy=-ky/k;omega=(i==0?.048f:.031f)/Physics.DT;amplitude=i==0?.65f:.22f;}
+            float v=-dy*x+dx*y;
+            float phase=k*(dx*x+dy*y-(montrose?bend(v,i):0))-omega*tick*Physics.DT;
+            float h=amplitude*(float)StrictMath.sin(phase);
+            if(montrose){float slope=bendSlope(v,i),nx=dx+dy*slope,ny=dy-dx*slope,len=Physics.length(nx,ny);dx=nx/len;dy=ny/len;}
+            else h=-h;
+            sx+=h*omega*dx;sy+=h*omega*dy;
+        }
+        out[0]=sx;out[1]=sy;
+    }
     /** View-bounded crest strips use exactly the phase used by value(). Shared shore clip is active. */
     static void draw(Game g,Painter p){
         if(!g.montroseStage() || !(p instanceof RiverPainter))return;

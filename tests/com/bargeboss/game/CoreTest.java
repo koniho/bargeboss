@@ -147,7 +147,7 @@ public final class CoreTest {
         SurfaceLightingTest.run();
         LevelAssetsTest.run();
         TravelLiftTest.run();MontroseHauloutTest.run();MontroseTest.run();
-        MontroseRescueTest.run();MontroseCrewTest.run();MontroseWeatherTest.run();RacingBoatTest.run();
+        MontroseRescueTest.run();MontroseCrewTest.run();MontroseWeatherTest.run();WaterFlowTest.run();RacingBoatTest.run();
         SwimmerModelTest.run();
         MarinaReceiverTest.run();SceneryReceiverTest.run();
         DeveloperPanelTest.run();

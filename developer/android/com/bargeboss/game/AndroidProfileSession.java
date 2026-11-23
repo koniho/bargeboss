@@ -93,6 +93,7 @@ public final class AndroidProfileSession implements DeveloperHooks.Session {
             return;
         }
         ProfileScenario.prepare(root,scene,width,height);
+        root.activeGame().water.referenceSampling=activity.getIntent().getBooleanExtra("bb_reference_water",false);
         root.activeGame().settings.waterDetail=Math.max(0,Math.min(2,activity.getIntent().getIntExtra("bb_water_detail",2)));
         root.activeGame().settings.directWaterQuads=activity.getIntent().getBooleanExtra("bb_water_quads",true);
         root.activeGame().settings.resetWeather();root.activeGame().settings.adjustRain(rainLevel);root.activeGame().settings.adjustFog(fogLevel);root.activeGame().settings.adjustLightning(lightningLevel);
