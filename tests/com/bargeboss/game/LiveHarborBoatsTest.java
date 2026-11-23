@@ -26,17 +26,26 @@ public final class LiveHarborBoatsTest {
                 else check(p.fabric>0,"motorboats retain colored canopies");
             }
         }
+        for(int kind=0;kind<2;kind++)for(int heading=0;heading<32;heading++){
+            Body cruiser=new Body(10+kind,kind,0,0,heading*(float)Math.PI/16,false,true);
+            Probe p=new Probe();CruiserView.draw(g,new RiverPainter(p,g.layout.camera),cruiser);
+            check(p.faces>15 && p.boatSprites==0,"close towed cruisers use continuous geometry");
+        }
+        g.layout=Layout.focused(1333,600,0,0,.5f,666,300);Probe distant=new Probe();
+        CruiserView.draw(g,new RiverPainter(distant,g.layout.camera),new Body(10,0,0,0,0,false,true));
+        check(distant.boatSprites>0,"wide towed cruiser retains sprite LOD");
+        g.layout=Layout.focused(1333,600,0,0,3.1f,666,300);
         int tick=g.ticks;float x=g.mooredFleet.boats[0].x;
         int frame=Parity.frame(g);check(frame==Parity.frame(g) && g.ticks==tick && g.mooredFleet.boats[0].x==x,"render does not advance fleet");
         System.out.println("774 continuous live boat headings, normal lengths, sailboat canopy and bounded LOD checks passed");
     }
     private static final class Probe implements Painter {
-        long hash=1;int faces,fabric;
+        long hash=1;int faces,fabric,boatSprites;
         public void poly(float[] xy,int c){faces++;if(c==HarborBoatModel.FABRIC)fabric++;for(float v:xy){check(Float.isFinite(v),"finite projection");hash=hash*31+Float.floatToIntBits(v);}}
         public void rect(float x,float y,float w,float h,int c){}
         public void circle(float x,float y,float r,int c){}
         public void line(float x,float y,float xx,float yy,float w,int c){}
-        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){}
+        public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){if(a==SpriteAtlas.MOORED_BOATS)boatSprites++;}
         public void spriteBlend(int a,int f,int b,float x,float y,float w,float h,float r,float mix,float alpha){}
     }
     public static void main(String[] args){run();}

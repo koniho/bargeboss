@@ -6011,3 +6011,30 @@ launch restored after capture; screen timeout restored to300000ms.
   native screenshot for illuminated hulls and shore clipping. Installed Android.
 - Final day/dusk review copies refreshed in Photos/BargeBoss (MediaStore
   18148/18149). iOS hardware and Canvas fallback pixels were not validated.
+
+### 2026-11-23 — boat color parity and active cruiser geometry
+- Compared shared-rendered models with the painted tug/yacht at matched headings
+  and day/dusk profiles (docs/art-studies/live-boat-color). Found scenery grading
+  was imposing a blue cast on live vessels; replaced only vessel grading and
+  restored distinct ivory paint, tan decks and navy glass. Dynamic point lights
+  remain. No new textures, per-pixel raster preparation or geometry complexity.
+- Extracted reusable live hull draw; close rescue/haulout cruisers now use it,
+  with the existing size/distance sprite LOD. The separate 80-ft yacht remains
+  accepted sprite art pending a properly finished model. Added close/wide route
+  tests across cruiser headings and palette-preservation assertions.
+- Native measurements and validation follow after the build finishes.
+- Full shared/asset suite and Android encoder checks passed; replay
+  22a7ae77:2:1350. Added 64 close cruiser heading routes plus distant fallback
+  verification. All-heading shoreline regression: 1,756,523 production
+  hull/cargo pixels plus 38,121 training terrain pixels. Reviewed Android Vulkan
+  capture for palette, light reception and the live active cruiser.
+- Same-build device captures (180 samples, 120 warmup): 20261123-000743 live
+  draw p50/p95 17.513/18.511 ms; intervals 21.813/24.674 ms. 000828 with
+  exclusion512 (all live marina and active cruiser models disabled) draw
+  11.753/12.767 ms; intervals 16.641/19.880 ms. Live model rendering remains
+  material frame cost, not locked60; the difference includes all models, not
+  isolated color-grading or the one active cruiser. No CPU raster/texture builds
+  were introduced by the color pass. Record this as remaining optimization work.
+- Installed and launched Android; iOS hardware/Canvas fallback pixels untested.
+  Before/after review sheets saved in Photos/BargeBoss and MediaStore verified
+  at18150/18151. Canonical PNGs and reproduction tool are tracked in the repo.

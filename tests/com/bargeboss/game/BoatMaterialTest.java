@@ -9,6 +9,10 @@ public final class BoatMaterialTest {
         check((lit>>16&255)>(dark>>16&255)+20,"paint receives nearby warm lamps");
         int away=BoatMaterial.shade(LightingProfile.DUSK,lights,BoatMaterial.PAINT,albedo,0,0,5,-1,0,0,1);
         check((lit>>16&255)>(away>>16&255),"real geometry orientation controls receiver light");
+        int cream=BoatMaterial.ambient(LightingProfile.DUSK,0xffede5d3);
+        check((cream>>16&255)>(cream&255),"dusk retains warm ivory rather than scenery blue");
+        int glass=BoatMaterial.ambient(LightingProfile.DUSK,0xff17303d);
+        check((cream>>16&255)>(glass>>16&255)*4,"paint and glass retain distinct values");
         lights.count=0;
         int bottom=BoatMaterial.shade(LightingProfile.DAYLIGHT,lights,BoatMaterial.HULL,albedo,0,0,0,0,1,0,1);
         int top=BoatMaterial.shade(LightingProfile.DAYLIGHT,lights,BoatMaterial.HULL,albedo,0,0,3.5f,0,1,0,1);

@@ -77,11 +77,10 @@ public final class MooredBoats {
         if(detail<=.001f && live<=0)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         if(live>0){
-            LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=b.bimini;shade.alpha=live;shade.length=b.length;shade.width=b.width;
             float reach=b.length*.65f+6;
             float[] shore=ShoreOcclusion.region(g,c,wx-reach,wy-reach,wx+reach,wy+reach,c.screenY(wx,wy),p.supportsUnionClips());
             if(shore.length>0)p.pushClipOutside(shore);
-            try{HarborBoatModel.get(b.kind).rigid.draw(g,p,wx,wy,heave,angle,f==null?0:f.pitch,f==null?0:f.roll,shade);}
+            try{drawHull(g,p,b.kind,b.bimini,wx,wy,heave,angle,f==null?0:f.pitch,f==null?0:f.roll,live,lights);}
             finally{if(shore.length>0)p.popClip();}
         }
         if(live>=.999f)return;
@@ -94,6 +93,10 @@ public final class MooredBoats {
     static float liveWeight(Game g,float length,float x,float y){
         if((g.renderExclusions&RenderExclusions.LIVE_MARINA_BOATS)!=0)return 0;
         return SceneDetail.fade(length*g.layout.camera.scale,48,72)*(1-SceneDetail.fade(Physics.length(x-g.tug.x,y-g.tug.y),180,210));
+    }
+    static void drawHull(Game g,Painter p,int kind,int palette,float x,float y,float heave,float angle,float pitch,float roll,float alpha,MooredBoatLight.Lights lights){
+        LiveLight shade=LIVE_LIGHT.get();shade.profile=g.lighting();shade.lights=lights;shade.palette=palette;shade.alpha=alpha;shade.length=length(kind);shade.width=width(kind);
+        HarborBoatModel.get(kind).rigid.draw(g,p,x,y,heave,angle,pitch,roll,shade);
     }
     private static final ThreadLocal<LiveLight> LIVE_LIGHT=new ThreadLocal<LiveLight>(){protected LiveLight initialValue(){return new LiveLight();}};
     private static final class LiveLight implements ArticulatedModel.VertexLighting {
@@ -111,7 +114,7 @@ public final class MooredBoats {
         }
         public int shade(int ambient,int albedo,float x,float y,float z,float nx,float ny,float nz){
             if(albedo==HarborBoatModel.FABRIC)albedo=BiminiArt.color(palette);
-            int rgb=MarinaSurfaceLight.shade(profile,lights,albedo,x,y,z,nx,ny,nz);
+            int rgb=MarinaSurfaceLight.vessel(profile,lights,albedo,x,y,z,nx,ny,nz);
             return ((int)(255*alpha)<<24)|(rgb&0xffffff);
         }
     }

@@ -5,10 +5,16 @@ final class MarinaSurfaceLight {
     private MarinaSurfaceLight(){}
     static int shade(LightingProfile profile,MooredBoatLight.Lights lights,int albedo,
             float x,float y,float z,float nx,float ny,float nz){
+        return shade(profile,lights,albedo,x,y,z,nx,ny,nz,false);
+    }
+    static int vessel(LightingProfile profile,MooredBoatLight.Lights lights,int albedo,float x,float y,float z,float nx,float ny,float nz){
+        return shade(profile,lights,albedo,x,y,z,nx,ny,nz,true);
+    }
+    private static int shade(LightingProfile profile,MooredBoatLight.Lights lights,int albedo,float x,float y,float z,float nx,float ny,float nz,boolean vessel){
         float face=profile.face(nx,ny,nz);
         int shaded=SceneLighting.scale(albedo,Math.round(face*(profile.sunColor>>16&255)),
                 Math.round(face*(profile.sunColor>>8&255)),Math.round(face*(profile.sunColor&255)));
-        int ambient=profile.scenery(shaded);
+        int ambient=vessel?BoatMaterial.ambient(profile,shaded):profile.scenery(shaded);
         float red=0,green=0,blue=0;
         for(int i=0;i<lights.count;i++){
             float dx=lights.x[i]-x,dy=lights.y[i]-y,dz=lights.z[i]-z,d2=dx*dx+dy*dy+dz*dz;
