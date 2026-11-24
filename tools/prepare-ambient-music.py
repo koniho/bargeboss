@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Prepare the user-licensed soundtrack as portable PCM for all three hosts."""
+from argparse import ArgumentParser
 from pathlib import Path
 import hashlib
 import subprocess
 import wave
 
 root = Path(__file__).resolve().parents[1]
-source = root / 'docs/audio/sources/sergepavkinmusic/a-long-way-166385.mp3'
-target = root / 'assets/audio/a-long-way-v1.wav'
+parser = ArgumentParser(description=__doc__)
+parser.add_argument('source', type=Path, help='Privately held source MP3')
+source = parser.parse_args().source
+target = root / '.private/audio/a-long-way-v1.wav'
+target.parent.mkdir(parents=True, exist_ok=True)
 subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(source), '-af',
                 'afade=t=in:d=1,afade=t=out:st=271:d=2', '-ar', '44100', '-ac', '2',
                 '-c:a', 'pcm_s16le', str(target)], check=True)

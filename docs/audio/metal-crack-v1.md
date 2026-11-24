@@ -1,4 +1,4 @@
-# Tutmozis Metal Crack collisions
+# Archived Tutmozis Metal Crack collisions
 
 User-selected replacement for the Reitanna thunk, 2026-11-23.
 Source: Metal Crack by Tutmozis, Pixabay sound 606770.
@@ -8,8 +8,10 @@ https://pixabay.com/service/license-summary/
 Not CC0; not covered by the code license. Incorporated into the game, not offered
 as a standalone sound library.
 
-Original: `sources/tutmozis/metal-crack-606770.mp3`.
-Run `python3 tools/prepare-metal-crack.py` with ffmpeg to regenerate the derivatives.
+The original and generated variants are not in the current public tree. Public
+builds use the existing Reitanna CC0 collision thunks. With permission to use a
+privately held source, run `python3 tools/prepare-metal-crack.py /path/to/original.mp3`
+with ffmpeg to regenerate the archived variants under ignored `.private/audio/`.
 Arithmetic stereo averaging avoids downmix gain/clipping. Trim the pre-impact
 lead-in and keep only source seconds 0.058975–0.250000, before the renewed
 impact swell around 0.26 s. Fade the final 40 ms of that source interval before
@@ -21,7 +23,7 @@ The strength tiers remain −6 / −9 / −12 semitones (each six semitones belo
 These apply to tug-to-tug, other vessels and scenery contacts. Slot 5 also maps
 to the medium variant for compatibility. Radio priority, cooldown, Sound
 mute/level and engine ducking are unchanged; ambient music is unaffected.
-The previous thunk sources/derivatives remain archived but are no longer selected.
+These notes describe the prior Metal Crack configuration, not the active asset selection.
 
 Source SHA256: 57fdb5d116be9474a3519f7f769e502e871765c2483815a11ecc4d5f3b581129
 
@@ -36,7 +38,7 @@ cut before the second swell. Generator validates format, duration against the
 cut/pitch ratio, nonzero energy, unclipped peaks and zero-valued edges. This is
 waveform validation, not a listening audition.
 
-Validation for this revision: full shared and asset checks, Android build and
+Historical validation for this revision: full shared and asset checks, Android build and
 native encoding checks passed (replay 310d2a08:2:1350). Updated APK installed on
 the development phone and launched. Device listening and iOS playback have not
 been auditioned for this revision.

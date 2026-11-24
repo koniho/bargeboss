@@ -25,3 +25,9 @@ fastlane/README.md
 *.mobileprovision
 .env*
 .private/
+
+# Archived audio is prepared privately, not committed to the public tree.
+/docs/audio/sources/sergepavkinmusic/
+/docs/audio/sources/tutmozis/
+/assets/audio/a-long-way-v1.wav
+/assets/audio/collision-metal-crack-*-v1.wav
