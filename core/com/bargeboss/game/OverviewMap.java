@@ -4,9 +4,7 @@ package com.bargeboss.game;
 public final class OverviewMap {
     static final float WIDTH=184,HEIGHT=184,EDGE=.5f;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
-    private static final Chart[] CHARTS={new Chart(0),new Chart(1),new Chart(2),new Chart(3)};
-    /** Built on first Chicago use so other stages never load its survey. */
-    private static final class ChicagoChart {static final Chart DATA=new Chart(4);}
+    private static final Chart[] CHARTS={new Chart(0),new Chart(1)};
     // Never shrink below the full chart fit; preserve the world's aspect ratio.
     static final float MIN_ZOOM=1,MAX_ZOOM=4;
     private static final float[] OUTSIDE=outside();
@@ -66,7 +64,8 @@ public final class OverviewMap {
     }
     public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
-    static Chart chart(Game g){return g.chicagoStage()?ChicagoChart.DATA:CHARTS[g.montroseStage()?1:g.indianaStage()?2:g.calumetStage()?3:0];}
+    /** Survey charts are built on first use by their own level, never for other stages. */
+    static Chart chart(Game g){SurveyLevel level=g.level();return level!=null?level.chart():CHARTS[g.montroseStage()?1:0];}
     static float pulse(int tick){return .65f+.35f*(float)StrictMath.sin(tick*StrictMath.PI/60);}
     public static void draw(Game g,Painter p){
         if(!visible(g))return;
@@ -109,17 +108,18 @@ public final class OverviewMap {
     }
     private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wx,wy),y=mapY(g,wx,wy);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
-        final int stage;final float minX,maxX,minY,maxY,scale;
+        final int stage;final float minX,maxX,minY,maxY,scale;final SurveyLevel survey;
         final float[][] water,docks;
         final float[] navigableHoles,boundary;
-        Chart(int stage){
-            this.stage=stage;
-            float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:stage==2?new float[][]{IndianaHarbor.COAST}:stage==3?new float[][]{CalumetRiver.COAST}:stage==4?new float[][]{ChicagoRiver.COAST}:new float[][]{TrainingChannel.WATER_BOUNDARY};
+        Chart(int stage){this(stage,null);}
+        /** Geographic level chart; stage 10+id keeps layer keys unique per level. */
+        Chart(SurveyLevel level){this(10+level.id,level);}
+        private Chart(int stage,SurveyLevel survey){
+            this.stage=stage;this.survey=survey;
+            float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:survey!=null?new float[][]{survey.coast()}:new float[][]{TrainingChannel.WATER_BOUNDARY};
             // The tutorial includes its authored scenery margin; geographic levels retain play bounds.
             float[] bounds=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):
-                    stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:
-                    stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:
-                    stage==4?new float[]{ChicagoRiver.MIN_X,ChicagoRiver.MIN_Y,ChicagoRiver.MAX_X,ChicagoRiver.MAX_Y}:
+                    survey!=null?new float[]{survey.minX(),survey.minY(),survey.maxX(),survey.maxY()}:
                     TrainingScenery.bounds();
             minX=bounds[0];minY=bounds[1];maxX=bounds[2];maxY=bounds[3];
             scale=Math.min((WIDTH-2*EDGE)/(maxY-minY),(HEIGHT-2*EDGE)/(maxX-minX));
@@ -153,9 +153,7 @@ public final class OverviewMap {
                 for(float xx=minX;xx<maxX;xx+=256)for(float yy=minY;yy<maxY;yy+=256)
                     MontroseHarbor.paintWater(collector,new float[]{xx,yy,Math.min(xx+256,maxX),yy,Math.min(xx+256,maxX),Math.min(yy+256,maxY),xx,Math.min(yy+256,maxY)},0xffffffff);
             }
-            else if(stage==2)IndianaHarbor.paintWater(collector,region,0xffffffff);
-            else if(stage==3)CalumetRiver.paintWater(collector,region,0xffffffff);
-            else if(stage==4)ChicagoRiver.paintWater(collector,region,0xffffffff);
+            else if(survey!=null)survey.paintWater(collector,region,0xffffffff);
             else for(float[] triangle:PolygonWater.triangles(TrainingChannel.WATER_BOUNDARY))collector.poly(triangle,0xffffffff);
             int count=0;for(float[] q:pieces)count+=(q.length/2-2)*6;
             float[] triangles=new float[count];int at=0;

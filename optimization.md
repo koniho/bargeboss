@@ -6509,3 +6509,55 @@ existing surveyed stages, not Chicago-specific, and remain open.
   per-face screen cull and speck LOD disabled the old signature is exact.
 - `./check.sh` passes. Desktop review frames re-rendered (`out/chicago/`, including new
   `wolf-tug` / `downtown-tug`); device frames reviewed for masks, waves and fades.
+
+## 2026-11-24: Survey levels unified behind `SurveyLevel` (#26)
+
+- `SurveyLevel` (Calumet, Indiana, Chicago in lazy holders) owns geometry, bounds, markers,
+  bridges, landmarks with screen boxes, lights, shoreline segments, overview chart, ground
+  palette and level obstacles. `Game.level()` is the only stage-to-geography mapping; shared
+  render/geography code dispatches through it. `SurveyLevelView` is the single survey draw
+  pipeline; `SurveyGround` caches land-cover cells per tier (survey cell 64/128/256, same
+  650-cell stepping and 256-unit road cut-off as before), pre-triangulated area fills and
+  lazily land-clipped streets. Small play boxes (Chicago) are fully warmed at stage entry;
+  large ones warm the start view. `LevelContractTest` (1,358 assertions, 3 levels) checks
+  preparation, landmark boxes, shared-ground drawing, profiling fixtures and a source
+  allowlist for stage-name checks (gameplay files only). Rule added to `AGENTS.md`.
+- Inherited by all levels: bridge slice skipping (every landmark now has a box), shared
+  ground cache (Indiana/Calumet no longer re-clip land and roads per frame), survey wave
+  preclip now includes Calumet.
+- Canonical replay f74bb9ae:2:1350 (was 21c79fb2). Bisected: excluding Calumet from the wave
+  preclip restores 21c79fb2 exactly; draw commands only.
+- Android phone (Vulkan), draw p50/p95 ms, 60 warmup excluded; before = same fixtures on the
+  pre-refactor build earlier today where measured:
+
+| Fixture | Before | After | After interval |
+| --- | --- | --- | --- |
+| calumet-bridge | 9.92 / 16.53 | 8.99 / 12.86 | 17.67 / 55.17 |
+| calumet-basin | — | 7.72 / 10.68 | 17.72 / 56.21 |
+| indiana-harbor | — | 5.29 / 7.22 | 17.59 / 55.39 |
+| indiana-hick | 8.54 / 12.06 | 6.75 / 9.48 | 16.96 / 56.85 |
+| chicago-start | 9.82 / 14.26 | 9.99 / 14.38 | 19.21 / 59.28 |
+| chicago-downtown | 11.72 / 15.84 | 11.49 / 14.62 | 18.44 / 58.83 |
+| chicago-wolf | 10.57 / 14.13 | 10.81 / 14.17 | 18.85 / 60.20 |
+
+  A first after-run without stage-entry warm-up showed chicago-wolf draw p95 60.55 ms
+  (lazy cell clipping while the camera moved); full warm-up for small play boxes fixed it.
+  Device frames for Calumet and Indiana reviewed: ground, roads, seawalls and waves unchanged.
+- iOS simulator (iPhone 17 Pro, iOS 26.5, Release, Metal, `--replay`, 120 warmup / 360
+  frames), draw p50/p95 ms; before = commit 5cd3db8, after = this change, same session:
+
+| Fixture | Before | After | After interval p50/p95 |
+| --- | --- | --- | --- |
+| calumet-bridge | 10.45 / 11.38 | 9.65 / 10.38 | 16.67 / 16.71 |
+| calumet-basin | 8.55 / 9.25 | 6.32 / 6.60 | 16.66 / 16.70 |
+| indiana-harbor | 5.05 / 5.42 | 5.36 / 5.65 | 16.67 / 16.70 |
+| indiana-hick | 7.99 / 8.60 | 8.02 / 8.65 | 16.67 / 16.70 |
+| chicago-start | 35.38 / 36.87 | 34.94 / 37.07 | 50.00 / 50.04 |
+| chicago-downtown | 11.12 / 11.98 | 10.74 / 11.60 | 16.67 / 17.09 |
+| chicago-wolf | 22.07 / 23.03 | 21.51 / 24.45 | 33.31 / 40.32 |
+
+  Outputs: `out/ios-profile/{before,after}-204314-<fixture>/`. An earlier iOS pass was
+  discarded: a system Apple Account dialog covered the app. Open, pre-existing and
+  iOS-specific: chicago-start (~35 ms, 20 FPS) and chicago-wolf (~22 ms) are slow on the
+  simulator in both builds while the phone draws them in ~10 ms; needs an iOS trace.
+  Simulator timing does not prove device headroom.

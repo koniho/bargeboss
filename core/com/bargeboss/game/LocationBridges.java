@@ -54,7 +54,7 @@ final class LocationBridges {
     private static LandmarkBridge ind(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,IndianaHarbor.north(lat),IndianaHarbor.east(lon),yaw,type,style,width,LandmarkBridge.INDIANA);}
     static LandmarkBridge[] calumet(){return Calumet.ALL;}
     static LandmarkBridge[] indiana(){return Indiana.ALL;}
-    static LandmarkBridge[] forGame(Game g){return g.tutorial!=null?TutorialCanalBridge.bridges():g.calumetStage()?calumet():g.indianaStage()?indiana():g.chicagoStage()?chicago():new LandmarkBridge[0];}
+    static LandmarkBridge[] forGame(Game g){return g.tutorial!=null?TutorialCanalBridge.bridges():g.level()!=null?g.level().bridges():new LandmarkBridge[0];}
     static void shadows(Game g,Painter p){Painter world=new RiverPainter(p,g.layout.camera);for(int i=0;i<g.passages.bridges.length;i++)g.passages.bridges[i].shadow(g,world,g.passages.amount(i));}
     static void prepare(LandmarkBridge[] bridges){for(LandmarkBridge b:bridges)b.prepare();}
 }

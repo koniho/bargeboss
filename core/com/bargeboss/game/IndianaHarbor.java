@@ -24,7 +24,6 @@ public final class IndianaHarbor {
             {north(41.6672),east(-87.4419),-2.50f,0},{north(41.66787),east(-87.44279),-2.50f,1}};
     }
     public static void setup(Game g){
-        IndianaView.prepare();
         g.tug.x=START_X;g.tug.y=START_Y;g.tug.angle=START_ANGLE;
         g.cargo[0]=new Body(g.nextId++,0,START_X-105*(float)StrictMath.cos(START_ANGLE),START_Y-105*(float)StrictMath.sin(START_ANGLE),START_ANGLE);
         g.layout=Layout.focused(g.layout.width,g.layout.height,START_X,START_Y,Game.TRANSIT_ZOOM,g.layout.width*.5f,g.layout.height*.52f);

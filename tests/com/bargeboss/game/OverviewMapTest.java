@@ -16,12 +16,12 @@ final class OverviewMapTest {
     static int arrows(Game g,Ink p){int count=0;WorldArrows.begin(g);try{while(WorldArrows.pending()){WorldArrows.draw(p);count++;}}finally{WorldArrows.end();}return count;}
     static void run(){
         Game g=new Game();ReplayInput.controlFixture(g);
-        for(int stage=0;stage<4;stage++){
-            OverviewMap.Chart c=new OverviewMap.Chart(stage);float x=(c.minX+c.maxX)*.5f,y=(c.minY+c.maxY)*.5f;
+        OverviewMap.Chart[] charts={new OverviewMap.Chart(0),new OverviewMap.Chart(1),SurveyLevel.indiana().chart(),SurveyLevel.calumet().chart(),SurveyLevel.chicago().chart()};
+        for(OverviewMap.Chart c:charts){int stage=c.stage;float x=(c.minX+c.maxX)*.5f,y=(c.minY+c.maxY)*.5f;
             check(c.stage==1?c.y(x+10)>c.y(x):c.y(x+10)<c.y(x),"isometric upper-right becomes map up");
             check(c.x(y+10)>c.x(y),"isometric lower-right becomes map right");
             check(Math.abs((c.x(y+10)-c.x(y))-Math.abs(c.y(x)-c.y(x+10)))<.001f,"overhead projection has equal axis scale");
-            float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):stage==2?new float[]{IndianaHarbor.MIN_X,IndianaHarbor.MIN_Y,IndianaHarbor.MAX_X,IndianaHarbor.MAX_Y}:stage==3?new float[]{CalumetRiver.MIN_X,CalumetRiver.MIN_Y,CalumetRiver.MAX_X,CalumetRiver.MAX_Y}:TrainingScenery.bounds();
+            float[] actual=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):c.survey!=null?new float[]{c.survey.minX(),c.survey.minY(),c.survey.maxX(),c.survey.maxY()}:TrainingScenery.bounds();
             check(c.minX==actual[0] && c.minY==actual[1] && c.maxX==actual[2] && c.maxY==actual[3],"overview uses authoritative scenery coverage for the tutorial");
             check(c.boundary[0]==c.x(c.stage==1?c.minX:c.minY) && c.boundary[1]==c.y(c.stage==1?c.minY:c.maxX) && c.boundary[4]==c.x(c.stage==1?c.maxX:c.maxY) && c.boundary[5]==c.y(c.stage==1?c.maxY:c.minX),"border and world corners share one projection");
             check(c.boundary[0]==OverviewMap.EDGE && c.boundary[1]==OverviewMap.EDGE,"top-left play corner is aligned to viewport stroke");

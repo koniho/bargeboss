@@ -35,7 +35,7 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
         if(g.montroseStage()){
             for(int i=0;i<MontroseHarbor.PEDESTALS.length;i++){float[] p=MontroseHarbor.PEDESTALS[i];add(p[0],p[1],MarinaPedestals.LAMP_Z,90,.16f*MarinaPedestals.brightness(g,i),0xffffd68d);}
             for(int i=0;i<3;i++)add(MontroseBeaconArt.x(i),MontroseBeaconArt.y(i),MontroseBeaconArt.lampZ(i),MontroseBeaconArt.LIGHT_RADIUS,MontroseBeaconArt.LIGHT_ENERGY*MontroseBeaconArt.power(tick),MontroseBeaconArt.color(i));
-        }else if(!g.calumetStage() && !g.surveyStage()){
+        }else if(!g.surveyStage()){
             for(int side=0;side<2;side++)for(int i=HarborAtmosphere.firstLamp(g);i<=5;i++){
                 float px=HarborAtmosphere.lampBank(side),py=HarborAtmosphere.lampY(i);
                 if(g.tutorial!=null && TrainingChannel.contains(px,py))continue;
@@ -49,8 +49,7 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
         for(int i=0;i<g.passages.bridges.length;i++)g.passages.bridges[i].lights(g,this,g.passages.amount(i),g.passages.passable(i));
         DockView.lights(g,this);
         if(g.montroseStage())MontroseBeach.lights(this);
-        if(g.indianaStage())IndianaView.lights(this);
-        if(g.chicagoStage())ChicagoView.lights(g,this);
+        SurveyLevel level=g.level();if(level!=null)level.lights(g,this);
         if(g.bridgeStage())BridgeView.lights(g,this);
         if(g.lockStage())LockView.lights(g,this);
         if(g.tutorial!=null){

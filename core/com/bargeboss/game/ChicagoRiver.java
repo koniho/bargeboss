@@ -34,7 +34,6 @@ public final class ChicagoRiver {
         return !g.chicago.lock.blocksLine(x,y,xx,yy);
     }
     public static void setup(Game g){
-        ChicagoView.prepare();
         g.tug.x=START_X;g.tug.y=START_Y;g.tug.angle=START_ANGLE;
         g.chicago.setup(g);
         g.layout=Layout.focused(g.layout.width,g.layout.height,START_X,START_Y,Game.TRANSIT_ZOOM,g.layout.width*.5f,g.layout.height*.52f);

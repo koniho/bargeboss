@@ -163,6 +163,7 @@ public final class CoreTest {
         CalumetMapTest.run();
         IndianaHarborTest.run();
         ChicagoRiverTest.run();
+        LevelContractTest.run();
         MarinaArtTest.run();
         MarinaLayerPreparationTest.run();
         MarinaPedestalsTest.run();
@@ -203,7 +204,10 @@ public final class CoreTest {
         // NEXT button then moved 30 units left to leave a gap before SET SAIL (draw/hit box only).
         // Rigid faces are now culled per face when off screen or under 1.5 px in both axes
         // (draw commands only). Bisected: with both culls disabled cb5ec116 is exact.
-        check(Parity.signature().equals("21c79fb2:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // SurveyLevel unification (#26): Calumet now preclips wave crests under the shared shore
+        // mask like Indiana/Chicago (draw commands only). Bisected: excluding Calumet from that
+        // preclip restores 21c79fb2 exactly; ground, landmarks and physics are unchanged.
+        check(Parity.signature().equals("f74bb9ae:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

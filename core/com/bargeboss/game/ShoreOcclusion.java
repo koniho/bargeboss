@@ -19,9 +19,8 @@ public final class ShoreOcclusion {
     }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
-        if(g.calumetStage())return CalumetWaterGeometry.shore(c,left,top,right,bottom,depth,union);
-        if(g.indianaStage())return IndianaHarbor.geometry().shore(c,left,top,right,bottom,depth,union);
-        if(g.chicagoStage())return ChicagoRiver.geometry().shore(c,left,top,right,bottom,depth,union);
+        SurveyLevel level=g.level();
+        if(level!=null)return level.geometry().shore(c,left,top,right,bottom,depth,union);
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
         return industrial(c,left,top,right,bottom,depth,null);
     }

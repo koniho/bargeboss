@@ -23,10 +23,7 @@ public final class NavigationLights {
     private static final Entrance[] INDIANA={new Entrance("INDIANA OUTER HARBOR",600,-890,0,1,165),new Entrance("SHIP CANAL",375,210,0,1,88)};
     private static final Entrance[] LOCAL={new Entrance("HARBOR ENTRANCE",300,Physics.BOTTOM-45,0,-1,120)};
     private static final Entrance[] TRANSIT={LOCAL[0],new Entrance("UPSTREAM HARBOR",300,-280,0,-1,20)};
-    private static final class RiverMarks {static final Entrance[] ENTRANCES=fromMarkers(CalumetRiver.MARKERS);}
-    private static final class IndianaMarks {static final Entrance[] ENTRANCES=fromMarkers(IndianaHarbor.MARKERS);}
-    private static final class ChicagoMarks {static final Entrance[] ENTRANCES=fromMarkers(ChicagoRiver.MARKERS);}
-    private static Entrance[] fromMarkers(float[][] marks){Entrance[] out=new Entrance[marks.length/2];
+    static Entrance[] fromMarkers(float[][] marks){Entrance[] out=new Entrance[marks.length/2];
         for(int i=0;i<out.length;i++){
             float[] a=marks[i*2],b=marks[i*2+1],red=a[3]>0?a:b,green=a[3]>0?b:a;
             float length=Physics.length(red[0]-green[0],red[1]-green[1]);
@@ -34,10 +31,10 @@ public final class NavigationLights {
                     (red[1]-green[1])/length,-(red[0]-green[0])/length,length*.5f);
         }return out;
     }
-    private static float[][] markers(Game g){return g.calumetStage()?CalumetRiver.MARKERS:g.indianaStage()?IndianaHarbor.MARKERS:g.chicagoStage()?ChicagoRiver.MARKERS:null;}
-    private static boolean surveyed(Game g){return g.calumetStage() || g.surveyStage();}
+    private static float[][] markers(Game g){return g.level().markers();}
+    private static boolean surveyed(Game g){return g.surveyStage();}
     private NavigationLights(){}
-    public static Entrance[] entrances(Game g){return g.calumetStage()?RiverMarks.ENTRANCES:g.indianaStage()?IndianaMarks.ENTRANCES:g.chicagoStage()?ChicagoMarks.ENTRANCES:g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
+    public static Entrance[] entrances(Game g){SurveyLevel level=g.level();return level!=null?level.entrances():g.montroseStage()?MARINA:g.tutorial!=null?PRACTICE:g.lockStage()?TRANSIT:LOCAL;}
     /** One single flash every two seconds; long dark interval preserves the marine rhythm. */
     public static float flash(int ticks,int phase){return flash(ticks,phase,120);}
     static float flash(int ticks,int phase,int period){

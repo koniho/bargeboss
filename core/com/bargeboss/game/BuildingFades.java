@@ -25,7 +25,7 @@ public final class BuildingFades {
     }
     static float approach(float current,float target){return current+Physics.clamp(target-current,-OUT_STEP,IN_STEP);}
     public void step(Game g) {
-        if(g.montroseStage() || g.calumetStage() || g.surveyStage())return; // Set-back marina vegetation never overlaps water; no building queries.
+        if(g.montroseStage() || g.surveyStage())return; // Set-back marina vegetation never overlaps water; no building queries.
         for(Fade f:active)f.target=1;
         SceneryOcclusion scene=SceneryOcclusion.snapshot(g);
         if(!g.montroseStage()) {

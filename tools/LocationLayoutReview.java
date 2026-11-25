@@ -18,7 +18,7 @@ public final class LocationLayoutReview {
  }
  static void capture(Game g,String name,String title)throws Exception{
   BufferedImage im=new BufferedImage(W,H,BufferedImage.TYPE_INT_RGB);Graphics2D graphics=im.createGraphics();graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-  Painter p=new DesktopPainter(graphics);p.beginFrame();if(g.calumetStage())CalumetRiverView.draw(g,p);else IndianaView.draw(g,p);
+  Painter p=new DesktopPainter(graphics);p.beginFrame();SurveyLevelView.draw(g,p,g.level());
   p.rect(0,0,W,80,0xe30c161e);Lettering.center(p,title,W*.5f,35,20,VisualStyle.CREAM);
   p.rect(0,H-76,W,76,0xe30c161e);Lettering.center(p,"LAYOUT FIRST / GRASS / CONCRETE / WORK YARDS / RAIL / BRIDGES",W*.5f,H-46,13,VisualStyle.CREAM);
   float x=W-120,y=140;p.line(x,y,x+48,y-28,3,0xffd2b968);p.line(x+48,y-28,x+32,y-25,3,0xffd2b968);p.line(x+48,y-28,x+39,y-15,3,0xffd2b968);Lettering.center(p,"N",x+54,y-44,16,0xffd2b968);

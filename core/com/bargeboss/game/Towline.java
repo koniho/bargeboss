@@ -37,9 +37,7 @@ public final class Towline {
     public static boolean clear(Game g,float x,float y,float xx,float yy) {
         if(g.passages!=null && g.passages.blocksLine(x,y,xx,yy))return false;
         if(g.hasBridge() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))return false;
-        if(g.calumetStage())return CalumetRiver.clear(x,y,xx,yy,3);
-        if(g.indianaStage())return IndianaHarbor.clear(x,y,xx,yy);
-        if(g.chicagoStage())return ChicagoRiver.clear(g,x,y,xx,yy);
+        SurveyLevel level=g.level();if(level!=null)return level.clear(g,x,y,xx,yy);
         if(g.montroseStage())return MontroseHarbor.clear(x,y,xx,yy);
         if(g.lockStage() && g.lock.blocksLine(x,y,xx,yy))return false;
         if(!g.montroseStage()) {

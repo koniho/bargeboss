@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
 public final class OverviewMapPixelTest {
     private static void groupOpacity(){
         int ink=0;
-        for(int stage=0;stage<4;stage++){
-            OverviewMap.Chart chart=new OverviewMap.Chart(stage);
+        for(int stage=0;stage<5;stage++){
+            OverviewMap.Chart chart=chart(stage);
             BufferedImage image=new BufferedImage((int)chart.width()*2,(int)chart.height()*2,BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D g=image.createGraphics();g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             DesktopPainter p=new DesktopPainter(g);p.beginFrame();p.layer(chart,0,0,2,.53f);g.dispose();
@@ -21,9 +21,10 @@ public final class OverviewMapPixelTest {
         }
         System.out.println(ink+" outline pixels checked: joints never exceed group opacity");
     }
+    /** 0 training, 1 Montrose, then each survey level's own chart. */
+    private static OverviewMap.Chart chart(int stage){return stage<2?new OverviewMap.Chart(stage):(stage==2?SurveyLevel.indiana():stage==3?SurveyLevel.calumet():SurveyLevel.chicago()).chart();}
     private static boolean navigable(int stage,float x,float y){
-        return stage==0?TrainingChannel.contains(x,y):stage==1?MontroseHarbor.contains(x,y):
-                stage==2?IndianaHarbor.contains(x,y):CalumetRiver.contains(x,y);
+        return stage==0?TrainingChannel.contains(x,y):stage==1?MontroseHarbor.contains(x,y):chart(stage).survey.contains(x,y);
     }
     private static boolean nearContour(float[][] paths,float x,float y){
         for(float[] q:paths)for(int i=0;i<q.length;i+=2){int j=(i+2)%q.length;
@@ -34,9 +35,9 @@ public final class OverviewMapPixelTest {
     }
     private static void invertedFill(){
         int checked=0;
-        for(int stage=0;stage<4;stage++){
+        for(int stage=0;stage<5;stage++){
             long start=System.nanoTime();
-            OverviewMap.Chart chart=new OverviewMap.Chart(stage);
+            OverviewMap.Chart chart=chart(stage);
             long buildNanos=System.nanoTime()-start;
             BufferedImage image=new BufferedImage(736,736,BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics=image.createGraphics();graphics.scale(4,4);

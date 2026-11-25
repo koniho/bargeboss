@@ -5,7 +5,7 @@ public final class IndianaView {
     private static final int CONCRETE=0xff8b7870,STEEL=0xff79615c,RUST=0xffa56848;
     private static final Landmark[] LANDMARKS=landmarks();
     private IndianaView(){}
-    static void prepare(){for(Landmark a:LANDMARKS)a.model.prepare(a.pose);LocationBridges.prepare(LocationBridges.indiana());}
+    static void prepare(){for(Landmark a:LANDMARKS)a.model.prepare(a.pose);}
     private static final class Landmark {
         final float x,y;final int type;final float[] smoke;final ArticulatedModel model;final ArticulatedModel.Pose pose;
         Landmark(float x,float y,int type){this.x=x;this.y=y;this.type=type;model=model(x,y,type);pose=model.pose(type==3?1:0);smoke=pose.point(0,35,0,144);}
@@ -67,21 +67,15 @@ public final class IndianaView {
             if(l.type==2)for(int side=-1;side<=1;side+=2)for(int i=-2;i<=2;i++){float[] a=l.pose.point(0,i*10,side*24,49);out.add(a[0],a[1],a[2],65,.1f,0xffffc36d);}
         }
     }
-    static int count(Game g){return g.indianaStage()?LANDMARKS.length:0;}
+    static int count(){return LANDMARKS.length;}
+    /** Rigid model rectangle plus the mill smoke plume above it. */
+    static boolean box(Game g,int i,float[] out){Landmark a=LANDMARKS[i];if(!SurveyLevel.poseBox(g,a.pose,out))return false;
+        if(a.type==1){out[1]-=180*g.layout.camera.scale;out[0]-=40*g.layout.camera.scale;out[2]+=40*g.layout.camera.scale;}return true;}
     static float depth(Game g,int i){return g.layout.camera.screenY(LANDMARKS[i].x,LANDMARKS[i].y);}
     static void landmark(Game g,Painter p,int i){Landmark a=LANDMARKS[i];a.model.draw(g,p,a.pose);
         if(a.type==1 && HarborAtmosphere.visible(g,a.x,a.y,180*g.layout.camera.scale)){
             RiverCamera c=g.layout.camera;SceneryEffects.smoke(p,c.screenX(a.smoke[0],a.smoke[1]),c.screenY(a.smoke[0],a.smoke[1])-a.smoke[2]*ArticulatedModel.Z_SCALE*c.scale,4*c.scale,c.scale,.45f,g.visualTicks,a.x*.013f,true);
         }
-    }
-    public static void draw(Game g,Painter p){
-        p.rect(0,0,g.layout.width,g.layout.height,g.lighting()==LightingProfile.DUSK?0xff151b25:g.lighting().water);
-        WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
-        ShorelineView.water(g,p);LocationBridges.shadows(g,p);
-        IndianaShoreTiles.walls(g,p);IndianaShoreTiles.ground(g,p);
-        ShorelineView.walls(g,p);
-        VesselShoreLight.draw(g,p);
-        Renderer.river(g,new RiverPainter(p,g.layout.camera));
     }
     static void berth(Game g,Painter p){float x=IndianaHarbor.DOCK_X,y=IndianaHarbor.DOCK_Y;
         int color=SoftCue.animated(g,0x889ec8ae);

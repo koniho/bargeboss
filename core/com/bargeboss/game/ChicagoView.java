@@ -10,36 +10,31 @@ public final class ChicagoView {
     private static final class Models {
         static final ArticulatedModel.Rigid WHEEL=wheel(),SUPPORT=support(),GONDOLA=gondola();
         static final ArticulatedModel.Rigid[] LEAF=leaves();
-        /** Park polygons are concave; triangulate once, never during drawing. */
-        static final float[][][] PARKS=parks();
-        static final float[][] PARK_BOUNDS=parkBounds();
     }
-    /** Dry land clipped once per survey cell and street quads filtered against water once;
-     * frames only cull and project. Bounded by the fixed play box (about 380 cells). */
-    private static final class Ground {
-        static final float CELL=HarborPolygonGeometry.CELL;
-        static final int COL0=(int)StrictMath.floor(ChicagoRiver.MIN_X/CELL),ROW0=(int)StrictMath.floor(ChicagoRiver.MIN_Y/CELL);
-        static final int COLS=(int)StrictMath.floor(ChicagoRiver.MAX_X/CELL)-COL0+1,ROWS=(int)StrictMath.floor(ChicagoRiver.MAX_Y/CELL)-ROW0+1;
-        static final float[][][] DRY=dry();
-        static final float[][] ROADS;static final float[][] ROAD_BOUNDS;static final int[] ROAD_COLOR;
-        static {java.util.ArrayList<float[]> q=new java.util.ArrayList<float[]>();java.util.ArrayList<int[]> meta=new java.util.ArrayList<int[]>();
-            for(int n=0;n<ChicagoSurvey.ROADS.length;n++){float[] road=ChicagoSurvey.ROADS[n];int kind=ChicagoSurvey.ROAD_KIND[n];
-                float width=kind==0?34:kind==1?24:kind==2?16:9;int color=kind==0?AVENUE:kind==3?PLAZA:ROAD;
-                for(int i=2;i<road.length;i+=2){float x=road[i-2],y=road[i-1],xx=road[i],yy=road[i+1];
-                    if(ChicagoRiver.contains((x+xx)*.5f,(y+yy)*.5f))continue;
-                    float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy);if(len<.1f)continue;float nx=-dy/len*width*.5f,ny=dx/len*width*.5f;
-                    q.add(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny});meta.add(new int[]{color});}}
-            ROADS=q.toArray(new float[q.size()][]);ROAD_BOUNDS=new float[ROADS.length][];ROAD_COLOR=new int[ROADS.length];
-            for(int i=0;i<ROADS.length;i++){ROAD_BOUNDS[i]=PolygonWater.bounds(ROADS[i]);ROAD_COLOR[i]=meta.get(i)[0];}
-        }
-        private static float[][][] dry(){float[][][] out=new float[COLS*ROWS][][];HarborPolygonGeometry geo=ChicagoRiver.geometry();
-            for(int col=0;col<COLS;col++)for(int row=0;row<ROWS;row++){float l=(COL0+col)*CELL,t=(ROW0+row)*CELL;out[col*ROWS+row]=geo.dry(l,t,l+CELL,t+CELL);}
-            return out;}
+    /** Concrete city land, triangulated parks (concave, triangulated once) and streets for the
+     * shared survey ground cache. Street kinds: 0 avenue, 1-2 street, 3 plaza/pedestrian. */
+    static SurveyGround ground(){
+        final int LAND=0,GREEN=1,AVE=2,STREET=3,SQUARE=4;
+        java.util.ArrayList<float[]> quads=new java.util.ArrayList<float[]>();java.util.ArrayList<Integer> kinds=new java.util.ArrayList<Integer>();
+        for(int n=0;n<ChicagoSurvey.ROADS.length;n++){float[] road=ChicagoSurvey.ROADS[n];int kind=ChicagoSurvey.ROAD_KIND[n];
+            float width=kind==0?34:kind==1?24:kind==2?16:9;int style=kind==0?AVE:kind==3?SQUARE:STREET;
+            for(int i=2;i<road.length;i+=2){float x=road[i-2],y=road[i-1],xx=road[i],yy=road[i+1];
+                if(ChicagoRiver.contains((x+xx)*.5f,(y+yy)*.5f))continue;
+                float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy);if(len<.1f)continue;float nx=-dy/len*width*.5f,ny=dx/len*width*.5f;
+                quads.add(new float[]{x+nx,y+ny,xx+nx,yy+ny,xx-nx,yy-ny,x-nx,y-ny});kinds.add(style);}}
+        int[] roadKinds=new int[kinds.size()];for(int i=0;i<roadKinds.length;i++)roadKinds[i]=kinds.get(i);
+        float[][][] parks=new float[ChicagoSurvey.PARKS.length][][];int[] parkKinds=new int[parks.length];
+        for(int i=0;i<parks.length;i++){parks[i]=PolygonWater.triangles(ChicagoSurvey.PARKS[i]);parkKinds[i]=GREEN;}
+        final int[] colors={CONCRETE,PARK,AVENUE,ROAD,PLAZA};
+        return new SurveyGround(ChicagoRiver.geometry(),HarborPolygonGeometry.CELL,new SurveyGround.Style(){
+            public int cover(float x,float y){return LAND;}
+            public int color(int kind){return colors[kind];}
+            public int material(int kind){return kind==GREEN?-1:SurfaceMaterial.CONCRETE;}
+            public float wetness(int kind){return .12f;}
+        },quads.toArray(new float[quads.size()][]),roadKinds,parks,parkKinds);
     }
-    private static float[][][] parks(){float[][][] out=new float[ChicagoSurvey.PARKS.length][][];for(int i=0;i<out.length;i++)out[i]=PolygonWater.triangles(ChicagoSurvey.PARKS[i]);return out;}
-    private static float[][] parkBounds(){float[][] out=new float[ChicagoSurvey.PARKS.length][];for(int i=0;i<out.length;i++)out[i]=PolygonWater.bounds(ChicagoSurvey.PARKS[i]);return out;}
     private ChicagoView(){}
-    static void prepare(){ChicagoRiver.geometry();Models.WHEEL.fragmentCount();Models.PARKS.getClass();Ground.DRY.getClass();LocationBridges.prepare(LocationBridges.chicago());}
+    static void prepare(){Models.WHEEL.fragmentCount();Models.LEAF.getClass();}
     private static ArticulatedModel.Builder rigidRoot(){ArticulatedModel.Builder b=new ArticulatedModel.Builder();b.node("root",-1,0,0,0,0,0);return b;}
     private static ArticulatedModel.Rigid wheel(){ArticulatedModel.Builder b=rigidRoot();int steel=0xffd9dde0,led=0xff8fd4ff;
         int sides=36;
@@ -78,28 +73,16 @@ public final class ChicagoView {
             out[leaf]=b.build().rigid();}
         return out;
     }
-    public static void draw(Game g,Painter p){
-        p.rect(0,0,g.layout.width,g.layout.height,g.lighting()==LightingProfile.DUSK?0xff121820:g.lighting().water);
-        WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
-        ShorelineView.water(g,p);LocationBridges.shadows(g,p);
-        IndianaShoreTiles.walls(g,p,ChicagoRiver.COAST,ChicagoRiver.geometry());ground(g,p);
-        ShorelineView.walls(g,p);
-        VesselShoreLight.draw(g,p);
-        Renderer.river(g,new RiverPainter(p,g.layout.camera));
-    }
-    private static void ground(Game g,Painter p){float[] b=IndianaShoreTiles.visible(g);RiverCamera c=g.layout.camera;
-        int c0=Math.max(0,(int)StrictMath.floor(b[0]/Ground.CELL)-Ground.COL0),c1=Math.min(Ground.COLS-1,(int)StrictMath.floor(b[2]/Ground.CELL)-Ground.COL0);
-        int r0=Math.max(0,(int)StrictMath.floor(b[1]/Ground.CELL)-Ground.ROW0),r1=Math.min(Ground.ROWS-1,(int)StrictMath.floor(b[3]/Ground.CELL)-Ground.ROW0);
-        for(int col=c0;col<=c1;col++)for(int row=r0;row<=r1;row++)for(float[] dry:Ground.DRY[col*Ground.ROWS+row])surface(g,p,dry,CONCRETE,SurfaceMaterial.CONCRETE);
-        for(int i=0;i<Models.PARKS.length;i++){float[] box=Models.PARK_BOUNDS[i];if(box[2]<b[0] || box[0]>b[2] || box[3]<b[1] || box[1]>b[3])continue;
-            for(float[] tri:Models.PARKS[i])surface(g,p,tri,PARK,-1);}
-        if(c.scale<.35f)return;
-        for(int i=0;i<Ground.ROADS.length;i++){float[] box=Ground.ROAD_BOUNDS[i];if(box[2]<b[0] || box[0]>b[2] || box[3]<b[1] || box[1]>b[3])continue;
-            surface(g,p,Ground.ROADS[i],Ground.ROAD_COLOR[i],SurfaceMaterial.CONCRETE);}
-    }
-    private static void surface(Game g,Painter p,float[] world,int color,int material){float[] q=new float[world.length];RiverCamera c=g.layout.camera;
-        for(int i=0;i<world.length;i+=2){q[i]=c.screenX(world[i],world[i+1]);q[i+1]=c.screenY(world[i],world[i+1])-GroundArt.LAND_RISE*c.scale;}
-        if(material<0)p.poly(q,p.lighting().scenery(color));else p.surfacePolygon(q,world,material,color,.12f);
+    /** Conservative screen rectangles: towers from their extrusion, the wheel from hub and
+     * rim, lock leaves from hinge/tip, fires from plume height. */
+    static boolean box(Game g,int i,float[] out){RiverCamera c=g.layout.camera;
+        if(i<WHEEL){ChicagoCity.screenBox(g,i,out);return true;}
+        float x,y,reach,up;
+        if(i==WHEEL){x=ChicagoRiver.WHEEL_X;y=ChicagoRiver.WHEEL_Y;reach=(RADIUS+20)*c.scale;up=(GroundArt.LAND_RISE+(HUB+RADIUS+12)*ArticulatedModel.Z_SCALE)*c.scale;}
+        else if(i<FIRES){HarborLock lock=g.chicago.lock;int leaf=i-LEAVES;float ax=c.screenX(lock.leafX(leaf),lock.leafY(leaf)),ay=c.screenY(lock.leafX(leaf),lock.leafY(leaf)),bx=c.screenX(lock.tipX(leaf),lock.tipY(leaf)),by=c.screenY(lock.tipX(leaf),lock.tipY(leaf)),pad=24*c.scale;
+            out[0]=Math.min(ax,bx)-pad;out[2]=Math.max(ax,bx)+pad;out[1]=Math.min(ay,by)-(GroundArt.LAND_RISE+30)*c.scale;out[3]=Math.max(ay,by)+pad;return true;}
+        else{int pile=i-FIRES;x=ChicagoFire.x(pile);y=ChicagoFire.y(pile);reach=60*c.scale;up=(GroundArt.LAND_RISE+260)*c.scale;}
+        float sx=c.screenX(x,y),sy=c.screenY(x,y);out[0]=sx-reach;out[2]=sx+reach;out[1]=sy-up;out[3]=sy+reach;return true;
     }
     /** Visible landmark ids in ground-depth order; static towers are presorted offline. */
     static int[] ordered(Game g){int[] ids=new int[COUNT];int n=0;

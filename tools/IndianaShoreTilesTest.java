@@ -6,7 +6,7 @@ public final class IndianaShoreTilesTest {
   for(String row:IndianaSurvey.COVER){if(row.length()!=IndianaSurvey.COLS)throw new AssertionError("ragged cover");for(int i=0;i<row.length();i++){int kind=row.charAt(i)-'0';if(kind<0||kind>6)throw new AssertionError("invalid cover");kinds[kind]=true;checks++;}}
   for(int kind:new int[]{0,1,2,3,4,5})if(!kinds[kind])throw new AssertionError("missing shore material "+kind);
   Game g=new Game();g.challengeId=Challenges.INDIANA;g.reset();
-  for(float[] center:IndianaHarbor.ROUTE){g.layout=Layout.focused(960,600,center[0],center[1],1,480,300);Receiver p=new Receiver(g);IndianaShoreTiles.ground(g,p);checks+=p.count;}
+  for(float[] center:IndianaHarbor.ROUTE){g.layout=Layout.focused(960,600,center[0],center[1],1,480,300);Receiver p=new Receiver(g);SurveyLevel.indiana().ground().draw(g,p);checks+=p.count;}
   System.out.println(checks+" Indiana survey tile/shore receiver assertions passed");
  }
  static final class Receiver implements Painter {

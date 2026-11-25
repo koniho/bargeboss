@@ -17,6 +17,11 @@ the same `Painter`. Do not add a second game implementation for any platform.
   wordmark. Preserve technical control geometry, semantic colors and tutorial space.
 - Push completed, checked development increments as work progresses; do not hold
   unrelated completed changes until a large batch is finished.
+- Geographic levels implement `SurveyLevel` (geometry, bounds, markers, bridges, landmarks
+  with screen boxes, lights, ground palette) and draw through `SurveyLevelView`; shared code
+  dispatches through `Game.level()`. Never add `calumetStage()`-style checks to shared
+  rendering/geography; `LevelContractTest` enforces the allowlist. Add `<key>-...` profiling
+  fixtures for every new level.
 - Keep platform APIs out of `core/`. Native hosts own event transport, safe-area
   bounds, bitmap decoding/caching and drawing primitives only. All hosts use `Viewport`, the shared pointer router and `Game.advance`.
   Native haptic adapters consume shared semantic events; they never alter gameplay.

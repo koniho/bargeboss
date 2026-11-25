@@ -1,9 +1,11 @@
 package com.bargeboss.game;
-/** Shared depth ordering for fixed geographic landmarks. */
+/** Shared depth ordering for fixed geographic landmarks: survey-level landmarks, dock line
+ * crews at survey berths, and Montrose's beach scenery and line crew. */
 final class LocationLandmarks {
     static int[] ordered(Game g){
-        if(g.chicagoStage())return ChicagoView.ordered(g);
-        if(!g.calumetStage() && !g.indianaStage() && !g.montroseStage())return new int[0];
+        SurveyLevel level=g.level();
+        if(level!=null && !level.dockWorkers())return level.orderedLandmarks(g);
+        if(level==null && !g.montroseStage())return new int[0];
         int base=base(g);int[] workers=g.montroseStage()?new int[0]:DockWorkers.ordered(g),ids=new int[base+workers.length];
         for(int i=0;i<base;i++)ids[i]=i;
         for(int i=0;i<workers.length;i++)ids[base+i]=base+workers[i];
@@ -11,10 +13,16 @@ final class LocationLandmarks {
             while(j>0 && depth(g,ids[j-1])>d){ids[j]=ids[j-1];j--;}ids[j]=id;
         }return ids;
     }
-    static int base(Game g){return g.chicagoStage()?ChicagoView.COUNT:g.montroseStage()?MontroseBeach.COUNT+4:g.calumetStage()?CalumetRiverView.count(g):IndianaView.count(g);}
-    static int count(Game g){return base(g)+(g.calumetStage() || g.indianaStage()?6:0);}
-    static float depth(Game g,int i){if(g.chicagoStage())return ChicagoView.depth(g,i);if(g.montroseStage() && i>=MontroseBeach.COUNT)return DockLineCrew.depth(g,i-MontroseBeach.COUNT);if(i>=base(g))return DockWorkers.depth(g,i-base(g));return g.montroseStage()?MontroseBeach.depth(g,i):g.calumetStage()?CalumetRiverView.depth(g,i):IndianaView.depth(g,i);}
+    static int base(Game g){SurveyLevel level=g.level();return level!=null?level.landmarkCount(g):g.montroseStage()?MontroseBeach.COUNT+4:0;}
+    static int count(Game g){SurveyLevel level=g.level();return base(g)+(level!=null && level.dockWorkers()?6:0);}
+    static float depth(Game g,int i){SurveyLevel level=g.level();
+        if(g.montroseStage())return i>=MontroseBeach.COUNT?DockLineCrew.depth(g,i-MontroseBeach.COUNT):MontroseBeach.depth(g,i);
+        if(i>=base(g))return DockWorkers.depth(g,i-base(g));
+        return level.landmarkDepth(g,i);}
     /** Screen rectangle for landmarks that publish one; false means always treat as overlapping. */
-    static boolean screenBox(Game g,int i,float[] out){if(g.chicagoStage() && i<ChicagoCity.COUNT){ChicagoCity.screenBox(g,i,out);return true;}return false;}
-    static void draw(Game g,Painter p,int i){if(g.chicagoStage()){ChicagoView.landmark(g,p,i);return;}if(g.montroseStage() && i>=MontroseBeach.COUNT){DockLineCrew.draw(g,p,i-MontroseBeach.COUNT);return;}if(i>=base(g)){int id=i-base(g);if(g.berthDisplayEnabled(id/2))DockWorkers.draw(g,p,id);return;}if(g.montroseStage())MontroseBeach.landmark(g,p,i);else if(g.calumetStage())CalumetRiverView.landmark(g,p,i);else IndianaView.landmark(g,p,i);}
+    static boolean screenBox(Game g,int i,float[] out){SurveyLevel level=g.level();return level!=null && i<level.landmarkCount(g) && level.landmarkBox(g,i,out);}
+    static void draw(Game g,Painter p,int i){SurveyLevel level=g.level();
+        if(g.montroseStage()){if(i>=MontroseBeach.COUNT)DockLineCrew.draw(g,p,i-MontroseBeach.COUNT);else MontroseBeach.landmark(g,p,i);return;}
+        if(i>=base(g)){int id=i-base(g);if(g.berthDisplayEnabled(id/2))DockWorkers.draw(g,p,id);return;}
+        level.drawLandmark(g,p,i);}
 }

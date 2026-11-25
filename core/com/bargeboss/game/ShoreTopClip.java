@@ -17,9 +17,10 @@ final class ShoreTopClip {
             float wx=c.worldX(sx,sy),wy=c.worldY(sx,sy);
             l=Math.min(l,wx);t=Math.min(t,wy);r=Math.max(r,wx);b=Math.max(b,wy);
         }
-        cached=g.calumetStage()?CalumetWaterGeometry.tops(c,l,t,r,b,Float.NEGATIVE_INFINITY):ShoreOcclusion.industrial(c,l,t,r,b,Float.NEGATIVE_INFINITY,g.indianaStage()?IndianaHarbor.geometry():g.chicagoStage()?ChicagoRiver.geometry():null);
+        SurveyLevel level=g.level();
+        cached=ShoreOcclusion.industrial(c,l,t,r,b,Float.NEGATIVE_INFINITY,level==null?null:level.geometry());
         x=ox;y=oy;scale=c.scale;width=g.layout.width;height=g.layout.height;stage=stage(g);
         return cached;
     }
-    private static int stage(Game g){return g.calumetStage()?1:g.indianaStage()?2:g.chicagoStage()?3:0;}
+    private static int stage(Game g){SurveyLevel level=g.level();return level==null?-1:level.id;}
 }

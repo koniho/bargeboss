@@ -11,9 +11,8 @@ public final class Renderer {
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
         try {WorldArrows.begin(g);SceneryLighting.begin(g);
-        if(g.calumetStage())CalumetRiverView.draw(g,p);
-        else if(g.indianaStage())IndianaView.draw(g,p);
-        else if(g.chicagoStage())ChicagoView.draw(g,p);
+        SurveyLevel level=g.level();
+        if(level!=null)SurveyLevelView.draw(g,p,level);
         else if(g.montroseStage())MontroseView.draw(g,p);
         else TrainingChannelView.draw(g,p);
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);

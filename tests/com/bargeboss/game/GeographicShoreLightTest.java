@@ -35,7 +35,7 @@ public final class GeographicShoreLightTest {
     static void run(){
         for(int id:new int[]{Challenges.INDIANA,Challenges.TWO_BANKS}){
             Game g=fixture(id);Ink expected=new Ink();VesselShoreLight.draw(g,expected);
-            Ink actual=new Ink();if(g.indianaStage())IndianaView.draw(g,actual);else CalumetRiverView.draw(g,actual);
+            Ink actual=new Ink();SurveyLevelView.draw(g,actual,g.level());
             if(!actual.patches.containsAll(expected.patches))throw new AssertionError("geographic scene omitted vessel-to-shore lighting: "+id);
             g.tug.active=false;Ink dark=new Ink();VesselShoreLight.draw(g,dark);
             if(!dark.patches.isEmpty())throw new AssertionError("inactive source still lights shore");
