@@ -6641,3 +6641,23 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 | chicago-wolf | 36.3; 18.7 / 60.4; 94 | 59.3; 16.7 / 20.5; 1 |
 | calumet-bridge | 37.7; 18.2 / 59.6; - | 60.1; 16.7 / 22.4; 8 |
 | indiana-hick | 38.3; 17.9 / 60.3; 90 | 60.0; 16.7 / 18.3; 2 |
+
+## 2026-11-25: Impact juice (screen shake, contact flash, shock ring) and fire-monitor spray
+
+- `ImpactShake` (draw-only, 60 Hz visual clock): every new `CollisionSplashes` contact adds a
+  directional punch (damped spring along the projected strike direction, capped at 11 screen units)
+  and trauma (0..1, decays in 0.5 s; wobble = trauma² × 9 units, two incommensurate StrictMath sines
+  per axis). Hits involving the tug or a lined vessel shake fully; other visible contacts at 35%.
+  `Renderer` installs `Layout.shifted` only for the world pass; HUD, joystick, panels and input keep
+  the live layout. Cost equals ordinary camera follow (shore masks re-project on camera change).
+- Contact flash: warm-white GLOW at hull height for 7 ticks (power ≥ 0.25), hot core for hard hits.
+  Water shock ring: flattened RING material expanding for 22 ticks, second ring for power ≥ 0.5.
+- Fire monitor: each droplet draws a streak back along its arc (the jet reads as one stream), a mist
+  puff drifting off as the jet spreads, and a bloom at the nozzle. Every other droplet that lands in
+  water (including those expiring below z 6 at full reach) becomes a 20-tick splash with a ripple.
+  Water landings are impact floor 0 and excluded from `impactCount` (dry hits); `HoseImpactTest`
+  now also asserts open-water ripples.
+- Canonical replay 598248e9:2:1350 (was a1746b7f): draw trace only, score/deliveries unchanged.
+  Bisected: with shake, flash/ring and spray changes disabled the old signature is exact; each
+  part alone changes only the draw hash.
+- Desktop review: `out/collision-splash-motion/` (shake, flash, rings), fire barge spray capture.

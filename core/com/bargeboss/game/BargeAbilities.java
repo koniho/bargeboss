@@ -134,7 +134,14 @@ public final class BargeAbilities {
                 }
             }
             if(impact[i] && z[i]<impactFloor[i])life[i]=0;
-            if(z[i]<0)life[i]=0;
+            // Droplets expire a couple of ticks above the water at full reach, so a low expiry counts as landing.
+            if(z[i]<0 || life[i]==0 && !impact[i] && color[i]==0xffb9e9f4 && z[i]<6){
+                // Every other spray droplet that falls into the harbor kicks up a small splash and ripple
+                // (impact floor 0 marks water). Visual only: impacts never reach fires or crews.
+                if(!impact[i] && color[i]==0xffb9e9f4 && i%2==0 && WaterEffectsPainter.contains(g,x[i],y[i])){
+                    impact[i]=true;age[i]=0;life[i]=20;impactFloor[i]=0;z[i]=.5f;vx[i]*=.12f;vy[i]*=.12f;vz[i]=12;
+                }else life[i]=0;
+            }
             if(life[i]==0 && rocket[i]){rocket[i]=false;explode(x[i],y[i],z[i],color[i]);screenFlash=8;g.sounds.fireworkBurst();}
         }
     }
@@ -157,7 +164,9 @@ public final class BargeAbilities {
         emit(px,py,pz,0,0,0,28,tint);flash[(next-1)%CAPACITY]=true;
     }
     private void emit(float xx,float yy,float zz,float dx,float dy,float dz,int ticks,int tint){int i=next++%CAPACITY;rocket[i]=flash[i]=impact[i]=false;age[i]=0;travel[i]=0;x[i]=xx;y[i]=yy;z[i]=zz;vx[i]=dx;vy[i]=dy;vz[i]=dz;life[i]=ticks;color[i]=tint;}
-    int impactCount(){int n=0;for(int i=0;i<CAPACITY;i++)if(impact[i] && life[i]>0)n++;return n;}
+    /** Live dry-surface (ground, wood, fire) hits; water landings have impact floor 0. */
+    int impactCount(){int n=0;for(int i=0;i<CAPACITY;i++)if(impact[i] && impactFloor[i]!=0 && life[i]>0)n++;return n;}
+    int waterSplashCount(){int n=0;for(int i=0;i<CAPACITY;i++)if(impact[i] && impactFloor[i]==0 && life[i]>0)n++;return n;}
     boolean alive(int i){return life[i]>0;}
     float depth(Game g,int i){return g.layout.camera.screenY(x[i],y[i]);}
     void drawParticle(Game g,Painter p,int i){
@@ -174,12 +183,17 @@ public final class BargeAbilities {
         if(clip.length>0)p.pushClipOutside(clip);
         try{
             if(impact[i]){
+                if(impactFloor[i]==0){
+                    // Water landing: a flattened ripple spreading under the splash.
+                    float u=age[i]/20f,r=(4+age[i]*1.3f)*c.scale,wy=c.screenY(x[i],y[i]);
+                    p.material(sx,wy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(0xffeaf7ff,(1-u)*(1-u)*.55f));
+                }
                 float dx=c.screenX(x[i]+vx[i],y[i]+vy[i])-c.screenX(x[i],y[i]);
                 float dy=c.screenY(x[i]+vx[i],y[i]+vy[i])-c.screenY(x[i],y[i]);
                 float length=Math.max(.01f,Physics.length(dx,dy));dx/=length;dy/=length;
                 p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,dx*size*2,dy*size*2,-dy*size*2,dx*size*2,fade*.85f);
             }
-            else if(color[i]==0xffb9e9f4)p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,size*3,0,0,size*2,fade*.6f);
+            else if(color[i]==0xffb9e9f4)spray(g,p,i,sx,sy,size,fade);
             else if(flash[i]){
                 float t=age[i]/28f,r=(12+100*t)*c.scale;
                 p.material(sx,sy,r*2,0,0,r*2,EffectMaterial.RING,.018f,1,SoftCue.alpha(color[i],(1-t)*.7f));
@@ -200,6 +214,27 @@ public final class BargeAbilities {
                 if(i%7==0){float r=3*c.scale;p.line(sx-r,sy,sx+r,sy,c.scale,SoftCue.alpha(color[i],fade));p.line(sx,sy-r,sx,sy+r,c.scale,SoftCue.alpha(color[i],fade));}
             }
         }finally{if(clip.length>0)p.popClip();}
+    }
+    /** One monitor droplet: a streak back along its arc so the jet reads as a continuous stream,
+     * the droplet itself, a mist puff drifting off the jet as it spreads, and a bloom at the nozzle. */
+    private void spray(Game g,Painter p,int i,float sx,float sy,float size,float fade){
+        RiverCamera c=g.layout.camera;float dt=.07f,bx=x[i]-vx[i]*dt,by=y[i]-vy[i]*dt,bz=Math.max(0,z[i]-vz[i]*dt-40*dt*dt);
+        float tx=c.screenX(bx,by),ty=c.screenY(bx,by)-bz*ArticulatedModel.Z_SCALE*c.scale;
+        float dx=sx-tx,dy=sy-ty,len=Physics.length(dx,dy);
+        if(len>.5f){
+            p.line(tx,ty,sx,sy,size*1.15f,SoftCue.alpha(0xffcfeaf6,fade*.3f));
+            p.line(tx+dx*.35f,ty+dy*.35f,sx,sy,Math.max(.8f,size*.4f),SoftCue.alpha(0xfffafdff,fade*.55f));
+        }
+        p.spriteAffine(SpriteAtlas.SPLASH,i%4,sx,sy,size*3,0,0,size*2,fade*.6f);
+        float spread=Math.min(210,travel[i])/210;
+        if(spread>.15f && len>.5f){
+            float nx=-dy/len,ny=dx/len,side=((i*7)%5-2)*.5f,off=side*spread*14*c.scale,mist=size*(1.4f+spread);
+            p.spriteAffine(SpriteAtlas.SPLASH,(i+2)%4,sx+nx*off,sy+ny*off,mist*2.4f,0,0,mist*1.6f,fade*.22f*spread);
+        }
+        if(age[i]<=1){
+            float pulse=.75f+.25f*((g.visualTicks+i)%3)/2f,r=(16+((i/2)%2)*5)*c.scale*pulse;
+            p.material(sx,sy,r,0,0,r*.85f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffe9f8ff,.5f*pulse));
+        }
     }
     /** Map and equipment share the same HUD slot; only the ten-tick transition draws both. */
     public void drawMap(Game g,Painter p){

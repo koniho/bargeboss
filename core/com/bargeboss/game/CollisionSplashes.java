@@ -11,6 +11,10 @@ public final class CollisionSplashes {
     private int cursor;
     private float peakImpact;
     public int emitted;
+    /** Draw-only camera punch and rattle fed by new impacts. */
+    final ImpactShake shake=new ImpactShake();
+    /** Ticks of the bright contact flash and the water shock ring. */
+    static final int FLASH=7,RING=22;
     public CollisionSplashes(){for(int i=0;i<CAPACITY;i++)age[i]=LIFE;}
     /** Contact velocities include angular motion and are captured BEFORE the collision impulse.
      * Use the faster incoming participant as striker so solver argument order cannot reverse spray. */
@@ -35,12 +39,26 @@ public final class CollisionSplashes {
             vz[j]=(23+power[i]*48)*(.65f+.35f*((k*5+2)%7)/6f);
         }
     }
+    private static boolean involvesPlayer(Game g,Watercraft w){
+        return w!=null && (w==g.tug || w instanceof Body && ((Body)w).lineAttached);
+    }
+    /** The world layout for this frame: shaken while an impact is ringing, else the live one. */
+    Layout shaken(Game g){return shake.active()?g.layout.shifted(shake.offsetX(),shake.offsetY()):g.layout;}
     float impactOn(Watercraft craft){
         float peak=0;for(int i=0;i<CAPACITY;i++)if(age[i]==0 && (first[i]==craft || second[i]==craft))peak=Math.max(peak,power[i]*70);return peak;
     }
     /** Age at 60 real ticks, independent of the two motion/collision substeps and visibility. */
     public void step(Game g){
         if(g.mode==Game.PLAY)g.sounds.impact(peakImpact);peakImpact=0;
+        shake.step();
+        RiverCamera c=g.layout.camera;
+        for(int i=0;i<CAPACITY;i++)if(age[i]==0 && first[i]!=null){
+            boolean player=involvesPlayer(g,first[i]) || involvesPlayer(g,second[i]);
+            if(!player && !visible(g,originX[i],originY[i],0,40))continue;
+            // Punch along the striker's projected travel: the view is shoved the way the hit went.
+            float dx=(float)StrictMath.cos(direction[i]),dy=(float)StrictMath.sin(direction[i]);
+            shake.hit(power[i],c.screenX(dx,dy)-c.screenX(0,0),c.screenY(dx,dy)-c.screenY(0,0),player);
+        }
         for(int i=0;i<CAPACITY;i++)if(age[i]<LIFE){
             age[i]++;
             if(age[i]>=LIFE){first[i]=second[i]=null;continue;}
@@ -65,7 +83,21 @@ public final class CollisionSplashes {
             float xx=originX[i]+dx*(2+t*7),yy=originY[i]+dy*(2+t*7);
             if(!visible(g,xx,yy,0,length+width))continue;
             canvas.pushClipOutside(ShoreOcclusion.region(g,c,xx-length-width,yy-length-width,xx+length+width,yy+length+width,Float.NEGATIVE_INFINITY));
-            try{p.spriteAffine(SpriteAtlas.SPLASH,i%4,xx,yy,dx*length,dy*length,-dy*width,dx*width,alpha*.55f);}
+            try{
+                p.spriteAffine(SpriteAtlas.SPLASH,i%4,xx,yy,dx*length,dy*length,-dy*width,dx*width,alpha*.55f);
+                // Shock ring: a foam circle racing out across the water, faster and wider for harder hits.
+                if(age[i]<RING && power[i]>=.2f){
+                    float r=RING,u=age[i]/r,ease=1-(1-u)*(1-u),radius=(8+power[i]*30)*(.25f+ease*1.4f)*c.scale;
+                    float ox=c.screenX(originX[i],originY[i]),oy=c.screenY(originX[i],originY[i]);
+                    canvas.material(ox,oy,radius*2,0,0,radius*2*RiverCamera.DEPTH,EffectMaterial.RING,.03f+.03f*(1-u),1,
+                        SoftCue.alpha(0xffeaf7ff,(1-u)*(1-u)*(.35f+.5f*power[i])));
+                    if(power[i]>=.5f && age[i]>=3){
+                        float u2=(age[i]-3)/r,radius2=(6+power[i]*22)*(.25f+(1-(1-u2)*(1-u2))*1.5f)*c.scale;
+                        canvas.material(ox,oy,radius2*2,0,0,radius2*2*RiverCamera.DEPTH,EffectMaterial.RING,.025f,1,
+                            SoftCue.alpha(0xffeaf7ff,(1-u2)*(1-u2)*.4f*power[i]));
+                    }
+                }
+            }
             finally{canvas.popClip();}
         }
     }
@@ -98,6 +130,13 @@ public final class CollisionSplashes {
         try{
             // Stable frame/orientation for the packet's lifetime: no atlas flicker or apex flip.
             canvas.spriteAffine(SpriteAtlas.SPLASH,(i+j/2)%4,sx,sy,dx*length,dy*length,-dy*width,dx*width,alpha*.85f);
+            // Contact flash: a hot white bloom at hull height for the first frames of a real hit.
+            if(j%STAMPS==0 && age[i]<FLASH && power[i]>=.25f){
+                float f=1-age[i]/(float)FLASH,ox=c.screenX(originX[i],originY[i]),oy=c.screenY(originX[i],originY[i])-6*c.scale;
+                float size=(26+54*power[i])*(1.25f-.25f*f)*c.scale;
+                canvas.material(ox,oy,size,0,0,size*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfffff4dc,f*f*(.45f+.5f*power[i])));
+                if(power[i]>=.55f)canvas.material(ox,oy,size*.38f,0,0,size*.3f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,f*f));
+            }
             // Detached hot streaks only for substantial incoming impacts (>=45.5 units/s).
             if(power[i]>=.65f && age[i]<24) {
                 float fade=1-age[i]/24f,tail=(5+power[i]*11)*c.scale;

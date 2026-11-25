@@ -10,7 +10,9 @@ public final class Renderer {
         if(g.mode==Game.SETTINGS){ScreenView.settings(g,p);return;}
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
-        try {WorldArrows.begin(g);SceneryLighting.begin(g);
+        // Impact shake moves only the world projection; HUD, controls and input keep the live layout.
+        Layout live=g.layout;
+        try {g.layout=g.splashes.shaken(g);WorldArrows.begin(g);SceneryLighting.begin(g);
         SurveyLevel level=g.level();
         if(level!=null)SurveyLevelView.draw(g,p,level);
         else if(g.montroseStage())MontroseView.draw(g,p);
@@ -19,6 +21,7 @@ public final class Renderer {
         WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
+        g.layout=live;
         HarborView.objective(g,p);
         FeederView.callouts(g,p);
         g.abilities.drawScreenFlash(g,p);
@@ -32,7 +35,7 @@ public final class Renderer {
         TowRelease.draw(g,p);g.abilities.drawUI(g,p);
         if(g.mode==Game.PLAY){g.rescue.radio.draw(g,p);if(MontroseHaulout.active(g))g.haulout.radio.draw(g,p);g.dialogue.draw(g,p);}
         g.waveControls.draw(g,p);
-        } finally {WorldArrows.end();}
+        } finally {g.layout=live;WorldArrows.end();}
     }
     static void river(Game g,Painter p) {
         HarborView.draw(g,p);

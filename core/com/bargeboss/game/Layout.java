@@ -38,7 +38,15 @@ public final class Layout {
     /** Small offscreen drawing viewport; never installed on a playable Game. */
     static Layout renderTile(float width,float height,RiverCamera camera) {return new Layout(width,height,camera);}
     private Layout(float width,float height,RiverCamera camera) {
-        this.width=width;this.height=height;offsetX=offsetY=0;this.camera=camera;
+        this(width,height,0,0,camera);
+    }
+    private Layout(float width,float height,float offsetX,float offsetY,RiverCamera camera) {
+        this.width=width;this.height=height;this.offsetX=offsetX;this.offsetY=offsetY;this.camera=camera;
+    }
+    /** Same canvas with the world projection moved by a screen offset (draw-only screen shake). */
+    Layout shifted(float dx,float dy) {
+        RiverCamera c=camera;
+        return new Layout(width,height,offsetX,offsetY,new RiverCamera(c.left+dx,c.top+dy,c.scale,c.worldTop,c.worldRight,c.zoom));
     }
 
     /** Place a world focus at a screen anchor using the same inverse as touch input. */

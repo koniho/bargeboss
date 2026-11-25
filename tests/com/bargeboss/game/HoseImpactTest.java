@@ -14,6 +14,9 @@ public final class HoseImpactTest {
     public static void run(){
         Game g=fixture();Body b=g.cargo[3];
         check(spray(g,b.x-100,b.y)==0,"open water produces no dry-surface impact");
+        g=fixture();b=g.cargo[3];g.pointerDown(88,g.abilities.buttonX(g,0),g.abilities.buttonY(g));ReplayInput.hoseAim(g,88,b.x-100,b.y);
+        int splashes=0;for(int i=0;i<110;i++){g.abilities.step(g);splashes=Math.max(splashes,g.abilities.waterSplashCount());}
+        g.pointerCancel(88);check(splashes>0,"open water landings ripple");
         g=fixture();check(spray(g,FireworksLesson.X+15,FireworksLesson.Y)>0,"wood hits splash");
         g=fixture();check(spray(g,465,-1230)>0,"bare quay hits splash");
         for(int i=0;i<100;i++)g.abilities.step(g);check(g.abilities.impactCount()==0,"impact stamps expire");
