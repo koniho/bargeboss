@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> MARINA_TOWS=new java.util.WeakHashMap<Game,Boolean>();
@@ -80,6 +80,13 @@ public final class ProfileScenario {
             for(int i=0;i<90 && !root.tow.connected(b,root.tug);i++)root.step();
             if(!root.tow.connected(b,root.tug))throw new AssertionError("Circle fixture failed to catch tow");
             CIRCLES.put(root,Boolean.TRUE);return;
+        }
+        if(name.startsWith("chicago-")){
+            // Navy Pier start (fire, lock approach), downtown towers at Michigan Ave, and the Wolf Point confluence.
+            root.selectChallenge(Challenges.CHICAGO);root.reset();
+            if(name.equals("chicago-downtown")){root.tug.x=ChicagoRiver.north(41.88855);root.tug.y=ChicagoRiver.east(-87.62550);root.tug.angle=(float)(StrictMath.PI/2);}
+            if(name.equals("chicago-wolf")){root.tug.x=ChicagoRiver.north(41.88690);root.tug.y=ChicagoRiver.east(-87.63700);root.tug.angle=-(float)(StrictMath.PI/2);}
+            root.layout=Layout.focused(width,height,root.tug.x,root.tug.y,Game.TRANSIT_ZOOM,width*.5f,height*.52f);return;
         }
         if(name.startsWith("indiana-")){
             root.selectChallenge(Challenges.INDIANA);root.reset();

@@ -162,6 +162,7 @@ public final class CoreTest {
         MontroseBeaconTest.run();
         CalumetMapTest.run();
         IndianaHarborTest.run();
+        ChicagoRiverTest.run();
         MarinaArtTest.run();
         MarinaLayerPreparationTest.run();
         MarinaPedestalsTest.run();
@@ -196,8 +197,13 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
-        // Title-derived UI palette/geometry; reviewed draw-only changes, simulation/input unchanged.
-        check(Parity.signature().equals("310d2a08:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Chicago River appended as job 9 / location 4: star totals, the selector's second page
+        // and Indiana's next-harbor text change. Bisected: without that entry the prior
+        // baseline 310d2a08 is exact, so existing simulation/input are unchanged. The selector's
+        // NEXT button then moved 30 units left to leave a gap before SET SAIL (draw/hit box only).
+        // Rigid faces are now culled per face when off screen or under 1.5 px in both axes
+        // (draw commands only). Bisected: with both culls disabled cb5ec116 is exact.
+        check(Parity.signature().equals("21c79fb2:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

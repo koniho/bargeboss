@@ -163,6 +163,13 @@ for this level. Its layout is inspired by Montrose, with enlarged gameplay
 clearances. The yacht retains momentum and slows the tug under load. See the
 [asset and mission notes](docs/art-studies/montrose/README.md).
 
+**Chicago River** (selector page two, available immediately) runs from Navy Pier to
+Wolf Point on OpenStreetMap geometry, with extruded downtown towers, Ogden Slip,
+18 lifting bridges and the working Chicago Harbor Lock. In **Navy Pier Fire**, lock in
+from the lake, collect the Engine 2 fire barge, lock back out with it in tow, tap
+the barge and spray the burning Centennial Wheel gondolas. See
+[the Chicago River map notes](docs/maps/chicago-river.md).
+
 Each level ends immediately when its goal is complete. Cargo does not expire,
 and feeders dispatch only the barges required by that level.
 

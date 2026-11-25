@@ -126,7 +126,7 @@ public final class SceneryOcclusion implements Painter {
     private static final HashMap<Long,WaterPlacement>[] WATER_BUILDINGS=new HashMap[4*SpriteAtlas.ATLAS_COUNT*32];
     /** Placement-only eligibility: an inland silhouette never enters the fading path. */
     static boolean buildingOverWater(Game g,int atlas,int frame,float wx,float wy,float rise,float size) {
-        int kind=g.calumetStage()?1:g.indianaStage()?2:g.montroseStage()?3:0;
+        int kind=g.calumetStage()?1:g.surveyStage()?2:g.montroseStage()?3:0;
         int bucket=(kind*SpriteAtlas.ATLAS_COUNT+atlas)*32+frame;
         HashMap<Long,WaterPlacement> placements=WATER_BUILDINGS[bucket];
         if(placements==null)WATER_BUILDINGS[bucket]=placements=new HashMap<Long,WaterPlacement>();

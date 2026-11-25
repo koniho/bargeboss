@@ -8,6 +8,7 @@ public final class ShorelineView {
     private static final class PracticeSegments {static final Segment[] DATA=calumet();}
     private static final class RiverSegments {static final Segment[] DATA=polygon(CalumetRiver.COAST,2);static final HarborPolygonGeometry.Index INDEX=index(DATA);}
     private static final class IndianaSegments {static final Segment[] DATA=polygon(IndianaHarbor.COAST,3);static final HarborPolygonGeometry.Index INDEX=index(DATA);}
+    private static final class ChicagoSegments {static final Segment[] DATA=polygon(ChicagoRiver.COAST,4);static final HarborPolygonGeometry.Index INDEX=index(DATA);}
     private static final class MarinaSegments {static final Segment[] DATA=marina();}
     private ShorelineView(){}
     /** Prepare fixed level geometry during reset, outside active drawing. */
@@ -16,6 +17,7 @@ public final class ShorelineView {
         segments(g);if(g.montroseStage())DockTopLight.prepare();
         else if(g.calumetStage())CalumetWaterGeometry.prepare();
         else if(g.indianaStage())IndianaHarbor.geometry();
+        else if(g.chicagoStage())ChicagoRiver.geometry();
     }
     static final class Segment {
         final float ax,ay,bx,by,nx,ny,u0,u1,rise,height;
@@ -40,9 +42,9 @@ public final class ShorelineView {
         for(float[] e:MontroseShoreArt.DOCK_EDGES)u=edge(out,e[0],e[1],e[2],e[3],u,MontroseHarbor.DOCK_RISE,true);
         return out.toArray(new Segment[out.size()]);
     }
-    private static boolean water(int stage,float x,float y){return stage==1?MontroseHarbor.contains(x,y):stage==2?CalumetRiver.contains(x,y):stage==3?IndianaHarbor.contains(x,y):CalumetMap.contains(x,y);}
+    private static boolean water(int stage,float x,float y){return stage==1?MontroseHarbor.contains(x,y):stage==2?CalumetRiver.contains(x,y):stage==3?IndianaHarbor.contains(x,y):stage==4?ChicagoRiver.contains(x,y):CalumetMap.contains(x,y);}
     private static Segment[] polygon(float[] bank,int stage){ArrayList<Segment> out=new ArrayList<Segment>();float u=0;
-        HarborPolygonGeometry geo=stage==2?CalumetWaterGeometry.geometry():IndianaHarbor.geometry();
+        HarborPolygonGeometry geo=stage==2?CalumetWaterGeometry.geometry():stage==4?ChicagoRiver.geometry():IndianaHarbor.geometry();
         for(int i=0;i<bank.length;i+=2){int j=(i+2)%bank.length;if(geo.shoreEdge(bank[i],bank[i+1],bank[j],bank[j+1]))u=edge(out,bank[i],bank[i+1],bank[j],bank[j+1],u,GroundArt.LAND_RISE,stage);}
         return out.toArray(new Segment[out.size()]);
     }
@@ -65,10 +67,10 @@ public final class ShorelineView {
         return u+length;
     }
     static Segment[] segments(boolean marina){return marina?MarinaSegments.DATA:PracticeSegments.DATA;}
-    static Segment[] segments(Game g){return g.calumetStage()?RiverSegments.DATA:g.indianaStage()?IndianaSegments.DATA:segments(g.montroseStage());}
+    static Segment[] segments(Game g){return g.calumetStage()?RiverSegments.DATA:g.indianaStage()?IndianaSegments.DATA:g.chicagoStage()?ChicagoSegments.DATA:segments(g.montroseStage());}
     static Segment[] near(Game g,float l,float t,float r,float b){
-        if(!g.calumetStage() && !g.indianaStage())return segments(g);
-        Segment[] all=segments(g);HarborPolygonGeometry.Index index=g.calumetStage()?RiverSegments.INDEX:IndianaSegments.INDEX;
+        if(!g.calumetStage() && !g.surveyStage())return segments(g);
+        Segment[] all=segments(g);HarborPolygonGeometry.Index index=g.calumetStage()?RiverSegments.INDEX:g.chicagoStage()?ChicagoSegments.INDEX:IndianaSegments.INDEX;
         int[] candidates=index.area(l,t,r,b);Segment[] result=new Segment[candidates.length];for(int i=0;i<result.length;i++)result[i]=all[candidates[i]];return result;
     }
     private static Segment[] visible(Game g){RiverCamera c=g.layout.camera;float l=Float.MAX_VALUE,t=l,r=-l,b=-l;

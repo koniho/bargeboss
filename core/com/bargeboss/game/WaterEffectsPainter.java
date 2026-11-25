@@ -18,17 +18,18 @@ public final class WaterEffectsPainter implements Painter {
     private final RiverCamera camera;
     private final float screenWidth,screenHeight;
     private final float[][] water;
-    private final boolean marina,calumet,indiana;
+    private final boolean marina,calumet,indiana,chicago;
     private boolean preclipped;
     private final boolean directQuads;
     /** Preserve polygon stroke geometry when a caller already installed the water mask. */
     WaterEffectsPainter preclipped(){preclipped=true;return this;}
     public WaterEffectsPainter(Game g,Painter target) {
-        this.target=target;directQuads=g.settings.directWaterQuads;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.indianaStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
+        this.target=target;directQuads=g.settings.directWaterQuads;marina=g.montroseStage();calumet=g.calumetStage();indiana=g.indianaStage();chicago=g.chicagoStage();camera=target instanceof RiverPainter?((RiverPainter)target).camera:null;screenWidth=g.layout.width;screenHeight=g.layout.height;water=g.surveyStage()||g.montroseStage()||g.calumetStage()?null:CHANNEL;
     }
     public static boolean contains(Game g,float x,float y) {
         if(g.calumetStage())return CalumetRiver.contains(x,y);
         if(g.indianaStage())return IndianaHarbor.contains(x,y);
+        if(g.chicagoStage())return ChicagoRiver.contains(x,y);
         if(g.montroseStage())return MontroseHarbor.contains(x,y);
         return CalumetMap.contains(x,y);
     }
@@ -97,6 +98,7 @@ public final class WaterEffectsPainter implements Painter {
         if(preclipped){target.poly(points,color);return;}
         if(calumet){CalumetRiver.paintWater(target,points,color);return;}
         if(indiana){IndianaHarbor.paintWater(target,points,color);return;}
+        if(chicago){ChicagoRiver.paintWater(target,points,color);return;}
         if(marina){MontroseHarbor.paintWater(target,points,color);return;}
         for(float[] r:water) {
             if(maxX<=r[0] || minX>=r[2] || maxY<=r[1] || minY>=r[3]) continue;

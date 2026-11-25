@@ -53,7 +53,7 @@ public final class WaterSurface {
         return strength[i]*(1-age[i]/(float)LIFE)*profile*fan;
     }
     public float energy(Game g,float wx,float wy,Body ignore){
-        float sum=0;for(int i=0;i<CAPACITY;i++)sum+=Math.abs(wake(g,i,wx,wy,ignore));
+        float sum=0;for(int i=0;i<CAPACITY;i++){float w=wake(g,i,wx,wy,ignore);if(w!=0)sum+=w<0?-w:w;}
         return Math.min(1.8f,sum);
     }
     /** Height in sprite-rise units; orbital flow in world units/second. */

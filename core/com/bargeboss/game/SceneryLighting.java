@@ -20,7 +20,8 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
     }
     /** Called once per production frame; direct model review/tests may call this too. */
     static void begin(Game g){LOCAL.get().collect(g);}
-    private static int cell(float v){return (int)StrictMath.floor(v/CELL);}
+    /** Exact floor for in-range cells without Android's bit-level StrictMath.floor. */
+    private static int cell(float v){float q=v/CELL;int i=(int)q;return q<i?i-1:i;}
     private static int hash(int x,int y){return (x*73856093^y*19349663)&(BUCKETS-1);}
     void add(float px,float py,float pz,float r,float energy,int tint){add(px,py,pz,r,energy,tint,0,-1);}
     private void add(float px,float py,float pz,float r,float energy,int tint,float angle,int fixture){
@@ -34,7 +35,7 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
         if(g.montroseStage()){
             for(int i=0;i<MontroseHarbor.PEDESTALS.length;i++){float[] p=MontroseHarbor.PEDESTALS[i];add(p[0],p[1],MarinaPedestals.LAMP_Z,90,.16f*MarinaPedestals.brightness(g,i),0xffffd68d);}
             for(int i=0;i<3;i++)add(MontroseBeaconArt.x(i),MontroseBeaconArt.y(i),MontroseBeaconArt.lampZ(i),MontroseBeaconArt.LIGHT_RADIUS,MontroseBeaconArt.LIGHT_ENERGY*MontroseBeaconArt.power(tick),MontroseBeaconArt.color(i));
-        }else if(!g.calumetStage() && !g.indianaStage()){
+        }else if(!g.calumetStage() && !g.surveyStage()){
             for(int side=0;side<2;side++)for(int i=HarborAtmosphere.firstLamp(g);i<=5;i++){
                 float px=HarborAtmosphere.lampBank(side),py=HarborAtmosphere.lampY(i);
                 if(g.tutorial!=null && TrainingChannel.contains(px,py))continue;
@@ -49,6 +50,7 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
         DockView.lights(g,this);
         if(g.montroseStage())MontroseBeach.lights(this);
         if(g.indianaStage())IndianaView.lights(this);
+        if(g.chicagoStage())ChicagoView.lights(g,this);
         if(g.bridgeStage())BridgeView.lights(g,this);
         if(g.lockStage())LockView.lights(g,this);
         if(g.tutorial!=null){
@@ -76,6 +78,8 @@ final class SceneryLighting implements ArticulatedModel.FaceLighting {
         }
         float beam=game.spotlight.face(game,px,py,pz,nx,ny,nz);
         red+=beam;green+=beam*.93f;blue+=beam*.77f;
+        // Unlit faces keep their ambient exactly (each channel already <=255).
+        if(red==0 && green==0 && blue==0)return ambient;
         return ambient&0xff000000|Math.min(255,(ambient>>16&255)+Math.round((albedo>>16&255)*red))<<16
             |Math.min(255,(ambient>>8&255)+Math.round((albedo>>8&255)*green))<<8|Math.min(255,(ambient&255)+Math.round((albedo&255)*blue));
     }

@@ -73,7 +73,7 @@ public final class Buoys {
             // Entrance floats lie beside a bank: approach on their open-water side.
             // Training floats are far from cargo pickup routes and need no route override.
             if(g.tutorial!=null)continue;
-            if(g.calumetStage() || g.indianaStage()){
+            if(g.calumetStage() || g.surveyStage()){
                 float length=(float)StrictMath.sqrt(length2),nx=-dy/length,ny=dx/length;
                 for(int side=-1;side<=1;side+=2){float px=b.x+nx*clearance*side,py=b.y+ny*clearance*side;
                     if(WaterEffectsPainter.contains(g,px,py) && WaterEffectsPainter.contains(g,px+nx*g.tug.radius,py+ny*g.tug.radius)
@@ -165,7 +165,7 @@ public final class Buoys {
         // outside the old river corridor; Physics.banks would teleport their hulls.
         if(touched && !fixed){
             if(g.montroseStage())MontroseHarbor.collide(g,body,g.splashes);
-            else if(g.indianaStage())IndianaHarbor.collide(body,g.splashes);else if(g.calumetStage())CalumetRiver.collide(body,g.splashes);else CalumetMap.collide(body,g.splashes);
+            else if(g.indianaStage())IndianaHarbor.collide(body,g.splashes);else if(g.chicagoStage())ChicagoRiver.collide(body,g.splashes);else if(g.calumetStage())CalumetRiver.collide(body,g.splashes);else CalumetMap.collide(body,g.splashes);
         }
     }
 }

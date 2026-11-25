@@ -187,7 +187,7 @@ public final class ScreenView {
         text(p,label,x+12,y+10,9,MUTED);text(p,value,x+12,y+31,24,PAPER);
     }
     private static String goalSummary(int id) {
-        return Challenges.calumet(id)?"FOUR JOBS / INLET TO BASIN FIVE":Challenges.stageEntry(id)==Challenges.MONTROSE?"THREE JOBS / TOW AND RESCUE":"STEEL TOW / HARBOR AND CANAL";
+        return Challenges.calumet(id)?"FOUR JOBS / INLET TO BASIN FIVE":Challenges.stageEntry(id)==Challenges.MONTROSE?"THREE JOBS / TOW AND RESCUE":Challenges.stageEntry(id)==Challenges.CHICAGO?"FIRE CALL / HARBOR LOCK":"STEEL TOW / HARBOR AND CANAL";
     }
     /** Persistent career board; levels finish when their displayed goal is complete. */
     public static void challenges(Game g,Painter p) {
@@ -200,14 +200,15 @@ public final class ScreenView {
             Layout.Box b=Layout.CHALLENGE_CARDS[slot];boolean open=g.career.unlocked(id),selected=!g.trainingSelected && Challenges.stageEntry(g.challengeId)==id;
             PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xf0202e43:0xe0101c30);
             if(selected)p.rect(b.x+18,b.y,70,3,GOLD);
-            text(p,slot==0?"RIVER WORK":slot==1?"MARINA RESCUE":"INDUSTRIAL CANAL",b.x+20,b.y+22,10,GOLD);
+            int location=Challenges.locationIndex(id);
+            text(p,location==0?"RIVER WORK":location==1?"MARINA RESCUE":location==2?"INDUSTRIAL CANAL":"DOWNTOWN RIVER",b.x+20,b.y+22,10,GOLD);
             String name=Challenges.locationTitle(id);
             heading(p,name,b.x+20,b.y+49,23,220,PAPER);
             int[] jobs=Challenges.locationJobs(id);int completed=0;for(int job:jobs)if(g.career.bestStars(job)>0)completed++;
             text(p,""+jobs.length,b.x+20,b.y+93,40,open?GOLD:MUTED);
             text(p,jobs.length==1?"CONNECTED JOB":"CONNECTED JOBS",b.x+62,b.y+105,12,PAPER);
             text(p,"ONE CONTINUOUS WATERWAY",b.x+62,b.y+126,8,MUTED);
-            text(p,slot==0?"LAKE ENTRANCE TO BASIN FIVE":slot==1?"TOW, UNRAFT AND RESCUE":"HARBOR AND STEELWORKS",b.x+20,b.y+168,10,PAPER);
+            text(p,location==0?"LAKE ENTRANCE TO BASIN FIVE":location==1?"TOW, UNRAFT AND RESCUE":location==2?"HARBOR AND STEELWORKS":"NAVY PIER TO WOLF POINT",b.x+20,b.y+168,10,PAPER);
             text(p,completed+" / "+jobs.length+" JOBS COMPLETED",b.x+20,b.y+194,10,MUTED);
             p.rect(b.x+20,b.y+218,220,3,PilotGlass.TRACK);
             if(completed>0)p.rect(b.x+20,b.y+218,220f*completed/jobs.length,3,GOLD);

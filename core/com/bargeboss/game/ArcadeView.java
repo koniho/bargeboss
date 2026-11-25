@@ -4,7 +4,7 @@ package com.bargeboss.game;
 public final class ArcadeView {
     private ArcadeView() {}
     public static void water(Game g,Painter p) {
-        if(!g.calumetStage() && !g.montroseStage() && !g.indianaStage())HarborAtmosphere.reflections(g,p);
+        if(!g.calumetStage() && !g.montroseStage() && !g.surveyStage())HarborAtmosphere.reflections(g,p);
         g.water.draw(g,p);g.splashes.water(g,p);
     }
     public static void effects(Game g,Painter p) {

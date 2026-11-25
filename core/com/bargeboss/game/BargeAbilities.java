@@ -124,6 +124,8 @@ public final class BargeAbilities {
                 if(g.tutorial!=null && z[i]>=floor && z[i]<=floor+40)for(int pile=0;pile<FireworksLesson.PILES;pile++){
                     if(Math.abs(x[i]-(FireworksLesson.x(pile)+15))<=27 && Math.abs(y[i]-FireworksLesson.y(pile))<=38){wood=true;break;}
                 }
+                // Navy Pier wheel fire: the hit consumes this droplet and cools that gondola fire.
+                if(!wood && g.chicagoStage() && g.chicago.fire.hit(x[i],y[i],z[i],floor))wood=true;
                 boolean ground=z[i]<=floor && !WaterEffectsPainter.contains(g,x[i],y[i]);
                 if(wood || ground){
                     if(g.tutorial!=null)g.tutorial.fireworks.waterHit(x[i],y[i]);

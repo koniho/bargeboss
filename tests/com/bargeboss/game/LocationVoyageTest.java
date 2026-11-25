@@ -6,8 +6,8 @@ public final class LocationVoyageTest {
     private static void check(boolean ok,String message){checks++;if(!ok)throw new AssertionError(message);}
     public static void main(String[] args){run();}
     public static void run(){
-        check(Challenges.LOCATION_COUNT==3 && Challenges.pageCount()==1,"three geographic locations share one selector");
-        check(Challenges.menuId(0)==0 && Challenges.menuId(1)==4 && Challenges.menuId(2)==5 && Challenges.menuId(3)==-1,"location selector excludes individual jobs");
+        check(Challenges.LOCATION_COUNT==4 && Challenges.pageCount()==2 && Challenges.pageFor(Challenges.CHICAGO)==1,"four geographic locations page three cards at a time");
+        check(Challenges.menuId(0)==0 && Challenges.menuId(1)==4 && Challenges.menuId(2)==5 && Challenges.menuId(3)==Challenges.CHICAGO && Challenges.menuId(4)==-1,"location selector excludes individual jobs");
         for(int id=0;id<4;id++)check(Challenges.stageEntry(id)==0,"historic Calumet selection enters full voyage");
         check(Challenges.stageEntry(6)==4 && Challenges.stageEntry(7)==4,"historic Montrose rescue selection enters full harbor");
         calumet();montrose();

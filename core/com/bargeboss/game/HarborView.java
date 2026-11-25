@@ -7,6 +7,7 @@ public final class HarborView {
     public static void draw(Game g,Painter p) {
         if(g.calumetStage()){for(int i=0;i<3;i++)if(g.berthDisplayEnabled(i))CalumetRiverView.berth(g,p,i);return;}
         if(g.indianaStage()){IndianaView.berth(g,p);return;}
+        if(g.chicagoStage())return;
         if(g.montroseStage()){MontroseView.slip(g,p);return;}
         berths(g,p);
     }
@@ -96,6 +97,10 @@ public final class HarborView {
         if(g.montroseArrival.active())return;
         if(MontroseHaulout.active(g)){Body boat=g.cargo[0];boolean towed=g.haulout.towed;boolean lift=!g.haulout.lowered();destination(g,canvas,lift||towed?MontroseHaulout.X:boat.x,lift?MontroseHaulout.Y:towed?MontroseHaulout.APPROACH_Y:boat.y,!g.haulout.lowered()?"RADIO TRAVELIFT":towed?"HAULOUT / PUSH BOAT IN":"AIN'T BROKE / STAR DOCK S");return;}
         if(g.montroseStage()){Body yacht=g.cargo[0];boolean attached=g.mission.wasTowed;destination(g,canvas,attached?MontroseHarbor.SLIP_X:yacht.x,attached?MontroseHarbor.SLIP_Y:yacht.y,attached?"YACHT SLIP":"ATTACH TOWLINE");return;}
+        if(g.chicagoStage()){
+            if(g.ropeDragging || g.ropePhase!=0 || g.chicago.complete())return;
+            destination(g,canvas,g.chicago.targetX(g),g.chicago.targetY(g),g.chicago.label(g));return;
+        }
         if(g.lockStage()) {
             if(g.ropeDragging || g.ropePhase!=0)return;
             if(g.lock.phase==Lock.READY)destination(g,canvas,300,Lock.ENTRY_Y+85,"LOCK ENTRY");

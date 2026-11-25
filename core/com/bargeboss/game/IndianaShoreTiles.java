@@ -31,9 +31,11 @@ final class IndianaShoreTiles {
             for(float[] dry:IndianaHarbor.geometry().dry(box[0],box[1],box[2],box[3])){float[] piece=PolygonWater.clip(q,dry);if(piece.length>=6)surface(g,p,piece,kind);}
         }
     }}
-    static void walls(Game g,Painter p){float[] box=visible(g),coast=IndianaHarbor.COAST;RiverCamera c=g.layout.camera;float sign=PolygonWater.area(coast)>0?1:-1;
+    static void walls(Game g,Painter p){walls(g,p,IndianaHarbor.COAST,IndianaHarbor.geometry());}
+    /** Visible seawall faces for any surveyed coast ring; open play bounds are skipped. */
+    static void walls(Game g,Painter p,float[] coast,HarborPolygonGeometry geometry){float[] box=visible(g);RiverCamera c=g.layout.camera;float sign=PolygonWater.area(coast)>0?1:-1;
         for(int i=0;i<coast.length;i+=2){int next=(i+2)%coast.length;float x=coast[i],y=coast[i+1],xx=coast[next],yy=coast[next+1];
-            if(Math.max(x,xx)<box[0] || Math.min(x,xx)>box[2] || Math.max(y,yy)<box[1] || Math.min(y,yy)>box[3] || !IndianaHarbor.geometry().shoreEdge(x,y,xx,yy))continue;
+            if(Math.max(x,xx)<box[0] || Math.min(x,xx)>box[2] || Math.max(y,yy)<box[1] || Math.min(y,yy)>box[3] || !geometry.shoreEdge(x,y,xx,yy))continue;
             float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy),nx=-dy/len*sign,ny=dx/len*sign;if(-nx+ny<=0)continue;
             float ax=c.screenX(x,y),ay=c.screenY(x,y),bx=c.screenX(xx,yy),by=c.screenY(xx,yy),h=GroundArt.LAND_RISE*c.scale;
             p.surfacePolygon(new float[]{ax,ay,bx,by,bx,by-h,ax,ay-h},new float[]{0,0,len,0,len,GroundArt.LAND_RISE,0,GroundArt.LAND_RISE},SurfaceMaterial.CORRUGATED,0xff73685e,.65f);

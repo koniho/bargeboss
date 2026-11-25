@@ -71,16 +71,23 @@ public final class ViewportPainter implements Painter {
         float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;
         if(alpha>.005f && visible(x-w,y-h,x+w,y+h))target.waterFoam(x,y,ax,ay,bx,by,phase,kind,alpha);
     }
+    private final float[] box=new float[4];
+    /** Screen bounds of finite vertices; false on NaN/infinity (x-x is NaN only then). Plain
+     * comparisons avoid Android's bit-level Float.isFinite/Math.min/Math.max per vertex. */
+    private static boolean bounds(float[] xy,float[] out){float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
+        for(int i=0;i<xy.length;i+=2){float x=xy[i],y=xy[i+1];if(x-x!=0 || y-y!=0)return false;
+            if(x<l)l=x;if(x>r)r=x;if(y<t)t=y;if(y>b)b=y;}
+        out[0]=l;out[1]=t;out[2]=r;out[3]=b;return true;}
     public void shoreline(float[] xy,float[] uv,float phase,float energy,int kind,int color){
         if((color>>>24)==0 || xy.length<6 || xy.length!=uv.length)return;
         float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
-        for(int i=0;i<xy.length;i+=2){if(!Float.isFinite(xy[i]) || !Float.isFinite(xy[i+1]))return;l=Math.min(l,xy[i]);r=Math.max(r,xy[i]);t=Math.min(t,xy[i+1]);b=Math.max(b,xy[i+1]);}
+        if(!bounds(xy,box))return;l=box[0];t=box[1];r=box[2];b=box[3];
         if(visible(l,t,r,b))target.shoreline(xy,uv,phase,energy,kind,color);
     }
     public void surfacePolygon(float[] xy,float[] uv,int material,int color,float wetness){
         if((color>>>24)==0 || xy.length<6 || xy.length!=uv.length)return;
         float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
-        for(int i=0;i<xy.length;i+=2){if(!Float.isFinite(xy[i]) || !Float.isFinite(xy[i+1]))return;l=Math.min(l,xy[i]);r=Math.max(r,xy[i]);t=Math.min(t,xy[i+1]);b=Math.max(b,xy[i+1]);}
+        if(!bounds(xy,box))return;l=box[0];t=box[1];r=box[2];b=box[3];
         if(visible(l,t,r,b))target.surfacePolygon(xy,uv,material,color,wetness);
     }
     public void material(float x,float y,float ax,float ay,float bx,float by,int kind,float detail,float amount,int color){float w=(Math.abs(ax)+Math.abs(bx))*.5f,h=(Math.abs(ay)+Math.abs(by))*.5f;if((color>>>24)>0 && visible(x-w,y-h,x+w,y+h))target.material(x,y,ax,ay,bx,by,kind,detail,amount,color);}

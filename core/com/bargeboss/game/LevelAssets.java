@@ -25,6 +25,8 @@ public final class LevelAssets {
     static {
         for(int id=0;id<CHALLENGES.length;id++) {
             if(id==Challenges.INDIANA){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL);continue;}
+            // Engine 2 fire barge: hull, deck monitors and the cargo family its berth selects.
+            if(id==Challenges.CHICAGO){CHALLENGES[id]=new Plan(true,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);continue;}
             if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=MONTROSE;continue;}
             if(Challenges.calumet(id)){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;

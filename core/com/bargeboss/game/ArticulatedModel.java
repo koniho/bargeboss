@@ -259,7 +259,7 @@ public final class ArticulatedModel {
         }
         private void translate(Pose source,float dx,float dy,float dz){
             if(source.polygonCount!=polygonCount)throw new IllegalStateException("Translation requires stable prepared topology");
-            depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
+            version++;depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
             for(int n=0;n<nodes.length;n++){
                 System.arraycopy(source.matrix[n],0,matrix[n],0,12);matrix[n][3]+=dx;matrix[n][7]+=dy;matrix[n][11]+=dz;
                 if(worldBounds[n]!=null)for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}
@@ -279,7 +279,7 @@ public final class ArticulatedModel {
             prepared=true;fragments=motion.count;
         }
         private void update(Motion motion,float amount){
-            transform(amount);polygonCount=0;depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
+            transform(amount);version++;polygonCount=0;depthMin=Float.POSITIVE_INFINITY;depthMax=Float.NEGATIVE_INFINITY;
             for(int n=0;n<nodes.length;n++){
                 if(worldBounds[n]!=null){for(int k=0;k<3;k++){worldBounds[n][k]=Float.POSITIVE_INFINITY;worldBounds[n][k+3]=Float.NEGATIVE_INFINITY;}}
                 if(projectedBounds[n]!=null){projectedBounds[n][0]=projectedBounds[n][1]=Float.POSITIVE_INFINITY;projectedBounds[n][2]=projectedBounds[n][3]=Float.NEGATIVE_INFINITY;}
@@ -357,6 +357,25 @@ public final class ArticulatedModel {
             float x=c.screenX(0,0),y=c.screenY(0,0);
             return new float[]{x+b[0]*c.scale,y+b[1]*c.scale,x+b[2]*c.scale,y+b[3]*c.scale};
         }
+        /** Union of projected node rectangles into out (l,t,r,b), in screen space. */
+        public void screenBounds(RiverCamera c,float[] out){float x=c.screenX(0,0),y=c.screenY(0,0);
+            for(float[] b:projectedBounds)if(b!=null){out[0]=Math.min(out[0],x+b[0]*c.scale);out[1]=Math.min(out[1],y+b[1]*c.scale);out[2]=Math.max(out[2],x+b[2]*c.scale);out[3]=Math.max(out[3],y+b[3]*c.scale);}
+        }
+        /** Node screen culling and front-face count are view-dependent only: one evaluation per
+         * camera/pose state instead of one per depth slice. */
+        private boolean[] nodeVisible;private int visibleFaceCount,culledNodeCount,visibleKeyCount=-1,version,visibleVersion=-1;
+        private float visibleX,visibleY,visibleScale,visibleW,visibleH,visibleMin,visibleMax;
+        private boolean[] visibility(Game g){RiverCamera c=g.layout.camera;float ox=c.screenX(0,0),oy=c.screenY(0,0);
+            if(nodeVisible!=null && ox==visibleX && oy==visibleY && c.scale==visibleScale && g.layout.width==visibleW && g.layout.height==visibleH
+                    && depthMin==visibleMin && depthMax==visibleMax && polygonCount==visibleKeyCount && version==visibleVersion)return nodeVisible;
+            if(nodeVisible==null)nodeVisible=new boolean[nodes.length];culledNodeCount=0;
+            for(int i=0;i<nodes.length;i++){float[] b=projectedBounds[i];
+                boolean v=b!=null && ox+b[2]*c.scale>=0 && ox+b[0]*c.scale<=g.layout.width && oy+b[3]*c.scale>=0 && oy+b[1]*c.scale<=g.layout.height;
+                nodeVisible[i]=v;if(!v)culledNodeCount++;}
+            visibleFaceCount=0;for(int i=0;i<polygonCount;i++){Poly f=polygons[i];if(nodeVisible[f.node] && -f.nx+f.ny+f.nz>EPS)visibleFaceCount++;}
+            visibleX=ox;visibleY=oy;visibleScale=c.scale;visibleW=g.layout.width;visibleH=g.layout.height;visibleMin=depthMin;visibleMax=depthMax;visibleKeyCount=polygonCount;visibleVersion=version;
+            return nodeVisible;
+        }
         /** Moving shore machinery remains solid; only buildings may fade. */
         public float opacity(Game g,Painter painter,int node) {return 1;}
         /** Exact convex-face ray test; halos do not shine through opaque bridge parts. */
@@ -372,6 +391,8 @@ public final class ArticulatedModel {
             return false;
         }
     }
+    /** Faces whose projected box is under this size in both axes are invisible specks. */
+    static final float MIN_FACE_PIXELS=1.5f;
     public static final class Stats {public int sourceFaces,visibleFaces,fragments,drawnFaces,culledNodes;}
     /** Build immutable face ordering during level preparation, before active draws. */
     public void prepare(Pose pose) {
@@ -399,22 +420,26 @@ public final class ArticulatedModel {
         Stats stats=new Stats();stats.sourceFaces=faces.length;
         // Particle depth cursors visit many empty intervals: geometry cannot contribute here.
         if(!pose.overlapsDepth(min,max))return stats;
-        float[] alpha=new float[nodes.length];boolean[] visible=new boolean[nodes.length];
-        for(int i=0;i<nodes.length;i++) {float[] b=pose.nodeBounds(g.layout.camera,i);visible[i]=b!=null && b[2]>=0 && b[0]<=g.layout.width && b[3]>=0 && b[1]<=g.layout.height;
-            if(visible[i])alpha[i]=pose.opacity(g,p,i);else stats.culledNodes++;}
-        for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(visible[f.node] && -f.nx+f.ny+f.nz>EPS)stats.visibleFaces++;}
+        boolean[] visible=pose.visibility(g);stats.culledNodes=pose.culledNodeCount;stats.visibleFaces=pose.visibleFaceCount;
         if(stats.visibleFaces==0)return stats;
-        prepare(pose);
+        if(!pose.prepared){prepare(pose);visible=pose.visibility(g);}
         stats.fragments=pose.fragments;
         FaceLighting scene=SceneryLighting.get(g);
         p.beginSurfaceBatch();
         try {
-            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(alpha[f.node]>0){Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,alpha[f.node],scene,lighting,f.cx,f.cy,f.cz);stats.drawnFaces++;}}}
+            RiverCamera c=g.layout.camera;float ox=c.screenX(0,0),oy=c.screenY(0,0),sc=c.scale,w=g.layout.width,h=g.layout.height,speck=MIN_FACE_PIXELS/sc;
+            for(int i=0;i<pose.polygonCount;i++){Poly f=pose.polygons[i];if(!visible[f.node] || f.depthMax<=min || f.depthMin>max)continue;
+                // Per-face screen cull and sub-pixel speck LOD, before projection and lighting.
+                if(ox+f.screenMaxX*sc<0 || ox+f.screenMinX*sc>w || oy+f.screenMaxY*sc<0 || oy+f.screenMinY*sc>h)continue;
+                if(f.screenMaxX-f.screenMinX<speck && f.screenMaxY-f.screenMinY<speck)continue;
+                {Poly clipped=Branch.slice(f,min,max);if(clipped!=null){clipped.paint(p,g.layout.camera,1,scene,lighting,f.cx,f.cy,f.cz);stats.drawnFaces++;}}}
         } finally {p.endSurfaceBatch();}
         return stats;
     }
     private static final class Poly {
-        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz,sourceX,sourceY,sourceZ;int motionIndex,sourceIndex;int[] vertexIds;
+        final float[] xyz,uv;final int node,color,material;float nx,ny,nz,d,depthMin,depthMax,cx,cy,cz,sourceX,sourceY,sourceZ;
+        /** Camera-relative projected bounds at unit scale; screen = origin + bound * scale. */
+        float screenMinX,screenMinY,screenMaxX,screenMaxY;int motionIndex,sourceIndex;int[] vertexIds;
         Poly(float[] p,float[] texture,int n,int c,int m) {
             xyz=p;uv=texture;node=n;color=c;material=m;float ax=p[3]-p[0],ay=p[4]-p[1],az=p[5]-p[2],bx=p[6]-p[0],by=p[7]-p[1],bz=p[8]-p[2];
             float x=ay*bz-az*by,y=az*bx-ax*bz,z=ax*by-ay*bx,len=(float)StrictMath.sqrt(x*x+y*y+z*z);
@@ -423,8 +448,10 @@ public final class ArticulatedModel {
         Poly(float[] p,float[] texture,Poly original) {xyz=p;uv=texture;node=original.node;color=original.color;material=original.material;sourceIndex=original.sourceIndex;sourceX=original.sourceX;sourceY=original.sourceY;sourceZ=original.sourceZ;nx=original.nx;ny=original.ny;nz=original.nz;d=original.d;depthBounds();}
         /** Geometry-derived bounds refresh only when a rigid pose changes, never per slice. */
         void depthBounds(){
-            depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;cx=cy=cz=0;
-            for(int i=0;i<xyz.length;i+=3){cx+=xyz[i];cy+=xyz[i+1];cz+=xyz[i+2];float depth=xyz[i+1]-xyz[i];depthMin=Math.min(depthMin,depth);depthMax=Math.max(depthMax,depth);}
+            depthMin=Float.MAX_VALUE;depthMax=-Float.MAX_VALUE;cx=cy=cz=0;screenMinX=screenMinY=Float.MAX_VALUE;screenMaxX=screenMaxY=-Float.MAX_VALUE;
+            for(int i=0;i<xyz.length;i+=3){cx+=xyz[i];cy+=xyz[i+1];cz+=xyz[i+2];float depth=xyz[i+1]-xyz[i];if(depth<depthMin)depthMin=depth;if(depth>depthMax)depthMax=depth;
+                float sx=RiverCamera.Q*(xyz[i]+xyz[i+1]),sy=RiverCamera.Q*RiverCamera.DEPTH*(xyz[i+1]-xyz[i])-xyz[i+2]*Z_SCALE;
+                if(sx<screenMinX)screenMinX=sx;if(sx>screenMaxX)screenMaxX=sx;if(sy<screenMinY)screenMinY=sy;if(sy>screenMaxY)screenMaxY=sy;}
             int count=xyz.length/3;cx/=count;cy/=count;cz/=count;
         }
         void paint(Painter p,RiverCamera c,float alpha,FaceLighting scene,FaceLighting lighting,float x,float y,float z) {

@@ -32,8 +32,12 @@ public final class WaveView {
             float x=c.worldX(sx,sy),y=c.worldY(sx,sy);
             minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
         }
-        float[] mask=montrose?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
-        if(montrose)p.preclipped();
+        // Survey harbors reuse the camera-affine shore mask, so each crest is one quad instead of
+        // a clip against every local water triangle (as Montrose does with its ambient clip).
+        boolean survey=g.surveyStage();
+        float[] mask=montrose?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips())
+                :survey?ShoreOcclusion.region(g,c,minX-64,minY-64,maxX+64,maxY+64,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
+        if(montrose || survey)p.preclipped();
         if(mask.length>0)canvas.pushClipOutside(mask);
         try {
         int tick=g.visualTicks;

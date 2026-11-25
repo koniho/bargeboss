@@ -6437,3 +6437,75 @@ launch restored after capture; screen timeout restored to300000ms.
   cold-launched successfully. Native harbor menu was visually reviewed before
   the release-envelope correction; final continuity is covered by the new shared
   regression. No measured device input-latency distribution or iOS-device test.
+
+## 2026-11-24: Chicago River stage (Navy Pier to Wolf Point)
+
+- New surveyed stage loads only on Chicago entry: `Game.chicago`, the overview chart
+  and shoreline segments use lazy holders, so other stages never initialise its
+  1,070-building survey. Water triangles are precomputed offline (no runtime ear
+  clipping of the 679-vertex ring); park triangles are built once per process.
+- Towers are presorted by static depth; each frame culls them by projected box and
+  draws only visible walls (precomputed per footprint for the fixed camera yaw)
+  plus a roof. Window bands are line segments only at scale >= .5, on every third
+  floor with hashed coverage, and are skipped on faded towers.
+- Building fades advance at 60 Hz in mission step (not render) over visible towers.
+- Desktop Java2D headless review frames: 53-172 ms for working views, 1.16 s for the
+  first full-city overview (includes class initialisation). These are desktop
+  reference numbers only; no Android/iOS frame-time claim yet.
+- Canonical replay baseline moved 310d2a08 -> b65d9416 solely from catalog growth
+  (bisected: removing only the Chicago entry restores 310d2a08 exactly), then to
+  cb5ec116 when the newly visible NEXT page button gained a 30-unit gap before SET SAIL.
+- Android: full build/encoding checks passed; APK installed and the stage ran natively
+  (Vulkan) on the development phone. adb-injected taps on deferred-release menus were
+  unreliable, so no device frame-time or touch-routing measurement is claimed.
+
+## 2026-11-24: Chicago frame cost, building light and fades
+
+Android phone (Vulkan), profiling APK, `tools/profile-android.sh <scene> live`, 60 warmup
+excluded; draw = CPU record ms, interval = frame-to-frame ms, p50/p95. Fixtures
+`chicago-start`, `chicago-downtown`, `chicago-wolf` (tug at the confluence).
+
+| Fixture | Before draw | After draw | Before interval | After interval |
+| --- | --- | --- | --- | --- |
+| chicago-start | 14.56 / 17.60 | 9.82 / 14.26 | 18.53 / 58.41 | 19.50 / 55.92 |
+| chicago-downtown | 15.77 / 18.35 | 11.72 / 15.84 | 20.44 / 63.17 | 19.15 / 58.78 |
+| chicago-wolf | 28.06 / 29.95 | 10.57 / 14.13 | 45.42 / 85.65 | 18.72 / 59.83 |
+
+Before: `20261124-1500{26,46}` / `150108`; after: `20261124-153928`, `-153948`, and the
+final `chicago-wolf` run. Reference `indiana-hick` same build: draw 8.54/12.06,
+interval 17.56/60.42 — the ~18 ms median and ~60 ms p95 interval are shared by the
+existing surveyed stages, not Chicago-specific, and remain open.
+
+- Cause (method trace, Wolf Point): bridges 42% inclusive. Each tower is a depth event,
+  and every event sliced all 18 bascules; each slice recomputed node visibility
+  (allocating per node) and re-ran exact lamp-halo ray tests.
+  - `BridgeLayers.landmark`: a landmark only flushes bridge faces when its screen box
+    meets a visible bridge's projected box (plus halo). Skipped intervals paint at the
+    next event, still behind every later item. Off-screen bridges are not visited.
+  - `ArticulatedModel.Pose`: node culling/front-face counts cached per camera and pose
+    version (version bumps on motion update/translation; lift spans move in z only).
+  - Per-face screen cull and sub-pixel speck LOD (<1.5 px both axes) before projection
+    and lighting. Wolf at 1.1x: 22% of rigid faces were off screen; at 0.6x, 41% specks.
+  - Lamp world points and halo occlusion cached per pose amount (camera independent).
+- Chicago ground: dry land per 256-unit cell and street quads (already filtered
+  against water) precomputed at stage prepare; frames only cull and project. Before,
+  up to 400 cells re-entered a 128-entry dry LRU and every road segment ran `contains`.
+- Full-depth union shore masks (water surface clip) are camera-affine: cached as world
+  triangles with a raised flag over a padded rect, re-projected per camera and culled to
+  the query rect. Survey wave crests (Indiana/Chicago) now draw as quads under that mask,
+  like Montrose's ambient clip, instead of clipping each crest to water triangles.
+- Android bit-level helpers in hot paths replaced with exact equivalents: viewport
+  finite/bounds test (`x-x!=0`, plain compares), cell floor, wake-energy abs, unlit
+  `SceneryLighting.shade` early return, seam guard `Math.sqrt` (correctly rounded).
+  A wake-bounds early-out for `WaterSurface.energy` was tried and reverted: it failed
+  `ShorelineViewTest` (arriving wake response), so those bounds are not conservative there.
+- Buildings now receive scene lights: each wall and roof is shaded through
+  `SceneryLighting.shade` (wall midpoint at street height, outward normal) and drawn as a
+  LIT surface; per-building projection scratch is reused.
+- Tower fades: only when the tower is in front of a hull and its projected solid covers
+  the hull's screen point or a narrow margin (radius + 8 units sideways, superstructure
+  above) — exact base-polygon/vertical-segment test, not the former 150-unit circle.
+- Canonical replay 21c79fb2:2:1350 (was cb5ec116): draw trace only. Bisected: with the
+  per-face screen cull and speck LOD disabled the old signature is exact.
+- `./check.sh` passes. Desktop review frames re-rendered (`out/chicago/`, including new
+  `wolf-tug` / `downtown-tug`); device frames reviewed for masks, waves and fades.

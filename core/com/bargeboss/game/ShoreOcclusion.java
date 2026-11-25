@@ -21,11 +21,13 @@ public final class ShoreOcclusion {
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
         if(g.calumetStage())return CalumetWaterGeometry.shore(c,left,top,right,bottom,depth,union);
         if(g.indianaStage())return IndianaHarbor.geometry().shore(c,left,top,right,bottom,depth,union);
+        if(g.chicagoStage())return ChicagoRiver.geometry().shore(c,left,top,right,bottom,depth,union);
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
-        return industrial(c,left,top,right,bottom,depth,g.indianaStage());
+        return industrial(c,left,top,right,bottom,depth,null);
     }
-    static float[] industrial(RiverCamera c,float left,float top,float right,float bottom,float depth,boolean indiana){
-        if(indiana)return IndianaHarbor.geometry().tops(c,left,top,right,bottom,depth);
+    /** Survey geometry supplies raised tops directly; null selects the practice canal. */
+    static float[] industrial(RiverCamera c,float left,float top,float right,float bottom,float depth,HarborPolygonGeometry survey){
+        if(survey!=null)return survey.tops(c,left,top,right,bottom,depth);
         ArrayList<float[]> dry=new ArrayList<float[]>();
         subtract(dry,left,top,right,bottom,CalumetMap.water(),0);
         if(dry.isEmpty())return EMPTY;

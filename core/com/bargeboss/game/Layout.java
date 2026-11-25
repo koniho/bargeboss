@@ -20,7 +20,7 @@ public final class Layout {
             BACK=new Box(40,516,220,56), CHALLENGE_START=new Box(660,516,260,56),
             FINISH_CHALLENGES=new Box(60,450,240,64), NEXT_CHALLENGE=new Box(660,450,240,64);
     public static final Box CHALLENGE_PREV_PAGE=new Box(300,516,100,56),
-            CHALLENGE_NEXT_PAGE=new Box(560,516,100,56);
+            CHALLENGE_NEXT_PAGE=new Box(530,516,100,56);
     public static final Box[] CHALLENGE_CARDS={new Box(60,138,260,278),new Box(360,138,260,278),new Box(660,138,260,278)};
     public static final Layout DEFAULT=new Layout(WIDTH,HEIGHT);
     public final float width,height,offsetX,offsetY;

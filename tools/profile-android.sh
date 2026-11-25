@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")/.."
 scene=${1:-barge-push}
 mode=${2:-live}
-case "$scene" in training-spotlight|montrose-arrival|montrose-swimmers|montrose-swimmers-lit|montrose-lift-carry|montrose-lift-water|montrose-lift-lowering|montrose-tow-one|montrose-tow-two|montrose-chas|montrose-storm-return|montrose-racer|montrose-arrival|montrose-moorings-dusk|buoy-complete|montrose-dispatch|montrose-haulout|tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
+case "$scene" in training-spotlight|montrose-arrival|montrose-swimmers|montrose-swimmers-lit|montrose-lift-carry|montrose-lift-water|montrose-lift-lowering|montrose-tow-one|montrose-tow-two|montrose-chas|montrose-storm-return|montrose-racer|montrose-arrival|montrose-moorings-dusk|buoy-complete|montrose-dispatch|montrose-haulout|tutorial-fireworks|tutorial-firefight|barge-abilities|calumet-offload|calumet-bridge|calumet-skyway|indiana-bridges|calumet-inlet|calumet-basin|indiana-harbor|indiana-hick|chicago-start|chicago-downtown|chicago-wolf|shared-slip-wide|tow-tight-circle|basin-entry|canal-entry|canal-middle|barge-arrival|barge-push|harbor-close|barge-tow|barge-bridge|montrose-inlet|montrose-docks|montrose-overview) ;; *) echo 'Unknown scene' >&2; exit 2;; esac
 case "$mode" in freeze|live|replay) ;; *) echo 'Mode must be freeze, live or replay' >&2; exit 2;; esac
 bargeboss_reference_water=${BARGEBOSS_PROFILE_REFERENCE_WATER:-false}
 case "$bargeboss_reference_water" in true|false) ;; *) exit 2;; esac
@@ -71,10 +71,12 @@ dumpsys gfxinfo com.bargeboss.game framestats > '$staging/gfxinfo.txt'
 dumpsys meminfo com.bargeboss.game > '$staging/meminfo.txt'
 logcat -d --pid=\$(pidof com.bargeboss.game) -s BargeBossProfile:I AndroidRuntime:E > '$staging/logcat.txt'
 screencap -p '$staging/scene.png'"
-for name in frames.csv gfxinfo.txt meminfo.txt logcat.txt scene.png; do cp "$staging/$name" "$output/$name"; done
+# On the phone (Termux) staging is local; from a USB/ADB host pull it instead.
+fetch() { if [ -e "$1" ]; then cp "$1" "$2"; else adb pull "$1" "$2" >/dev/null; fi; }
+for name in frames.csv gfxinfo.txt meminfo.txt logcat.txt scene.png; do fetch "$staging/$name" "$output/$name"; done
 if [ "$trace" = true ]; then
     rish -c "cp '$remote/$scene-$mode.trace' '$staging/methods.trace'"
-    cp "$staging/methods.trace" "$output/methods.trace"
+    fetch "$staging/methods.trace" "$output/methods.trace"
     python3 tools/summarize-method-trace.py "$output/methods.trace" > "$output/method-hotspots.txt"
 fi
 git rev-parse HEAD > "$output/revision.txt"

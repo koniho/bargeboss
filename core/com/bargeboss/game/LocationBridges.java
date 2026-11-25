@@ -27,11 +27,34 @@ final class LocationBridges {
         ind("columbus","COLUMBUS DRIVE",41.63931,-87.47128,1.57f,LandmarkBridge.BASCULE,2,64),
         ind("east-works","EAST WORKS CROSSING",41.65637,-87.43309,1.20f,LandmarkBridge.BASCULE,2,50)
     };}
-    private static LandmarkBridge cal(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,CalumetRiver.north(lat),CalumetRiver.east(lon),yaw,type,style,width,false);}
-    private static LandmarkBridge ind(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,IndianaHarbor.north(lat),IndianaHarbor.east(lon),yaw,type,style,width,true);}
+    /** Movable crossings from Wolf Point to the lake; OSM bridge-way midpoints and deck axes. */
+    private static final class Chicago {static final LandmarkBridge[] ALL={
+        chi("grand","GRAND AVENUE",41.89142,-87.64112,-1.67f,LandmarkBridge.BASCULE,2,48),
+        chi("kinzie","KINZIE STREET",41.88908,-87.63949,1.46f,LandmarkBridge.BASCULE,3,40),
+        chi("kinzie-rail","KINZIE STREET RAIL (RAISED)",41.88851,-87.63921,1.58f,LandmarkBridge.BASCULE,5,26),
+        chi("lake","LAKE STREET / L",41.88573,-87.63772,1.57f,LandmarkBridge.BASCULE,1,52),
+        chi("randolph","RANDOLPH STREET",41.88446,-87.63798,-1.59f,LandmarkBridge.BASCULE,2,56),
+        chi("washington","WASHINGTON STREET",41.88320,-87.63809,1.54f,LandmarkBridge.BASCULE,3,56),
+        chi("madison","MADISON STREET",41.88190,-87.63823,-1.59f,LandmarkBridge.BASCULE,2,60),
+        chi("franklin","FRANKLIN-ORLEANS",41.88741,-87.63584,-.59f,LandmarkBridge.BASCULE,2,56),
+        chi("wells","WELLS STREET / L",41.88755,-87.63400,0,LandmarkBridge.BASCULE,1,56),
+        chi("lasalle","LASALLE STREET",41.88752,-87.63251,0,LandmarkBridge.BASCULE,3,62),
+        chi("clark","CLARK STREET",41.88751,-87.63103,0,LandmarkBridge.BASCULE,2,58),
+        chi("dearborn","DEARBORN STREET",41.88753,-87.62954,0,LandmarkBridge.BASCULE,4,54),
+        chi("state","STATE STREET",41.88757,-87.62801,0,LandmarkBridge.BASCULE,3,62),
+        chi("wabash","WABASH AVENUE",41.88794,-87.62689,-.43f,LandmarkBridge.BASCULE,2,56),
+        chi("michigan","DUSABLE / MICHIGAN AVENUE",41.88888,-87.62438,.17f,LandmarkBridge.BASCULE,4,78),
+        chi("columbus","COLUMBUS DRIVE",41.88859,-87.62058,.13f,LandmarkBridge.BASCULE,2,70),
+        chi("lsd","LAKE SHORE DRIVE LINK",41.88842,-87.61410,0,LandmarkBridge.BASCULE,1,96),
+        chi("lsd-ogden","LAKE SHORE DRIVE / OGDEN SLIP",41.89032,-87.61410,0,LandmarkBridge.BASCULE,1,96)
+    };}
+    private static LandmarkBridge chi(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,ChicagoRiver.north(lat),ChicagoRiver.east(lon),yaw,type,style,width,LandmarkBridge.CHICAGO);}
+    static LandmarkBridge[] chicago(){return Chicago.ALL;}
+    private static LandmarkBridge cal(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,CalumetRiver.north(lat),CalumetRiver.east(lon),yaw,type,style,width,LandmarkBridge.CALUMET);}
+    private static LandmarkBridge ind(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,IndianaHarbor.north(lat),IndianaHarbor.east(lon),yaw,type,style,width,LandmarkBridge.INDIANA);}
     static LandmarkBridge[] calumet(){return Calumet.ALL;}
     static LandmarkBridge[] indiana(){return Indiana.ALL;}
-    static LandmarkBridge[] forGame(Game g){return g.tutorial!=null?TutorialCanalBridge.bridges():g.calumetStage()?calumet():g.indianaStage()?indiana():new LandmarkBridge[0];}
+    static LandmarkBridge[] forGame(Game g){return g.tutorial!=null?TutorialCanalBridge.bridges():g.calumetStage()?calumet():g.indianaStage()?indiana():g.chicagoStage()?chicago():new LandmarkBridge[0];}
     static void shadows(Game g,Painter p){Painter world=new RiverPainter(p,g.layout.camera);for(int i=0;i<g.passages.bridges.length;i++)g.passages.bridges[i].shadow(g,world,g.passages.amount(i));}
     static void prepare(LandmarkBridge[] bridges){for(LandmarkBridge b:bridges)b.prepare();}
 }

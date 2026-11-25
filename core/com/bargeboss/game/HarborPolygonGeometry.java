@@ -12,7 +12,7 @@ final class HarborPolygonGeometry {
     private final float[] coast;
     private final float[][] water,waterBounds,edges,edgeBounds;
     private final Index waterIndex,edgeIndex;
-    private final float maxX,maxY,openMinX;
+    private final float maxX,maxY,openMinX,openMinY;
     private final LinkedHashMap<Long,float[][]> DRY=new LinkedHashMap<Long,float[][]>(64,.75f,true){
         protected boolean removeEldestEntry(Map.Entry<Long,float[][]> e){return size()>DRY_CACHE_LIMIT;}
     };
@@ -30,14 +30,16 @@ final class HarborPolygonGeometry {
         }
     }
     HarborPolygonGeometry(float[] coast,float[][] water,float maxX,float maxY){this(coast,water,maxX,maxY,Float.NaN);}
-    HarborPolygonGeometry(float[] coast,float[][] water,float maxX,float maxY,float openMinX){
-        this.coast=coast;this.water=water;this.maxX=maxX;this.maxY=maxY;this.openMinX=openMinX;
+    HarborPolygonGeometry(float[] coast,float[][] water,float maxX,float maxY,float openMinX){this(coast,water,maxX,maxY,openMinX,Float.NaN);}
+    HarborPolygonGeometry(float[] coast,float[][] water,float maxX,float maxY,float openMinX,float openMinY){
+        this.coast=coast;this.water=water;this.maxX=maxX;this.maxY=maxY;this.openMinX=openMinX;this.openMinY=openMinY;
         waterBounds=bounds(water);waterIndex=new Index(waterBounds);
         edges=edges();edgeBounds=bounds(edges);edgeIndex=new Index(edgeBounds);
     }
     private static float[][] bounds(float[][] shapes){float[][] result=new float[shapes.length][];for(int i=0;i<shapes.length;i++)result[i]=PolygonWater.bounds(shapes[i]);return result;}
     private static long key(int x,int y){return ((long)x<<32)^(y&0xffffffffL);}
-    private static int cell(float v){return (int)StrictMath.floor(v/CELL);}
+    /** Exact floor for in-range cells without Android's bit-level StrictMath.floor. */
+    private static int cell(float v){float q=v/CELL;int i=(int)q;return q<i?i-1:i;}
     /** Immutable bucket contents; query scratch is per thread and never escapes. */
     static final class Index {
         private static final int[] EMPTY=new int[0];
@@ -104,7 +106,8 @@ final class HarborPolygonGeometry {
     boolean shoreEdge(float ax,float ay,float bx,float by){
         return !(Math.abs(ax-maxX)<.1f && Math.abs(bx-maxX)<.1f
                 || Math.abs(ay-maxY)<.1f && Math.abs(by-maxY)<.1f
-                || Math.abs(ax-openMinX)<.1f && Math.abs(bx-openMinX)<.1f);
+                || Math.abs(ax-openMinX)<.1f && Math.abs(bx-openMinX)<.1f
+                || Math.abs(ay-openMinY)<.1f && Math.abs(by-openMinY)<.1f);
     }
     float[] tops(RiverCamera c,float l,float t,float r,float b,float depth){ArrayList<float[]> pieces=new ArrayList<float[]>();
         float rise=GroundArt.LAND_RISE*c.scale;
@@ -115,7 +118,49 @@ final class HarborPolygonGeometry {
     }
     float[] shore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){MaskCache cache=maskCache.get();
         float[] value=cache.get(c,l,t,r,b,depth,union);if(value!=null)return value;
-        value=buildShore(c,l,t,r,b,depth,union);cache.put(l,t,r,b,depth,union,value);return value;
+        value=depth==Float.NEGATIVE_INFINITY && union?worldMask.get().project(this,c,l,t,r,b):buildShore(c,l,t,r,b,depth,union);
+        cache.put(l,t,r,b,depth,union,value);return value;
+    }
+    /** Full-depth union masks (the per-frame water surface clip) are camera-affine: world
+     * triangles with a raised/ground flag, rebuilt only when the padded world rect no longer
+     * covers the view. A moving camera then only re-projects instead of re-clipping land. */
+    private final ThreadLocal<WorldMask> worldMask=new ThreadLocal<WorldMask>(){protected WorldMask initialValue(){return new WorldMask();}};
+    private static final class WorldMask {
+        float l,t,r,b;float[] world;boolean ready;
+        float[] project(HarborPolygonGeometry geo,RiverCamera c,float ql,float qt,float qr,float qb){
+            float w=qr-ql,h=qb-qt;
+            if(!ready || ql<l || qt<t || qr>r || qb>b || (r-l)*(b-t)>9*w*h){
+                l=ql-w*.5f;t=qt-h*.5f;r=qr+w*.5f;b=qb+h*.5f;world=geo.worldShore(l,t,r,b);ready=true;}
+            float rise=GroundArt.LAND_RISE*c.scale;float[] out=new float[world.length/3*2];int at=0;
+            for(int i=0;i<world.length;i+=9){
+                // Only triangles touching the query rect; the padding exists for reuse, not drawing.
+                float x0=world[i],x1=world[i+3],x2=world[i+6],y0=world[i+1],y1=world[i+4],y2=world[i+7];
+                if(x0<ql && x1<ql && x2<ql || x0>qr && x1>qr && x2>qr || y0<qt && y1<qt && y2<qt || y0>qb && y1>qb && y2>qb)continue;
+                float ax=c.screenX(world[i],world[i+1]),ay=c.screenY(world[i],world[i+1])-world[i+2]*rise;
+                float bx=c.screenX(world[i+3],world[i+4]),by=c.screenY(world[i+3],world[i+4])-world[i+5]*rise;
+                float cx=c.screenX(world[i+6],world[i+7]),cy=c.screenY(world[i+6],world[i+7])-world[i+8]*rise;
+                float area=PolygonWater.cross(ax,ay,bx,by,cx,cy);if(area<=.0001f && area>=-.0001f)continue;
+                out[at++]=ax;out[at++]=ay;
+                if(area<0){out[at++]=cx;out[at++]=cy;out[at++]=bx;out[at++]=by;}else{out[at++]=bx;out[at++]=by;out[at++]=cx;out[at++]=cy;}
+            }
+            float[] mask=at==out.length?out:Arrays.copyOf(out,at);sealRasterSeams(mask);return mask;
+        }
+    }
+    /** World triangles (x,y,raised) of land tops and visible seawall faces inside a rect. */
+    private float[] worldShore(float l,float t,float r,float b){ArrayList<float[]> tris=new ArrayList<float[]>();
+        for(float[] q:dry(l,t,r,b))for(int i=2;i<q.length-2;i+=2)tris.add(new float[]{q[0],q[1],1,q[i],q[i+1],1,q[i+2],q[i+3],1});
+        for(int i:edgeIndex.area(l,t,r,b)){float[] e=edges[i];float ax=e[0],ay=e[1],dx=e[2]-ax,dy=e[3]-ay,len=Physics.length(dx,dy);
+            float nx=-dy/len,ny=dx/len;if(!contains(ax+dx*.5f+nx,ay+dy*.5f+ny)){nx=-nx;ny=-ny;}
+            if(ny-nx<=0)continue;
+            float start=0,end=1;
+            for(int axis=0;axis<2;axis++){float d=axis==0?dx:dy,o=axis==0?ax:ay,min=axis==0?l:t,max=axis==0?r:b;
+                if(Math.abs(d)<.001f){if(o<min || o>max){end=-1;break;}}
+                else{float low=(min-o)/d,high=(max-o)/d;start=Math.max(start,Math.min(low,high));end=Math.min(end,Math.max(low,high));}}
+            if(end<=start)continue;
+            float x=ax+dx*start,y=ay+dy*start,xx=ax+dx*end,yy=ay+dy*end;
+            tris.add(new float[]{x,y,0,xx,yy,0,xx,yy,1});tris.add(new float[]{x,y,0,xx,yy,1,x,y,1});
+        }
+        float[] out=new float[tris.size()*9];for(int i=0;i<tris.size();i++)System.arraycopy(tris.get(i),0,out,i*9,9);return out;
     }
     private float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
         float[] top=tops(c,l,t,r,b,depth);ArrayList<float[]> pieces=new ArrayList<float[]>();
@@ -144,16 +189,17 @@ final class HarborPolygonGeometry {
     /** Conservative 1/8-screen-pixel guard prevents native hard clips from
      * rasterizing cracks between independently clipped geographic triangles.
      * Same positive winding is required by the union-capable painter contract. */
-    private static void sealRasterSeams(float[] mask){
+    /** Render-only: Math.sqrt is correctly rounded and uses the Android intrinsic. */
+    private static void sealRasterSeams(float[] mask){float[] original=new float[6];
         for(int i=0;i<mask.length;i+=6){
-            float[] original=Arrays.copyOfRange(mask,i,i+6);
+            System.arraycopy(mask,i,original,0,6);
             for(int v=0;v<3;v++){
                 int a=(v+2)%3*2,b=v*2,c=(v+1)%3*2;
                 float dx=original[b]-original[a],dy=original[b+1]-original[a+1],ex=original[c]-original[b],ey=original[c+1]-original[b+1];
-                float dl=Physics.length(dx,dy),el=Physics.length(ex,ey);if(dl<.0001f || el<.0001f)continue;
+                float dl=(float)Math.sqrt(dx*dx+dy*dy),el=(float)Math.sqrt(ex*ex+ey*ey);if(dl<.0001f || el<.0001f)continue;
                 float nx=dy/dl,ny=-dx/dl,mx=ey/el,my=-ex/el,den=1+nx*mx+ny*my;
                 if(den<.01f)continue;
-                float ox=(nx+mx)*.125f/den,oy=(ny+my)*.125f/den,len=Physics.length(ox,oy);
+                float ox=(nx+mx)*.125f/den,oy=(ny+my)*.125f/den,len=(float)Math.sqrt(ox*ox+oy*oy);
                 if(len>1){ox/=len;oy/=len;}
                 mask[i+b]+=ox;mask[i+b+1]+=oy;
             }

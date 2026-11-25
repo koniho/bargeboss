@@ -9,7 +9,7 @@ public final class CareerTest {
         System.out.println(assertions+" challenge, rank and progress persistence assertions passed");
     }
     private static void challengeRules() {
-        check(Challenges.COUNT==9 && Challenges.quota(0)==2,"first level has two opposite-bank deliveries");
+        check(Challenges.COUNT==10 && Challenges.quota(0)==2 && Challenges.quota(Challenges.CHICAGO)==1,"first level has two opposite-bank deliveries; the fire call is one job");
         check(Challenges.quota(1)==3 && Challenges.quota(2)==2 && Challenges.quota(3)==3,"shared slip and deep channel use three loads; lock passage uses two");
         check(Challenges.stars(0,1,0,100)==0 && Challenges.stars(0,2,0,0)==0,"incomplete goal or wreck earns no stars");
         check(Challenges.stars(0,2,1,79)==1 && Challenges.stars(0,2,0,79)==2
@@ -74,13 +74,15 @@ public final class CareerTest {
         int ticks=game.ticks,visual=game.visualTicks;game.advance(.1);
         check(game.ticks==ticks && game.visualTicks>visual,"location menu animates without simulation");
         for(int card=0;card<Challenges.LOCATION_COUNT;card++){
-            ReplayInput.tap(game,Layout.CHALLENGE_CARDS[card]);
+            if(card/Challenges.PAGE_SIZE>game.challengePage)ReplayInput.tap(game,Layout.CHALLENGE_NEXT_PAGE);
+            check(game.challengePage==card/Challenges.PAGE_SIZE,"later locations page into view");
+            ReplayInput.tap(game,Layout.CHALLENGE_CARDS[card%Challenges.PAGE_SIZE]);
             check(game.challengeId==Challenges.menuId(card),"cards select locations, not jobs");
         }
         ReplayInput.tap(game,Layout.CHALLENGE_START);
-        check(game.mode==Game.PLAY && game.indianaStage(),"selected location launches");
+        check(game.mode==Game.PLAY && game.chicagoStage(),"selected location launches");
         game.background();ReplayInput.tap(game,Layout.RESTART);
-        check(game.indianaStage() && game.ticks==0,"restart preserves location");
+        check(game.chicagoStage() && game.ticks==0,"restart preserves location");
         Game failed=new Game();failed.reset();failed.hull=0;failed.step();
         check(failed.mode==Game.FINISH && failed.career.totalStars()==0,"wreck earns no reward");
     }

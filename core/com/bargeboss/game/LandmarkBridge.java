@@ -19,8 +19,9 @@ final class LandmarkBridge {
         final String id;final boolean moving;final int node;final float x,y,z,nx=0,ny=0,nz=1,radius;final boolean signal;
         Lamp(String id,boolean moving,int node,float x,float y,float z,float radius,boolean signal){this.id=id;this.moving=moving;this.node=node;this.x=x;this.y=y;this.z=z;this.radius=radius;this.signal=signal;}
     }
-    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,boolean indiana){
-        this(id,name,x,y,yaw,type,style,width,bank(indiana,x,y,yaw,-1),bank(indiana,x,y,yaw,1));
+    static final int CALUMET=0,INDIANA=1,CHICAGO=2;
+    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,int location){
+        this(id,name,x,y,yaw,type,style,width,bank(location,x,y,yaw,-1),bank(location,x,y,yaw,1));
     }
     LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,float l,float r){
         this.id=id;this.name=name;this.x=x;this.y=y;this.yaw=yaw;this.type=type;this.style=style;this.width=width;
@@ -86,12 +87,12 @@ final class LandmarkBridge {
         radioPoint=fixedPose.point(root,right+29,-width*.5f-18,houseHeight*.65f);
         lamps=lights.toArray(new Lamp[lights.size()]);leaves=new int[leafIds.size()];for(int i=0;i<leaves.length;i++)leaves[i]=leafIds.get(i);
     }
-    private static float bank(boolean indiana,float x,float y,float yaw,int side){
+    private static float bank(int location,float x,float y,float yaw,int side){
         float distance=0,dx=(float)StrictMath.cos(yaw)*side,dy=(float)StrictMath.sin(yaw)*side;
-        while(distance<1000 && water(indiana,x+dx*distance,y+dy*distance))distance+=3;
+        while(distance<1000 && water(location,x+dx*distance,y+dy*distance))distance+=3;
         return distance;
     }
-    private static boolean water(boolean indiana,float x,float y){return indiana?IndianaHarbor.contains(x,y):CalumetRiver.contains(x,y);}
+    private static boolean water(int location,float x,float y){return location==INDIANA?IndianaHarbor.contains(x,y):location==CHICAGO?ChicagoRiver.contains(x,y):CalumetRiver.contains(x,y);}
     private static void truss(ArticulatedModel.Builder b,int n,float length,float width,float h,int color,boolean roof,boolean below){
         b.box(n,length*.5f,0,0,length,width,5,STEEL,SurfaceMaterial.STEEL);
         for(int side=-1;side<=1;side+=2){float yy=side*width*.5f;
@@ -186,13 +187,33 @@ final class LandmarkBridge {
     void draw(Game g,Painter p,float amount,boolean passable){
         drawRange(g,p,amount,passable,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY);
     }
+    /** Lamp world points and halo occlusion depend only on the pose amount, not the camera.
+     * Cached per amount so depth slices and still frames skip the exact ray tests. */
+    private float lampAmount=Float.NaN;private float[][] lampAt;private boolean[] lampHidden;
+    private void lampCache(ArticulatedModel.Pose pose,float amount){
+        if(lampAt!=null && amount==lampAmount)return;
+        if(lampAt==null){lampAt=new float[lamps.length][];lampHidden=new boolean[lamps.length];}
+        for(int i=0;i<lamps.length;i++){Lamp lamp=lamps[i];ArticulatedModel.Pose owner=lamp.moving?pose:fixedPose;
+            float[] at=owner.point(lamp.node,lamp.x,lamp.y,lamp.z);lampAt[i]=at;lampHidden[i]=fixedPose.occluded(at) || pose.occluded(at);}
+        lampAmount=amount;
+    }
+    /** Projected rectangle of both poses plus lamp halos; false when it misses the screen. */
+    boolean screenBounds(Game g,float amount,float[] out){
+        if(!visible(g))return false;ArticulatedModel.Pose pose=pose(amount);RiverCamera c=g.layout.camera;
+        out[0]=out[1]=Float.MAX_VALUE;out[2]=out[3]=-Float.MAX_VALUE;
+        fixedPose.screenBounds(c,out);pose.screenBounds(c,out);
+        float halo=0;for(Lamp lamp:lamps)halo=Math.max(halo,lamp.radius);halo=halo*3*c.scale+8;
+        out[0]-=halo;out[1]-=halo;out[2]+=halo;out[3]+=halo;
+        return out[2]>=0 && out[0]<=g.layout.width && out[3]>=0 && out[1]<=g.layout.height;
+    }
     void drawRange(Game g,Painter p,float amount,boolean passable,float min,float max){
         if(!visible(g))return;ArticulatedModel.Pose pose=pose(amount);
+        // Lamps sit on model geometry, so an interval missing both poses has nothing to paint.
+        if(!fixedPose.overlapsDepth(min,max) && !pose.overlapsDepth(min,max))return;
         fixed.drawRange(g,p,fixedPose,min,max);moving.drawRange(g,p,pose,min,max);
-        RiverCamera c=g.layout.camera;
-        for(int i=0;i<lamps.length;i++){Lamp lamp=lamps[i];ArticulatedModel.Pose owner=lamp.moving?pose:fixedPose;
-            float[] at=owner.point(lamp.node,lamp.x,lamp.y,lamp.z);
-            if(at[1]-at[0]<=min || at[1]-at[0]>max || fixedPose.occluded(at) || pose.occluded(at))continue;
+        RiverCamera c=g.layout.camera;lampCache(pose,amount);
+        for(int i=0;i<lamps.length;i++){Lamp lamp=lamps[i];float[] at=lampAt[i];
+            if(at[1]-at[0]<=min || at[1]-at[0]>max || lampHidden[i])continue;
             float px=c.screenX(at[0],at[1]),py=c.screenY(at[0],at[1])-at[2]*ArticulatedModel.Z_SCALE*c.scale;
             int color=lamp.signal?(passable?0xff7ee2aa:0xffff6850):0xffffbd79;
             SceneryEffects.glow(p,px,py,lamp.radius*c.scale,color,1,g.visualTicks,i*.79f);

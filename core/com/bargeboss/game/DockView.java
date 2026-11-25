@@ -15,7 +15,8 @@ public final class DockView {
     }
     private DockView(){}
     static void prepare(Game g){
-        g.dockCranes=new Crane[g.calumetStage()?CalumetRiver.JOB_SITES.length:3];if(g.montroseStage())return;
+        // The Chicago fire call has no cargo berths, so it prepares no cargo cranes.
+        g.dockCranes=new Crane[g.calumetStage()?CalumetRiver.JOB_SITES.length:g.chicagoStage()?0:3];if(g.montroseStage())return;
         for(int berth=0;berth<g.dockCranes.length;berth++){
             float[] at=new float[2];
             if(g.calumetStage()){float[] site=CalumetRiver.JOB_SITES[berth];at[0]=site[0]+site[2]*90-site[3]*70;at[1]=site[1]+site[3]*90+site[2]*70;}

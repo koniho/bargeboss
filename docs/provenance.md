@@ -113,14 +113,16 @@ Java geometry, aligned to the collision boundary rather than baked into a raster
 
 ## Geographic location data
 
-The Calumet and Indiana survey JSON and generated geographic coordinate/material
+The Calumet, Indiana and Chicago River survey JSON and generated geographic coordinate/material
 arrays contain data derived from © OpenStreetMap contributors under
 [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/), separate from the MIT
 license for game code. [OSM attribution and copyright](https://www.openstreetmap.org/copyright).
 USGS/USDA aerial imagery was consulted for layout review and broad material zones;
 no imagery is embedded as a runtime texture. Source dates, edits, simplifications
 and export commands are recorded in [Calumet](levels/calumet/README.md) and
-[Indiana Harbor](maps/indiana-harbor.md). These are gameplay maps, not navigational
+[Indiana Harbor](maps/indiana-harbor.md) and [Chicago River](maps/chicago-river.md).
+Chicago building heights are OSM `height`/level tags or stated defaults. A user-supplied
+Google Maps crop was a layout reference only. These are gameplay maps, not navigational
 products. Preserve the data attribution when redistributing the surveys.
 
 ### Geographic bridge landmark rigs (2026-11-18)
