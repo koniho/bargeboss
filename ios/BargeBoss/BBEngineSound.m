@@ -41,9 +41,11 @@
             AVAudioPlayer *clip=[[AVAudioPlayer alloc] initWithContentsOfURL:url error:nil];
             if(clip){clip.volume=.85f;[clip prepareToPlay];[radio addObject:clip];}
         }
-        NSURL *musicURL=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBMusicAudio asset]]];
-        _music=[[AVAudioPlayer alloc] initWithContentsOfURL:musicURL error:nil];
-        _music.numberOfLoops=-1;[_music prepareToPlay];
+        if([BBMusicAudio available]){
+            NSURL *musicURL=[NSBundle.mainBundle.resourceURL URLByAppendingPathComponent:[@"assets/" stringByAppendingString:[BBMusicAudio asset]]];
+            _music=[[AVAudioPlayer alloc] initWithContentsOfURL:musicURL error:nil];
+            _music.numberOfLoops=-1;[_music prepareToPlay];
+        }
         _radio=radio;
         _players=players;_rates=rates;_buffers=buffers;[_engine prepare];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(interruption:) name:AVAudioSessionInterruptionNotification object:nil];

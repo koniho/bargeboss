@@ -28,7 +28,7 @@ final class EngineSound implements AudioManager.OnAudioFocusChangeListener {
         AudioAttributes attributes=new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
         pool=new SoundPool.Builder().setMaxStreams(EngineAudio.LAYERS+SoundEffects.VOICES).setAudioAttributes(attributes).build();
         if(Build.VERSION.SDK_INT>=26)request=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).setAudioAttributes(attributes).setOnAudioFocusChangeListener(this).build();
-        try(AssetFileDescriptor file=context.getAssets().openFd(MusicAudio.asset())){
+        if(MusicAudio.available())try(AssetFileDescriptor file=context.getAssets().openFd(MusicAudio.asset())){
             music=new MediaPlayer();music.setAudioAttributes(attributes);
             music.setDataSource(file.getFileDescriptor(),file.getStartOffset(),file.getLength());
             music.setLooping(true);

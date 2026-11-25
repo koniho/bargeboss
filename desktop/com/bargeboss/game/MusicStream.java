@@ -10,7 +10,7 @@ final class MusicStream {
     private volatile boolean closed;
     private volatile SourceDataLine line;
     private final Thread worker;
-    MusicStream(){worker=new Thread(this::play,"BargeBoss music");worker.setDaemon(true);worker.start();}
+    MusicStream(){worker=MusicAudio.available()?new Thread(this::play,"BargeBoss music"):null;if(worker!=null){worker.setDaemon(true);worker.start();}}
     synchronized void gain(float value){gain=value;notifyAll();}
     private AudioInputStream open()throws Exception{
         InputStream input=MusicStream.class.getResourceAsStream("/assets/"+MusicAudio.asset());
@@ -50,5 +50,5 @@ final class MusicStream {
         }catch(Exception e){if(!closed)System.err.println("Music unavailable: "+e.getMessage());}
         finally{if(line!=null)line.close();}
     }
-    void close(){synchronized(this){closed=true;notifyAll();}worker.interrupt();if(line!=null)line.close();}
+    void close(){synchronized(this){closed=true;notifyAll();}if(worker!=null)worker.interrupt();if(line!=null)line.close();}
 }

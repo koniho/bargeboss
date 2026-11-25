@@ -6609,3 +6609,35 @@ The union path also uses the tiles now:
 | chicago-start | 9.99 | 8.72 / 12.88 | 18.1 / 62.6 |
 | chicago-downtown | 11.49 | 9.36 / 13.31 | 18.1 / 59.5 |
 | chicago-wolf | 10.81 | 10.36 / 13.22 | 18.7 / 60.4 |
+
+## 2026-11-25: Android frame pacing restored to 60 FPS (silent soundtrack loop)
+
+**Symptom.** Every Android scene, the Montrose two-boat tow stress scene included, delivered
+about 37 FPS: three quick frames, then a ~55 ms gap, repeating. Draw (5-12 ms) and advance
+(~1 ms) were cheap; the simulation caught up with several ticks in one frame, so steering and
+tows stuttered. The ~60 ms interval p95 noted for survey levels on 2026-11-24 was this, not a
+survey-level floor.
+
+**Cause (bisected on the phone, `tow-tight-circle`, 8 build-and-profile rounds).** First bad
+commit `3e3618c` (remove standalone third-party audio). It replaced the soundtrack with
+`music-silence-v1.wav`, a 50 ms clip; every host loops the soundtrack, so Android's
+`MediaPlayer` restarted it about 20 times a second, and that stalled the UI thread's frame loop.
+Parent `e4061c2`: 60.0 FPS, interval p95 25.0 ms; `3e3618c`: 37.8 FPS, p95 58.9 ms.
+
+**Fix.** `MusicAudio.asset()` is null when a build ships no soundtrack; `available()` gates the
+Android `MediaPlayer`, the iOS `AVAudioPlayer` and the desktop stream thread, so no player
+exists. The silent clip is deleted. `SoundEffectsTest` requires any future looped soundtrack
+to last at least 10 s. Parity unchanged (`a1746b7f:2:1350`).
+
+Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frames > 25 ms):
+
+| Scene | Before | After |
+| --- | --- | --- |
+| montrose-tow-two | 37.1; 19.0 / 58.9; 101 | 60.0; 16.6 / 21.5; 0 |
+| tow-tight-circle | 37.6; 17.6 / 59.3; 95 | 60.0; 16.7 / 17.8; 0 |
+| barge-push | 37.0; 18.2 / 60.0; 93 | 59.8; 16.7 / 20.3; 4 |
+| chicago-start | 36.5; 18.1 / 62.6; - | 60.0; 16.6 / 20.3; 0 |
+| chicago-downtown | 37.0; 18.1 / 59.5; - | 60.0; 16.7 / 22.2; 1 |
+| chicago-wolf | 36.3; 18.7 / 60.4; 94 | 59.3; 16.7 / 20.5; 1 |
+| calumet-bridge | 37.7; 18.2 / 59.6; - | 60.1; 16.7 / 22.4; 8 |
+| indiana-hick | 38.3; 17.9 / 60.3; 90 | 60.0; 16.7 / 18.3; 2 |

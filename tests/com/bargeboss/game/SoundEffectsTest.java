@@ -3,6 +3,10 @@ package com.bargeboss.game;
 public final class SoundEffectsTest {
     private static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}
     public static void run(){
+        // Hosts loop the soundtrack: a missing one creates no player, a shipped one must be long.
+        // A 50 ms looped stand-in restarted Android's MediaPlayer ~20x/s and cut pacing to ~37 FPS.
+        if(MusicAudio.available())try{javax.sound.sampled.AudioFileFormat f=javax.sound.sampled.AudioSystem.getAudioFileFormat(new java.io.File("assets/"+MusicAudio.asset()));
+            check(f.getFrameLength()/f.getFormat().getFrameRate()>=10,"looped soundtrack lasts at least 10 s");}catch(Exception e){throw new AssertionError(e);}
         Game g=new Game();g.mode=Game.PLAY;
         for(float speed:new float[]{0,1,2,Float.NaN})g.sounds.impact(speed);
         check(SoundEffects.sequence(g)==0,"resting and invalid contacts remain quiet");

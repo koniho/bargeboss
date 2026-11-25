@@ -102,4 +102,4 @@ Source, hash and reproducible processing: docs/audio/reitanna-thunks-v1.md and
  tools/prepare-reitanna-thunks.py.
 
 Public build soundtrack
-music-silence-v1.wav is synthetic silent PCM, with no third-party recording.
+None. Public builds ship no soundtrack and create no music player.
