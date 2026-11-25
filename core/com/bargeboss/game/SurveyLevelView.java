@@ -4,7 +4,7 @@ package com.bargeboss.game;
 final class SurveyLevelView {
     private SurveyLevelView(){}
     static void draw(Game g,Painter p,SurveyLevel level){
-        p.rect(0,0,g.layout.width,g.layout.height,level.background(g.lighting()));
+        int water=level.background(g.lighting());p.rect(0,0,g.layout.width,g.layout.height,water);WaterTexture.draw(g,p,water);
         WaveView.surface(g,p);ArcadeView.water(g,new RiverPainter(p,g.layout.camera));
         ShorelineView.water(g,p);LocationBridges.shadows(g,p);
         SurveyGround.walls(g,p,level);level.ground().draw(g,p);

@@ -6661,3 +6661,18 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   Bisected: with shake, flash/ring and spray changes disabled the old signature is exact; each
   part alone changes only the draw hash.
 - Desktop review: `out/collision-splash-motion/` (shake, flash, rings), fire barge spray capture.
+
+## 2026-11-25: Slowly evolving base water texture
+
+- `WaterTexture` (shared, visual clock): after each base water fill (survey levels, training, Montrose
+  via `WaveView.draw`) a sparse world-anchored field of soft GLOW patches: half faint sheen (water
+  mixed 50% toward pale cyan, alpha ≤ 0.2), half deeper troughs (60% toward black, alpha ≤ 0.4).
+  Each patch is stretched along a slow current (2.4, 1.1 units/s), wanders within its cell and
+  breathes over ~40–70 s (fully out before returning). Cells are world tiers of 24 × 2^k units, the
+  smallest spanning ≥ 170 px, so grain stays constant across zoom. Land, masks and waves draw over it.
+  Skipped at water detail 0 and by the training AMBIENT_WATER profiling exclusion.
+- Android (Vulkan, profiling APK, live, 360 samples): montrose-tow-two draw 7.34/8.86 (was
+  7.20/8.42), 60.0 FPS, 1 frame > 25 ms; chicago-wolf 7.98/9.80, 60.0 FPS, 0; barge-push three runs
+  9.92/9.73/9.83 p50 (was 9.65), 59.5–59.7 FPS, 12/3/5 frames > 25 ms (was 4: run-to-run noise).
+- Canonical replay b74b9bf8:2:1350 (was 598248e9): draw trace only; with the texture disabled the
+  previous signature is exact. `./check.sh` passes.
