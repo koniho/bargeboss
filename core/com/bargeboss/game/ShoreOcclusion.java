@@ -17,6 +17,16 @@ public final class ShoreOcclusion {
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth) {
         return region(g,c,left,top,right,bottom,depth,false);
     }
+    /** Full-depth mask over the whole view (water surface, wave crests), padded by pad world
+     * units. Survey levels reuse cached unit-space tiles; other stages fall back to region(). */
+    public static float[] view(Game g,RiverCamera c,float pad,boolean union){
+        float p=pad*c.scale,w=g.layout.width,h=g.layout.height;
+        SurveyLevel level=g.level();
+        if(level!=null && g.mode!=Game.TITLE && g.mode!=Game.CHALLENGES)return level.geometry().viewShore(c,-p,-p,w+p,h+p,union);
+        float l=Float.MAX_VALUE,t=l,r=-l,b=-l;
+        for(int k=0;k<4;k++){float x=c.worldX((k&1)*w,(k>>1)*h),y=c.worldY((k&1)*w,(k>>1)*h);l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);}
+        return region(g,c,l-pad,t-pad,r+pad,b+pad,Float.NEGATIVE_INFINITY,union);
+    }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
         if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
         SurveyLevel level=g.level();

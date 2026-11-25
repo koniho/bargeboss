@@ -191,7 +191,7 @@ public final class WaterSurface {
                 l=Math.min(l,wx);right=Math.max(right,wx);top=Math.min(top,wy);bottom=Math.max(bottom,wy);
             }
             clip=g.montroseStage()?surfaceClip.get(g,c,l-8,top-8,right+8,bottom+8,canvas.supportsUnionClips())
-                    :ShoreOcclusion.region(g,c,l-8,top-8,right+8,bottom+8,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips());
+                    :ShoreOcclusion.view(g,c,8,canvas.supportsUnionClips());
         } else p=new WaterEffectsPainter(g,p);
         if(clip.length>0)canvas.pushClipOutside(clip);
         p.beginWaterFoamBatch();

@@ -36,7 +36,7 @@ public final class WaveView {
         // a clip against every local water triangle (as Montrose does with its ambient clip).
         boolean survey=g.surveyStage();
         float[] mask=montrose?g.water.ambientClip.get(g,c,minX-64,minY-64,maxX+64,maxY+64,canvas.supportsUnionClips())
-                :survey?ShoreOcclusion.region(g,c,minX-64,minY-64,maxX+64,maxY+64,Float.NEGATIVE_INFINITY,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
+                :survey?ShoreOcclusion.view(g,c,64,canvas.supportsUnionClips()):ShoreOcclusion.EMPTY;
         if(montrose || survey)p.preclipped();
         if(mask.length>0)canvas.pushClipOutside(mask);
         try {

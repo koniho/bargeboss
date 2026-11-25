@@ -207,7 +207,11 @@ public final class CoreTest {
         // SurveyLevel unification (#26): Calumet now preclips wave crests under the shared shore
         // mask like Indiana/Chicago (draw commands only). Bisected: excluding Calumet from that
         // preclip restores 21c79fb2 exactly; ground, landmarks and physics are unchanged.
-        check(Parity.signature().equals("f74bb9ae:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Whole-view shore masks for painters without union clips (iOS, this Parity painter) now
+        // come from cached unit-space tiles (draw commands only; repeat calls are identical).
+        // Bisected: routing the non-union view mask back to per-frame buildShore restores
+        // f74bb9ae exactly; the spread spatial hash keys do not change output.
+        check(Parity.signature().equals("a1746b7f:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

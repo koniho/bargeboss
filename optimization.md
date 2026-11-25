@@ -6561,3 +6561,51 @@ existing surveyed stages, not Chicago-specific, and remain open.
   iOS-specific: chicago-start (~35 ms, 20 FPS) and chicago-wolf (~22 ms) are slow on the
   simulator in both builds while the phone draws them in ~10 ms; needs an iOS trace.
   Simulator timing does not prove device headroom.
+
+## 2026-11-25: iOS survey shore masks from cached unit tiles
+
+**Cause.** iOS Metal (and desktop/Parity) cannot union clip shapes, so `WaterSurface` and
+`WaveView` asked `HarborPolygonGeometry` for a disjoint whole-view shore mask every frame:
+`buildShore` plus `disjoint()` over every dry piece and seawall quad on screen. Navy Pier's
+piers and breakwaters made Chicago start the worst case (35 ms draw, 20 FPS on the
+simulator). The camera-affine world mask cache did not help: small `-inf` region queries kept
+evicting it, and its output depended on cache history. Separately, spatial `Long` keys
+(`col<<32 ^ row`) collided along diagonals; J2ObjC's HashMap tree bins then compare by
+reflection.
+
+**Fix (shared library, every SurveyLevel).**
+- `HarborPolygonGeometry.viewShore`: the mask is built per 1024-unit tile in camera unit space
+  (uniform scale plus translation preserves disjointness), made disjoint once per tile, cached
+  (LRU, 256 tiles per mode), cropped to the padded screen and projected. Output depends only on
+  the camera.
+- `ShoreOcclusion.view(g,c,pad,union)`: whole-view callers (`WaterSurface`, survey `WaveView`)
+  use the tiles; local masks keep the per-region path.
+- `HarborPolygonGeometry.key(col,row)`: multiplicative hash, shared with `SurveyGround`.
+- Parity `f74bb9ae` -> `a1746b7f` (draw-only, bisected; see `CoreTest`).
+
+iOS simulator (iPhone 17 Pro, Release, replay, draw p50 / p95 ms):
+
+| Scene | Before (`c771d90`) | After |
+| --- | --- | --- |
+| calumet-bridge | 10.45 / 11.38 | 5.04 / 5.80 |
+| calumet-basin | 8.55 | 3.84 |
+| indiana-harbor | 5.05 | 4.07 |
+| indiana-hick | 7.99 | 4.37 |
+| chicago-start | 35.38 | 6.17 / 6.92 |
+| chicago-downtown | 11.12 | 6.13 |
+| chicago-wolf | 22.07 | 7.70 / 8.39 |
+
+All seven now hold a 16.67 ms interval (60 FPS).
+
+Android phone (Vulkan, union clips; profile build, live, draw p50 / p95, interval p50 / p95 ms).
+The union path also uses the tiles now:
+
+| Scene | #26 draw p50 | Draw | Interval |
+| --- | --- | --- | --- |
+| calumet-bridge | 8.99 | 6.82 / 9.73 | 18.2 / 59.6 |
+| calumet-basin | 7.72 | 5.70 / 7.81 | 18.0 / 58.1 |
+| indiana-harbor | 5.29 | 4.77 / 6.96 | 17.6 / 56.5 |
+| indiana-hick | 6.75 | 6.71 / 9.94 | 17.9 / 60.3 |
+| chicago-start | 9.99 | 8.72 / 12.88 | 18.1 / 62.6 |
+| chicago-downtown | 11.49 | 9.36 / 13.31 | 18.1 / 59.5 |
+| chicago-wolf | 10.81 | 10.36 / 13.22 | 18.7 / 60.4 |

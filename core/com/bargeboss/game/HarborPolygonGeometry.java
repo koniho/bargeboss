@@ -37,7 +37,10 @@ final class HarborPolygonGeometry {
         edges=edges();edgeBounds=bounds(edges);edgeIndex=new Index(edgeBounds);
     }
     private static float[][] bounds(float[][] shapes){float[][] result=new float[shapes.length][];for(int i=0;i<shapes.length;i++)result[i]=PolygonWater.bounds(shapes[i]);return result;}
-    private static long key(int x,int y){return ((long)x<<32)^(y&0xffffffffL);}
+    /** Unique cell key; the odd multiplier is a bijection that spreads Long.hashCode (plain
+     * (x<<32)^y hashes to x^y, collapsing diagonals into tree bins, which J2ObjC resolves via
+     * reflection). */
+    static long key(int x,int y){return (((long)x<<32)^(y&0xffffffffL))*0x9E3779B97F4A7C15L;}
     /** Exact floor for in-range cells without Android's bit-level StrictMath.floor. */
     private static int cell(float v){float q=v/CELL;int i=(int)q;return q<i?i-1:i;}
     /** Immutable bucket contents; query scratch is per thread and never escapes. */
@@ -118,37 +121,69 @@ final class HarborPolygonGeometry {
     }
     float[] shore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){MaskCache cache=maskCache.get();
         float[] value=cache.get(c,l,t,r,b,depth,union);if(value!=null)return value;
-        value=depth==Float.NEGATIVE_INFINITY && union?worldMask.get().project(this,c,l,t,r,b):buildShore(c,l,t,r,b,depth,union);
+        value=buildShore(c,l,t,r,b,depth,union);
         cache.put(l,t,r,b,depth,union,value);return value;
     }
-    /** Full-depth union masks (the per-frame water surface clip) are camera-affine: world
-     * triangles with a raised/ground flag, rebuilt only when the padded world rect no longer
-     * covers the view. A moving camera then only re-projects instead of re-clipping land. */
-    private final ThreadLocal<WorldMask> worldMask=new ThreadLocal<WorldMask>(){protected WorldMask initialValue(){return new WorldMask();}};
-    private static final class WorldMask {
-        float l,t,r,b;float[] world;boolean ready;
-        float[] project(HarborPolygonGeometry geo,RiverCamera c,float ql,float qt,float qr,float qb){
-            float w=qr-ql,h=qb-qt;
-            if(!ready || ql<l || qt<t || qr>r || qb>b || (r-l)*(b-t)>9*w*h){
-                l=ql-w*.5f;t=qt-h*.5f;r=qr+w*.5f;b=qb+h*.5f;world=geo.worldShore(l,t,r,b);ready=true;}
-            float rise=GroundArt.LAND_RISE*c.scale;float[] out=new float[world.length/3*2];int at=0;
-            for(int i=0;i<world.length;i+=9){
-                // Only triangles touching the query rect; the padding exists for reuse, not drawing.
-                float x0=world[i],x1=world[i+3],x2=world[i+6],y0=world[i+1],y1=world[i+4],y2=world[i+7];
-                if(x0<ql && x1<ql && x2<ql || x0>qr && x1>qr && x2>qr || y0<qt && y1<qt && y2<qt || y0>qb && y1>qb && y2>qb)continue;
-                float ax=c.screenX(world[i],world[i+1]),ay=c.screenY(world[i],world[i+1])-world[i+2]*rise;
-                float bx=c.screenX(world[i+3],world[i+4]),by=c.screenY(world[i+3],world[i+4])-world[i+5]*rise;
-                float cx=c.screenX(world[i+6],world[i+7]),cy=c.screenY(world[i+6],world[i+7])-world[i+8]*rise;
-                float area=PolygonWater.cross(ax,ay,bx,by,cx,cy);if(area<=.0001f && area>=-.0001f)continue;
-                out[at++]=ax;out[at++]=ay;
-                if(area<0){out[at++]=cx;out[at++]=cy;out[at++]=bx;out[at++]=by;}else{out[at++]=bx;out[at++]=by;out[at++]=cx;out[at++]=cy;}
-            }
-            float[] mask=at==out.length?out:Arrays.copyOf(out,at);sealRasterSeams(mask);return mask;
-        }
+    /** Whole-view full-depth mask (water surface and wave clips). Small local queries use
+     * shore(). The camera enters only through a uniform scale and translation:
+     * screen = origin + scale * unit, where unit is the scale-1 isometric projection with raised
+     * points lifted by LAND_RISE. Unit space is cut into fixed tiles; each tile holds the land
+     * tops and seawall faces projecting into it, clipped to the tile and (for hosts without
+     * union clips) made disjoint. Tiles partition the plane, so the mask is disjoint overall,
+     * and a tile depends only on its coordinates: output never depends on cache history, and a
+     * moving camera only re-projects cached tiles. */
+    float[] viewShore(RiverCamera c,float l,float t,float r,float b,boolean union){MaskCache cache=maskCache.get();
+        // l,t,r,b is the padded screen rectangle in pixels.
+        float[] value=cache.get(c,l,t,r,b,Float.MAX_VALUE,union);if(value!=null)return value;
+        TileCache tiles=(union?unionTiles:disjointTiles).get();
+        float ox=c.screenX(0,0),oy=c.screenY(0,0),sc=c.scale;
+        float u0=(l-ox)/sc,u1=(r-ox)/sc,v0=(t-oy)/sc,v1=(b-oy)/sc;
+        int i0=tile(u0),i1=tile(u1),j0=tile(v0),j1=tile(v1);
+        ArrayList<float[]> parts=new ArrayList<float[]>();int total=0;
+        for(int i=i0;i<=i1;i++)for(int j=j0;j<=j1;j++){Long key=key(i,j);float[] part=tiles.get(key);
+            if(part==null){part=unitTile(i,j,union);tiles.put(key,part);}
+            if(part.length>0){parts.add(part);total+=part.length;}}
+        float[] out=new float[total];int at=0;
+        for(float[] part:parts)for(int n=0;n<part.length;n+=6){
+            // Tiles are cached whole; draw only triangles touching the query's unit box.
+            float pu0=part[n],pu1=part[n+2],pu2=part[n+4],pv0=part[n+1],pv1=part[n+3],pv2=part[n+5];
+            if(pu0<u0 && pu1<u0 && pu2<u0 || pu0>u1 && pu1>u1 && pu2>u1 || pv0<v0 && pv1<v0 && pv2<v0 || pv0>v1 && pv1>v1 && pv2>v1)continue;
+            float ax=ox+part[n]*sc,ay=oy+part[n+1]*sc,bx=ox+part[n+2]*sc,by=oy+part[n+3]*sc,cx=ox+part[n+4]*sc,cy=oy+part[n+5]*sc;
+            float area=PolygonWater.cross(ax,ay,bx,by,cx,cy);if(area<=.0001f && area>=-.0001f)continue;
+            out[at++]=ax;out[at++]=ay;out[at++]=bx;out[at++]=by;out[at++]=cx;out[at++]=cy;}
+        value=at==out.length?out:Arrays.copyOf(out,at);if(union)sealRasterSeams(value);
+        cache.put(l,t,r,b,Float.MAX_VALUE,union,value);return value;
     }
-    /** World triangles (x,y,raised) of land tops and visible seawall faces inside a rect. */
-    private float[] worldShore(float l,float t,float r,float b){ArrayList<float[]> tris=new ArrayList<float[]>();
-        for(float[] q:dry(l,t,r,b))for(int i=2;i<q.length-2;i+=2)tris.add(new float[]{q[0],q[1],1,q[i],q[i+1],1,q[i+2],q[i+3],1});
+    /** Unit-space tile edge. Bounded LRU per thread and union mode. */
+    static final float UNIT_TILE=1024;
+    private static final int TILE_LIMIT=256;
+    private static int tile(float v){float q=v/UNIT_TILE;int i=(int)q;return q<i?i-1:i;}
+    private static final class TileCache extends java.util.LinkedHashMap<Long,float[]> {
+        TileCache(){super(64,.75f,true);}
+        protected boolean removeEldestEntry(Map.Entry<Long,float[]> eldest){return size()>TILE_LIMIT;}
+    }
+    private final ThreadLocal<TileCache> unionTiles=new ThreadLocal<TileCache>(){protected TileCache initialValue(){return new TileCache();}};
+    private final ThreadLocal<TileCache> disjointTiles=new ThreadLocal<TileCache>(){protected TileCache initialValue(){return new TileCache();}};
+    private static float unitX(float x,float y){return RiverCamera.Q*(x+y);}
+    private static float unitY(float x,float y,float raised){return RiverCamera.Q*RiverCamera.DEPTH*(y-x)-raised*GroundArt.LAND_RISE;}
+    /** Positively wound triangles of everything projecting into one unit tile. */
+    private float[] unitTile(int i,int j,boolean union){float u0=i*UNIT_TILE,u1=u0+UNIT_TILE,v0=j*UNIT_TILE,v1=v0+UNIT_TILE;
+        // World rectangle covering every ground (raised=0) or raised (1) point that lands in the tile.
+        float l=Float.MAX_VALUE,t=Float.MAX_VALUE,r=-Float.MAX_VALUE,b=-Float.MAX_VALUE;
+        for(int k=0;k<8;k++){float u=(k&1)==0?u0:u1,v=((k&2)==0?v0:v1)+((k&4)==0?0:GroundArt.LAND_RISE);
+            float sum=u/RiverCamera.Q,diff=v/(RiverCamera.Q*RiverCamera.DEPTH),x=(sum-diff)*.5f,y=(sum+diff)*.5f;
+            l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);}
+        ArrayList<float[]> pieces=new ArrayList<float[]>();
+        for(float[] q:dry(l,t,r,b)){float[] p=new float[q.length];for(int n=0;n<q.length;n+=2){p[n]=unitX(q[n],q[n+1]);p[n+1]=unitY(q[n],q[n+1],1);}
+            p=PolygonWater.rectangle(p,u0,v0,u1,v1);if(solid(p))pieces.add(p);}
+        for(float[] e:shoreWalls(l,t,r,b)){float x=e[0],y=e[1],xx=e[2],yy=e[3];
+            float[] p=PolygonWater.rectangle(new float[]{unitX(x,y),unitY(x,y,0),unitX(xx,yy),unitY(xx,yy,0),unitX(xx,yy),unitY(xx,yy,1),unitX(x,y),unitY(x,y,1)},u0,v0,u1,v1);
+            if(solid(p))pieces.add(p);}
+        if(!union)pieces=disjoint(pieces);
+        return fan(pieces);
+    }
+    /** Visible seawall faces inside a rect, as clipped world segments {x,y,xx,yy}. */
+    private ArrayList<float[]> shoreWalls(float l,float t,float r,float b){ArrayList<float[]> walls=new ArrayList<float[]>();
         for(int i:edgeIndex.area(l,t,r,b)){float[] e=edges[i];float ax=e[0],ay=e[1],dx=e[2]-ax,dy=e[3]-ay,len=Physics.length(dx,dy);
             float nx=-dy/len,ny=dx/len;if(!contains(ax+dx*.5f+nx,ay+dy*.5f+ny)){nx=-nx;ny=-ny;}
             if(ny-nx<=0)continue;
@@ -158,9 +193,9 @@ final class HarborPolygonGeometry {
                 else{float low=(min-o)/d,high=(max-o)/d;start=Math.max(start,Math.min(low,high));end=Math.min(end,Math.max(low,high));}}
             if(end<=start)continue;
             float x=ax+dx*start,y=ay+dy*start,xx=ax+dx*end,yy=ay+dy*end;
-            tris.add(new float[]{x,y,0,xx,yy,0,xx,yy,1});tris.add(new float[]{x,y,0,xx,yy,1,x,y,1});
+            walls.add(new float[]{x,y,xx,yy});
         }
-        float[] out=new float[tris.size()*9];for(int i=0;i<tris.size();i++)System.arraycopy(tris.get(i),0,out,i*9,9);return out;
+        return walls;
     }
     private float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
         float[] top=tops(c,l,t,r,b,depth);ArrayList<float[]> pieces=new ArrayList<float[]>();

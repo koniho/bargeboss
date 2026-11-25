@@ -47,7 +47,7 @@ final class SurveyGround {
             b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}return b;}
     /** Smallest tier whose cells keep a view at or below MAX_VIEW_CELLS. */
     int tier(float[] b){int tier=0;float step=cell;while(tier<TIERS-1 && (b[2]-b[0])*(b[3]-b[1])/(step*step)>MAX_VIEW_CELLS){step*=2;tier++;}return tier;}
-    private Cell cell(int tier,int col,int row){Long key=((long)col<<32)|(row&0xffffffffL);Cell cell=tiers[tier].get(key);
+    private Cell cell(int tier,int col,int row){Long key=HarborPolygonGeometry.key(col,row);Cell cell=tiers[tier].get(key);
         if(cell==null){float step=this.cell*(1<<tier),x=col*step,y=row*step;float[][] dry=geometry.dry(x,y,x+step,y+step);
             cell=new Cell(dry.length==0?NONE:dry,style.cover(x+step*.5f,y+step*.5f));tiers[tier].put(key,cell);}
         return cell;}
