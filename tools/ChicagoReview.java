@@ -16,7 +16,7 @@ public final class ChicagoReview {
    ImageIO.write(image,"png",new File(dir,names[i]+".png"));System.out.println(names[i]+" "+ms+" ms");
   }
   // Tug among the towers: fades settle over 60 ticks and its lamps light nearby walls.
-  double[][] tugs={{41.88690,-87.63700,-Math.PI/2},{41.88855,-87.62550,Math.PI/2}};String[] tugNames={"wolf-tug","downtown-tug"};
+  double[][] tugs={{41.88690,-87.63700,-Math.PI/2},{41.88855,-87.62550,Math.PI/2},{41.88751,-87.63103,Math.PI},{41.88855,-87.6066,-Math.PI/2}};String[] tugNames={"wolf-tug","downtown-tug","clark-bridge-tug","lock-tug"};
   for(int i=0;i<tugs.length;i++){Game g=new Game();g.challengeId=Challenges.CHICAGO;g.reset();
    g.tug.x=ChicagoRiver.north(tugs[i][0]);g.tug.y=ChicagoRiver.east(tugs[i][1]);g.tug.angle=(float)tugs[i][2];g.tug.vx=g.tug.vy=0;
    g.layout=Layout.focused(1243,700,g.tug.x,g.tug.y,1.1f,621,350);

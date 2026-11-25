@@ -1,7 +1,7 @@
 package com.bargeboss.game;
 
 /** Navy Pier fire call: lock in from the lake, collect the Engine 2 fire barge,
- * lock out with it in tow and spray the burning wheel gondolas. */
+ * lock out with it in tow and spray the pier pavilions the wheel's sparks set alight. */
 public final class ChicagoMission {
     public static final int TO_LOCK=0,FETCH=1,TOW_OUT=2,FIGHT=3,DONE=4;
     final HarborLock lock=new HarborLock();
@@ -9,7 +9,7 @@ public final class ChicagoMission {
     final ChicagoView.Fades fades=new ChicagoView.Fades();
     public int phase;
     Body barge;
-    /** Open water south of the pier, inside monitor range of every burning gondola. */
+    /** Open water south of the pier, inside monitor range of every burning pavilion. */
     static final float[] SPRAY=sprayPoint();
     void setup(Game g){phase=TO_LOCK;lock.reset();fire.reset();fire.ignite();
         g.addCargo(2,ChicagoRiver.FIRE_DOCK_X,ChicagoRiver.FIRE_DOCK_Y);
@@ -25,7 +25,7 @@ public final class ChicagoMission {
         lock.step(g);fire.step(g);fades.step(g);
         if(phase==TO_LOCK && river(g.tug)){phase=FETCH;g.tell("RIVER SIDE / FIRE BARGE AT ENGINE 2");g.haptic(Game.HAPTIC_SUCCESS);}
         if(phase==FETCH && towing(g)){phase=TOW_OUT;g.tell("FIRE BARGE IN TOW / BACK THROUGH THE LOCK");g.haptic(Game.HAPTIC_SUCCESS);}
-        if(phase==TOW_OUT && lake(barge) && towing(g)){phase=FIGHT;g.tell("CLEAR OF THE LOCK / TAP THE BARGE / SPRAY THE WHEEL");g.haptic(Game.HAPTIC_SUCCESS);}
+        if(phase==TOW_OUT && lake(barge) && towing(g)){phase=FIGHT;g.tell("CLEAR OF THE LOCK / TAP THE BARGE / SPRAY THE PIER FIRES");g.haptic(Game.HAPTIC_SUCCESS);}
         if(phase==FIGHT && fire.out()){phase=DONE;g.delivered=1;g.score+=1500;g.tell("FIRE OUT / NAVY PIER IS SAFE");g.haptic(Game.HAPTIC_SUCCESS);}
     }
     float targetX(Game g){return target(g,true);}
@@ -49,7 +49,7 @@ public final class ChicagoMission {
         if(phase==TO_LOCK)return "FIRE AT NAVY PIER / LOCK IN TO ENGINE 2 / "+lock.signal();
         if(phase==FETCH)return "THROW A LINE TO THE FIRE BARGE";
         if(phase==TOW_OUT)return towing(g)?"TOW THE FIRE BARGE OUT / "+lock.signal():"RECONNECT THE FIRE BARGE";
-        if(phase==FIGHT)return "SPRAY THE WHEEL / "+fire.remaining()+" FIRES LEFT";
+        if(phase==FIGHT)return "SPRAY THE PIER / "+fire.remaining()+" FIRES LEFT";
         return "FIRE OUT / NAVY PIER IS SAFE";
     }
     private static float[] sprayPoint(){
@@ -57,6 +57,6 @@ public final class ChicagoMission {
         // March south from the wheel to open water, then stand off from the pier wall.
         float step=4;int guard=0;
         while(!ChicagoRiver.contains(x,y) && guard++<200)x-=step;
-        return new float[]{x-32,y};
+        return new float[]{x-20*ChicagoSurvey.UNITS_PER_METRE,y};
     }
 }

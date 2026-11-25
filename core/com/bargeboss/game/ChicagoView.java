@@ -5,8 +5,10 @@ package com.bargeboss.game;
 public final class ChicagoView {
     static final int WHEEL=ChicagoCity.COUNT,LEAVES=WHEEL+1,FIRES=LEAVES+4,COUNT=FIRES+ChicagoFire.PILES;
     private static final int CONCRETE=0xff4b4e53,PARK=0xff3f5a45,ROAD=0xff2c2f34,AVENUE=0xff33363c,PLAZA=0xff5b5a57;
-    /** Hub height and rim radius in model units (2 world units per metre, 59.7 m wheel). */
-    static final float HUB=64,RADIUS=54,GONDOLAS=42;
+    /** Survey world units per metre; stage art that follows the map is sized in metres. */
+    private static final float U=ChicagoSurvey.UNITS_PER_METRE;
+    /** Hub height and rim radius in model units (59.7 m wheel). */
+    static final float HUB=32*U,RADIUS=27*U,GONDOLAS=42;
     private static final class Models {
         static final ArticulatedModel.Rigid WHEEL=wheel(),SUPPORT=support(),GONDOLA=gondola();
         static final ArticulatedModel.Rigid[] LEAF=leaves();
@@ -17,7 +19,7 @@ public final class ChicagoView {
         final int LAND=0,GREEN=1,AVE=2,STREET=3,SQUARE=4;
         java.util.ArrayList<float[]> quads=new java.util.ArrayList<float[]>();java.util.ArrayList<Integer> kinds=new java.util.ArrayList<Integer>();
         for(int n=0;n<ChicagoSurvey.ROADS.length;n++){float[] road=ChicagoSurvey.ROADS[n];int kind=ChicagoSurvey.ROAD_KIND[n];
-            float width=kind==0?34:kind==1?24:kind==2?16:9;int style=kind==0?AVE:kind==3?SQUARE:STREET;
+            float width=(kind==0?17:kind==1?12:kind==2?8:4.5f)*U;int style=kind==0?AVE:kind==3?SQUARE:STREET;
             for(int i=2;i<road.length;i+=2){float x=road[i-2],y=road[i-1],xx=road[i],yy=road[i+1];
                 if(ChicagoRiver.contains((x+xx)*.5f,(y+yy)*.5f))continue;
                 float dx=xx-x,dy=yy-y,len=Physics.length(dx,dy);if(len<.1f)continue;float nx=-dy/len*width*.5f,ny=dx/len*width*.5f;
@@ -34,11 +36,11 @@ public final class ChicagoView {
         },quads.toArray(new float[quads.size()][]),roadKinds,parks,parkKinds);
     }
     private ChicagoView(){}
-    static void prepare(){Models.WHEEL.fragmentCount();Models.LEAF.getClass();}
+    static void prepare(){Models.WHEEL.fragmentCount();Models.LEAF.getClass();ChicagoFire.prepare();}
     private static ArticulatedModel.Builder rigidRoot(){ArticulatedModel.Builder b=new ArticulatedModel.Builder();b.node("root",-1,0,0,0,0,0);return b;}
     private static ArticulatedModel.Rigid wheel(){ArticulatedModel.Builder b=rigidRoot();int steel=0xffd9dde0,led=0xff8fd4ff;
         int sides=36;
-        for(int face=-1;face<=1;face+=2){float y=face*4;
+        for(int face=-1;face<=1;face+=2){float y=face*2*U;
             for(int i=0;i<sides;i++){double a=2*Math.PI*i/sides,aa=2*Math.PI*(i+1)/sides;
                 float x0=(float)StrictMath.cos(a)*RADIUS,z0=(float)StrictMath.sin(a)*RADIUS,x1=(float)StrictMath.cos(aa)*RADIUS,z1=(float)StrictMath.sin(aa)*RADIUS;
                 b.beam(0,x0,y,z0,x1,y,z1,2.2f,steel,SurfaceMaterial.STEEL);
@@ -53,15 +55,16 @@ public final class ChicagoView {
         return b.build().rigid();
     }
     private static ArticulatedModel.Rigid support(){ArticulatedModel.Builder b=rigidRoot();int white=0xffcfd3d6;
-        for(int side=-1;side<=1;side+=2)for(int leg=-1;leg<=1;leg+=2)b.beam(0,leg*30,side*12,0,0,side*6,HUB,3,white,SurfaceMaterial.STEEL);
-        b.box(0,0,0,2,70,26,4,0xff6f7276,SurfaceMaterial.CONCRETE);
-        b.box(0,-36,0,6,14,18,12,0xff9fa6ad,SurfaceMaterial.CONCRETE);
+        for(int side=-1;side<=1;side+=2)for(int leg=-1;leg<=1;leg+=2)b.beam(0,leg*15*U,side*6*U,0,0,side*3*U,HUB,3,white,SurfaceMaterial.STEEL);
+        b.box(0,0,0,2,35*U,13*U,4,0xff6f7276,SurfaceMaterial.CONCRETE);
+        b.box(0,-18*U,0,6,7*U,9*U,12,0xff9fa6ad,SurfaceMaterial.CONCRETE);
         return b.build().rigid();
     }
     private static ArticulatedModel.Rigid gondola(){ArticulatedModel.Builder b=rigidRoot();
-        b.box(0,0,0,-4.5f,6,5,6,0xff3e6f9a,SurfaceMaterial.STEEL);
-        b.box(0,0,0,-1,6.6f,5.6f,1,0xffe6e8ea,SurfaceMaterial.STEEL);
-        b.box(0,0,0,-5,4.6f,5.2f,2.2f,0xffffd895,SurfaceMaterial.EMISSIVE);
+        float s=U*.5f; // sized at 2 units per metre
+        b.box(0,0,0,-4.5f*s,6*s,5*s,6*s,0xff3e6f9a,SurfaceMaterial.STEEL);
+        b.box(0,0,0,-1*s,6.6f*s,5.6f*s,1*s,0xffe6e8ea,SurfaceMaterial.STEEL);
+        b.box(0,0,0,-5*s,4.6f*s,5.2f*s,2.2f*s,0xffffd895,SurfaceMaterial.EMISSIVE);
         return b.build().rigid();
     }
     private static ArticulatedModel.Rigid[] leaves(){HarborLock lock=new HarborLock();ArticulatedModel.Rigid[] out=new ArticulatedModel.Rigid[4];
@@ -115,6 +118,8 @@ public final class ChicagoView {
         for(int i=0;i<GONDOLAS;i++){double a=2*Math.PI*i/GONDOLAS-spin;
             float gx=(float)StrictMath.cos(a)*(RADIUS+1),gz=(float)StrictMath.sin(a)*(RADIUS+1);
             Models.GONDOLA.drawSolid(g,p,x+gx,y,hub+gz*ArticulatedModel.Z_SCALE,0,0,0);}
+        // Lower south rim (toward the pier wall) smokes while the pavilions burn.
+        float rx=x-RADIUS*.6f;g.chicago.fire.wheelSmoke(g,p,c.screenX(rx,y),c.screenY(rx,y)-(hub-RADIUS*.8f*ArticulatedModel.Z_SCALE)*c.scale);
     }
     private static void leaf(Game g,Painter p,int leaf){HarborLock lock=g.chicago.lock;
         Models.LEAF[leaf].drawSolid(g,p,lock.leafX(leaf),lock.leafY(leaf),0,lock.leafAngle(leaf),0,0);

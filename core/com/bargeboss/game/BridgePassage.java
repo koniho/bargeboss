@@ -7,7 +7,7 @@ final class BridgePassage {
     final int[] position,hold,wait;
     BridgePassage(Game g){bridges=LocationBridges.forGame(g);position=new int[bridges.length];hold=new int[bridges.length];wait=new int[bridges.length];}
     float amount(int i){return position[i]/(float)OPEN_TICKS;}
-    boolean passable(int i){return !bridges[i].movable() || position[i]>=OPEN_TICKS;}
+    boolean passable(int i){return !bridges[i].opens() || position[i]>=OPEN_TICKS;}
     boolean blocksLine(float x,float y,float xx,float yy){
         for(int i=0;i<bridges.length;i++)if(!passable(i)){
             LandmarkBridge b=bridges[i];float a=b.across(x,y),c=b.across(xx,yy);
@@ -26,7 +26,7 @@ final class BridgePassage {
         }}return false;
     }
     void step(Game g){for(int i=0;i<bridges.length;i++){
-        if(!bridges[i].movable())continue;
+        if(!bridges[i].opens())continue;
         boolean request=g.tutorial!=null?(i==0?g.tutorial.canal.authorized:g.tutorial.towBridges.authorized[i]):requested(g,i);
         if(request){hold[i]=HOLD_TICKS;if(position[i]>0 || ++wait[i]>=WAIT_TICKS)position[i]=Math.min(OPEN_TICKS,position[i]+1);}
         else if(hold[i]>0)hold[i]--;

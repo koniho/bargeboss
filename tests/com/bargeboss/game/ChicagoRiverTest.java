@@ -25,9 +25,14 @@ public final class ChicagoRiverTest {
         check(!ChicagoRiver.contains(ChicagoRiver.WHEEL_X,ChicagoRiver.WHEEL_Y),"wheel stands on Navy Pier");
         check(!ChicagoRiver.contains(ChicagoRiver.north(41.89170),ChicagoRiver.east(-87.60200)),"Navy Pier is solid");
         HarborLock lock=g.chicago.lock;
-        check(lock.length>300 && lock.halfWidth>18 && lock.halfWidth<40,"lock chamber keeps surveyed proportions");
+        check(lock.length>480 && lock.halfWidth*2>=2.8f*2*new Body(0,-1,0,0,0).radius && lock.halfWidth*2<=3.4f*2*new Body(0,-1,0,0,0).radius,"lock chamber fits about three tug beams");
+        for(LandmarkBridge b:LocationBridges.chicago()){
+            check(!b.opens() && b.rise>0,b.id+" stays closed: the tug passes beneath");
+            check(b.height-18>=LandmarkBridge.CHICAGO_RISE,b.id+" deck clears the tug funnel");}
         check(ChicagoRiver.contains(lock.centerX(),lock.centerY()),"lock chamber is navigable");
-        // Monitors reach every burning gondola from the open-water spray station.
+        // Monitors reach every burning pavilion from the open-water spray station; flames sit
+        // on the pier deck, low enough for the monitors' flat arc.
+        for(int i=0;i<ChicagoFire.PILES;i++)check(!ChicagoRiver.contains(ChicagoFire.x(i),ChicagoFire.y(i)) && ChicagoFire.rise(i)<=25,"fire "+i+" burns on the pier, within the spray arc");
         check(ChicagoRiver.contains(ChicagoMission.SPRAY[0],ChicagoMission.SPRAY[1]),"spray station is open water");
         for(int i=0;i<ChicagoFire.PILES;i++)check(Physics.length(ChicagoFire.x(i)-ChicagoMission.SPRAY[0],ChicagoFire.y(i)-ChicagoMission.SPRAY[1])<200,"fire "+i+" within monitor range");
         check(LocationBridges.chicago().length>=15,"downtown movable bridges are represented");
@@ -72,7 +77,7 @@ public final class ChicagoRiverTest {
         stepUntil(g,120,()->a.chicago.phase==ChicagoMission.FIGHT);
         check(g.chicago.phase==ChicagoMission.FIGHT && g.tow.connected(barge,g.tug),"towing clear of the lock starts the firefight");
 
-        // Only droplets at the burning gondolas cool them.
+        // Only droplets at the burning pavilions cool them.
         ChicagoFire f=g.chicago.fire;float floor=GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE;
         check(!f.hit(ChicagoMission.SPRAY[0],ChicagoMission.SPRAY[1],floor+10,floor),"open water is not on fire");
         for(int pile=0;pile<ChicagoFire.PILES;pile++)for(int n=0;n<ChicagoFire.PILE_HEAT;n++)check(f.hit(ChicagoFire.x(pile),ChicagoFire.y(pile),floor+ChicagoFire.rise(pile),floor),"droplet cools pile "+pile);

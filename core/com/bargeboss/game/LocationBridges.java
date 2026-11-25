@@ -27,7 +27,8 @@ final class LocationBridges {
         ind("columbus","COLUMBUS DRIVE",41.63931,-87.47128,1.57f,LandmarkBridge.BASCULE,2,64),
         ind("east-works","EAST WORKS CROSSING",41.65637,-87.43309,1.20f,LandmarkBridge.BASCULE,2,50)
     };}
-    /** Movable crossings from Wolf Point to the lake; OSM bridge-way midpoints and deck axes. */
+    /** Movable crossings from Wolf Point to the lake; OSM bridge-way midpoints and deck axes.
+     * Deck widths are listed in half-metres and scaled to the survey. */
     private static final class Chicago {static final LandmarkBridge[] ALL={
         chi("grand","GRAND AVENUE",41.89142,-87.64112,-1.67f,LandmarkBridge.BASCULE,2,48),
         chi("kinzie","KINZIE STREET",41.88908,-87.63949,1.46f,LandmarkBridge.BASCULE,3,40),
@@ -48,7 +49,7 @@ final class LocationBridges {
         chi("lsd","LAKE SHORE DRIVE LINK",41.88842,-87.61410,0,LandmarkBridge.BASCULE,1,96),
         chi("lsd-ogden","LAKE SHORE DRIVE / OGDEN SLIP",41.89032,-87.61410,0,LandmarkBridge.BASCULE,1,96)
     };}
-    private static LandmarkBridge chi(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,ChicagoRiver.north(lat),ChicagoRiver.east(lon),yaw,type,style,width,LandmarkBridge.CHICAGO);}
+    private static LandmarkBridge chi(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,ChicagoRiver.north(lat),ChicagoRiver.east(lon),yaw,type,style,width*ChicagoSurvey.UNITS_PER_METRE*.5f,LandmarkBridge.CHICAGO);}
     static LandmarkBridge[] chicago(){return Chicago.ALL;}
     private static LandmarkBridge cal(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,CalumetRiver.north(lat),CalumetRiver.east(lon),yaw,type,style,width,LandmarkBridge.CALUMET);}
     private static LandmarkBridge ind(String id,String name,double lat,double lon,float yaw,int type,int style,float width){return new LandmarkBridge(id,name,IndianaHarbor.north(lat),IndianaHarbor.east(lon),yaw,type,style,width,LandmarkBridge.INDIANA);}

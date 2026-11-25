@@ -2,14 +2,17 @@
 
 The Chicago River stage spans the lakefront at Navy Pier west along the main stem to
 Wolf Point, where the North and South Branches meet. North projects to the upper
-right of the isometric camera, matching every other surveyed stage. Two world units
-are one metre; the origin is 41.888 N, 87.62 W. The play box is -87.6430 to -87.5940
+right of the isometric camera, matching every other surveyed stage. 3.2 world units
+are one metre (raised from 2.0 so the harbor lock fits about three tug beams), and
+the downtown bascules sit high enough closed for the tug to pass beneath without
+opening; the origin is 41.888 N, 87.62 W. The play box is -87.6430 to -87.5940
 longitude and 41.8815 to 41.8945 latitude, so both branches run off the north and
 south edges just past Grand Avenue and Madison Street.
 
 ## Mission: Navy Pier fire
 
-The Centennial Wheel's lower south gondolas are burning. The tug starts in the Navy
+Sparks from the Centennial Wheel have set the timber pavilions on Navy Pier's south
+edge alight, and the wheel's lower gondolas are smoking. The tug starts in the Navy
 Pier basin, locks in through the Chicago Harbor Lock, throws a line to the fire
 barge at the Chicago Fire Department Engine 2 fireboat pier (Chicago Marine Safety
 Station, just inside the lock on the south bank), locks back out with the barge in
@@ -21,8 +24,12 @@ tow and sprays the three fires from the harbor south of the pier.
   gate's swing hold it open. The same leaf poses drive collision, tow-line
   blocking, signal lamps and the rigid 3-D leaf models.
 - Lock levelling stirs a deterministic sluice current inside the chamber.
-- The wheel stands 72 m back from the south pier wall, so the burning cars are the
-  south-lower gondolas, within monitor range of the marked spray station.
+- The wheel stands 72 m back from the south pier wall, beyond the monitors' reach,
+  so it only smokes. The three burning pavilions stand 8 m back from the wall, low
+  enough for the monitors' flat arc and within reach of the marked spray station
+  20 m off the wall.
+- Downtown bascules stay down: their closed decks clear the tug, so they never
+  open, collide or block tow lines.
 
 ## Sources and dates
 

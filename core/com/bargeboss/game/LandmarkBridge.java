@@ -7,6 +7,11 @@ final class LandmarkBridge {
     static final int BASCULE=0,LIFT=1,SKYWAY=2,ROLLING=3,FIXED=4;
     final String id,name;
     final float x,y,yaw,dx,dy,left,right,width,height;
+    /** Closed-deck lift above the standard bascule hinge height. Raised decks clear the tug
+     * and never open, collide or block tow lines. */
+    final float rise;
+    /** Chicago bascules: the tug passes beneath closed decks (funnel top is about 37 z). */
+    static final float CHICAGO_RISE=30;
     final int type,style;
     final ArticulatedModel fixed,moving;
     final ArticulatedModel.Pose fixedPose;
@@ -21,19 +26,20 @@ final class LandmarkBridge {
     }
     static final int CALUMET=0,INDIANA=1,CHICAGO=2;
     LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,int location){
-        this(id,name,x,y,yaw,type,style,width,bank(location,x,y,yaw,-1),bank(location,x,y,yaw,1));
+        this(id,name,x,y,yaw,type,style,width,bank(location,x,y,yaw,-1),bank(location,x,y,yaw,1),location==CHICAGO && type==BASCULE?CHICAGO_RISE:0);
     }
-    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,float l,float r){
-        this.id=id;this.name=name;this.x=x;this.y=y;this.yaw=yaw;this.type=type;this.style=style;this.width=width;
+    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,float l,float r){this(id,name,x,y,yaw,type,style,width,l,r,0);}
+    LandmarkBridge(String id,String name,float x,float y,float yaw,int type,int style,float width,float l,float r,float rise){
+        this.id=id;this.rise=rise;this.name=name;this.x=x;this.y=y;this.yaw=yaw;this.type=type;this.style=style;this.width=width;
         dx=(float)StrictMath.cos(yaw);dy=(float)StrictMath.sin(yaw);
-        left=l;right=r;height=type==SKYWAY?230:type==FIXED?180:type==LIFT?170:18;
+        left=l;right=r;height=type==SKYWAY?230:type==FIXED?180:type==LIFT?170:18+rise;
         if(l+r<25)throw new IllegalArgumentException("Bridge center outside channel: "+id);
         ArticulatedModel.Builder a=new ArticulatedModel.Builder(),b=new ArticulatedModel.Builder();
         int root=a.node(id+"-foundation",-1,x,y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,yaw,0);
         int motion=b.node(id+"-motion-root",-1,x,y,GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE,yaw,0);
         ArrayList<Lamp> lights=new ArrayList<Lamp>();ArrayList<Integer> leafIds=new ArrayList<Integer>();
         for(int side=-1;side<=1;side+=2){float bank=side<0?-left:right;
-            a.box(root,bank+side*14,0,5,28,width+24,10,STONE,SurfaceMaterial.CONCRETE);
+            a.box(root,bank+side*14,0,(10+rise)*.5f,28,width+24,10+rise,STONE,SurfaceMaterial.CONCRETE);
             if(type==SKYWAY || type==FIXED)continue;
             // Fender piles and abutment sit outside the navigable bank line.
             for(int edge=-1;edge<=1;edge+=2)a.box(root,bank+side*5,edge*(width*.5f+9),4,9,12,20,0xff686658,SurfaceMaterial.WOOD);
@@ -65,7 +71,7 @@ final class LandmarkBridge {
             for(int k=0;k<count;k++){
                 int side=k==0?-1:1;float bank=side<0?-left:right,length=type==ROLLING?span:span*.5f-2;
                 float angle=side<0?0:(float)StrictMath.PI;
-                int leaf=b.movingNode(id+"-leaf-"+k,motion,bank,0,18,angle,1.37f,type==ROLLING?-18:0,0,0);leafIds.add(leaf);
+                int leaf=b.movingNode(id+"-leaf-"+k,motion,bank,0,18+rise,angle,1.37f,type==ROLLING?-18:0,0,0);leafIds.add(leaf);
                 float trussHeight=type==ROLLING?46:style==2?17:style==4?40:style==3?27:23;
                 truss(b,leaf,length,width,trussHeight,style==2?0xff8d9ea2:style==4?0xff557e78:RUST,type==ROLLING,style==2);
                 b.box(leaf,-15,0,-8,25,width*.8f,22,STONE,SurfaceMaterial.CONCRETE);
@@ -160,6 +166,8 @@ final class LandmarkBridge {
     ArticulatedModel.Pose pose(float amount){if(motion==null)throw new IllegalStateException("Prepare bridge motion before drawing");return motion.pose(Math.max(0,Math.min(1,amount)));}
     int motionFragments(){return motion==null?0:motion.fragmentCount();}
     boolean movable(){return type!=SKYWAY && type!=FIXED;}
+    /** Whether vessels must wait for this span to open. */
+    boolean opens(){return movable() && rise==0;}
     float along(float xx,float yy){return (xx-x)*dx+(yy-y)*dy;}
     float across(float xx,float yy){return -(xx-x)*dy+(yy-y)*dx;}
     boolean visible(Game g){RiverCamera c=g.layout.camera;float px=c.screenX(x,y),py=c.screenY(x,y),pad=(Math.max(left,right)+600)*c.scale;return px+pad>=0 && px-pad<=g.layout.width && py+pad>=0 && py-pad<=g.layout.height;}

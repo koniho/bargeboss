@@ -6,7 +6,8 @@ package com.bargeboss.game;
 final class HarborLock {
     static final int IDLE=0,OPENING=1,OPEN=2,CLOSING=3,LEVELLING=4;
     static final int RIVER=0,LAKE=1,GATE_TICKS=4*60,LEVEL_TICKS=9*60,CLEAR_TICKS=90,SETTLE_TICKS=45;
-    static final float APPROACH=420,LEAF_HALF=2.6f,LIFT_METRES=.6f;
+    /** Approach trigger: 210 m of channel either side of the chamber. */
+    static final float APPROACH=210*ChicagoSurvey.UNITS_PER_METRE,LEAF_HALF=2.6f,LIFT_METRES=.6f;
     /** Gate 0 is the river (west) gate, gate 1 the lake (east) gate. */
     final float[][] hinge=new float[2][4],apex=new float[2][2];
     final float axisX,axisY,originX,originY,length,halfWidth;

@@ -5,7 +5,7 @@ package com.bargeboss.game;
  * bounded to buildings whose projected box meets the screen. */
 final class ChicagoCity {
     static final int COUNT=ChicagoSurvey.HEIGHTS.length;
-    private static final float FLOOR=7.2f;
+    private static final float FLOOR=3.6f*ChicagoSurvey.UNITS_PER_METRE;
     private static final int[] PALETTE={0xff56606e,0xff4a5463,0xff5f6670,0xff6b6560,0xff747a80,0xff3f4c5c,0xff655b55,0xff7f7b74};
     /** Per building: world bounds, depth key, base color and visible wall list. */
     private static final float[][] BOX=new float[COUNT][];
@@ -106,7 +106,7 @@ final class ChicagoCity {
         else{float[] t=ChicagoSurvey.ROOFS[i];int color=SoftCue.alpha(roofLit,alpha);
             for(int k=0;k<t.length;k+=6){float[] q=new float[6];for(int v=0;v<3;v++){float x=t[k+v*2],y=t[k+v*2+1];q[v*2]=c.screenX(x,y);q[v*2+1]=c.screenY(x,y)-rise-top;}p.poly(q,color);}}
         // Tall towers carry a red aviation lamp; deterministic slow blink from shared ticks.
-        if(h>300 && (g.visualTicks/40+i)%3!=0){float cx=0,cy=0;for(int k=0;k<n;k++){cx+=sx[k];cy+=sy[k];}cx/=n;cy=cy/n-top;
+        if(h>150*ChicagoSurvey.UNITS_PER_METRE && (g.visualTicks/40+i)%3!=0){float cx=0,cy=0;for(int k=0;k<n;k++){cx+=sx[k];cy+=sy[k];}cx/=n;cy=cy/n-top;
             p.material(cx,cy-3*c.scale,9*c.scale,0,0,9*c.scale,EffectMaterial.GLOW,0,alpha,0xffff3b2e);}
     }
     private static float[] roofUV(float[] o){float[] uv=new float[o.length];for(int k=0;k<o.length;k++)uv[k]=o[k];return uv;}
