@@ -34,11 +34,32 @@ final class HullDamage {
         if(b.health==0)sink(g,b);
         return true;
     }
-    /** A hard hit on someone's moored boat (they have no health of their own). */
-    static void moored(Game g,float closing){
-        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || g.ticks-g.mooredDamageTick<COOLDOWN)return;
-        g.mooredDamageTick=g.ticks;g.othersDamage+=HIT;PlayerPortrait.wince(g);
+    /** A hard hit on someone's moored marina boat: same health rules as every other vessel. */
+    static void moored(Game g,MooredFleet.FloatBoat m,float closing){
+        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<COOLDOWN)return;
+        m.healthBefore=m.health;m.health=Math.max(0,m.health-HIT);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
+        g.othersDamage+=m.healthBefore-m.health;PlayerPortrait.wince(g);
+        if(m.health>0)return;
+        m.sinkTicks=1;shake(g,1);g.haptic(Game.HAPTIC_IMPACT);g.tell("BOAT SINKING!");
     }
+    /** A marina wreck's fixed-step sinking: drifts to a stop, vents smoke, pops, plunges; the slick lingers. */
+    static void stepMoored(Game g,MooredFleet.FloatBoat m){
+        if(m.sinkTicks>=SINK+SLICK)return;
+        int t=++m.sinkTicks;
+        if(t>=SINK)return;
+        m.vx*=.95f;m.vy*=.95f;m.x+=m.vx*Physics.DT;m.y+=m.vy*Physics.DT;
+        m.yaw+=(float)StrictMath.sin(t*.13f)*.004f*t/SINK;m.updateHull();
+        float depth=sinkDepth(t,m.berth.width*.5f);
+        if(t==2)for(int k=-1;k<=1;k++)wreckSmoke(g,m,k*.3f,10);
+        if(t<PLUNGE && t%6==0)wreckSmoke(g,m,((t/6)%3-1)*.25f,14-depth*.4f);
+        for(int pop:POPS)if(t==pop){shake(g,.55f);g.haptic(Game.HAPTIC_IMPACT);wreckSmoke(g,m,0,8);}
+        if(t==PLUNGE){shake(g,.7f);g.haptic(Game.HAPTIC_IMPACT);}
+    }
+    private static void wreckSmoke(Game g,MooredFleet.FloatBoat m,float along,float height){
+        float a=m.berth.angle+m.yaw,l=m.berth.length*along;
+        g.smoke.shore(m.x+(float)StrictMath.cos(a)*l,m.y+(float)StrictMath.sin(a)*l,height,.8f);
+    }
+    static float sinkDepth(int ticks,float radius){float t=Math.min(1,ticks/(float)SINK);return t*t*(2*radius+26);}
     private static void sink(Game g,Body b){
         b.sinkTicks=1;
         if(g.tow.incoming(b)!=null || b.lineAttached)g.tow.detachBody(g,b);
@@ -85,16 +106,26 @@ final class HullDamage {
     /** World units the hull has settled below its float line (eased; most of the drop comes late). */
     static float sinkDepth(Body b){float t=progress(b);return t*t*(2*b.radius+26);}
 
-    private static float rand(Body b,int k,int salt){int h=(b.id*7919+k*104729+salt*31337)*0x45d9f3b;h=(h^(h>>>16))*0x45d9f3b;h^=h>>>16;return (h&65535)/65535f;}
+    private static float rand(int id,int k,int salt){int h=(id*7919+k*104729+salt*31337)*0x45d9f3b;h=(h^(h>>>16))*0x45d9f3b;h^=h>>>16;return (h&65535)/65535f;}
 
     /** Fireball, debris, sparks, pops, plunge geyser, rings, bubbles, slick and caption, over the world. */
     static void effects(Game g,Painter p){
         RiverCamera c=g.layout.camera;
         for(Body b:g.cargo){
             if(b==null || b.sinkTicks<=0 || !b.active && !b.sunk)continue;
-            int t=b.sinkTicks;float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y),s=c.scale,hull=b.half+b.radius;
+            wreck(g,p,c,b.x,b.y,b.half,b.radius,b.id,b.cruiser || b.yacht,b.sinkTicks);
+        }
+        if(g.montroseStage())for(MooredFleet.FloatBoat m:g.mooredFleet.boats)if(m.sinkTicks>0 && m.sinkTicks<SINK+SLICK)
+            wreck(g,p,c,m.x,m.y,m.berth.length*.5f,m.berth.width*.5f,MOORED_SEED+m.berth.frame+(int)m.berth.x,true,m.sinkTicks);
+    }
+    /** Seed offset so marina wrecks never share debris patterns with mission vessels. */
+    static final int MOORED_SEED=100000;
+    /** One sinking or sunk hull's effects at sink tick t; half and radius are its hull extents. */
+    private static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t){
+        {
+            float sx=c.screenX(bx,by),sy=c.screenY(bx,by),s=c.scale,hull=half+radius;
             float pad=(hull+160)*s;
-            if(sx<-pad || sx>g.layout.width+pad || sy<-pad || sy>g.layout.height+pad)continue;
+            if(sx<-pad || sx>g.layout.width+pad || sy<-pad || sy>g.layout.height+pad)return;
             float zs=ArticulatedModel.Z_SCALE*s;
             // Lingering oil slick: a dark sheen with a faint rainbow rim, spreading and thinning.
             float slick=Physics.clamp((t-PLUNGE)/40f,0,1)*(1-Physics.clamp((t-SINK-SLICK+80)/80f,0,1));
@@ -119,20 +150,20 @@ final class HullDamage {
             float boil=t<SINK?1:1-Physics.clamp((t-SINK)/120f,0,1);
             if(boil>0)for(int k=0;k<12;k++){
                 int age=(t+k*13)%40;float u=age/40f,a=k*2.39996f;
-                float bx=b.x+(float)StrictMath.cos(a)*(b.half*.8f)*((k%3+1)/3f),by=b.y+(float)StrictMath.sin(a)*(b.radius*.9f);
+                float px=bx+(float)StrictMath.cos(a)*(half*.8f)*((k%3+1)/3f),py=by+(float)StrictMath.sin(a)*(radius*.9f);
                 float size=(2.5f+u*5)*s;
-                p.spriteAffine(SpriteAtlas.SPLASH,k%4,c.screenX(bx,by),c.screenY(bx,by)-u*6*s,size*2,0,0,size*1.4f,(1-u)*.7f*boil);
+                p.spriteAffine(SpriteAtlas.SPLASH,k%4,c.screenX(px,py),c.screenY(px,py)-u*6*s,size*2,0,0,size*1.4f,(1-u)*.7f*boil);
             }
-            if(t>=SINK)continue;
+            if(t>=SINK)return;
             // Opening blast: fireball, debris and sparks, then two smaller pops.
-            explosion(p,c,b,t,0,1,sx,sy,zs);
-            for(int i=0;i<POPS.length;i++)explosion(p,c,b,t-POPS[i],i+1,.5f,sx,sy,zs);
+            explosion(p,c,bx,by,hull,seed,craft,t,0,1,sx,sy,zs);
+            for(int i=0;i<POPS.length;i++)explosion(p,c,bx,by,hull,seed,craft,t-POPS[i],i+1,.5f,sx,sy,zs);
             // Plunge geyser: a column of spray thrown up as the hull goes under.
             if(plunge>=0 && plunge<26){
                 float u=plunge/26f;
                 for(int k=0;k<9;k++){
-                    float h=(1-(1-u)*(1-u))*(40+rand(b,k,7)*45)*(1-u*.35f),ox=(rand(b,k,8)-.5f)*hull*1.1f,oy=(rand(b,k,9)-.5f)*b.radius;
-                    float px=c.screenX(b.x+ox,b.y+oy),py=c.screenY(b.x+ox,b.y+oy)-h*zs,size=(7+rand(b,k,10)*7)*s*(1+u);
+                    float h=(1-(1-u)*(1-u))*(40+rand(seed,k,7)*45)*(1-u*.35f),ox=(rand(seed,k,8)-.5f)*hull*1.1f,oy=(rand(seed,k,9)-.5f)*radius;
+                    float px=c.screenX(bx+ox,by+oy),py=c.screenY(bx+ox,by+oy)-h*zs,size=(7+rand(seed,k,10)*7)*s*(1+u);
                     p.spriteAffine(SpriteAtlas.SPLASH,k%4,px,py,size*1.4f,-size*.8f,size*.6f,size*1.2f,(1-u)*.9f);
                 }
             }
@@ -147,9 +178,9 @@ final class HullDamage {
         }
     }
     /** One blast `age` ticks old (none before 0): scale 1 is the opening explosion. */
-    private static void explosion(Painter p,RiverCamera c,Body b,int age,int salt,float scale,float sx,float sy,float zs){
+    private static void explosion(Painter p,RiverCamera c,float bx,float by,float hull,int seed,boolean craft,int age,int salt,float scale,float sx,float sy,float zs){
         if(age<0 || age>=70)return;
-        float s=c.scale,hull=b.half+b.radius,sec=age/60f;
+        float s=c.scale,sec=age/60f;
         if(age<16){
             float f=1-age/16f,size=hull*4.6f*scale*s*(1.25f-.25f*f);
             p.material(sx,sy-10*s,size,0,0,size*.75f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffff8a2b,f*.95f));
@@ -158,9 +189,9 @@ final class HullDamage {
         }
         int pieces=scale>=1?14:5;
         for(int k=0;k<pieces;k++){
-            float a=rand(b,k,salt*3+1)*6.2831855f,speed=(40+rand(b,k,salt*3+2)*70)*scale,vz=(45+rand(b,k,salt*3+3)*65)*scale;
+            float a=rand(seed,k,salt*3+1)*6.2831855f,speed=(40+rand(seed,k,salt*3+2)*70)*scale,vz=(45+rand(seed,k,salt*3+3)*65)*scale;
             float z=8+vz*sec-48*sec*sec;if(z<0)continue;
-            float x=b.x+(float)StrictMath.cos(a)*speed*sec,y=b.y+(float)StrictMath.sin(a)*speed*sec;
+            float x=bx+(float)StrictMath.cos(a)*speed*sec,y=by+(float)StrictMath.sin(a)*speed*sec;
             float px=c.screenX(x,y),py=c.screenY(x,y)-z*zs;
             if(k%3==0){
                 // Spark: a short hot streak along its arc.
@@ -171,10 +202,10 @@ final class HullDamage {
                 p.line(tx,ty,px,py,1.1f*s,SoftCue.alpha(0xffffefb0,fade));
             }else{
                 // Tumbling plank or plate in the hull's colours.
-                float spin=age*(.25f+rand(b,k,salt*3+4)*.35f)+k,len=(1.6f+rand(b,k,salt*3+5)*2.6f)*s,w=(.7f+rand(b,k,salt*3+6)*.9f)*s;
+                float spin=age*(.25f+rand(seed,k,salt*3+4)*.35f)+k,len=(1.6f+rand(seed,k,salt*3+5)*2.6f)*s,w=(.7f+rand(seed,k,salt*3+6)*.9f)*s;
                 float cx=(float)StrictMath.cos(spin),cy=(float)StrictMath.sin(spin),fade=Physics.clamp((70-age)/20f,0,1);
                 // The vessel's own materials: fibreglass and trim for pleasure craft, rusted plate and timber for barges.
-                int[] palette=b.cruiser || b.yacht?CRAFT_DEBRIS:BARGE_DEBRIS;int color=palette[k%palette.length];
+                int[] palette=craft?CRAFT_DEBRIS:BARGE_DEBRIS;int color=palette[k%palette.length];
                 float ex=len+.8f*s,ew=w+.8f*s;
                 p.convexQuad(px-cx*ex-cy*ew,py-cy*ex+cx*ew,px+cx*ex-cy*ew,py+cy*ex+cx*ew,px+cx*ex+cy*ew,py+cy*ex-cx*ew,px-cx*ex+cy*ew,py-cy*ex-cx*ew,SoftCue.alpha(0xff120c0a,.75f*fade));
                 p.convexQuad(px-cx*len-cy*w,py-cy*len+cx*w,px+cx*len-cy*w,py+cy*len+cx*w,px+cx*len+cy*w,py+cy*len-cx*w,px-cx*len+cy*w,py-cy*len-cx*w,SoftCue.alpha(color,fade));

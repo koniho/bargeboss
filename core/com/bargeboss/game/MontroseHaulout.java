@@ -37,7 +37,7 @@ public final class MontroseHaulout {
     public static boolean clear(Game g){
         if(inClearance(g.tug))return false;
         for(Body b:g.cargo)if(inClearance(b))return false;
-        for(MooredFleet.FloatBoat b:g.mooredFleet.boats){float r=b.berth.length*.6f+4;
+        for(MooredFleet.FloatBoat b:g.mooredFleet.boats){if(!b.afloat())continue;float r=b.berth.length*.6f+4;
             if(Math.abs(b.x-X)<37+r && b.y+r>Y-55 && b.y-r<MontroseHarbor.mapY(298)
                     && PolygonWater.rectangle(b.hull,X-41,Y-59,X+41,MontroseHarbor.mapY(298)+4).length>=6)return false;
         }

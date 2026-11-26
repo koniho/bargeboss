@@ -32,7 +32,19 @@ public final class HullDamageTest {
         for(int i=0;i<HullDamage.FAIL_DELAY;i++)HullDamage.step(g);
         check(g.cargoSunk && g.goalFailed(),"sunk required cargo fails the mission");
         // Moored marina boats count as others' property, once per cooldown.
-        g=yard();HullDamage.moored(g,100);HullDamage.moored(g,100);check(g.othersDamage==HullDamage.HIT,"moored hit recorded once per cooldown");
+        // Moored marina boats have their own health: hit once per cooldown, sink at zero, then leave the water.
+        g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
+        check(g.mooredFleet.boats.length>0,"Montrose fills its marina");
+        MooredFleet.FloatBoat m=g.mooredFleet.boats[0];
+        HullDamage.moored(g,m,77);check(m.health==100,"soft bump leaves a marina boat whole");
+        HullDamage.moored(g,m,100);HullDamage.moored(g,m,100);
+        check(m.health==100-HullDamage.HIT && g.othersDamage==HullDamage.HIT,"moored hit costs health once per cooldown");
+        while(m.health>0){g.ticks+=HullDamage.COOLDOWN;HullDamage.moored(g,m,100);}
+        check(m.sinkTicks>0 && !m.afloat() && g.othersDamage==100,"a wrecked marina boat sinks and the record totals its health");
+        Body probe=new Body(-1,-1,m.x,m.y,0);probe.vx=200;
+        check(g.mooredFleet.collide(g,probe,g.splashes)==0,"a sinking marina boat no longer blocks traffic");
+        for(int i=0;i<HullDamage.SINK+HullDamage.SLICK+5;i++)g.mooredFleet.step(g);
+        check(m.sinkTicks==HullDamage.SINK+HullDamage.SLICK,"marina wreck clock stops after its slick fades");
         System.out.println("Vessel health, property record, sinking and sunk-cargo failure passed");
     }
     public static void main(String[] a){run();}

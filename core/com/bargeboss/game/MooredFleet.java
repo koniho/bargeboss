@@ -6,6 +6,9 @@ public final class MooredFleet {
     static final class FloatBoat {
         final MooredBoats.Berth berth;final float[] hull=new float[8];final boolean roomy;
         float x,y,vx,vy,yaw,spin,heave,wakeHeave,anchorX,anchorY;
+        /** Owner's boat health (0..100), the value before the last hit, and the sinking clock (0 = afloat). */
+        int health=100,healthBefore=100,damagedTick=-HullDamage.COOLDOWN,sinkTicks;
+        boolean afloat(){return sinkTicks<=0;}
         FloatBoat(MooredBoats.Berth b){berth=b;x=b.x;y=b.y;anchorX=b.ax;anchorY=b.ay;updateHull();boolean room=true;for(int corner=0;corner<8;corner+=2)for(int n=0;n<16;n++){double a=n*StrictMath.PI/8;if(!MontroseHarbor.contains(hull[corner]+9*(float)StrictMath.cos(a),hull[corner+1]+9*(float)StrictMath.sin(a)))room=false;}roomy=room;}
         void updateHull(){float a=berth.angle+yaw,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
             for(int i=0;i<4;i++){float u=(i<2?-1:1)*berth.length*.48f,v=(i==0||i==3?-1:1)*berth.width*.48f;hull[i*2]=x+c*u-s*v;hull[i*2+1]=y+s*u+c*v;}}
@@ -35,7 +38,7 @@ public final class MooredFleet {
     }
     FloatBoat sorted(int i){return i<order.length?boats[order[i]]:null;}
     public void step(Game g){if(!g.montroseStage())return;
-        for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
+        for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];if(!b.afloat()){HullDamage.stepMoored(g,b);continue;}float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
             g.water.flow(g,b.x,b.y,g.visualTicks,null,force);
             force[0]*=1.4f;force[1]*=1.4f;
             // Amplify only propagated wake motion, leaving sheltered idle water calm.
@@ -62,9 +65,9 @@ public final class MooredFleet {
         }
         for(int i=1;i<order.length;i++){int value=order[i],j=i-1;FloatBoat b=boats[value];while(j>=0 && boats[order[j]].y-boats[order[j]].x>b.y-b.x){order[j+1]=order[j];j--;}order[j+1]=value;}
     }
-    public float collide(Body body,CollisionSplashes splashes){float hit=0;
-        for(FloatBoat b:boats)if(Math.abs(body.x-b.x)<body.half+body.radius+b.berth.length && Math.abs(body.y-b.y)<body.half+body.radius+b.berth.length){
-            float vx=body.vx,vy=body.vy,impact=PolygonWater.collide(body,b.hull,false,splashes);hit=Math.max(hit,impact);
+    public float collide(Game g,Body body,CollisionSplashes splashes){float hit=0;
+        for(FloatBoat b:boats)if(b.afloat() && Math.abs(body.x-b.x)<body.half+body.radius+b.berth.length && Math.abs(body.y-b.y)<body.half+body.radius+b.berth.length){
+            float vx=body.vx,vy=body.vy,impact=PolygonWater.collide(body,b.hull,false,splashes);hit=Math.max(hit,impact);HullDamage.moored(g,b,impact);
             if(impact>0){b.vx=Physics.clamp(b.vx+vx*.08f,-4,4);b.vy=Physics.clamp(b.vy+vy*.08f,-4,4);if(b.swinging()){
                     float torque=((body.x-b.x)*vy-(body.y-b.y)*vx)/Math.max(1,b.berth.length*b.berth.length);
                     b.spin=Physics.clamp(b.spin+torque*.6f,-.8f,.8f);

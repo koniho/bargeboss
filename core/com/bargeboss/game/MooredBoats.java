@@ -56,7 +56,10 @@ public final class MooredBoats {
     public static float depth(Game g,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=BERTHS[i];return g.layout.camera.screenY(f==null?b.x:f.x,f==null?b.y:f.y);}
     public static float bob(int ticks,int i){return .35f*(float)StrictMath.sin(ticks*.026+i*1.73);}
     public static void draw(Game g,Painter p,int i){MooredFleet.FloatBoat f=g.mooredFleet.sorted(i);Berth b=f==null?BERTHS[i]:f.berth;
+        if(f!=null && f.sinkTicks>=HullDamage.SINK)return;
         float wx=f==null?b.x:f.x,wy=f==null?b.y:f.y,angle=b.angle+(f==null?0:f.yaw),heave=f==null?0:f.heave;
+        // A sinking hull settles under its float line and is gone by the plunge.
+        float alpha=1;if(f!=null && f.sinkTicks>0){heave-=HullDamage.sinkDepth(f.sinkTicks,b.width*.5f);alpha=1-Physics.clamp((f.sinkTicks-HullDamage.PLUNGE+12)/24f,0,1);if(alpha<=0)return;}
         RiverCamera c=g.layout.camera;float x=c.screenX(wx,wy),y=c.screenY(wx,wy)-heave*c.scale,size=CELL_WORLD*c.scale;
         if(x+size*.5f<0||x-size*.5f>g.layout.width||y+size*.3f<0||y-size*.7f>g.layout.height)return;
         float detail=SceneDetail.boat(g,b.length,wx,wy);
@@ -80,13 +83,13 @@ public final class MooredBoats {
             p.line(sx,sy,(sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,.8f*c.scale,0x998d9c99);
             p.line((sx+ex)*.5f,(sy+ey)*.5f+1.5f*c.scale,ex,ey,.8f*c.scale,0x998d9c99);
         }
-        dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,1);
+        dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,alpha);
         dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
-                x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,1);
+                x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,alpha);
         if(detail<=.001f)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         for(int n=0;n<lights.count;n++){
-            float energy=lights.energy[n]*detail,second=energy*mix,first=energy*(1-mix)/(1-second);
+            float energy=lights.energy[n]*detail*alpha,second=energy*mix,first=energy*(1-mix)/(1-second);
             p.normalSprite(base+a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],first);
             if(second>.001f)p.normalSprite(base+next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],second);
         }

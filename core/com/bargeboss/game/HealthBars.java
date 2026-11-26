@@ -17,18 +17,24 @@ final class HealthBars {
         for(Body b:g.cargo)if(b!=null && b.active && b.sinkTicks<=0)bar(g,p,b,false);
         if(g.tutorial==null && g.feeders!=null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){bar(g,p,f.boat,false);if(f.load!=null && f.load.active)bar(g,p,f.load,false);}
         if(g.trafficActive())bar(g,p,g.trafficBoat,false);
+        // Marina boats show a bar once they have been hit, so a full harbour stays uncluttered.
+        if(g.montroseStage())for(MooredFleet.FloatBoat m:g.mooredFleet.boats)if(m.afloat() && m.health<100)
+            bar(g,p,m.x,m.y,m.heave,30*ArticulatedModel.Z_SCALE,(m.berth.length+m.berth.width)*.55f,m.health/100f,m.healthBefore/100f,g.ticks-m.damagedTick,false);
     }
     private static void bar(Game g,Painter p,Body b,boolean player){
         if(b==null)return;
-        RiverCamera c=g.layout.camera;
         // Above the tallest point of the hull: the tug's funnel, a deck load otherwise.
         float lift=(player?44:b.cruiser || b.yacht?34:28)*ArticulatedModel.Z_SCALE+WaterSurface.lift(g,b);
-        float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y)-lift*c.scale-10;
-        float width=Physics.clamp((b.half+b.radius)*1.1f*c.scale,MIN_WIDTH,MAX_WIDTH);
-        if(sx+width<0 || sx-width>g.layout.width || sy<-HEIGHT || sy-HEIGHT>g.layout.height)return;
         float health,before;int sinceHit;
         if(player){health=g.hull/100f;sinceHit=g.damageFlashTicks>0?40-g.damageFlashTicks:HullDamage.CHIP;before=Math.min(100,g.hull+9)/100f;}
         else {health=b.health/100f;sinceHit=g.ticks-b.damagedTick;before=b.healthBefore/100f;}
+        bar(g,p,b.x,b.y,0,lift,(b.half+b.radius)*1.1f,health,before,sinceHit,player);
+    }
+    private static void bar(Game g,Painter p,float wx,float wy,float heave,float lift,float hull,float health,float before,int sinceHit,boolean player){
+        RiverCamera c=g.layout.camera;
+        float sx=c.screenX(wx,wy),sy=c.screenY(wx,wy)-(lift+heave)*c.scale-10;
+        float width=Physics.clamp(hull*c.scale,MIN_WIDTH,MAX_WIDTH);
+        if(sx+width<0 || sx-width>g.layout.width || sy<-HEIGHT || sy-HEIGHT>g.layout.height)return;
         health=Physics.clamp(health,0,1);
         float x=Math.round(sx-width*.5f),y=Math.round(sy-HEIGHT*.5f);
         int fill=player?PLAYER:OTHER;
