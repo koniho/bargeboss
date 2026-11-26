@@ -6874,3 +6874,15 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 
 - Rebased onto da80790 (lesson reorder + mooring ball, 569d9fda): combined canonical replay 144a8cff:2:1350;
   the portrait part is filename/name text only (bisected on its branch), score/deliveries unchanged.
+
+## 2026-11-26: Mooring lesson was hidden behind the fire monitor panel
+
+- After the fires the fire barge stayed selected: its FIRE MONITOR panel kept the chart hidden and the
+  tutorial card kept showing "BARGE EQUIPMENT", so the new mooring step looked like a broken ending.
+  EXTINGUISH → MOOR (and a MOOR skip) now deselect abilities; the equipment card is limited to the
+  fireworks/fire lessons; barge abilities are unavailable during MOOR.
+- The mooring frame anchors on the tug/ball midpoint below-left of centre, so the ball and barges
+  are no longer under the top-right instruction panel; the ball is larger (float size 24) with a
+  pulsing mint target ring and a faint throw-reach ring.
+- Canonical replay ecc8a070:2:1350 (was 144a8cff): practice tutorial only (all Parity sections that
+  run the practice tutorial disabled: identical a349c251 on both trees). Score/deliveries unchanged.

@@ -113,7 +113,7 @@ public final class Tutorial {
             if(lesson>=MOOR)fireworks.extinguished();
             if(lesson==MOOR){
                 // Both fireworks barges wait loose near the woodpile basin's mooring ball.
-                g.tow.release(g);
+                g.tow.release(g);g.abilities.deselect();
                 Body a=PracticeMooring.hull(g,0),b=PracticeMooring.hull(g,1);a.lineAttached=b.lineAttached=false;
                 a.x=PracticeMooring.X-95;a.y=PracticeMooring.Y+70;b.x=PracticeMooring.X+95;b.y=PracticeMooring.Y+70;park(a);park(b);
                 g.tug.x=PracticeMooring.X;g.tug.y=PracticeMooring.Y+170;g.tug.angle=-(float)Math.PI/2;
@@ -222,6 +222,8 @@ public final class Tutorial {
         } else if(lesson==EXTINGUISH && fireworks.done && fireworks.rescueRadio.complete()) {
             // Cast off the fire barge where it fought the fires; it waits there while the fireworks barges moor.
             g.tow.detachBody(g,g.cargo[3]);park(g.cargo[3]);
+            // Put the fire monitor away so the mooring instructions and chart come back.
+            g.abilities.deselect();
             lesson=MOOR;g.cancelInputs();success(g);
         } else if(lesson==MOOR) {
             if(mooring.tied(g)==PracticeMooring.HULLS && mooring.snug(g)){lesson=DONE;g.cancelInputs();success(g);}

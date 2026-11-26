@@ -286,7 +286,8 @@ public final class Game {
         if(tutorial.lesson==Tutorial.CHALLENGE)return workCamera(TowingChallenge.ZOOM,0,true);
         // Mooring: one steady frame on the tug and the ball, so ties and tows never re-target the view.
         if(tutorial.lesson==Tutorial.MOOR){float bx=tutorial.mooring.x(this),by=tutorial.mooring.y(this);
-            return Layout.focused(layout.width,layout.height,tug.x*.65f+bx*.35f,tug.y*.65f+by*.35f,1.3f,layout.width*.5f,layout.height*.58f);}
+            // Anchor below-left of centre: the instruction panel owns the top-right corner.
+            return Layout.focused(layout.width,layout.height,tug.x*.5f+bx*.5f,tug.y*.5f+by*.5f,1.15f,layout.width*.42f,layout.height*.64f);}
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
         float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;

@@ -32,7 +32,7 @@ public final class BargeAbilities {
     }
     float opacity(){return blend*blend*(3-2*blend);}
     boolean replacesMap(){return selected!=null || blend>0;}
-    private boolean available(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson<Tutorial.DONE);}
+    private boolean available(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson<Tutorial.DONE && g.tutorial.lesson!=Tutorial.MOOR);}
     private boolean visible(Game g){return available(g) && !g.conversation() && selected!=null && selected.active;}
     private boolean hit(Game g,float px,float py,int button){return selected!=null && selected.ability==FIREWORKS?Math.abs(px-buttonX(g,0))<=68 && Math.abs(py-buttonY(g))<=62:Physics.length(px-buttonX(g,0),py-buttonY(g))<=AIM_RADIUS+10;}
     public boolean down(Game g,int id,float px,float py){

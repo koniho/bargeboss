@@ -224,7 +224,7 @@ public final class CoreTest {
         // ae32a7f8: new pixels and PortraitRegistration X offsets under the old file names and
         // HUD labels reproduce ae32a7f8 exactly; the hashed atlas file names and the HUD name
         // label text are the only inputs that move (old files + new labels: b32cd182).
-        check(Parity.signature().equals("144a8cff:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("ecc8a070:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

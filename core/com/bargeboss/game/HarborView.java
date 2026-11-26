@@ -127,6 +127,11 @@ public final class HarborView {
             Body b=nearer(g,PracticeMooring.hull(g,0),PracticeMooring.hull(g,1));if(b!=null)destination(g,canvas,b.x,b.y,"CELEBRATE / TAP A FIREWORKS BARGE");return;
         }
         if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOOR){
+            // The ball is the goal for the whole lesson: a pulsing target ring around it.
+            float bx=g.tutorial.mooring.x(g),by=g.tutorial.mooring.y(g),pulse=4*(float)StrictMath.sin(g.visualTicks*.08);
+            RiverPainter river=new RiverPainter(canvas,g.layout.camera);
+            ControlView.ring(g,river,bx,by,PracticeMooring.REACH*.32f+pulse,1,0xff9bffe0,2.5f);
+            ControlView.ring(g,river,bx,by,PracticeMooring.REACH,1,0x449bffe0,1.5f);
             if(g.ropeDragging || g.ropePhase!=0)return;
             Body towing=null,loose=null;
             for(int i=0;i<PracticeMooring.HULLS;i++){Body b=PracticeMooring.hull(g,i);if(b==null || b.lineAttached)continue;if(g.tow.connected(b,g.tug))towing=b;else if(loose==null)loose=b;}

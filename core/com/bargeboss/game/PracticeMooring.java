@@ -7,7 +7,7 @@ public final class PracticeMooring {
     /** Ball anchor: open water between the three fire-barge stations. */
     public static final float X=180,Y=-1370;
     /** Throw reach from a barge, the ball's float size, and the line's fitting height on the ball. */
-    static final float REACH=165,SIZE=16,TOP=7;
+    static final float REACH=165,SIZE=24,TOP=9;
     static final int HULLS=2;
     /** Tied barges this lesson (for the panel). */
     int count;
