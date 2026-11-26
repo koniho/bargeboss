@@ -26,6 +26,8 @@ final class FireworksLesson {
     boolean launched,ignited,done;
     float launchX,launchY;
     void reset(){contactSteam.reset();for(int i=0;i<PILES;i++)pileHeat[i]=pileSteam[i]=pileSizzle[i]=0;rescueRadio.reset();showTicks=heat=steam=sizzle=0;launched=ignited=done=false;}
+    /** Explicit setup after the fire lesson: the piles are already out and the relief call is over. */
+    void extinguished(){reset();launched=ignited=done=true;rescueRadio.conclude();}
     void launched(Game g,Body b){
         if(g.tutorial.lesson!=Tutorial.SHOW || (b!=g.cargo[0] && b!=g.cargo[2]) || !g.passages.passable(TutorialTowBridges.ENTRY) || launched)return;
         launched=true;launchX=b.x;launchY=b.y;

@@ -77,7 +77,7 @@ public final class StaticTerrainTest {
         // chunks should consume raster-cache entries or background preparation slots.
         Trace removed=new Trace();StaticTerrain.tile(20,20,false).surfaces(removed);
         check(removed.surfaces==0,"removed outer filler has no ground surfaces");
-        Game sparse=new Game();int col=-8,row=-2;
+        Game sparse=new Game();int col=-10,row=0; // Quiet yard west of the challenge basin quays.
         sparse.layout=Layout.renderTile(64,64,new RiverCamera(RiverCamera.Q*288-col*StaticTerrain.CHUNK-64,
                 -RiverCamera.Q*RiverCamera.DEPTH*312-row*StaticTerrain.CHUNK-64,1));
         StaticTerrain.Tile surfaceOnly=StaticTerrain.tile(col,row,false);Trace faces=new Trace();surfaceOnly.surfaces(faces);

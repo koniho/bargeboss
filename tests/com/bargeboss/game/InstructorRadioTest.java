@@ -21,14 +21,18 @@ public final class InstructorRadioTest {
             check(g.passages.passable(0) && g.cargo[0]!=null,"towing starts with open canal and cargo ready");
             call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.SHOW,"skip towing prepares abilities");
             check(g.tow.loadCount(g.tug)==0 && g.cargo[0].ability==BargeAbilities.FIREWORKS && !g.tutorial.fireworks.launched,"abilities starts with released fireworks barges ready to activate");
-            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.DONE && !g.dialogue.active,"skip abilities finishes training");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.CHALLENGE && g.dialogue.active,"skip abilities opens the towing challenge briefing");
+            ticks(root,20);reply(root,0);check(!g.dialogue.active && g.tutorial.challenge.phase==TowingChallenge.APPROACH,"briefing reply hands over to the basin approach");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.DONE && !g.dialogue.active,"skip towing challenge finishes training");
             for(int lesson=Tutorial.MOVE;lesson<Tutorial.DONE;lesson++){
                 g.tutorial.lesson=lesson;g.tutorial.setup(g);
-                int expected=lesson<Tutorial.CONNECT?Tutorial.CONNECT:lesson<Tutorial.SHOW?Tutorial.SHOW:Tutorial.DONE;
+                if(lesson==Tutorial.CHALLENGE){ticks(root,20);reply(root,0);}
+                int expected=lesson<Tutorial.CONNECT?Tutorial.CONNECT:lesson<Tutorial.SHOW?Tutorial.SHOW:lesson<Tutorial.CHALLENGE?Tutorial.CHALLENGE:Tutorial.DONE;
                 call(root);check(g.dialogue.content().title.contains(g.tutorial.phaseName()),"confirmation names the entire phase");reply(root,1);
                 check(g.tutorial.lesson==expected,"skip from every sublesson reaches next phase boundary");
                 check(!g.tutorial.feedback.active(),"skipping does not claim earned lesson praise");
-                if(expected==Tutorial.DONE){ticks(root,360);check(!g.dialogue.active && g.tutorial.fireworks.heat==0 && g.tutorial.fireworks.sizzle==0,"skipped fire cannot restart radio or ambience");}
+                if(expected==Tutorial.CHALLENGE){check(g.dialogue.active,"challenge skip target briefs the timed basin");ticks(root,20);reply(root,0);}
+                if(expected>=Tutorial.CHALLENGE){ticks(root,360);check(!g.dialogue.active && g.tutorial.fireworks.heat==0 && g.tutorial.fireworks.sizzle==0,"skipped fire cannot restart radio or ambience");}
             }
             root=new Game();root.configureCanvas(width,600);ReplayInput.startPractice(root);g=root.activeGame();
             for(int i=0;i<1000 && !g.tutorial.instructorRadio.teach;i++){ReplayInput.tutorial(root);root.step();}

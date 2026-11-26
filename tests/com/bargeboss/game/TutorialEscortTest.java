@@ -6,7 +6,7 @@ public final class TutorialEscortTest {
     public static void run(){
         Game root=new Game();root.startTutorial();Game g=root.activeGame();Body teacher=g.teacherBoat();
         float travel=0;boolean inCanal=false,inHarbor=false;
-        for(int tick=0;tick<18000 && g.tutorial.lesson!=Tutorial.DONE;tick++){
+        for(int tick=0;tick<22500 && g.tutorial.lesson!=Tutorial.DONE;tick++){
             float x=teacher.x,y=teacher.y;ReplayInput.tutorial(root);root.step();
             float step=Physics.length(teacher.x-x,teacher.y-y);travel+=step;
             check(step<8,"escort never teleports: "+step);

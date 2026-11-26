@@ -199,6 +199,7 @@ public final class CoreTest {
         LockCurrentTest.run();
         PersistentBargeTest.run();
         PhysicalBerthsTest.run();
+        TowingChallengeTest.run();
         // Chicago River appended as job 9 / location 4: star totals, the selector's second page
         // and Indiana's next-harbor text change. Bisected: without that entry the prior
         // baseline 310d2a08 is exact, so existing simulation/input are unchanged. The selector's

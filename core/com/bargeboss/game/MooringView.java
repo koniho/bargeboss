@@ -26,7 +26,7 @@ public final class MooringView {
             if(g.montroseStage() || !g.berthEnabled(berth)) continue;
             float x=g.bollardX(berth),y=g.bollardY(berth);
             boolean ready=false,tied=false;
-            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth && (!g.calumetStage() || b.destination==g.voyage.destination(berth))) {
+            for(Body b:g.cargo) if(b!=null && b.active && b.berth==berth && !g.challengeHull(b) && (!g.calumetStage() || b.destination==g.voyage.destination(berth))) {
                 ready|=g.canTie(b); tied|=b.lineAttached;
             }
             if(reachableBollard(g,berth)) bollardGlow(g,p,x,y);
@@ -42,6 +42,7 @@ public final class MooringView {
                 ControlView.ring(g,p,x,y,17,1,0x6688e2bb,1);
             }
         }
+        if(g.tutorial!=null && g.tutorial.challenge.active())challengeBollards(g,p,tick);
         for(Body b:g.cargo) if(b!=null && b.active) {
             if((g.ropeDragging || g.towAiming) && g.heldCargo()==b) {
                 aim(g,p,b); continue;
@@ -112,11 +113,36 @@ public final class MooringView {
         }
 
     }
+    /** Far-quay towing-challenge fittings: one per berth, culled to the view. */
+    private static void challengeBollards(Game g,Painter p,int tick) {
+        TowingChallenge challenge=g.tutorial.challenge;
+        Body held=g.heldCargo();
+        boolean aiming=g.pointer && (g.ropeDragging || g.towAiming) && g.ropePhase==0 && challenge.owns(held) && g.ropeWithinReach(held);
+        int heldRow=aiming?challenge.berthFor(held):-1;
+        for(int row=0;row<TowingChallenge.BARGES;row++) {
+            float x=TowingChallenge.bollardX(),y=TowingChallenge.bollardY(row);
+            if(p instanceof RiverPainter){
+                RiverCamera c=((RiverPainter)p).camera;float sx=c.screenX(x,y),sy=c.screenY(x,y),margin=60*c.scale;
+                if(sx<-margin || sx>g.layout.width+margin || sy<-margin || sy>g.layout.height+margin)continue;
+            }
+            if(row==heldRow)bollardGlow(g,p,x,y);
+            bollard(g,p,x,y);
+            if(challenge.claimed(row)){p.rect(x-3,y-11,6,2,GREEN);continue;}
+            boolean ready=false;
+            for(Body b:challenge.barges)if(b!=null && g.canTie(b) && challenge.berthFor(b)==row)ready=true;
+            if(ready){
+                ControlView.ring(g,p,x,y,Game.TIE_RADIUS,1,GREEN,1.5f);
+                float top=y-48+3*(float)StrictMath.sin(tick*.11);
+                ControlView.arrow(g,p,x,top,x,top+18,VisualStyle.GOLD);
+                SoftCue.caption(p,"TIE",x-12,y-38,8,GREEN);
+            }
+        }
+    }
     /** Show only a target the held hull can actually catch, independent of aim direction. */
     static boolean reachableBollard(Game g,int berth) {
         Body held=g.heldCargo();
         return g.pointer && (g.ropeDragging || g.towAiming) && g.ropePhase==0
-                && held!=null && held.berth==berth && g.ropeWithinReach(held);
+                && held!=null && held.berth==berth && !g.challengeHull(held) && g.ropeWithinReach(held);
     }
     private static void bollardGlow(Game g,Painter p,float x,float y) {
         float scale=1;

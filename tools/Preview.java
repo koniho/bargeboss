@@ -65,7 +65,7 @@ public final class Preview {
         capture(g,"untimed-level");
         g=new Game(); ReplayInput.tap(g,Layout.LEARN); capture(g,"tutorial-0");
         int previous=0;
-        for(int i=0;i<9000;i++) {
+        for(int i=0;i<13500;i++) {
             Game a=g.activeGame();boolean entering=a.tutorial.entering; ReplayInput.tutorial(g); g.step();
             if(i==120)capture(g,"tutorial-entrance-crossing");
             if(entering && !a.tutorial.entering)capture(g,"tutorial-entrance-handoff");

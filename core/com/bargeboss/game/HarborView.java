@@ -108,6 +108,20 @@ public final class HarborView {
             else if(g.lock.phase==Lock.EXIT)destination(g,canvas,300,Lock.EXIT_Y-120,"LOCK EXIT");
             return;
         }
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.CHALLENGE){
+            TowingChallenge c=g.tutorial.challenge;
+            if(g.ropeDragging || g.ropePhase!=0 || g.conversation())return;
+            if(c.phase==TowingChallenge.APPROACH){destination(g,canvas,TowingChallenge.START_X,TowingChallenge.START_Y-80,"CHALLENGE BASIN");return;}
+            if(c.phase!=TowingChallenge.RUN)return;
+            if(g.tow.loadCount(g.tug)>0){
+                int row=c.nearestFreeRow(g.tug.y);
+                if(row>=0)destination(g,canvas,TowingChallenge.BERTH_X,TowingChallenge.rowY(row),"FAR QUAY / TIE OFF");
+                return;
+            }
+            Body next=c.nearestWaiting(g);
+            if(next!=null)destination(g,canvas,next.x,next.y,"COLLECT BARGES");
+            return;
+        }
         // The early lessons teach a touch target, before the berth destination.
         if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.DOUBLE)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;

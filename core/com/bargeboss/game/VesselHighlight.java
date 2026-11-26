@@ -14,7 +14,7 @@ public final class VesselHighlight {
         if(t!=null && b==g.cargo[0] && (t.lesson==Tutorial.CONNECT || t.lesson==Tutorial.PULL || t.lesson==Tutorial.CASTOFF))return SpriteAtlas.BARGE_GOLD;
         if(b.lineAttached || b.deliveryRecorded)return -1;
         if(g.canTie(b) && !g.ropeDragging)return SpriteAtlas.BARGE_MINT;
-        return t!=null && t.lesson>=Tutorial.CONNECT && t.lesson<Tutorial.DONE && (t.lesson==Tutorial.LINK?g.cargo[2]==b:g.cargo[0]==b)
+        return t!=null && t.lesson>=Tutorial.CONNECT && t.lesson<Tutorial.CHALLENGE && (t.lesson==Tutorial.LINK?g.cargo[2]==b:g.cargo[0]==b)
                 ?SpriteAtlas.BARGE_GOLD:-1;
     }
     static float opacity(int tick) {

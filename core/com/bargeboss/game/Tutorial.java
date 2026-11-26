@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Drag-control practice with action gates and no clock, damage or traffic. */
 public final class Tutorial {
-    public static final int MOVE=0, FIGURE_EIGHT=1, REVERSE=2, SLIP=3, MAP=4, CHANNEL=5, CONNECT=6, PULL=7, CASTOFF=8, HOLD=9, STEER=10, DOCK=11, TIE=12, DOUBLE=13, BRIDGE=14, LINK=15, TRAIN=16, RELEASE=17, SHOW=18, FIRE_TOW=19, EXTINGUISH=20, DONE=21;
+    public static final int MOVE=0, FIGURE_EIGHT=1, REVERSE=2, SLIP=3, MAP=4, CHANNEL=5, CONNECT=6, PULL=7, CASTOFF=8, HOLD=9, STEER=10, DOCK=11, TIE=12, DOUBLE=13, BRIDGE=14, LINK=15, TRAIN=16, RELEASE=17, SHOW=18, FIRE_TOW=19, EXTINGUISH=20, CHALLENGE=21, DONE=22;
     // PULL (7) is a retired checkpoint ID; explicit resets redirect to CASTOFF.
     public static final float BRIDGE_CLEAR_Y=TutorialTowBridges.EXIT_Y-35,TRAIN_CLEAR_Y=TrainingChannel.NARROW_EXIT-15;
     final InstructorRadio instructorRadio=new InstructorRadio();
@@ -11,6 +11,8 @@ public final class Tutorial {
     public final TutorialCanalBridge canal=new TutorialCanalBridge();
     final TutorialTowBridges towBridges=new TutorialTowBridges();
     final FireworksLesson fireworks=new FireworksLesson();
+    /** Timed finale in the challenge basin, after the towing and ability lessons. */
+    public final TowingChallenge challenge=new TowingChallenge();
     public boolean firstTowParked;
     private int firstOrbitDirection,outsideTicks;
     private boolean skippedPhase;
@@ -50,7 +52,7 @@ public final class Tutorial {
         boolean hadTeacher=arrival!=null;instructorRadio.reset();feedback.reset();
         entering=false;entranceTicks=0;arrival=null;g.dialogue.close(g);instructionPanel.reset();
         g.buoys.reset(g);g.splashes=new CollisionSplashes();
-        g.crew.reset();towBridges.reset();fireworks.reset();g.abilities.reset();firstTowParked=false;
+        g.crew.reset();towBridges.reset();fireworks.reset();challenge.reset();g.abilities.reset();firstTowParked=false;
         canal.reset(lesson>CHANNEL);g.passages=new BridgePassage(g);LocationBridges.prepare(g.passages.bridges);
         if(lesson>CHANNEL)g.passages.position[0]=BridgePassage.OPEN_TICKS;
         for(int i=0;i<buoyClearTicks.length;i++)buoyClearTicks[i]=0;
@@ -106,10 +108,12 @@ public final class Tutorial {
             }
             if(lesson>=RELEASE){g.tug.y=-1350;towPractice.y=-1250;g.cargo[2].y=-1140;trainCrossed=3;}
             if(lesson>=SHOW){g.tow.release(g);fireworks.reset();}
-            if(lesson>=FIRE_TOW){fireworks.launched=true;fireworks.ignite();}
+            if(lesson>=FIRE_TOW && lesson<=EXTINGUISH){fireworks.launched=true;fireworks.ignite();}
+            if(lesson>=CHALLENGE)fireworks.extinguished();
             if(lesson==EXTINGUISH){g.cargo[3].x=FireworksLesson.TOW_X;g.cargo[3].y=FireworksLesson.TOW_Y;park(g.cargo[3]);g.tug.x=FireworksLesson.TOW_X;g.tug.y=FireworksLesson.TOW_Y+110;g.tow.attach(g,g.cargo[3]);}
             reconfigureRelease=g.towReleases;rememberTow(g);
             actionTicks=g.towReleases;
+            if(lesson==CHALLENGE)challenge.setup(g,false);
         }
         startX=lesson==TRAIN?g.cargo[2].x:lesson>=HOLD?g.cargo[0].x:g.tug.x;
         startY=lesson==TRAIN?g.cargo[2].y:lesson>=HOLD?g.cargo[0].y:g.tug.y;
@@ -118,9 +122,9 @@ public final class Tutorial {
         if(hadTeacher && arrival==null){arrival=new TutorialArrival();arrival.observe(g);}
         g.fitTutorialCamera();
     }
-    int nextPhase(){return lesson<CONNECT?CONNECT:lesson<SHOW?SHOW:DONE;}
-    String phaseName(){return lesson<CONNECT?"DRIVING":lesson<SHOW?"TOWING":"BARGE ABILITIES";}
-    String skipDetail(){return lesson<CONNECT?"NEXT: CONNECT AND HANDLE A TOW.":lesson<SHOW?"NEXT: FIREWORKS AND FIREFIGHTING.":"THIS WILL FINISH CAPTAIN TRAINING.";}
+    int nextPhase(){return lesson<CONNECT?CONNECT:lesson<SHOW?SHOW:lesson<CHALLENGE?CHALLENGE:DONE;}
+    String phaseName(){return lesson<CONNECT?"DRIVING":lesson<SHOW?"TOWING":lesson<CHALLENGE?"BARGE ABILITIES":"TOWING CHALLENGE";}
+    String skipDetail(){return lesson<CONNECT?"NEXT: CONNECT AND HANDLE A TOW.":lesson<SHOW?"NEXT: FIREWORKS AND FIREFIGHTING.":lesson<CHALLENGE?"NEXT: THE 60-SECOND TOWING CHALLENGE.":"THIS WILL FINISH CAPTAIN TRAINING.";}
     /** Explicit phase skip prepares the next phase's complete prerequisite scene. */
     void skip(Game g){
         if(lesson>=DONE)return;
@@ -207,7 +211,9 @@ public final class Tutorial {
             Body fire=g.cargo[3];if(direct(g,fire) && g.navigating)actionTicks++;
             if(direct(g,fire) && actionTicks>=6 && Physics.length(fire.x-FireworksLesson.TOW_X,fire.y-FireworksLesson.TOW_Y)<=50){lesson=EXTINGUISH;g.cancelInputs();success(g);}
         } else if(lesson==EXTINGUISH && fireworks.done && fireworks.rescueRadio.complete()) {
-            lesson=DONE;g.cancelInputs();success(g);
+            lesson=CHALLENGE;g.cancelInputs();challenge.begin(g);success(g);
+        } else if(lesson==CHALLENGE) {
+            if(challenge.step(g)){lesson=DONE;g.cancelInputs();success(g);}
         } else if(lesson==DOUBLE && g.passages.passable(TutorialTowBridges.ENTRY) && doubleTow(g)) {
             lesson=BRIDGE;rememberTow(g);g.cancelInputs();success(g);
         } else if(lesson==BRIDGE) {
@@ -300,7 +306,7 @@ public final class Tutorial {
     public float driveTargetX(){return lesson==MOVE?helm.targetX:DRIVE_X[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return lesson==MOVE?helm.targetY:DRIVE_Y[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","RETIRED CHECKPOINT","TOW THEN RELEASE","HOLD AND DRAG TO PUSH","HOLD FOR BERTH ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","READY FOR YOUR LEVEL"}[lesson];
+        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","RETIRED CHECKPOINT","TOW THEN RELEASE","HOLD AND DRAG TO PUSH","HOLD FOR BERTH ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","TOWING CHALLENGE","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {

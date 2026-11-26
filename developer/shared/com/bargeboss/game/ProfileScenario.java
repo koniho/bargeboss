@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina"};
+    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina","towing-challenge","towing-challenge-wide"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> MARINA_TOWS=new java.util.WeakHashMap<Game,Boolean>();
@@ -216,6 +216,16 @@ public final class ProfileScenario {
             g.layout=Layout.focused(width,height,-800,160,1.4f,width*.5f,height*.65f);return;
         }
         if(name.equals("tutorial-entrance"))return;
+        if(name.equals("towing-challenge") || name.equals("towing-challenge-wide")){
+            // Twenty seconds into a real run: public lasso/tow/tie gestures, ten barges in the basin.
+            g.tutorial.lesson=Tutorial.CHALLENGE;g.tutorial.setup(g);g.dialogue.close(g);
+            for(int i=0;i<3000 && g.tutorial.challenge.remaining>TowingChallenge.TICKS-20*60;i++){ReplayInput.tutorial(root);root.step();}
+            if(!g.tutorial.challenge.running())throw new IllegalStateException("Towing challenge fixture not reached");
+            // Wide: every challenge barge, both quays and the far berths in one view.
+            if(name.equals("towing-challenge-wide"))g.layout=TrainingScenery.constrain(Layout.focused(width,height,
+                    (TowingChallenge.SPAWN_X+TowingChallenge.BERTH_X)*.5f,(TowingChallenge.rowY(0)+TowingChallenge.rowY(TowingChallenge.BARGES-1))*.5f,.65f,width*.5f,height*.52f));
+            return;
+        }
         if(name.equals("canal-radio") || name.equals("canal-operator") || name.equals("canal-opening") || name.equals("canal-follow") || name.equals("canal-milestone")){
             g.tutorial.lesson=Tutorial.CHANNEL;g.tutorial.setup(g);
             for(int i=0;i<90;i++)root.step();

@@ -20,6 +20,7 @@ public final class ScreenView {
         else if(g.tutorial!=null) {
             subtitle=g.tutorial.entering?"DOCKSIDE RADIO / CHANNEL 08":"CAPTAIN TRAINING";
             if(g.trainingChannel())subtitle+=" / GATE "+g.tutorial.channelGate+" / "+(TrainingChannel.X.length-1);
+            else if(g.tutorial.lesson==Tutorial.CHALLENGE)subtitle="CAPTAIN TRAINING / TOWING CHALLENGE";
         } else if(g.lockStage()) {
             boolean window=g.lock.phase==Lock.ENTRY || g.lock.phase==Lock.EXIT;
             subtitle=g.goalProgress()+" / "+g.quota()+" THROUGH LOCK / "+(window?

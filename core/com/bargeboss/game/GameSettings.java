@@ -53,4 +53,10 @@ public final class GameSettings {
     public int version(){return version;}
     public void setJoystickSide(int next){if(next==OFF)next=LEFT;if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}
     void restore(int next){side=next==OFF?LEFT:next;version=0;}
+    /** Best towing-challenge count. A practice record, not a career reward: it travels with the
+     * shared settings object so the practice child can save it without touching stars or unlocks. */
+    private int towingBest;
+    public int towingChallengeBest(){return towingBest;}
+    public void recordTowingChallenge(int tied){if(tied>towingBest && tied<=TowingChallenge.BARGES){towingBest=tied;version++;}}
+    void restoreTowingBest(int value){towingBest=value;}
 }

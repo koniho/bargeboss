@@ -13,7 +13,11 @@ public final class OverviewMap {
     boolean active;
     int edits;
     void lessonZoomIn(Game g){level=1;zoom=maxZoom(g);cancelTouch();}
-    static float maxZoom(Game g){return chart(g).stage==0?5:MAX_ZOOM;}
+    /** Training chart detail at full zoom: five times the fit of the original 3392-unit yard.
+     * Fixed in chart pixels per world unit so enlarging the yard (challenge basin) keeps the
+     * chart lesson's close view, and its distant target, unchanged. */
+    static final float TRAINING_DETAIL=5*(WIDTH-2*EDGE)/3392f;
+    static float maxZoom(Game g){Chart c=chart(g);return c.stage==0?Math.max(5,TRAINING_DETAIL/c.scale):MAX_ZOOM;}
     OverviewMap(){}
     float level(){return level;}
     float zoom(){return zoom;}
@@ -83,7 +87,8 @@ public final class OverviewMap {
         local.pushClipOutside(OUTSIDE);
         try {
         local.layer(c,EDGE*(1-zoom)+offsetX(g),EDGE*(1-zoom)+offsetY(g),zoom,.53f);
-        for(int i=0;i<3;i++)if(g.berthEnabled(i) && (!MontroseRescue.cruisers(g) || g.rescue.slipsRevealed()) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT))target(g,local,g.dockX(i),g.dockY(i),TARGET);
+        for(int i=0;i<3;i++)if(g.berthEnabled(i) && (!MontroseRescue.cruisers(g) || g.rescue.slipsRevealed()) && !MontroseRescue.swimmers(g) && (g.tutorial==null || g.tutorial.lesson>=Tutorial.CONNECT && g.tutorial.lesson<Tutorial.CHALLENGE))target(g,local,g.dockX(i),g.dockY(i),TARGET);
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.CHALLENGE)target(g,local,TowingChallenge.BERTH_X,(TowingChallenge.rowY(0)+TowingChallenge.rowY(TowingChallenge.BARGES-1))*.5f,TARGET);
         for(Body b:g.cargo)if(b!=null&&b.active&&!b.deliveryRecorded) {
             float x=mapX(g,b.x,b.y),y=mapY(g,b.x,b.y);local.rect(x-1.7f,y-1.7f,3.4f,3.4f,SoftCue.alpha(CARGO,.7f));
         }

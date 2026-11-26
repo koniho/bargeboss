@@ -7,6 +7,9 @@ public final class TrainingChannel {
     public static final float BASIN_LEFT=-1856,BASIN_TOP=192,BASIN_BOTTOM=832;
     public static final float SLIP_LEFT=-2000,SLIP_TOP=250,SLIP_BOTTOM=350;
     public static final float ENTRY_LEFT=-2240,ENTRY_TOP=570,ENTRY_BOTTOM=730;
+    /** Towing-challenge basin north of the train basin, joined by a short open mouth. */
+    public static final float CHALLENGE_LEFT=-260,CHALLENGE_RIGHT=760,CHALLENGE_TOP=-2880,CHALLENGE_BOTTOM=-1680;
+    public static final float CHALLENGE_MOUTH_LEFT=250,CHALLENGE_MOUTH_RIGHT=350;
     public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};
     /** Each water rectangle is [minX,minY,maxX,maxY]; their union is navigable. */
@@ -17,7 +20,7 @@ public final class TrainingChannel {
     public static final float[] WATER_BOUNDARY=waterBoundary();
     private TrainingChannel() {}
     private static float[][] waterRectangles() {
-        float[][] water=new float[RECTANGLES.length+12][];
+        float[][] water=new float[RECTANGLES.length+14][];
         System.arraycopy(RECTANGLES,0,water,0,RECTANGLES.length);
         water[RECTANGLES.length]=new float[]{Physics.LEFT,TOW_BASIN_TOP,Physics.RIGHT,Physics.BOTTOM};
         water[RECTANGLES.length+1]=new float[]{BASIN_LEFT,BASIN_TOP,MIN,BASIN_BOTTOM};
@@ -31,11 +34,13 @@ public final class TrainingChannel {
         water[RECTANGLES.length+9]=new float[]{-130,-1430,30,-970};
         water[RECTANGLES.length+10]=new float[]{-150,-1130,30,-970};
         water[RECTANGLES.length+11]=new float[]{-500,-1190,-150,-850};
+        water[RECTANGLES.length+12]=new float[]{CHALLENGE_MOUTH_LEFT,CHALLENGE_BOTTOM,CHALLENGE_MOUTH_RIGHT,TOW_END};
+        water[RECTANGLES.length+13]=new float[]{CHALLENGE_LEFT,CHALLENGE_TOP,CHALLENGE_RIGHT,CHALLENGE_BOTTOM};
         return water;
     }
     private static float[] waterBoundary() {
         // Open both canal ends into permanent basins; neither mouth has a wall.
-        float[] result=new float[LOW.length+HIGH.length+80];int n=0;
+        float[] result=new float[LOW.length+HIGH.length+96];int n=0;
         result[n++]=BASIN_LEFT;result[n++]=BASIN_TOP;
         result[n++]=MIN;result[n++]=BASIN_TOP;
         for(float v:LOW) result[n++]=v;
@@ -56,6 +61,15 @@ public final class TrainingChannel {
         result[n++]=-130;result[n++]=-1430;
         result[n++]=Physics.LEFT;result[n++]=-1430;
         result[n++]=Physics.LEFT;result[n++]=TOW_END;
+        // The challenge basin opens through the train basin's north quay.
+        result[n++]=CHALLENGE_MOUTH_LEFT;result[n++]=TOW_END;
+        result[n++]=CHALLENGE_MOUTH_LEFT;result[n++]=CHALLENGE_BOTTOM;
+        result[n++]=CHALLENGE_LEFT;result[n++]=CHALLENGE_BOTTOM;
+        result[n++]=CHALLENGE_LEFT;result[n++]=CHALLENGE_TOP;
+        result[n++]=CHALLENGE_RIGHT;result[n++]=CHALLENGE_TOP;
+        result[n++]=CHALLENGE_RIGHT;result[n++]=CHALLENGE_BOTTOM;
+        result[n++]=CHALLENGE_MOUTH_RIGHT;result[n++]=CHALLENGE_BOTTOM;
+        result[n++]=CHALLENGE_MOUTH_RIGHT;result[n++]=TOW_END;
         result[n++]=Physics.RIGHT;result[n++]=TOW_END;
         result[n++]=Physics.RIGHT;result[n++]=NARROW_EXIT;
         result[n++]=NARROW_RIGHT;result[n++]=NARROW_EXIT;
@@ -77,7 +91,8 @@ public final class TrainingChannel {
         result[n++]=BASIN_LEFT;result[n++]=SLIP_BOTTOM;
         result[n++]=SLIP_LEFT;result[n++]=SLIP_BOTTOM;
         result[n++]=SLIP_LEFT;result[n++]=SLIP_TOP;
-        result[n++]=BASIN_LEFT;result[n]=SLIP_TOP;
+        result[n++]=BASIN_LEFT;result[n++]=SLIP_TOP;
+        if(n!=result.length)throw new IllegalStateException("training boundary size "+n+" != "+result.length);
         return result;
     }
     /** Banks run from MIN to MAX; repeated X coordinates are vertical quay edges. */

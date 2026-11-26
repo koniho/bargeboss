@@ -284,6 +284,28 @@ public final class ReplayInput {
         int pile=g.tutorial.fireworks.targetPile();
         hoseAim(root,88,FireworksLesson.x(pile),FireworksLesson.y(pile));
     }
+    /** Single-barge shuttle through the public gestures: lasso to tug, tow east, tie at the far quay. */
+    public static void challenge(Game root){
+        Game g=root.activeGame();TowingChallenge c=g.tutorial.challenge;
+        if(c.phase==TowingChallenge.APPROACH){drive(g,TowingChallenge.START_X,TowingChallenge.START_Y-120);return;}
+        if(c.phase!=TowingChallenge.RUN){if(g.pointer)up(root,g.pointerX,g.pointerY);return;}
+        if(g.ropePhase!=0)return;
+        Body towed=null;for(Body b:c.barges)if(b!=null && g.tow.connected(b,g.tug) && b!=g.tug){towed=b;break;}
+        if(towed!=null){
+            if(g.canTie(towed)){
+                if(g.pointer)up(root,g.pointerX,g.pointerY);
+                if(towed.speed()>45)return; // Let the hull settle before throwing.
+                lasso(root,towed);return;
+            }
+            if(g.tug.x<TowingChallenge.BERTH_X-100)drive(g,TowingChallenge.BERTH_X+20,towed.y);
+            else drive(g,TowingChallenge.BERTH_X+20,g.tug.y-150);
+            return;
+        }
+        Body next=c.nearestWaiting(g);if(next==null){if(g.pointer)up(root,g.pointerX,g.pointerY);return;}
+        if(Physics.length(g.tug.x-next.x,g.tug.y-next.y)>120){drive(g,next.x+95,next.y);return;}
+        if(g.pointer)up(root,g.pointerX,g.pointerY);
+        down(root,next.x,next.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);
+    }
     public static void tutorial(Game root) {
         Game g=root.activeGame();
         if(g.tutorial.entering){
@@ -366,6 +388,8 @@ public final class ReplayInput {
             case Tutorial.RELEASE:
                 if(g.pointer) up(root,g.pointerX,g.pointerY);
                 releaseTow(root);break;
+            case Tutorial.CHALLENGE:
+                challenge(root);break;
             default: break;
         }
     }

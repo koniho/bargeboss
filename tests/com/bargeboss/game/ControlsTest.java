@@ -106,7 +106,7 @@ public final class ControlsTest {
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN); g=root.activeGame();
         steps(root,2000); check(g.tutorial.lesson==Tutorial.MOVE && g.hull==100,"waiting never advances practice");
         int seen=0;
-        for(int i=0;i<15000 && g.tutorial.lesson!=Tutorial.DONE;i++) {
+        for(int i=0;i<19500 && g.tutorial.lesson!=Tutorial.DONE;i++) {
             seen|=1<<g.tutorial.lesson; ReplayInput.tutorial(root); root.step();
         }
         check(g.tutorial.lesson==Tutorial.DONE && seen==(((1<<Tutorial.DONE)-1)&~(1<<Tutorial.PULL)),"all fourteen lessons require real gestures and unloading: lesson="+g.tutorial.lesson);

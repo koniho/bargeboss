@@ -30,7 +30,8 @@ public final class Game {
     public boolean cargoSunk;
     public static final int[] COLORS={0xffefa94a,0xff62c8bd,0xffde7965};
     public static final String[] CARGO_NAMES={"STEEL", "FREIGHT", "BULK"};
-    public final Body[] cargo=new Body[9];
+    // Fourteen practice hulls fit: four lesson barges plus ten towing-challenge barges.
+    public final Body[] cargo=new Body[16];
     public Body tug;
     public WaterSurface water=new WaterSurface();
     public Buoys buoys=new Buoys();
@@ -159,7 +160,10 @@ public final class Game {
     public float dockX(int berth) { if(MontroseHaulout.active(this))return MontroseHaulout.X;return calumetStage()?voyage.dockX(voyage.destination(berth)):MontroseRescue.cruisers(this)?MontroseRescue.berth(berth).x:indianaStage()?IndianaHarbor.DOCK_X:chicagoStage()?chicago.targetX(this):montroseStage()?MontroseHarbor.SLIP_X:orderStage()?PhysicalBerths.dockX(challengeId,berth):DOCK_X[berth]; }
     public float dockHalfWidth() { return calumetStage()?CalumetVoyage.HALF_WIDTH:orderStage()?PhysicalBerths.HALF_WIDTH:55; }
     public boolean berthRight(int berth) { return calumetStage()?voyage.normalX(voyage.destination(berth))>0:!orderStage() && berth==1; }
+    /** Ten towing-challenge hulls use their own far-quay berths instead of practice berth A. */
+    boolean challengeHull(Body b){return tutorial!=null && tutorial.challenge.owns(b);}
     public Body berthBlocker(int berth,Body incoming) {
+        if(challengeHull(incoming))return tutorial.challenge.blocker(this,incoming);
         if(calumetStage())return voyage.blocker(this,incoming==null?voyage.destination(berth):incoming.destination,incoming);
         float x=dockX(berth),y=dockY(berth),half=dockHalfWidth();
         for(Body other:cargo)if(other!=null && other!=incoming && other.active)for(int i=0;i<3;i++) {
@@ -172,7 +176,7 @@ public final class Game {
     public boolean berthEnabled(int berth) { return calumetStage()?voyage.berthEnabled(berth):MontroseRescue.cruisers(this)?berth>=0 && berth<2:indianaStage()?berth==0:chicagoStage()?false:montroseStage()?berth==2:tutorial!=null?berth==2:!lockStage() && (orderStage() || berth==2 || berth==1); }
     public char berthLetter(int berth) { return tutorial!=null?'A':orderStage()?(berth==2?'A':berth==0?'B':'C'):berth==1?'B':'A'; }
     public float dockY(int berth) { if(MontroseHaulout.active(this))return MontroseHaulout.Y;return calumetStage()?voyage.dockY(voyage.destination(berth)):MontroseRescue.cruisers(this)?MontroseRescue.berth(berth).y:indianaStage()?IndianaHarbor.DOCK_Y:chicagoStage()?chicago.targetY(this):montroseStage()?MontroseHarbor.SLIP_Y:orderStage()?PhysicalBerths.dockY(challengeId,berth):Challenges.kind(challengeId)==Challenges.TWO_BANKS && tutorial==null && berth==2?290:DOCK_Y[berth]; }
-    public float channelTop() { SurveyLevel level=level();return level!=null?level.minY():montroseStage()?MontroseHarbor.PLAY_BOUNDS[1]:TrainingChannel.TOW_END; }
+    public float channelTop() { SurveyLevel level=level();return level!=null?level.minY():montroseStage()?MontroseHarbor.PLAY_BOUNDS[1]:TrainingChannel.CHALLENGE_TOP; }
     /** Kept as a score-age scale for legacy previews; cargo never expires. */
     public int contractSeconds() { return 68; }
     public int feedInterval() { return 14*60; }
@@ -201,17 +205,23 @@ public final class Game {
     public int feederDrops() { int count=0;for(Feeder f:feeders) count+=f.drops;return count; }
     public void restoreProgress(String value) {
         if(value==null || value.length()>64+Challenges.COUNT*24)return;
-        String progress=value;int side=GameSettings.LEFT;int[] audio={100,0,100,0};boolean tutorialDone=false;int captain=-1;
-        if(value.startsWith("BBG1\n") || value.startsWith("BBG2\n") || value.startsWith("BBG3\n")) {
+        String progress=value;int side=GameSettings.LEFT;int[] audio={100,0,100,0};boolean tutorialDone=false;int captain=-1;int towingBest=0;
+        if(value.startsWith("BBG1\n") || value.startsWith("BBG2\n") || value.startsWith("BBG3\n") || value.startsWith("BBG4\n")) {
             String[] parts=value.split("\n",-1);
-            if(parts.length!=(value.startsWith("BBG3\n")?5:value.startsWith("BBG2\n")?4:3) || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
+            if(parts.length!=(value.startsWith("BBG4\n")?6:value.startsWith("BBG3\n")?5:value.startsWith("BBG2\n")?4:3) || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
             progress=parts[1];side=parts[2].charAt(0)-'0';
-            if(parts.length==5){
+            if(parts.length>=5){
                 // Captain line: "<tutorial done 0|1>,<captain -1..2>".
                 String[] values=parts[4].split(",",-1);
                 if(values.length!=2 || !(values[0].equals("0") || values[0].equals("1")))return;
                 if(!(values[1].equals("-1") || values[1].length()==1 && values[1].charAt(0)>='0' && values[1].charAt(0)<'0'+PlayerPortrait.COUNT))return;
                 tutorialDone=values[0].equals("1");captain=Integer.parseInt(values[1]);
+            }
+            if(parts.length==6){
+                // BBG4: practice towing-challenge record (0..10).
+                if(parts[5].length()<1 || parts[5].length()>2)return;
+                try{towingBest=Integer.parseInt(parts[5]);}catch(NumberFormatException e){return;}
+                if(towingBest<0 || towingBest>TowingChallenge.BARGES)return;
             }
             if(parts.length>=4){
                 String[] values=parts[3].split(",",-1);if(values.length!=4)return;
@@ -221,9 +231,10 @@ public final class Game {
                 }
             }
         }
-        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);settings.restoreAudio(audio);settings.restoreCaptain(tutorialDone,captain);}
+        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);settings.restoreAudio(audio);settings.restoreCaptain(tutorialDone,captain);settings.restoreTowingBest(towingBest);}
     }
-    public String saveProgress() { return "BBG3\n"+career.save()+"\n"+settings.joystickSide()+"\n"+settings.audioSave()+"\n"+settings.captainSave(); }
+    /** BBG4: career, joystick side, audio, captain line, practice towing record. BBG1..BBG3 still load. */
+    public String saveProgress() { return "BBG4\n"+career.save()+"\n"+settings.joystickSide()+"\n"+settings.audioSave()+"\n"+settings.captainSave()+"\n"+settings.towingChallengeBest(); }
     public int progressVersion() { return career.version()+settings.version(); }
     public void openSettings(){if(mode==SETTINGS)return;settingsReturnMode=mode;cancelInputs();accumulator=visualAccumulator=0;mode=SETTINGS;}
     public boolean selectChallenge(int id) {
@@ -269,6 +280,8 @@ public final class Game {
             return Layout.focused(layout.width,layout.height,tug.x*.75f+teacherBoat().x*.25f,
                     tug.y*.75f+teacherBoat().y*.25f,PRACTICE_CANAL_ZOOM,layout.width*.5f,layout.height*.65f);
         if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.5f,0,true);
+        // The large basin keeps a transit-scale view that still fits the whole towed train.
+        if(tutorial.lesson==Tutorial.CHALLENGE)return workCamera(TowingChallenge.ZOOM,0,true);
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
         float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;
@@ -365,7 +378,8 @@ public final class Game {
         float anchorX=layout.width*.5f,anchorY=layout.height*(tutorial!=null?.59f:.52f);
         float x=c.worldX(anchorX,anchorY),y=c.worldY(anchorX,anchorY);
         float tx=desired.camera.worldX(anchorX,anchorY),ty=desired.camera.worldY(anchorX,anchorY);
-        float ease=tutorial!=null?(tutorial.lesson<=Tutorial.CONNECT?.045f:.03f):.055f;
+        // The open challenge basin is crossed at full speed; follow like a shift, not a lesson.
+        float ease=tutorial!=null?(tutorial.lesson<=Tutorial.CONNECT?.045f:tutorial.lesson==Tutorial.CHALLENGE?.06f:.03f):.055f;
         Layout next=Layout.focused(layout.width,layout.height,x+(tx-x)*ease,y+(ty-y)*ease,zoom,anchorX,anchorY);
         if(Math.abs(next.camera.worldTop-c.worldTop)<.0001f && Math.abs(next.camera.worldRight-c.worldRight)<.0001f
                 && Math.abs(zoom-c.zoom)<.000001f) return;
@@ -645,7 +659,7 @@ public final class Game {
         return b!=null && b.voyageJob!=Challenges.HAULOUT && !b.yacht && b.active && !b.deliveryRecorded && !b.lineAttached && berthEnabled(b.berth) && (!calumetStage() || b.voyageJob==voyage.job) && berthBlocker(b.berth,b)==null
                 && (!b.awaitingPickup || tutorial!=null) // Practice parks the teaching hull in place.
                 && inTieArea(b)
-                && (tutorial==null || tutorial.lesson==Tutorial.TIE && b==cargo[0]);
+                && (tutorial==null || tutorial.lesson==Tutorial.TIE && b==cargo[0] || tutorial.challenge.tieable(b));
     }
     boolean ropeWithinReach(Body b) {
         if(b==tug)return SlipMooring.eligible(this);
@@ -655,10 +669,10 @@ public final class Game {
     /** Raised quay fittings share the exact projection used by touch and rope drawing. */
     public float bollardX(int berth) { return calumetStage()?voyage.bollardX(voyage.destination(berth)):(indianaStage()?IndianaHarbor.DOCK_X+IndianaHarbor.DOCK_NX*64:orderStage()?PhysicalBerths.LEFT-25:berthRight(berth)?480:120)+(!montroseStage()?RiverCamera.riseX(GroundArt.LAND_RISE):0); }
     public float bollardY(int berth) { return calumetStage()?voyage.bollardY(voyage.destination(berth)):(indianaStage()?IndianaHarbor.DOCK_Y+IndianaHarbor.DOCK_NY*64:dockY(berth))+(!montroseStage()?RiverCamera.riseY(GroundArt.LAND_RISE):0); }
-    public float dockX(Body b){if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.X;if(b.cruiser)return MontroseRescue.berth(b.berth).x;if(b.yacht)return MontroseHarbor.SLIP_X;return calumetStage() && b.destination>=0?voyage.dockX(b.destination):dockX(b.berth);}
-    public float dockY(Body b){if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.Y;if(b.cruiser)return MontroseRescue.berth(b.berth).y;if(b.yacht)return MontroseHarbor.SLIP_Y;return calumetStage() && b.destination>=0?voyage.dockY(b.destination):dockY(b.berth);}
-    public float bollardX(Body b){if(b==tug)return SlipMooring.x();return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
-    public float bollardY(Body b){if(b==tug)return SlipMooring.y();return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
+    public float dockX(Body b){if(challengeHull(b))return tutorial.challenge.dockX(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.X;if(b.cruiser)return MontroseRescue.berth(b.berth).x;if(b.yacht)return MontroseHarbor.SLIP_X;return calumetStage() && b.destination>=0?voyage.dockX(b.destination):dockX(b.berth);}
+    public float dockY(Body b){if(challengeHull(b))return tutorial.challenge.dockY(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.Y;if(b.cruiser)return MontroseRescue.berth(b.berth).y;if(b.yacht)return MontroseHarbor.SLIP_Y;return calumetStage() && b.destination>=0?voyage.dockY(b.destination):dockY(b.berth);}
+    public float bollardX(Body b){if(b==tug)return SlipMooring.x();if(challengeHull(b))return tutorial.challenge.bollardX(b);return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
+    public float bollardY(Body b){if(b==tug)return SlipMooring.y();if(challengeHull(b))return tutorial.challenge.bollardY(b);return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
     public float ropeOriginX() { return ropeBody.x+ropeLocalX*(float)StrictMath.cos(ropeBody.angle)-ropeLocalY*(float)StrictMath.sin(ropeBody.angle); }
     public float ropeOriginY() { return ropeBody.y+ropeLocalX*(float)StrictMath.sin(ropeBody.angle)+ropeLocalY*(float)StrictMath.cos(ropeBody.angle); }
     public boolean overTiePoint(Body b,float x,float y) {
@@ -666,10 +680,12 @@ public final class Game {
     }
     public float aimX(Body b,float x,float y) {
         if(b==tug)return overTiePoint(b,x,y)?bollardX(b):x;
+        if(challengeHull(b))return overTiePoint(b,x,y)?bollardX(b):Physics.clamp(x,TrainingChannel.CHALLENGE_LEFT,TrainingChannel.CHALLENGE_RIGHT+80);
         SurveyLevel level=level();return overTiePoint(b,x,y)?bollardX(b):level!=null?Physics.clamp(x,level.minX(),level.maxX()):Physics.clamp(x,TIE_X[0]-TIE_RADIUS,TIE_X[1]+TIE_RADIUS);
     }
     public float aimY(Body b,float x,float y) {
         if(b==tug)return overTiePoint(b,x,y)?bollardY(b):y;
+        if(challengeHull(b))return overTiePoint(b,x,y)?bollardY(b):Physics.clamp(y,TrainingChannel.CHALLENGE_TOP-47,TrainingChannel.CHALLENGE_BOTTOM+40);
         SurveyLevel level=level();return overTiePoint(b,x,y)?bollardY(b):level!=null?Physics.clamp(y,level.minY(),level.maxY()):Physics.clamp(y,channelTop()-47,816);
     }
     public Body heldCargo() { return held>=0 && cargo[held]!=null && cargo[held].active?cargo[held]:null; }
@@ -743,7 +759,7 @@ public final class Game {
         SurveyLevel level=level();if(level!=null)return level.inBounds(x,y);
         if(montroseStage())return x>=MontroseHarbor.PLAY_BOUNDS[0] && x<=MontroseHarbor.PLAY_BOUNDS[2] && y>=MontroseHarbor.PLAY_BOUNDS[1] && y<=MontroseHarbor.PLAY_BOUNDS[5];
         return x>=(TrainingChannel.ENTRY_LEFT-40)
-                && x<=CalumetMap.EAST+40
+                && x<=Math.max(CalumetMap.EAST,TrainingChannel.CHALLENGE_RIGHT+100)+40
                 && y>=channelTop()-67 && y<=RiverPainter.WORLD_BOTTOM;
     }
     private void beginDown(float x,float y,boolean river) {
@@ -1302,7 +1318,8 @@ public final class Game {
             float sideSign=side>=0?1:-1;
             float sx=b.x-nx*(reach+14), sy=b.y-ny*(reach+14);
             if(along>-20) { sx-=ny*sideSign*78; sy+=nx*sideSign*78; }
-            guideX=(surveyStage() || montroseStage())?sx:Physics.clamp(sx,198,orderStage()?PhysicalBerths.RIGHT-20:402); guideY=(surveyStage() || montroseStage())?sy:Physics.clamp(sy,channelTop()+30,787);
+            boolean freeGuide=surveyStage() || montroseStage() || challengeHull(b);
+            guideX=freeGuide?sx:Physics.clamp(sx,198,orderStage()?PhysicalBerths.RIGHT-20:402); guideY=freeGuide?sy:Physics.clamp(sy,channelTop()+30,787);
             control=steering?STEERING:ALIGNING;
             if(!steering && orderStage() && !calumetStage()) {
                 PhysicalBerths.waypoint(challengeId,tug.x,tug.y,guideX,guideY,tug.half+tug.radius+2,route);

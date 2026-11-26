@@ -9,6 +9,7 @@ public final class TutorialView {
         if((t.lesson>=Tutorial.SHOW && t.lesson<=Tutorial.EXTINGUISH) && t.towBridges.current(g)==0 && !t.towBridges.busy())return t.fireworks.content(g);
         InstructionPanel.Content coaching=t.feedback.content();if(coaching!=null)return coaching;
         InstructionPanel.Content radio=t.instructorRadio.content();if(radio!=null)return radio;
+        if(t.lesson==Tutorial.CHALLENGE)return t.challenge.content(g);
         InstructionPanel.Content towRadio=t.towBridges.content(g);if(towRadio!=null)return towRadio;
         if(t.lesson==Tutorial.CHANNEL && !t.entering)return t.canal.content(g);
         if(t.arrival!=null && t.arrival.warningTicks>0)return t.arrival.warning();
@@ -86,6 +87,12 @@ public final class TutorialView {
             Lettering.center(p,"THROTTLE. DRAG CARGO.",770,241,12,PAPER);
             Lettering.center(p,"THROW LINE. TOW. LET GO.",770,272,12,MUTED);
             ScreenView.button(g,p,Layout.START,t.resumeShift?"BACK TO LEVEL":"START LEVEL",true);
+            return;
+        }
+        if(t.lesson==Tutorial.CHALLENGE){
+            if(!t.instructorRadio.teach && t.instructorRadio.phase==0)ChallengeView.guidance(g,p);
+            t.instructionPanel.draw(g,p);
+            ChallengeView.scoreboard(g,p);
             return;
         }
         drawLessonGuidance(g,p);

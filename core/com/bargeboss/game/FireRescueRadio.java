@@ -35,6 +35,7 @@ final class FireRescueRadio {
         }else if(ending==3 && ++ticks>=240)ending=4;
     }
     boolean complete(){return ending==4;}
+    void conclude(){visible=0;ending=4;}
     InstructionPanel.Content content(Game g,String instruction){
         if(ending==1 || ending==3){
             String title=ending==1?"IT'S OUT! OH, THANK GOODNESS.":"WELCOME ABOARD, CAPTAIN.";

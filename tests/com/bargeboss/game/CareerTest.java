@@ -62,11 +62,14 @@ public final class CareerTest {
         practice.tutorial.lesson=Tutorial.TIE;practice.tutorial.setup(practice);
         practice.delivered=10; practice.score=10000;
         practice.ticks=practice.shiftTicks()-1; practice.step();
-        for(int i=0;i<7000 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
+        for(int i=0;i<11500 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
         check(practice.tutorial.lesson==Tutorial.DONE && practice.earnedStars==0,"tutorial completion never records challenge rewards");
-        check(game.progressVersion()==version && game.saveProgress().equals(saved),"practice leaves parent career and dirty version unchanged");
+        // The towing-challenge best is a shared practice record (like preferences); career data must not move.
+        String expected=saved.substring(0,saved.lastIndexOf('\n')+1)+game.settings.towingChallengeBest();
+        check(game.settings.towingChallengeBest()>0 && game.saveProgress().equals(expected),"practice leaves parent career unchanged; only the shared towing-challenge best updates");
+        version=game.progressVersion();
         ReplayInput.tap(game,Layout.START);
-        check(game.activeGame()==game && game.challengeId==0 && game.saveProgress().equals(saved),"practice return preserves challenge and career");
+        check(game.activeGame()==game && game.challengeId==0 && game.saveProgress().equals(expected) && game.progressVersion()==version,"practice return preserves challenge and career");
     }
     private static void menuRouting() {
         Game game=new Game();game.configureCanvas(1400,600);
