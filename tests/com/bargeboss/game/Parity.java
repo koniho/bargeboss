@@ -183,7 +183,7 @@ public final class Parity implements Painter {
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); ReplayInput.finishMenu(root); }
     private static void tutorial(Parity p) {
         Game root=new Game(); ReplayInput.tap(root,Layout.LEARN);
-        for(int i=0;i<20500;i++) {
+        for(int i=0;i<23500;i++) {
             Game g=root.activeGame();
             if(g.tutorial.lesson==Tutorial.DONE) { Renderer.draw(root,p); return; }
             ReplayInput.tutorial(root);

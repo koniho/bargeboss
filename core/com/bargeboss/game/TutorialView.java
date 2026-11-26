@@ -132,6 +132,12 @@ public final class TutorialView {
                     ControlView.ring(g,river,FireworksLesson.TOW_X,FireworksLesson.TOW_Y,50+pulse,1,ControlView.GREEN,3);
                 }else ControlView.arrow(g,river,equipment.x,equipment.y,g.tug.x,g.tug.y,ControlView.BLUE);
             }
+            if(t.lesson==Tutorial.EXTINGUISH && t.fireworks.heat>0 && !t.fireworks.onStation(equipment)){
+                // Next quay group is out of monitor reach: lead the tow to its station.
+                int group=t.fireworks.targetGroup();
+                driveArrow(g,river,t.towTargetX(g),t.towTargetY(g),null);
+                ControlView.ring(g,river,FireworksLesson.STATION_X[group],FireworksLesson.STATION_Y[group],50+pulse,1,ControlView.GREEN,3);
+            }
             if(t.lesson==Tutorial.EXTINGUISH)for(int pile=0;pile<FireworksLesson.PILES;pile++){
                 if(t.fireworks.heat(pile)==0)continue;
                 float x=g.layout.camera.screenX(FireworksLesson.x(pile),FireworksLesson.y(pile)),y=g.layout.camera.screenY(FireworksLesson.x(pile),FireworksLesson.y(pile))-GroundArt.LAND_RISE*g.layout.camera.scale;

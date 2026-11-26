@@ -124,7 +124,7 @@ public final class BargeAbilities {
                 float floor=(g.montroseStage() && MontroseHarbor.openWater(x[i],y[i])?MontroseHarbor.DOCK_RISE:GroundArt.LAND_RISE)/ArticulatedModel.Z_SCALE;
                 boolean wood=false;
                 if(g.tutorial!=null && z[i]>=floor && z[i]<=floor+40)for(int pile=0;pile<FireworksLesson.PILES;pile++){
-                    if(Math.abs(x[i]-(FireworksLesson.x(pile)+15))<=27 && Math.abs(y[i]-FireworksLesson.y(pile))<=38){wood=true;break;}
+                    if(FireworksLesson.onPile(pile,x[i],y[i])){wood=true;break;}
                 }
                 // Navy Pier wheel fire: the hit consumes this droplet and cools that gondola fire.
                 if(!wood && g.chicagoStage() && g.chicago.fire.hit(x[i],y[i],z[i],floor))wood=true;

@@ -6795,3 +6795,46 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Merged onto main (c07ae8b0, captain + unified HUD + no mission buttons): save format is now BBG4
   (captain line + towing record; BBG1..BBG3 still load). Combined canonical replay a691a143:2:1350;
   every component bisected draw/save-only on its own branch; score/deliveries unchanged.
+
+## 2026-11-25: Six-fire practice extinguish phase (wash, smoke, profiling)
+
+- Platform: shared Java; desktop Java2D reference renders and command counts only. Native Metal/
+  Vulkan frame intervals NOT measured yet (fixture `tutorial-six-fires` added for that).
+- Change: `Tutorial.EXTINGUISH` now has six woodpiles in three quay groups (east quay from the
+  marked water; north quay; west canal far shore + north-west corner). Each group is in monitor
+  reach only from its own station, so the barge is towed between groups. Pile footprint
+  (`FireworksLesson.onPile`) is now both the droplet stop box and the cooling area (the old
+  29-unit radius from the pile origin missed jets arriving from the south).
+- Wide red tint: ONE large GLOW quad per quay group (not per pile), centred on the burning piles'
+  intensity-weighted midpoint with summed intensity, drawn on the ground/water layer before
+  vessels/buildings/HUD (`TrainingChannelView`). Per-pile quads would be 6 near-full-screen quads;
+  merging caps wash fill at 3 screens and is visually identical (piles of a group are 120-220
+  units apart, the wash is 1450x980 screen units at scale 1). Hot core glow: one 210x130 quad per
+  burning pile (was two quads, 270x200 + 160x85).
+- Smoke: analytic, storage-free columns, 20 `smokePuff`/`SteamPuff` quads per fire, drawn beneath
+  vessels so plumes never hide the tug/barge; soot while dry, steam for puffs born while water
+  lands (fixed 6x256 boolean ring, allocated once), nothing after the steam tail. `FlameArt` now
+  feeds the shared `VesselSmoke` pool one puff per pile per 10 ticks (six fires = 0.6/tick, the
+  former two-pile rate), so the 384-slot pool never evicts live vessel exhaust.
+- Evidence (`FireDrawCost` scratch counter, 1320x600, 120 live frames, glow fill = sum of on-screen
+  GLOW quad area / screen area):
+  - main `tutorial-firefight` (2 fires): 4388 calls/frame, 61.7 GLOW quads, 4.05 screens glow fill,
+    214 smoke puffs.
+  - branch `tutorial-firefight` (east group, 5-6 burning): 5050 calls, 66.4 GLOW, 6.83 screens fill,
+    168 smoke puffs.
+  - branch `tutorial-six-fires` (camera framing four burning piles, all six burning, spraying):
+    5915 calls, 79.2 GLOW, 6.48 screens fill, 275 smoke puffs.
+  - Per-pile washes (before merging) measured 9.6 screens of glow fill on `tutorial-firefight`.
+  - Java2D times (75 vs 110-135 ms) reflect the 16-shell CPU glow fallback, not native cost.
+- Unresolved: native frame pacing with `--ios-live-scene=tutorial-six-fires` / Android profile;
+  the extra ~2.5 screens of alpha fill is the main GPU risk on low-end devices.
+- Canonical replay ae32a7f8:2:1350 (was a691a143:2:1350). Bisected on main 64a5f28: main reproduces
+  a691a143; only the `tutorial` parity section changes (radio, responsive, progression, feeders,
+  goalLevels, rescue, joystick, slipTether hashes identical; deliveries 2 and score 1350 unchanged).
+  Per-lesson replay hashes: state identical through FIRE_TOW; draw differs from TRAIN (16) and SHOW
+  (18) only because the four new unlit woodpiles are on screen (hiding piles 2-5 before ignition
+  restores main's 16/18 draw hashes exactly); FIRE_TOW (19) draw adds the six fires' flames, wash
+  and smoke; EXTINGUISH (20) gameplay now takes 2208 ticks (was 855) with towing between groups;
+  the towing CHALLENGE (21) then starts from a different tug/barge position (4451 vs 3947 ticks).
+  Full-tutorial replay budgets raised by 3000 ticks (Parity, ControlsTest, ContinuousTutorialTest,
+  TrainReview).

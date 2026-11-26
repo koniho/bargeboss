@@ -20,6 +20,8 @@ public final class TrainingChannelView {
         // order so they cover hulls without cutting through nearer buildings.
         if((g.renderExclusions&RenderExclusions.SHORE_GEOMETRY)==0)StaticTerrain.draw(g,canvas,false);
         VesselShoreLight.draw(g,canvas);
+        // Burning woodpiles wash the ground and water red, and raise smoke, beneath vessels, buildings and HUD.
+        if(g.tutorial!=null){g.tutorial.fireworks.wash(g,canvas);g.tutorial.fireworks.plumes(g,canvas);}
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
         int gate=g.tutorial==null?0:g.tutorial.canal.guideGate(g);

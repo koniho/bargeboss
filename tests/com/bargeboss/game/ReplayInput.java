@@ -271,18 +271,36 @@ public final class ReplayInput {
         float reach=Math.min(210,Physics.length(wx-b.x,wy-b.y))/210*BargeAbilities.AIM_RADIUS;
         root.pointerMove(id,g.abilities.buttonX(g,0)+dx/distance*reach,g.abilities.buttonY(g)+dy/distance*reach);
     }
+    /** Aim at a pile's timber footprint, dragged a fifth farther: the monitor's arc lands short
+     * of the aim point, as the panel's "DRAG FARTHER FOR REACH" hint tells players. */
+    static void hosePile(Game root,int id,int pile){
+        Game g=root.activeGame();Body b=g.abilities.selected;
+        float cx=FireworksLesson.x(pile)+FireworksLesson.FOOT_OFFSET,cy=FireworksLesson.y(pile);
+        hoseAim(root,id,b.x+(cx-b.x)*1.2f,b.y+(cy-b.y)*1.2f);
+    }
     static void abilityLesson(Game root){
         Game g=root.activeGame();boolean fire=g.tutorial.lesson==Tutorial.EXTINGUISH;
         Body b=fire?g.cargo[3]:g.cargo[0];
         if(g.tutorial.fireworks.launched && !fire){if(g.pointer)up(root,g.pointerX,g.pointerY);return;}
+        FireworksLesson f=g.tutorial.fireworks;
+        if(fire && f.heat>0 && !f.onStation(b) && Tutorial.direct(g,b)){
+            // Next quay group is out of reach: stop spraying and tow the barge to its station.
+            if(g.abilities.owner>=0)root.pointerCancel(88);
+            float tx=g.tutorial.towTargetX(g),ty=g.tutorial.towTargetY(g);
+            if(Physics.length(tx-g.tug.x,ty-g.tug.y)<40){
+                // At the route's end with the barge still short or overshot: pull it across the station.
+                int k=f.targetGroup();float sx=FireworksLesson.STATION_X[k],sy=FireworksLesson.STATION_Y[k];
+                float dx=sx-b.x,dy=sy-b.y,len=Math.max(1,Physics.length(dx,dy));tx=sx+dx/len*140;ty=sy+dy/len*140;
+            }
+            drive(g,tx,ty);return;
+        }
         if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>155){drive(g,300,b.y-85);return;}
         if(g.pointer)up(root,g.pointerX,g.pointerY);
         if(g.abilities.selected!=b || g.abilities.visibleTicks==0){down(root,b.x,b.y);up(root,b.x,b.y);return;}
         float x=g.abilities.buttonX(g,0),y=g.abilities.buttonY(g);
         if(!fire){tap(root,x,y);return;}
         if(g.abilities.owner<0)root.pointerDown(88,x,y);
-        int pile=g.tutorial.fireworks.targetPile();
-        hoseAim(root,88,FireworksLesson.x(pile),FireworksLesson.y(pile));
+        hosePile(root,88,f.targetPile(b));
     }
     /** Single-barge shuttle through the public gestures: lasso to tug, tow east, tie at the far quay. */
     public static void challenge(Game root){

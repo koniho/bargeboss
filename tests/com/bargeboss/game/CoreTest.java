@@ -122,6 +122,7 @@ public final class CoreTest {
         TutorialTowBridgesTest.run();TutorialEquipmentTimingTest.run();BargeAbilitiesTest.run();
         AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();InstructorIdleWakeTest.run();
         FireworksLessonTest.run();
+        FireWashTest.run();
         FireRescueRadioTest.run();
         TowReleaseTest.run();
         CargoGestureTest.run();TowPriorityTest.run();
@@ -219,7 +220,7 @@ public final class CoreTest {
         // remaining tutorial diff is only the hashed DONE id (21->22) on the final tick, the lesson
         // progress-bar fraction and the BBG3 save string. worldTouch/channelTop widening is neutral.
         // Delivered/score (2:1350) never change; the practice-yard replay plays identically.
-        check(Parity.signature().equals("a691a143:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("ae32a7f8:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

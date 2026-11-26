@@ -328,6 +328,8 @@ public final class Game {
         for(int i=0;i<count+cargo.length;i++) {
             Body train=i>=count?cargo[i-count]:null;
             if(i>=count && (train==null || train==load || !tow.connected(train,tug)))continue;
+            // Frame only nearby burning piles; distant quay groups would zoom the view far out.
+            if(fireResponse && i>=2 && i<count && !tutorial.fireworks.framed(load,i-2))continue;
             float wx=i>=count?train.x:i==0?tug.x:i==1?load.x:fireResponse?FireworksLesson.x(i-2):bollardX(load);
             float wy=i>=count?train.y:i==0?tug.y:i==1?load.y:fireResponse?FireworksLesson.y(i-2): bollardY(load);
             float x=base.screenX(wx,wy)/base.scale,y=base.screenY(wx,wy)/base.scale;

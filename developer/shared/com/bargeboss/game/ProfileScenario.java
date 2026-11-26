@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina","towing-challenge","towing-challenge-wide"};
+    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina","towing-challenge","towing-challenge-wide","tutorial-six-fires"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> MARINA_TOWS=new java.util.WeakHashMap<Game,Boolean>();
@@ -196,6 +196,14 @@ public final class ProfileScenario {
             g.abilities.reveal(g,g.tug);for(int i=0;i<20;i++)g.abilities.step(g);return;
         }
 
+        if(name.equals("tutorial-six-fires")){
+            // Worst case for the extinguish phase: all six fires burning while the monitor sprays,
+            // with the tow moved north between the east and north quays so the live camera frames
+            // four burning piles and every group's red wash and smoke column reaches the screen.
+            prepare(root,"tutorial-firefight",width,height);g=root.activeGame();
+            Body barge=g.cargo[3];float dy=-1300-barge.y;
+            barge.y+=dy;barge.tiedY+=dy;g.tug.y+=dy;g.fitTutorialCamera();return;
+        }
         if(name.equals("tutorial-fireworks") || name.equals("tutorial-firefight") || name.equals("barge-abilities")){
             boolean spray=name.equals("tutorial-firefight") || name.equals("barge-abilities");
             g.tutorial.lesson=spray?Tutorial.EXTINGUISH:Tutorial.SHOW;g.tutorial.setup(g);

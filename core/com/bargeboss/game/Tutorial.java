@@ -258,9 +258,9 @@ public final class Tutorial {
         return TowRouteGuide.target(g.tug.x,g.tug.y,FIRST_TOW_X,FIRST_TOW_Y,lesson==CASTOFF,x);
     }
     /** One route target for the actual tow; cues and public-input replays share it. */
-    public float towTargetX(Game g){if(lesson==FIRE_TOW)return fireworks.target(g,true);return lesson==CASTOFF || lesson==CONNECT?firstTowTarget(g,true):300;}
+    public float towTargetX(Game g){if(lesson==FIRE_TOW || lesson==EXTINGUISH)return fireworks.target(g,true);return lesson==CASTOFF || lesson==CONNECT?firstTowTarget(g,true):300;}
     public float towTargetY(Game g){
-        if(lesson==FIRE_TOW)return fireworks.target(g,false);
+        if(lesson==FIRE_TOW || lesson==EXTINGUISH)return fireworks.target(g,false);
         if(lesson==CASTOFF || lesson==CONNECT)return firstTowTarget(g,false);
         if(lesson==BRIDGE)return g.passages.passable(TutorialTowBridges.EXIT)?-595:TutorialTowBridges.EXIT_Y+95;
         return TrainingChannel.TOW_END+80;
@@ -306,7 +306,7 @@ public final class Tutorial {
     public float driveTargetX(){return lesson==MOVE?helm.targetX:DRIVE_X[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.cos(guideAngle());}
     public float driveTargetY(){return lesson==MOVE?helm.targetY:DRIVE_Y[Math.min(driveMarker,1)]+DRIVE_RADIUS*(float)StrictMath.sin(guideAngle());}
     public String title() {
-        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","RETIRED CHECKPOINT","TOW THEN RELEASE","HOLD AND DRAG TO PUSH","HOLD FOR BERTH ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","ONE LAST LITTLE FIRE","TOWING CHALLENGE","READY FOR YOUR LEVEL"}[lesson];
+        return new String[]{"LEAVE THE DOCK","FORWARD FIGURE EIGHT","REVERSE FIGURE EIGHT","BACK INTO THE SLIP","USE THE OVERVIEW MAP","NAVIGATE THE CANAL","CONNECT A TOWLINE","RETIRED CHECKPOINT","TOW THEN RELEASE","HOLD AND DRAG TO PUSH","HOLD FOR BERTH ASSIST","DOCK YOUR FIRST LOAD","THROW YOUR LINE","CONNECT BOTH TO TUG","TOW UNDER THE BRIDGE","NARROW PASSAGE AHEAD","THREAD THE CHANNEL","UNCOUPLE YOUR TRAIN","VICTORY FIREWORKS","FETCH THE FIRE BARGE","SIX LITTLE FIRES","TOWING CHALLENGE","READY FOR YOUR LEVEL"}[lesson];
     }
     public String firstLine() {
         switch(lesson) {

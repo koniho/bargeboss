@@ -3,8 +3,13 @@ package com.bargeboss.game;
 /** Permanent dry-quay timber stack; shared shaded timber faces, fixed isometric geometry. */
 final class FirewoodPile {
     static final float X=FireworksLesson.X+15,Y=FireworksLesson.Y;
-    private static final ArticulatedModel[] MODELS={build(false,0),build(true,0),build(false,1),build(true,1)};
-    private static final ArticulatedModel.Pose[] POSES={MODELS[0].pose(0),MODELS[1].pose(0),MODELS[2].pose(0),MODELS[3].pose(0)};
+    /** Fresh and charred variants per pile, at state pile*2+(ignited?1:0). */
+    private static final ArticulatedModel[] MODELS=models();
+    private static final ArticulatedModel.Pose[] POSES=poses();
+    private static ArticulatedModel[] models(){ArticulatedModel[] out=new ArticulatedModel[FireworksLesson.PILES*2];
+        for(int i=0;i<out.length;i++)out[i]=build(i%2==1,i/2);return out;}
+    private static ArticulatedModel.Pose[] poses(){ArticulatedModel.Pose[] out=new ArticulatedModel.Pose[MODELS.length];
+        for(int i=0;i<out.length;i++)out[i]=MODELS[i].pose(0);return out;}
     static void prepare(){for(int i=0;i<MODELS.length;i++)MODELS[i].prepare(POSES[i]);}
     private FirewoodPile(){}
     private static ArticulatedModel build(boolean charred,int pile){

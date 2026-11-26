@@ -7,7 +7,7 @@ final class FireLight implements ArticulatedModel.FaceLighting {
     static float energy(Game g){return energy(g,0);}
     static float energy(Game g,int pile){
         if(g.tutorial==null || g.tutorial.fireworks.heat(pile)<=0)return 0;
-        float flame=.77f+.14f*(float)StrictMath.sin(g.visualTicks*.19)+.09f*(float)StrictMath.sin(g.visualTicks*.071+1.3);
+        float flame=.77f+.14f*(float)StrictMath.sin(g.visualTicks*.19+pile)+.09f*(float)StrictMath.sin(g.visualTicks*.071+1.3+pile);
         return flame*(.25f+.75f*g.tutorial.fireworks.heat(pile)/FireworksLesson.PILE_HEAT);
     }
     static int color(Game g){return color(g,0);}
