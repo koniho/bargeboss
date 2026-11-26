@@ -57,6 +57,7 @@ public final class Buoys {
                     contact(g,b,f.boat,true);if(f.load!=null)contact(g,b,f.load,true);
                 }
                 if(g.trafficActive())contact(g,b,g.trafficBoat,true);
+                for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active)contact(g,b,c.body,true);
                 if(g.lockStage()){constrain(g,b);g.lock.collide(b,g.splashes);}
             }
         }

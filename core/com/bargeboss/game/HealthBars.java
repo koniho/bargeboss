@@ -21,6 +21,7 @@ final class HealthBars {
         for(Body b:g.cargo)if(b!=null && b.active && b.sinkTicks<=0)bar(g,p,b,false);
         if(g.tutorial==null && g.feeders!=null)for(Feeder f:g.feeders)if(f.phase!=Feeder.IDLE){bar(g,p,f.boat,false);if(f.load!=null && f.load.active)bar(g,p,f.load,false);}
         if(g.trafficActive())bar(g,p,g.trafficBoat,false);
+        for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active && c.body.sinkTicks<=0)bar(g,p,c.body,false);
         if(g.montroseStage())for(MooredFleet.FloatBoat m:g.mooredFleet.boats)if(m.afloat())
             bar(g,p,m.x,m.y,m.heave,30*ArticulatedModel.Z_SCALE,(m.berth.length+m.berth.width)*.55f,m.health/100f,m.healthBefore/100f,g.ticks-m.damagedTick,false);
     }

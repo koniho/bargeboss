@@ -36,6 +36,7 @@ public final class Game {
     public WaterSurface water=new WaterSurface();
     public Buoys buoys=new Buoys();
     public MooredFleet mooredFleet=new MooredFleet();
+    HarborTraffic harborTraffic=new HarborTraffic();
     public CollisionSplashes splashes=new CollisionSplashes();
     final ShoreCrewReaction crew=new ShoreCrewReaction();
     public VesselSmoke smoke=new VesselSmoke(),titleSmoke=new VesselSmoke();
@@ -503,7 +504,7 @@ public final class Game {
         nextFeedTick=feedInterval();
         targetX=tug.x; targetY=tug.y; navigating=false; cancel();
         mode=PLAY; tell(goalStatus());
-        buoys=new Buoys();buoys.reset(this);mooredFleet=new MooredFleet();mooredFleet.reset(this);splashes=new CollisionSplashes();
+        buoys=new Buoys();buoys.reset(this);mooredFleet=new MooredFleet();mooredFleet.reset(this);harborTraffic=new HarborTraffic();harborTraffic.reset(this);splashes=new CollisionSplashes();
         ShorelineView.prepare(this);
         DockView.prepare(this);
         if(montroseStage()){if(locationArrival)montroseArrival.start(this);else MontroseDockmaster.dispatch(this);}
@@ -1006,7 +1007,7 @@ public final class Game {
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
         if(montroseStage() && montroseArrival.active()){
-            montroseArrival.step(this);water.step(this);mooredFleet.step(this);smoke.step(this);buildingFades.step(this);return;
+            montroseArrival.step(this);water.step(this);mooredFleet.step(this);harborTraffic.step(this,splashes);smoke.step(this);buildingFades.step(this);return;
         }
         if(montroseStage())rescue.radioStep(this);
         if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);HullDamage.step(this);
@@ -1182,6 +1183,7 @@ public final class Game {
             if(f.load!=null) feederContact(f.load);
         }
         traffic();
+        if(montroseStage()){harborTraffic.step(this,splashes);damage(harborTraffic.collide(this,splashes));}
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }
         int currentContact=contact==null?-1:contact.id;

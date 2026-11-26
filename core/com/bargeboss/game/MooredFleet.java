@@ -33,9 +33,11 @@ public final class MooredFleet {
     }
     FloatBoat[] boats=new FloatBoat[0];int[] order=new int[0];private final float[] force=new float[4];
     public void reset(Game g){java.util.ArrayList<FloatBoat> list=new java.util.ArrayList<FloatBoat>();
-        if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b) && !MontroseHaulout.reserved(b))list.add(new FloatBoat(b));
+        if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b) && !MontroseHaulout.reserved(b) && !away(b))list.add(new FloatBoat(b));
         boats=list.toArray(new FloatBoat[list.size()]);order=new int[boats.length];for(int i=0;i<order.length;i++)order[i]=i;
     }
+    /** About one slip in six stands empty: its boat is out on the water. Fixed per berth. */
+    static boolean away(MooredBoats.Berth b){int h=(b.row*131+b.station*7+b.side*3+b.star*977+b.arm*53+b.mooring*17)*0x45d9f3b;h^=h>>>15;return b.mooring<0 && Math.floorMod(h,6)==0;}
     FloatBoat sorted(int i){return i<order.length?boats[order[i]]:null;}
     public void step(Game g){if(!g.montroseStage())return;
         for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];if(!b.afloat()){HullDamage.stepMoored(g,b);continue;}float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
@@ -67,7 +69,7 @@ public final class MooredFleet {
     }
     public float collide(Game g,Body body,CollisionSplashes splashes){float hit=0;
         for(FloatBoat b:boats)if(b.afloat() && Math.abs(body.x-b.x)<body.half+body.radius+b.berth.length && Math.abs(body.y-b.y)<body.half+body.radius+b.berth.length){
-            float vx=body.vx,vy=body.vy,impact=PolygonWater.collide(body,b.hull,false,splashes);hit=Math.max(hit,impact);HullDamage.moored(g,b,impact);
+            float vx=body.vx,vy=body.vy,impact=PolygonWater.collide(body,b.hull,false,splashes);hit=Math.max(hit,impact);HullDamage.moored(g,b,body,impact);
             if(impact>0){b.vx=Physics.clamp(b.vx+vx*.08f,-4,4);b.vy=Physics.clamp(b.vy+vy*.08f,-4,4);if(b.swinging()){
                     float torque=((body.x-b.x)*vy-(body.y-b.y)*vx)/Math.max(1,b.berth.length*b.berth.length);
                     b.spin=Physics.clamp(b.spin+torque*.6f,-.8f,.8f);

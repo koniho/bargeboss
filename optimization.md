@@ -6950,3 +6950,14 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   last 30), plus while the player's hull is below 25%. Canonical replay de315fad:2:1350 (was
   a4e41cf6). Bisected: restoring HEAD's HealthBars.java with every other change kept gives
   a4e41cf6 exactly, so the only hashed change is the bars no longer drawn when idle (draw-only).
+
+## Montrose harbor traffic
+
+- `HarborTraffic`: 12 live pleasure craft (6 on marina fairways/inlet, 6 on the open lake incl. two
+  offshore racers) as real Bodies drawn by `CruiserView` in their own hull kind. Lanes were planned
+  with an A* over a shore/dock/hull/mooring clearance field and are re-verified by
+  `HarborTrafficTest` (>= 20 units clear). Traffic only takes damage the player causes.
+- About one slip in six is empty (`MooredFleet.away`), its boat out on the water.
+- Canonical replay 5adaee69:2:1350 (was de315fad). Bisected: with `HarborTraffic.active` false the
+  replay returns to de315fad with or without the empty slips, so the only cause is the new traffic
+  in the replayed Montrose haulout job (drawn hulls and their wakes). Deliveries and score unchanged.

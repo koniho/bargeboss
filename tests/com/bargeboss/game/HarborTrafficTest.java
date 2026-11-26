@@ -1,0 +1,45 @@
+package com.bargeboss.game;
+/** Montrose traffic: clear lanes, live movement, player-only damage, empty slips. */
+public final class HarborTrafficTest {
+    private static void check(boolean ok,String why){if(!ok)throw new AssertionError(why);}
+    /** Smallest clearance (world units) from a lane to shore, docks, berthed hulls and mooring balls. */
+    static float laneClearance(float[] route,boolean loop){
+        float worst=Float.MAX_VALUE;int n=route.length/2;
+        for(int i=0;i<(loop?n:n-1);i++){
+            int j=(i+1)%n;float ax=route[i*2],ay=route[i*2+1],bx=route[j*2],by=route[j*2+1],len=Physics.length(bx-ax,by-ay);
+            for(float t=0;t<=len;t+=6){float x=ax+(bx-ax)*t/len,y=ay+(by-ay)*t/len;worst=Math.min(worst,clearance(x,y));}
+        }
+        return worst;
+    }
+    private static float clearance(float x,float y){
+        for(float r=0;r<=60;r+=4){
+            for(int k=0;k<16;k++){double a=k*Math.PI/8;if(!MontroseHarbor.contains(x+r*(float)Math.cos(a),y+r*(float)Math.sin(a)))return r;}
+            for(MooredBoats.Berth b:MooredBoats.BERTHS)if(Physics.length(x-b.x,y-b.y)<b.length*.5f+r)return r;
+            for(float[] m:MontroseHarbor.MOORINGS)if(Physics.length(x-m[0],y-m[1])<12+r)return r;
+        }
+        return 60;
+    }
+    public static void run(){
+        float[][] lanes={HarborTraffic.INLET_RUN,HarborTraffic.NORTH_RUN,HarborTraffic.MOUTH,
+            HarborTraffic.RACE_LOOP,HarborTraffic.SOUTH_LANE,HarborTraffic.EAST_LANE,HarborTraffic.NORTH_LANE,HarborTraffic.SHORE_LANE};
+        for(int i=0;i<lanes.length;i++){float c=laneClearance(lanes[i],lanes[i]==HarborTraffic.RACE_LOOP);System.out.println("lane "+i+" clearance "+c);check(c>=20,"traffic lane "+i+" keeps clear of shore, docks and hulls ("+c+")");}
+        Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
+        check(g.harborTraffic.craft.length==12,"Montrose launches its harbor and lake traffic");
+        int empty=0;for(MooredBoats.Berth b:MooredBoats.BERTHS)if(MooredFleet.away(b))empty++;
+        check(empty>MooredBoats.BERTHS.length/10 && empty<MooredBoats.BERTHS.length/3,"some slips stand empty: "+empty);
+        float[] x0=new float[12],y0=new float[12];for(int i=0;i<12;i++){x0[i]=g.harborTraffic.craft[i].body.x;y0[i]=g.harborTraffic.craft[i].body.y;}
+        g.tug.x=-2000;g.tug.y=-4000;
+        for(int t=0;t<60*40;t++){g.harborTraffic.step(g,g.splashes);g.harborTraffic.collide(g,g.splashes);g.splashes.step(g);HullDamage.step(g);g.ticks++;}
+        for(int i=0;i<12;i++){Body b=g.harborTraffic.craft[i].body;
+            check(Physics.length(b.x-x0[i],b.y-y0[i])>60 || g.harborTraffic.craft[i].idle>0,"craft "+i+" makes way");
+            check(b.health==100 && b.active,"traffic never damages itself without the player: craft "+i+" health "+b.health);
+            check(MontroseHarbor.contains(b.x,b.y),"craft "+i+" stays on the water");}
+        check(g.othersDamage==0,"traffic bumping traffic is not the player's fault");
+        // The tug ramming a cruiser costs it health and gets the skipper shouting.
+        HarborTraffic.Craft c=g.harborTraffic.craft[2];Body boat=c.body;
+        g.splashes.contact(g.tug,boat,boat.x,boat.y,120,0,0,0,120);g.splashes.step(g);
+        check(boat.health==100-HullDamage.HIT && g.othersDamage==HullDamage.HIT && c.shoutTicks>0,"ramming traffic damages it and the skipper yells");
+        System.out.println("Harbor traffic lanes, motion and damage passed");
+    }
+    public static void main(String[] a){run();}
+}

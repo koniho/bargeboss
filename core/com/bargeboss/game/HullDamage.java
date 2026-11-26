@@ -21,21 +21,27 @@ final class HullDamage {
     /** One new contact between a and b (b may be null for walls) at a closing speed. */
     static void contact(Game g,Watercraft a,Watercraft b,float closing){
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD))return;
-        boolean hitA=hit(g,a),hitB=hit(g,b);
+        // Harbor traffic only takes damage the player causes; skippers bumping each other shrug it off.
+        boolean hitA=(!traffic(a) || CollisionSplashes.involvesPlayer(g,b)) && hit(g,a),hitB=(!traffic(b) || CollisionSplashes.involvesPlayer(g,a)) && hit(g,b);
         // The captain winces when the tug or a lined vessel damages someone else's hull.
         if(hitA && CollisionSplashes.involvesPlayer(g,b) || hitB && CollisionSplashes.involvesPlayer(g,a))PlayerPortrait.wince(g);
     }
+    private static boolean traffic(Watercraft w){return w instanceof Body && ((Body)w).traffic;}
     private static boolean hit(Game g,Watercraft w){
         if(!(w instanceof Body) || w==g.tug)return false;
         Body b=(Body)w;
         if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return false;
         b.healthBefore=b.health;b.health=Math.max(0,b.health-HIT);b.damagedTick=g.ticks;
         g.othersDamage+=b.healthBefore-b.health;
+        if(b.traffic)g.harborTraffic.rammed(b);
         if(b.health==0)sink(g,b);
         return true;
     }
     /** A hard hit on someone's moored marina boat: same health rules as every other vessel. */
-    static void moored(Game g,MooredFleet.FloatBoat m,float closing){
+    static void moored(Game g,MooredFleet.FloatBoat m,float closing){moored(g,m,null,closing);}
+    /** As above; a hit by harbor traffic (by) costs nothing, since the player did not cause it. */
+    static void moored(Game g,MooredFleet.FloatBoat m,Body by,float closing){
+        if(by!=null && by.traffic)return;
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<COOLDOWN)return;
         m.healthBefore=m.health;m.health=Math.max(0,m.health-HIT);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
         g.othersDamage+=m.healthBefore-m.health;PlayerPortrait.wince(g);
@@ -77,13 +83,18 @@ final class HullDamage {
     /** Fixed-step sinking: the hull loses way and rolls, vents smoke, pops twice, plunges, then leaves
      * play; its oil slick lingers for SLICK ticks afterwards. */
     static void step(Game g){
-        for(Body b:g.cargo){
-            if(b==null || b.sinkTicks<=0)continue;
+        for(Body b:g.cargo)step(g,b,true);
+        for(HarborTraffic.Craft c:g.harborTraffic.craft)step(g,c.body,false);
+    }
+    /** One hull's sinking step; only required (cargo) hulls fail the mission when they go down. */
+    private static void step(Game g,Body b,boolean required){
+        {
+            if(b==null || b.sinkTicks<=0)return;
             if(!b.active){
                 if(b.sunk && b.sinkTicks<SINK+SLICK)b.sinkTicks++;
                 // Hold the fail screen a beat so the wreck's slick and boil are seen.
-                if(b.sunk && !b.deliveryRecorded && b.sinkTicks>=SINK+FAIL_DELAY)g.cargoSunk=true;
-                continue;
+                if(required && b.sunk && !b.deliveryRecorded && b.sinkTicks>=SINK+FAIL_DELAY)g.cargoSunk=true;
+                return;
             }
             int t=++b.sinkTicks;
             b.vx*=.95f;b.vy*=.95f;
@@ -114,6 +125,11 @@ final class HullDamage {
         for(Body b:g.cargo){
             if(b==null || b.sinkTicks<=0 || !b.active && !b.sunk)continue;
             wreck(g,p,c,b.x,b.y,b.half,b.radius,b.id,b.cruiser || b.yacht,b.sinkTicks);
+        }
+        for(HarborTraffic.Craft t:g.harborTraffic.craft){
+            Body b=t.body;
+            if(b.sinkTicks<=0 || !b.active && !b.sunk)continue;
+            wreck(g,p,c,b.x,b.y,b.half,b.radius,b.id,true,b.sinkTicks);
         }
         if(g.montroseStage())for(MooredFleet.FloatBoat m:g.mooredFleet.boats)if(m.sinkTicks>0 && m.sinkTicks<SINK+SLICK)
             wreck(g,p,c,m.x,m.y,m.berth.length*.5f,m.berth.width*.5f,MOORED_SEED+m.berth.frame+(int)m.berth.x,true,m.sinkTicks);

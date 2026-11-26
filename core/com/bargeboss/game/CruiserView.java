@@ -7,9 +7,9 @@ final class CruiserView {
         if(river==null)return;
         RiverCamera c=river.camera;Painter p=river.canvas();float rise=g.haulout.vesselRise(b),heave=rise>0?rise:WaterSurface.lift(g,b)-HullDamage.sinkDepth(b);
         float[] water=ShoreOcclusion.vessel(g,c,b,true);p.pushClipOutside(water);
-        try{if(rise<=0){if(b.racing)RacingBoatArt.shadow(g,p,b,c);VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,b.racing?56:38,b.racing?14:16,b.speed(),false);}}finally{p.popClip();}
+        try{if(rise<=0){if(b.racing)RacingBoatArt.shadow(g,p,b,c);VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,b.hullKind>=0?MooredBoats.length(b.hullKind):b.racing?56:38,b.hullKind>=0?MooredBoats.width(b.hullKind):b.racing?14:16,b.speed(),false);}}finally{p.popClip();}
         float heading=b.angle*32/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
-        int base=(b.racing?6:b.berth%2)*32,a=base+Math.floorMod((int)whole,32),next=base+Math.floorMod((int)whole+1,32);
+        int base=(b.hullKind>=0?b.hullKind:b.racing?6:b.berth%2)*32,a=base+Math.floorMod((int)whole,32),next=base+Math.floorMod((int)whole+1,32);
         float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y)-heave*c.scale,size=MooredBoats.CELL_WORLD*c.scale;
         float sink=HullDamage.progress(b),alpha=.92f*(1-sink*sink),second=alpha*mix,first=alpha*(1-mix)/(1-second);
         if(alpha<.01f)return;

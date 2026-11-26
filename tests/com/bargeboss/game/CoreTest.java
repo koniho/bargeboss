@@ -120,7 +120,7 @@ public final class CoreTest {
         TowTrainTest.run();
         TutorialTowCourseTest.run();
         TutorialTowBridgesTest.run();TutorialEquipmentTimingTest.run();BargeAbilitiesTest.run();
-        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();PracticeMooringTest.run();WeatherCoverageTest.run();InstructorIdleWakeTest.run();
+        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();HarborTrafficTest.run();PracticeMooringTest.run();WeatherCoverageTest.run();InstructorIdleWakeTest.run();
         FireworksLessonTest.run();
         FireWashTest.run();
         FireRescueRadioTest.run();
@@ -227,7 +227,7 @@ public final class CoreTest {
         // Shift-free captain frames (expressions composited onto neutral, equal X offsets) leave
         // ecc8a070 unchanged: atlas pixels and portrait pivots are not hashed. Bisected: the only
         // input that moves is PlayerPortrait breathing now running in every state (c127893d).
-        check(Parity.signature().equals("de315fad:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("5adaee69:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

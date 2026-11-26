@@ -13,7 +13,8 @@ public final class MontroseRescueTest {
         CruiserLightingTest.run();
         Game g=game(Challenges.RAFT_RESCUE);Body a=g.cargo[0],b=g.cargo[1];
         check(a.cruiser && b.cruiser && a.awaitingPickup && b.awaitingPickup,"Two anchored cabin cruisers");
-        check(g.mooredFleet.boats.length==MooredBoats.BERTHS.length-3,"Two Dock C rescue slips and the star-dock haulout berth are reserved");
+        int away=0;for(MooredBoats.Berth slip:MooredBoats.BERTHS)if(MooredFleet.away(slip) && !MontroseRescue.reserved(g,slip) && !MontroseHaulout.reserved(slip))away++;
+        check(g.mooredFleet.boats.length==MooredBoats.BERTHS.length-3-away,"Two Dock C rescue slips and the star-dock haulout berth are reserved; boats out on the water leave their slips empty");
         check(!g.tow.canAttach(g,a,g.tug),"Raft must be separated before towing");
         tapWorld(g,(a.x+b.x)*.5f,(a.y+b.y)*.5f);check(!g.rescue.rafted,"Public tap releases rafting line");
         ReplayInput.down(g,a.x,a.y);ReplayInput.move(g,g.tug.x,g.tug.y);ReplayInput.up(g,g.tug.x,g.tug.y);steps(g,60);

@@ -24,6 +24,8 @@ public final class Body implements Watercraft {
     /** Non-player hull health (0..100) and sinking state; see HullDamage. The tug uses Game.hull. */
     public int health=100,healthBefore=100,damagedTick=-1000,sinkTicks;
     public boolean sunk;
+    /** Live harbor traffic (not mission cargo) and the moored-boat hull kind it is drawn as (-1: by role). */
+    public boolean traffic;public int hullKind=-1;
     public Body(int id, int berth, float x, float y, float angle) {
         this(id,berth,x,y,angle,false);
     }

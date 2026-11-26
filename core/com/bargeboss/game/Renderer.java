@@ -22,7 +22,7 @@ public final class Renderer {
         WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
-        HullDamage.effects(g,p);HealthBars.draw(g,p);
+        HullDamage.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);
         g.layout=live;
         HarborView.objective(g,p);
         FeederView.callouts(g,p);
@@ -51,13 +51,14 @@ public final class Renderer {
             if(g.trafficWarning()) SoftCue.caption(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
         }
         FeederView.draw(g,p);
-        Body[] ordered=new Body[g.cargo.length+6]; int count=0;
+        Body[] ordered=new Body[g.cargo.length+6+g.harborTraffic.craft.length]; int count=0;
         for(Body b:g.cargo) if(b!=null && b.active) ordered[count++]=b;
         ordered[count++]=g.tug;
         if(g.tutorial==null) for(Feeder f:g.feeders) if(f.phase!=Feeder.IDLE) {
             ordered[count++]=f.boat;if(f.load!=null) ordered[count++]=f.load;
         }
         if(g.trafficActive()) ordered[count++]=g.trafficBoat;
+        for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active && HarborTrafficView.visible(g,c.body))ordered[count++]=c.body;
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }
@@ -113,6 +114,7 @@ public final class Renderer {
     }
     /** One vessel and its play cues, shared by the continuous yard depth sorter. */
     static void body(Game g,Painter p,Body b) {
+        if(b.traffic){VesselView.draw(g,p,b,false);return;}
         if(b.berth<0) {
             VesselView.draw(g,p,b,true);
             return;
