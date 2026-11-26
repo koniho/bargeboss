@@ -81,6 +81,8 @@ final class HarborTraffic {
         }
         if(blocker!=null && limit<.5f){
             c.blocked++;
+            // A skipper kept waiting edges around the obstruction instead of deadlocking with it.
+            if(c.blocked>150){limit=Math.max(limit,.4f);swerve=1;}
             if(c.blocked>45 && c.shoutCooldown==0)shout(c,COMPLAINTS[(b.id+c.blocked/45)%COMPLAINTS.length]);
         }else c.blocked=0;
         float desired=(float)StrictMath.atan2(dy,dx)-swerve*.55f,error=Physics.angle(desired-b.angle);

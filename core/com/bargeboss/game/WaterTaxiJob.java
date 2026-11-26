@@ -7,7 +7,7 @@ final class WaterTaxiJob extends MontroseJob {
     static final int GUESTS=10,SEATS=3,BOARD_TICKS=22;
     static final float REACH=62,SLOW=26;
     /** Dock-end pickups on verified clear fairway water, and the party pier off the inlet. */
-    static final float[] PICKUPS={746,-474,1442,-666,590,-678,446,-870,1100,-570,300,-300};
+    static final float[] PICKUPS={746,-474,1442,-666,1736,-942,300,-300,1100,-570,-82,-30};
     static final float PIER_X=-70,PIER_Y=420;
     final int[] waiting=new int[PICKUPS.length/2];
     int aboard,boardTimer,spawned,spawnTimer;

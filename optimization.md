@@ -6989,3 +6989,16 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   whole signature, so JVM / J2ObjC determinism remains checked for both.
 - Verified: a water-texture alpha tweak moves draw 827b4a7c -> a2e8da9f with state unchanged.
 - Baselines: state=c1d995af:2:1350, draw=827b4a7c (same code as the old combined 7370ec74).
+
+## Montrose play-through (touch input only)
+
+- `tools/MontrosePlayThrough.java` plays the six new jobs with public input only (joystick, lasso drag,
+  tow-release tap, ability taps) and an A* pilot that avoids shore, docks and moored hulls.
+- First run: only Regatta finished. Fixes from it: traffic no longer deadlocks nose-to-nose with the
+  tug (edges around after 2.5 s); towed hulls are taken automatically inside a larger ring (Loose
+  Boats 105, Sandbar 115, Fireworks 125); speeders roam only dock-free linked fairway spots; taxi
+  pickups moved out of dock pockets; drifters blow down the fairway and return to slips that open onto
+  it. Fireworks showtime tightened 3:30 -> 2:30.
+- Final bot run (an optimal-ish player; humans will be slower): Wake Patrol 24 s, Loose Boats 180 s,
+  Water Taxi 121 s of 150, Sandbar 47 s, Regatta 38 s, Fireworks Night 47 s. All six complete.
+- State hash unchanged; draw hash 827b4a7c -> abecae4a (speeder spots in the replayed Wake Patrol frame).

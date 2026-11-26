@@ -4,7 +4,7 @@ package com.bargeboss.game;
  * line tension rocks it loose (watch the meter), then it pops free in a burst of sand and spray. Tow it
  * home to the harbor service dock through the lake traffic. */
 final class SandbarJob extends MontroseJob {
-    static final float BAR_X=1350,BAR_Y=700,BAR_ANGLE=.15f,DOCK_X=-60,DOCK_Y=-100,DOCK_REACH=80;
+    static final float BAR_X=1350,BAR_Y=700,BAR_ANGLE=.15f,DOCK_X=-60,DOCK_Y=-100,DOCK_REACH=115;
     /** Tension-seconds of hauling needed to break the hull free. */
     static final float BREAKOUT=330;
     Body yacht;boolean stuck=true;float progress;int popTicks,warp;
@@ -21,7 +21,7 @@ final class SandbarJob extends MontroseJob {
     String status(Game g){
         boolean towed=g.tow.connected(yacht,g.tug);
         if(stuck)return towed?"HAUL AWAY FROM THE BAR / "+Math.round(100*progress/BREAKOUT)+"% FREE":"YACHT AGROUND / LASSO IT FROM THE TUG";
-        return "TOW IT TO THE HARBOR SERVICE DOCK / RELEASE IN THE RING";
+        return "TOW IT INTO THE SERVICE DOCK RING / THE CREW TAKES IT";
     }
     void step(Game g){
         super.step(g);
@@ -48,7 +48,7 @@ final class SandbarJob extends MontroseJob {
             if(t>=1){secure(yacht,yacht.x,yacht.y,yacht.angle);score(g,DOCK_X,DOCK_Y,2500+yacht.health*10,"YACHT SAFE AT THE SERVICE DOCK");}
             return;
         }
-        if(!towed && Physics.length(yacht.x-DOCK_X,yacht.y-DOCK_Y)<DOCK_REACH && yacht.speed()<30){warp=1;g.tow.detachBody(g,yacht);g.tell("SERVICE CREW TAKING HER IN");}
+        if(Physics.length(yacht.x-DOCK_X,yacht.y-DOCK_Y)<DOCK_REACH && yacht.speed()<35){warp=1;g.tow.detachBody(g,yacht);g.tell("SERVICE CREW TAKING HER IN");}
     }
     void motion(Game g){
         if(!stuck || yacht.deliveryRecorded)return;

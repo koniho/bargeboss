@@ -5,22 +5,24 @@ package com.bargeboss.game;
  * Drifters keep moving while you work, so the order you catch them in matters. */
 final class LooseBoatsJob extends MontroseJob {
     static final int BOATS=4;
-    /** Gusting wind (world units/s^2) toward the north-east shore. */
-    static final float WIND_X=5.5f,WIND_Y=-4f,CAPTURE=70;
+    /** Gusting wind (world units/s^2) down the main fairway toward the inlet. */
+    static final float WIND_X=-3.2f,WIND_Y=2.2f,CAPTURE=105;
     static final int WARP=70;
     final MooredBoats.Berth[] slips=new MooredBoats.Berth[BOATS];
     final int[] warp=new int[BOATS];final Body[] boats=new Body[BOATS];
     final float[] fromX=new float[BOATS],fromY=new float[BOATS],fromAngle=new float[BOATS];
-    private static final float[] START={-60,-90,420,-380,820,-500,1150,-600};
+    private static final float[] START={1300,-660,1000,-560,700,-480,400,-400};
 
     void setup(Game g){
-        int found=0;
-        // Empty fairway slips (their boats are the drifters), nearest the main fairway first.
+        // Empty slips (their boats are the drifters) that open straight onto the fairway, best first.
+        float[] best=new float[BOATS];java.util.Arrays.fill(best,Float.MAX_VALUE);
         for(MooredBoats.Berth b:MooredBoats.BERTHS){
-            if(found==BOATS)break;
             if(!MooredFleet.away(b) || b.mooring>=0 || MontroseRescue.reserved(g,b) || MontroseHaulout.reserved(b))continue;
-            if(b.y<-1000 || b.y>-150 || b.x<0 || b.x>1700)continue;
-            slips[found++]=b;
+            float reach=fairway(b);
+            for(int k=0;k<BOATS;k++)if(reach<best[k]){
+                for(int m=BOATS-1;m>k;m--){best[m]=best[m-1];slips[m]=slips[m-1];}
+                best[k]=reach;slips[k]=b;break;
+            }
         }
         for(int i=0;i<BOATS;i++){
             MooredBoats.Berth slip=slips[i]==null?MooredBoats.BERTHS[i]:slips[i];slips[i]=slip;
@@ -35,8 +37,21 @@ final class LooseBoatsJob extends MontroseJob {
         for(int i=0;i<BOATS;i++){Body b=boats[i];if(b==null || b.deliveryRecorded || warp[i]>0)continue;float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);if(d<best){best=d;near=b;}}
         if(near!=null)arrow(g,canvas,near.x,near.y,"DRIFTER");
     }
+    /** Distance from a slip to the nearest open fairway point it can be reached from in a straight line. */
+    static float fairway(MooredBoats.Berth b){
+        float best=Float.MAX_VALUE;
+        for(float[] lane:new float[][]{HarborTraffic.INLET_RUN,HarborTraffic.NORTH_RUN,HarborTraffic.MOUTH})
+            for(int i=0;i+3<lane.length;i+=2){
+                float ax=lane[i],ay=lane[i+1],bx=lane[i+2],by=lane[i+3],len=Physics.length(bx-ax,by-ay);
+                for(float t=0;t<=len;t+=40){
+                    float x=ax+(bx-ax)*t/len,y=ay+(by-ay)*t/len,d=Physics.length(b.x-x,b.y-y);
+                    if(d<best && d<260 && WakePatrolJob.clearBut(x,y,b.x,b.y,b))best=d;
+                }
+            }
+        return best;
+    }
     String status(Game g){
-        for(int i=0;i<BOATS;i++)if(g.cargo[i]!=null && g.tow.connected(g.cargo[i],g.tug))return "TOW IT TO THE GLOWING SLIP / RELEASE TO DOCK";
+        for(int i=0;i<BOATS;i++)if(g.cargo[i]!=null && g.tow.connected(g.cargo[i],g.tug))return "TOW IT INTO THE GLOWING SLIP RING / THE CREW TAKES IT";
         return "SQUALL! LASSO THE DRIFTING BOATS / "+g.delivered+" OF "+BOATS+" HOME";
     }
     void step(Game g){
@@ -53,7 +68,8 @@ final class LooseBoatsJob extends MontroseJob {
                 continue;
             }
             boolean towed=g.tow.connected(b,g.tug);
-            if(!towed && Physics.length(b.x-slip.x,b.y-slip.y)<CAPTURE && b.speed()<30){
+            // Tow it into the ring: the dock crew grabs it there, line on or off.
+            if(Physics.length(b.x-slip.x,b.y-slip.y)<CAPTURE && b.speed()<35){
                 warp[i]=1;fromX[i]=b.x;fromY[i]=b.y;fromAngle[i]=b.angle;g.tow.detachBody(g,b);g.tell("DOCK CREW HAS IT / NICE TOW");
             }
         }

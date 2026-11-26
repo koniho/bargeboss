@@ -7,7 +7,24 @@ final class WakePatrolJob extends MontroseJob {
     static final int SPEEDERS=6;
     static final float CRUISE=78,FLEE=92,ALERT=170;
     /** Open fairway water the speeders hop between (all on verified traffic lanes). */
-    static final float[] SPOTS={-82,-30,746,-474,1442,-666,1736,-942,590,-558,590,-678,446,-870,2,-102,300,-300,1100,-570};
+    static final float[] SPOTS={-82,-30,746,-474,1442,-666,1736,-942,2,-102,300,-300,1100,-570,520,-420};
+    /** Spot pairs a speeder can run between in a straight line without crossing docks or shore. */
+    static final boolean[][] LINKS=links();
+    private static boolean[][] links(){
+        int n=SPOTS.length/2;boolean[][] out=new boolean[n][n];
+        for(int a=0;a<n;a++)for(int b=0;b<n;b++)if(a!=b)out[a][b]=clear(SPOTS[a*2],SPOTS[a*2+1],SPOTS[b*2],SPOTS[b*2+1]);
+        return out;
+    }
+    static boolean clear(float ax,float ay,float bx,float by){return clearBut(ax,ay,bx,by,null);}
+    /** As clear(), ignoring one berth (an empty slip being the destination). */
+    static boolean clearBut(float ax,float ay,float bx,float by,MooredBoats.Berth skip){
+        float len=Physics.length(bx-ax,by-ay);
+        for(float t=0;t<=len;t+=8){float x=ax+(bx-ax)*t/len,y=ay+(by-ay)*t/len;
+            if(!MontroseHarbor.contains(x,y))return false;
+            for(MooredBoats.Berth b:MooredBoats.BERTHS)if(b!=skip && !MooredFleet.away(b) && Math.abs(x-b.x)<70 && Math.abs(y-b.y)<70 && Physics.length(x-b.x,y-b.y)<b.length*.5f+20)return false;}
+        return true;
+    }
+    final int[] at=new int[SPEEDERS];
     final Body[] speeders=new Body[SPEEDERS];
     final int[] spot=new int[SPEEDERS],juke=new int[SPEEDERS];
     final boolean[] ticketed=new boolean[SPEEDERS];
@@ -15,7 +32,7 @@ final class WakePatrolJob extends MontroseJob {
 
     void setup(Game g){
         for(int i=0;i<SPEEDERS;i++){
-            int s=(i*3+1)%(SPOTS.length/2);spot[i]=(s+2)%(SPOTS.length/2);
+            int s=(i*3+1)%(SPOTS.length/2);at[i]=s;spot[i]=next(s,-1);
             Body b=new Body(g.nextId++,-1,SPOTS[s*2],SPOTS[s*2+1],i*1.1f,false,true,i%3==0);
             b.traffic=true;b.hullKind=i%3==0?HarborTraffic.RACER:i%6;speeders[i]=b;
         }
@@ -29,6 +46,8 @@ final class WakePatrolJob extends MontroseJob {
     }
     String status(Game g){return "BUMP THE SPEEDERS TO TICKET THEM / "+g.delivered+" OF "+SPEEDERS;}
     private int random(int n){seed=seed*1103515245+12345;return Math.floorMod(seed>>>8,n);}
+    /** A random linked spot from s (avoiding `not` when possible). */
+    private int next(int s,int not){int n=SPOTS.length/2,count=0;for(int k=0;k<n;k++)if(LINKS[s][k] && k!=not)count++;if(count==0)return s==0?1:0;int pick=random(count);for(int k=0;k<n;k++)if(LINKS[s][k] && k!=not && pick--==0)return k;return s;}
 
     void step(Game g){
         super.step(g);
@@ -54,12 +73,12 @@ final class WakePatrolJob extends MontroseJob {
             }else{
                 float dx=b.x-g.tug.x,dy=b.y-g.tug.y,d=Math.max(1,Physics.length(dx,dy));
                 tx=SPOTS[spot[i]*2];ty=SPOTS[spot[i]*2+1];speed=CRUISE;
-                if(Physics.length(tx-b.x,ty-b.y)<60)spot[i]=random(SPOTS.length/2);
+                if(Physics.length(tx-b.x,ty-b.y)<60){int from=at[i];at[i]=spot[i];spot[i]=next(spot[i],from);tx=SPOTS[spot[i]*2];ty=SPOTS[spot[i]*2+1];}
                 if(d<ALERT){
                     // Break away: pick the roaming spot that leads furthest from the tug, juking when it is close.
                     float best=-1;int pick=spot[i];
-                    for(int s=0;s<SPOTS.length/2;s++){float sx=SPOTS[s*2],sy=SPOTS[s*2+1],away=Physics.length(sx-g.tug.x,sy-g.tug.y)-Physics.length(sx-b.x,sy-b.y)*.6f;if(away>best){best=away;pick=s;}}
-                    spot[i]=pick;tx=SPOTS[pick*2];ty=SPOTS[pick*2+1];speed=FLEE;
+                    for(int s=0;s<SPOTS.length/2;s++){if(s!=at[i] && !LINKS[at[i]][s])continue;float sx=SPOTS[s*2],sy=SPOTS[s*2+1],away=Physics.length(sx-g.tug.x,sy-g.tug.y)-Physics.length(sx-b.x,sy-b.y)*.6f;if(away>best){best=away;pick=s;}}
+                    if(pick!=spot[i]){spot[i]=pick;}tx=SPOTS[pick*2];ty=SPOTS[pick*2+1];speed=FLEE;
                     if(d<70 && juke[i]==0)juke[i]=24;
                 }
             }

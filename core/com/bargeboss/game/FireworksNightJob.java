@@ -4,8 +4,8 @@ package com.bargeboss.game;
  * the show mark on the lake before showtime; it anchors on station. Then tap the barge and fire three
  * volleys for the crowd on the beach. Dusk falls as the job runs. */
 final class FireworksNightJob extends MontroseJob {
-    static final float PICKUP_X=590,PICKUP_Y=-600,MARK_X=1000,MARK_Y=920,MARK_REACH=90;
-    static final int VOLLEYS=3,SHOWTIME=210*60;
+    static final float PICKUP_X=590,PICKUP_Y=-600,MARK_X=1000,MARK_Y=920,MARK_REACH=125;
+    static final int VOLLEYS=3,SHOWTIME=150*60;
     Body barge;boolean onStation;int launchesAtStation;
 
     void setup(Game g){
@@ -20,13 +20,13 @@ final class FireworksNightJob extends MontroseJob {
         if(g.tow.connected(barge,g.tug))arrow(g,canvas,MARK_X,MARK_Y,"SHOW MARK");else arrow(g,canvas,barge.x,barge.y,"FIREWORKS BARGE");
     }
     String status(Game g){
-        if(!onStation)return g.tow.connected(barge,g.tug)?"TOW TO THE SHOW MARK ON THE LAKE / RELEASE IN THE RING":"TOW THE FIREWORKS BARGE OUT TO THE SHOW MARK";
+        if(!onStation)return g.tow.connected(barge,g.tug)?"TOW IT INTO THE SHOW MARK RING ON THE LAKE":"TOW THE FIREWORKS BARGE OUT TO THE SHOW MARK";
         return "SHOWTIME! TAP THE BARGE AND LAUNCH / "+g.delivered+" OF "+VOLLEYS+" VOLLEYS";
     }
     void step(Game g){
         super.step(g);
         if(!onStation){
-            if(!g.tow.connected(barge,g.tug) && Physics.length(barge.x-MARK_X,barge.y-MARK_Y)<MARK_REACH && barge.speed()<30){
+            if(Physics.length(barge.x-MARK_X,barge.y-MARK_Y)<MARK_REACH && barge.speed()<35){
                 onStation=true;g.tow.detachBody(g,barge);
                 barge.awaitingPickup=true;barge.tiedX=barge.x;barge.tiedY=barge.y;barge.tiedAngle=barge.angle;barge.vx=barge.vy=barge.spin=0;
                 launchesAtStation=g.abilities.launches;limit=Math.max(limit,ticks+90*60);
