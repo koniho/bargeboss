@@ -19,7 +19,7 @@ public final class MontroseHaulout {
     private static void pin(Body b,float x,float y){b.x=x;b.y=y;b.angle=b.tiedAngle;b.vx=b.vy=b.spin=0;}
 
     public boolean hoisting(){return liftedBoat!=null && hoistTicks<HOIST_TICKS;}
-    public float vesselRise(Body b){return b==parkedBoat?MontroseHarbor.LAND_RISE+1:b==liftedBoat?Math.max(0,64*MontroseTravelLift.SCALE*.65f*hoistTicks/HOIST_TICKS-9)*ArticulatedModel.Z_SCALE:0;}
+    public float vesselRise(Body b){if(b.liftRise>0)return b.liftRise;return b==parkedBoat?MontroseHarbor.LAND_RISE+1:b==liftedBoat?Math.max(0,64*MontroseTravelLift.SCALE*.65f*hoistTicks/HOIST_TICKS-9)*ArticulatedModel.Z_SCALE:0;}
     final DockLineCrew lineCrew=new DockLineCrew(true);
     public final TravelLiftRadio radio=new TravelLiftRadio();
     public final TravelLiftEffects effects=new TravelLiftEffects();

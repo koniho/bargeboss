@@ -41,8 +41,35 @@ public final class WeatherView {
     /** Scenery-level weather, drawn by every stage after its ground and before the vessel depth merge:
      * evening darkening and background haze. */
     public static void scenery(Game g,Painter canvas){g.weather.background(g,canvas);backgroundFog(g,canvas);}
+    public static final int MAX_FLAKES=320;
+    /** Blizzard: wind-driven snow in three depth layers, gust streaks, and a breathing whiteout veil.
+     * Screen-space and stateless (stable flake identities from the fixed noise table). */
+    static void snow(Game g,Painter p){
+        StageWeather w=g.weather;float b=w.blizzard,gust=w.gust(g.visualTicks);
+        float width=g.layout.width,height=g.layout.height,angle=w.windAngle(g.visualTicks);
+        float wx=(float)StrictMath.cos(angle),wy=(float)StrictMath.sin(angle);
+        // Screen drift: down the screen plus the wind's screen-space push.
+        float driftX=-wx*(1.2f+3.5f*gust)-.4f,driftY=1.4f+1.2f*gust;
+        int count=Math.min(MAX_FLAKES,Math.round(MAX_FLAKES*Math.min(1,b*1.15f)));
+        for(int i=0;i<count;i++){
+            float depth=DEPTH[i%MAX_STREAKS],speed=.5f+depth*1.1f,t=g.visualTicks*speed;
+            float x=Math.floorMod((int)(X[i%MAX_STREAKS]*(width+80)+noise(i*7+5)*900+t*driftX),(int)width+80)-40;
+            float y=Math.floorMod((int)(Y[i%MAX_STREAKS]*(height+80)+noise(i*7+6)*700+t*driftY),(int)height+80)-40;
+            x+=3*(float)StrictMath.sin(g.visualTicks*.05f+i);
+            float size=1+depth*2.6f;int alpha=Math.round((90+depth*140)*Math.min(1,b*1.5f));
+            if(gust>.55f && i%3==0){
+                // Gust streak: the flake smeared along the wind.
+                float len=(6+depth*16)*gust;p.line(x,y,x-driftX*len*.35f,y-driftY*len*.35f,size*.7f,(Math.round(alpha*.7f)<<24)|0xf2f7fb);
+            }else p.rect(x-size*.5f,y-size*.5f,size,size,(alpha<<24)|0xf4f8fc);
+        }
+        // Whiteout veil: thickens with the blizzard and pulses with the gusts.
+        int veil=Math.round(255*(.06f+.22f*b+.12f*gust));
+        p.rect(0,0,width,height,(veil<<24)|0xdfe8f0);
+        p.material(width*.5f,height*.5f,width*1.4f,0,0,height*1.4f,EffectMaterial.GLOW,0,1,(Math.round(60*gust)<<24)|0xffffff);
+    }
     public static void draw(Game g,Painter p){
         float rain=g.weather.rain(g);float flash=flash(g);
+        if(g.weather.blizzard>0)snow(g,p);
         if(rain==0 && flash==0 && g.weather.fog(g)==0)return;
         lowFog(g,p);
         float width=g.layout.width,height=g.layout.height;

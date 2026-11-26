@@ -19,7 +19,7 @@ public final class DeveloperPanelTest {
             for(int row=0;row<jobs.length;row++){
                 if(!root.developerPanel.open)ReplayInput.tap(root,40,DeveloperPanel.BUTTON_Y+16);
                 float[] at=DeveloperPanel.jobCenter(root,row);ReplayInput.tap(root,at[0],at[1]);
-                Game g=root.activeGame();check(g!=root && g.challengeId==jobs[row],"exact job starts");
+                Game g=root.activeGame();check(g!=root && g.challengeId==jobs[row],"exact job starts: row "+row);
                 check(!root.developerPanel.open && g.tutorial==null,"picker closed, playable mission");
                 if(Challenges.calumet(jobs[row])){
                     check(g.voyage.job==jobs[row],"correct contiguous Calumet objective");

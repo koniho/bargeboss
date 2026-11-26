@@ -26,6 +26,8 @@ public final class Body implements Watercraft {
     public boolean sunk;
     /** Live harbor traffic (not mission cargo) and the moored-boat hull kind it is drawn as (-1: by role). */
     public boolean traffic;public int hullKind=-1;
+    /** Height a travel-lift job is hoisting this hull to (0: afloat); see MontroseHaulout.vesselRise. */
+    public float liftRise;
     public Body(int id, int berth, float x, float y, float angle) {
         this(id,berth,x,y,angle,false);
     }

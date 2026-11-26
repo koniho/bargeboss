@@ -63,7 +63,7 @@ public final class LocationVoyageTest {
         check(g.challengeId==Challenges.WAKE_PATROL && !g.montroseComplete && g.mode==Game.PLAY,"swimmer rescue continues into the new day's jobs");
         a=b=c=false;for(Body boat:g.cargo){a|=boat==first;b|=boat==second;c|=boat==yacht;}
         check(a && b && c,"delivered watercraft stay berthed through the new day");
-        for(int job=Challenges.WAKE_PATROL;job<=Challenges.FIREWORKS_NIGHT;job++){check(g.challengeId==job && g.mode==Game.PLAY,"job "+job+" is live before the finale");g.dialogue.close(g);g.delivered=g.quota();g.step();}
+        for(int job=Challenges.WAKE_PATROL;job<=Challenges.DEEP_FREEZE;job++){check(g.challengeId==job && g.mode==Game.PLAY,"job "+job+" is live before the finale");g.dialogue.close(g);g.delivered=g.quota();g.step();}
         check(g.montroseComplete && g.mode==Game.FINISH,"only final Montrose job reaches finish screen");
         check(g.career.bestStars(4)==3 && g.career.bestStars(6)==3 && g.career.bestStars(7)==3,"each legacy Montrose reward keeps its existing save slot");
     }

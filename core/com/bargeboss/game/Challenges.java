@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Append-only level catalog. Existing IDs stay stable in saved careers. */
 public final class Challenges {
     public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,RAFT_RESCUE=6,SWIMMER_RESCUE=7,HAULOUT=8,CHICAGO=9,
-            WAKE_PATROL=10,LOOSE_BOATS=11,WATER_TAXI=12,SANDBAR=13,REGATTA=14,FIREWORKS_NIGHT=15,PAGE_SIZE=3;
+            WAKE_PATROL=10,LOOSE_BOATS=11,WATER_TAXI=12,SANDBAR=13,REGATTA=14,FIREWORKS_NIGHT=15,DEEP_FREEZE=16,PAGE_SIZE=3;
     private static final class Definition {
         final int kind,quota,replaySeconds;
         final String title,description,summary,cardGoal,cardHint;
@@ -45,7 +45,9 @@ public final class Challenges {
         new Definition(MONTROSE,10,600,"REGATTA RUN","PROVE THE REGATTA COURSE: THREAD TEN GATES AGAINST THE CLOCK.",
                 "10 GATES / TIME TRIAL","EACH GATE ADDS TIME","LEFTOVER SECONDS PAY OUT"),
         new Definition(MONTROSE,3,1200,"FIREWORKS NIGHT","TOW THE FIREWORKS BARGE TO THE SHOW MARK AND FIRE THREE VOLLEYS FOR THE BEACH.",
-                "FIREWORKS / FINALE","TOW OUT / ANCHOR / LAUNCH","BEAT SHOWTIME")
+                "FIREWORKS / FINALE","TOW OUT / ANCHOR / LAUNCH","BEAT SHOWTIME"),
+        new Definition(MONTROSE,10,1200,"DEEP FREEZE","A BLIZZARD IS ROLLING IN. HAUL AS MANY BOATS TO THE TRAVEL LIFT AS YOU CAN BEFORE THE HARBOR FREEZES.",
+                "BLIZZARD / HAUL OUT","TOW TO THE LIFT / BEAT THE ICE","4 SAVES IT / 8 FOR THREE STARS")
     };
     public static final int COUNT=LEVELS.length;
     // Hot scene queries need only primitive metadata. Object-array reads retain /
@@ -53,7 +55,7 @@ public final class Challenges {
     private static final int[] KINDS=kinds();
     private static int[] kinds(){int[] out=new int[COUNT];for(int i=0;i<COUNT;i++)out[i]=LEVELS[i].kind;return out;}
     private Challenges() {}
-    public static boolean standalone(int id) {return id==HAULOUT || id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id==CHICAGO || id>=WAKE_PATROL && id<=FIREWORKS_NIGHT;}
+    public static boolean standalone(int id) {return id==HAULOUT || id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id==CHICAGO || id>=WAKE_PATROL && id<=DEEP_FREEZE;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
     public static int kind(int id) { return KINDS[valid(id)?id:0]; }
@@ -72,14 +74,14 @@ public final class Challenges {
     public static int quota(int id) { return level(id).quota; }
     public static final int LOCATION_COUNT=4;
     public static boolean calumet(int id){return id>=0 && id<=DEEP_CHANNEL;}
-    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==HAULOUT || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id>=WAKE_PATROL && id<=FIREWORKS_NIGHT?MONTROSE:id;}
+    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==HAULOUT || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id>=WAKE_PATROL && id<=DEEP_FREEZE?MONTROSE:id;}
     public static int menuId(int slot){return slot==0?TWO_BANKS:slot==1?MONTROSE:slot==2?INDIANA:slot==3?CHICAGO:-1;}
     /** Selector index of a location entry; -1 for a job that is not an entry. */
     public static int locationIndex(int id){int entry=stageEntry(id);for(int i=0;i<LOCATION_COUNT;i++)if(menuId(i)==entry)return i;return -1;}
-    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{8,4,6,7,10,11,12,13,14,15}:stageEntry(id)==CHICAGO?new int[]{CHICAGO}:new int[]{5};}
+    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{8,4,6,7,10,11,12,13,14,15,16}:stageEntry(id)==CHICAGO?new int[]{CHICAGO}:new int[]{5};}
     public static int nextStage(int id){int entry=stageEntry(id);return entry==TWO_BANKS?MONTROSE:entry==MONTROSE?INDIANA:entry==INDIANA?CHICAGO:-1;}
     public static String locationTitle(int id){return calumet(id)?"CALUMET RIVER":stageEntry(id)==MONTROSE?"MONTROSE HARBOR":stageEntry(id)==CHICAGO?"CHICAGO RIVER":"INDIANA HARBOR";}
-    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"TEN JOBS / RESCUES / TOWS / CHASES / FIREWORKS":stageEntry(id)==CHICAGO?"NAVY PIER TO WOLF POINT / HARBOR LOCK FIRE CALL":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
+    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"ELEVEN JOBS / RESCUES / CHASES / FIREWORKS / BLIZZARD":stageEntry(id)==CHICAGO?"NAVY PIER TO WOLF POINT / HARBOR LOCK FIRE CALL":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
     public static int pageCount() { return (LOCATION_COUNT+PAGE_SIZE-1)/PAGE_SIZE; }
     public static int pageFor(int id) { return Math.max(0,locationIndex(id))/PAGE_SIZE; }
     public static int maxStars() { return COUNT*3; }

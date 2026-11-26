@@ -49,6 +49,10 @@ public final class MontroseDockmaster {
                 title="LAST JOB OF THE DAY. THE BIG ONE";
                 detail="FIREWORKS BARGE TO THE SHOW MARK BEFORE SHOWTIME. THEN LIGHT IT UP.";
                 reply="COPY. LET'S GIVE THEM A SHOW.";break;
+            case Challenges.DEEP_FREEZE:
+                title="BLIZZARD WARNING. THE HARBOR'S GOING TO FREEZE";
+                detail="TEN BOATS STILL OUT. GET THEM TO THE LIFT BEFORE THE ICE LOCKS THEM IN.";
+                reply="COPY. HAULING AS MANY AS I CAN.";break;
             default:return;
         }
         g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",title,detail,reply);

@@ -12,7 +12,7 @@ abstract class MontroseJob {
     /** Floating "+points" pops in world space. */
     private final float[] popX=new float[8],popY=new float[8];private final int[] popAge=new int[8];private final String[] popText=new String[8];private int popNext;
 
-    static boolean is(int id){return id>=Challenges.WAKE_PATROL && id<=Challenges.FIREWORKS_NIGHT;}
+    static boolean is(int id){return id>=Challenges.WAKE_PATROL && id<=Challenges.DEEP_FREEZE;}
     static MontroseJob create(int id){
         switch(id){
             case Challenges.WAKE_PATROL:return new WakePatrolJob();
@@ -20,11 +20,12 @@ abstract class MontroseJob {
             case Challenges.WATER_TAXI:return new WaterTaxiJob();
             case Challenges.SANDBAR:return new SandbarJob();
             case Challenges.REGATTA:return new RegattaJob();
+            case Challenges.DEEP_FREEZE:return new DeepFreezeJob();
             default:return new FireworksNightJob();
         }
     }
     /** The job after this one in the Montrose day; -1 ends the location. */
-    static int next(int id){return id==Challenges.SWIMMER_RESCUE?Challenges.WAKE_PATROL:is(id) && id<Challenges.FIREWORKS_NIGHT?id+1:-1;}
+    static int next(int id){return id==Challenges.SWIMMER_RESCUE?Challenges.WAKE_PATROL:is(id) && id<Challenges.DEEP_FREEZE?id+1:-1;}
 
     abstract void setup(Game g);
     abstract String status(Game g);
@@ -39,6 +40,10 @@ abstract class MontroseJob {
     /** Whether the tow line may take this cargo hull now. */
     boolean towable(Body b){return !b.deliveryRecorded;}
     boolean failed(Game g){return limit>0 && ticks>=limit && g.delivered<g.quota();}
+    /** Whether the job is finished (hands off to the next job). */
+    boolean done(Game g){return g.delivered>=g.quota();}
+    /** Stars for the finished job. */
+    int stars(Game g){return Challenges.stars(g.challengeId,g.delivered,g.lost,g.hull);}
     int secondsLeft(){return limit<=0?0:Math.max(0,(limit-ticks+59)/60);}
     void water(Game g,Painter p){}
     void overlay(Game g,Painter p){

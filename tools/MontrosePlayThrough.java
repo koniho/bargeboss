@@ -61,23 +61,23 @@ public final class MontrosePlayThrough {
     }
 
     public static void main(String[] a)throws Exception{
-        int[] all={Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,Challenges.FIREWORKS_NIGHT};int[] ids=all;
+        int[] all={Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,Challenges.FIREWORKS_NIGHT,Challenges.DEEP_FREEZE};int[] ids=all;
         if(a.length>1){ids=new int[a.length-1];for(int i=1;i<a.length;i++)ids[i-1]=Integer.parseInt(a[i]);}
         for(int id:ids){
             Game g=ReplayInput.montroseJob(id);g.configureCanvas(1333,750);g.mode=Game.PLAY;g.dialogue.close(g);
             MontroseJob.start(g,g.tug.x,g.tug.y,g.tug.angle);grid(g);
             int startHull=g.hull,frames=0,max=60*300;boolean shotMid=false;
-            while(frames<max && g.challengeId==id && !g.goalFailed() && g.mode==Game.PLAY){
+            while(frames<max && g.challengeId==id && !g.goalFailed() && g.mode==Game.PLAY && !g.montroseComplete){
                 if(g.dialogue.active){g.dialogue.close(g);}
                 if(g.ropePhase==0)pilot(g,id);
                 g.step();frames++;
                 if(TRACE && frames%600==0)System.out.println("  t="+frames/60+" tug "+(int)g.tug.x+","+(int)g.tug.y+" v="+(int)g.tug.speed()+" rope="+g.ropePhase+" | "+g.goalStatus());
                 if(!shotMid && g.delivered>=Math.max(1,g.quota()/2)){shot(g,Challenges.title(id)+" midway");shotMid=true;}
             }
-            boolean done=g.challengeId!=id || g.montroseComplete;
+            boolean done=g.challengeId!=id || g.montroseComplete;int got=g.delivered;
             if(!done)shot(g,Challenges.title(id)+" STOPPED");
             System.out.printf("%-16s %s in %5.1fs  progress %d/%d  hull %d->%d  others' damage %d  near misses %d  score %d%n",
-                Challenges.title(id),done?"DONE  ":g.goalFailed()?"FAILED":"TIMEOUT",frames/60f,done?Challenges.quota(id):g.delivered,Challenges.quota(id),startHull,g.hull,g.othersDamage,g.arcade.nearMisses,g.score);
+                Challenges.title(id),done?"DONE  ":g.goalFailed()?"FAILED":"TIMEOUT",frames/60f,id==Challenges.DEEP_FREEZE || !done?got:Challenges.quota(id),Challenges.quota(id),startHull,g.hull,g.othersDamage,g.arcade.nearMisses,g.score);
         }
         ImageIO.write(sheet,"png",new File(a[0]));
     }
@@ -124,6 +124,19 @@ public final class MontrosePlayThrough {
         if(id==Challenges.REGATTA){
             RegattaJob r=(RegattaJob)job;if(r.next>=r.gates()){stop(g);return;}
             drive(g,RegattaJob.GATES[r.next*2],RegattaJob.GATES[r.next*2+1],95);return;
+        }
+        if(id==Challenges.DEEP_FREEZE){
+            DeepFreezeJob z=(DeepFreezeJob)job;
+            for(Body b:z.boats){if(b==null||b.deliveryRecorded||b==z.lifting||!g.tow.connected(b,g.tug))continue;
+                float d=Physics.length(b.x-DeepFreezeJob.RING_X,b.y-DeepFreezeJob.RING_Y);
+                if(z.phase==DeepFreezeJob.READY){across(g,b,DeepFreezeJob.RING_X,DeepFreezeJob.RING_Y,d);return;}
+                // Lift busy: hold just outside the ring.
+                drive(g,DeepFreezeJob.RING_X+90,DeepFreezeJob.RING_Y+170,40);return;}
+            Body t=null;float best=1e9f;
+            for(Body b:z.boats){if(b==null||!b.active||b.deliveryRecorded||b==z.lifting)continue;float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);if(d<best){best=d;t=b;}}
+            if(t==null){stop(g);return;}
+            if(best<130 && lassoCooldown==0 && g.canTow(t)){lasso(g,t);lassoCooldown=40;return;}
+            drive(g,t.x,t.y,best<200?50:90);return;
         }
         FireworksNightJob f=(FireworksNightJob)job;Body b=f.barge;
         if(f.onStation){

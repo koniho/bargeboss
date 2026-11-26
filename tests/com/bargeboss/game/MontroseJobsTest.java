@@ -62,14 +62,33 @@ public final class MontroseJobsTest {
         for(int v=0;v<3;v++){g.abilities.launches++;frames(g,1);}
         check(g.delivered==3,"three volleys complete the show");
 
+        // Deep freeze: the blizzard builds, the lift cycles boat by boat, and the freeze decides the outcome.
+        g=job(Challenges.DEEP_FREEZE);DeepFreezeJob ice=(DeepFreezeJob)g.job;
+        check(g.harborTraffic.craft.length==0,"everyone else has fled the blizzard");
+        for(int i=0;i<DeepFreezeJob.BOATS;i++)check(MontroseHarbor.contains(ice.boats[i].x,ice.boats[i].y),"anchorage "+i+" is on the water");
+        frames(g,DeepFreezeJob.RAMP);check(g.weather.blizzard==1 && g.weather.freeze==0,"the blizzard is full before the ice starts");
+        float bx=ice.boats[0].x;
+        Body loose2=ice.boats[0];loose2.awaitingPickup=false;for(int t=0;t<120;t++){g.job.motion(g);Physics.integrate(loose2);}
+        check(loose2.x!=bx,"gusts shove a boat that is off its anchor");
+        int cycle=DeepFreezeJob.WARP_TICKS+DeepFreezeJob.HOIST_TICKS+DeepFreezeJob.CARRY_TICKS+DeepFreezeJob.RETURN_TICKS+2;
+        for(int i=0;i<3;i++){Body b=ice.boats[i];b.awaitingPickup=false;b.x=DeepFreezeJob.RING_X;b.y=DeepFreezeJob.RING_Y;b.vx=b.vy=0;frames(g,1);
+            check(ice.lifting==b,"the lift crew takes boat "+i);
+            Body next=ice.boats[i+1];next.awaitingPickup=false;next.x=DeepFreezeJob.RING_X+10;next.y=DeepFreezeJob.RING_Y;next.vx=next.vy=0;frames(g,1);
+            check(ice.lifting==b,"the next boat waits while the lift works");next.x=ice.boats[i+1].tiedX;next.y=ice.boats[i+1].tiedY+400;
+            frames(g,cycle);check(b.deliveryRecorded && !b.active && ice.phase==DeepFreezeJob.READY,"boat "+i+" is hauled out and the straps come back down");}
+        check(g.delivered==3 && !g.job.done(g),"three boats hauled");
+        frames(g,DeepFreezeJob.FREEZE_TICKS);check(g.weather.freeze==1 && g.goalFailed(),"the deep freeze with three boats saved fails the job");
+        g=job(Challenges.DEEP_FREEZE);g.delivered=DeepFreezeJob.SILVER;frames(g,DeepFreezeJob.FREEZE_TICKS);
+        check(g.job.done(g) && !g.goalFailed() && g.job.stars(g)==2,"six boats saved by the freeze earn two stars");
+        Parity.frame(g);
         // The whole Montrose day hands off job to job and ends after the fireworks.
-        g=job(Challenges.WAKE_PATROL);int[] order={Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,Challenges.FIREWORKS_NIGHT};
+        g=job(Challenges.WAKE_PATROL);int[] order={Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,Challenges.FIREWORKS_NIGHT,Challenges.DEEP_FREEZE};
         for(int k=0;k<order.length;k++){
             check(g.challengeId==order[k] && g.job!=null,"montrose day reaches job "+order[k]);
             g.delivered=g.quota();g.step();g.dialogue.close(g);
             if(k<order.length-1){check(g.challengeId==order[k+1] && g.delivered==0,"job "+order[k]+" hands off to "+order[k+1]);Parity.frame(g);}
         }
-        check(g.montroseComplete && g.career.bestStars(Challenges.FIREWORKS_NIGHT)>0,"finishing fireworks night completes Montrose and records stars");
+        check(g.montroseComplete && g.career.bestStars(Challenges.DEEP_FREEZE)>0,"finishing the deep freeze completes Montrose and records stars");
         g=ReplayInput.montroseJob(Challenges.SWIMMER_RESCUE);g.mode=Game.PLAY;g.delivered=g.quota();g.step();
         check(g.challengeId==Challenges.WAKE_PATROL && !g.montroseComplete && g.job!=null,"the swimmer rescue leads into the new day's jobs");
         // Arcade layer: a clean high-speed skim past traffic pays out; finishing under par pays a quick-job bonus and shows the banner.

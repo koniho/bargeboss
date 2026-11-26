@@ -1081,7 +1081,7 @@ public final class Game {
                 mode=FINISH; overview.cancelTouch(); cancel();
                 if(goalComplete() && !goalFailed()) {
                     if(lockStage()) {score+=1200;delivered=quota();haptic(HAPTIC_SUCCESS);}
-                    earnedStars=Challenges.stars(challengeId,goalProgress(),lost,hull);
+                    earnedStars=job!=null && MontroseJob.is(challengeId)?job.stars(this):Challenges.stars(challengeId,goalProgress(),lost,hull);
                     int before=career.rank(); if(!calumetStage() && !montroseStage())career.record(challengeId,earnedStars,score);
                     rankPromoted|=career.rank()>before;
                 }
@@ -1092,9 +1092,11 @@ public final class Game {
         engineHaptics.step(this);
     }
     private void advanceMontroseJob(){
-        if(montroseComplete || delivered<quota() || goalFailed())return;
+        if(montroseComplete || goalFailed())return;
+        boolean arcadeJob=job!=null && MontroseJob.is(challengeId);
+        if(arcadeJob?!job.done(this):delivered<quota())return;
         if(challengeId==Challenges.RAFT_RESCUE && rescue.radio.pendingThanks())return;
-        int jobStars=Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull);
+        int jobStars=arcadeJob?job.stars(this):Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull);
         arcade.complete(this,challengeId,jobStars,score-montroseJobScore);
         int before=career.rank();career.record(challengeId,jobStars,score-montroseJobScore);rankPromoted|=career.rank()>before;
         int nextJob=MontroseJob.next(challengeId);

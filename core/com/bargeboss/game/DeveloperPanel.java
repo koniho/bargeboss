@@ -3,6 +3,8 @@ package com.bargeboss.game;
 /** Opt-in host capability; shared layout, routing and isolated mission initialization. */
 public final class DeveloperPanel {
     boolean open;
+    /** Job buttons use action codes from here up, clear of the weather controls (30..51) however many jobs a location has. */
+    static final int JOBS=100;
     /** Closed DEV PANEL button sits below the always-visible captain portrait. */
     static final float BUTTON_Y=PlayerPortrait.BOTTOM+8;
     private boolean environment;
@@ -19,7 +21,7 @@ public final class DeveloperPanel {
             return y>=444?(x<left+350?50:51):-1;
         }
         int count=jobs(g).length,cols=columns(count);float rowH=rowHeight(count);
-        if(y>=218 && y<218+rows(count)*rowH){int index=(int)((y-218)/rowH)*cols+(cols==2 && x>left+350?1:0);return index<count?20+index:-1;}
+        if(y>=218 && y<218+rows(count)*rowH){int index=(int)((y-218)/rowH)*cols+(cols==2 && x>left+350?1:0);return index<count?JOBS+index:-1;}
         return y>=444 && g.activeGame().tutorial!=null?1:-1;
     }
     Layout.Box feedbackBox(Game g,float x,float y){
@@ -28,14 +30,14 @@ public final class DeveloperPanel {
         float left=(g.layout.width-700)/2;int action=hit(g,x,y);
         if(action==0)return new Layout.Box(left+600,108,88,36);
         if(action==2 || action==3)return new Layout.Box(left+(action==2?16:356),158,328,44);
+        if(action>=JOBS)return jobBox(left,action-JOBS,jobs(g).length);
         if(action>=30 && action<42)return new Layout.Box(left+((action%2)==0?16:630),218+((action-30)/2)*36,54,32);
         if(action>=50)return new Layout.Box(left+(action==50?16:356),448,328,40);
-        if(action==1)return new Layout.Box(left+16,448,668,40);
-        return jobBox(left,action-20,jobs(g).length);
+        return new Layout.Box(left+16,448,668,40);
     }
     /** Long job lists (Montrose) use two columns of shorter rows so every job fits the panel. */
     private static int columns(int count){return count>4?2:1;}
-    private static float rowHeight(int count){return count>4?41:52;}
+    private static float rowHeight(int count){return count>8?36:count>4?41:52;}
     private static int rows(int count){return (count+columns(count)-1)/columns(count);}
     private static Layout.Box jobBox(float left,int index,int count){
         int cols=columns(count);float rowH=rowHeight(count),w=cols==2?328:668;
@@ -57,12 +59,12 @@ public final class DeveloperPanel {
         if(action!=old)return true;
         if(action==0)open=!open;
         else if(action==2 || action==3)environment=action==3;
+        else if(action>=JOBS){int mission=jobs(g)[action-JOBS];open=false;g.startDeveloperMission(mission);}
         else if(action>=30){
             Game active=g.activeGame();
             int[] actions={1,2,3,4,7,8,9,10,12,13,14,15};
             WaveControls.adjust(active,action==50?11:action==51?5:actions[action-30]);
         }
-        else if(action>=20){int mission=jobs(g)[action-20];open=false;g.startDeveloperMission(mission);}
         else if(action==1){open=false;g.startTutorial();}
         return true;
     }

@@ -7005,3 +7005,14 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Smash through traffic: tug-vs-traffic contacts keep 80% of the tug's way, shove the boat with 65%
   of it plus spin, cost the tug no hull, and a hard ram costs traffic 34 health (three sink it).
   State hash unchanged; draw abecae4a -> 43f14e76 (traffic shoved differently in the replayed haulout).
+
+## Deep Freeze (blizzard haul-out) and blizzard weather
+
+- StageWeather gains blizzard (snow, whiteout veil, gusts, +80% waves) and freeze (ice floes, slush);
+  DeepFreezeJob (id 16) runs a fast travel-lift cycle; 4 boats pass, 6 two stars, 8 three, 10 ends early.
+- Bot play-through: 7 of 10 hauled in the 200 s before the freeze (thresholds set from that run).
+- Developer picker: job buttons use action codes from 100 up; with eleven jobs the eleventh job's
+  old code (20+10=30) collided with the first weather control.
+- Gameplay hash state=9af0f0af:2:1350 (was state=c1d995af:2:1350). Bisected: removing the Deep Freeze catalog entry
+  returns it exactly to c1d995af, so the only gameplay cause is the seventeenth career slot (save
+  string). Draw 32cfdce1.
