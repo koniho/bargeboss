@@ -6,10 +6,16 @@ picks the requested heads by their bounding box, registers every frame to the fi
 cross-correlating their ink lines, and writes a 1536x1024 3x2 alpha source with one
 512 px cell per frame that tools/PackGavinPortrait.java packs like the other captains.
 
+With --captain, the captain's preset picks are used and every expression frame is rebuilt on
+the neutral frame (tools/portrait_registration.py): only the eyes, brows and mouth come from
+the expression, registered by masked ECC, so the silhouette never moves between frames.
+
 Usage:
   python3 tools/extract_sheet_portraits.py SHEET OUT.png --list
-  python3 tools/extract_sheet_portraits.py SHEET OUT.png --pick x,y x,y ... [--preview P.png]
-Each --pick point lies inside one head on the sheet, in output frame order.
+  python3 tools/extract_sheet_portraits.py SHEET OUT.png --captain NAME [--preview P.png]
+  python3 tools/extract_sheet_portraits.py SHEET OUT.png --pick x,y x,y ... [--mirror]
+Each --pick point lies inside one head on the sheet (unmirrored coordinates), in output frame
+order. --mirror flips the sheet left-right before keying, alignment and packing.
 """
 
 import argparse
@@ -17,6 +23,8 @@ import argparse
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+
+import portrait_registration
 
 CELL = 512
 
@@ -138,8 +146,18 @@ def parse_args():
     parser.add_argument("out")
     parser.add_argument("--list", action="store_true")
     parser.add_argument("--pick", nargs="*", default=[])
+    parser.add_argument(
+        "--captain",
+        choices=sorted(portrait_registration.CAPTAINS),
+        help="use the captain's preset picks and composite expressions onto neutral",
+    )
     parser.add_argument("--scale", type=float, default=2.6)
     parser.add_argument("--preview")
+    parser.add_argument(
+        "--mirror",
+        action="store_true",
+        help="flip the sheet left-right first; --pick points stay in sheet coordinates",
+    )
     parser.add_argument(
         "--pockets",
         type=float,
@@ -149,12 +167,24 @@ def parse_args():
     parser.add_argument(
         "--under", type=int, default=120, help="bust band height filled from frame zero"
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.captain:
+        preset = portrait_registration.CAPTAINS[args.captain]
+        args.pick = args.pick or preset["pick"]
+        args.scale = preset["scale"]
+        args.pockets = preset["pockets"]
+        args.mirror = args.mirror or preset["mirror"]
+    return args
 
 
-def load_sheet(path, pockets):
-    """Sheet colour (paper removed), soft alpha, component labels and head boxes."""
+def load_sheet(path, pockets, mirror=False):
+    """Sheet colour (paper removed), soft alpha, component labels and head boxes.
+
+    A mirrored sheet is flipped left-right first, so a captain drawn facing left faces right.
+    """
     rgb = np.asarray(Image.open(path).convert("RGB"), np.float32)
+    if mirror:
+        rgb = rgb[:, ::-1].copy()
     paper = paper_mask(rgb)
     alpha, art = cutout_alpha(rgb, paper)
     labels, boxes = components(art)
@@ -237,6 +267,24 @@ def share_base(frames, under_rows):
     return frames, (left, rows.min() - margin, right, rows.max())
 
 
+def cut_floor(frames):
+    """Cut every frame at frame zero's bust floor."""
+    floor = np.nonzero(frames[0][..., 3].max(1) > 128)[0].max()
+    for cell in frames:
+        cell[floor - 3 :] = 0
+    return frames
+
+
+def union_footprint(frames):
+    """Bounding box of everything any frame paints, with a small margin."""
+    occupied = np.zeros(frames[0].shape[:2], bool)
+    for cell in frames:
+        occupied |= cell[..., 3] > 8
+    rows, cols = np.nonzero(occupied)
+    margin = 3
+    return cols.min() - margin, rows.min() - margin, cols.max() + margin, rows.max()
+
+
 def layout(frames, footprint):
     """Centre the shared footprint in each 512 px cell of the 3x2 source sheet."""
     left, top, right, bottom = footprint
@@ -282,14 +330,27 @@ def register(patches, heights, scale):
 def main():
     """Extract, register and lay out the picked heads."""
     args = parse_args()
-    color, alpha, labels, boxes = load_sheet(args.sheet, args.pockets)
+    color, alpha, labels, boxes = load_sheet(args.sheet, args.pockets, args.mirror)
     if args.list:
+        width = color.shape[1]
         for box in boxes:
-            print(f"box x{box[0]}-{box[2]} y{box[1]}-{box[3]} area {box[4]}")
+            left, right = box[0], box[2]
+            if args.mirror:
+                left, right = width - right, width - left
+            print(f"box x{left}-{right} y{box[1]}-{box[3]} area {box[4]}")
         return
-    patches, heights = head_patches(args.pick, color, alpha, labels, boxes)
+    picks = args.pick
+    if args.mirror:
+        width = color.shape[1]
+        picks = [f"{width - 1 - int(x)},{y}" for x, y in (p.split(",") for p in picks)]
+    patches, heights = head_patches(picks, color, alpha, labels, boxes)
     frames = register(patches, heights, args.scale)
-    frames, footprint = share_base(frames, args.under)
+    if args.captain:
+        captain = portrait_registration.CAPTAINS[args.captain]
+        frames = portrait_registration.composite(cut_floor(frames), captain)
+        footprint = union_footprint(frames)
+    else:
+        frames, footprint = share_base(frames, args.under)
     out = layout(frames, footprint)
     out.save(args.out)
     if args.preview:

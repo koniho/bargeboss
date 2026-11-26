@@ -19,9 +19,11 @@ sheets are not committed. The repository keeps the processed alpha sources
 cells) and the runtime sheets `assets/sprites/portrait-captain-{whitney-v1,wesley-v1,dot-v2}.png`
 (576x384, 192 px cells).
 
-- **Whitney:** dark brown top-knot bun with loose strands, big dark square sunglasses, wide
-  grin, olive hooded utility jacket over a black tee, orange-tan crossbody strap. Her blink
-  frame sits behind the lenses and is almost identical to neutral; that is intended.
+- **Whitney:** dark brown top-knot bun with loose strands, big dark square sunglasses with gold
+  trim, wide grin, olive hooded utility jacket over a black tee, orange-tan crossbody strap. Her
+  current sheet (supplied 2026-11-26, replacing the first one) draws her facing left; it is
+  mirrored on extraction so she faces right like Wesley and Dot. Her eyes show faintly through
+  the lenses, so blink, mad and wince change only the lens interior and the skin above.
 - **Wesley:** short greying brown hair, blue eyes, big confident grin, navy hooded nautical
   jacket with an orange/red life-vest panel and an anchor patch, sunglasses hung at the collar.
 - **Dot:** retired school lunch lady, deep warm brown skin, floral headwrap over grey curls,
@@ -48,31 +50,57 @@ unused for now; `PlayerPortrait` keeps its six-frame contract shared with the HU
 `tools/extract_sheet_portraits.py` keys out the near-white paper by flood-filling it from the
 sheet border (the ink outline stops the fill), derives a soft edge alpha and removes the paper
 blended into edge pixels, and selects heads by connected component, which drops the caption
-pills, banners and effect marks. Rows are drawn at slightly different sizes and poses, so
-each frame gets one uniform scale (within 6% of its head-height ratio), a small rotation (up to
-10 degrees) and an offset that best match frame zero's softened ink lines by normalized
-cross-correlation. No frame is stretched non-uniformly. Every frame then takes frame zero's
-bust base (the lowest 44 px, blended over 16 px, plus frame zero's bust under any gap a
-rotation exposes) and is cropped to frame zero's footprint, so `tools/PackGavinPortrait.java`
-registers all six at base (95.5, 182) and `PortraitRegistration` needs no per-frame offsets.
+pills, banners and effect marks. `--mirror` flips the sheet left-right first (pick points stay in
+sheet coordinates). Each frame then gets one uniform scale, a small rotation and an offset that
+best match frame zero's softened ink lines (coarse registration).
 
-Rebuild (the sheet paths are the user's local copies):
+The rows of a sheet are drawn at different head sizes and angles (mad and wince up to 5% larger
+and a degree or two of tilt), so coarse registration alone left the head swimming by 1-4 px at
+192 px whenever the HUD swapped frames. With `--captain NAME` the tool therefore rebuilds every
+expression frame on top of the neutral frame (`tools/portrait_registration.py`):
+
+1. The frame is registered to neutral by masked affine ECC over a pyramid, on the static head
+   only (hair, headwear, ears, glasses, jacket; eyes, brows, mouth and the copied base band
+   masked out).
+2. Each face feature (an eyes/brows ellipse and a mouth/jaw ellipse, in fractions of the neutral
+   bounding box, per captain in `CAPTAINS`) is registered on its own anchors: the neutral
+   glasses (an exhaustive rotation/scale search with masked edge template matching, then ECC,
+   keeping whichever matches the rims better) or nearby static areas such as the nose, cheek
+   and ear. The feature is warped onto the neutral face and blended in with a feathered mask.
+   Eye features stay inside the neutral silhouette; only the mouth may reshape the jaw line.
+3. The neutral glasses are laid back on top: Dot's whole wire frame (her expressions' own rims
+   are inpainted away first, since mad and wince draw them at another tilt), and the outer band
+   and lens glints of Whitney's sunglasses, so the eyes behind her lenses still change.
+
+Everything outside the feature ellipses is the neutral frame's pixels, so the outline, hair,
+glasses, ears, earrings and shoulders are pixel-identical in every frame. The sheet is cut at the
+neutral bust floor and laid out on the union footprint, `tools/PackGavinPortrait.java` registers
+all six cells identically at base (96, 182) (Wesley 95.5, 182), and `PortraitRegistration`
+carries no per-frame offsets for the captains. `PlayerPortrait` keeps its breathing rise running
+through every state so an idle-to-talk swap does not drop the bust; the deliberate mad/wince
+shake is unchanged.
+
+Rebuild everything with one command (the sheet paths are the user's local copies, never
+committed; Java must be on `PATH`):
 
 ```sh
-python3 tools/extract_sheet_portraits.py SHEET --list      # component boxes on the sheet
-python3 tools/extract_sheet_portraits.py dot-sheet.png docs/art-studies/captains/dot-source-v2.png \
-  --pick 460,200 820,200 650,470 1420,200 380,750 1240,470
-python3 tools/extract_sheet_portraits.py wesley-sheet.png docs/art-studies/captains/wesley-source-v1.png \
-  --scale 2.3 --pick 460,240 830,240 660,510 1420,240 370,790 1230,510
-python3 tools/extract_sheet_portraits.py whitney-sheet.png docs/art-studies/captains/whitney-source-v1.png --pockets 0.5 \
-  --pick 470,230 830,230 660,500 1420,230 360,770 1230,500
-for n in whitney-v1 wesley-v1 dot-v2; do
-  java -cp build/check com.bargeboss.game.PackGavinPortrait \
-    docs/art-studies/captains/${n%-*}-source-${n##*-}.png assets/sprites/portrait-captain-$n.png
-done
+tools/rebuild-captain-portraits.sh WHITNEY_SHEET WESLEY_SHEET DOT_SHEET
 ```
 
-Each `--pick` point lies inside one head, in runtime frame order.
+It writes `docs/art-studies/captains/*-source-*.png`, packs `assets/sprites/portrait-captain-*.png`
+and prints each sheet's static-region residuals (offset, rotation, scale, RMS displacement and
+mean static pixel difference of every frame against neutral; all zero after compositing). The
+presets carry the picks (Whitney `--mirror --scale 2.3 --pockets 0.5`, Wesley `--scale 2.3`,
+Dot `--scale 2.6`). For a new sheet:
+
+```sh
+python3 tools/extract_sheet_portraits.py SHEET --list [--mirror]   # component boxes on the sheet
+python3 tools/portrait_registration.py assets/sprites/portrait-captain-dot-v2.png dot  # residuals
+python3 tools/captain_portrait_review.py out/captain-registration after  # flip/diff/GIF renders
+```
+
+Each `--pick` point lies inside one head, in runtime frame order. A new captain needs a
+`CAPTAINS` entry: picks, scale, feature ellipses and anchors, and a glasses box if any.
 
 ## Review
 
