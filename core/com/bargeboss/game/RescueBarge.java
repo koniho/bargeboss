@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Flingable rings and swimmer return/boarding, independent of renderer/platform. */
 final class RescueBarge {
-    static final int RINGS=32,FLIGHT=48,CLIMB=75,HURT=90;
+    static final int RINGS=32,FLIGHT=48,CLIMB=75,HURT=90,VANISH=30;
     static final float RANGE=240,CATCH_RADIUS=38;
     final float[] x=new float[RINGS],y=new float[RINGS],z=new float[RINGS],sx=new float[RINGS],sy=new float[RINGS],tx=new float[RINGS],ty=new float[RINGS];
     final int[] age=new int[RINGS],phase=new int[RINGS],person=new int[RINGS];
@@ -37,18 +37,21 @@ final class RescueBarge {
         }
         for(int i=0;i<MontroseRescue.PEOPLE;i++){
             if(r.state[i]==4){seat(r,i);continue;}
-            if(r.state[i]==5){if(++timer[i]>=HURT){r.state[i]=6;r.failed=true;}continue;}
-            if(r.state[i]==6)continue;
+            // A struck swimmer thrashes, then blinks out; the rescue carries on without them.
+            if(r.state[i]==5){if(++timer[i]>=HURT){r.state[i]=6;g.tell("SWIMMER LOST / "+(g.quota()-g.delivered)+" STILL IN THE WATER");}continue;}
+            if(r.state[i]==6){if(timer[i]<HURT+VANISH)timer[i]++;continue;}
             // Slow, deliberate boarding is exempt; treading/swimming casualties are not.
             if(g.tug.hit(r.x[i],r.y[i],3) || boat.hit(r.x[i],r.y[i],1) && (r.state[i]<2 || boat.speed()>8)){
-                r.state[i]=5;r.found[i]=true;timer[i]=0;r.flash[i]=HURT;if(ring[i]>=0)phase[ring[i]]=0;g.lost++;g.haptic(Game.HAPTIC_IMPACT);g.tell("SWIMMER HURT / STOP THE BOAT!");continue;
+                r.state[i]=5;r.found[i]=true;timer[i]=0;r.flash[i]=HURT;if(ring[i]>=0)phase[ring[i]]=0;g.lost++;g.haptic(Game.HAPTIC_IMPACT);g.sounds.yell();
+                RiverCamera cam=g.layout.camera;g.splashes.shake.hit(.6f,cam.screenX(g.tug.vx,g.tug.vy)-cam.screenX(0,0),cam.screenY(g.tug.vx,g.tug.vy)-cam.screenY(0,0),true);
+                PlayerPortrait.wince(g);g.tell("SWIMMER HIT! SLOW DOWN NEAR PEOPLE");continue;
             }
             if(r.state[i]==1){int k=ring[i];if(move(r,i,x[k],y[k],12)<2){r.state[i]=2;r.flash[i]=60;}}
             if(r.state[i]==2){int k=ring[i];float d=move(r,i,boardX(),boardY(),10);x[k]=r.x[i];y[k]=r.y[i];
                 if(d<6 && boat.speed()<8){r.state[i]=3;timer[i]=0;}}
             if(r.state[i]==3){float t=Math.min(1,++timer[i]/(float)CLIMB);r.x[i]=localX(boat,-12,boat.radius+5-13*t);r.y[i]=localY(boat,-12,boat.radius+5-13*t);
                 if(ring[i]>=0){x[ring[i]]=r.x[i];y[ring[i]]=r.y[i];}
-                if(timer[i]>=CLIMB){r.state[i]=4;if(ring[i]>=0)phase[ring[i]]=0;g.delivered++;g.score+=100;g.haptic(Game.HAPTIC_SUCCESS);g.tell("SURVIVOR ABOARD / "+g.delivered+" OF 20");seat(r,i);}
+                if(timer[i]>=CLIMB){r.state[i]=4;if(ring[i]>=0)phase[ring[i]]=0;g.delivered++;g.score+=100;g.haptic(Game.HAPTIC_SUCCESS);g.tell("SURVIVOR ABOARD / "+g.delivered+" OF "+g.quota());seat(r,i);}
             }
         }
     }

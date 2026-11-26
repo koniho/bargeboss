@@ -21,12 +21,15 @@ public final class SwimmerModel {
     public void draw(Game g,Painter p,int id){
         MontroseRescue r=g.rescue;camera=g.layout.camera;wx=r.x[id];wy=r.y[id];bob=bob(g.visualTicks,id)+r.barge.rise(r,id)+(r.state[id]==3 || r.state[id]==4?WaterSurface.lift(g,r.barge.boat):0);count=0;
         lighting=g.lighting();lights=MooredBoatLight.lights(g,wx,wy,bob);
-        float phase=phase(r.state[id]==5?g.visualTicks*3:g.visualTicks,id),wave=(float)StrictMath.sin(phase),other=(float)StrictMath.sin(phase+1.7f);
+        boolean hurt=r.state[id]==5;
+        // Struck: frantic, out-of-sync thrashing that bobs the whole body and spins it about.
+        float phase=phase(hurt?g.visualTicks*7:g.visualTicks,id),wave=(float)StrictMath.sin(phase),other=(float)StrictMath.sin(phase*(hurt?1.37f:1)+1.7f);
+        if(hurt){int t=r.barge.timer[id];bob+=.9f*Math.abs((float)StrictMath.sin(t*.45f))-.012f*t;wave*=1.6f;other*=1.6f;}
         float relief=r.state[id]==2 || r.state[id]==4?1:0;
         // Gentle heading changes retain a stable rescue/hit anchor. Different phases avoid synchronized crowds.
-        float heading=r.state[id]==1 || r.state[id]==2?r.barge.heading[id]:r.state[id]==3 || r.state[id]==4?r.barge.boat.angle:id*.71f+.16f*(float)StrictMath.sin(phase*.23f);
+        float heading=hurt?id*.71f+r.barge.timer[id]*.21f+.6f*(float)StrictMath.sin(r.barge.timer[id]*.5f):r.state[id]==1 || r.state[id]==2?r.barge.heading[id]:r.state[id]==3 || r.state[id]==4?r.barge.boat.angle:id*.71f+.16f*(float)StrictMath.sin(phase*.23f);
         cosine=(float)StrictMath.cos(heading);sine=(float)StrictMath.sin(heading);
-        int skin=r.state[id]==5 && r.barge.timer[id]%10<5?0xffffa074:SKIN[id%SKIN.length],suit=id%2==0?0xffd27943:0xff4c9caa;
+        int skin=hurt && r.barge.timer[id]%8<4?0xffff5a4a:SKIN[id%SKIN.length],suit=id%2==0?0xffd27943:0xff4c9caa;
         rounded(0,0,-1.3f,1.25f,.8f,3.3f,suit);
         box(0,-.05f,2.05f,.52f,.5f,.6f,skin);
         rounded(0,0,2.65f,.92f,.77f,1.5f,skin);

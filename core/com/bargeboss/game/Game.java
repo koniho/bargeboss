@@ -136,7 +136,7 @@ public final class Game {
     public int challengeId,earnedStars,challengePage;
     public boolean rankPromoted;
     public Game() { reset(); mode=TITLE; }
-    public int quota() { return calumetStage()?voyage.quota():Challenges.quota(challengeId); }
+    public int quota() { return calumetStage()?voyage.quota():MontroseRescue.swimmers(this)?Challenges.quota(challengeId)-rescue.struck():Challenges.quota(challengeId); }
     public int shiftTicks() { return calumetStage()?6000*60:Challenges.shiftTicks(challengeId); }
     /** One title rule for every stage's HUD and finish screen: LOCATION / JOB (job omitted when it is the location). */
     public String challengeTitle() {
@@ -196,7 +196,7 @@ public final class Game {
     public boolean correctOrder(Body b) { return true; }
     public int goalProgress() { return calumetStage()?voyage.progress(this):lockStage()?lock.clearedCount(this):delivered; }
     public boolean goalComplete() { return tutorial==null && (calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
-    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && rescue.failed || lockStage() && lock.failed(); }
+    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || lockStage() && lock.failed(); }
     public String goalStatus() {
         if(calumetStage())return voyage.status();
         if(indianaStage())return "TOW STEEL PAST HICK TOWER / SOUTH FORK MILL";
@@ -1091,7 +1091,7 @@ public final class Game {
     private void advanceMontroseJob(){
         if(montroseComplete || delivered<quota() || goalFailed())return;
         if(challengeId==Challenges.RAFT_RESCUE && rescue.radio.pendingThanks())return;
-        int before=career.rank();career.record(challengeId,Challenges.stars(challengeId,delivered,lost,hull),score-montroseJobScore);rankPromoted|=career.rank()>before;
+        int before=career.rank();career.record(challengeId,Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull),score-montroseJobScore);rankPromoted|=career.rank()>before;
         if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;

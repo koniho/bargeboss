@@ -43,6 +43,8 @@ public final class MontroseRescue {
     public int aiming=-1,flying=-1,flightTicks,cooldown;
     public float fromX,fromY,toX,toY;
     public boolean failed;
+    /** Swimmers struck by a hull: out of the rescue, so they leave the quota. */
+    public int struck(){int n=0;for(int s:state)if(s>=5)n++;return n;}
     public static boolean cruisers(Game g){return g.tutorial==null && g.challengeId==Challenges.RAFT_RESCUE;}
     public static boolean swimmers(Game g){return g.tutorial==null && g.challengeId==Challenges.SWIMMER_RESCUE;}
     public static boolean active(Game g){return cruisers(g)||swimmers(g);}

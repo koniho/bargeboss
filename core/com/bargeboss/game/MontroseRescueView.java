@@ -30,7 +30,7 @@ public final class MontroseRescueView {
     public static int[] ordered(Game g){
         if(!MontroseRescue.swimmers(g))return new int[0];MontroseRescue r=g.rescue;
         int[] ids=new int[MontroseRescue.PEOPLE+RescueBarge.RINGS];int count=0;
-        for(int i=0;i<MontroseRescue.PEOPLE;i++)if(r.found[i] && r.state[i]!=4 && r.state[i]!=6)ids[count++]=i;
+        for(int i=0;i<MontroseRescue.PEOPLE;i++)if(r.found[i] && r.state[i]!=4 && (r.state[i]!=6 || r.barge.timer[i]<RescueBarge.HURT+RescueBarge.VANISH))ids[count++]=i;
         for(int i=0;i<RescueBarge.RINGS;i++)if(r.barge.phase[i]>0)ids[count++]=MontroseRescue.PEOPLE+i;
         for(int i=1;i<count;i++)for(int j=i;j>0 && depth(g,ids[j])<depth(g,ids[j-1]);j--){int n=ids[j];ids[j]=ids[j-1];ids[j-1]=n;}
         return java.util.Arrays.copyOf(ids,count);
@@ -40,7 +40,21 @@ public final class MontroseRescueView {
         float wx=i>=20?r.barge.x[i-20]:r.x[i],wy=i>=20?r.barge.y[i-20]:r.y[i],x=c.screenX(wx,wy),y=c.screenY(wx,wy);
         if(x< -60 || x>g.layout.width+60 || y< -100 || y>g.layout.height+100)return;
         if(i>=20){r.barge.drawRing(g,p,i-20);return;}
-        if(r.state[i]==5 && r.barge.timer[i]%10<5)p=new OpacityPainter(p,.3f);
+        int t=r.barge.timer[i];float s=c.scale;
+        if(r.state[i]==6){
+            // Vanish: a white pop and a spreading ring where the swimmer was.
+            float u=(t-RescueBarge.HURT)/(float)RescueBarge.VANISH,ring=(5+u*18)*s;
+            p.material(x,y,ring*2,0,0,ring*2*RiverCamera.DEPTH,EffectMaterial.RING,.06f,1,SoftCue.alpha(0xffffffff,(1-u)*.8f));
+            if(u<.3f)p.material(x,y-4*s,14*s,0,0,12*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,1-u/.3f));
+            return;
+        }
+        if(r.state[i]==5){
+            // Impact: a hot flash and splash ring, then thrashing with a flicker that speeds up to the vanish.
+            if(t<14){float f=1-t/14f;p.material(x,y-4*s,30*s,0,0,24*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffff5a3c,f*.85f));
+                float ring=(5+t*2.2f)*s;p.material(x,y,ring*2,0,0,ring*2*RiverCamera.DEPTH,EffectMaterial.RING,.07f,1,SoftCue.alpha(0xffeaf7ff,f));}
+            int period=t<45?10:t<70?6:3;
+            if(t>=30 && t%period<period/2)p=new OpacityPainter(p,.25f);
+        }
         r.swimmerModel.draw(g,p,i);
     }
 }

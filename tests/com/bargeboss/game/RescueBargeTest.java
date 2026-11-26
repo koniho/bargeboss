@@ -33,7 +33,10 @@ public final class RescueBargeTest {
   g=scene();r=g.rescue;g.tug.x=r.x[0];g.tug.y=r.y[0];g.rescue.step(g);
   check(r.state[0]==5 && !g.goalFailed() && g.lost==1,"Impact starts visible injury instead of instant failure");
   ticks(g,RescueBarge.HURT-1);check(r.state[0]==5,"Hurt swimmer remains during flailing interval");ticks(g,1);
-  check(r.state[0]==6 && r.failed && g.goalFailed(),"Hurt swimmer disappears before failure");
+  check(r.state[0]==6 && !r.failed && !g.goalFailed(),"Hurt swimmer vanishes and the rescue carries on");
+  check(g.quota()==19,"a lost swimmer leaves the quota");
+  ticks(g,RescueBarge.VANISH+5);check(r.barge.timer[0]==RescueBarge.HURT+RescueBarge.VANISH,"vanish effect clock stops");
+  g=scene();r=g.rescue;g.tug.x=r.x[0];g.tug.y=r.y[0];g.rescue.step(g);check(SoundEffects.cue(g)==SoundEffects.SWIMMER_YELL,"a struck swimmer yells");
   System.out.println("Rescue barge tow gate, public free fling, misses, swim/ring/return/climb,20 aboard and delayed casualty passed");
  }
  public static void main(String[] args){run();}
