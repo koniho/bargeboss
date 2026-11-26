@@ -20,6 +20,13 @@ final class CruiserView {
             float e=lights.energy[n];p.normalSprite(a,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],e*(1-mix));
             if(mix>.001f)p.normalSprite(next,x,y,size,size,lights.x[n],lights.y[n],lights.z[n],lights.radius[n],lights.color[n],e*mix);
         }
+        if(b.neon!=0){
+            // Custom paint: flood the hull with its colour from overhead and a low side light (native lit sprites).
+            int frameA=a,frameB=next;float wobble=.85f+.15f*(float)StrictMath.sin(g.visualTicks*.21f+b.id);
+            p.normalSprite(frameA,x,y,size,size,0,0,46,140,b.neon,alpha*(1-mix)*wobble);
+            p.normalSprite(frameA,x,y,size,size,-30,30,14,90,b.neon,alpha*(1-mix)*.8f);
+            if(mix>.001f){p.normalSprite(frameB,x,y,size,size,0,0,46,140,b.neon,alpha*mix*wobble);p.normalSprite(frameB,x,y,size,size,-30,30,14,90,b.neon,alpha*mix*.8f);}
+        }
         VesselNavigationLights.draw(g,world,b,false,heave,true);
     }
     private CruiserView(){}

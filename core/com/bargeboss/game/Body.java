@@ -28,6 +28,8 @@ public final class Body implements Watercraft {
     public boolean traffic;public int hullKind=-1;
     /** Height a travel-lift job is hoisting this hull to (0: afloat); see MontroseHaulout.vesselRise. */
     public float liftRise;
+    /** Loud custom paint (ARGB, 0 = factory finish): CruiserView floods the hull with this colour. */
+    public int neon;
     public Body(int id, int berth, float x, float y, float angle) {
         this(id,berth,x,y,angle,false);
     }
