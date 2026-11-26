@@ -21,6 +21,9 @@ public final class Body implements Watercraft {
     public boolean floatingInitialized;
     public float tiedX,tiedY,tiedAngle;
     public boolean active = true, lineAttached, awaitingPickup, deliveryRecorded;
+    /** Non-player hull health (0..100) and sinking state; see HullDamage. The tug uses Game.hull. */
+    public int health=100,healthBefore=100,damagedTick=-1000,sinkTicks;
+    public boolean sunk;
     public Body(int id, int berth, float x, float y, float angle) {
         this(id,berth,x,y,angle,false);
     }

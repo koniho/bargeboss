@@ -1,0 +1,181 @@
+package com.bargeboss.game;
+
+/** Health of every watercraft other than the player's tug (whose hull stays in {@link Game#hull}),
+ * the player's property-damage record, and the sinking sequence.
+ *
+ * Rules (shared by every level):
+ * - A hard contact (closing speed at least {@link #HARD}, the tug's own threshold) costs a vessel
+ *   {@link #HIT} health, at most once per {@link #COOLDOWN} ticks. Practice tutorials take no damage.
+ * - Record: own = hull the tug lost; others = health every other vessel lost plus hard hits on
+ *   moored marina boats.
+ * - At 0 health a vessel sinks over {@link #SINK} ticks (flash, shake, smoke, ripples, lowered under
+ *   its waterline), then leaves play. Mission cargo is required, so a sunk cargo vessel fails the
+ *   mission FAIL_DELAY ticks after it goes under. */
+final class HullDamage {
+    private HullDamage(){}
+    static final int HIT=9,COOLDOWN=75,SINK=150;
+    static final float HARD=78;
+    /** Health shown as recently lost (white chip) for this many ticks after a hit. */
+    static final int CHIP=40;
+
+    /** One new contact between a and b (b may be null for walls) at a closing speed. */
+    static void contact(Game g,Watercraft a,Watercraft b,float closing){
+        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD))return;
+        hit(g,a);hit(g,b);
+    }
+    private static void hit(Game g,Watercraft w){
+        if(!(w instanceof Body) || w==g.tug)return;
+        Body b=(Body)w;
+        if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return;
+        b.healthBefore=b.health;b.health=Math.max(0,b.health-HIT);b.damagedTick=g.ticks;
+        g.othersDamage+=b.healthBefore-b.health;
+        if(b.health==0)sink(g,b);
+    }
+    /** A hard hit on someone's moored boat (they have no health of their own). */
+    static void moored(Game g,float closing){
+        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || g.ticks-g.mooredDamageTick<COOLDOWN)return;
+        g.mooredDamageTick=g.ticks;g.othersDamage+=HIT;
+    }
+    private static void sink(Game g,Body b){
+        b.sinkTicks=1;
+        if(g.tow.incoming(b)!=null || b.lineAttached)g.tow.detachBody(g,b);
+        if(g.ropeBody==b){g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=null;}
+        g.abilities.forget(b);
+        RiverCamera c=g.layout.camera;
+        g.splashes.shake.hit(1,c.screenX(1,1)-c.screenX(0,0),c.screenY(1,1)-c.screenY(0,0),true);
+        g.haptic(Game.HAPTIC_IMPACT);
+        g.tell(b.cruiser || b.yacht?"BOAT SINKING!":"BARGE SINKING!");
+    }
+    /** Secondary explosions while the hull goes down, and the final plunge. */
+    static final int[] POPS={42,84};
+    static final int PLUNGE=SINK-24,SLICK=240,FAIL_DELAY=45;
+    private static final int[] BARGE_DEBRIS={0xff7a4a32,0xff4a3426,0xff9c6a46,0xffb0562c,0xff5d5048},CRAFT_DEBRIS={0xffe9ecef,0xffb9c3cc,0xff2f5d8a,0xff8a96a3,0xff4b4f55};
+    /** Fixed-step sinking: the hull loses way and rolls, vents smoke, pops twice, plunges, then leaves
+     * play; its oil slick lingers for SLICK ticks afterwards. */
+    static void step(Game g){
+        for(Body b:g.cargo){
+            if(b==null || b.sinkTicks<=0)continue;
+            if(!b.active){
+                if(b.sunk && b.sinkTicks<SINK+SLICK)b.sinkTicks++;
+                // Hold the fail screen a beat so the wreck's slick and boil are seen.
+                if(b.sunk && !b.deliveryRecorded && b.sinkTicks>=SINK+FAIL_DELAY)g.cargoSunk=true;
+                continue;
+            }
+            int t=++b.sinkTicks;
+            b.vx*=.95f;b.vy*=.95f;
+            // Listing roll: the stricken hull swings, harder as it settles.
+            b.spin=b.spin*.9f+(float)StrictMath.sin(t*.13f)*.35f*progress(b);
+            if(t==2)for(int k=-1;k<=1;k++)g.smoke.equipment(g,b,k*b.half*.6f,0,10/ArticulatedModel.Z_SCALE);
+            if(t<PLUNGE && t%6==0){
+                float side=((t/6)%3-1)*b.half*.5f;
+                g.smoke.equipment(g,b,side,0,(14-sinkDepth(b)*.4f)/ArticulatedModel.Z_SCALE);
+            }
+            for(int pop:POPS)if(t==pop){shake(g,.55f);g.haptic(Game.HAPTIC_IMPACT);g.smoke.equipment(g,b,0,0,8/ArticulatedModel.Z_SCALE);}
+            if(t==PLUNGE){shake(g,.7f);g.haptic(Game.HAPTIC_IMPACT);}
+            if(t>=SINK){b.active=false;b.sunk=true;}
+        }
+    }
+    private static void shake(Game g,float power){
+        RiverCamera c=g.layout.camera;g.splashes.shake.hit(power,c.screenX(1,-1)-c.screenX(0,0),c.screenY(1,-1)-c.screenY(0,0),true);
+    }
+    static float progress(Body b){return b.sinkTicks<=0?0:Math.min(1,b.sinkTicks/(float)SINK);}
+    /** World units the hull has settled below its float line (eased; most of the drop comes late). */
+    static float sinkDepth(Body b){float t=progress(b);return t*t*(2*b.radius+26);}
+
+    private static float rand(Body b,int k,int salt){int h=(b.id*7919+k*104729+salt*31337)*0x45d9f3b;h=(h^(h>>>16))*0x45d9f3b;h^=h>>>16;return (h&65535)/65535f;}
+
+    /** Fireball, debris, sparks, pops, plunge geyser, rings, bubbles, slick and caption, over the world. */
+    static void effects(Game g,Painter p){
+        RiverCamera c=g.layout.camera;
+        for(Body b:g.cargo){
+            if(b==null || b.sinkTicks<=0 || !b.active && !b.sunk)continue;
+            int t=b.sinkTicks;float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y),s=c.scale,hull=b.half+b.radius;
+            float pad=(hull+160)*s;
+            if(sx<-pad || sx>g.layout.width+pad || sy<-pad || sy>g.layout.height+pad)continue;
+            float zs=ArticulatedModel.Z_SCALE*s;
+            // Lingering oil slick: a dark sheen with a faint rainbow rim, spreading and thinning.
+            float slick=Physics.clamp((t-PLUNGE)/40f,0,1)*(1-Physics.clamp((t-SINK-SLICK+80)/80f,0,1));
+            if(slick>0){
+                float r=hull*(1.1f+.9f*Physics.clamp((t-PLUNGE)/(float)(SLICK),0,1))*s;
+                p.material(sx,sy,r*2.6f,0,0,r*2.6f*RiverCamera.DEPTH,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff05080c,.55f*slick));
+                p.material(sx,sy,r*2.2f,0,0,r*2.2f*RiverCamera.DEPTH,EffectMaterial.RING,.06f,1,SoftCue.alpha(0xff8fd0c8,.22f*slick));
+                p.material(sx,sy,r*1.7f,0,0,r*1.7f*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(0xffc49be0,.16f*slick));
+            }
+            // Rings: a wave every 24 ticks while going down, a big one at the plunge.
+            for(int k=0;k<7;k++){
+                int age=t-k*24;if(age<0 || age>=60 || k*24>PLUNGE)continue;
+                float u=age/60f,r=hull*(.8f+(1-(1-u)*(1-u))*2.2f)*s;
+                p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.035f,1,SoftCue.alpha(0xffeaf7ff,(1-u)*(1-u)*.6f));
+            }
+            int plunge=t-PLUNGE;
+            if(plunge>=0 && plunge<70){
+                float u=plunge/70f,r=hull*(1+(1-(1-u)*(1-u))*3.6f)*s;
+                p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(0xffffffff,(1-u)*(1-u)*.8f));
+            }
+            // Air boiling up around the settling hull (and over the wreck for a while after).
+            float boil=t<SINK?1:1-Physics.clamp((t-SINK)/120f,0,1);
+            if(boil>0)for(int k=0;k<12;k++){
+                int age=(t+k*13)%40;float u=age/40f,a=k*2.39996f;
+                float bx=b.x+(float)StrictMath.cos(a)*(b.half*.8f)*((k%3+1)/3f),by=b.y+(float)StrictMath.sin(a)*(b.radius*.9f);
+                float size=(2.5f+u*5)*s;
+                p.spriteAffine(SpriteAtlas.SPLASH,k%4,c.screenX(bx,by),c.screenY(bx,by)-u*6*s,size*2,0,0,size*1.4f,(1-u)*.7f*boil);
+            }
+            if(t>=SINK)continue;
+            // Opening blast: fireball, debris and sparks, then two smaller pops.
+            explosion(p,c,b,t,0,1,sx,sy,zs);
+            for(int i=0;i<POPS.length;i++)explosion(p,c,b,t-POPS[i],i+1,.5f,sx,sy,zs);
+            // Plunge geyser: a column of spray thrown up as the hull goes under.
+            if(plunge>=0 && plunge<26){
+                float u=plunge/26f;
+                for(int k=0;k<9;k++){
+                    float h=(1-(1-u)*(1-u))*(40+rand(b,k,7)*45)*(1-u*.35f),ox=(rand(b,k,8)-.5f)*hull*1.1f,oy=(rand(b,k,9)-.5f)*b.radius;
+                    float px=c.screenX(b.x+ox,b.y+oy),py=c.screenY(b.x+ox,b.y+oy)-h*zs,size=(7+rand(b,k,10)*7)*s*(1+u);
+                    p.spriteAffine(SpriteAtlas.SPLASH,k%4,px,py,size*1.4f,-size*.8f,size*.6f,size*1.2f,(1-u)*.9f);
+                }
+            }
+            // Arcade caption: SUNK! pops in, floats up and fades.
+            if(t>=PLUNGE-10){
+                int a=t-(PLUNGE-10);float u=Physics.clamp(a/34f,0,1),pop=a<6?1.5f-a/12f:1;
+                float size=Math.min(34,Math.max(18,22*s))*pop,y=sy-(46+u*30)*s;
+                int alpha=Math.round(255*(1-Physics.clamp((a-18)/16f,0,1)));
+                Lettering.center(p,"SUNK!",sx+1.5f,y+1.5f,size,(alpha*3/4<<24)|0x140608);
+                Lettering.center(p,"SUNK!",sx,y,size,(alpha<<24)|0xff5a3c);
+            }
+        }
+    }
+    /** One blast `age` ticks old (none before 0): scale 1 is the opening explosion. */
+    private static void explosion(Painter p,RiverCamera c,Body b,int age,int salt,float scale,float sx,float sy,float zs){
+        if(age<0 || age>=70)return;
+        float s=c.scale,hull=b.half+b.radius,sec=age/60f;
+        if(age<16){
+            float f=1-age/16f,size=hull*4.6f*scale*s*(1.25f-.25f*f);
+            p.material(sx,sy-10*s,size,0,0,size*.75f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffff8a2b,f*.95f));
+            p.material(sx,sy-12*s,size*.55f,0,0,size*.42f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffe6a8,f));
+            if(age<5)p.material(sx,sy-12*s,size*.25f,0,0,size*.2f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,1-age/5f));
+        }
+        int pieces=scale>=1?14:5;
+        for(int k=0;k<pieces;k++){
+            float a=rand(b,k,salt*3+1)*6.2831855f,speed=(40+rand(b,k,salt*3+2)*70)*scale,vz=(45+rand(b,k,salt*3+3)*65)*scale;
+            float z=8+vz*sec-48*sec*sec;if(z<0)continue;
+            float x=b.x+(float)StrictMath.cos(a)*speed*sec,y=b.y+(float)StrictMath.sin(a)*speed*sec;
+            float px=c.screenX(x,y),py=c.screenY(x,y)-z*zs;
+            if(k%3==0){
+                // Spark: a short hot streak along its arc.
+                float vx=(float)StrictMath.cos(a)*speed,vy=(float)StrictMath.sin(a)*speed,dz=vz-96*sec,dt=.04f;
+                float tx=c.screenX(x-vx*dt,y-vy*dt),ty=c.screenY(x-vx*dt,y-vy*dt)-(z-dz*dt)*zs;
+                float fade=1-age/70f;
+                p.line(tx,ty,px,py,2.6f*s,SoftCue.alpha(0xffff7a2b,fade));
+                p.line(tx,ty,px,py,1.1f*s,SoftCue.alpha(0xffffefb0,fade));
+            }else{
+                // Tumbling plank or plate in the hull's colours.
+                float spin=age*(.25f+rand(b,k,salt*3+4)*.35f)+k,len=(1.6f+rand(b,k,salt*3+5)*2.6f)*s,w=(.7f+rand(b,k,salt*3+6)*.9f)*s;
+                float cx=(float)StrictMath.cos(spin),cy=(float)StrictMath.sin(spin),fade=Physics.clamp((70-age)/20f,0,1);
+                // The vessel's own materials: fibreglass and trim for pleasure craft, rusted plate and timber for barges.
+                int[] palette=b.cruiser || b.yacht?CRAFT_DEBRIS:BARGE_DEBRIS;int color=palette[k%palette.length];
+                float ex=len+.8f*s,ew=w+.8f*s;
+                p.convexQuad(px-cx*ex-cy*ew,py-cy*ex+cx*ew,px+cx*ex-cy*ew,py+cy*ex+cx*ew,px+cx*ex+cy*ew,py+cy*ex-cx*ew,px-cx*ex+cy*ew,py-cy*ex-cx*ew,SoftCue.alpha(0xff120c0a,.75f*fade));
+                p.convexQuad(px-cx*len-cy*w,py-cy*len+cx*w,px+cx*len-cy*w,py+cy*len+cx*w,px+cx*len+cy*w,py+cy*len-cx*w,px-cx*len+cy*w,py-cy*len-cx*w,SoftCue.alpha(color,fade));
+            }
+        }
+    }
+}

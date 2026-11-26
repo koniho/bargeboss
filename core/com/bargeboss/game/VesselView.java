@@ -12,7 +12,8 @@ public final class VesselView {
     }
     private static void paint(Game g,Painter p,Body b,boolean tug,boolean wake) {
         int tick=g.visualTicks;
-        float bob=WaterSurface.lift(g,b);
+        // A sinking hull settles under its fixed waterline clip.
+        float bob=WaterSurface.lift(g,b)-HullDamage.sinkDepth(b);
         boolean river=p instanceof RiverPainter;
         float hullX=b.x+(river?RiverCamera.riseX(bob):0),hullY=b.y+(river?RiverCamera.riseY(bob):-bob);
         float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);

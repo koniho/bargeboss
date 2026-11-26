@@ -19,10 +19,6 @@ public final class SoundEffects {
         if(value<2 && cue==COMPLETE && age==0)pendingComplete=120;
         cue=value;sequence++;age=0;
     }
-    void impact(float speed){
-        if(!Float.isFinite(speed) || speed<3 || cooldown>0 || cue<2 && age<30)return;
-        impactAge=0;emit(speed<30?BUMP:speed<65?THUD:CRUNCH);cooldown=18;
-    }
     /** Real launch transient, emitted with the rocket; never interrupt instructor speech. */
     void firework(){
         if(cue<2 && age<54 || cue>=BUMP && cue<=TUG_THUD && age<6)return;

@@ -22,8 +22,8 @@ public final class EngineAudioTest {
         g.activeGame().mode=Game.PAUSE;check(!EngineAudio.audible(g),"Paused practice silence");
         g=new Game();g.resetPracticeYard();g.mode=Game.PLAY;g.tug.engineLoad=1;
         float idle=EngineAudio.gain(g,0),working=EngineAudio.gain(g,1),rate=EngineAudio.rate(g,1);
-        g.sounds.impact(90);
-        check(Math.abs(EngineAudio.gain(g,1)-working*.28f)<.00001f,"impact makes room in engine mix immediately");
+        g.sounds.firework();
+        check(Math.abs(EngineAudio.gain(g,1)-working*.28f)<.00001f,"launch transient makes room in engine mix immediately");
         check(EngineAudio.rate(g,1)==rate,"ducking does not change engine speed/pitch");
         previous=0;
         for(int tick=0;tick<24;tick++){

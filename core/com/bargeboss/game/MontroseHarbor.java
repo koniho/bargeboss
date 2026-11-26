@@ -176,7 +176,7 @@ public final class MontroseHarbor {
         float e=b.half+b.radius;float[] region={b.x-e,b.y-e,b.x+e,b.y+e};
         for(int i=0;i<DOCKS.length;i++)if(PolygonWater.overlaps(region,DOCK_BOUNDS[i]))impact=Math.max(impact,PolygonWater.collide(b,DOCKS[i],false,splashes));
     }return impact;}
-    public static float collide(Game g,Body b,CollisionSplashes splashes){if(g.haulout.inLift(b))return 0;float hit=collide(b,splashes);return Math.max(hit,g.mooredFleet.collide(b,splashes));}
+    public static float collide(Game g,Body b,CollisionSplashes splashes){if(g.haulout.inLift(b))return 0;float hit=collide(b,splashes),moored=g.mooredFleet.collide(b,splashes);HullDamage.moored(g,moored);return Math.max(hit,moored);}
     public static boolean fits(Body b){float c=(float)StrictMath.cos(SLIP_ANGLE),s=(float)StrictMath.sin(SLIP_ANGLE);
         for(int i=0;i<3;i++){float dx=b.discX(i)-SLIP_X,dy=b.discY(i)-SLIP_Y;if(Math.abs(dx*c+dy*s)+b.radius>100 || Math.abs(-dx*s+dy*c)+b.radius>40)return false;}
         return Math.abs(StrictMath.sin(b.angle-SLIP_ANGLE))<.23f;

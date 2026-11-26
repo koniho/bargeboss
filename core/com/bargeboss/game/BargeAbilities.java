@@ -17,6 +17,8 @@ public final class BargeAbilities {
     private final int[] life=new int[CAPACITY],color=new int[CAPACITY];
     public void reset(){selected=panelBody=null;blend=0;cancel();visibleTicks=launches=next=screenFlash=0;for(int i=0;i<CAPACITY;i++)life[i]=0;}
     void deselect(){selected=null;visibleTicks=0;cancel();}
+    /** A vessel leaving play (sinking) drops its ability panel and nozzle. */
+    void forget(Body b){if(selected==b)deselect();if(panelBody==b){panelBody=null;blend=0;}}
     public void cancel(){owner=-1;pressed=-1;spraying=false;heldTicks=0;}
     public boolean reveal(Game g,Body b){
         if(b==null || !b.active || b.ability==NONE && b!=g.tug)return false;

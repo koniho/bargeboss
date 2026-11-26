@@ -21,6 +21,7 @@ public final class Renderer {
         WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
+        HullDamage.effects(g,p);HealthBars.draw(g,p);
         g.layout=live;
         HarborView.objective(g,p);
         FeederView.callouts(g,p);

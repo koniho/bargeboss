@@ -164,7 +164,7 @@ public final class ScreenView {
     public static void finish(Game g,Painter p) {
         p=menu(g,p);overlay(p,82,454);
         boolean complete=g.goalComplete() && g.hull>0;
-        heading(p,g.hull<=0?"TUG OUT OF SERVICE":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,840,PAPER);
+        heading(p,g.hull<=0?"TUG OUT OF SERVICE":g.cargoSunk?"VESSEL SUNK":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,840,PAPER);
         text(p,g.challengeTitle(),60,151,12,MUTED);
         captainBadge(p,190,250,1.2f,g.career.stripes());
         headingCenter(p,g.career.rankTitle(),190,328,17,260,GOLD);
@@ -174,6 +174,7 @@ public final class ScreenView {
         metric(p,340,280,"GOAL",g.goalProgress()+" / "+g.quota());
         metric(p,505,280,"HULL",g.hull+"%");
         metric(p,670,280,"SCORE",""+g.score);
+        text(p,"DAMAGE  OWN TUG "+g.ownDamage+"  /  OTHERS' PROPERTY "+g.othersDamage,340,386,10,g.othersDamage+g.ownDamage>0?PAPER:MUTED);
         text(p,"PERSONAL BEST  "+g.career.locationScore(g.challengeId),340,366,10,MUTED);
         boolean next=Challenges.nextStage(g.challengeId)>=0 && g.career.unlocked(Challenges.nextStage(g.challengeId));
         String note=g.lockStage() && g.lock.failed()?g.lock.failure():next?"NEXT HARBOR: "+Challenges.locationTitle(Challenges.nextStage(g.challengeId)):"REPLAY TO IMPROVE YOUR RATING";

@@ -24,6 +24,10 @@ public final class Game {
     public Towline tow=new Towline();
     final SlipMooring slipMooring=new SlipMooring();
     public int towReleases;
+    /** Property-damage record (hull points): the tug's own losses and every other vessel's. */
+    public int ownDamage,othersDamage,mooredDamageTick=-1000;
+    /** A required cargo vessel sank: the mission fails. */
+    public boolean cargoSunk;
     public static final int[] COLORS={0xffefa94a,0xff62c8bd,0xffde7965};
     public static final String[] CARGO_NAMES={"STEEL", "FREIGHT", "BULK"};
     public final Body[] cargo=new Body[9];
@@ -174,7 +178,7 @@ public final class Game {
     public boolean correctOrder(Body b) { return true; }
     public int goalProgress() { return calumetStage()?voyage.progress(this):lockStage()?lock.clearedCount(this):delivered; }
     public boolean goalComplete() { return tutorial==null && (calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
-    public boolean goalFailed() { return hull<=0 || MontroseRescue.swimmers(this) && rescue.failed || lockStage() && lock.failed(); }
+    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && rescue.failed || lockStage() && lock.failed(); }
     public String goalStatus() {
         if(calumetStage())return voyage.status();
         if(indianaStage())return "TOW STEEL PAST HICK TOWER / SOUTH FORK MILL";
@@ -437,7 +441,7 @@ public final class Game {
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
         overview.reset();
-        ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;
+        ticks=score=delivered=lost=combo=spawnIndex=0; hull=100; nextId=1;ownDamage=othersDamage=0;mooredDamageTick=-1000;cargoSunk=false;
         earnedStars=0; rankPromoted=false;pinchZoom.reset();cameraZoomHoldTicks=0;cameraTransit=false;
         if(layout.camera.zoom!=1 || layout.camera.worldTop!=148 || layout.camera.worldRight!=460) layout=new Layout(layout.width,layout.height);
         voyage=new CalumetVoyage();passages=new BridgePassage(this);
@@ -937,7 +941,7 @@ public final class Game {
             montroseArrival.step(this);water.step(this);mooredFleet.step(this);smoke.step(this);buildingFades.step(this);return;
         }
         if(montroseStage())rescue.radioStep(this);
-        if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);
+        if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);HullDamage.step(this);
         if(tutorial!=null){tutorial.fireworks.step(this);tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){
             tutorial.update(this);buoys.step(this);water.step(this);smoke.step(this);buildingFades.step(this);updateCamera();return;
@@ -1294,7 +1298,7 @@ public final class Game {
     private void damage(float speed) {
         if(tutorial!=null) return;
         if(speed<78 || damageCooldown>0) return;
-        hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40; tell("HARD IMPACT - HULL -9");
+        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40; tell("HARD IMPACT - HULL -9");
         impactX=tug.x; impactY=tug.y; impactTicks=45;
         haptic(HAPTIC_IMPACT);
     }

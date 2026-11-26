@@ -6676,3 +6676,25 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   9.92/9.73/9.83 p50 (was 9.65), 59.5–59.7 FPS, 12/3/5 frames > 25 ms (was 4: run-to-run noise).
 - Canonical replay b74b9bf8:2:1350 (was 598248e9): draw trace only; with the texture disabled the
   previous signature is exact. `./check.sh` passes.
+
+## 2026-11-25: Health bars, vessel health/sinking, property-damage record, silent collisions
+
+- `HealthBars`: thin (4 px) bar above every active watercraft, drawn over the world (shaken layout),
+  under the HUD. Player tug: mint (`Game.hull`), pulses toward red with a red glow below 25%. Others:
+  amber (`Body.health`). White chip shows the health just lost, holds 12 ticks, drains by 40.
+- `HullDamage`: every non-tug `Body` loses 9 health per hard contact (closing ≥ 78, the tug's own
+  threshold), once per 75 ticks; practice tutorials take none. Record: `Game.ownDamage` (tug hull lost)
+  and `Game.othersDamage` (others' health lost + hard hits on moored marina boats, once per 75 ticks).
+  Finish screen shows both; heading "VESSEL SUNK" on a sinking failure.
+- Sinking at 0 health (150 ticks): fireball + debris (vessel-material palette) + sparks, two secondary
+  pops (shake + haptic), listing roll, smoke venting, hull settling under its fixed waterline clip
+  (cruisers fade), ring waves, boiling bubbles, plunge geyser + big ring, SUNK! caption, oil slick for
+  240 ticks. Tow lines and ability panels release. Mission cargo is required: `Game.cargoSunk` fails
+  the mission 45 ticks after it goes under.
+- Collision sound removed (`SoundEffects.impact` and its call). Cue slots/assets kept for a future sound.
+- Canonical replay 9748df6b:2:1350 (was b74b9bf8). Bisected: bars/sinking draw and the finish damage
+  line disabled plus the old collision sound restored reproduce b74b9bf8 exactly; the hashed tutorial
+  audio sequence is the only non-draw difference. Score/deliveries unchanged.
+- Developer fixture `sink-demo` (Montrose two-cruiser tow, last-hit cruiser, tug at 20%); checked live on
+  the iOS simulator (`--ios-live-scene=sink-demo`). Note: `ProfileScenarioTest` already fails on
+  `barge-tow` ("fixture not reached") at 26eddee, before this change.

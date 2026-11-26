@@ -5,11 +5,10 @@ public final class CollisionSplashes {
     public static final int CAPACITY=24,STAMPS=6,LIFE=72,COOLDOWN=14;
     private final Watercraft[] first=new Watercraft[CAPACITY],second=new Watercraft[CAPACITY];
     final int[] age=new int[CAPACITY];
-    final float[] originX=new float[CAPACITY],originY=new float[CAPACITY],direction=new float[CAPACITY],power=new float[CAPACITY];
+    final float[] originX=new float[CAPACITY],originY=new float[CAPACITY],direction=new float[CAPACITY],power=new float[CAPACITY],closing=new float[CAPACITY];
     final float[] x=new float[CAPACITY*STAMPS],y=new float[CAPACITY*STAMPS],z=new float[CAPACITY*STAMPS],
             vx=new float[CAPACITY*STAMPS],vy=new float[CAPACITY*STAMPS],vz=new float[CAPACITY*STAMPS];
     private int cursor;
-    private float peakImpact;
     public int emitted;
     /** Draw-only camera punch and rattle fed by new impacts. */
     final ImpactShake shake=new ImpactShake();
@@ -20,8 +19,6 @@ public final class CollisionSplashes {
      * Use the faster incoming participant as striker so solver argument order cannot reverse spray. */
     public void contact(Watercraft a,Watercraft b,float px,float py,float ax,float ay,float bx,float by,float closing){
         if(closing<3 || !Float.isFinite(closing) || !Float.isFinite(px) || !Float.isFinite(py))return;
-        // Audio severity must not be discarded by the visual spray cooldown.
-        if(closing>peakImpact)peakImpact=closing;
         for(int i=0;i<CAPACITY;i++)if(age[i]<COOLDOWN && (first[i]==a && second[i]==b || first[i]==b && second[i]==a))return;
         float aa=ax*ax+ay*ay,bb=bx*bx+by*by;
         boolean reverse=b!=null && (bb>aa || bb==aa && (b.waterX()<a.waterX() || b.waterX()==a.waterX() && b.waterY()<a.waterY()));
@@ -29,7 +26,7 @@ public final class CollisionSplashes {
         if(len<.001f || !Float.isFinite(len))return;
         int i=cursor;cursor=(cursor+1)%CAPACITY;first[i]=a;second[i]=b;age[i]=0;emitted++;
         originX[i]=px;originY[i]=py;direction[i]=(float)StrictMath.atan2(dy,dx);
-        power[i]=Physics.clamp(closing/70,.12f,1);
+        power[i]=Physics.clamp(closing/70,.12f,1);this.closing[i]=closing;
         float spread=.16f+.48f*Physics.clamp(closing/len,0,1);
         for(int k=0;k<STAMPS;k++){
             int j=i*STAMPS+k;float fan=(k-(STAMPS-1)*.5f)/((STAMPS-1)*.5f);
@@ -49,10 +46,11 @@ public final class CollisionSplashes {
     }
     /** Age at 60 real ticks, independent of the two motion/collision substeps and visibility. */
     public void step(Game g){
-        if(g.mode==Game.PLAY)g.sounds.impact(peakImpact);peakImpact=0;
+        // Collisions are silent: feedback is shake, flash, spray, health bars and haptics.
         shake.step();
         RiverCamera c=g.layout.camera;
         for(int i=0;i<CAPACITY;i++)if(age[i]==0 && first[i]!=null){
+            HullDamage.contact(g,first[i],second[i],closing[i]);
             boolean player=involvesPlayer(g,first[i]) || involvesPlayer(g,second[i]);
             if(!player && !visible(g,originX[i],originY[i],0,40))continue;
             // Punch along the striker's projected travel: the view is shoved the way the hit went.
