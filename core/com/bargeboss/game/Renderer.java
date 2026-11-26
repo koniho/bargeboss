@@ -10,6 +10,7 @@ public final class Renderer {
         if(g.mode==Game.SETTINGS){ScreenView.settings(g,p);return;}
         if(g.mode==Game.TITLE) { ScreenView.title(g,p); return; }
         if(g.mode==Game.CHALLENGES) { ScreenView.challenges(g,p); return; }
+        if(g.mode==Game.CAPTAINS) { ScreenView.captains(g,p); return; }
         // Impact shake moves only the world projection; HUD, controls and input keep the live layout.
         Layout live=g.layout;
         try {g.layout=g.splashes.shaken(g);WorldArrows.begin(g);SceneryLighting.begin(g);
@@ -27,6 +28,7 @@ public final class Renderer {
         FeederView.callouts(g,p);
         g.abilities.drawScreenFlash(g,p);
         ScreenView.hud(g,p);
+        PlayerPortrait.draw(g,p);
         if(!g.conversation())AssistView.draw(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);

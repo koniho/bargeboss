@@ -391,7 +391,10 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
-    [self tapTitle:stage x:770 y:362]; [self waitFor:BBLessonToken(BBLessonMove) on:stage];
+    // First Start: pick a captain (Weslie, centre card), then START TRAINING enters the first tutorial.
+    [self tapTitle:stage x:770 y:362]; [self waitFor:@"Captains;" on:stage];
+    [self tapMenu:stage x:480 y:300]; [self tapMenu:stage x:770 y:544];
+    [self waitFor:BBLessonToken(BBLessonMove) on:stage];
     [self waitFor:@"; dialogue 3;" on:stage after:0.5];
     CGSize radioSize=[self logicalSize:stage];
     double choiceWidth=fmin(440,(radioSize.width-64)/2);
@@ -405,6 +408,37 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     [self tapMenu:stage x:770 y:446];
     XCTAssertTrue([(NSString *)stage.value hasPrefix:@"Working; delivered 0;"]);
     XCTAssertFalse([(NSString *)stage.value containsString:@"lesson"]);
+}
+- (void)testCaptainIntroAndHudPortrait {
+    XCUIApplication *app=[[XCUIApplication alloc] init];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
+    XCUIElement *stage=app.otherElements[@"river-stage"];
+    XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
+    [self waitFor:@"Ready;" on:stage];
+    // First Start opens the captain intro; a card only highlights until START TRAINING.
+    [self tapTitle:stage x:770 y:362]; [self waitFor:@"Captains;" on:stage];
+    [self tapMenu:stage x:770 y:300]; [NSThread sleepForTimeInterval:1.5];
+    [self tapMenu:stage x:770 y:544]; [self waitFor:BBLessonToken(BBLessonMove) on:stage];
+    // The instructor's question: answering transmits as the captain (talking portrait).
+    [self waitFor:@"; dialogue 3;" on:stage after:1.5];
+    CGSize radioSize=[self logicalSize:stage];
+    double choiceWidth=fmin(440,(radioSize.width-64)/2);
+    [[self point:stage x:radioSize.width/2-choiceWidth/2-8 y:radioSize.height-131] tap];
+    [NSThread sleepForTimeInterval:8];
+    // The chosen captain is saved: a plain relaunch shows Dot on the title shortcut.
+    [app terminate]; app.launchArguments=@[]; [app launch];
+    stage=app.otherElements[@"river-stage"]; XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
+    [self waitFor:@"Ready;" on:stage]; [NSThread sleepForTimeInterval:2];
+    // Practice yard (default captain after the progress reset): ram the bank for the mad face.
+    [app terminate];
+    app.launchArguments=@[@"--reset-progress-for-ui-tests",@"--practice-yard-for-ui-tests"];
+    [app launch]; stage=app.otherElements[@"river-stage"];
+    XCTAssertTrue([stage waitForExistenceWithTimeout:10]); [self waitFor:@"Working;" on:stage];
+    CGSize size=[self logicalSize:stage];
+    double cx=113,cy=size.height-171;
+    [[self point:stage x:cx y:cy] pressForDuration:0.1 thenDragToCoordinate:[self point:stage x:cx-42 y:cy+42]
+        withVelocity:600 thenHoldForDuration:2.5];
+    [NSThread sleepForTimeInterval:2];
 }
 - (void)testChallengeBoardAndSavedCaptainProgress {
     XCUIApplication *app=[[XCUIApplication alloc] init];

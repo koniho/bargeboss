@@ -105,7 +105,7 @@ public final class TitleLayoutTest {
             int ticks=g.ticks;float tx=g.tug.x,ty=g.tug.y;TitleView.voyage(g,new Parity());
             check(g.ticks==ticks && g.tug.x==tx && g.tug.y==ty,"title framing cannot move the live player tug");
             for(Layout.Box button:new Layout.Box[]{Layout.START,Layout.CHALLENGES}) {
-                Game menu=new Game();menu.configureCanvas(size[0],size[1]);ReplayInput.tap(menu,button);
+                Game menu=ReplayInput.veteran(new Game());menu.configureCanvas(size[0],size[1]);ReplayInput.tap(menu,button);
                 check(button==Layout.LEARN?menu.activeGame()!=menu:button==Layout.START?menu.mode==Game.PLAY:menu.mode==Game.CHALLENGES,"title buttons retain their responsive hit targets");
             }
         }

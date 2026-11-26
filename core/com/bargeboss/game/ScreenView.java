@@ -26,9 +26,12 @@ public final class ScreenView {
                     (g.lock.phase==Lock.ENTRY?"ENTRY CLOSES IN ":"EXIT CLOSES IN ")+g.lock.secondsRemaining()+"S":g.lock.signal());
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
+        // Keep the ribbon clear of the always-visible top-left captain portrait.
+        float clear=PlayerPortrait.RIGHT+12;
+        if(x<clear){width=Math.min(width,g.layout.width-clear-16);x=Math.max(clear,(g.layout.width-width)*.5f);}
         PilotGlass.ribbon(p,x,8,width,48);
-        headingCenter(p,title,g.layout.width*.5f,14,16,width-24,PAPER);
-        center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
+        headingCenter(p,title,x+width*.5f,14,16,width-24,PAPER);
+        center(p,subtitle,x+width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
     }
     private static void titleSettings(Game g,Painter p) {
         Layout.Box setup=g.controlBox(Layout.SETTINGS);
@@ -60,6 +63,61 @@ public final class ScreenView {
         captainBadge(p,54,g.layout.height-37,.38f,g.career.stripes());
         text(p,g.career.rankTitle(),80,g.layout.height-49,14,PAPER);
         text(p,g.career.totalStars()+" STARS / CAPTAIN'S PROGRESS",80,g.layout.height-29,9,MUTED);
+        titleCaptain(g,p);
+    }
+    /** Title shortcut to change the player captain; the bust pops out above its plate. */
+    private static void titleCaptain(Game g,Painter p){
+        Layout.Box b=g.controlBox(Layout.CAPTAIN);boolean chosen=g.settings.captainChosen();
+        PilotGlass.button(p,b.x,b.y,b.w,b.h,false);
+        p.sprite(PlayerPortrait.atlas(g.settings.captain()),0,b.x+30,b.y+b.h-26,54,54,0,chosen?1:.55f);
+        heading(p,chosen?PlayerPortrait.name(g.settings.captain()):"YOUR CAPTAIN",b.x+62,b.y+9,13,b.w-90,PAPER);
+        text(p,chosen?"CHANGE CAPTAIN":"PICK ON FIRST SAIL",b.x+62,b.y+27,8,MUTED);
+        PilotGlass.chevron(p,b.x+b.w-16,b.centerY(),1,GOLD);
+    }
+    private static String[][] stories;
+    /** Card backstories, wrapped once to the card width with the shared body font. */
+    static String[] story(int captain){
+        if(stories==null){
+            String[][] wrapped=new String[PlayerPortrait.COUNT][];
+            for(int i=0;i<wrapped.length;i++)wrapped[i]=wrap(PlayerPortrait.STORIES[i][0]+" "+PlayerPortrait.STORIES[i][1],Layout.CAPTAIN_CARDS[i].w-34,10);
+            stories=wrapped;
+        }
+        return stories[captain];
+    }
+    static String[] wrap(String text,float width,float size){
+        java.util.ArrayList<String> lines=new java.util.ArrayList<String>();
+        StringBuilder line=new StringBuilder();
+        for(String word:text.split(" ")){
+            String next=line.length()==0?word:line+" "+word;
+            if(line.length()>0 && Lettering.width(next,size)>width){lines.add(line.toString());line.setLength(0);line.append(word);}
+            else{line.setLength(0);line.append(next);}
+        }
+        if(line.length()>0)lines.add(line.toString());
+        return lines.toArray(new String[0]);
+    }
+    /** Intro and title picker: three captains with portrait, name and a short backstory. */
+    public static void captains(Game g,Painter p) {
+        harbor(g,p);p.rect(0,0,g.layout.width,g.layout.height,0xdd0b1728);
+        p=centered(g,p);
+        boolean first=g.captainContinuesStart;
+        heading(p,first?"PICK YOUR CAPTAIN":"CHANGE CAPTAIN",60,30,30,840,PAPER);
+        text(p,first?"WHO IS TAKING THE HELM? YOU CAN CHANGE THIS LATER FROM THE TITLE SCREEN.":"YOUR CAPTAIN RIDES ALONG IN THE TOP-LEFT CORNER OF EVERY VOYAGE.",60,72,11,MUTED);
+        for(int i=0;i<PlayerPortrait.COUNT;i++){
+            Layout.Box b=Layout.CAPTAIN_CARDS[i];boolean selected=g.captainChoice==i;
+            PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xf0202e43:0xe0101c30);
+            if(selected){p.rect(b.x+18,b.y,70,3,GOLD);p.rect(b.x,b.y+b.h-3,b.w,3,GOLD);}
+            int t=(g.visualTicks+i*71)%PlayerPortrait.BLINK_PERIOD;
+            p.sprite(PlayerPortrait.atlas(i),t<PlayerPortrait.BLINK_TICKS?PlayerPortrait.BLINK:PlayerPortrait.NEUTRAL,b.centerX(),b.y+88,168,168,0,1);
+            p.rect(b.x+16,b.y+170,b.w-32,1,PilotGlass.TRACK);
+            heading(p,PlayerPortrait.NAMES[i],b.x+17,b.y+182,22,b.w-34,selected?GOLD:PAPER);
+            text(p,PlayerPortrait.TAGLINES[i],b.x+17,b.y+212,10,GOLD);
+            String[] lines=story(i);
+            for(int k=0;k<lines.length;k++)text(p,lines[k],b.x+17,b.y+236+k*16,10,PAPER);
+            if(selected){PilotGlass.tick(p,b.x+22,b.y+b.h-24,4,GOLD);text(p,"SELECTED",b.x+38,b.y+b.h-31,12,GOLD);}
+            else text(p,"TAP TO CHOOSE",b.x+17,b.y+b.h-31,11,MUTED);
+        }
+        button(g,p,Layout.BACK,"BACK",false);
+        button(g,p,Layout.CAPTAIN_CONFIRM,first && g.firstVoyage()?"START TRAINING":first?"SET SAIL":"CONFIRM",g.captainChoice>=0);
     }
 
     private static void harbor(Game g,Painter p) {

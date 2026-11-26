@@ -3,11 +3,13 @@ package com.bargeboss.game;
 /** Opt-in host capability; shared layout, routing and isolated mission initialization. */
 public final class DeveloperPanel {
     boolean open;
+    /** Closed DEV PANEL button sits below the always-visible captain portrait. */
+    static final float BUTTON_Y=PlayerPortrait.BOTTOM+8;
     private boolean environment;
     private int pointer=-1,pressed=-1;
     private boolean enabled(Game g){return g.settings.developerTools && (g.activeGame().mode==Game.PLAY || g.activeGame().mode==Game.PAUSE);}
     private int hit(Game g,float x,float y){
-        if(!open)return x>=12 && x<=172 && y>=16 && y<=52?0:-1;
+        if(!open)return x>=12 && x<=172 && y>=BUTTON_Y && y<=BUTTON_Y+36?0:-1;
         float left=(g.layout.width-700)/2;
         if(x<left || x>left+700 || y<100 || y>500)return -1;
         if(y<150)return x>left+600?0:-1;
@@ -21,7 +23,7 @@ public final class DeveloperPanel {
     }
     Layout.Box feedbackBox(Game g,float x,float y){
         if(!enabled(g) || hit(g,x,y)<0)return null;
-        if(!open)return new Layout.Box(12,16,160,36);
+        if(!open)return new Layout.Box(12,BUTTON_Y,160,36);
         float left=(g.layout.width-700)/2;int action=hit(g,x,y);
         if(action==0)return new Layout.Box(left+600,108,88,36);
         if(action==2 || action==3)return new Layout.Box(left+(action==2?16:356),158,328,44);
@@ -56,7 +58,7 @@ public final class DeveloperPanel {
     boolean back(){if(!open)return false;open=false;cancel();return true;}
     void draw(Game g,Painter p){
         if(!enabled(g))return;
-        if(!open){button(p,12,16,160,36,"DEV PANEL",false);return;}
+        if(!open){button(p,12,BUTTON_Y,160,36,"DEV PANEL",false);return;}
         p.rect(0,0,g.layout.width,g.layout.height,0xb8000814);
         float x=(g.layout.width-700)/2;
         PilotGlass.button(p,x,100,700,400,false);

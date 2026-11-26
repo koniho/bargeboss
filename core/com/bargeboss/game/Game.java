@@ -5,7 +5,7 @@ public final class Game {
     /** Developer render exclusions; zero in ordinary play, never read by simulation. */
     public int renderExclusions;
     BridgePassage passages;
-    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6;
+    public static final int TITLE=0, PLAY=1, PAUSE=2, FINISH=3, HELP=4, CHALLENGES=5, SETTINGS=6, CAPTAINS=7;
     public static final int SHIFT_TICKS=180*60, QUOTA=2;
     // Two original-size motion steps per real tick: 2x travel/turning with the
     // same collision resolution, stopping distances and impact thresholds.
@@ -107,10 +107,15 @@ public final class Game {
 
     public Layout layout=Layout.DEFAULT;
     public final Career career=new Career();
+    /** Player captain face/radio state for this game (root or practice child). */
+    public final PlayerPortrait portrait=new PlayerPortrait();
+    /** Captain screen: highlighted card and whether confirming continues a first Start. */
+    public int captainChoice=-1;
+    boolean captainContinuesStart;
     final MontroseWeather montroseWeather=new MontroseWeather();
     private LightingProfile stageLighting=LightingProfile.DUSK;
     private int nextLighting=2;
-    public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES?LightingProfile.DUSK:stageLighting;}
+    public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES || mode==CAPTAINS?LightingProfile.DUSK:stageLighting;}
     public int selectedLighting(){return nextLighting;}
     /** Explicit live control replaces only this stage snapshot; hosts rebuild before advancing. */
     public void changeLighting(int id){montroseWeather.manualLighting=true;stageLighting=LightingProfile.preset(id);nextLighting=id;}
@@ -196,12 +201,19 @@ public final class Game {
     public int feederDrops() { int count=0;for(Feeder f:feeders) count+=f.drops;return count; }
     public void restoreProgress(String value) {
         if(value==null || value.length()>64+Challenges.COUNT*24)return;
-        String progress=value;int side=GameSettings.LEFT;int[] audio={100,0,100,0};
-        if(value.startsWith("BBG1\n") || value.startsWith("BBG2\n")) {
+        String progress=value;int side=GameSettings.LEFT;int[] audio={100,0,100,0};boolean tutorialDone=false;int captain=-1;
+        if(value.startsWith("BBG1\n") || value.startsWith("BBG2\n") || value.startsWith("BBG3\n")) {
             String[] parts=value.split("\n",-1);
-            if(parts.length!=(value.startsWith("BBG2\n")?4:3) || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
+            if(parts.length!=(value.startsWith("BBG3\n")?5:value.startsWith("BBG2\n")?4:3) || parts[2].length()!=1 || parts[2].charAt(0)<'0' || parts[2].charAt(0)>'2')return;
             progress=parts[1];side=parts[2].charAt(0)-'0';
-            if(parts.length==4){
+            if(parts.length==5){
+                // Captain line: "<tutorial done 0|1>,<captain -1..2>".
+                String[] values=parts[4].split(",",-1);
+                if(values.length!=2 || !(values[0].equals("0") || values[0].equals("1")))return;
+                if(!(values[1].equals("-1") || values[1].length()==1 && values[1].charAt(0)>='0' && values[1].charAt(0)<'0'+PlayerPortrait.COUNT))return;
+                tutorialDone=values[0].equals("1");captain=Integer.parseInt(values[1]);
+            }
+            if(parts.length>=4){
                 String[] values=parts[3].split(",",-1);if(values.length!=4)return;
                 for(int i=0;i<4;i++){
                     try{audio[i]=Integer.parseInt(values[i]);}catch(NumberFormatException e){return;}
@@ -209,9 +221,9 @@ public final class Game {
                 }
             }
         }
-        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);settings.restoreAudio(audio);}
+        if(career.restore(progress)){challengeId=Challenges.stageEntry(career.selectedChallenge());challengePage=Challenges.pageFor(challengeId);settings.restore(side);settings.restoreAudio(audio);settings.restoreCaptain(tutorialDone,captain);}
     }
-    public String saveProgress() { return "BBG2\n"+career.save()+"\n"+settings.joystickSide()+"\n"+settings.audioSave(); }
+    public String saveProgress() { return "BBG3\n"+career.save()+"\n"+settings.joystickSide()+"\n"+settings.audioSave()+"\n"+settings.captainSave(); }
     public int progressVersion() { return career.version()+settings.version(); }
     public void openSettings(){if(mode==SETTINGS)return;settingsReturnMode=mode;cancelInputs();accumulator=visualAccumulator=0;mode=SETTINGS;}
     public boolean selectChallenge(int id) {
@@ -396,7 +408,7 @@ public final class Game {
     public Game activeGame() { return practice==null?this:practice; }
     public void startTutorial() {
         cancelInputs(); accumulator=0; visualAccumulator=0;
-        returnToShift=mode!=TITLE && mode!=FINISH && mode!=CHALLENGES;
+        returnToShift=mode!=TITLE && mode!=FINISH && mode!=CHALLENGES && mode!=CAPTAINS;
         practice=new Game(); practice.selectLighting(nextLighting);practice.reset(); practice.tutorial=new Tutorial();practice.bridge=new Bridge();practice.lock.passive=true;
         practice.restoreProgress(saveProgress());
         practice.settings=settings;
@@ -418,7 +430,7 @@ public final class Game {
     public void render(Painter painter) { Renderer.draw(this,painter); developerPanel.draw(this,painter); activeGame().menuFeedback.draw(painter);if(practice!=null)menuFeedback.draw(painter); }
     public String status() {
         if(practice!=null) return practice.status();
-        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==SETTINGS?"Settings":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":"Finished";
+        String state=mode==PLAY?"Working":mode==PAUSE?"Paused":mode==HELP?"Help":mode==SETTINGS?"Settings":mode==TITLE?"Ready":mode==CHALLENGES?"Challenges":mode==CAPTAINS?"Captains":"Finished";
         String activity=ropePhase==1?"; rope flying":ropePhase==2?"; rope retracting":ropePhase==3?ropeToTug?"; towline caught":"; bollard hit":"";
         if(tow.count()>0) activity=montroseStage()?"; towing yacht":"; towing "+tow.loadCount(tug)+" barges";
         for(Body b:cargo) if(b!=null && b.active && b.lineAttached && !b.deliveryRecorded) activity="; securing load";
@@ -452,7 +464,7 @@ public final class Game {
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();haulout=new MontroseHaulout();rescue=new MontroseRescue();buildingFades=new BuildingFades();
         water=new WaterSurface(); crew.reset(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
-        celebrationTicks=impactTicks=damageFlashTicks=0;
+        celebrationTicks=impactTicks=damageFlashTicks=0;portrait.reset();
         damageCooldown=0; accumulator=0; selected=-1;
         tug=new Body(0,-1,330,650,(float)Math.PI);
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
@@ -597,6 +609,8 @@ public final class Game {
     }
     void finishPractice() {
         if(practice==null) return;
+        // Completing the first tutorial, or deliberately leaving it, spends first-start routing.
+        if(practice.tutorial!=null && (practice.tutorial.lesson==Tutorial.DONE || practice.tutorial.exitRequested || practice.mode==TITLE))settings.completeTutorial();
         // Explicit title navigation also discards a suspended voyage, instead of
         // following the tutorial's usual return-to-shift/completion behavior.
         if(practice.mode==TITLE) {
@@ -716,7 +730,7 @@ public final class Game {
         cancelInputs();accumulator=visualAccumulator=0;
         if(mode==SETTINGS)mode=settingsReturnMode;
         else if(mode==HELP)mode=PLAY;
-        else if(mode==CHALLENGES || mode==FINISH)mode=TITLE;
+        else if(mode==CHALLENGES || mode==FINISH || mode==CAPTAINS)mode=TITLE;
     }
     public void pause() { if(practice!=null) { practice.pause(); return; } cancelInputs(); accumulator=0; visualAccumulator=0; if(mode==PLAY) mode=PAUSE; else if(mode==PAUSE) mode=PLAY; }
     /** Direct/replay input uses world coordinates on the board, canvas coordinates in menus. */
@@ -865,13 +879,15 @@ public final class Game {
             cancel();return;
         }
         if(mode==TITLE && tap && tapped(Layout.SETTINGS,x,y)){openSettings();return;}
+        if(mode==TITLE && tap && tapped(Layout.CAPTAIN,x,y)){openCaptains(false);cancel();return;}
+        if(mode==CAPTAINS){captainTap(tap,x,y);cancel();return;}
         if(tutorial!=null && mode==PLAY && tutorial.lesson==Tutorial.DONE) {
             if(tap && tapped(Layout.START,x,y)) tutorial.exitRequested=true;
         } else if(mode==HELP) {
             if(tap && tapped(Layout.LEARN,x,y)) { startTutorial(); return; }
             if(tap && tapped(Layout.START,x,y)) mode=PLAY;
         } else if(mode==TITLE) {
-            if(tap && tapped(Layout.START,x,y)) reset();
+            if(tap && tapped(Layout.START,x,y)) {start();return;}
             else if(tap && tapped(Layout.CHALLENGES,x,y)) mode=CHALLENGES;
         } else if(mode==CHALLENGES) {
             if(tap && tapped(Layout.TRAINING_HARBOR,x,y)){trainingSelected=true;cancel();return;}
@@ -907,6 +923,26 @@ public final class Game {
         }
         cancel();
     }
+    /** True until the first tutorial has been completed or left; veterans with stars skip it. */
+    public boolean firstVoyage(){return !settings.tutorialDone() && career.totalStars()==0;}
+    /** Title Start: pick a captain once, take the first tutorial once, then the chosen harbor. */
+    void start(){
+        if(!settings.captainChosen()){openCaptains(true);cancel();return;}
+        if(firstVoyage() && !trainingSelected){startTutorial();return;}
+        reset();
+    }
+    void openCaptains(boolean continueStart){
+        cancelInputs();accumulator=visualAccumulator=0;
+        captainContinuesStart=continueStart;captainChoice=settings.captain();mode=CAPTAINS;
+    }
+    private void captainTap(boolean tap,float x,float y){
+        if(!tap)return;
+        for(int i=0;i<PlayerPortrait.COUNT;i++)if(tapped(Layout.CAPTAIN_CARDS[i],x,y)){if(captainChoice!=i)haptic(HAPTIC_TICK);captainChoice=i;return;}
+        if(tapped(Layout.BACK,x,y)){mode=TITLE;return;}
+        if(captainChoice<0 || !tapped(Layout.CAPTAIN_CONFIRM,x,y))return;
+        settings.setCaptain(captainChoice);mode=TITLE;
+        if(captainContinuesStart){captainContinuesStart=false;start();}
+    }
     /** Actual screen target, including title-only right anchoring. */
     public Layout.Box controlBox(Layout.Box box) {return mode==TITLE?layout.titleBox(box):layout.box(box);}
     private boolean tapped(Layout.Box box,float x,float y) {
@@ -921,11 +957,11 @@ public final class Game {
         if(Double.isNaN(seconds) || seconds<=0) return;
         if(mode!=PLAY) {
             accumulator=0;
-            if(mode==TITLE || mode==FINISH || mode==CHALLENGES) {
+            if(mode==TITLE || mode==FINISH || mode==CHALLENGES || mode==CAPTAINS) {
                 visualAccumulator+=Math.min(.25,seconds);
                 while(visualAccumulator+1e-10>=1.0/60.0) {
                     visualAccumulator-=1.0/60.0; visualTicks++;
-                    if(mode==TITLE)titleSmoke.titleStep(this);else {smoke.drift();splashes.step(this);buildingFades.step(this);}
+                    if(mode==TITLE)titleSmoke.titleStep(this);else if(mode!=CAPTAINS){smoke.drift();splashes.step(this);buildingFades.step(this);}
                 }
             } else visualAccumulator=0;
             return;
@@ -938,7 +974,7 @@ public final class Game {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
-        montroseWeather.step(this);crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;
+        montroseWeather.step(this);crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;portrait.step(this);
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
         if(montroseStage() && montroseArrival.active()){
@@ -1304,7 +1340,7 @@ public final class Game {
     private void damage(float speed) {
         if(tutorial!=null) return;
         if(speed<78 || damageCooldown>0) return;
-        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40; tell("HARD IMPACT - HULL -9");
+        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40;portrait.mad(); tell("HARD IMPACT - HULL -9");
         impactX=tug.x; impactY=tug.y; impactTicks=45;
         haptic(HAPTIC_IMPACT);
     }

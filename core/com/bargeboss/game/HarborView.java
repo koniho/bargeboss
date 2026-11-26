@@ -135,6 +135,8 @@ public final class HarborView {
             float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
             // Every stage keeps edge markers clear of the joystick, chart (with its zoom slider) and button row.
             ey=clearOfControls(g,ex,ey);
+            // The captain portrait owns the top-left corner; slide edge cues below it.
+            if(ex<PlayerPortrait.RIGHT+40 && ey<PlayerPortrait.BOTTOM+24)ey=PlayerPortrait.BOTTOM+24;
             float ux=dx/distance,uy=dy/distance;
             ControlView.arrow(g,new RiverPainter(canvas,c),c.worldX(ex-ux*40,ey-uy*40),c.worldY(ex-ux*40,ey-uy*40),c.worldX(ex,ey),c.worldY(ex,ey),GOLD);
             Lettering.center(canvas,label,Physics.clamp(ex,85,g.layout.width-85),

@@ -126,7 +126,7 @@ public final class ControlsTest {
         ReplayInput.tap(root,Layout.TITLE_SCREEN);
         check(root.activeGame()==root && root.mode==Game.TITLE,"early practice exit returns to title");
         for(int context=0;context<3;context++) {
-            root=context==1?new Game():game();
+            root=ReplayInput.veteran(context==1?new Game():game());
             root.configureCanvas(1280,720);
             if(context>0) root.startTutorial();
             g=root.activeGame();

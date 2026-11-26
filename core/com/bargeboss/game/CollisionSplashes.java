@@ -36,7 +36,7 @@ public final class CollisionSplashes {
             vz[j]=(23+power[i]*48)*(.65f+.35f*((k*5+2)%7)/6f);
         }
     }
-    private static boolean involvesPlayer(Game g,Watercraft w){
+    static boolean involvesPlayer(Game g,Watercraft w){
         return w!=null && (w==g.tug || w instanceof Body && ((Body)w).lineAttached);
     }
     /** The world layout for this frame: shaken while an impact is ringing, else the live one. */

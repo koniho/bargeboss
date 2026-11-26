@@ -203,7 +203,7 @@ public final class Parity implements Painter {
         throw new IllegalStateException("Tutorial replay did not finish");
     }
     private static void responsive(Parity p) {
-        Game g=new Game(); g.configureCanvas(1333.3334f,600); Renderer.draw(g,p);
+        Game g=ReplayInput.veteran(new Game()); g.configureCanvas(1333.3334f,600); Renderer.draw(g,p);
         ReplayInput.tap(g,Layout.START); Renderer.draw(g,p);
         ReplayInput.throttle(g,0,-100);
         for(int i=0;i<45;i++) g.step();

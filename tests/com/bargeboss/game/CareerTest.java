@@ -53,7 +53,7 @@ public final class CareerTest {
     }
     private static Game quickTurn() {
         Career career=new Career(); career.record(0,1,100);
-        Game game=new Game(); game.restoreProgress(career.save()); game.selectChallenge(1); game.reset(); return game;
+        Game game=new Game(); game.restoreProgress(career.save()); game.settings.completeTutorial(); game.selectChallenge(1); game.reset(); return game;
     }
     private static void practiceIsolation() {
         Game game=quickTurn(); String saved=game.saveProgress(); int version=game.progressVersion();

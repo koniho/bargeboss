@@ -13,6 +13,8 @@ public final class RadioAudio {
     public void receiveCrew(){receiveCrew(null);}
     public void receiveCrew(Body boat){transmit(TEACHER);transmitter=CREW;crewBoat=boat;}
     public int transmitter(){return transmitter;}
+    /** Increments on every new transmission, including relayed incoming calls. */
+    int transmission(){return sequence;}
     public void step(){if(age<1000)age++;}
     public float progress(){return Physics.clamp(age/(cue==TEACHER?54f:30f),0,1);}
     public boolean transmitting(Game g,Body boat){if(transmitter==CREW)return progress()<1 && boat==(crewBoat==null?g.cargo[0]:crewBoat);return progress()<1 && sequence>0 && transmitter!=BRIDGE && transmitter!=DOCKMASTER && boat==(cue==TEACHER?g.teacherBoat():g.tug);}

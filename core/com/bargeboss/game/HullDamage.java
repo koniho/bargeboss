@@ -21,20 +21,23 @@ final class HullDamage {
     /** One new contact between a and b (b may be null for walls) at a closing speed. */
     static void contact(Game g,Watercraft a,Watercraft b,float closing){
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD))return;
-        hit(g,a);hit(g,b);
+        boolean hitA=hit(g,a),hitB=hit(g,b);
+        // The captain winces when the tug or a lined vessel damages someone else's hull.
+        if(hitA && CollisionSplashes.involvesPlayer(g,b) || hitB && CollisionSplashes.involvesPlayer(g,a))PlayerPortrait.wince(g);
     }
-    private static void hit(Game g,Watercraft w){
-        if(!(w instanceof Body) || w==g.tug)return;
+    private static boolean hit(Game g,Watercraft w){
+        if(!(w instanceof Body) || w==g.tug)return false;
         Body b=(Body)w;
-        if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return;
+        if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return false;
         b.healthBefore=b.health;b.health=Math.max(0,b.health-HIT);b.damagedTick=g.ticks;
         g.othersDamage+=b.healthBefore-b.health;
         if(b.health==0)sink(g,b);
+        return true;
     }
     /** A hard hit on someone's moored boat (they have no health of their own). */
     static void moored(Game g,float closing){
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || g.ticks-g.mooredDamageTick<COOLDOWN)return;
-        g.mooredDamageTick=g.ticks;g.othersDamage+=HIT;
+        g.mooredDamageTick=g.ticks;g.othersDamage+=HIT;PlayerPortrait.wince(g);
     }
     private static void sink(Game g,Body b){
         b.sinkTicks=1;

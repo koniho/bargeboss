@@ -61,7 +61,8 @@ final class MenuFeedback {
         }
         Layout.Box[] choices;
         switch(g.mode){
-            case Game.TITLE:choices=new Layout.Box[]{Layout.START,Layout.CHALLENGES,Layout.SETTINGS};break;
+            case Game.TITLE:choices=new Layout.Box[]{Layout.START,Layout.CHALLENGES,Layout.SETTINGS,Layout.CAPTAIN};break;
+            case Game.CAPTAINS:choices=new Layout.Box[]{Layout.BACK,Layout.CAPTAIN_CONFIRM,Layout.CAPTAIN_CARDS[0],Layout.CAPTAIN_CARDS[1],Layout.CAPTAIN_CARDS[2]};break;
             case Game.CHALLENGES:choices=new Layout.Box[]{Layout.TRAINING_HARBOR,Layout.BACK,Layout.CHALLENGE_START,Layout.CHALLENGE_PREV_PAGE,Layout.CHALLENGE_NEXT_PAGE,Layout.CHALLENGE_CARDS[0],Layout.CHALLENGE_CARDS[1],Layout.CHALLENGE_CARDS[2]};break;
             case Game.SETTINGS:choices=new Layout.Box[]{Layout.JOYSTICK_LEFT,Layout.JOYSTICK_RIGHT,Layout.HAPTICS,Layout.SOUND_MUTE,Layout.MUSIC_MUTE,Layout.SETTINGS_BACK};break;
             case Game.PAUSE:choices=new Layout.Box[]{Layout.RESUME,Layout.RESTART,Layout.TITLE_SCREEN};break;

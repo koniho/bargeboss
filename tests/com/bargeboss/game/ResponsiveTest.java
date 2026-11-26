@@ -19,7 +19,7 @@ public final class ResponsiveTest {
             check(near(viewport.worldX(window[0]),viewport.logicalWidth())
                     && near(viewport.worldY(window[1]),viewport.logicalHeight()),"host edge input maps to canvas edges");
             Game game=new Game(); game.layout=new Layout(960,600); game.configureCanvas(viewport.logicalWidth(),viewport.logicalHeight());
-            checkLayout(game.layout); menuAndGestureRouting(game); practiceAndResize(game);
+            checkLayout(game.layout); ReplayInput.veteran(game); menuAndGestureRouting(game); practiceAndResize(game);
         }
         independentGames(); cameraMath();
         System.out.println(assertions+" responsive canvas, camera and pointer-routing assertions passed");
@@ -132,6 +132,7 @@ public final class ResponsiveTest {
         second.configureCanvas(960,1100);
         check(first.layout==layout && first.layout.width==1400 && first.layout.height==600,"second game cannot overwrite first layout");
         check(first.layout.camera.screenX(376,700)==sx && first.layout.camera.screenY(376,700)==sy,"camera transforms remain instance-local");
+        ReplayInput.veteran(first); ReplayInput.veteran(second);
         tap(first,Layout.START); tap(second,Layout.START);
         ReplayInput.throttleDown(first); ReplayInput.throttleDown(second);
         check(first.joystick.active && second.joystick.active,"different canvases accept the same world gesture independently");

@@ -32,7 +32,7 @@ public final class CoreTest {
         InstructorRadioTest.run();
         DockCraneTest.run();
         CargoTransferTest.run();
-        Game g=new Game(); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
+        Game g=ReplayInput.veteran(new Game()); tap(g,Layout.START); check(g.mode==Game.PLAY,"start button");
 
         g.resetPracticeYard(); ReplayInput.throttle(g,0,-100); steps(g,60);
         check(g.navigating && g.tug.y<650,"drag drives tug in finger direction");
@@ -175,6 +175,7 @@ public final class CoreTest {
         CargoDepthTest.run();
         ResponsiveTest.run();
         CareerTest.run();
+        CaptainTest.run();
         FeederTest.run();
         SceneryTest.run();
         SceneryOcclusionTest.run();

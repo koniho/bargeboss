@@ -38,6 +38,17 @@ public final class GameSettings {
     public void adjustRain(int change){rainLevel=Math.max(0,Math.min(3,rainLevel+change));}
     public void adjustLightning(int change){lightningLevel=Math.max(0,Math.min(2,lightningLevel+change));}
     public void resetWeather(){rainLevel=lightningLevel=fogLevel=0;weatherFlashTick=-1000000;}
+    private int captain=-1;
+    private boolean tutorialDone;
+    /** Chosen player captain (PlayerPortrait.BRITTNEY..DOT), or -1 before the intro choice. */
+    public int captain(){return captain;}
+    public boolean captainChosen(){return captain>=0;}
+    public void setCaptain(int next){if(next>=0 && next<PlayerPortrait.COUNT && next!=captain){captain=next;version++;}}
+    /** First-start routing is spent once the first tutorial is completed or deliberately left. */
+    public boolean tutorialDone(){return tutorialDone;}
+    void completeTutorial(){if(!tutorialDone){tutorialDone=true;version++;}}
+    String captainSave(){return (tutorialDone?1:0)+","+captain;}
+    void restoreCaptain(boolean done,int chosen){tutorialDone=done;captain=chosen>=0 && chosen<PlayerPortrait.COUNT?chosen:-1;}
     public int joystickSide(){return side;}
     public int version(){return version;}
     public void setJoystickSide(int next){if(next==OFF)next=LEFT;if(next>=OFF && next<=RIGHT && next!=side){side=next;version++;}}

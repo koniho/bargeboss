@@ -21,6 +21,9 @@ public final class Layout {
             FINISH_CHALLENGES=new Box(60,450,240,64), NEXT_CHALLENGE=new Box(660,450,240,64);
     public static final Box CHALLENGE_PREV_PAGE=new Box(300,516,100,56),
             CHALLENGE_NEXT_PAGE=new Box(530,516,100,56);
+    /** Title captain button (right-anchored via titleBox) and the captain picker. */
+    public static final Box CAPTAIN=new Box(392,542,200,42), CAPTAIN_CONFIRM=new Box(640,516,260,56);
+    public static final Box[] CAPTAIN_CARDS={new Box(60,100,260,400),new Box(350,100,260,400),new Box(640,100,260,400)};
     public static final Box[] CHALLENGE_CARDS={new Box(60,138,260,278),new Box(360,138,260,278),new Box(660,138,260,278)};
     public static final Layout DEFAULT=new Layout(WIDTH,HEIGHT);
     public final float width,height,offsetX,offsetY;
@@ -61,6 +64,7 @@ public final class Layout {
         if(original==LEARN)return new Box(48,250+offsetY,310,78);
         if(original==START)return new Box(width-332,294+offsetY,284,76);
         if(original==CHALLENGES)return new Box(width-332,228+offsetY,284,44);
+        if(original==CAPTAIN)return new Box(392,height-58,200,42);
         return box(original);
     }
     /** Other menus remain centered; live controls use the outer canvas edges. */
