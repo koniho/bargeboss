@@ -113,13 +113,13 @@ public final class Game {
     /** Captain screen: highlighted card and whether confirming continues a first Start. */
     public int captainChoice=-1;
     boolean captainContinuesStart;
-    final MontroseWeather montroseWeather=new MontroseWeather();
+    final StageWeather weather=new StageWeather();
     private LightingProfile stageLighting=LightingProfile.DUSK;
     private int nextLighting=2;
     public LightingProfile lighting(){return mode==TITLE || mode==CHALLENGES || mode==CAPTAINS?LightingProfile.DUSK:stageLighting;}
     public int selectedLighting(){return nextLighting;}
     /** Explicit live control replaces only this stage snapshot; hosts rebuild before advancing. */
-    public void changeLighting(int id){montroseWeather.manualLighting=true;stageLighting=LightingProfile.preset(id);nextLighting=id;}
+    public void changeLighting(int id){weather.manualLighting=true;stageLighting=LightingProfile.preset(id);nextLighting=id;}
     /** Selection only affects the next entry, never the live stage or a sibling practice. */
     public void selectLighting(int id){LightingProfile.preset(id);nextLighting=id;}
     public GameSettings settings=new GameSettings();
@@ -474,7 +474,7 @@ public final class Game {
         challengeId=practiceYard?-1:Challenges.stageEntry(challengeId);montroseComplete=false;montroseJobScore=0;
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
         if(developerStart>=0){challengeId=developerStart;developerStart=-1;}
-        montroseWeather.reset();if(Challenges.stageEntry(challengeId)==Challenges.MONTROSE){stageLighting=LightingProfile.DUSK;nextLighting=LightingProfile.DUSK.id;}
+        weather.reset();if(Challenges.stageEntry(challengeId)==Challenges.MONTROSE){stageLighting=LightingProfile.DUSK;nextLighting=LightingProfile.DUSK.id;}
         dialogue.close(this);practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
@@ -1000,7 +1000,7 @@ public final class Game {
         if(practice!=null) { practice.step(); return; }
         if(mode!=PLAY) return;
         if(tug.lineSnapTicks>0)tug.lineSnapTicks--;if(tug.tieBurstTicks>0)tug.tieBurstTicks--;
-        montroseWeather.step(this);crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;portrait.step(this);
+        weather.step(this);crew.step(this);abilities.step(this);sounds.step();radio.step();dialogue.step();visualTicks++;portrait.step(this);
         if(montroseStage())haulout.effects.step();
         if(MontroseHaulout.active(this))haulout.radio.step(this);
         if(montroseStage() && montroseArrival.active()){
@@ -1092,7 +1092,7 @@ public final class Game {
         if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;
-            challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;montroseWeather.evening=true;
+            challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;weather.evening=true;
         }else if(challengeId==Challenges.RAFT_RESCUE){
             for(int i=0;i<2;i++){Body boat=cargo[i];cargo[i]=null;int slot=cargo.length-1;while(slot>1 && cargo[slot]!=null)slot--;cargo[slot]=boat;}
             challengeId=Challenges.MONTROSE;mission=new MontroseHarbor();

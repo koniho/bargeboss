@@ -10,6 +10,7 @@ final class SurveyLevelView {
         SurveyGround.walls(g,p,level);level.ground().draw(g,p);
         ShorelineView.walls(g,p);
         VesselShoreLight.draw(g,p);
+        WeatherView.scenery(g,p);
         Renderer.river(g,new RiverPainter(p,g.layout.camera));
     }
 }

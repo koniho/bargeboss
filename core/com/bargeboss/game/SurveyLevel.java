@@ -42,6 +42,13 @@ abstract class SurveyLevel {
     final float collide(Body b,CollisionSplashes splashes){return PolygonWater.collide(b,coast(),true,splashes);}
     final boolean inBounds(float x,float y){return x>=minX() && x<=maxX() && y>=minY() && y<=maxY();}
 
+    /** Wave exposure zones (see WaveZones): open lake water rough, rivers and inner harbours calmer.
+     * Every level defines its own; the default is uniformly sheltered water. */
+    float[][] waveZones(){return new float[0][];}
+    float waveCalm(){return WaveZones.CALM;}
+    private float[][] zones;
+    final float waveExposure(float x,float y){if(zones==null)zones=waveZones();return WaveZones.exposure(zones,waveCalm(),x,y);}
+
     // Level-owned moving obstacles (for example Chicago's harbor lock). Defaults: none.
     void integrate(Game g,Body b){Physics.integrate(b);}
     float obstacles(Game g,Body b,CollisionSplashes splashes){return 0;}
@@ -81,6 +88,8 @@ abstract class SurveyLevel {
         LandmarkBridge[] bridges(){return LocationBridges.calumet();}
         boolean clear(Game g,float x,float y,float xx,float yy){return CalumetRiver.clear(x,y,xx,yy,3);}
         SurveyGround createGround(){return CalumetRiverTiles.ground();}
+        /** Lake Michigan beyond the river mouth; the river is sheltered upstream. */
+        float[][] waveZones(){return new float[][]{{13179,6791,-.14f,.99f,700,350,1}};}
     }
     private static final class Indiana extends SurveyLevel {
         Indiana(){super(INDIANA);}
@@ -92,6 +101,8 @@ abstract class SurveyLevel {
         LandmarkBridge[] bridges(){return LocationBridges.indiana();}
         boolean clear(Game g,float x,float y,float xx,float yy){return IndianaHarbor.clear(x,y,xx,yy);}
         SurveyGround createGround(){return IndianaShoreTiles.ground();}
+        /** Open lake north of the outer breakwater; the inner harbour behind the ship-canal mouth is moderate. */
+        float[][] waveZones(){return new float[][]{{8991,2745,.96f,.28f,900,450,1},{6120,2937,.71f,.71f,700,500,.5f}};}
         int landmarkCount(Game g){return IndianaView.count();}
         float landmarkDepth(Game g,int i){return IndianaView.depth(g,i);}
         void drawLandmark(Game g,Painter p,int i){IndianaView.landmark(g,p,i);}
@@ -109,6 +120,8 @@ abstract class SurveyLevel {
         LandmarkBridge[] bridges(){return LocationBridges.chicago();}
         boolean clear(Game g,float x,float y,float xx,float yy){return ChicagoRiver.clear(g,x,y,xx,yy);}
         SurveyGround createGround(){return ChicagoView.ground();}
+        /** The lake and Navy Pier water east of the harbour entrance; the river west of it is sheltered. */
+        float[][] waveZones(){return new float[][]{{160,4097,0,1,900,600,1}};}
         void integrate(Game g,Body b){g.chicago.lock.integrate(b);}
         float obstacles(Game g,Body b,CollisionSplashes splashes){return g.chicago.lock.collide(b,splashes);}
         int background(LightingProfile light){return light==LightingProfile.DUSK?0xff121820:light.water;}

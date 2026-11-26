@@ -18,7 +18,7 @@ public final class RescueBargeTest {
  static void ticks(Game g,int count){for(int i=0;i<count;i++){g.visualTicks++;g.rescue.step(g);}}
  public static void run(){
   Game g=scene();MontroseRescue r=g.rescue;Body b=r.barge.boat;
-  check(b.ability==BargeAbilities.RESCUE && g.montroseWeather.rain(g)>=3 && g.montroseWeather.fog(g)>=2,"Storm mission supplies a rescue barge");
+  check(b.ability==BargeAbilities.RESCUE && g.weather.rain(g)>=3 && g.weather.fog(g)>=2,"Storm mission supplies a rescue barge");
   fling(g,r.x[0]+15,r.y[0]);check(r.barge.throwsMade==0,"Player must tow barge before operating rescue");
   check(g.tow.attach(g,b,g.tug),"Rescue barge supports normal tow graph");r.barge.step(g);g.tow.detach(g,b);
   fling(g,r.x[0]+15,r.y[0]);check(r.barge.throwsMade==1 && r.barge.phase[0]==1,"Public equipment fling launches free-aim ring");

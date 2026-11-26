@@ -120,7 +120,7 @@ public final class CoreTest {
         TowTrainTest.run();
         TutorialTowCourseTest.run();
         TutorialTowBridgesTest.run();TutorialEquipmentTimingTest.run();BargeAbilitiesTest.run();
-        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();PracticeMooringTest.run();InstructorIdleWakeTest.run();
+        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();PracticeMooringTest.run();WeatherCoverageTest.run();InstructorIdleWakeTest.run();
         FireworksLessonTest.run();
         FireWashTest.run();
         FireRescueRadioTest.run();
@@ -150,7 +150,7 @@ public final class CoreTest {
         SurfaceLightingTest.run();
         LevelAssetsTest.run();
         TravelLiftTest.run();TravelLiftCycleTest.run();HauloutCaptureTest.run();DockLineCrewTest.run();SpotlightTest.run();SpotlightWaterTest.run();MontroseHauloutTest.run();MontroseTest.run();
-        MontroseRescueTest.run();MontroseCrewTest.run();ChasRadioTest.run();PushFeedbackTest.run();MontroseWeatherTest.run();WaterFlowTest.run();RacingBoatTest.run();
+        MontroseRescueTest.run();MontroseCrewTest.run();ChasRadioTest.run();PushFeedbackTest.run();StageWeatherTest.run();WaterFlowTest.run();RacingBoatTest.run();
         SwimmerModelTest.run();
         MarinaReceiverTest.run();SceneryReceiverTest.run();
         DeveloperPanelTest.run();

@@ -12,7 +12,7 @@ public final class MontroseRescue {
     boolean touring;private int tourLeg;private int radioPhase,replyTicks,replyChoice;
     static final float RAFT_X=MontroseHarbor.mapX(2350),RAFT_Y=MontroseHarbor.mapY(-1530);
     static String name(int slot){return slot==0?"RUMRUNNER 2":"NEVER WETTER";}
-    void distress(Game g){g.montroseWeather.evening=true;g.montroseWeather.storm=true;touring=false;radioPhase=1;replyTicks=0;
+    void distress(Game g){g.weather.evening=true;g.weather.storm=true;touring=false;radioPhase=1;replyTicks=0;
         g.dialogue.showFrom(g,RadioAudio.CREW,"CHAS / NEVER WETTER","HELP! THREE KIDS ABOARD!",
             "RUMRUNNER 2 AND NEVER WETTER. WEATHER'S TURNING!",
             "WHY ARE YOU OUT THERE IN THIS WEATHER?","STAY CALM, CHAS. WHAT HAPPENED?");
@@ -65,7 +65,7 @@ public final class MontroseRescue {
                 {1387,-1538},{1476,-1440},{1564,-1368},{1620,-1415},{1689,-1326},
                 {1810,-1280},{1234,-1840},{1508,-1726},{1875,-1548},{2020,-1190}};
             for(int i=0;i<PEOPLE;i++){x[i]=MontroseHarbor.mapX(scatter[i][0]);y[i]=MontroseHarbor.mapY(scatter[i][1]);}
-            barge.setup(g);g.montroseWeather.evening=g.montroseWeather.storm=true;g.montroseWeather.stormTicks=MontroseWeather.STORM_TICKS;g.montroseWeather.towTicks=MontroseWeather.TOW_TICKS;
+            barge.setup(g);g.weather.evening=g.weather.storm=true;g.weather.stormTicks=StageWeather.STORM_TICKS;g.weather.towTicks=StageWeather.TOW_TICKS;
             if(reposition){g.tug.x=barge.boat.x;g.tug.y=barge.boat.y+85;g.tug.angle=-(float)Math.PI/2;}
 
         }

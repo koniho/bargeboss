@@ -21,7 +21,7 @@ final class FogLighting {
     }
     private static final ThreadLocal<Lights> SCRATCH=new ThreadLocal<Lights>(){protected Lights initialValue(){return new Lights();}};
     static void draw(Game g,Painter p){
-        float fog=g.montroseWeather.fog(g);if(fog==0 || !g.montroseStage())return;
+        float fog=g.weather.fog(g);if(fog==0)return;
         Lights out=SCRATCH.get();out.count=0;RiverCamera c=g.layout.camera;
         for(int id=0;id<3;id++)out.add(g,c.screenX(MontroseBeaconArt.x(id),MontroseBeaconArt.y(id)),
             c.screenY(MontroseBeaconArt.x(id),MontroseBeaconArt.y(id))-MontroseBeaconArt.lampZ(id)*ArticulatedModel.Z_SCALE*c.scale,
@@ -43,7 +43,7 @@ final class FogLighting {
         }
     }
     private static void vessel(Game g,Lights out,Body b){
-        if(!b.active)return;RiverCamera c=g.layout.camera;float fog=g.montroseWeather.fog(g);
+        if(!b.active)return;RiverCamera c=g.layout.camera;float fog=g.weather.fog(g);
         float bob=WaterSurface.lift(g,b);
         if(b.berth<0){
             float size=2*(b.half+b.radius)/TugArt.HULL_FRACTION;

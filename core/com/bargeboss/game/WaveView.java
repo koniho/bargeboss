@@ -60,8 +60,9 @@ public final class WaveView {
             if(cellScreenX<-pad || cellScreenX>g.layout.width+pad || cellScreenY<-pad || cellScreenY>g.layout.height+pad)continue;
             // Stable spatial thinning keeps ambient water lively without competing
             // with the vessel wakes. Never base this on time or camera position.
-            float rough=montrose?g.montroseWeather.waves(g)*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):0;
-            if(noise(seed+41)<(montrose?Math.max(.1f,.45f-rough*.12f):.45f))continue;
+            // Storm chop thins fewer crest cells: Montrose by lake exposure, sheltered water only above the default sea.
+            float rough=montrose?g.weather.waves(g)*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):Math.max(0,g.weather.waves(g)-1)*1.2f*WaveZones.at(g,(col+.5f)*38,(row+.5f)*30);
+            if(noise(seed+41)<Math.max(.1f,.45f-rough*.12f))continue;
             float x=0,y=0;
             if(!montrose){
                 x=(col+.15f+noise(seed+2)*.7f)*38+(float)StrictMath.sin(tick*.008+seed)*4;
@@ -79,7 +80,7 @@ public final class WaveView {
             float phase=tick*(.016f+noise(seed+11)*.009f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             if(montrose){
-                rough=g.montroseWeather.waves(g)*SeaWaves.exposure(x,y);
+                rough=g.weather.waves(g)*SeaWaves.exposure(x,y);
                 float waveLife=.5f+.5f*Physics.clamp(surface.height(x,y)/Math.max(.1f,3.2f*rough),-1,1);
                 life+=(waveLife-life)*Physics.clamp(rough,0,1);
                 fade=life*life;detail*=1+rough*.25f;

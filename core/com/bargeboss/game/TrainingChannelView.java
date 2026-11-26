@@ -24,6 +24,7 @@ public final class TrainingChannelView {
         if(g.tutorial!=null){g.tutorial.fireworks.wash(g,canvas);g.tutorial.fireworks.plumes(g,canvas);}
         NavigationLights.landShadows(g,canvas);
         ShadowView.factories(g,canvas);
+        WeatherView.scenery(g,canvas);
         int gate=g.tutorial==null?0:g.tutorial.canal.guideGate(g);
         // One transient lesson cue; physical markers belong only at region mouths.
         if(g.trainingChannel() && g.tutorial.canal.escort.leading && gate<TrainingChannel.X.length) {

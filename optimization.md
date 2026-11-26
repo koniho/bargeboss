@@ -6886,3 +6886,23 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   pulsing mint target ring and a faint throw-reach ring.
 - Canonical replay ecc8a070:2:1350 (was 144a8cff): practice tutorial only (all Parity sections that
   run the practice tutorial disabled: identical a349c251 on both trees). Score/deliveries unchanged.
+
+## 2026-11-26: Weather on every level, with per-level rough and calm water
+
+- Weather was hard-gated to Montrose (`montroseStage()` in the weather step, rain/fog/lightning draw,
+  fog lighting and the evening darkening), so the shared settings did nothing elsewhere.
+  `MontroseWeather` is now `StageWeather` (`Game.weather`); the gates are gone and every stage pipeline
+  calls `WeatherView.scenery` (evening darkening + background haze) after its ground: SurveyLevelView
+  (so every survey level, current and future), TrainingChannelView and MontroseView. Rain, low fog,
+  fog-lit lamps and lightning come from the shared `Renderer` → `WeatherView.draw`. Mission scripts only
+  set the evening/storm flags (Montrose's storm tow ramp stays Montrose-specific).
+- Waves: each level maps exposure (0 sheltered … 1 open water) — `SurveyLevel.waveZones()` (Calumet: lake
+  beyond the river mouth; Indiana: open lake past the outer breakwater, moderate inner harbour; Chicago:
+  lake/Navy Pier east of the entrance), `WaveZones.training` (big towing basin rough, working basins
+  moderate, canal/slips calm), Montrose's authored lake map. Outside Montrose the sea's swell and crest
+  chop scale by `1 + (waves − 1) × exposure`: the default sea (waves 1) is bit-identical everywhere,
+  storms build big waves in open water while rivers and canals stay calmer.
+- `WeatherCoverageTest` (94 assertions): rain, fog, lightning, evening and storm waves render/act on the
+  practice tutorial, practice yard and every challenge stage; each level has rough and calm zones.
+- Canonical replay unchanged (ecc8a070:2:1350): weather is off by default and the default sea is identical.
+- Cost note: fog is two full-screen layers plus 8 glow quads; heavy rain adds up to 384 line streaks.
