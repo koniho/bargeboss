@@ -8,7 +8,7 @@ public final class TrainingChannel {
     public static final float SLIP_LEFT=-2000,SLIP_TOP=250,SLIP_BOTTOM=350;
     public static final float ENTRY_LEFT=-2240,ENTRY_TOP=570,ENTRY_BOTTOM=730;
     /** Towing-challenge basin north of the train basin, joined by a short open mouth. */
-    public static final float CHALLENGE_LEFT=-260,CHALLENGE_RIGHT=760,CHALLENGE_TOP=-2880,CHALLENGE_BOTTOM=-1680;
+    public static final float CHALLENGE_LEFT=20,CHALLENGE_RIGHT=580,CHALLENGE_TOP=-2880,CHALLENGE_BOTTOM=-1680;
     public static final float CHALLENGE_MOUTH_LEFT=250,CHALLENGE_MOUTH_RIGHT=350;
     public static final float[] X={-1180,-1000,-820,-640,-460,-280,-100,80};
     public static final float[] Y={500,390,620,390,620,390,600,500};

@@ -6906,3 +6906,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   practice tutorial, practice yard and every challenge stage; each level has rough and calm zones.
 - Canonical replay unchanged (ecc8a070:2:1350): weather is off by default and the default sea is identical.
 - Cost note: fog is two full-screen layers plus 8 glow quads; heavy rain adds up to 384 line streaks.
+
+## 2026-11-26: Narrower towing-challenge basin (tow across ≈ 50%)
+
+- `TrainingChannel.CHALLENGE_LEFT/RIGHT` −260/760 → 20/580 (1020 → 560 wide, still centred on the
+  unchanged 250..350 mouth). Barge spawn line and tie-off berths follow (SPAWN_X/BERTH_X derive from the
+  walls): the tow across drops from 930 to 470 units. Walls, collision, shore masks, roads/workshops, the
+  overview map and the rough-water wave zone all derive from the same constants.
+- Canonical replay 2ce50f2c:2:1350 (was ecc8a070). Score/deliveries unchanged. Unlike tutorial-only
+  changes, the practice yard section also moves: it shares the training geography (overview map scale and
+  regenerated quay buildings), so the non-tutorial hash differs too (a349c251 → 7862aab9) by design.
