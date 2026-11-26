@@ -6979,3 +6979,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   Bisected: with `MontroseArcade.step` and the bonus/banner in `complete` disabled the replay returns
   exactly to 53c5a10e; the cause is the quick-job bonus added to the replayed haulout and swimmer job
   scores and the banner drawn at those hand-offs.
+
+## Replay hash split (state strict, draw advisory)
+
+- `Parity` now keeps two hashes: `state` from the explicit gameplay samples (tug/cargo poses, health,
+  score, rope, audio event order) and `hash` from every draw command. `CoreTest` gates only the state
+  hash (`STATE_BASELINE`) and prints a NOTE when the draw hash moves (`DRAW_BASELINE`). Visual-only
+  work no longer needs a bisect; gameplay changes still do. `ios/scripts/parity.sh` still compares the
+  whole signature, so JVM / J2ObjC determinism remains checked for both.
+- Verified: a water-texture alpha tweak moves draw 827b4a7c -> a2e8da9f with state unchanged.
+- Baselines: state=c1d995af:2:1350, draw=827b4a7c (same code as the old combined 7370ec74).

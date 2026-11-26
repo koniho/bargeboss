@@ -1,9 +1,12 @@
 package com.bargeboss.game;
 
-/** Translated by J2ObjC too: CI compares this state/drawing trace with the JVM output. */
+/** Translated by J2ObjC too: CI compares this state/drawing trace with the JVM output.
+ * Two hashes: `state` samples gameplay (positions, health, score, audio events) and gates changes
+ * strictly; `hash` covers every draw command and is advisory, so visual work needs no bisecting.
+ * The cross-platform parity script still compares both. */
 public final class Parity implements Painter {
     private static boolean tracing;
-    private int hash=1,ordinal;
+    private int hash=1,state=1,ordinal;
     private void mark(String label) { if(tracing) System.out.println("COMMAND "+label); }
     public static int filenameHash(String value) {
         // J2ObjC maps String.hashCode() to NSString.hash, whose algorithm is native.
@@ -14,6 +17,9 @@ public final class Parity implements Painter {
     }
     private void add(int value) { hash=31*hash+value; if(tracing) System.out.println((ordinal++)+" "+value+" "+hash); }
     private void value(float f) { add(Math.round(f*100)); }
+    /** Gameplay samples: the strict state hash. */
+    private void stateAdd(int value) { state=31*state+value; if(tracing) System.out.println((ordinal++)+" S "+value+" "+state); }
+    private void stateValue(float f) { stateAdd(Math.round(f*100)); }
     public void pushClipOutside(float[] triangles){mark("clipOutside");add(8);add(triangles.length);for(float v:triangles)value(v);}
     public void popClip(){mark("clipRestore");add(9);}
     public void rect(float x,float y,float w,float h,int c) { mark("rect"); add(1); value(x); value(y); value(w); value(h); add(c); }
@@ -70,9 +76,9 @@ public final class Parity implements Painter {
             if(i==1260) g.cancel();
             g.step();
             if(i%60==0) {
-                p.add(g.ticks); p.add(g.score); p.add(g.delivered); p.add(g.hull); p.add(g.ropePhase); p.add(g.ropeTicks); p.add(g.cameraZoomHoldTicks);
-                p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.value(g.tug.engineLoad); p.add(g.water.emitted);
-                for(Body b:g.cargo) if(b!=null) { p.add(b.id); p.add(b.ability);p.add(b.abilityTicks);p.add(b.abilityCooldown);p.value(b.abilityAim); p.add(b.active?1:0); p.value(b.x); p.value(b.y); p.value(b.angle); p.add(b.lineAttached?1:0); p.add(b.mooringTicks); p.add(b.unloadingTicks); p.add(b.lineSnapTicks); p.add(b.tieBurstTicks); p.value(b.heave); p.add(b.wakeKickTicks); }
+                p.stateAdd(g.ticks); p.stateAdd(g.score); p.stateAdd(g.delivered); p.stateAdd(g.hull); p.stateAdd(g.ropePhase); p.stateAdd(g.ropeTicks); p.stateAdd(g.cameraZoomHoldTicks);
+                p.stateValue(g.tug.x); p.stateValue(g.tug.y); p.stateValue(g.tug.angle); p.stateValue(g.tug.heave); p.stateValue(g.tug.engineLoad); p.stateAdd(g.water.emitted);
+                for(Body b:g.cargo) if(b!=null) { p.stateAdd(b.id); p.stateAdd(b.ability);p.stateAdd(b.abilityTicks);p.stateAdd(b.abilityCooldown);p.stateValue(b.abilityAim); p.stateAdd(b.active?1:0); p.stateValue(b.x); p.stateValue(b.y); p.stateValue(b.angle); p.stateAdd(b.lineAttached?1:0); p.stateAdd(b.mooringTicks); p.stateAdd(b.unloadingTicks); p.stateAdd(b.lineSnapTicks); p.stateAdd(b.tieBurstTicks); p.stateValue(b.heave); p.stateAdd(b.wakeKickTicks); }
             }
             if(i%600==0) Renderer.draw(g,p);
         }
@@ -87,7 +93,7 @@ public final class Parity implements Painter {
         rescue(p);
         joystick(p);
         slipTether(p);
-        return Integer.toHexString(p.hash)+":"+g.delivered+":"+g.score;
+        return "state="+Integer.toHexString(p.state)+":"+g.delivered+":"+g.score+" draw="+Integer.toHexString(p.hash);
     }
     private static void slipTether(Parity p){
         Game root=new Game();ReplayInput.startPractice(root);Game g=root.activeGame();
@@ -96,8 +102,8 @@ public final class Parity implements Painter {
         for(int i=0;i<240;i++){
             if(i==45)ReplayInput.throttle(g,90,0);
             if(i==180){g.cancelInputs();ReplayInput.down(g,g.bollardX(g.tug),g.bollardY(g.tug));ReplayInput.up(g,g.bollardX(g.tug),g.bollardY(g.tug));}
-            g.step();p.value(g.tug.x);p.value(g.tug.y);p.value(g.tug.angle);p.value(g.tug.vx);p.value(g.tug.vy);p.value(g.tug.spin);
-            p.add(g.tug.lineAttached?1:0);p.value(g.slipMooring.length);p.add(g.ropePhase);
+            g.step();p.stateValue(g.tug.x);p.stateValue(g.tug.y);p.stateValue(g.tug.angle);p.stateValue(g.tug.vx);p.stateValue(g.tug.vy);p.stateValue(g.tug.spin);
+            p.stateAdd(g.tug.lineAttached?1:0);p.stateValue(g.slipMooring.length);p.stateAdd(g.ropePhase);
             if(i%30==0)Renderer.draw(g,p);
         }
     }
@@ -106,11 +112,11 @@ public final class Parity implements Painter {
         Game root=new Game();root.configureCanvas(1333,600);root.startTutorial();Game g=root.activeGame();
         for(int tick=0;tick<460;tick++){
             if(tick==280){Layout.Box box=g.dialogue.choiceBox(g,1);root.pointerDown(77,box.centerX(),box.centerY());root.pointerUp(77,box.centerX(),box.centerY());ReplayInput.finishMenu(root);}
-            root.step();p.value(g.tug.x);p.value(g.teacherBoat().x);p.value(g.teacherBoat().vx);
-            p.add(RadioAudio.sequence(root));p.add(RadioAudio.cue(root));p.add(g.dialogue.result());
+            root.step();p.stateValue(g.tug.x);p.stateValue(g.teacherBoat().x);p.stateValue(g.teacherBoat().vx);
+            p.stateAdd(RadioAudio.sequence(root));p.stateAdd(RadioAudio.cue(root));p.stateAdd(g.dialogue.result());
             if(tick==100 || tick==270 || tick==281 || tick==400 || tick==459)Renderer.draw(root,p);
         }
-        for(int color:new int[]{0xffa95d32,0xffb9b5ad,0x608e4228,0x00112233})p.add(SpriteGrade.argb(SpriteAtlas.TEACHER_TUG,color));
+        for(int color:new int[]{0xffa95d32,0xffb9b5ad,0x608e4228,0x00112233})p.stateAdd(SpriteGrade.argb(SpriteAtlas.TEACHER_TUG,color));
     }
     private static void joystick(Parity p) {
         Game g=new Game();g.configureCanvas(1333.3334f,600);ReplayInput.startPractice(g);
@@ -119,13 +125,13 @@ public final class Parity implements Painter {
             ReplayInput.tap(g,side==GameSettings.LEFT?Layout.JOYSTICK_LEFT:Layout.JOYSTICK_RIGHT);
             ReplayInput.tap(g,Layout.SOUND_LEVEL);ReplayInput.tap(g,Layout.SOUND_MUTE);
             ReplayInput.tap(g,Layout.MUSIC_LEVEL);ReplayInput.tap(g,Layout.MUSIC_MUTE);
-            Renderer.draw(g,p);p.add(filenameHash(g.saveProgress()));
-            Game saved=new Game();saved.restoreProgress(g.saveProgress());p.add(filenameHash(saved.saveProgress()));
-            p.value(saved.settings.soundGain());p.value(saved.settings.musicGain());
+            Renderer.draw(g,p);p.stateAdd(filenameHash(g.saveProgress()));
+            Game saved=new Game();saved.restoreProgress(g.saveProgress());p.stateAdd(filenameHash(saved.saveProgress()));
+            p.stateValue(saved.settings.soundGain());p.stateValue(saved.settings.musicGain());
             ReplayInput.tap(g,Layout.SETTINGS_BACK);
             Game active=g.activeGame();float x=Joystick.centerX(active),y=Joystick.centerY(active);
             g.pointerDown(4,x,y);g.pointerMove(4,x+28,y-28);
-            for(int tick=0;tick<30;tick++){g.step();p.value(active.tug.x);p.value(active.tug.y);p.value(active.tug.angle);}
+            for(int tick=0;tick<30;tick++){g.step();p.stateValue(active.tug.x);p.stateValue(active.tug.y);p.stateValue(active.tug.angle);}
             Renderer.draw(g,p);g.pointerUp(4,x+28,y-28);g.step();Renderer.draw(g,p);
         }
     }
@@ -133,25 +139,25 @@ public final class Parity implements Painter {
     private static void goalLevels(Parity p) {
         for(int id:new int[]{0,Challenges.MONTROSE,Challenges.INDIANA}){
             Game g=new Game();g.challengeId=id;g.reset();
-            for(int i=0;i<120;i++){g.step();p.value(g.tug.x);p.value(g.tug.y);p.add(g.hull);}
-            Renderer.draw(g,p);p.add(g.goalProgress());
+            for(int i=0;i<120;i++){g.step();p.stateValue(g.tug.x);p.stateValue(g.tug.y);p.stateAdd(g.hull);}
+            Renderer.draw(g,p);p.stateAdd(g.goalProgress());
             if(id==Challenges.MONTROSE){
-                Body disabled=g.cargo[0];for(int tick=0;tick<2400 && !disabled.deliveryRecorded;tick++){ReplayInput.work(g);g.step();if(tick%90==0){p.value(disabled.x);p.value(disabled.y);p.add(g.haulout.warping?1:0);Renderer.draw(g,p);}}
-                p.add(g.challengeId);p.add(g.career.bestStars(Challenges.HAULOUT));Renderer.draw(g,p);
+                Body disabled=g.cargo[0];for(int tick=0;tick<2400 && !disabled.deliveryRecorded;tick++){ReplayInput.work(g);g.step();if(tick%90==0){p.stateValue(disabled.x);p.stateValue(disabled.y);p.stateAdd(g.haulout.warping?1:0);Renderer.draw(g,p);}}
+                p.stateAdd(g.challengeId);p.stateAdd(g.career.bestStars(Challenges.HAULOUT));Renderer.draw(g,p);
             }
             if(id==0){
                 for(int site=0;site<CalumetRiver.JOB_SITES.length;site++){
                     float[] at=CalumetRiver.JOB_SITES[site];g.layout=Layout.focused(960,600,at[0],at[1],1.5f,480,300);Renderer.draw(g,p);
                 }
                 for(Body body:g.cargo)if(body!=null)body.deliveryRecorded=true;
-                g.voyage.step(g);p.add(g.voyage.job);p.add(g.career.totalStars());Renderer.draw(g,p);
+                g.voyage.step(g);p.stateAdd(g.voyage.job);p.stateAdd(g.career.totalStars());Renderer.draw(g,p);
             }
         }
     }
     private static void rescue(Parity p){
         Game g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);Renderer.draw(g,p);
         float x=(g.cargo[0].x+g.cargo[1].x)*.5f,y=g.cargo[0].y;
-        ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.add(g.rescue.rafted?1:0);Renderer.draw(g,p);
+        ReplayInput.down(g,x,y);ReplayInput.up(g,x,y);for(int i=0;i<30;i++)g.step();p.stateAdd(g.rescue.rafted?1:0);Renderer.draw(g,p);
         // Isolate the new free-aim rescue lifecycle from navigation; trace real public
         // fling input, fixed-step swimming, flotation and climbing for every survivor.
         g=RescueBargeTest.scene();g.rescue.barge.towed=true;Body barge=g.rescue.barge.boat;
@@ -161,24 +167,24 @@ public final class Parity implements Painter {
             RescueBargeTest.fling(g,g.rescue.x[person]+12,g.rescue.y[person]);
             for(int i=0;i<1600 && g.rescue.state[person]!=4;i++){
                 RescueBargeTest.ticks(g,1);
-                if(i%180==0){p.add(g.rescue.state[person]);p.value(g.rescue.x[person]);p.value(g.rescue.y[person]);Renderer.draw(g,p);}
+                if(i%180==0){p.stateAdd(g.rescue.state[person]);p.stateValue(g.rescue.x[person]);p.stateValue(g.rescue.y[person]);Renderer.draw(g,p);}
             }
             if(g.rescue.state[person]!=4)throw new IllegalStateException("Swimmer did not board");
         }
         g.step();if(g.challengeId!=Challenges.WAKE_PATROL || g.job==null)throw new IllegalStateException("Swimmer replay did not hand off to the next Montrose job");
-        p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
+        p.stateAdd(g.score);p.stateAdd(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {
         Game g=new Game(); g.resetPracticeYard();
         for(int i=0;i<350;i++) {
             g.step();
             if(i%30==0) { Renderer.draw(g,p); for(Feeder f:g.feeders) {
-                p.add(f.phase); p.add(f.drops); p.add(f.shoutTicks); p.add(f.blocked?1:0); p.value(f.boat.y);
+                p.stateAdd(f.phase); p.stateAdd(f.drops); p.stateAdd(f.shoutTicks); p.stateAdd(f.blocked?1:0); p.stateValue(f.boat.y);
             } }
         }
         g.resetPracticeYard(); g.tug.x=260; g.tug.y=760;
         for(int i=0;i<410;i++) g.step();
-        Renderer.draw(g,p); p.add(g.feeders[0].blockedTicks);
+        Renderer.draw(g,p); p.stateAdd(g.feeders[0].blockedTicks);
     }
     private static void tap(Game root,float x,float y) { root.pointerDown(0,x,y); root.pointerUp(0,x,y); ReplayInput.finishMenu(root); }
     private static void tutorial(Parity p) {
@@ -189,15 +195,15 @@ public final class Parity implements Painter {
             ReplayInput.tutorial(root);
             root.step();
             for(int slot=0;slot<Towline.CAPACITY;slot++) {
-                Towline link=g.tow.link(slot);p.add(link==null || link.cargo==null?0:link.cargo.id);
-                if(link!=null && link.cargo!=null){p.add(link.leader.id);p.value(link.length);p.value(link.tension);}
+                Towline link=g.tow.link(slot);p.stateAdd(link==null || link.cargo==null?0:link.cargo.id);
+                if(link!=null && link.cargo!=null){p.stateAdd(link.leader.id);p.stateValue(link.length);p.stateValue(link.tension);}
             }
-            if(g.cargo[0]!=null) { p.value(g.cargo[0].x);p.value(g.cargo[0].y);p.value(g.cargo[0].angle); }
-            p.add(g.tutorial.lesson);p.add(g.tutorial.helm.phase);p.add(g.tutorial.helm.pace);p.add(g.tutorial.navigation.slipPhase);p.add(g.tutorial.navigation.retry?1:0);p.add(g.tutorial.navigation.mapPhase);p.add(SoundEffects.sequence(g));p.add(SoundEffects.cue(g));p.add(g.tutorial.channelGate);p.value(g.layout.camera.worldRight); p.add(g.control); p.add(root.pollHaptic());
-            p.add(g.tutorial.firstTowParked?1:0);p.add(g.tutorial.towBridges.phase);p.add(g.tutorial.towBridges.authorized[1]?1:0);p.add(g.tutorial.towBridges.authorized[2]?1:0);p.add(g.passages.position[1]);p.add(g.passages.position[2]);
-            p.add(g.tutorial.canal.phase);p.add(g.tutorial.canal.authorized?1:0);p.add(g.passages.position[0]);
-            p.add(g.tutorial.canal.escort.gate);p.add(g.tutorial.canal.escort.waiting?1:0);p.add(g.radio.transmitter());
-            p.value(g.tug.x); p.value(g.tug.y); p.value(g.tug.angle); p.value(g.tug.heave); p.add(g.water.emitted); p.add(g.ropeDragging?1:0); p.add(g.ropePhase); p.add(g.ropeTicks);
+            if(g.cargo[0]!=null) { p.stateValue(g.cargo[0].x);p.stateValue(g.cargo[0].y);p.stateValue(g.cargo[0].angle); }
+            p.stateAdd(g.tutorial.lesson);p.stateAdd(g.tutorial.helm.phase);p.stateAdd(g.tutorial.helm.pace);p.stateAdd(g.tutorial.navigation.slipPhase);p.stateAdd(g.tutorial.navigation.retry?1:0);p.stateAdd(g.tutorial.navigation.mapPhase);p.stateAdd(SoundEffects.sequence(g));p.stateAdd(SoundEffects.cue(g));p.stateAdd(g.tutorial.channelGate);p.stateValue(g.layout.camera.worldRight); p.stateAdd(g.control); p.stateAdd(root.pollHaptic());
+            p.stateAdd(g.tutorial.firstTowParked?1:0);p.stateAdd(g.tutorial.towBridges.phase);p.stateAdd(g.tutorial.towBridges.authorized[1]?1:0);p.stateAdd(g.tutorial.towBridges.authorized[2]?1:0);p.stateAdd(g.passages.position[1]);p.stateAdd(g.passages.position[2]);
+            p.stateAdd(g.tutorial.canal.phase);p.stateAdd(g.tutorial.canal.authorized?1:0);p.stateAdd(g.passages.position[0]);
+            p.stateAdd(g.tutorial.canal.escort.gate);p.stateAdd(g.tutorial.canal.escort.waiting?1:0);p.stateAdd(g.radio.transmitter());
+            p.stateValue(g.tug.x); p.stateValue(g.tug.y); p.stateValue(g.tug.angle); p.stateValue(g.tug.heave); p.stateAdd(g.water.emitted); p.stateAdd(g.ropeDragging?1:0); p.stateAdd(g.ropePhase); p.stateAdd(g.ropeTicks);
             if(i%30==0) Renderer.draw(root,p);
         }
         throw new IllegalStateException("Tutorial replay did not finish");
@@ -207,7 +213,7 @@ public final class Parity implements Painter {
         ReplayInput.tap(g,Layout.START); Renderer.draw(g,p);
         ReplayInput.throttle(g,0,-100);
         for(int i=0;i<45;i++) g.step();
-        p.value(g.tug.x); p.value(g.tug.y); Renderer.draw(g,p);
+        p.stateValue(g.tug.x); p.stateValue(g.tug.y); Renderer.draw(g,p);
         g.background(); Renderer.draw(g,p);
         g.configureCanvas(960,720); Renderer.draw(g,p);
         g.pause(); g.startTutorial(); Renderer.draw(g,p);
@@ -217,11 +223,11 @@ public final class Parity implements Painter {
         g.mode=Game.CHALLENGES; Renderer.draw(g,p);
         g.selectChallenge(1); g.reset();
         g.ticks=120; g.delivered=g.quota(); g.hull=95; g.lost=0; g.score=7500;
-        g.step(); p.add(g.earnedStars); p.add(g.career.rank()); p.add(g.progressVersion());
-        p.add(filenameHash(g.saveProgress())); Renderer.draw(g,p);
+        g.step(); p.stateAdd(g.earnedStars); p.stateAdd(g.career.rank()); p.stateAdd(g.progressVersion());
+        p.stateAdd(filenameHash(g.saveProgress())); Renderer.draw(g,p);
         Game restored=new Game(); restored.restoreProgress(g.saveProgress());
         restored.configureCanvas(1333.3334f,600); restored.mode=Game.CHALLENGES;
-        p.add(filenameHash(restored.saveProgress())); Renderer.draw(restored,p);
+        p.stateAdd(filenameHash(restored.saveProgress())); Renderer.draw(restored,p);
     }
     public static void diagnostic() {
         tracing=true;
