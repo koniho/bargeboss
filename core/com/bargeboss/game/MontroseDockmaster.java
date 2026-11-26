@@ -27,7 +27,7 @@ public final class MontroseDockmaster {
                 reply="COPY. SEARCHLIGHT ON. BRINGING RINGS AND THE RESCUE BARGE.";break;
             case Challenges.WAKE_PATROL:
                 title="GOOD MORNING. WE'VE GOT HOOLIGANS";
-                detail="SIX SPEEDERS IN THE NO-WAKE ZONE. BUMP 'EM AND I'LL MAIL THE TICKETS.";
+                detail="SIX SPEEDERS IN THE NO-WAKE ZONE. BUMP 'EM, THEN TOW 'EM TO THE POLICE BOAT BY THE CANS.";
                 reply="COPY. TIME TO WRITE SOME TICKETS.";break;
             case Challenges.LOOSE_BOATS:
                 title="SQUALL JUST BLEW THROUGH";

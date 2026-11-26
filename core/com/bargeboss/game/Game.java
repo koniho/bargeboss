@@ -1177,12 +1177,12 @@ public final class Game {
         damage(passages.collide(tug,splashes));
         if(hasBridge()) damage(bridge.collide(tug,splashes));
         if(lockStage()) damage(lock.collide(tug,splashes));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else if(level!=null)level.integrate(this,b);else Physics.integrate(b); if(level!=null){damage(level.collide(b,splashes));damage(level.obstacles(this,b,splashes));}else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,b,splashes));damage(passages.collide(b,splashes));if(hasBridge()) damage(bridge.collide(b,splashes));if(lockStage()) damage(lock.collide(b,splashes)); }
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else if(level!=null)level.integrate(this,b);else Physics.integrate(b); if(level!=null){cargoDamage(level.collide(b,splashes));cargoDamage(level.obstacles(this,b,splashes));}else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)cargoDamage(hit);}else cargoDamage(MontroseHarbor.collide(this,b,splashes));cargoDamage(passages.collide(b,splashes));if(hasBridge()) cargoDamage(bridge.collide(b,splashes));if(lockStage()) cargoDamage(lock.collide(b,splashes)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active || haulout.inLift(a)) continue;
                 damage(Physics.collide(tug,a,splashes));
-                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null && !haulout.inLift(cargo[j])) damage(Physics.collide(a,cargo[j],splashes));
+                for(int j=i+1;j<cargo.length;j++) if(cargo[j]!=null && !haulout.inLift(cargo[j])) cargoDamage(Physics.collide(a,cargo[j],splashes));
             }
         }
         if(teacherBoat()!=null){
@@ -1218,18 +1218,18 @@ public final class Game {
         if(lockStage()){
             // Cargo/float contact correction happens after integration: it cannot push hulls through doors.
             damage(lock.collide(tug,splashes));
-            for(Body b:cargo)if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup)damage(lock.collide(b,splashes));
+            for(Body b:cargo)if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup)cargoDamage(lock.collide(b,splashes));
             if(trafficActive())lock.collide(trafficBoat,splashes);
         }
-        damage(passages.collide(tug,splashes));for(Body b:cargo)if(b!=null && b.active)damage(passages.collide(b,splashes));
+        damage(passages.collide(tug,splashes));for(Body b:cargo)if(b!=null && b.active)cargoDamage(passages.collide(b,splashes));
         SurveyLevel survey=level();
         if(survey!=null){
             damage(survey.obstacles(this,tug,splashes));damage(survey.collide(tug,splashes));
-            for(Body b:cargo)if(b!=null && b.active){damage(survey.obstacles(this,b,splashes));damage(survey.collide(b,splashes));}
+            for(Body b:cargo)if(b!=null && b.active){cargoDamage(survey.obstacles(this,b,splashes));cargoDamage(survey.collide(b,splashes));}
         }
         if(montroseStage()){
             damage(MontroseHarbor.collide(this,tug,splashes));
-            for(Body b:cargo)if(b!=null && b.active)damage(MontroseHarbor.collide(this,b,splashes));
+            for(Body b:cargo)if(b!=null && b.active)cargoDamage(MontroseHarbor.collide(this,b,splashes));
         }
         // Fender damping follows motion time; mooring confirmation uses real time.
         for(Body b:cargo) if(b!=null && b.active) {
@@ -1389,6 +1389,13 @@ public final class Game {
     private void damage(float speed) {
         if(speed<78) return;
         hardHit();
+    }
+    /** Hull the tug is charged when a hull it tows or pushes slams into something (its crew's fault, not a ram). */
+    public static final int CARGO_HIT=9;
+    private void cargoDamage(float speed) {
+        if(speed<78 || tutorial!=null || damageCooldown>0) return;
+        ownDamage+=Math.min(CARGO_HIT,hull);hull=Math.max(0,hull-CARGO_HIT); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("TOW SLAMMED - HULL -"+CARGO_HIT);
+        impactX=tug.x; impactY=tug.y; impactTicks=45;haptic(HAPTIC_IMPACT);
     }
     /** One hard hit on the tug (cooldown-limited): walls, hulls, and smashing through traffic. */
     private void hardHit() {

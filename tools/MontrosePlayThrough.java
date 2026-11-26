@@ -90,7 +90,15 @@ public final class MontrosePlayThrough {
         if(lassoCooldown>0)lassoCooldown--;
         MontroseJob job=g.job;if(job==null)return;
         if(id==Challenges.WAKE_PATROL){
-            WakePatrolJob w=(WakePatrolJob)job;Body t=null;float best=1e9f;
+            WakePatrolJob w=(WakePatrolJob)job;
+            // A ticketed speeder goes to the police impound before chasing the next one.
+            for(int i=0;i<w.speeders.length;i++)if(w.ticketed[i] && !w.impounded[i] && w.warp[i]==0 && g.tow.connected(w.speeders[i],g.tug)){
+                Body b=w.speeders[i];across(g,b,WakePatrolJob.RING_X,WakePatrolJob.RING_Y,Physics.length(b.x-WakePatrolJob.RING_X,b.y-WakePatrolJob.RING_Y));return;}
+            for(int i=0;i<w.speeders.length;i++)if(w.ticketed[i] && !w.impounded[i] && w.warp[i]==0){
+                Body b=w.speeders[i];float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);
+                if(d<130 && lassoCooldown==0 && g.canTow(b)){lasso(g,b);lassoCooldown=40;return;}
+                drive(g,b.x,b.y,d<200?45:90);return;}
+            Body t=null;float best=1e9f;
             for(int i=0;i<w.speeders.length;i++){Body b=w.speeders[i];if(!b.active||w.ticketed[i])continue;float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);if(d<best){best=d;t=b;}}
             if(t==null){stop(g);return;}
             // Lead the target a little.

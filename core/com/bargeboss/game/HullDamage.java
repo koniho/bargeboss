@@ -38,6 +38,8 @@ final class HullDamage {
         if(!(w instanceof Body) || w==g.tug)return false;
         Body b=(Body)w;
         if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return false;
+        // Parked traffic hulls (a police boat, impounded or ticketed boats awaiting a tow) cannot be wrecked.
+        if(b.traffic && b.awaitingPickup)return false;
         b.healthBefore=b.health;b.health=Math.max(0,b.health-(b.traffic?SMASH:HIT));b.damagedTick=g.ticks;
         g.othersDamage+=b.healthBefore-b.health;
         if(b.traffic)g.harborTraffic.rammed(b);

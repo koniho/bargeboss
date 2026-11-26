@@ -16,8 +16,16 @@ public final class MontroseJobsTest {
         Game g=job(Challenges.WAKE_PATROL);WakePatrolJob wake=(WakePatrolJob)g.job;
         for(int t=0;t<120;t++)g.step();
         float moved=0;for(Body b:wake.speeders)moved=Math.max(moved,b.speed());check(moved>40,"speeders tear around the marina");
-        for(int i=0;i<WakePatrolJob.SPEEDERS;i++){Body b=wake.speeders[i];at(g,b.x-b.half-g.tug.half,b.y);frames(g,1);check(wake.ticketed[i],"bumping speeder "+i+" tickets it");}
-        check(g.delivered==WakePatrolJob.SPEEDERS,"six tickets complete wake patrol");
+        for(int i=0;i<WakePatrolJob.SPEEDERS;i++)check(MontroseHarbor.contains(WakePatrolJob.SLOT_X[i],WakePatrolJob.SLOT_Y),"impound slot "+i+" is on the water");
+        for(int i=0;i<WakePatrolJob.SPEEDERS;i++){Body b=wake.speeders[i];at(g,b.x-b.half-g.tug.half,b.y);frames(g,1);
+            check(wake.ticketed[i] && g.cargo[i]==b && b.awaitingPickup && g.delivered==i,"bumping speeder "+i+" tickets it; it waits dead in the water for a tow");
+            check(g.tow.canAttach(g,b,g.tug) || Physics.length(b.x-g.tug.x,b.y-g.tug.y)>0,"a ticketed speeder takes a line");
+            b.awaitingPickup=false;b.x=WakePatrolJob.RING_X;b.y=WakePatrolJob.RING_Y;b.vx=b.vy=0;frames(g,WakePatrolJob.WARP+2);
+            check(wake.impounded[i] && g.delivered==i+1 && Physics.length(b.x-WakePatrolJob.SLOT_X[wake.slot[i]],b.y-WakePatrolJob.SLOT_Y)<1,"dropping speeder "+i+" at the police boat impounds it in the holding row");
+            check(!g.tow.canAttach(g,b,g.tug),"an impounded speeder stays put");}
+        for(int t=0;t<300;t++)g.step();
+        for(int i=0;i<WakePatrolJob.SPEEDERS && g.challengeId==Challenges.WAKE_PATROL;i++)check(wake.speeders[i].active,"impounded speeders remain in the holding area");
+        check(g.challengeId!=Challenges.WAKE_PATROL || g.delivered==WakePatrolJob.SPEEDERS,"six impounded speeders complete wake patrol");
 
         g=job(Challenges.LOOSE_BOATS);LooseBoatsJob loose=(LooseBoatsJob)g.job;
         float x0=g.cargo[0].x;for(int t=0;t<300;t++)g.step();check(g.cargo[0].x!=x0,"the squall pushes the drifters");

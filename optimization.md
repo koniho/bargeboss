@@ -7065,3 +7065,17 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   boats keep their speed. Water Taxi clock 2:30 -> 3:00 (slow fairway traffic).
 - Play-through (bot now steers around traffic) completes all seven jobs; taxi 141 s of the old 150.
 - Gameplay hash unchanged (no hard hits or traffic samples in the replay); draw -> 37166713.
+
+## Wake Patrol: tow ticketed speeders to the police impound
+
+- A bumped speeder is ticketed (+150) and sits dead in the water as a cargo hull; it must be lassoed
+  and towed into the police impound ring south of the mooring cans (-240,-100), where the police
+  crew warps it into a holding row slot (six side by side at y=-85) and it stays (+400, counts).
+  The police boat (strobing light bar) and parked traffic hulls cannot be wrecked or farmed for
+  near misses.
+- Speeder links now also test dock walkways (a hull probe never pushed by harbor walls); the
+  unlinked north-east spot is gone.
+- Hulls the tug tows or pushes slamming into things charge Game.CARGO_HIT=9 (the tug's own hard
+  hits stay at 25).
+- Play-through: Wake Patrol 6/6 impounded in 180 s, no hull lost. Gameplay hash unchanged; draw
+  37166713 -> babe49b5 (police boat in the replayed Wake Patrol frame).
