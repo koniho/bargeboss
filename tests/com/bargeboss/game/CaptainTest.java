@@ -179,7 +179,7 @@ final class CaptainTest {
         check(g.portrait.state(g)==PlayerPortrait.IDLE,"collisions between other vessels are not the captain's fault");
         g.splashes.contact(g.tug,null,300,400,95,0,0,0,95);g.splashes.step(g);
         check(g.portrait.state(g)==PlayerPortrait.IDLE,"hitting the shore is not hitting another vessel");
-        g.splashes.step(g);g.splashes.contact(g.tug,g.cargo[1],300,400,95,0,0,0,95);g.splashes.step(g);g.splashes.step(g);
+        g.ticks+=HullDamage.COOLDOWN;g.splashes.step(g);g.splashes.contact(g.tug,g.cargo[1],300,400,95,0,0,0,95);g.splashes.step(g);g.splashes.step(g);
         check(g.portrait.winceTicks==PlayerPortrait.WINCE_TICKS,"each contact winces once, on its first tick");
     }
 }

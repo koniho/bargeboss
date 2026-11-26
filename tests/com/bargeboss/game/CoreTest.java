@@ -212,7 +212,11 @@ public final class CoreTest {
         // come from cached unit-space tiles (draw commands only; repeat calls are identical).
         // Bisected: routing the non-union view mask back to per-frame buildShore restores
         // f74bb9ae exactly; the spread spatial hash keys do not change output.
-        check(Parity.signature().equals("289ac27e:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Player captain: HUD portrait, ribbon/edge-cue offsets and the title captain shortcut (draw
+        // commands) plus the BBG3 save line (saveProgress hashes). Bisected: with that drawing and
+        // the BBG2 save format restored, 3f51f7ac is exact; score and deliveries are unchanged.
+        // Merged onto the unified HUD (289ac27e, itself draw-only): combined 698cb458.
+        check(Parity.signature().equals("698cb458:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

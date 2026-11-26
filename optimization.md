@@ -6732,3 +6732,23 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
     Chicago and the tow-circle fixture).
 - Canonical replay 289ac27e:2:1350 (was 3f51f7ac): draw only; restoring ScreenView/HarborView/Game
   reproduces 3f51f7ac exactly.
+## 2026-11-25: Player captain portrait, captain intro and first-start tutorial routing
+
+- `PlayerPortrait` draws in the top-left corner of every voyage: one PilotGlass plate, one atlas
+  sprite (576x384 sheet, prepared with every `LevelAssets` plan so no lazy texture load mid-play),
+  a cached name label and, during short radio acknowledgements, a constant-colour bubble with a
+  reused tail polygon (cached text layer, no per-frame allocation). State (mad/wince/ack timers)
+  steps in fixed `Game.step` ticks; drawing never mutates it. Idle blink/breathing come from
+  `visualTicks`. Mad on own hull damage (`Game.damage`); wince when `HullDamage` damages another
+  vessel in a contact with the tug or a lined vessel, or a moored boat.
+- The objective ribbon starts right of the portrait when centring would overlap it (not at 960 or
+  wider today); edge cues near the top-left slide below it; the DEV PANEL button moved below it.
+- Canonical replay 388211f0:2:1350 (was 3f51f7ac): draw trace plus the new BBG3 save line hashed
+  by the progression replay. Bisected: portrait/title/ribbon drawing disabled and the BBG2 save
+  restored gives 3f51f7ac exactly; save format alone b3e01c46, drawing alone 5b49c156. Score and
+  deliveries unchanged; the replay's own tutorial/practice entry path is unchanged (its one title
+  Start tap uses a returning-player fixture).
+- Not profiled on device: the cost is one extra sprite, three rects and a cached label per frame.
+
+- Merged onto main after the unified-HUD change (289ac27e): combined canonical replay 698cb458:2:1350
+  (both changes draw/save-only and bisected separately; score/deliveries unchanged).
