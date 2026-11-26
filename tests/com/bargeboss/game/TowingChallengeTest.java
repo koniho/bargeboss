@@ -153,7 +153,8 @@ public final class TowingChallengeTest {
         check(root.career.save().equals(new Game().career.save()),"practice best never touches career stars");
         for(int i=0;i<TowingChallenge.RESULT_DELAY+20;i++)root.step();
         ReplayInput.tap(root,g.dialogue.choiceBox(g,0));for(int i=0;i<30;i++)root.step();
-        check(g.tutorial.lesson==Tutorial.DONE,"finish training leaves the challenge");
+        int left=0;for(Body b:g.cargo)if(b!=null)left++;
+        check(g.tutorial.lesson==Tutorial.SHOW && left==4 && !g.tutorial.fireworks.launched,"back to celebrate: the ten challenge hulls leave and the fireworks lesson begins");
     }
     private static void hudAndCamera(){
         for(int width:new int[]{960,1333,1800}){

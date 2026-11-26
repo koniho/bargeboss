@@ -15,6 +15,7 @@ public final class Mooring {
     public static void step(Game g,Body b) {
         if(g.calumetStage()){g.voyage.moor(g,b);return;}
         if(g.challengeHull(b)){g.tutorial.challenge.moor(g,b);return;}
+        if(g.ballHull(b)){g.tutorial.mooring.moor(g,b);return;}
         if(g.indianaStage()){indiana(g,b);return;}
         if(g.berthBlocker(b.berth,b)!=null)return;
         if(b.mooringTicks<TIGHTEN_TICKS+ALIGN_TICKS) b.mooringTicks++;

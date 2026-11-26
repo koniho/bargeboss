@@ -78,8 +78,10 @@ public final class NavigationLightsTest {
             check(lit>0 && dark>lit,"single flashes have a longer true dark interval");
         }
         Game g=new Game();g.startTutorial();g=g.activeGame();
-        int first=NavigationLights.count(g)-2;
+        int first=NavigationLights.count(g)-3;
         for(int i=0;i<2;i++)check(NavigationLights.x(g,first+i)==Tutorial.DRIVE_X[i] && NavigationLights.y(g,first+i)==Tutorial.DRIVE_Y[i] && NavigationLights.color(g,first+i)==NavigationLights.YELLOW,"practice buoy models stay at actual circling centers and use distinct yellow lamps");
+        int ball=NavigationLights.count(g)-1;
+        check(NavigationLights.x(g,ball)==PracticeMooring.X && NavigationLights.y(g,ball)==PracticeMooring.Y && NavigationLights.color(g,ball)==MooringBuoyArt.WHITE && g.inWater(PracticeMooring.X,PracticeMooring.Y),"practice mooring ball floats white in the woodpile basin");
         System.out.println(checks+" lateral light side, flash, land/water placement, depth and animation assertions passed");
     }
     private static final class Capture implements Painter {

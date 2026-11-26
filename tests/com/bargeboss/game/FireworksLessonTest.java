@@ -26,10 +26,10 @@ public final class FireworksLessonTest {
         steps(g,200);check(g.abilities.spraying && g.tutorial.fireworks.heat==FireworksLesson.HEAT,"spraying away from flames earns no credit");
         g.pointerCancel(88);check(!g.abilities.spraying,"cancel stops water emission");
         boolean towed=false;
-        for(int i=0;i<5000 && g.tutorial.lesson<Tutorial.CHALLENGE;i++){ReplayInput.tutorial(g);g.step();
+        for(int i=0;i<5000 && g.tutorial.lesson<Tutorial.MOOR;i++){ReplayInput.tutorial(g);g.step();
             if(g.tutorial.lesson==Tutorial.EXTINGUISH && g.tutorial.fireworks.heat>0)towed|=g.tutorial.fireworks.targetGroup()>0 && Physics.length(fire.x-FireworksLesson.TOW_X,fire.y-FireworksLesson.TOW_Y)>150;}
         check(towed,"later quay groups require towing the fire barge away from the marked water");
-        check(g.tutorial.lesson==Tutorial.CHALLENGE && g.tutorial.fireworks.done && g.tutorial.fireworks.heat==0,"aimed simulated water hits are required to finish the fire lesson");
+        check(g.tutorial.lesson==Tutorial.MOOR && g.tutorial.fireworks.done && g.tutorial.fireworks.heat==0,"aimed simulated water hits are required to finish the fire lesson");
         check(g.cargo[0]==first && g.cargo[2]==second && g.cargo[3]==fire,"finale preserves all three original specialty barges");
         steps(g,200);check(g.tutorial.fireworks.steam==0,"completion steam expires during the towing challenge");
         g=fixture(Tutorial.EXTINGUISH);FireworksLesson fires=g.tutorial.fireworks;

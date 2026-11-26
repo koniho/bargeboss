@@ -162,6 +162,8 @@ public final class Game {
     public boolean berthRight(int berth) { return calumetStage()?voyage.normalX(voyage.destination(berth))>0:!orderStage() && berth==1; }
     /** Ten towing-challenge hulls use their own far-quay berths instead of practice berth A. */
     boolean challengeHull(Body b){return tutorial!=null && tutorial.challenge.owns(b);}
+    /** Fireworks barges tied to the practice mooring ball in the last lesson. */
+    boolean ballHull(Body b){return tutorial!=null && tutorial.mooring.owns(this,b);}
     public Body berthBlocker(int berth,Body incoming) {
         if(challengeHull(incoming))return tutorial.challenge.blocker(this,incoming);
         if(calumetStage())return voyage.blocker(this,incoming==null?voyage.destination(berth):incoming.destination,incoming);
@@ -282,6 +284,9 @@ public final class Game {
         if(tutorial.lesson==Tutorial.BRIDGE || tutorial.lesson==Tutorial.TRAIN)return workCamera(1.5f,0,true);
         // The large basin keeps a transit-scale view that still fits the whole towed train.
         if(tutorial.lesson==Tutorial.CHALLENGE)return workCamera(TowingChallenge.ZOOM,0,true);
+        // Mooring: one steady frame on the tug and the ball, so ties and tows never re-target the view.
+        if(tutorial.lesson==Tutorial.MOOR){float bx=tutorial.mooring.x(this),by=tutorial.mooring.y(this);
+            return Layout.focused(layout.width,layout.height,tug.x*.65f+bx*.35f,tug.y*.65f+by*.35f,1.3f,layout.width*.5f,layout.height*.58f);}
         float entrance=Physics.clamp((tug.x-(TrainingChannel.MIN-160))/160,0,1);
         entrance=entrance*entrance*(3-2*entrance);
         float travelZoom=PRACTICE_DRIVE_ZOOM+(PRACTICE_CANAL_ZOOM-PRACTICE_DRIVE_ZOOM)*entrance;
@@ -655,6 +660,7 @@ public final class Game {
         return orderStage()?PhysicalBerths.fits(challengeId,b):Math.abs(b.x-dockX(b))<=55 && Math.abs(b.y-dockY(b))<=53;
     }
     private boolean tieEligible(Body b) {
+        if(ballHull(b))return tutorial.mooring.tieable(this,b);
         if(b==tug)return SlipMooring.eligible(this);
         // Wide berths permit angled catches and winch alignment. Narrow physical
         // slips require the complete hull inside so the winch cannot cross a quay.
@@ -665,16 +671,17 @@ public final class Game {
     }
     boolean ropeWithinReach(Body b) {
         if(b==tug)return SlipMooring.eligible(this);
+        if(ballHull(b))return tutorial.mooring.tieable(this,b);
         return b!=null && b.voyageJob!=Challenges.HAULOUT && !b.yacht && b.active && !b.deliveryRecorded && !b.lineAttached && berthEnabled(b.berth) && (!calumetStage() || b.voyageJob==voyage.job) && berthBlocker(b.berth,b)==null
                 && Math.abs(b.x-dockX(b))<105 && Math.abs(b.y-dockY(b))<105;
     }
     /** Raised quay fittings share the exact projection used by touch and rope drawing. */
     public float bollardX(int berth) { return calumetStage()?voyage.bollardX(voyage.destination(berth)):(indianaStage()?IndianaHarbor.DOCK_X+IndianaHarbor.DOCK_NX*64:orderStage()?PhysicalBerths.LEFT-25:berthRight(berth)?480:120)+(!montroseStage()?RiverCamera.riseX(GroundArt.LAND_RISE):0); }
     public float bollardY(int berth) { return calumetStage()?voyage.bollardY(voyage.destination(berth)):(indianaStage()?IndianaHarbor.DOCK_Y+IndianaHarbor.DOCK_NY*64:dockY(berth))+(!montroseStage()?RiverCamera.riseY(GroundArt.LAND_RISE):0); }
-    public float dockX(Body b){if(challengeHull(b))return tutorial.challenge.dockX(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.X;if(b.cruiser)return MontroseRescue.berth(b.berth).x;if(b.yacht)return MontroseHarbor.SLIP_X;return calumetStage() && b.destination>=0?voyage.dockX(b.destination):dockX(b.berth);}
-    public float dockY(Body b){if(challengeHull(b))return tutorial.challenge.dockY(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.Y;if(b.cruiser)return MontroseRescue.berth(b.berth).y;if(b.yacht)return MontroseHarbor.SLIP_Y;return calumetStage() && b.destination>=0?voyage.dockY(b.destination):dockY(b.berth);}
-    public float bollardX(Body b){if(b==tug)return SlipMooring.x();if(challengeHull(b))return tutorial.challenge.bollardX(b);return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
-    public float bollardY(Body b){if(b==tug)return SlipMooring.y();if(challengeHull(b))return tutorial.challenge.bollardY(b);return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
+    public float dockX(Body b){if(ballHull(b))return tutorial.mooring.x(this);if(challengeHull(b))return tutorial.challenge.dockX(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.X;if(b.cruiser)return MontroseRescue.berth(b.berth).x;if(b.yacht)return MontroseHarbor.SLIP_X;return calumetStage() && b.destination>=0?voyage.dockX(b.destination):dockX(b.berth);}
+    public float dockY(Body b){if(ballHull(b))return tutorial.mooring.y(this);if(challengeHull(b))return tutorial.challenge.dockY(b);if(b.voyageJob==Challenges.HAULOUT)return MontroseHaulout.Y;if(b.cruiser)return MontroseRescue.berth(b.berth).y;if(b.yacht)return MontroseHarbor.SLIP_Y;return calumetStage() && b.destination>=0?voyage.dockY(b.destination):dockY(b.berth);}
+    public float bollardX(Body b){if(b==tug)return SlipMooring.x();if(ballHull(b))return tutorial.mooring.x(this)+RiverCamera.riseX(PracticeMooring.TOP);if(challengeHull(b))return tutorial.challenge.bollardX(b);return calumetStage() && b.destination>=0?voyage.bollardX(b.destination):bollardX(b.berth);}
+    public float bollardY(Body b){if(b==tug)return SlipMooring.y();if(ballHull(b))return tutorial.mooring.y(this)+RiverCamera.riseY(PracticeMooring.TOP);if(challengeHull(b))return tutorial.challenge.bollardY(b);return calumetStage() && b.destination>=0?voyage.bollardY(b.destination):bollardY(b.berth);}
     public float ropeOriginX() { return ropeBody.x+ropeLocalX*(float)StrictMath.cos(ropeBody.angle)-ropeLocalY*(float)StrictMath.sin(ropeBody.angle); }
     public float ropeOriginY() { return ropeBody.y+ropeLocalX*(float)StrictMath.sin(ropeBody.angle)+ropeLocalY*(float)StrictMath.cos(ropeBody.angle); }
     public boolean overTiePoint(Body b,float x,float y) {
@@ -682,11 +689,13 @@ public final class Game {
     }
     public float aimX(Body b,float x,float y) {
         if(b==tug)return overTiePoint(b,x,y)?bollardX(b):x;
+        if(ballHull(b))return overTiePoint(b,x,y)?bollardX(b):x;
         if(challengeHull(b))return overTiePoint(b,x,y)?bollardX(b):Physics.clamp(x,TrainingChannel.CHALLENGE_LEFT,TrainingChannel.CHALLENGE_RIGHT+80);
         SurveyLevel level=level();return overTiePoint(b,x,y)?bollardX(b):level!=null?Physics.clamp(x,level.minX(),level.maxX()):Physics.clamp(x,TIE_X[0]-TIE_RADIUS,TIE_X[1]+TIE_RADIUS);
     }
     public float aimY(Body b,float x,float y) {
         if(b==tug)return overTiePoint(b,x,y)?bollardY(b):y;
+        if(ballHull(b))return overTiePoint(b,x,y)?bollardY(b):y;
         if(challengeHull(b))return overTiePoint(b,x,y)?bollardY(b):Physics.clamp(y,TrainingChannel.CHALLENGE_TOP-47,TrainingChannel.CHALLENGE_BOTTOM+40);
         SurveyLevel level=level();return overTiePoint(b,x,y)?bollardY(b):level!=null?Physics.clamp(y,level.minY(),level.maxY()):Physics.clamp(y,channelTop()-47,816);
     }

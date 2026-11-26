@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 public final class BuoyCollisionReview {
     public static void main(String[] args)throws Exception{
         Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);
-        int marker=NavigationLights.count(g)-2;Buoys.Buoy b=g.buoys.get(g,marker);
+        int marker=NavigationLights.count(g)-3;Buoys.Buoy b=g.buoys.get(g,marker);
         g.tug.x=b.anchorX-72;g.tug.y=b.anchorY;g.tug.angle=0;
         ReplayInput.throttle(g,110,0);
         File dir=new File("out/buoy-collision-motion");dir.mkdirs();

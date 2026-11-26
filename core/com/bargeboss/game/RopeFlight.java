@@ -29,7 +29,7 @@ public final class RopeFlight {
         float distance=returning?1-(1-(1-t)*(1-t)):tip(t),u=distance*fraction;
         float currentX=g.ropeOriginX(),currentY=g.ropeOriginY(),currentHeight=RopeAttachment.height(g.ropeBody)+WaterSurface.lift(g,g.ropeBody);
         float sx=returning?currentX:g.ropeStartX,sy=returning?currentY:g.ropeStartY,h=returning?currentHeight:g.ropeStartHeight;
-        float endRise=!g.ropeToTug && !g.montroseStage()?GroundArt.LAND_RISE:0;
+        float endRise=g.ropeToTug?0:g.ballHull(g.ropeBody)?PracticeMooring.TOP:!g.montroseStage()?GroundArt.LAND_RISE:0;
         float ex=g.ropeEndX-RiverCamera.riseX(endRise),ey=g.ropeEndY-RiverCamera.riseY(endRise);
         float dx=ex-sx,dy=ey-sy,reach=Math.max(1,Physics.length(dx,dy)),nx=-dy/reach,ny=dx/reach;
         // Travelling S-wave: zero at the hand and the tip, strongest mid-line, gone when the loop lands.

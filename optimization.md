@@ -6838,3 +6838,22 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   the towing CHALLENGE (21) then starts from a different tug/barge position (4451 vs 3947 ticks).
   Full-tutorial replay budgets raised by 3000 ticks (Parity, ControlsTest, ContinuousTutorialTest,
   TrainReview).
+
+## 2026-11-26: Practice order — towing challenge before the celebration; fireworks barges moored last
+
+- Lessons renumbered: RELEASE 17 → CHALLENGE 18 → SHOW (fireworks, "go back to celebrate") 19 →
+  FIRE_TOW 20 → EXTINGUISH 21 → MOOR 22 (new) → DONE 23. Phase skips: driving → towing →
+  towing challenge → barge abilities (fireworks, fire, mooring) → done. Titles/praise reordered.
+- RELEASE parks both uncoupled fireworks barges (they otherwise drift south on the canal current for the
+  60 s challenge); the challenge result offers BACK TO CELEBRATE / TRY AGAIN and its ten hulls leave play.
+- MOOR: `PracticeMooring` — a white mooring ball (third tutorial float: shared buoy physics, depth sort,
+  MooringBuoyArt) at (180,−1370) in the woodpile basin. The fireworks barges (found by ability; practice
+  reorders cargo slots) are towed to it and tied with the normal lasso (reach 165); a tied barge is
+  winched in to a 72-unit riding line, turns bow-to-ball and is kept clear of the other. The lesson ends
+  when both are tied and snug. EXTINGUISH now casts off and parks the fire barge. Objective markers:
+  CELEBRATE / TAP A FIREWORKS BARGE, then FIREWORKS BARGE / MOORING BALL. Steady camera on tug + ball.
+- Tests: `PracticeMooringTest`; skip-order, challenge-finish, fireworks and buoy-index tests updated;
+  full-tutorial tick budgets +3000 (bot run ≈ 22,000 ticks).
+- Canonical replay 569d9fda:2:1350 (was ae32a7f8). Gameplay change confined to practice-tutorial play:
+  with every Parity section that runs the practice tutorial (tutorial, radio, responsive, joystick,
+  slipTether) disabled, old and new trees hash identically (2bd6de79). Score/deliveries unchanged.

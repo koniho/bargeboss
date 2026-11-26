@@ -122,6 +122,18 @@ public final class HarborView {
             if(next!=null)destination(g,canvas,next.x,next.y,"COLLECT BARGES");
             return;
         }
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.SHOW && !g.tutorial.fireworks.launched && g.abilities.selected==null && g.ropePhase==0){
+            // After the big basin: head back to the yard and celebrate with a fireworks barge.
+            Body b=nearer(g,PracticeMooring.hull(g,0),PracticeMooring.hull(g,1));if(b!=null)destination(g,canvas,b.x,b.y,"CELEBRATE / TAP A FIREWORKS BARGE");return;
+        }
+        if(g.tutorial!=null && g.tutorial.lesson==Tutorial.MOOR){
+            if(g.ropeDragging || g.ropePhase!=0)return;
+            Body towing=null,loose=null;
+            for(int i=0;i<PracticeMooring.HULLS;i++){Body b=PracticeMooring.hull(g,i);if(b==null || b.lineAttached)continue;if(g.tow.connected(b,g.tug))towing=b;else if(loose==null)loose=b;}
+            if(towing!=null || loose==null)destination(g,canvas,g.tutorial.mooring.x(g),g.tutorial.mooring.y(g),"MOORING BALL");
+            else destination(g,canvas,loose.x,loose.y,"FIREWORKS BARGE");
+            return;
+        }
         // The early lessons teach a touch target, before the berth destination.
         if(g.tutorial!=null && (g.tutorial.lesson<Tutorial.DOCK || g.tutorial.lesson>=Tutorial.DOUBLE)) return;
         int berth=focused(g); if(berth<0 || g.ropeDragging || g.ropePhase!=0) return;
@@ -130,6 +142,10 @@ public final class HarborView {
         boolean ready=false; for(Body b:g.cargo) if(b!=null && b.active && (g.sharedBerthStage() || b.berth==berth)) ready|=g.canTie(b);
         if(ready) return;
         destination(g,canvas,g.dockX(berth),g.dockY(berth),g.sharedBerthStage()?"UNLOADING SLIP":"BERTH "+g.berthLetter(berth));
+    }
+    private static Body nearer(Game g,Body a,Body b){
+        if(a==null || !a.active)return b!=null && b.active?b:null;if(b==null || !b.active)return a;
+        return Physics.length(a.x-g.tug.x,a.y-g.tug.y)<=Physics.length(b.x-g.tug.x,b.y-g.tug.y)?a:b;
     }
     /** Marker height that keeps an edge marker (arrow plus its label below) off the HUD controls. */
     static float clearOfControls(Game g,float x,float y){

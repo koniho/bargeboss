@@ -19,7 +19,7 @@ public final class ContinuousTutorialTest {
             Game g=root.activeGame();Body tug=g.tug,load=g.cargo[0],towLoad=g.cargo[1];
             check(load!=null && towLoad!=null && load!=towLoad,"both teaching barges exist when practice begins");
             int seen=0,transitions=0,waitAtTow=0;boolean closeWorkSeen=false;
-            for(int tick=0;tick<23500 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
+            for(int tick=0;tick<26500 && g.tutorial.lesson!=Tutorial.DONE;tick++) {
                 int lesson=g.tutorial.lesson;seen|=1<<lesson;
                 int marker=g.tutorial.driveMarker,gate=g.tutorial.channelGate;root.pollHaptic();
                 float x=tug.x,y=tug.y,lx=load.x,ly=load.y,bx=towLoad.x,by=towLoad.y;

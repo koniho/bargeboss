@@ -30,7 +30,7 @@ public final class TutorialHoldTest {
             check(g.tutorial.lesson==Tutorial.STEER,"hold must finish after real "+(drag?"steered":"assisted")+" push on "+size[0]+"x"+size[1]);
             check(Physics.length(b.x-292,b.y-700)>6,"lesson requires a real manual push, without an arbitrary placement target");
             ReplayInput.up(root,g.pointerX,g.pointerY);
-            for(int i=0;i<11500 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
+            for(int i=0;i<14500 && g.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(root);root.step(); }
             check(g.tutorial.lesson==Tutorial.DONE,"remaining lessons remain completable after holding: "+size[0]+"x"+size[1]+" drag="+drag+" lesson="+g.tutorial.lesson+" tug="+g.tug.x+","+g.tug.y+" radio="+g.tutorial.towBridges.current(g)+"/"+g.tutorial.towBridges.phase+" contact="+g.tutorial.towBridges.contactable(g)+" tow="+g.tow.count()+" house="+g.tutorial.towBridges.houseX(g,1)+","+g.tutorial.towBridges.houseY(g,1)+" zoom="+g.layout.camera.zoom);
         }
         Game root=lesson(960,600),g=root.activeGame();Body b=g.cargo[0];

@@ -19,7 +19,7 @@ public final class Buoys {
     public void reset(Game g){
         floats=new Buoy[NavigationLights.count(g)];
         for(int i=0;i<floats.length;i++)if(!NavigationLights.land(g,i)){
-            floats[i]=new Buoy(NavigationLights.anchorX(g,i),NavigationLights.anchorY(g,i),NavigationLights.size(g,i),g.montroseStage() && i>=2);
+            floats[i]=new Buoy(NavigationLights.anchorX(g,i),NavigationLights.anchorY(g,i),NavigationLights.size(g,i),g.montroseStage() && i>=2 || g.tutorial!=null && i==NavigationLights.practiceMooring(g));
         }
     }
     /** Uninitialized preview/stage fixtures fall back to anchors without mutating during drawing. */

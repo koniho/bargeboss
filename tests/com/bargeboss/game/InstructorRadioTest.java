@@ -19,15 +19,15 @@ public final class InstructorRadioTest {
             call(root);int tick=radio.ticks;g.pause();ticks(root,60);check(radio.ticks==tick,"pause freezes instructor conversation");g.pause();
             reply(root,1);check(g.tutorial.lesson==Tutorial.CONNECT,"skip driving goes directly to towing");
             check(g.passages.passable(0) && g.cargo[0]!=null,"towing starts with open canal and cargo ready");
-            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.SHOW,"skip towing prepares abilities");
-            check(g.tow.loadCount(g.tug)==0 && g.cargo[0].ability==BargeAbilities.FIREWORKS && !g.tutorial.fireworks.launched,"abilities starts with released fireworks barges ready to activate");
-            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.CHALLENGE && g.dialogue.active,"skip abilities opens the towing challenge briefing");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.CHALLENGE && g.dialogue.active,"skip towing opens the towing challenge briefing");
             ticks(root,20);reply(root,0);check(!g.dialogue.active && g.tutorial.challenge.phase==TowingChallenge.APPROACH,"briefing reply hands over to the basin approach");
-            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.DONE && !g.dialogue.active,"skip towing challenge finishes training");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.SHOW,"skip towing challenge goes back to celebrate");
+            check(g.tow.loadCount(g.tug)==0 && g.cargo[0].ability==BargeAbilities.FIREWORKS && !g.tutorial.fireworks.launched,"abilities starts with released fireworks barges ready to activate");
+            call(root);reply(root,1);check(g.tutorial.lesson==Tutorial.DONE && !g.dialogue.active,"skip abilities and mooring finishes training");
             for(int lesson=Tutorial.MOVE;lesson<Tutorial.DONE;lesson++){
                 g.tutorial.lesson=lesson;g.tutorial.setup(g);
                 if(lesson==Tutorial.CHALLENGE){ticks(root,20);reply(root,0);}
-                int expected=lesson<Tutorial.CONNECT?Tutorial.CONNECT:lesson<Tutorial.SHOW?Tutorial.SHOW:lesson<Tutorial.CHALLENGE?Tutorial.CHALLENGE:Tutorial.DONE;
+                int expected=lesson<Tutorial.CONNECT?Tutorial.CONNECT:lesson<Tutorial.CHALLENGE?Tutorial.CHALLENGE:lesson<Tutorial.SHOW?Tutorial.SHOW:Tutorial.DONE;
                 call(root);check(g.dialogue.content().title.contains(g.tutorial.phaseName()),"confirmation names the entire phase");reply(root,1);
                 check(g.tutorial.lesson==expected,"skip from every sublesson reaches next phase boundary");
                 check(!g.tutorial.feedback.active(),"skipping does not claim earned lesson praise");

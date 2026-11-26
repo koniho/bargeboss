@@ -44,13 +44,15 @@ public final class NavigationLights {
         if(t<37)return (37-t)/12f;
         return 0;
     }
-    public static int count(Game g){if(surveyed(g))return markers(g).length;return entrances(g).length*2+(g.montroseStage()?MontroseHarbor.MOORINGS.length:g.tutorial!=null?2:0);}
-    private static boolean mooring(Game g,int i){return g.montroseStage() && i>=2;}
-    private static boolean practice(Game g,int i){return g.tutorial!=null && i>=entrances(g).length*2;}
-    public static boolean land(Game g,int i){return g.montroseStage()?i<2:g.tutorial!=null && !practice(g,i);}
+    public static int count(Game g){if(surveyed(g))return markers(g).length;return entrances(g).length*2+(g.montroseStage()?MontroseHarbor.MOORINGS.length:g.tutorial!=null?3:0);}
+    /** Tutorial float index of the practice mooring ball (after the two practice buoys). */
+    static int practiceMooring(Game g){return entrances(g).length*2+2;}
+    private static boolean mooring(Game g,int i){return g.montroseStage()?i>=2:g.tutorial!=null && i==practiceMooring(g);}
+    private static boolean practice(Game g,int i){return g.tutorial!=null && i>=entrances(g).length*2 && i<practiceMooring(g);}
+    public static boolean land(Game g,int i){return g.montroseStage()?i<2:g.tutorial!=null && i<entrances(g).length*2;}
     private static int practiceIndex(Game g,int i){return i-entrances(g).length*2;}
-    public static float anchorX(Game g,int i){if(surveyed(g))return markers(g)[i][0];return mooring(g,i)?MontroseHarbor.MOORINGS[i-2][0]:practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
-    public static float anchorY(Game g,int i){if(surveyed(g))return markers(g)[i][1];return mooring(g,i)?MontroseHarbor.MOORINGS[i-2][1]:practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
+    public static float anchorX(Game g,int i){if(surveyed(g))return markers(g)[i][0];return mooring(g,i)?(g.montroseStage()?MontroseHarbor.MOORINGS[i-2][0]:PracticeMooring.X):practice(g,i)?Tutorial.DRIVE_X[practiceIndex(g,i)]:entrances(g)[i/2].markerX(i%2==1);}
+    public static float anchorY(Game g,int i){if(surveyed(g))return markers(g)[i][1];return mooring(g,i)?(g.montroseStage()?MontroseHarbor.MOORINGS[i-2][1]:PracticeMooring.Y):practice(g,i)?Tutorial.DRIVE_Y[practiceIndex(g,i)]:entrances(g)[i/2].markerY(i%2==1);}
     public static float x(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorX(g,i):b.x;}
     public static float y(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?anchorY(g,i):b.y;}
     private static float roll(Game g,int i){Buoys.Buoy b=g.buoys.get(g,i);return b==null?0:b.roll;}
@@ -91,7 +93,7 @@ public final class NavigationLights {
             LandMarkerArt.ground(g,canvas,x(g,i),y(g,i),frame(g,i),color(g,i),power(g,i));
     }
     private static int frame(Game g,int i){return mooring(g,i)?BuoyArt.YELLOW:practice(g,i)?BuoyArt.YELLOW:color(g,i)==RED?BuoyArt.RED:BuoyArt.GREEN;}
-    public static float size(Game g,int i){if(surveyed(g))return BuoyArt.MARKER_SIZE;return mooring(g,i)?10:practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
+    public static float size(Game g,int i){if(surveyed(g))return BuoyArt.MARKER_SIZE;return mooring(g,i)?(g.montroseStage()?10:PracticeMooring.SIZE):practice(g,i)?BuoyArt.PRACTICE_SIZE:entrances(g)[i/2].halfWidth<30?BuoyArt.CHANNEL_SIZE:BuoyArt.MARKER_SIZE;}
     /** Tutorial and Montrose entrances use fixed beacons; mooring/practice marks float. */
     public static void draw(Game g,Painter canvas,int i){
         if(!visible(g,i))return;

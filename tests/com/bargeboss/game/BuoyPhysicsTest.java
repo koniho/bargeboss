@@ -5,7 +5,7 @@ public final class BuoyPhysicsTest {
     private static int checks;
     private static void check(boolean yes,String why){checks++;if(!yes)throw new AssertionError(why);}
     private static Game practice(){Game root=new Game();root.startTutorial();Game g=root.activeGame();g.tutorial.setup(g);return g;}
-    private static Buoys.Buoy first(Game g){return g.buoys.get(g,NavigationLights.count(g)-2);}
+    private static Buoys.Buoy first(Game g){return g.buoys.get(g,NavigationLights.count(g)-3);}
     private static float distance(Buoys.Buoy b){return Physics.length(b.x-b.anchorX,b.y-b.anchorY);}
     private static void approach(Body hull,Buoys.Buoy b,float angle){
         hull.angle=angle;float c=(float)StrictMath.cos(angle),s=(float)StrictMath.sin(angle);
@@ -29,7 +29,7 @@ public final class BuoyPhysicsTest {
         g=practice();b=first(g);approach(g.tug,b,0);g.step();
         check(distance(b)>1 && b.vx>0,"actual game motion step resolves buoy collision");
         check(g.hull==100,"small floating fenders do not cause hull damage");
-        int index=NavigationLights.count(g)-2;
+        int index=NavigationLights.count(g)-3;
         check(NavigationLights.x(g,index)==b.x && NavigationLights.y(g,index)==b.y,"depth, lights, shadows and draw location use displaced body");
         float x=b.x,y=b.y,roll=b.roll,vx=b.vx;
         Renderer.draw(g,new Parity());Renderer.draw(g,new Parity());
@@ -65,7 +65,8 @@ public final class BuoyPhysicsTest {
                 }
             }
         }
-        g=practice();for(int i=0;i<NavigationLights.count(g)-2;i++)check(g.buoys.get(g,i)==null,"land markers have no floating collision body");
+        g=practice();for(int i=0;i<NavigationLights.count(g)-3;i++)check(g.buoys.get(g,i)==null,"land markers have no floating collision body");
+        check(g.buoys.get(g,NavigationLights.count(g)-1)!=null,"practice mooring ball is a floating body");
         g=new Game();g.resetPracticeYard();b=g.buoys.get(g,0);b.x+=b.reach;
         g.tug.x=Physics.LEFT+g.tug.radius;g.tug.y=b.y;g.tug.angle=(float)Math.PI/2;
         g.buoys.step(g);

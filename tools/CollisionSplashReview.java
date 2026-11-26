@@ -11,7 +11,7 @@ public final class CollisionSplashReview {
         if(kind==1){g.startTutorial();g=g.activeGame();}
         for(int i=0;i<g.cargo.length;i++)g.cargo[i]=null;
         if(kind==0){g.tug.x=270;g.tug.y=500;g.tug.angle=0;g.tug.vx=65;g.addCargo(0,330,500);g.cargo[0].angle=0;}
-        else if(kind==1){Buoys.Buoy b=g.buoys.get(g,NavigationLights.count(g)-2);g.tug.x=b.x-38;g.tug.y=b.y;g.tug.angle=0;g.tug.vx=65;}
+        else if(kind==1){Buoys.Buoy b=g.buoys.get(g,NavigationLights.count(g)-3);g.tug.x=b.x-38;g.tug.y=b.y;g.tug.angle=0;g.tug.vx=65;}
         else if(kind==2){Buoys.Buoy b=g.buoys.get(g,1);g.tug.x=b.x-18;g.tug.y=b.y-32;g.tug.angle=(float)Math.PI/2;g.tug.vy=65;}
         else {g.tug.x=415;g.tug.y=500;g.tug.angle=0;g.tug.vx=65;}
         return g;

@@ -256,7 +256,7 @@ public final class ProfileScenario {
             g.layout=Layout.focused(width,height,g.tug.x,g.tug.y,2.2f,width*.52f,height*.56f);return;
         }
         int channelTicks=0;
-        for(int tick=0;tick<24000;tick++) {
+        for(int tick=0;tick<27000;tick++) {
             int lesson=g.tutorial.lesson;
             if(lesson==Tutorial.CHANNEL)channelTicks++;
             if(name.equals("buoy-complete") && g.tutorial.driveMarker==1 && g.tutorial.buoyClearTicks[0]>0 && g.tutorial.buoyClearTicks[0]<=84

@@ -64,7 +64,7 @@ public final class TowingChallenge {
         g.tow.release(g);spawn(g);phase=INTRO;introReply=-1;intro(g);
     }
     private void intro(Game g){
-        g.dialogue.show(g,"INSTRUCTOR / GREEN TUG","ONE LAST JOB: THE BIG BASIN.",
+        g.dialogue.show(g,"INSTRUCTOR / GREEN TUG","TIME FOR THE BIG BASIN.",
                 "TEN BARGES, SIXTY SECONDS. TIE EACH ONE ON THE FAR QUAY.",
                 "START THE CLOCK.","TRAINS COUNT TOO?");
     }
@@ -85,7 +85,7 @@ public final class TowingChallenge {
         remaining=TICKS;tied=0;resultTicks=celebrateTicks=0;newBest=false;
         best=g.settings.towingChallengeBest();
     }
-    /** Returns true once the player chooses to finish training from the result. */
+    /** Returns true once the player chooses to head back and celebrate. */
     boolean step(Game g){
         if(celebrateTicks>0)celebrateTicks--;
         if(phase==INTRO){
@@ -119,7 +119,7 @@ public final class TowingChallenge {
             if(!g.dialogue.active){
                 if(++resultTicks<RESULT_DELAY)return false;
                 resultTicks=0;
-                g.dialogue.show(g,"INSTRUCTOR / GREEN TUG",resultTitle,resultDetail,"FINISH TRAINING.","TRY AGAIN.");
+                g.dialogue.show(g,"INSTRUCTOR / GREEN TUG",resultTitle,resultDetail,"BACK TO CELEBRATE!","TRY AGAIN.");
                 return false;
             }
             if(g.dialogue.result()<0)return false;
@@ -141,6 +141,15 @@ public final class TowingChallenge {
     void retry(Game g){
         g.cancelInputs();g.tow=new Towline();g.ropePhase=g.ropeTicks=0;g.ropeBody=null;g.ropeTowTarget=g.towAimBody=null;g.ropeToTug=false;
         setup(g,true);g.fitTutorialCamera();
+    }
+    /** Leaving the challenge: its ten hulls leave play so later lessons stay light. */
+    void clear(Game g){
+        for(int i=0;i<BARGES;i++){
+            Body old=barges[i];
+            if(old!=null){g.tow.detachBody(g,old);for(int slot=0;slot<g.cargo.length;slot++)if(g.cargo[slot]==old)g.cargo[slot]=null;}
+            barges[i]=null;berth[i]=-1;
+        }
+        phase=IDLE;
     }
     void reset(){
         for(int i=0;i<BARGES;i++){barges[i]=null;berth[i]=-1;}

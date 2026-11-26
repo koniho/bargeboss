@@ -302,6 +302,16 @@ public final class ReplayInput {
         if(g.abilities.owner<0)root.pointerDown(88,x,y);
         hosePile(root,88,f.targetPile(b));
     }
+    /** Woodpile-basin route: the west canal and east corridor only meet through the open basin row. */
+    private static int basinRegion(float x,float y){return y>-1320 && x<100?0:y>-1320 && x>240?2:1;}
+    private static void basinDrive(Game g,float x,float y){
+        int from=basinRegion(g.tug.x,g.tug.y),to=basinRegion(x,y);
+        if(from!=to){
+            float nx=from!=1?(from==0?-50:300):(to==0?-50:300),ny=-1350;
+            if(from!=1 || Physics.length(g.tug.x-nx,g.tug.y-ny)>40){drive(g,nx,ny);return;}
+        }
+        drive(g,x,y);
+    }
     /** Single-barge shuttle through the public gestures: lasso to tug, tow east, tie at the far quay. */
     public static void challenge(Game root){
         Game g=root.activeGame();TowingChallenge c=g.tutorial.challenge;
@@ -408,6 +418,24 @@ public final class ReplayInput {
                 releaseTow(root);break;
             case Tutorial.CHALLENGE:
                 challenge(root);break;
+            case Tutorial.MOOR:{
+                // Fetch each fireworks barge, tow it to the mooring ball and lasso it on.
+                if(g.ropePhase!=0)break;
+                Body b=null;for(int k=0;k<PracticeMooring.HULLS;k++){Body h=PracticeMooring.hull(g,k);if(h!=null && !h.lineAttached){b=h;break;}}
+                if(b==null){if(g.pointer)up(root,g.pointerX,g.pointerY);break;}
+                float bx=g.tutorial.mooring.x(g),by=g.tutorial.mooring.y(g);
+                if(Physics.length(b.x-bx,b.y-by)<=PracticeMooring.REACH-30){
+                    if(g.pointer)up(root,g.pointerX,g.pointerY);
+                    if(b.speed()>40)break;
+                    lasso(root,b);break;
+                }
+                if(!g.tow.connected(b,g.tug)){
+                    if(Physics.length(g.tug.x-b.x,g.tug.y-b.y)>120){basinDrive(g,b.x,b.y-75);break;}
+                    if(g.pointer)up(root,g.pointerX,g.pointerY);
+                    down(root,b.x,b.y);move(root,g.tug.x,g.tug.y);up(root,g.tug.x,g.tug.y);break;
+                }
+                basinDrive(g,bx,by);break;
+            }
             default: break;
         }
     }

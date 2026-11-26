@@ -62,7 +62,7 @@ public final class CareerTest {
         practice.tutorial.lesson=Tutorial.TIE;practice.tutorial.setup(practice);
         practice.delivered=10; practice.score=10000;
         practice.ticks=practice.shiftTicks()-1; practice.step();
-        for(int i=0;i<11500 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
+        for(int i=0;i<14500 && practice.tutorial.lesson!=Tutorial.DONE;i++) { ReplayInput.tutorial(game);game.step(); }
         check(practice.tutorial.lesson==Tutorial.DONE && practice.earnedStars==0,"tutorial completion never records challenge rewards");
         // The towing-challenge best is a shared practice record (like preferences); career data must not move.
         String expected=saved.substring(0,saved.lastIndexOf('\n')+1)+game.settings.towingChallengeBest();

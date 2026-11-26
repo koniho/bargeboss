@@ -63,7 +63,7 @@ public final class TowView {
             }
             for(int slot=0;slot<=g.cargo.length;slot++) {
                 Body b=slot==g.cargo.length?g.tug:g.cargo[slot];if(b==null || !b.active || !b.lineAttached || b.yacht)continue;
-                float tx=g.bollardX(b),ty=g.bollardY(b),rise=g.tutorial!=null?GroundArt.LAND_RISE:0;
+                float tx=g.bollardX(b),ty=g.bollardY(b),rise=g.ballHull(b)?PracticeMooring.TOP:g.tutorial!=null?GroundArt.LAND_RISE:0;
                 float[] fit=new float[2];RopeAttachment.mooring(b,tx,ty,fit);
                 // Bollard coordinates include raised projection; recover ground for depth sorting.
                 float ex=tx-RiverCamera.riseX(rise),ey=ty-RiverCamera.riseY(rise);
