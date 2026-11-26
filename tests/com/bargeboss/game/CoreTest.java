@@ -213,11 +213,13 @@ public final class CoreTest {
         // come from cached unit-space tiles (draw commands only; repeat calls are identical).
         // Bisected: routing the non-union view mask back to per-frame buildShore restores
         // f74bb9ae exactly; the spread spatial hash keys do not change output.
-        // Player captain: HUD portrait, ribbon/edge-cue offsets and the title captain shortcut (draw
-        // commands) plus the BBG3 save line (saveProgress hashes). Bisected: with that drawing and
-        // the BBG2 save format restored, 3f51f7ac is exact; score and deliveries are unchanged.
-        // Merged onto the unified HUD (289ac27e, itself draw-only): combined 698cb458.
-        check(Parity.signature().equals("c07ae8b0:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Towing challenge (lesson 21, DONE renumbered 22) and its permanent basin. Bisected against
+        // 289ac27e (exact on main): basin geometry alone gives 6f06a5df (training water, procedural
+        // roads/workshops, chart scale; draw only). Without the basin or the challenge transition the
+        // remaining tutorial diff is only the hashed DONE id (21->22) on the final tick, the lesson
+        // progress-bar fraction and the BBG3 save string. worldTouch/channelTop widening is neutral.
+        // Delivered/score (2:1350) never change; the practice-yard replay plays identically.
+        check(Parity.signature().equals("a691a143:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

@@ -69,7 +69,7 @@ final class CaptainTest {
     private static void persistence(){
         Game g=new Game();g.settings.setCaptain(PlayerPortrait.WESLIE);
         String save=g.saveProgress();
-        check(save.startsWith("BBG3\n") && save.endsWith("\n0,1"),"captain and tutorial state are saved: "+save);
+        check(save.startsWith("BBG4\n") && save.endsWith("\n0,1\n0"),"captain and tutorial state are saved: "+save);
         Game restored=new Game();restored.restoreProgress(save);
         check(restored.settings.captain()==PlayerPortrait.WESLIE && !restored.settings.tutorialDone(),"captain restores without the tutorial flag");
         g.settings.completeTutorial();restored=new Game();restored.restoreProgress(g.saveProgress());

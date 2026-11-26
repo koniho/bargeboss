@@ -145,7 +145,7 @@ public final class TowingChallengeTest {
         for(int i=0;i<2;i++){Body b=c.barges[i];place(b,i);tie(root,b);}
         while(c.phase==TowingChallenge.RUN)root.step();
         check(c.tied==2 && c.newBest() && g.settings.towingChallengeBest()==2 && g.progressVersion()>before,"a better result saves a new best");
-        String save=root.saveProgress();check(save.startsWith("BBG3\n") && save.endsWith("\n2"),"best travels in the shared progress snapshot");
+        String save=root.saveProgress();check(save.startsWith("BBG4\n") && save.endsWith("\n2"),"best travels in the shared progress snapshot");
         Game restored=new Game();restored.restoreProgress(save);check(restored.settings.towingChallengeBest()==2,"saved best restores");
         restored.restoreProgress(save.substring(0,save.length()-1)+"11");check(restored.settings.towingChallengeBest()==2,"invalid best is rejected atomically");
         Game legacy=new Game();legacy.restoreProgress("BBG2\n"+g.career.save()+"\n1\n100,0,100,0");check(legacy.settings.towingChallengeBest()==0 && legacy.career.save().equals(g.career.save()),"BBG2 saves still restore");

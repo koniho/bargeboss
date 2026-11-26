@@ -6761,3 +6761,37 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   practice entry are still covered (entered directly / via `startTutorial`).
 - Canonical replay c07ae8b0:2:1350 (was 698cb458): draw only; restoring AssistView/Game/MenuFeedback
   reproduces 698cb458 exactly.
+
+## 2026-11-25: Towing-challenge basin (practice lesson 21)
+
+- Platform: desktop JVM/Java2D only (`tools/TowingChallengeProfile.java`, 1320x600, 150 live frames,
+  median/p95 `Game.render` ms; allocation from `ThreadMXBean`). Not native timings.
+- Geometry: one permanent 1020x1200 basin (`TrainingChannel.CHALLENGE_*`) north of the train basin,
+  joined by a 100-wide mouth, added to `WATER_RECTANGLES`/`WATER_BOUNDARY`. Ground, walls, caps,
+  shore masks, collision, roads, workshops (80 -> 94), haulers (74 -> 99) and the chart derive from it;
+  no new renderer or cache. Training chart full zoom is now a fixed detail (`OverviewMap.TRAINING_DETAIL`)
+  so the larger yard keeps the chart lesson's close view (5x on the old yard, 6.2x now).
+- Draw cost (median / p95 ms, submitted calls, sprites):
+  towing-challenge 35.9/45.0, 17474, 13 (5 barges on screen); towing-challenge-wide (all 10 barges, both
+  quays, zoom .65) 43.0/51.3, 24654, 51; barge-bridge 51.9/65.1, 28865; harbor-close 59.2/89.2, 28457;
+  tutorial-yard 43.3/59.4, 24790; canal-middle 45.0/78.7, 25608. The basin is in line with or below
+  existing training scenes.
+- Allocation: `TowingChallenge.step` and its cached panel content allocate ~0 B/tick; HUD labels are
+  pre-built strings. Input-free simulation allocates ~70 KB/tick with all 14 practice hulls vs ~32 KB
+  with the 10 challenge hulls removed (~3.8 KB per extra hull) from existing per-body code paths. Not
+  attributed further; worth a look if GC pauses appear on device.
+- Camera: challenge uses `workCamera(1.4)` with a .06 ease (shift-like) so the full-speed crossing
+  does not trigger `CameraCoverage.follow` snaps (< 20 px per tick, `ContinuousTutorialTest`).
+- `Game.cargo` grew from 9 to 16 slots (4 lesson barges + 10 challenge barges); neutral for parity.
+- Canonical replay 23915678:2:1350 (was 289ac27e). Bisected against main: main reproduces 289ac27e;
+  basin geometry alone gives 6f06a5df (training water, regenerated roads/workshops, chart scale, all
+  draw-only). Without the basin and the CHALLENGE transition, the only remaining differences are the
+  hashed DONE id (21 -> 22) on the final tutorial tick, the lesson progress-bar fraction and the BBG3
+  save string. The worldTouch/channelTop widening, cargo size and chart max zoom are each neutral.
+  Delivered/score (2:1350) never change.
+- Fixtures: `towing-challenge` (20 s into a real run) and `towing-challenge-wide` (all ten barges).
+  Native device/simulator profiling was not run for this change.
+
+- Merged onto main (c07ae8b0, captain + unified HUD + no mission buttons): save format is now BBG4
+  (captain line + towing record; BBG1..BBG3 still load). Combined canonical replay a691a143:2:1350;
+  every component bisected draw/save-only on its own branch; score/deliveries unchanged.
