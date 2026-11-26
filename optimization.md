@@ -6752,3 +6752,12 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 
 - Merged onto main after the unified-HUD change (289ac27e): combined canonical replay 698cb458:2:1350
   (both changes draw/save-only and bisected separately; score/deliveries unchanged).
+
+## 2026-11-25: Mission HUD buttons removed
+
+- HELP and PRACTICE no longer draw, hit-test or highlight in mission HUDs (`AssistView`,
+  `Game.liveButton`/tap routing, `MenuFeedback`); the practice tutorial keeps the same slots as RESET
+  (lesson) and EXIT. Tests now assert the empty mission slots do nothing; the help screen itself and
+  practice entry are still covered (entered directly / via `startTutorial`).
+- Canonical replay c07ae8b0:2:1350 (was 698cb458): draw only; restoring AssistView/Game/MenuFeedback
+  reproduces 698cb458 exactly.

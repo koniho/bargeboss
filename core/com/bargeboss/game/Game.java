@@ -590,8 +590,8 @@ public final class Game {
         if(mapInRiver) up(layout.camera.worldX(x,y),layout.camera.worldY(x,y)); else up(x,y);
     }
     private boolean liveButton(float x,float y) {
-        return layout.box(Layout.HELP).contains(x,y)
-                || layout.box(Layout.PRACTICE).contains(x,y);
+        return tutorial!=null && (layout.box(Layout.HELP).contains(x,y)
+                || layout.box(Layout.PRACTICE).contains(x,y));
     }
     private boolean liveRiverInput() { return mode==PLAY && (tutorial==null || tutorial.lesson!=Tutorial.DONE); }
     public void pointerCancel(int id) {
@@ -912,13 +912,11 @@ public final class Game {
                 if(training) { tutorial=new Tutorial(); tutorial.resumeShift=resume; tutorial.setup(this);tutorial.enter(this);fitTutorialCamera(); }
             }
         } else if(tap) {
-            if(tapped(Layout.HELP,x,y)) {
-                cancelInputs();
-                if(tutorial!=null) tutorial.setup(this); else mode=HELP;
-            } else if(tapped(Layout.PRACTICE,x,y)) {
-                cancelInputs();
-                if(tutorial!=null) tutorial.exitRequested=true;
-                else { startTutorial(); return; }
+            // Missions have no HUD buttons; the practice tutorial keeps RESET (lesson) and EXIT.
+            if(tutorial!=null && tapped(Layout.HELP,x,y)) {
+                cancelInputs();tutorial.setup(this);
+            } else if(tutorial!=null && tapped(Layout.PRACTICE,x,y)) {
+                cancelInputs();tutorial.exitRequested=true;
             }else if(mode==PLAY && pressTicks<12)abilities.deselect();
         }
         cancel();

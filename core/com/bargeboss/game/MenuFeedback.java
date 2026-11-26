@@ -68,7 +68,7 @@ final class MenuFeedback {
             case Game.PAUSE:choices=new Layout.Box[]{Layout.RESUME,Layout.RESTART,Layout.TITLE_SCREEN};break;
             case Game.HELP:choices=new Layout.Box[]{Layout.LEARN,Layout.START};break;
             case Game.FINISH:choices=new Layout.Box[]{Layout.AGAIN,Layout.FINISH_CHALLENGES,Layout.NEXT_CHALLENGE};break;
-            default:choices=g.tutorial!=null && g.tutorial.lesson==Tutorial.DONE?new Layout.Box[]{Layout.START}:g.mode==Game.PLAY && !g.conversation()?new Layout.Box[]{Layout.HELP,Layout.PRACTICE}:new Layout.Box[0];
+            default:choices=g.tutorial!=null && g.tutorial.lesson==Tutorial.DONE?new Layout.Box[]{Layout.START}:g.mode==Game.PLAY && !g.conversation() && g.tutorial!=null?new Layout.Box[]{Layout.HELP,Layout.PRACTICE}:new Layout.Box[0];
         }
         for(Layout.Box candidate:choices){Layout.Box b=g.controlBox(candidate);if(b.contains(x,y))return b;}
         return null;
