@@ -14,8 +14,9 @@ package com.bargeboss.game;
 final class HullDamage {
     private HullDamage(){}
     static final int HIT=9,COOLDOWN=75,SINK=150;
-    /** Harbor traffic is light pleasure craft: a hard ram costs it this much (three smashes sink it). */
-    static final int SMASH=34;
+    /** Harbor traffic is light pleasure craft, far weaker than the tug (which loses HIT=9 a hard hit):
+     * a smash costs it this much, so two sink it. */
+    static final int SMASH=55;
     /** Light craft register a ram at lower closing speeds than working hulls: traffic from SMASH_SPEED,
      * moored marina boats from BUMP_SPEED, with damage scaled by how hard the hit was. */
     static final float SMASH_SPEED=40,BUMP_SPEED=30;
@@ -50,7 +51,7 @@ final class HullDamage {
         if(by!=null && by.traffic)return;
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=BUMP_SPEED) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<MOORED_COOLDOWN)return;
         // A solid bump dents it; a full-speed ram caves it in.
-        int damage=Math.min(40,Math.round(8+(closing-BUMP_SPEED)*.7f));
+        int damage=Math.min(65,Math.round(20+(closing-BUMP_SPEED)));
         m.healthBefore=m.health;m.health=Math.max(0,m.health-damage);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
         shake(g,Math.min(.5f,.15f+damage*.01f));
         g.othersDamage+=m.healthBefore-m.health;PlayerPortrait.wince(g);

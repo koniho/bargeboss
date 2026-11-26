@@ -30,7 +30,7 @@ final class HealthBars {
         // Above the tallest point of the hull: the tug's funnel, a deck load otherwise.
         float lift=(player?44:b.cruiser || b.yacht?34:28)*ArticulatedModel.Z_SCALE+WaterSurface.lift(g,b);
         float health,before;int sinceHit;
-        if(player){health=g.hull/100f;sinceHit=g.ticks-g.hullDamagedTick;before=Math.min(100,g.hull+9)/100f;}
+        if(player){health=g.hull/100f;sinceHit=g.ticks-g.hullDamagedTick;before=Math.min(100,g.hull+Game.TUG_HIT)/100f;}
         else {health=b.health/100f;sinceHit=g.ticks-b.damagedTick;before=b.healthBefore/100f;}
         bar(g,p,b.x,b.y,0,lift,(b.half+b.radius)*1.1f,health,before,sinceHit,player);
     }

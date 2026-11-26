@@ -37,7 +37,7 @@ public final class MontroseJobsTest {
             frames(g,1);
         }
         check(g.delivered==10 && !g.job.failed(g),"ten guests ferried in time ("+g.job.ticks/60+" s)");
-        g=job(Challenges.WATER_TAXI);frames(g,150*60);check(g.goalFailed(),"the taxi clock runs out");
+        g=job(Challenges.WATER_TAXI);frames(g,180*60);check(g.goalFailed(),"the taxi clock runs out");
 
         g=job(Challenges.SANDBAR);SandbarJob bar=(SandbarJob)g.job;Body yacht=bar.yacht;
         at(g,yacht.x-120,yacht.y+70);check(g.tow.attach(g,yacht,g.tug),"the grounded yacht takes a line");

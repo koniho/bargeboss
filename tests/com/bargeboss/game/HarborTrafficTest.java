@@ -44,12 +44,21 @@ public final class HarborTrafficTest {
         Body victim=g.harborTraffic.craft[0].body;victim.vx=victim.vy=0;victim.spin=0;
         g.tug.angle=0;g.tug.x=victim.x-victim.half-g.tug.half-8;g.tug.y=victim.y+4;g.tug.vx=95;g.tug.vy=0;
         int hull=g.hull;float vx=victim.vx;
-        for(int t=0;t<4;t++){Physics.integrate(g.tug);g.harborTraffic.collide(g,g.splashes);}
+        float smashed=0;for(int t=0;t<4;t++){Physics.integrate(g.tug);smashed=Math.max(smashed,g.harborTraffic.collide(g,g.splashes));}
         check(g.tug.vx>60,"the tug keeps its way through the boat ("+g.tug.vx+")");
         check(victim.vx>vx+30 && victim.spin!=0,"the rammed boat is shoved and spun aside");
-        check(g.hull==hull,"smashing traffic never costs the tug hull");
-        for(int k=0;k<3;k++){g.ticks+=HullDamage.COOLDOWN;g.splashes.contact(g.tug,victim,victim.x,victim.y,120,0,0,0,120);for(int s=0;s<=CollisionSplashes.COOLDOWN;s++)g.splashes.step(g);}
-        check(victim.sinkTicks>0 && victim.health==0,"three hard smashes sink a pleasure boat");
+        check(smashed>=HullDamage.SMASH_SPEED,"a full-speed smash reports a hard tug impact (Game charges TUG_HIT) ("+smashed+")");
+        for(int k=0;k<2;k++){g.ticks+=HullDamage.COOLDOWN;g.splashes.contact(g.tug,victim,victim.x,victim.y,120,0,0,0,120);for(int s=0;s<=CollisionSplashes.COOLDOWN;s++)g.splashes.step(g);}
+        check(victim.sinkTicks>0 && victim.health==0,"two hard smashes sink a pleasure boat");
+        // No-wake marina: law-abiding traffic idles inside the harbor; the hooligan and lake boats do not.
+        g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;g.tug.x=-2000;g.tug.y=-4000;
+        float fastest=0,hooligan=0,lake=0;
+        for(int t=0;t<60*30;t++){g.harborTraffic.step(g,g.splashes);
+            for(HarborTraffic.Craft each:g.harborTraffic.craft){Body b=each.body;if(t<300)continue;
+                if(HarborTraffic.noWake(b.x,b.y)){if(each.hooligan)hooligan=Math.max(hooligan,b.speed());else fastest=Math.max(fastest,b.speed());}
+                else lake=Math.max(lake,b.speed());}}
+        check(fastest<=HarborTraffic.NO_WAKE+3,"marina traffic keeps to no-wake speed ("+fastest+")");
+        check(hooligan>40 && lake>60,"the hooligan and the lake boats still run fast ("+hooligan+", "+lake+")");
         System.out.println("Harbor traffic lanes, motion and damage passed");
     }
     public static void main(String[] a){run();}

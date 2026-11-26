@@ -35,7 +35,7 @@ public final class MontroseDockmaster {
                 reply="COPY. ROUNDING UP STRAYS.";break;
             case Challenges.WATER_TAXI:
                 title="PARTY AT THE INLET PIER";
-                detail="GUESTS ARE WAVING FROM THE DOCKS. THREE SEATS. TWO AND A HALF MINUTES.";
+                detail="GUESTS ARE WAVING FROM THE DOCKS. THREE SEATS. THREE MINUTES. MIND THE NO-WAKE TRAFFIC.";
                 reply="COPY. TAXI'S OPEN.";break;
             case Challenges.SANDBAR:
                 title="YACHT ON THE BAR";

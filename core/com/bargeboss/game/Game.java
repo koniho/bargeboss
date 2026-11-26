@@ -1198,7 +1198,8 @@ public final class Game {
             if(f.load!=null) feederContact(f.load);
         }
         traffic();
-        if(montroseStage()){harborTraffic.step(this,splashes);damage(harborTraffic.collide(this,splashes));if(job!=null)job.motion(this);}
+        // Smashing through traffic hard enough to wreck the boat costs the tug a hard hit too.
+        if(montroseStage()){harborTraffic.step(this,splashes);if(harborTraffic.collide(this,splashes)>=HullDamage.SMASH_SPEED)hardHit();if(job!=null)job.motion(this);}
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }
         int currentContact=contact==null?-1:contact.id;
@@ -1383,10 +1384,16 @@ public final class Game {
             } else navigate(Physics.LEFT+60,TrainingChannel.Y[TrainingChannel.Y.length-1],speed);
         } else navigate(x,y,speed);
     }
+    /** Hull a hard hit costs the tug: a quarter of it, so four hard hits sink the tug. */
+    public static final int TUG_HIT=25;
     private void damage(float speed) {
-        if(tutorial!=null) return;
-        if(speed<78 || damageCooldown>0) return;
-        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("HARD IMPACT - HULL -9");
+        if(speed<78) return;
+        hardHit();
+    }
+    /** One hard hit on the tug (cooldown-limited): walls, hulls, and smashing through traffic. */
+    private void hardHit() {
+        if(tutorial!=null || damageCooldown>0) return;
+        ownDamage+=Math.min(TUG_HIT,hull);hull=Math.max(0,hull-TUG_HIT); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("HARD IMPACT - HULL -"+TUG_HIT);
         impactX=tug.x; impactY=tug.y; impactTicks=45;
         haptic(HAPTIC_IMPACT);
     }

@@ -38,6 +38,10 @@ public final class MontrosePlayThrough {
         if(backing>0){if(--backing==0)lift(g);float c=(float)Math.cos(g.tug.angle+.6f),s=(float)Math.sin(g.tug.angle+.6f);ReplayInput.throttle(g,-c*70,-s*70);return;}
         if(g.tug.speed()<4 && Physics.length(tx-g.tug.x,ty-g.tug.y)>60){if(++stuck>90){stuck=0;backing=60;lift(g);}}else stuck=0;
         float[] w=path(g.tug.x,g.tug.y,tx,ty);float dx=w[0]-g.tug.x,dy=w[1]-g.tug.y,len=Physics.length(dx,dy);
+        // Steer around traffic in the lane like a player would (smashing costs a quarter of the hull).
+        if(len>1)for(HarborTraffic.Craft c:g.harborTraffic.craft){Body o=c.body;if(!o.active)continue;
+            float rx=o.x-g.tug.x,ry=o.y-g.tug.y,ahead=(rx*dx+ry*dy)/len,lateral=(-rx*dy+ry*dx)/len;
+            if(ahead>0 && ahead<110 && Math.abs(lateral)<45){float side=lateral>0?-1:1,nx=-dy/len*side,ny=dx/len*side;dx=dx/len+nx*1.3f;dy=dy/len+ny*1.3f;len=Physics.length(dx,dy);speed=Math.min(speed,55);break;}}
         if(g.pointer && g.joystick!=null && !g.joystick.active){ReplayInput.up(g,g.pointerX,g.pointerY);}
         if(len<10 && Physics.length(tx-g.tug.x,ty-g.tug.y)<10){ReplayInput.throttle(g,0,0);return;}
         ReplayInput.throttle(g,dx/len*speed,dy/len*speed);

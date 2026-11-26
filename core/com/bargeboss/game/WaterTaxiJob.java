@@ -14,7 +14,7 @@ final class WaterTaxiJob extends MontroseJob {
     private int seed=29;
 
     void setup(Game g){
-        limit=150*60;
+        limit=180*60;
         // Two crowds are already waiting; more guests show up as the party fills.
         waiting[0]=2;waiting[2]=2;spawned=4;
         start(g,PIER_X,PIER_Y-40,-(float)Math.PI/2);

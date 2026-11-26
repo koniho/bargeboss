@@ -13,6 +13,8 @@ final class HarborTraffic {
     static final int RACER=6;
     static final class Craft {
         final Body body;final float[] route;final boolean loop;final float cruise;
+        /** Ignores the no-wake zone (one per harbor, for contrast and to chase). */
+        boolean hooligan;
         int leg,dir=1,idle,blocked,shoutTicks,shoutCooldown;String shout="";
         Craft(Body body,float[] route,boolean loop,float cruise,int leg){this.body=body;this.route=route;this.loop=loop;this.cruise=cruise;this.leg=leg;}
         float targetX(){return route[leg*2];}
@@ -34,7 +36,7 @@ final class HarborTraffic {
     void reset(Game g){
         if(!active(g)){craft=new Craft[0];return;}
         craft=new Craft[]{
-            make(g,INLET_RUN,false,2,58,0),make(g,INLET_RUN,false,5,52,5),make(g,INLET_RUN,false,0,50,3),
+            hooligan(make(g,INLET_RUN,false,2,58,0)),make(g,INLET_RUN,false,5,52,5),make(g,INLET_RUN,false,0,50,3),
             make(g,NORTH_RUN,false,4,46,0),make(g,NORTH_RUN,false,3,42,3),make(g,MOUTH,false,1,50,2),
             make(g,RACE_LOOP,true,RACER,150,0),make(g,RACE_LOOP,true,RACER,140,4),
             make(g,SOUTH_LANE,false,1,72,0),make(g,EAST_LANE,false,5,78,1),
@@ -42,6 +44,10 @@ final class HarborTraffic {
         };
     }
     static boolean active(Game g){return g.montroseStage();}
+    private static Craft hooligan(Craft c){c.hooligan=true;return c;}
+    /** Marina and inlet are a no-wake zone: law-abiding skippers idle through at NO_WAKE world units/s. */
+    static final float NO_WAKE=20,NO_WAKE_Y=320;
+    static boolean noWake(float x,float y){return x>-650 && x<1950 && y>-1150 && y<NO_WAKE_Y;}
     private static Craft make(Game g,float[] route,boolean loop,int kind,float cruise,int start){
         int n=route.length/2,from=Math.min(start,n-1),to=loop?(from+1)%n:Math.min(from+1,n-1);
         if(to==from)to=from-1;
@@ -90,7 +96,8 @@ final class HarborTraffic {
         float desired=(float)StrictMath.atan2(dy,dx)-swerve*.55f,error=Physics.angle(desired-b.angle);
         float turn=b.racing?3.2f:4.5f;
         b.spin+=Physics.clamp(error*turn-b.spin*2.6f,-6,6)*Physics.DT;
-        float speed=c.cruise*limit*Math.max(.2f,1-Math.abs(error)*.55f);
+        float cruise=!c.hooligan && noWake(b.x,b.y)?Math.min(c.cruise,NO_WAKE):c.cruise;
+        float speed=cruise*limit*Math.max(.2f,1-Math.abs(error)*.55f);
         // Ease in to the end of a ping-pong lane.
         if(!c.loop && (c.leg==0 || c.leg==c.points()-1))speed=Math.min(speed,(float)StrictMath.sqrt(d*60));
         float dvx=cos*speed-b.vx,dvy=sin*speed-b.vy,force=Physics.length(dvx,dvy),max=(b.racing?140:70)*Physics.DT;
@@ -122,16 +129,17 @@ final class HarborTraffic {
 
     /** Contacts between the tug, its cargo and traffic (and traffic with traffic). The tug smashes
      * through pleasure boats: it keeps most of its way and takes no hull damage, while the boat is
-     * shoved and spun aside (and charged to the player's property record by HullDamage). Returns 0:
-     * traffic never costs the tug hull. */
+     * shoved and spun aside (and charged to the player's property record by HullDamage). Returns the
+     * hardest tug impact this step; Game charges the tug a hard hit for a smash. */
     float collide(Game g,CollisionSplashes splashes){
+        float hardest=0;
         for(int i=0;i<craft.length;i++){
             Body a=craft[i].body;if(!a.active)continue;
-            smash(g.tug,a,splashes);
+            hardest=Math.max(hardest,smash(g.tug,a,splashes));
             for(Body o:g.cargo)if(o!=null && o.active && !g.haulout.inLift(o))Physics.collide(o,a,splashes);
             for(int j=i+1;j<craft.length;j++)Physics.collide(a,craft[j].body,splashes);
         }
-        return 0;
+        return hardest;
     }
     /** Share of its pre-contact velocity the tug keeps, and of it handed to the boat it rams. */
     static final float PLOW=.8f,SHOVE=.65f;

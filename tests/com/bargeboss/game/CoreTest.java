@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 public final class CoreTest {
     /** Strict gameplay replay hash, and the advisory draw-command hash (see Parity). */
-    static final String STATE_BASELINE="state=9af0f0af:2:1350",DRAW_BASELINE="1cc02d06";
+    static final String STATE_BASELINE="state=9af0f0af:2:1350",DRAW_BASELINE="37166713";
     private static int assertions;
     private static void check(boolean condition,String message) {
         assertions++; if(!condition) throw new AssertionError(message);
@@ -71,8 +71,8 @@ public final class CoreTest {
         g.down(300,700); g.move(360,700); g.cancel(); check(!g.pointer,"cancelled drag cannot stick");
         Viewport v=new Viewport(1200,1000); check(Math.abs(v.worldX(v.x+300*v.scale)-300)<.001,"letterboxed coordinate mapping");
         g=playing(); g.down(-3000,500); check(!g.pointer,"letterbox tap ignored");
-        g=playing(); g.tug.x=415; g.tug.y=500; g.tug.vx=100; steps(g,1); check(g.hull==91,"hard bank collision damages hull once");
-        steps(g,1); check(g.hull==91,"impact cooldown avoids multiple charges");
+        g=playing(); g.tug.x=415; g.tug.y=500; g.tug.vx=100; steps(g,1); check(g.hull==100-Game.TUG_HIT,"hard bank collision damages hull once");
+        steps(g,1); check(g.hull==100-Game.TUG_HIT,"impact cooldown avoids multiple charges");
         g=playing(); g.ticks=1200; steps(g,1);
         check(!g.trafficActive(),"berth puzzles retain clear navigation rather than unrelated crossing traffic");
         Game low=playing(), high=playing(); ReplayInput.throttle(low,0,-100);

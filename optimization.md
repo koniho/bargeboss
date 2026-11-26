@@ -7055,3 +7055,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Play-through still completes all seven jobs; Loose Boats capture widened 105 -> 140 (a towed boat
   trailing the tug into a slip mouth).
 - Gameplay hash unchanged (9af0f0af); draw 32cfdce1 -> 1cc02d06.
+
+## Weaker NPC hulls, a 25% tug hit, and a no-wake marina
+
+- Tug hard hits cost Game.TUG_HIT=25 (was 9): four sink it. Smashing through traffic hard enough to
+  wreck the boat (closing >= 40) now also costs the tug a hard hit; the plow-through handling stays.
+- NPC hulls are far weaker: a traffic smash costs 55 (two sink it); moored rams cost 20..65 by speed.
+- Harbor traffic idles at no-wake speed (20) inside the marina and inlet; one hooligan and the lake
+  boats keep their speed. Water Taxi clock 2:30 -> 3:00 (slow fairway traffic).
+- Play-through (bot now steers around traffic) completes all seven jobs; taxi 141 s of the old 150.
+- Gameplay hash unchanged (no hard hits or traffic samples in the replay); draw -> 37166713.
