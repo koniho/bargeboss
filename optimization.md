@@ -7033,3 +7033,25 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   source cutouts using pack + cleanup. Updated APK installed and launched; native
   captain-picker pixels reviewed against the user's screenshot. iOS not tested
   on-device. Review sheets copied to Pictures/BargeBoss and MediaStore verified.
+## Moored damage that registers, and harbor performance with traffic
+
+- Moored boats never took damage in play: HARD=78 closing speed is above what the tug reaches into a
+  moored hull (64-76 measured). Moored boats now take damage from BUMP_SPEED=30, scaled 8..40 by the
+  hit, with a hull flash; traffic smashes register from 40. Their damage tick starts far in the past
+  (the old -75 showed every marina boat's bar at stage start).
+- Desktop core, Montrose with traffic (HarborBench, 3000 frames after warm-up, null painter):
+  step 0.690 -> 0.396 ms (-43%), draw-command generation 2.144 -> 0.81 ms (-62%); worst draw 3.56 ->
+  2.46 ms. Changes, from the JFR profile:
+  1. Wake crests skip off-screen packets and cache each crest segment's shore-blocked radius once per
+     packet (origin and bearings are fixed), instead of marching the shore test per segment per frame.
+  2. One slip in three is empty (was one in six); moored boats more than 260 world units outside the
+     view hold their pose instead of sampling water and tethers every tick.
+  3. Off-screen traffic neither floats nor lays wakes; traffic wall tests only within 500 of the view
+     (lanes are verified clear).
+  4. Shore masks are built once in a fixed reference camera and mapped to the live camera (uniform
+     scale + shift, exact); keys are world-space with the depth line as a world line (1/8 unit). A
+     moored boat's ripple mask is built once and reused while the camera follows. Verified within
+     0.5% area of direct builds across zooms, berths and both mask modes.
+- Play-through still completes all seven jobs; Loose Boats capture widened 105 -> 140 (a towed boat
+  trailing the tug into a slip mouth).
+- Gameplay hash unchanged (9af0f0af); draw 32cfdce1 -> 1cc02d06.

@@ -6,6 +6,11 @@ public final class WaterSurface {
     public final float[] x=new float[CAPACITY],y=new float[CAPACITY],strength=new float[CAPACITY],heading=new float[CAPACITY];
     public final int[] age=new int[CAPACITY];
     private final Body[] source=new Body[CAPACITY];
+    /** Draw-only: per packet and crest segment, the radius at which the shore first blocks that bearing
+     * (NaN = not yet measured). The packet origin and segment bearings are fixed for its whole life, so
+     * this is measured once instead of re-marching the shore test every frame. */
+    private final float[][] crestBlocked=new float[CAPACITY][CREST_SEGMENTS];
+    static final int CREST_SEGMENTS=16;
     public final VesselFoam foam=new VesselFoam();
     private int cursor;
     /** Diagnostic/reference path; default uses bit-equivalent paired sampling. */
@@ -29,7 +34,7 @@ public final class WaterSurface {
     private final WaterClip surfaceClip=new WaterClip();
     final WaterClip ambientClip=new WaterClip();
     public int emitted,pulses;
-    public WaterSurface() { for(int i=0;i<CAPACITY;i++) age[i]=LIFE; }
+    public WaterSurface() { for(int i=0;i<CAPACITY;i++){ age[i]=LIFE; java.util.Arrays.fill(crestBlocked[i],Float.NaN); } }
     static final float WAKE_SPEED=.55f, WAKE_WIDTH=26;
     /** All consumers use the same signed packet, fan, decay and shore visibility. */
     static float wakeRadius(int age){return 9+age*WAKE_SPEED;}
@@ -51,6 +56,11 @@ public final class WaterSurface {
         int samples=Math.max(1,(int)StrictMath.ceil(d/8));
         for(int k=0;k<=samples;k++)if(!WaterEffectsPainter.contains(g,x[i]+dx*k/samples,y[i]+dy*k/samples))return 0;
         return strength[i]*(1-age[i]/(float)LIFE)*profile*fan;
+    }
+    /** wake()'s profile x fan at the crest radius along bearing `angle`, normalised by strength and age. */
+    private float crestShape(int i,float angle){
+        float rel=Math.abs(Physics.angle(angle-heading[i]-(float)StrictMath.PI));
+        return wakeProfile(0)*(1-SeaWaves.smooth(.32f*(float)StrictMath.PI,.4f*(float)StrictMath.PI,rel));
     }
     public float energy(Game g,float wx,float wy,Body ignore){
         float sum=0;for(int i=0;i<CAPACITY;i++){float w=wake(g,i,wx,wy,ignore);if(w!=0)sum+=w<0?-w:w;}
@@ -127,7 +137,9 @@ public final class WaterSurface {
             floatBoat(g,f.boat);if(f.load!=null) floatBoat(g,f.load);
         }
         if(g.trafficActive()) floatBoat(g,g.trafficBoat);
-        for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active)floatBoat(g,c.body);
+        // Off-screen traffic neither rides the waves nor lays wakes (nobody sees either).
+        float[] view=g.harborTraffic.craft.length>0?SurveyGround.visible(g):null;
+        for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active && HarborTrafficView.near(view,c.body,200))floatBoat(g,c.body);
         if(g.job!=null)for(Body b:g.job.bodies())if(b!=null && b.active)floatBoat(g,b);
     }
     private void floatBoat(Game g,Body b) {
@@ -167,7 +179,7 @@ public final class WaterSurface {
         b.floatingInitialized=true;
     }
     private void emit(Body b,float intensity) {
-        int i=cursor;cursor=(cursor+1)%CAPACITY;age[i]=0;source[i]=b;
+        int i=cursor;cursor=(cursor+1)%CAPACITY;age[i]=0;source[i]=b;java.util.Arrays.fill(crestBlocked[i],Float.NaN);
         float angle=(float)StrictMath.atan2(b.vy,b.vx);
         heading[i]=angle;
         float stern=b.radius+b.half*(float)StrictMath.abs(StrictMath.cos(angle-b.angle));
@@ -199,11 +211,21 @@ public final class WaterSurface {
         p.beginWaterFoamBatch();
         try {SeaWaves.draw(g,p);drawCrests(g,p);} finally {p.endWaterFoamBatch();if(clip.length>0)canvas.popClip();}
     }
+    /** First radius along bearing `angle` from packet i's origin where the shore blocks it (max reach if never). */
+    private float blockedAt(Game g,int i,int segment,float angle){
+        float cached=crestBlocked[i][segment];if(cached==cached)return cached;
+        float reach=wakeRadius(LIFE)+WAKE_WIDTH,cx=(float)StrictMath.cos(angle),sy=(float)StrictMath.sin(angle),hit=reach;
+        for(float d=0;d<=reach;d+=8)if(!WaterEffectsPainter.contains(g,x[i]+cx*d,y[i]+sy*d)){hit=d;break;}
+        crestBlocked[i][segment]=hit;return hit;
+    }
     private void drawCrests(Game g,Painter p) {
+        float[] view=SurveyGround.visible(g);
         for(int i=0;i<CAPACITY;i++) if(age[i]<LIFE) {
             float t=age[i]/(float)LIFE,r=wakeRadius(age[i]);
             int alpha=(int)Math.min(255,330*strength[i]*(1-t)*(1-t*.35f));
             if(alpha<3)continue;
+            // Off-screen packets draw nothing.
+            float pad=r+WAKE_WIDTH;if(x[i]+pad<view[0] || x[i]-pad>view[2] || y[i]+pad<view[1] || y[i]-pad>view[3])continue;
             float start=heading[i]+(float)Math.PI*.6f,end=heading[i]+(float)Math.PI*1.4f;
             for(int j=0;j<16;j++) {
                 float a=start+(end-start)*j/16,b=start+(end-start)*(j+1)/16;
@@ -213,8 +235,8 @@ public final class WaterSurface {
                 // Full stroke clipping prevents crests cutting across quay corners.
                 // Fan opacity follows the same shore-visible packet sampled by hulls.
                 float mid=(a+b)*.5f;
-                float crest=Math.max(0,wake(g,i,x[i]+r*(float)StrictMath.cos(mid),y[i]+r*(float)StrictMath.sin(mid),null));
-                crest/=Math.max(.001f,strength[i]*(1-t));
+                // Same packet profile and fan as wake(); shore visibility from the per-segment cache.
+                float crest=r<blockedAt(g,i,j,mid)?crestShape(i,mid):0;
                 if(crest<.17f && age[i]>45) continue;
                 float dx=bx-xx,dy=by-yy,len=Physics.length(dx,dy),width=10+strength[i]*8;
                 if(len<.01f)continue;

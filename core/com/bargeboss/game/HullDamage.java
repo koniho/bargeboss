@@ -16,15 +16,19 @@ final class HullDamage {
     static final int HIT=9,COOLDOWN=75,SINK=150;
     /** Harbor traffic is light pleasure craft: a hard ram costs it this much (three smashes sink it). */
     static final int SMASH=34;
+    /** Light craft register a ram at lower closing speeds than working hulls: traffic from SMASH_SPEED,
+     * moored marina boats from BUMP_SPEED, with damage scaled by how hard the hit was. */
+    static final float SMASH_SPEED=40,BUMP_SPEED=30;
+    static final int MOORED_COOLDOWN=40;
     static final float HARD=78;
     /** Health shown as recently lost (white chip) for this many ticks after a hit. */
     static final int CHIP=40;
 
     /** One new contact between a and b (b may be null for walls) at a closing speed. */
     static void contact(Game g,Watercraft a,Watercraft b,float closing){
-        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD))return;
+        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=SMASH_SPEED))return;
         // Harbor traffic only takes damage the player causes; skippers bumping each other shrug it off.
-        boolean hitA=(!traffic(a) || CollisionSplashes.involvesPlayer(g,b)) && hit(g,a),hitB=(!traffic(b) || CollisionSplashes.involvesPlayer(g,a)) && hit(g,b);
+        boolean hitA=(traffic(a)?CollisionSplashes.involvesPlayer(g,b):closing>=HARD) && hit(g,a),hitB=(traffic(b)?CollisionSplashes.involvesPlayer(g,a):closing>=HARD) && hit(g,b);
         // The captain winces when the tug or a lined vessel damages someone else's hull.
         if(hitA && CollisionSplashes.involvesPlayer(g,b) || hitB && CollisionSplashes.involvesPlayer(g,a))PlayerPortrait.wince(g);
     }
@@ -44,8 +48,11 @@ final class HullDamage {
     /** As above; a hit by harbor traffic (by) costs nothing, since the player did not cause it. */
     static void moored(Game g,MooredFleet.FloatBoat m,Body by,float closing){
         if(by!=null && by.traffic)return;
-        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=HARD) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<COOLDOWN)return;
-        m.healthBefore=m.health;m.health=Math.max(0,m.health-HIT);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
+        if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=BUMP_SPEED) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<MOORED_COOLDOWN)return;
+        // A solid bump dents it; a full-speed ram caves it in.
+        int damage=Math.min(40,Math.round(8+(closing-BUMP_SPEED)*.7f));
+        m.healthBefore=m.health;m.health=Math.max(0,m.health-damage);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
+        shake(g,Math.min(.5f,.15f+damage*.01f));
         g.othersDamage+=m.healthBefore-m.health;PlayerPortrait.wince(g);
         if(m.health>0)return;
         m.sinkTicks=1;shake(g,1);g.haptic(Game.HAPTIC_IMPACT);g.tell("BOAT SINKING!");

@@ -54,6 +54,7 @@ final class HarborTraffic {
 
     /** Autopilot, motion and shore/marina collisions for one fixed step. */
     void step(Game g,CollisionSplashes splashes){
+        float[] view=craft.length>0?SurveyGround.visible(g):null;
         for(Craft c:craft){
             Body b=c.body;
             if(c.shoutTicks>0)c.shoutTicks--;
@@ -61,7 +62,8 @@ final class HarborTraffic {
             if(!b.active)continue;
             if(b.sinkTicks<=0)pilot(g,c);
             Physics.integrate(b);
-            MontroseHarbor.collide(g,b,splashes);
+            // Lanes are verified clear of shore, docks and hulls; only craft near the view need the full wall test.
+            if(HarborTrafficView.near(view,b,500) || b.sinkTicks>0)MontroseHarbor.collide(g,b,splashes);
         }
     }
     private void pilot(Game g,Craft c){

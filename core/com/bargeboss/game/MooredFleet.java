@@ -7,7 +7,7 @@ public final class MooredFleet {
         final MooredBoats.Berth berth;final float[] hull=new float[8];final boolean roomy;
         float x,y,vx,vy,yaw,spin,heave,wakeHeave,anchorX,anchorY;
         /** Owner's boat health (0..100), the value before the last hit, and the sinking clock (0 = afloat). */
-        int health=100,healthBefore=100,damagedTick=-HullDamage.COOLDOWN,sinkTicks;
+        int health=100,healthBefore=100,damagedTick=-100000,sinkTicks;
         boolean afloat(){return sinkTicks<=0;}
         FloatBoat(MooredBoats.Berth b){berth=b;x=b.x;y=b.y;anchorX=b.ax;anchorY=b.ay;updateHull();boolean room=true;for(int corner=0;corner<8;corner+=2)for(int n=0;n<16;n++){double a=n*StrictMath.PI/8;if(!MontroseHarbor.contains(hull[corner]+9*(float)StrictMath.cos(a),hull[corner+1]+9*(float)StrictMath.sin(a)))room=false;}roomy=room;}
         void updateHull(){float a=berth.angle+yaw,c=(float)StrictMath.cos(a),s=(float)StrictMath.sin(a);
@@ -36,11 +36,17 @@ public final class MooredFleet {
         if(g.montroseStage())for(MooredBoats.Berth b:MooredBoats.BERTHS)if(!MontroseRescue.reserved(g,b) && !MontroseHaulout.reserved(b) && !away(b))list.add(new FloatBoat(b));
         boats=list.toArray(new FloatBoat[list.size()]);order=new int[boats.length];for(int i=0;i<order.length;i++)order[i]=i;
     }
-    /** About one slip in six stands empty: its boat is out on the water. Fixed per berth. */
-    static boolean away(MooredBoats.Berth b){int h=(b.row*131+b.station*7+b.side*3+b.star*977+b.arm*53+b.mooring*17)*0x45d9f3b;h^=h>>>15;return b.mooring<0 && Math.floorMod(h,6)==0;}
+    /** About one slip in three stands empty: its boat is out on the water (and the marina stays light
+     * to simulate and draw). Fixed per berth. */
+    static boolean away(MooredBoats.Berth b){int h=(b.row*131+b.station*7+b.side*3+b.star*977+b.arm*53+b.mooring*17)*0x45d9f3b;h^=h>>>15;return b.mooring<0 && Math.floorMod(h,3)==0;}
+    /** World margin around the view inside which moored boats keep simulating; farther boats hold their pose. */
+    static final float LIVE_MARGIN=260;
     FloatBoat sorted(int i){return i<order.length?boats[order[i]]:null;}
     public void step(Game g){if(!g.montroseStage())return;
-        for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];if(!b.afloat()){HullDamage.stepMoored(g,b);continue;}float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
+        float[] view=SurveyGround.visible(g);float l=view[0]-LIVE_MARGIN,t=view[1]-LIVE_MARGIN,r=view[2]+LIVE_MARGIN,bt=view[3]+LIVE_MARGIN;
+        for(int i=0;i<boats.length;i++){FloatBoat b=boats[i];if(!b.afloat()){HullDamage.stepMoored(g,b);continue;}
+            // Out of sight and out of reach: bobbing nobody can see is not worth a water query.
+            if(b.x<l || b.x>r || b.y<t || b.y>bt)continue;float dx=b.x-b.berth.x,dy=b.y-b.berth.y;
             g.water.flow(g,b.x,b.y,g.visualTicks,null,force);
             force[0]*=1.4f;force[1]*=1.4f;
             // Amplify only propagated wake motion, leaving sheltered idle water calm.

@@ -12,6 +12,7 @@ public final class MooringActivityTest {
   g.tug.x+=1000;g.tug.vx=g.tug.vy=0;for(int i=0;i<600;i++){g.visualTicks++;g.buoys.step(g);}
   check(Physics.length(ball.x-ball.anchorX,ball.y-ball.anchorY)<1,"ball settles back at its anchor");
   g=ReplayInput.montroseJob(Challenges.HAULOUT);for(MooredFleet.FloatBoat b:g.mooredFleet.boats)if(b.berth.mooring==9)target=b;
+  g.layout=Layout.focused(960,600,target.x,target.y,1.5f,480,300);// boats out of view hold still (MooredFleet.LIVE_MARGIN)
   g.tug.x=target.x+60;g.tug.y=target.y;g.tug.angle=0;g.tug.vx=60;g.tug.wakeTrailTicks=7;g.water.step(g);g.tug.x+=500;g.tug.vx=0;
   float peak=0,moved=0;for(int i=0;i<240;i++){g.visualTicks++;g.water.step(g);g.mooredFleet.step(g);peak=Math.max(peak,Math.abs(target.wakeHeave));moved=Math.max(moved,Physics.length(target.x-target.berth.x,target.y-target.berth.y));}
   check(peak>.1f && moved>.1f,"passing wake visibly bobs and displaces moored sailboat");

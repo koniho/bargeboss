@@ -86,6 +86,10 @@ public final class MooredBoats {
         dissolve(p,SpriteAtlas.MOORED_BOATS,base+a,base+next,x,y,size,size,mix,alpha);
         dissolve(p,SpriteAtlas.MOORED_BIMINI,BiminiArt.frame(b.bimini,base+a),BiminiArt.frame(b.bimini,base+next),
                 x,y,size*BiminiArt.WIDTH/128,size*BiminiArt.HEIGHT/128,mix,alpha);
+        // Struck: a hot flash over the hull for a few frames.
+        if(f!=null){int since=g.ticks-f.damagedTick;if(since>=0 && since<16){float k=1-since/16f,len=b.length*c.scale;
+            p.material(x,y-4*c.scale,len*1.3f,0,0,len*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffc890,.85f*k));
+            p.material(x,y-5*c.scale,len*.6f,0,0,len*.4f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,k));}}
         if(detail<=.001f)return;
         MooredBoatLight.Lights lights=MooredBoatLight.lights(g,wx,wy,heave);
         for(int n=0;n<lights.count;n++){

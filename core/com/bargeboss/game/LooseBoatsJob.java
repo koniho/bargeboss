@@ -6,7 +6,7 @@ package com.bargeboss.game;
 final class LooseBoatsJob extends MontroseJob {
     static final int BOATS=4;
     /** Gusting wind (world units/s^2) down the main fairway toward the inlet. */
-    static final float WIND_X=-3.2f,WIND_Y=2.2f,CAPTURE=105;
+    static final float WIND_X=-3.2f,WIND_Y=2.2f,CAPTURE=140;
     static final int WARP=70;
     final MooredBoats.Berth[] slips=new MooredBoats.Berth[BOATS];
     final int[] warp=new int[BOATS];final Body[] boats=new Body[BOATS];

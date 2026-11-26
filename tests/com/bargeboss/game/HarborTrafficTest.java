@@ -26,7 +26,7 @@ public final class HarborTrafficTest {
         Game g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
         check(g.harborTraffic.craft.length==12,"Montrose launches its harbor and lake traffic");
         int empty=0;for(MooredBoats.Berth b:MooredBoats.BERTHS)if(MooredFleet.away(b))empty++;
-        check(empty>MooredBoats.BERTHS.length/10 && empty<MooredBoats.BERTHS.length/3,"some slips stand empty: "+empty);
+        check(empty>MooredBoats.BERTHS.length/5 && empty<MooredBoats.BERTHS.length/2,"about a third of the slips stand empty: "+empty+" of "+MooredBoats.BERTHS.length);
         float[] x0=new float[12],y0=new float[12];for(int i=0;i<12;i++){x0[i]=g.harborTraffic.craft[i].body.x;y0[i]=g.harborTraffic.craft[i].body.y;}
         g.tug.x=-2000;g.tug.y=-4000;
         for(int t=0;t<60*40;t++){g.harborTraffic.step(g,g.splashes);g.harborTraffic.collide(g,g.splashes);g.splashes.step(g);HullDamage.step(g);g.ticks++;}

@@ -234,19 +234,36 @@ public final class MontroseHarbor {
         return out.toArray(new float[out.size()][]);
     }
     /** At most 32 exact masks / 256KiB float payload per render thread. Geometry is immutable. */
+    /** Shore masks are built once in a fixed reference camera and mapped to the live camera: the
+     * projection is a uniform scale plus a shift, so the mapping is exact. Keys are world-space (the
+     * screen-space depth line becomes a world line), so a static box such as a moored boat's ripple
+     * area is built once and reused every frame even while the camera follows the tug. */
+    private static final RiverCamera CANON=new RiverCamera(0,0,1,0,0,1);
+    static final int SHORE_CACHE_SLOTS=128;
     private static final class ShoreCache {
-        RiverCamera camera;final float[][] keys=new float[32][6],masks=new float[32][];int next,retained;
-        float[] get(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
-            if(camera!=c){java.util.Arrays.fill(masks,null);camera=c;next=retained=0;return null;}
-            for(int i=0;i<masks.length;i++){float[] key=keys[i];if(masks[i]!=null && key[0]==l && key[1]==t && key[2]==r && key[3]==b && key[4]==depth && key[5]==(union?1:0))return masks[i];}
-            return null;
+        static final int SLOTS=SHORE_CACHE_SLOTS,BUDGET=1<<18;
+        final float[][] keys=new float[SLOTS][6],masks=new float[SLOTS][],mapped=new float[SLOTS][];final RiverCamera[] mappedFor=new RiverCamera[SLOTS];int next,retained;
+        int find(float l,float t,float r,float b,float depth,boolean union){
+            for(int i=0;i<SLOTS;i++){float[] key=keys[i];if(masks[i]!=null && key[0]==l && key[1]==t && key[2]==r && key[3]==b && key[4]==depth && key[5]==(union?1:0))return i;}
+            return -1;
         }
-        void put(float l,float t,float r,float b,float depth,boolean union,float[] mask){
-            if(mask.length>65536)return;
+        int put(float l,float t,float r,float b,float depth,boolean union,float[] mask){
+            if(mask.length>BUDGET/4)return -1;
             if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}
-            while(retained+mask.length>65536){if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}next=(next+1)%masks.length;}
-            float[] key=keys[next];key[0]=l;key[1]=t;key[2]=r;key[3]=b;key[4]=depth;key[5]=union?1:0;masks[next]=mask;retained+=mask.length;next=(next+1)%masks.length;
+            while(retained+mask.length>BUDGET){if(masks[next]!=null){retained-=masks[next].length;masks[next]=null;}next=(next+1)%SLOTS;}
+            int slot=next;float[] key=keys[slot];key[0]=l;key[1]=t;key[2]=r;key[3]=b;key[4]=depth;key[5]=union?1:0;masks[slot]=mask;mapped[slot]=null;mappedFor[slot]=null;retained+=mask.length;next=(next+1)%SLOTS;
+            return slot;
         }
+        /** The slot's reference-camera mask in camera c (memoised for the last camera asked). */
+        float[] in(int slot,RiverCamera c){
+            if(mappedFor[slot]==c)return mapped[slot];
+            float[] src=masks[slot],out=new float[src.length];
+            float k=c.scale,ox=c.left-Q(c)*(c.worldRight+c.worldTop),oy=c.top+QD(c)*(c.worldRight-c.worldTop);
+            for(int i=0;i+1<src.length;i+=2){out[i]=ox+k*src[i];out[i+1]=oy+k*src[i+1];}
+            mapped[slot]=out;mappedFor[slot]=c;return out;
+        }
+        private static float Q(RiverCamera c){return RiverCamera.Q*c.scale;}
+        private static float QD(RiverCamera c){return RiverCamera.Q*RiverCamera.DEPTH*c.scale;}
     }
     private static final ThreadLocal<ShoreCache> SHORE_CACHE=new ThreadLocal<ShoreCache>(){
         protected ShoreCache initialValue(){return new ShoreCache();}
@@ -255,8 +272,15 @@ public final class MontroseHarbor {
         return shore(c,l,t,r,b,depth,false);
     }
     static float[] shore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
-        ShoreCache cache=SHORE_CACHE.get();float[] mask=cache.get(c,l,t,r,b,depth,union);
-        if(mask!=null)return mask;mask=buildShore(c,l,t,r,b,depth,union);cache.put(l,t,r,b,depth,union,mask);return mask;
+        // Screen depth line -> world line (y - x = const), quantised so a static box keeps one key.
+        float world=depth==Float.NEGATIVE_INFINITY?depth:Math.round(((depth-c.top)/(RiverCamera.Q*RiverCamera.DEPTH*c.scale)+c.worldTop-c.worldRight)*8)/8f;
+        ShoreCache cache=SHORE_CACHE.get();int slot=cache.find(l,t,r,b,world,union);
+        if(slot<0){
+            float[] mask=buildShore(CANON,l,t,r,b,depth==Float.NEGATIVE_INFINITY?depth:RiverCamera.Q*RiverCamera.DEPTH*world,union);
+            slot=cache.put(l,t,r,b,world,union,mask);
+            if(slot<0)return buildShore(c,l,t,r,b,depth,union);
+        }
+        return cache.in(slot,c);
     }
     private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
         float[] land=projected(MontroseShoreArt.LAND_TOPS,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE),steps=MontroseShoreArt.stepMask(c,l,t,r,b,depth),access=MontroseShoreArt.accessMask(c,l,t,r,b,depth);

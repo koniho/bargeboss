@@ -100,10 +100,15 @@ public final class MontroseGeometryTest {
         check(hull!=clip(shifted,x,y,depth),"Camera changes invalidate projected masks");
         float[] rebuilt=clip(c,x,y,depth);check(java.util.Arrays.equals(hull,rebuilt),"Camera invalidation preserves exact rebuilt coordinates");
         // Empty lake requests still count toward the fixed entry cap, without a giant fixture.
-        float[][] masks=new float[33][];float lx=MontroseHarbor.mapX(600),ly=MontroseHarbor.mapY(1450);
+        int slots=MontroseHarbor.SHORE_CACHE_SLOTS;float[][] masks=new float[slots+1][];float lx=MontroseHarbor.mapX(600),ly=MontroseHarbor.mapY(1450);
         for(int i=0;i<masks.length;i++)masks[i]=MontroseHarbor.shore(c,lx+i,ly,lx+i+1,ly+1,Float.NEGATIVE_INFINITY);
-        check(masks[32]==MontroseHarbor.shore(c,lx+32,ly,lx+33,ly+1,Float.NEGATIVE_INFINITY),"Newest exact request remains cached");
-        check(masks[0]!=MontroseHarbor.shore(c,lx,ly,lx+1,ly+1,Float.NEGATIVE_INFINITY),"Cache cannot retain more than 32 request entries");
+        check(masks[slots]==MontroseHarbor.shore(c,lx+slots,ly,lx+slots+1,ly+1,Float.NEGATIVE_INFINITY),"Newest exact request remains cached");
+        check(masks[0]!=MontroseHarbor.shore(c,lx,ly,lx+1,ly+1,Float.NEGATIVE_INFINITY),"Cache cannot retain more than its fixed entry count");
+        // Camera-independent: a following camera reuses the same built mask, mapped exactly.
+        RiverCamera panned=new RiverCamera(80,20,1.4f);float[] there=clip(panned,x,y,panned.screenY(x,y));
+        float dx=panned.screenX(x,y)-c.screenX(x,y),dy=panned.screenY(x,y)-c.screenY(x,y);boolean same=there.length==hull.length;
+        for(int i=0;same && i+1<hull.length;i+=2)same=Math.abs(there[i]-hull[i]-dx)<.01f && Math.abs(there[i+1]-hull[i+1]-dy)<.01f;
+        check(same,"A panned camera maps the cached mask exactly instead of rebuilding it");
     }
     public static void run(){collision();receivers();nativeMasks();exactCache();System.out.println(checks+" Montrose edge collision, raised shore and dock depth assertions passed");}
     public static void main(String[] args){run();}

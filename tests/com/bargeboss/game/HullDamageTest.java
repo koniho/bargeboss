@@ -36,9 +36,10 @@ public final class HullDamageTest {
         g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
         check(g.mooredFleet.boats.length>0,"Montrose fills its marina");
         MooredFleet.FloatBoat m=g.mooredFleet.boats[0];
-        HullDamage.moored(g,m,77);check(m.health==100,"soft bump leaves a marina boat whole");
+        HullDamage.moored(g,m,HullDamage.BUMP_SPEED-1);check(m.health==100,"a gentle nudge leaves a marina boat whole");
+        HullDamage.moored(g,m,60);check(m.health<100 && m.health>60,"a solid bump dents it, scaled by speed");g.ticks+=HullDamage.COOLDOWN;int dented=m.health;
         HullDamage.moored(g,m,100);HullDamage.moored(g,m,100);
-        check(m.health==100-HullDamage.HIT && g.othersDamage==HullDamage.HIT,"moored hit costs health once per cooldown");
+        check(m.health==dented-40 && g.othersDamage==100-m.health,"a full-speed ram costs 40, once per cooldown");
         while(m.health>0){g.ticks+=HullDamage.COOLDOWN;HullDamage.moored(g,m,100);}
         check(m.sinkTicks>0 && !m.afloat() && g.othersDamage==100,"a wrecked marina boat sinks and the record totals its health");
         Body probe=new Body(-1,-1,m.x,m.y,0);probe.vx=200;
