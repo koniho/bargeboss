@@ -1,8 +1,11 @@
 package com.bargeboss.game;
 
 /**
- * The player's captain: chosen character, short radio acknowledgements and the always-visible
- * top-left HUD portrait with talking, mad, wincing and idle (blink/breathing) faces.
+ * The player's captain: chosen character, short radio acknowledgements and the player's own
+ * transmission panel. It mirrors the incoming-radio panel (same height on screen, portrait on the
+ * left instead of the right) and is only open while the captain is transmitting or has something to
+ * say: a radio reply, an acknowledgement, or a reaction line when the tug is hit (mad) or hits
+ * someone else (wince). Faces: talking, mad, wincing and idle (blink/breathing).
  *
  * <p>Simulation-side state only advances in fixed {@link Game#step()} ticks and never feeds back
  * into gameplay; drawing reads it without mutating anything and allocates nothing per frame.
@@ -27,12 +30,16 @@ public final class PlayerPortrait {
         {"COPY THAT!","ON IT, BOSS.","EASY PEASY.","WAVING AS I GO!"},
         {"ROGER, ROGER.","CONSIDER IT DONE.","SMOOTH AS SILK.","YOU GOT IT, CHIEF."},
         {"YES, DEAR.","RIGHT AWAY, HONEY.","WELL, ALRIGHT!","NO DAWDLING."}};
-    // HUD geometry, logical canvas units. The plate sits in the top-left corner, clear of the
-    // centered objective ribbon at the 960 minimum width, the joystick and the chart.
-    static final float X=10,Y=8,W=104,H=112,NAME_H=15,SPRITE=114;
-    /** Right and bottom edges of everything the portrait draws (excluding its speech bubble). */
+    // Panel geometry, logical canvas units: the incoming-radio panel's top and height (InstructionPanel
+    // draws at y=68, 124 tall), mirrored to the left edge. At the 960 minimum width it stays clear of
+    // the right-hand radio panel, the centered objective ribbon above, and the joystick below.
+    static final float X=18,Y=68,W=372,H=124,SPRITE=108,SPLIT=112;
+    /** Right and bottom edges of the open panel. */
     public static final float RIGHT=X+W,BOTTOM=Y+H;
-    static final float BUBBLE_X=RIGHT+10,BUBBLE_Y=64,BUBBLE_H=26;
+    static final int OPEN_TICKS=10,REACT_TICKS=96,REPLY_HOLD=150;
+    static final String[] MAD_LINES={"ARGH! MY PAINT!","OOF! THAT'LL LEAVE A MARK","WHO PUT THAT THERE?!","EASY, EASY!"};
+    static final String[] WINCE_LINES={"OOPS, SORRY!","MY BAD!","THAT WASN'T ME...","WHOOPS! INSURED, RIGHT?"};
+    int openTicks,reactTicks,reactCount,replyTicks;String reaction,reply;
 
     int madTicks,winceTicks,ackTicks,ackLine=-1,ackCount,sinceAck=ACK_GAP;
     private int seenSequence;
@@ -42,22 +49,29 @@ public final class PlayerPortrait {
     static int valid(int captain){return captain<0 || captain>=COUNT?WHITNEY:captain;}
     public static String name(int captain){return NAMES[valid(captain)];}
 
-    void reset(){madTicks=winceTicks=ackTicks=0;ackLine=-1;ackPending=false;sinceAck=ACK_GAP;}
+    void reset(){madTicks=winceTicks=ackTicks=openTicks=reactTicks=0;ackLine=-1;ackPending=false;sinceAck=ACK_GAP;reaction=reply=null;}
     /** Own tug took hull damage. */
-    void mad(){madTicks=MAD_TICKS;}
+    void mad(){madTicks=MAD_TICKS;reaction=MAD_LINES[reactCount++%MAD_LINES.length];reactTicks=REACT_TICKS;}
     /** The player damaged someone else's vessel (called from HullDamage). */
-    public static void wince(Game g){g.portrait.winceTicks=WINCE_TICKS;}
+    public static void wince(Game g){PlayerPortrait self=g.portrait;self.winceTicks=WINCE_TICKS;
+        if(self.reactTicks<REACT_TICKS/2){self.reaction=WINCE_LINES[self.reactCount++%WINCE_LINES.length];self.reactTicks=REACT_TICKS;}}
 
     /** Fixed-step update: decay reactions and answer finished incoming radio calls. */
     void step(Game g){
         if(madTicks>0)madTicks--;
         if(winceTicks>0)winceTicks--;
+        if(reactTicks>0)reactTicks--;
+        if(replyTicks>0)replyTicks--;
+        // The panel opens while there is something to say, and folds away when there is not.
+        boolean show=g.mode==Game.PLAY && (talking(g) || reactTicks>0 || replyTicks>0);
+        openTicks=Math.max(0,Math.min(OPEN_TICKS,openTicks+(show?1:-1)));
         if(ackTicks>0)ackTicks--;
         if(sinceAck<ACK_GAP)sinceAck++;
         RadioAudio radio=g.radio;
         if(radio.transmission()!=seenSequence){
             seenSequence=radio.transmission();
             ackPending=radio.transmitter()!=RadioAudio.REPLY;
+            if(radio.transmitter()==RadioAudio.REPLY){reply=g.dialogue.chosen();if(reply!=null)replyTicks=REPLY_HOLD;}
             if(!ackPending)ackTicks=0;
         }
         if(ackPending && radio.progress()>=1 && !g.dialogue.active && ackTicks==0){
@@ -88,35 +102,48 @@ public final class PlayerPortrait {
         }
     }
     String line(Game g){return ackTicks>0 && ackLine>=0?ACKS[valid(g.settings.captain())][ackLine]:null;}
+    /** What the panel says: the radio reply in flight, an acknowledgement, or a reaction line. */
+    String text(Game g){
+        if(replyTicks>0 && reply!=null)return reply;
+        String ack=line(g);if(ack!=null)return ack;
+        return reactTicks>0?reaction:null;
+    }
+    float open(){float t=openTicks/(float)OPEN_TICKS;return t*t*(3-2*t);}
 
-    /** HUD draw: one plate, one atlas sprite, a cached name label and an optional bubble. */
+    /** HUD draw: the mirrored transmission panel, hidden when the captain has nothing to say. */
     static void draw(Game g,Painter p){
-        PlayerPortrait self=g.portrait;int captain=valid(g.settings.captain());
-        int state=self.state(g);
+        PlayerPortrait self=g.portrait;float amount=self.open();
+        if(amount<=0)return;
+        int captain=valid(g.settings.captain()),state=self.state(g);
         float shake=state==MAD?(float)StrictMath.sin(self.madTicks*1.9)*Math.min(1,self.madTicks/18f)*2.2f
                 :state==WINCE?(float)StrictMath.sin(self.winceTicks*2.6)*Math.min(1,self.winceTicks/14f)*1.4f:0;
-        PilotGlass.panel(p,X,Y,W,H,0xe8101c30);
-        if(state==MAD)p.rect(X,Y,W,H,(Math.round(110*Math.min(1,self.madTicks/(float)MAD_TICKS))<<24)|0x9a1f22);
-        // Breathing: a sub-pixel rise of the bust, never a resample of the face. It runs through
-        // every state so a swap from idle to talk/mad/wince never drops the bust by up to .7 px.
+        // CRT open/close like the incoming panel: the plate grows from its vertical centre.
+        float h=Math.max(1,H*amount),cy=Y+H*.5f;
+        PilotGlass.panel(p,X,cy-h*.5f,W,h,PilotGlass.FILL);
+        if(state==MAD)p.rect(X,cy-h*.5f,W,h,(Math.round(90*Math.min(1,self.madTicks/(float)MAD_TICKS))<<24)|0x9a1f22);
+        if(amount<1){float beam=cy-h*.5f+h*amount;p.line(X+9,beam,X+W-9,beam,3,SoftCue.alpha(0x55ffc52f,1-amount));}
+        if(amount<.6f)return;
+        // Contents fade in once the plate is mostly open, and out as it folds.
+        if(amount<1)p=new OpacityPainter(p,(amount-.6f)/.4f);
+        // Portrait on the LEFT (the incoming panel keeps its speaker on the right), facing the text.
         float breathe=(float)StrictMath.sin(g.visualTicks*.045)*.7f;
-        // Registered shoulder base (row 182 of the 192 px cell) rests on the plate's bottom edge.
-        float cx=X+W*.5f+shake,cy=Y+H-SPRITE*(182.5f/192-.5f)+breathe;
-        p.sprite(atlas(captain),self.frame(g),cx,cy,SPRITE,SPRITE,0,1);
-        p.rect(X,Y+H-NAME_H,W,NAME_H,0xd8101c30);
-        p.rect(X,Y+H-NAME_H,3,NAME_H,state==MAD?0xffd8463c:PilotGlass.AMBER);
-        Lettering.center(p,NAMES[captain],X+W*.5f+1,Y+H-NAME_H+3,9,PilotGlass.TEXT);
-        String line=self.line(g);
-        if(line!=null)bubble(p,line);
-    }
-    // Reused tail geometry; the bubble is drawn at constant colors so its text layer stays cached.
-    private static final float[] TAIL={BUBBLE_X-9,BUBBLE_Y+BUBBLE_H*.5f,BUBBLE_X+1,BUBBLE_Y+6,BUBBLE_X+1,BUBBLE_Y+BUBBLE_H-6};
-    private static void bubble(Painter p,String line){
-        float w=Lettering.width(line,11)+24;
-        p.poly(TAIL,0xf0f3ead2);
-        p.rect(BUBBLE_X,BUBBLE_Y,w,BUBBLE_H,0xf0f3ead2);
-        p.rect(BUBBLE_X,BUBBLE_Y+BUBBLE_H-2,w,2,0xffd9a441);
-        Lettering.draw(p,line,BUBBLE_X+12,BUBBLE_Y+7,11,VisualStyle.NAVY);
+        float px=X+SPLIT*.5f+shake,py=Y+H-6-SPRITE*(182.5f/192-.5f)+breathe;
+        p.sprite(atlas(captain),self.frame(g),px,py,SPRITE,SPRITE,0,1);
+        p.line(X+SPLIT,Y+18,X+SPLIT,Y+106,1,0x447e939f);
+        float tx=X+SPLIT+14,tw=W-SPLIT-28;
+        ArcadeIcons.draw(p,ArcadeIcons.RADIO,tx+6,Y+22,.65f,state==MAD?0xffd8463c:PilotGlass.AMBER);
+        String header=NAMES[captain]+" / YOUR TUG";
+        Lettering.draw(p,header,tx+20,Y+18,Math.min(9,(tw-80)/Math.max(1,Lettering.width(header,1))),PilotGlass.AMBER);
+        String badge=self.talking(g)?"RADIO / TX":state==MAD?"HULL HIT":"OOPS";
+        float bw=Lettering.width(badge,9)+16;p.rect(X+W-14-bw,Y+12,bw,22,0xff26334a);Lettering.draw(p,badge,X+W-6-bw,Y+18,9,PilotGlass.MUTED);
+        String text=self.text(g);
+        if(text!=null)Lettering.heading(p,text,tx,Y+46,Math.min(17,17*tw/Math.max(1,Lettering.headingWidth(text,17))),PilotGlass.TEXT);
+        String note=state==MAD?"HULL -"+Game.TUG_HIT+"% / EASY ON THE THROTTLE":state==WINCE?"SOMEONE ELSE'S PROPERTY / THAT GOES ON THE RECORD":self.talking(g)?"TRANSMITTING":"SENT";
+        Lettering.draw(p,note,tx,Y+80,Math.min(10,tw/Math.max(1,Lettering.width(note,1))),PilotGlass.MUTED);
+        if(self.talking(g))for(int i=0;i<7;i++){
+            float bh=2+5*(.5f+.5f*(float)StrictMath.sin(g.visualTicks*.6f+i*1.8f));
+            p.rect(tx+i*7,Y+106-bh,4,bh,PilotGlass.AMBER);
+        }
     }
     PlayerPortrait(){}
 }

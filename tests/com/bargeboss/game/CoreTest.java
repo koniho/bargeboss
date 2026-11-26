@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 public final class CoreTest {
     /** Strict gameplay replay hash, and the advisory draw-command hash (see Parity). */
-    static final String STATE_BASELINE="state=9af0f0af:2:1350",DRAW_BASELINE="babe49b5";
+    static final String STATE_BASELINE="state=9af0f0af:2:1350",DRAW_BASELINE="19b19c23";
     private static int assertions;
     private static void check(boolean condition,String message) {
         assertions++; if(!condition) throw new AssertionError(message);

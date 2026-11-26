@@ -26,6 +26,8 @@ public final class Dialogue {
     public void cancel(){pointer=pressed=-1;}
     public int count(){return choices.length;}
     public int result(){return result;}
+    /** The reply the player picked (kept after close until the next conversation), or null. */
+    String chosen(){return result>=0 && result<choices.length?choices[result]:null;}
     public boolean ready(){return active && result<0 && ticks>=InstructionPanel.OPEN_TICKS;}
     InstructionPanel.Content content(){return new InstructionPanel.Content("radio-"+revision,title,first,second,-1,0,speaker,"RADIO / RX",active && result<0);}
     public void step(){if(!active)return;ticks++;panel.step(content());}

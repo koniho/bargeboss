@@ -27,9 +27,7 @@ public final class ScreenView {
                     (g.lock.phase==Lock.ENTRY?"ENTRY CLOSES IN ":"EXIT CLOSES IN ")+g.lock.secondsRemaining()+"S":g.lock.signal());
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
-        // Keep the ribbon clear of the always-visible top-left captain portrait.
-        float clear=PlayerPortrait.RIGHT+12;
-        if(x<clear){width=Math.min(width,g.layout.width-clear-16);x=Math.max(clear,(g.layout.width-width)*.5f);}
+        // The captain's transmission panel opens below the ribbon (y=68), so the ribbon stays centered.
         PilotGlass.ribbon(p,x,8,width,48);
         headingCenter(p,title,x+width*.5f,14,16,width-24,PAPER);
         center(p,subtitle,x+width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);

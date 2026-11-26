@@ -7079,3 +7079,14 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   hits stay at 25).
 - Play-through: Wake Patrol 6/6 impounded in 180 s, no hull lost. Gameplay hash unchanged; draw
   37166713 -> babe49b5 (police boat in the replayed Wake Patrol frame).
+
+## Player transmission panel (mirrors the incoming radio panel)
+
+- The always-on top-left portrait plate is gone. The captain now has a transmission panel at the
+  incoming radio panel's height (y=68, 124 tall), mirrored to the left edge with the portrait on the
+  left, header "NAME / YOUR TUG", badge, the line being said and voice bars. It CRT-opens only while
+  there is something to say: a radio reply (held 2.5 s so it can be read), an acknowledgement, or a
+  reaction line on a hull hit (mad, red tint) or on damaging someone else (wince); otherwise hidden.
+- Neon Wake Patrol speeders (custom paint via lit normal sprites + underglow) with hooligan speech
+  bubbles replace their target rings.
+- Gameplay hash unchanged; draw babe49b5 -> 19b19c23.
