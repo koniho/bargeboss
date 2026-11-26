@@ -10,13 +10,16 @@ if [ "$#" -ne 3 ]; then
 fi
 cd "$(dirname "$0")/.."
 mkdir -p build/portraits
-javac -Xlint:-options --release 8 -d build/portraits tools/PackGavinPortrait.java
+javac -Xlint:-options --release 8 -d build/portraits tools/PackGavinPortrait.java tools/CleanPortraitEdges.java
 build() {
   captain=$1 sheet=$2 name=$3
   python3 tools/extract_sheet_portraits.py "$sheet" \
     "docs/art-studies/captains/$captain-source-$name.png" --captain "$captain"
   java -Djava.awt.headless=true -cp build/portraits com.bargeboss.game.PackGavinPortrait \
     "docs/art-studies/captains/$captain-source-$name.png" \
+    "assets/sprites/portrait-captain-$captain-$name.png"
+  java -Djava.awt.headless=true -cp build/portraits com.bargeboss.game.CleanPortraitEdges \
+    "assets/sprites/portrait-captain-$captain-$name.png" \
     "assets/sprites/portrait-captain-$captain-$name.png"
   python3 tools/portrait_registration.py "assets/sprites/portrait-captain-$captain-$name.png" "$captain"
 }

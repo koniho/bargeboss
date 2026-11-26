@@ -108,3 +108,20 @@ Each `--pick` point lies inside one head, in runtime frame order. A new captain 
 `out/captain-title-*.png`, `out/captain-tutorial-*.png` and every HUD state
 (`out/captain-hud-{idle,blink,talk,wince,mad}-<captain>-<width>.png`) at 960x600 and 1243x600.
 `PortraitRegistrationReview` checks every frame's painted base against `PortraitRegistration`.
+
+## Dark-background edge cleanup (2026-11-26)
+
+The captain-picker screenshot exposed gray/white paper residue around the hair,
+jaw and shoulders. `CleanPortraitEdges.java` now runs after packing, before the
+registration report. It flood-fills only neutral gray outer pixels connected to
+transparent space (a three-pixel band at runtime size), recovers their coverage
+against nearby opaque dark ink, and replaces contaminated color with that ink.
+Very faint alpha dust and isolated paper fragments are removed. Interior skin,
+teeth, glasses highlights and headwear are protected by the ink contour.
+
+All six frames retain their existing 192 px cells, placement and dimensions;
+there is no crop, scale, silhouette blur or new pose generation. The committed
+source cutouts remain unchanged, so the cleanup is reproducible and reversible.
+The tool runs offline; all platforms draw the same cleaned PNGs without additional
+runtime work. Review on navy as well as light backgrounds and inspect every
+expression, including Dot's pearls/glasses and Whitney's hair strands.

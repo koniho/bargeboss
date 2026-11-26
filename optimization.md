@@ -7016,3 +7016,20 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Gameplay hash state=9af0f0af:2:1350 (was state=c1d995af:2:1350). Bisected: removing the Deep Freeze catalog entry
   returns it exactly to c1d995af, so the only gameplay cause is the seventeenth career slot (save
   string). Draw 32cfdce1.
+
+## 2026-11-26: captain portrait matte cleanup
+
+- Screenshot inspection found pale gray paper residue baked into the three player
+  portrait atlases. An offline Java pack-stage cleanup now recovers outer-edge
+  color/coverage from nearby dark ink, without touching interior face details or
+  resizing/repositioning cells. Original registered sources remain unchanged.
+- Same three 576x384 atlases, same six poses, same native texture/cache footprint;
+  no runtime effect, shader, rasterization or extra draw calls. No frame-time
+  improvement claimed. Actual shared picker and all HUD states rendered for review.
+- Painted-base registration review passes all six frames for Whitney, Wesley and
+  Dot. Full build/device validation is recorded below after completion.
+- Validation: full shared/asset checks and Android build/native encoding checks
+  passed. All three cleaned atlases reproduce byte-for-byte from the committed
+  source cutouts using pack + cleanup. Updated APK installed and launched; native
+  captain-picker pixels reviewed against the user's screenshot. iOS not tested
+  on-device. Review sheets copied to Pictures/BargeBoss and MediaStore verified.
