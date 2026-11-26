@@ -7090,3 +7090,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Neon Wake Patrol speeders (custom paint via lit normal sprites + underglow) with hooligan speech
   bubbles replace their target rings.
 - Gameplay hash unchanged; draw babe49b5 -> 19b19c23.
+
+## Hidden hit points for every watercraft; underglow in the ripple layer
+
+- HullDamage: one raw damage curve (10 HP + 1 per unit of closing speed above 30) applied to hidden
+  per-hull pools: tug 240, barges 600, yachts 300, light craft (cruisers, runabouts, racers) 70,
+  moored boats 40+length. Bars show only the fraction; messages and the captain's panel no longer
+  print numbers. A 78 wall hit costs the tug ~24%; a 60 smash costs it ~17% and a runabout ~57%.
+- Neon underglow moved from the job's water pass into CruiserView's ripple layer (same shore clip
+  and depth order), as a keel-aligned ellipse that brightens with speed.
+- Play-through: all seven jobs complete. Hashes unchanged (no damage or glow in the replay).

@@ -71,8 +71,8 @@ public final class CoreTest {
         g.down(300,700); g.move(360,700); g.cancel(); check(!g.pointer,"cancelled drag cannot stick");
         Viewport v=new Viewport(1200,1000); check(Math.abs(v.worldX(v.x+300*v.scale)-300)<.001,"letterboxed coordinate mapping");
         g=playing(); g.down(-3000,500); check(!g.pointer,"letterbox tap ignored");
-        g=playing(); g.tug.x=415; g.tug.y=500; g.tug.vx=100; steps(g,1); check(g.hull==100-Game.TUG_HIT,"hard bank collision damages hull once");
-        steps(g,1); check(g.hull==100-Game.TUG_HIT,"impact cooldown avoids multiple charges");
+        g=playing(); g.tug.x=415; g.tug.y=500; g.tug.vx=100; steps(g,1); check(g.hull<100 && g.hull==100-g.lastHit && g.lastHit>=HullDamage.percent(78,HullDamage.TUG_HP),"hard bank collision damages hull once");int afterHit=g.hull;
+        steps(g,1); check(g.hull==afterHit,"impact cooldown avoids multiple charges");
         g=playing(); g.ticks=1200; steps(g,1);
         check(!g.trafficActive(),"berth puzzles retain clear navigation rather than unrelated crossing traffic");
         Game low=playing(), high=playing(); ReplayInput.throttle(low,0,-100);

@@ -157,11 +157,7 @@ final class WakePatrolJob extends MontroseJob {
         boolean towing=false;
         for(int i=0;i<SPEEDERS;i++){
             Body b=speeders[i];if(!b.active)continue;
-            if(!ticketed[i]){
-                // Neon underglow instead of a target ring: loud, pulsing, unmistakable.
-                RiverCamera c=g.layout.camera;float sx=c.screenX(b.x,b.y),sy=c.screenY(b.x,b.y),r=(b.half+b.radius)*1.6f*c.scale,pulse=.65f+.35f*(float)StrictMath.sin(g.visualTicks*.25f+i);
-                p.material(sx,sy,r*2.4f,0,0,r*1.3f,EffectMaterial.GLOW,0,1,SoftCue.alpha(b.neon,.55f*pulse));
-            }
+            if(!ticketed[i])continue; // Loose speeders glow from their own ripple layer (CruiserView.underglow).
             else if(!impounded[i] && warp[i]==0){if(g.tow.connected(b,g.tug))towing=true;else ring(g,p,b.x,b.y,30,0xffffd166,.7f);}
         }
         ring(g,p,RING_X,RING_Y,RING_REACH*.7f,0xff5aa8ff,towing?1:.45f);

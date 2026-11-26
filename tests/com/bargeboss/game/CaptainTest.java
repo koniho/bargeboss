@@ -163,7 +163,7 @@ final class CaptainTest {
     private static void triggers(){
         // Mad: own tug takes hull damage.
         Game g=ReplayInput.veteran(new Game());ReplayInput.controlFixture(g);g.tug.x=415;g.tug.y=500;g.tug.vx=100;steps(g,1);
-        check(g.hull==100-Game.TUG_HIT && g.portrait.state(g)==PlayerPortrait.MAD,"hard impact damages the hull and makes the captain mad");
+        check(g.hull<100 && g.hull==100-g.lastHit && g.portrait.state(g)==PlayerPortrait.MAD,"hard impact damages the hull and makes the captain mad");
         // Wince: the tug or a lined vessel damages another vessel's hull (HullDamage).
         for(float closing:new float[]{60,77.9f,78,110}){
             g=ReplayInput.veteran(new Game());ReplayInput.controlFixture(g);Body other=g.cargo[0];

@@ -38,7 +38,7 @@ public final class HarborTrafficTest {
         // The tug ramming a cruiser costs it health and gets the skipper shouting.
         HarborTraffic.Craft c=g.harborTraffic.craft[2];Body boat=c.body;
         g.splashes.contact(g.tug,boat,boat.x,boat.y,120,0,0,0,120);g.splashes.step(g);
-        check(boat.health==100-HullDamage.SMASH && g.othersDamage==HullDamage.SMASH && c.shoutTicks>0,"ramming traffic smashes it and the skipper yells");
+        int smash=HullDamage.percent(120,HullDamage.LIGHT_HP);check(boat.health==Math.max(0,100-smash) && g.othersDamage==100-boat.health && c.shoutTicks>0,"ramming traffic smashes it and the skipper yells");
         // Smash through: a full-speed ram keeps the tug moving, throws the boat aside and costs the tug nothing.
         g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
         Body victim=g.harborTraffic.craft[0].body;victim.vx=victim.vy=0;victim.spin=0;
@@ -47,9 +47,9 @@ public final class HarborTrafficTest {
         float smashed=0;for(int t=0;t<4;t++){Physics.integrate(g.tug);smashed=Math.max(smashed,g.harborTraffic.collide(g,g.splashes));}
         check(g.tug.vx>60,"the tug keeps its way through the boat ("+g.tug.vx+")");
         check(victim.vx>vx+30 && victim.spin!=0,"the rammed boat is shoved and spun aside");
-        check(smashed>=HullDamage.SMASH_SPEED,"a full-speed smash reports a hard tug impact (Game charges TUG_HIT) ("+smashed+")");
+        check(smashed>=HullDamage.SMASH_SPEED,"a full-speed smash reports a hard tug impact ("+smashed+")");
         for(int k=0;k<2;k++){g.ticks+=HullDamage.COOLDOWN;g.splashes.contact(g.tug,victim,victim.x,victim.y,120,0,0,0,120);for(int s=0;s<=CollisionSplashes.COOLDOWN;s++)g.splashes.step(g);}
-        check(victim.sinkTicks>0 && victim.health==0,"two hard smashes sink a pleasure boat");
+        check(victim.sinkTicks>0 && victim.health==0,"hard smashes sink a pleasure boat");
         // No-wake marina: law-abiding traffic idles inside the harbor; the hooligan and lake boats do not.
         g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;g.tug.x=-2000;g.tug.y=-4000;
         float fastest=0,hooligan=0,lake=0;
@@ -59,6 +59,10 @@ public final class HarborTrafficTest {
                 else lake=Math.max(lake,b.speed());}}
         check(fastest<=HarborTraffic.NO_WAKE+3,"marina traffic keeps to no-wake speed ("+fastest+")");
         check(hooligan>40 && lake>60,"the hooligan and the lake boats still run fast ("+hooligan+", "+lake+")");
+        // Lopsided: smashing through a pleasure boat costs the tug far less than the boat.
+        for(float closing:new float[]{45,60,78,95}){int tugLoss=HullDamage.percent(closing,HullDamage.TUG_HP),runabout=HullDamage.percent(closing,HullDamage.LIGHT_HP);
+            check(tugLoss*3<=runabout,"hidden HP at closing "+closing+": the tug loses "+tugLoss+"%, a runabout "+runabout+"%");}
+        check(Math.abs(HullDamage.percent(78,HullDamage.TUG_HP)-25)<=2,"a hard 78 wall hit still costs the tug about a quarter");
         System.out.println("Harbor traffic lanes, motion and damage passed");
     }
     public static void main(String[] a){run();}

@@ -31,7 +31,7 @@ public final class ProfileScenario {
             prepare(root,"montrose-tow-two",width,height);Game g=root.activeGame();
             Body b=null;for(Body c:g.cargo)if(c!=null && c.active)b=c;
             if(b==null)throw new IllegalStateException("sink-demo needs a cruiser");
-            g.hull=20;b.health=HullDamage.HIT;g.ticks+=HullDamage.COOLDOWN;
+            g.hull=20;b.health=HullDamage.percent(100,HullDamage.hp(b));g.ticks+=HullDamage.COOLDOWN;
             g.splashes.contact(g.tug,b,(g.tug.x+b.x)*.5f,(g.tug.y+b.y)*.5f,100,0,0,0,100);return;
         }
         if(name.startsWith("land-")){

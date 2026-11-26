@@ -5,7 +5,7 @@ package com.bargeboss.game;
  *
  * Rules (shared by every level):
  * - A hard contact (closing speed at least {@link #HARD}, the tug's own threshold) costs a vessel
- *   {@link #HIT} health, at most once per {@link #COOLDOWN} ticks. Practice tutorials take no damage.
+ *   health by hidden hit points (see {@link #TUG_HP}), at most once per {@link #COOLDOWN} ticks. Practice tutorials take no damage.
  * - Record: own = hull the tug lost; others = health every other vessel lost plus hard hits on
  *   moored marina boats.
  * - At 0 health a vessel sinks over {@link #SINK} ticks (flash, shake, smoke, ripples, lowered under
@@ -13,10 +13,17 @@ package com.bargeboss.game;
  *   mission FAIL_DELAY ticks after it goes under. */
 final class HullDamage {
     private HullDamage(){}
-    static final int HIT=9,COOLDOWN=75,SINK=150;
-    /** Harbor traffic is light pleasure craft, far weaker than the tug (which loses HIT=9 a hard hit):
-     * a smash costs it this much, so two sink it. */
-    static final int SMASH=55;
+    static final int COOLDOWN=75,SINK=150;
+    /** Hidden hit points. A collision deals the same raw damage (HP) to whatever it hits, scaled by
+     * closing speed; each hull's pool turns that into the health fraction its bar shows. The player
+     * only ever sees fractions, never numbers. A big tug shrugs off what guts a runabout. */
+    static final float TUG_HP=240,BARGE_HP=600,YACHT_HP=300,LIGHT_HP=70;
+    /** Raw impact damage in hit points at a closing speed (none below BUMP_SPEED). */
+    static float raw(float closing){return closing<BUMP_SPEED?0:10+(closing-BUMP_SPEED);}
+    /** Health percent a hull with `hp` hit points loses from a hit at `closing` (at least 1 once it counts). */
+    static int percent(float closing,float hp){return closing<BUMP_SPEED?0:Math.max(1,Math.round(raw(closing)*100/hp));}
+    static float hp(Body b){return b.racing || b.cruiser?LIGHT_HP:b.yacht?YACHT_HP:BARGE_HP;}
+    static float hp(MooredFleet.FloatBoat m){return 40+m.berth.length;}
     /** Light craft register a ram at lower closing speeds than working hulls: traffic from SMASH_SPEED,
      * moored marina boats from BUMP_SPEED, with damage scaled by how hard the hit was. */
     static final float SMASH_SPEED=40,BUMP_SPEED=30;
@@ -29,18 +36,18 @@ final class HullDamage {
     static void contact(Game g,Watercraft a,Watercraft b,float closing){
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=SMASH_SPEED))return;
         // Harbor traffic only takes damage the player causes; skippers bumping each other shrug it off.
-        boolean hitA=(traffic(a)?CollisionSplashes.involvesPlayer(g,b):closing>=HARD) && hit(g,a),hitB=(traffic(b)?CollisionSplashes.involvesPlayer(g,a):closing>=HARD) && hit(g,b);
+        boolean hitA=(traffic(a)?CollisionSplashes.involvesPlayer(g,b):closing>=HARD) && hit(g,a,closing),hitB=(traffic(b)?CollisionSplashes.involvesPlayer(g,a):closing>=HARD) && hit(g,b,closing);
         // The captain winces when the tug or a lined vessel damages someone else's hull.
         if(hitA && CollisionSplashes.involvesPlayer(g,b) || hitB && CollisionSplashes.involvesPlayer(g,a))PlayerPortrait.wince(g);
     }
     private static boolean traffic(Watercraft w){return w instanceof Body && ((Body)w).traffic;}
-    private static boolean hit(Game g,Watercraft w){
+    private static boolean hit(Game g,Watercraft w,float closing){
         if(!(w instanceof Body) || w==g.tug)return false;
         Body b=(Body)w;
         if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return false;
         // Parked traffic hulls (a police boat, impounded or ticketed boats awaiting a tow) cannot be wrecked.
         if(b.traffic && b.awaitingPickup)return false;
-        b.healthBefore=b.health;b.health=Math.max(0,b.health-(b.traffic?SMASH:HIT));b.damagedTick=g.ticks;
+        b.healthBefore=b.health;b.health=Math.max(0,b.health-percent(closing,hp(b)));b.damagedTick=g.ticks;
         g.othersDamage+=b.healthBefore-b.health;
         if(b.traffic)g.harborTraffic.rammed(b);
         if(b.health==0)sink(g,b);
@@ -53,7 +60,7 @@ final class HullDamage {
         if(by!=null && by.traffic)return;
         if(g.mode!=Game.PLAY || g.tutorial!=null || !(closing>=BUMP_SPEED) || !m.afloat() || m.health<=0 || g.ticks-m.damagedTick<MOORED_COOLDOWN)return;
         // A solid bump dents it; a full-speed ram caves it in.
-        int damage=Math.min(65,Math.round(20+(closing-BUMP_SPEED)));
+        int damage=percent(closing,hp(m));
         m.healthBefore=m.health;m.health=Math.max(0,m.health-damage);m.damagedTick=g.ticks;g.mooredDamageTick=g.ticks;
         shake(g,Math.min(.5f,.15f+damage*.01f));
         g.othersDamage+=m.healthBefore-m.health;PlayerPortrait.wince(g);

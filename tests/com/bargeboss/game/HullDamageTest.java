@@ -13,9 +13,9 @@ public final class HullDamageTest {
     public static void run(){
         Game g=yard();Body barge=g.cargo[0];
         hit(g,g.tug,barge,77);check(barge.health==100 && g.othersDamage==0,"soft contact leaves health");
-        hit(g,g.tug,barge,90);check(barge.health==100-HullDamage.HIT && g.othersDamage==HullDamage.HIT,"hard contact costs the barge and is recorded as others' property");
+        int loss=HullDamage.percent(90,HullDamage.BARGE_HP);hit(g,g.tug,barge,90);check(barge.health==100-loss && g.othersDamage==loss,"hard contact costs the barge (hidden HP) and is recorded as others' property");
         for(int t=0;t<20;t++)g.ticks++;hit(g,g.tug,barge,120);
-        check(barge.health==100-HullDamage.HIT,"damage cooldown");
+        check(barge.health==100-loss,"damage cooldown");
         check(g.hull==100 && g.ownDamage==0,"splash contacts never touch the tug hull (Game.damage owns it)");
         Game tutorial=new Game();tutorial.startTutorial();Game t=tutorial.activeGame();t.mode=Game.PLAY;
         Body target=null;for(Body b:t.cargo)if(b!=null)target=b;
@@ -23,7 +23,7 @@ public final class HullDamageTest {
         // Wreck it: hits spaced past the cooldown until it sinks.
         g=yard();barge=g.cargo[0];int hits=0;
         while(barge.health>0 && hits<40){g.ticks+=HullDamage.COOLDOWN;hit(g,g.tug,barge,100);hits++;}
-        check(barge.health==0 && barge.sinkTicks>0 && hits==(100+HullDamage.HIT-1)/HullDamage.HIT,"repeated hard hits sink the vessel");
+        check(barge.health==0 && barge.sinkTicks>0 && hits==(100+HullDamage.percent(100,HullDamage.BARGE_HP)-1)/HullDamage.percent(100,HullDamage.BARGE_HP),"repeated hard hits sink the vessel");
         check(g.othersDamage==100,"others' damage totals the lost health");
         check(!g.goalFailed() && barge.active,"the mission fails only once the sinking finishes");
         float depth=0;
@@ -39,7 +39,7 @@ public final class HullDamageTest {
         HullDamage.moored(g,m,HullDamage.BUMP_SPEED-1);check(m.health==100,"a gentle nudge leaves a marina boat whole");
         HullDamage.moored(g,m,40);check(m.health<100 && m.health>60,"a solid bump dents it, scaled by speed");g.ticks+=HullDamage.COOLDOWN;int dented=m.health;
         HullDamage.moored(g,m,100);HullDamage.moored(g,m,100);
-        check(m.health==Math.max(0,dented-65) && g.othersDamage==100-m.health,"a full-speed ram costs 65, once per cooldown");
+        check(m.health==Math.max(0,dented-HullDamage.percent(100,HullDamage.hp(m))) && g.othersDamage==100-m.health,"a full-speed ram costs its hidden-HP share, once per cooldown");
         while(m.health>0){g.ticks+=HullDamage.COOLDOWN;HullDamage.moored(g,m,100);}
         check(m.sinkTicks>0 && !m.afloat() && g.othersDamage==100,"a wrecked marina boat sinks and the record totals its health");
         Body probe=new Body(-1,-1,m.x,m.y,0);probe.vx=200;

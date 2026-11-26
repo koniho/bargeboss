@@ -1199,7 +1199,7 @@ public final class Game {
         }
         traffic();
         // Smashing through traffic hard enough to wreck the boat costs the tug a hard hit too.
-        if(montroseStage()){harborTraffic.step(this,splashes);if(harborTraffic.collide(this,splashes)>=HullDamage.SMASH_SPEED)hardHit();if(job!=null)job.motion(this);}
+        if(montroseStage()){harborTraffic.step(this,splashes);{float smash=harborTraffic.collide(this,splashes);if(smash>=HullDamage.SMASH_SPEED)hit(HullDamage.percent(smash,HullDamage.TUG_HP));}if(job!=null)job.motion(this);}
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }
         int currentContact=contact==null?-1:contact.id;
@@ -1384,23 +1384,25 @@ public final class Game {
             } else navigate(Physics.LEFT+60,TrainingChannel.Y[TrainingChannel.Y.length-1],speed);
         } else navigate(x,y,speed);
     }
-    /** Hull a hard hit costs the tug: a quarter of it, so four hard hits sink the tug. */
-    public static final int TUG_HIT=25;
+    /** Health percent of the tug's most recent hull hit (hidden HP, see HullDamage.TUG_HP). */
+    public int lastHit;
+    /** The tug's own hard impacts (walls, docks, heavy hulls) from closing speed 78. */
     private void damage(float speed) {
         if(speed<78) return;
-        hardHit();
+        hit(HullDamage.percent(speed,HullDamage.TUG_HP));
     }
     /** Hull the tug is charged when a hull it tows or pushes slams into something (its crew's fault, not a ram). */
     public static final int CARGO_HIT=9;
     private void cargoDamage(float speed) {
         if(speed<78 || tutorial!=null || damageCooldown>0) return;
-        ownDamage+=Math.min(CARGO_HIT,hull);hull=Math.max(0,hull-CARGO_HIT); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("TOW SLAMMED - HULL -"+CARGO_HIT);
+        lastHit=CARGO_HIT;ownDamage+=Math.min(CARGO_HIT,hull);hull=Math.max(0,hull-CARGO_HIT); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("TOW SLAMMED!");
         impactX=tug.x; impactY=tug.y; impactTicks=45;haptic(HAPTIC_IMPACT);
     }
     /** One hard hit on the tug (cooldown-limited): walls, hulls, and smashing through traffic. */
-    private void hardHit() {
+    /** One hit on the tug's hull (cooldown-limited). */
+    private void hit(int amount) {
         if(tutorial!=null || damageCooldown>0) return;
-        ownDamage+=Math.min(TUG_HIT,hull);hull=Math.max(0,hull-TUG_HIT); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("HARD IMPACT - HULL -"+TUG_HIT);
+        lastHit=amount;ownDamage+=Math.min(amount,hull);hull=Math.max(0,hull-amount); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("HARD IMPACT!");
         impactX=tug.x; impactY=tug.y; impactTicks=45;
         haptic(HAPTIC_IMPACT);
     }

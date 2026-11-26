@@ -138,7 +138,7 @@ public final class PlayerPortrait {
         float bw=Lettering.width(badge,9)+16;p.rect(X+W-14-bw,Y+12,bw,22,0xff26334a);Lettering.draw(p,badge,X+W-6-bw,Y+18,9,PilotGlass.MUTED);
         String text=self.text(g);
         if(text!=null)Lettering.heading(p,text,tx,Y+46,Math.min(17,17*tw/Math.max(1,Lettering.headingWidth(text,17))),PilotGlass.TEXT);
-        String note=state==MAD?"HULL -"+Game.TUG_HIT+"% / EASY ON THE THROTTLE":state==WINCE?"SOMEONE ELSE'S PROPERTY / THAT GOES ON THE RECORD":self.talking(g)?"TRANSMITTING":"SENT";
+        String note=state==MAD?"HULL DAMAGED / EASY ON THE THROTTLE":state==WINCE?"SOMEONE ELSE'S PROPERTY / THAT GOES ON THE RECORD":self.talking(g)?"TRANSMITTING":"SENT";
         Lettering.draw(p,note,tx,Y+80,Math.min(10,tw/Math.max(1,Lettering.width(note,1))),PilotGlass.MUTED);
         if(self.talking(g))for(int i=0;i<7;i++){
             float bh=2+5*(.5f+.5f*(float)StrictMath.sin(g.visualTicks*.6f+i*1.8f));
