@@ -6940,3 +6940,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 
 - Rebased onto e8a1ba7 (narrow basin, 2ce50f2c): combined canonical replay a4e41cf6:2:1350; restoring main's
   PlayerPortrait.java reproduces 2ce50f2c exactly (the breathing fix is the only hashed change).
+
+## Marina boat health and transient health bars
+
+- Montrose marina boats (`MooredFleet.FloatBoat`) carry their own health; hard hits cost HIT on the
+  shared cooldown, and at zero they sink with the shared wreck effects (`HullDamage.wreck`, now
+  hull-generic). Canonical replay unchanged (a4e41cf6): the replay has no marina contact.
+- Health bars now appear only for `HealthBars.SHOW`=150 ticks after a health change (fading over the
+  last 30), plus while the player's hull is below 25%. Canonical replay de315fad:2:1350 (was
+  a4e41cf6). Bisected: restoring HEAD's HealthBars.java with every other change kept gives
+  a4e41cf6 exactly, so the only hashed change is the bars no longer drawn when idle (draw-only).

@@ -227,7 +227,7 @@ public final class CoreTest {
         // Shift-free captain frames (expressions composited onto neutral, equal X offsets) leave
         // ecc8a070 unchanged: atlas pixels and portrait pivots are not hashed. Bisected: the only
         // input that moves is PlayerPortrait breathing now running in every state (c127893d).
-        check(Parity.signature().equals("a4e41cf6:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("de315fad:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

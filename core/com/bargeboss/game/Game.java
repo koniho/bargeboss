@@ -56,6 +56,8 @@ public final class Game {
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
     public int visualTicks;
     public int celebrationTicks, celebrationPoints, impactTicks,damageFlashTicks;
+    /** Tick the tug's hull last changed (drives the transient health bar). */
+    public int hullDamagedTick=-1000;
     public float celebrationX,celebrationY,impactX,impactY;
     public int noticeTicks, damageCooldown, nextId=1;
     public String notice="WELCOME TO THE RIVER";
@@ -486,7 +488,7 @@ public final class Game {
         bridge=new Bridge();if(tutorial==null)bridge.phase=Bridge.OPEN;lock=new Lock();lock.passive=!lockStage();mission=new MontroseHarbor();haulout=new MontroseHaulout();rescue=new MontroseRescue();buildingFades=new BuildingFades();
         water=new WaterSurface(); crew.reset(); smoke=new VesselSmoke();titleSmoke=new VesselSmoke(); trafficBoat=new Body(-1,-1,110,TRAFFIC_Y,0);
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
-        celebrationTicks=impactTicks=damageFlashTicks=0;portrait.reset();
+        celebrationTicks=impactTicks=damageFlashTicks=0;hullDamagedTick=-1000;portrait.reset();
         damageCooldown=0; accumulator=0; selected=-1;
         tug=new Body(0,-1,330,650,(float)Math.PI);
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
@@ -1367,7 +1369,7 @@ public final class Game {
     private void damage(float speed) {
         if(tutorial!=null) return;
         if(speed<78 || damageCooldown>0) return;
-        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40;portrait.mad(); tell("HARD IMPACT - HULL -9");
+        ownDamage+=Math.min(9,hull);hull=Math.max(0,hull-9); combo=0; damageCooldown=75;damageFlashTicks=40;hullDamagedTick=ticks;portrait.mad(); tell("HARD IMPACT - HULL -9");
         impactX=tug.x; impactY=tug.y; impactTicks=45;
         haptic(HAPTIC_IMPACT);
     }
