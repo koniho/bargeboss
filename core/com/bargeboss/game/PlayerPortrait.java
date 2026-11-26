@@ -97,8 +97,9 @@ public final class PlayerPortrait {
                 :state==WINCE?(float)StrictMath.sin(self.winceTicks*2.6)*Math.min(1,self.winceTicks/14f)*1.4f:0;
         PilotGlass.panel(p,X,Y,W,H,0xe8101c30);
         if(state==MAD)p.rect(X,Y,W,H,(Math.round(110*Math.min(1,self.madTicks/(float)MAD_TICKS))<<24)|0x9a1f22);
-        // Idle breathing: a sub-pixel rise of the bust, never a resample of the face.
-        float breathe=state==IDLE?(float)StrictMath.sin(g.visualTicks*.045)*.7f:0;
+        // Breathing: a sub-pixel rise of the bust, never a resample of the face. It runs through
+        // every state so a swap from idle to talk/mad/wince never drops the bust by up to .7 px.
+        float breathe=(float)StrictMath.sin(g.visualTicks*.045)*.7f;
         // Registered shoulder base (row 182 of the 192 px cell) rests on the plate's bottom edge.
         float cx=X+W*.5f+shake,cy=Y+H-SPRITE*(182.5f/192-.5f)+breathe;
         p.sprite(atlas(captain),self.frame(g),cx,cy,SPRITE,SPRITE,0,1);

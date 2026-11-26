@@ -6916,3 +6916,27 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Canonical replay 2ce50f2c:2:1350 (was ecc8a070). Score/deliveries unchanged. Unlike tutorial-only
   changes, the practice yard section also moves: it shares the training geography (overview map scale and
   regenerated quay buildings), so the non-tutorial hash differs too (a349c251 → 7862aab9) by design.
+## 2026-11-26: Shift-free player-captain portrait frames, new mirrored Whitney sheet
+
+- Platform: shared assets plus one shared HUD line; no renderer, cache or draw-call change.
+  Texture sizes, cells, atlas ids 92-94 and file names are unchanged.
+- Problem: sheet rows are drawn at different head sizes/angles, so frames swapped by the HUD
+  swam. Static-region residual against neutral (masked affine ECC at 192 px, RMS displacement):
+  Whitney (old sheet) 0.34/3.30/0.85/4.00/3.46 px for talk-small/talk-open/blink/mad/wince,
+  Wesley 0.45/1.51/0.71/3.15/2.22, Dot 0.76/1.25/0.61/3.28/3.21; scale errors up to 5.4%.
+- Fix: `tools/portrait_registration.py` composites each expression onto the neutral frame:
+  only feathered eye/brow and mouth/jaw ellipses come from the expression, registered on their
+  own anchors (glasses by similarity search + ECC, or nose/cheek/ear areas); neutral glasses are
+  laid back on top (Dot's wire frame after inpainting the expression's own rims; Whitney's
+  sunglasses outer band and glints). Residual after: 0.00 px and 0.00 mean static pixel
+  difference on every frame. Whitney now comes from the user's replacement sheet, mirrored
+  (`--mirror`) to face right. One-command rebuild: `tools/rebuild-captain-portraits.sh`.
+- `PortraitRegistration` captain rows are now equal per captain (no per-frame X offsets).
+  `PlayerPortrait` breathing (sub-pixel bust rise) runs in every state, so idle to talk/mad/wince
+  no longer drops the bust by up to 0.7 px; the deliberate mad/wince shake is unchanged.
+- Canonical replay c127893d:2:1350 (was ecc8a070). Bisected: new pixels and equal X offsets with
+  the old breathing still give ecc8a070 (atlas pixels and pivots are not hashed); the only input
+  that moves is the breathing offset in non-idle states. Deliveries 2, score 1350.
+
+- Rebased onto e8a1ba7 (narrow basin, 2ce50f2c): combined canonical replay a4e41cf6:2:1350; restoring main's
+  PlayerPortrait.java reproduces 2ce50f2c exactly (the breathing fix is the only hashed change).

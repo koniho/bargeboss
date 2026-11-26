@@ -224,7 +224,10 @@ public final class CoreTest {
         // ae32a7f8: new pixels and PortraitRegistration X offsets under the old file names and
         // HUD labels reproduce ae32a7f8 exactly; the hashed atlas file names and the HUD name
         // label text are the only inputs that move (old files + new labels: b32cd182).
-        check(Parity.signature().equals("2ce50f2c:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Shift-free captain frames (expressions composited onto neutral, equal X offsets) leave
+        // ecc8a070 unchanged: atlas pixels and portrait pivots are not hashed. Bisected: the only
+        // input that moves is PlayerPortrait breathing now running in every state (c127893d).
+        check(Parity.signature().equals("a4e41cf6:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }
