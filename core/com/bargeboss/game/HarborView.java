@@ -117,6 +117,14 @@ public final class HarborView {
         if(ready) return;
         destination(g,canvas,g.dockX(berth),g.dockY(berth),g.sharedBerthStage()?"UNLOADING SLIP":"BERTH "+g.berthLetter(berth));
     }
+    /** Marker height that keeps an edge marker (arrow plus its label below) off the HUD controls. */
+    static float clearOfControls(Game g,float x,float y){
+        float jx=Joystick.centerX(g),jy=Joystick.centerY(g),r=Joystick.RADIUS+14;
+        if(Joystick.visible(g) && x>jx-r-60 && x<jx+r+60 && y>jy-r-30)y=Math.min(y,jy-r-30);
+        Layout.Box map=OverviewMap.bounds(g);
+        if(x>map.x-60 && x<map.x+map.w+60 && y>map.y-30)y=Math.min(y,map.y-30);
+        return Math.min(y,g.layout.height-92);
+    }
     private static void destination(Game g,Painter canvas,float wx,float wy,String label) {
         RiverCamera c=g.layout.camera;
         float x=c.screenX(wx,wy),y=c.screenY(wx,wy);
@@ -125,10 +133,12 @@ public final class HarborView {
             float fraction=Math.min((g.layout.width/2-32)/Math.max(1,Math.abs(dx)),
                     (g.layout.height/2-80)/Math.max(1,Math.abs(dy)));
             float ex=cx+dx*fraction,ey=cy+dy*fraction,distance=Physics.length(dx,dy);
+            // Every stage keeps edge markers clear of the joystick, chart (with its zoom slider) and button row.
+            ey=clearOfControls(g,ex,ey);
             float ux=dx/distance,uy=dy/distance;
             ControlView.arrow(g,new RiverPainter(canvas,c),c.worldX(ex-ux*40,ey-uy*40),c.worldY(ex-ux*40,ey-uy*40),c.worldX(ex,ey),c.worldY(ex,ey),GOLD);
             Lettering.center(canvas,label,Physics.clamp(ex,85,g.layout.width-85),
-                    Physics.clamp(ey+22,85,g.layout.height-62),12,GOLD);return;
+                    Physics.clamp(ey+22,85,g.layout.height-70),12,GOLD);return;
         }
         // Place the entire arrow, including its head, in the water plane.
         float dx=wx-g.tug.x,dy=wy-g.tug.y,length=Physics.length(dx,dy);

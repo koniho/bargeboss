@@ -6717,3 +6717,18 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   tutorial audio sequence. Bisected: restoring RopeFlight/TowView/MooringView/Game/SoundEffects
   reproduces 9748df6b exactly. `LassoFeedbackTest` now asserts the whip (tip on the throw line,
   mid-throw wave, wind-up/overshoot/exact landing) instead of the old preview-arc identity.
+
+## 2026-11-25: Unified in-game HUD rules across stages
+
+- Audit (desktop renders of every stage's play HUD, `HudShots` at 1243×600): header ribbon, chart,
+  zoom slider, joystick, health bars, radio/instruction panels (one `InstructionPanel`), ability panel,
+  pause/finish screens were already shared. Divergences fixed:
+  - Header title: one rule, LOCATION / JOB (`Game.challengeTitle`, also the finish screen); practice is
+    "INDUSTRIAL HARBOR / PRACTICE", Montrose arrival/tour "MONTROSE HARBOR / ARRIVAL|EXPLORE". Was a mix of
+    job-only ("NAVY PIER FIRE"), location-only and "PRACTICE - INDUSTRIAL HARBOR".
+  - Header detail no longer appends "HULL n%": the tug's health bar is the single hull readout.
+  - Off-screen objective markers: `HarborView.clearOfControls` keeps arrow + label above the joystick,
+    the chart with its slider and the button row in every stage (they sat on the joystick in Indiana,
+    Chicago and the tow-circle fixture).
+- Canonical replay 289ac27e:2:1350 (was 3f51f7ac): draw only; restoring ScreenView/HarborView/Game
+  reproduces 3f51f7ac exactly.

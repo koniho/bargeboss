@@ -129,7 +129,11 @@ public final class Game {
     public Game() { reset(); mode=TITLE; }
     public int quota() { return calumetStage()?voyage.quota():Challenges.quota(challengeId); }
     public int shiftTicks() { return calumetStage()?6000*60:Challenges.shiftTicks(challengeId); }
-    public String challengeTitle() { return calumetStage()?"CALUMET RIVER / "+voyage.title():Challenges.title(challengeId); }
+    /** One title rule for every stage's HUD and finish screen: LOCATION / JOB (job omitted when it is the location). */
+    public String challengeTitle() {
+        String location=Challenges.locationTitle(challengeId),job=calumetStage()?voyage.title():Challenges.title(challengeId);
+        return job.equals(location)?location:location+" / "+job;
+    }
     public boolean calumetStage() {return tutorial==null && Challenges.calumet(challengeId);}
     public boolean hasBridge() { return tutorial==null && challengeId<0; }
     /** The practice bridge is separate from surveyed location bridge instances. */

@@ -11,7 +11,9 @@ public final class ScreenView {
     private static void headingCenter(Painter p,String s,float x,float y,float size,float width,int c){Lettering.centerHeading(p,s,x,y,Math.min(size,width/Math.max(1,Lettering.headingWidth(s,1))),c);}
     public static void hud(Game g,Painter p) {
         float width=Math.min(720,g.layout.width-32),x=(g.layout.width-width)*.5f;
-        String title=g.montroseArrival.active()?"MONTROSE HARBOR":g.montroseStage() && g.rescue.touring?"EXPLORE MONTROSE":g.tutorial!=null?"PRACTICE - INDUSTRIAL HARBOR":g.challengeTitle();
+        // Unified header: LOCATION / JOB, then progress / status. Hull lives on the tug's health bar.
+        String title=g.tutorial!=null?"INDUSTRIAL HARBOR / PRACTICE":g.montroseArrival.active()?Challenges.locationTitle(g.challengeId)+" / ARRIVAL"
+                :g.montroseStage() && g.rescue.touring?Challenges.locationTitle(g.challengeId)+" / EXPLORE":g.challengeTitle();
         String subtitle;
         if(g.montroseArrival.active())subtitle="ARRIVING FROM LAKE MICHIGAN";
         else if(g.montroseStage() && g.rescue.touring)subtitle=g.goalStatus();
@@ -24,7 +26,6 @@ public final class ScreenView {
                     (g.lock.phase==Lock.ENTRY?"ENTRY CLOSES IN ":"EXIT CLOSES IN ")+g.lock.secondsRemaining()+"S":g.lock.signal());
             subtitle+=" / WATER "+Math.round(g.lock.waterLevel()*100)+"%"+(g.lock.phase==Lock.FILLING?" RISING":"");
         } else subtitle=g.goalProgress()+" / "+g.quota()+" / "+g.goalStatus();
-        if(g.tutorial==null && g.hull<100)subtitle+=" / HULL "+g.hull+"%";
         PilotGlass.ribbon(p,x,8,width,48);
         headingCenter(p,title,g.layout.width*.5f,14,16,width-24,PAPER);
         center(p,subtitle,g.layout.width*.5f,38,Math.min(9,(width-24)/Math.max(1,Lettering.width(subtitle,1))),GOLD);
