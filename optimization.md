@@ -7002,3 +7002,6 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Final bot run (an optimal-ish player; humans will be slower): Wake Patrol 24 s, Loose Boats 180 s,
   Water Taxi 121 s of 150, Sandbar 47 s, Regatta 38 s, Fireworks Night 47 s. All six complete.
 - State hash unchanged; draw hash 827b4a7c -> abecae4a (speeder spots in the replayed Wake Patrol frame).
+- Smash through traffic: tug-vs-traffic contacts keep 80% of the tug's way, shove the boat with 65%
+  of it plus spin, cost the tug no hull, and a hard ram costs traffic 34 health (three sink it).
+  State hash unchanged; draw abecae4a -> 43f14e76 (traffic shoved differently in the replayed haulout).

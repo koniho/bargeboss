@@ -38,7 +38,18 @@ public final class HarborTrafficTest {
         // The tug ramming a cruiser costs it health and gets the skipper shouting.
         HarborTraffic.Craft c=g.harborTraffic.craft[2];Body boat=c.body;
         g.splashes.contact(g.tug,boat,boat.x,boat.y,120,0,0,0,120);g.splashes.step(g);
-        check(boat.health==100-HullDamage.HIT && g.othersDamage==HullDamage.HIT && c.shoutTicks>0,"ramming traffic damages it and the skipper yells");
+        check(boat.health==100-HullDamage.SMASH && g.othersDamage==HullDamage.SMASH && c.shoutTicks>0,"ramming traffic smashes it and the skipper yells");
+        // Smash through: a full-speed ram keeps the tug moving, throws the boat aside and costs the tug nothing.
+        g=new Game();g.selectChallenge(Challenges.MONTROSE);g.reset();g.mode=Game.PLAY;
+        Body victim=g.harborTraffic.craft[0].body;victim.vx=victim.vy=0;victim.spin=0;
+        g.tug.angle=0;g.tug.x=victim.x-victim.half-g.tug.half-8;g.tug.y=victim.y+4;g.tug.vx=95;g.tug.vy=0;
+        int hull=g.hull;float vx=victim.vx;
+        for(int t=0;t<4;t++){Physics.integrate(g.tug);g.harborTraffic.collide(g,g.splashes);}
+        check(g.tug.vx>60,"the tug keeps its way through the boat ("+g.tug.vx+")");
+        check(victim.vx>vx+30 && victim.spin!=0,"the rammed boat is shoved and spun aside");
+        check(g.hull==hull,"smashing traffic never costs the tug hull");
+        for(int k=0;k<3;k++){g.ticks+=HullDamage.COOLDOWN;g.splashes.contact(g.tug,victim,victim.x,victim.y,120,0,0,0,120);for(int s=0;s<=CollisionSplashes.COOLDOWN;s++)g.splashes.step(g);}
+        check(victim.sinkTicks>0 && victim.health==0,"three hard smashes sink a pleasure boat");
         System.out.println("Harbor traffic lanes, motion and damage passed");
     }
     public static void main(String[] a){run();}

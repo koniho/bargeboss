@@ -82,7 +82,7 @@ abstract class MontroseJob {
         float hit=0;
         for(int i=0;i<hulls.length;i++){
             Body a=hulls[i];if(a==null || !a.active)continue;
-            hit=Math.max(hit,Physics.collide(g.tug,a,splashes));
+            if(a.traffic)HarborTraffic.smash(g.tug,a,splashes);else hit=Math.max(hit,Physics.collide(g.tug,a,splashes));
             for(Body o:g.cargo)if(o!=null && o.active)Physics.collide(o,a,splashes);
             for(int j=i+1;j<hulls.length;j++)if(hulls[j]!=null)Physics.collide(a,hulls[j],splashes);
         }

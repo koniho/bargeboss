@@ -14,6 +14,8 @@ package com.bargeboss.game;
 final class HullDamage {
     private HullDamage(){}
     static final int HIT=9,COOLDOWN=75,SINK=150;
+    /** Harbor traffic is light pleasure craft: a hard ram costs it this much (three smashes sink it). */
+    static final int SMASH=34;
     static final float HARD=78;
     /** Health shown as recently lost (white chip) for this many ticks after a hit. */
     static final int CHIP=40;
@@ -31,7 +33,7 @@ final class HullDamage {
         if(!(w instanceof Body) || w==g.tug)return false;
         Body b=(Body)w;
         if(!b.active || b.sinkTicks>0 || b.health<=0 || g.ticks-b.damagedTick<COOLDOWN)return false;
-        b.healthBefore=b.health;b.health=Math.max(0,b.health-HIT);b.damagedTick=g.ticks;
+        b.healthBefore=b.health;b.health=Math.max(0,b.health-(b.traffic?SMASH:HIT));b.damagedTick=g.ticks;
         g.othersDamage+=b.healthBefore-b.health;
         if(b.traffic)g.harborTraffic.rammed(b);
         if(b.health==0)sink(g,b);

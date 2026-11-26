@@ -118,16 +118,31 @@ final class HarborTraffic {
     /** The skipper of a traffic hull the player just damaged yells about it. */
     void rammed(Body b){for(Craft c:craft)if(c.body==b){c.shoutCooldown=0;shout(c,RAMMED[(b.id+b.health)%RAMMED.length]);}}
 
-    /** Contacts between the tug, its cargo and traffic (and traffic with traffic); returns the tug's hardest hit. */
+    /** Contacts between the tug, its cargo and traffic (and traffic with traffic). The tug smashes
+     * through pleasure boats: it keeps most of its way and takes no hull damage, while the boat is
+     * shoved and spun aside (and charged to the player's property record by HullDamage). Returns 0:
+     * traffic never costs the tug hull. */
     float collide(Game g,CollisionSplashes splashes){
-        float hit=0;
         for(int i=0;i<craft.length;i++){
             Body a=craft[i].body;if(!a.active)continue;
-            hit=Math.max(hit,Physics.collide(g.tug,a,splashes));
+            smash(g.tug,a,splashes);
             for(Body o:g.cargo)if(o!=null && o.active && !g.haulout.inLift(o))Physics.collide(o,a,splashes);
             for(int j=i+1;j<craft.length;j++)Physics.collide(a,craft[j].body,splashes);
         }
-        return hit;
+        return 0;
+    }
+    /** Share of its pre-contact velocity the tug keeps, and of it handed to the boat it rams. */
+    static final float PLOW=.8f,SHOVE=.65f;
+    /** The tug rams a light hull: normal contact resolution, then the tug keeps its way and the hull is thrown aside. */
+    static float smash(Body tug,Body b,CollisionSplashes splashes){
+        float vx=tug.vx,vy=tug.vy,impact=Physics.collide(tug,b,splashes);
+        if(impact<=0)return 0;
+        tug.vx+=(vx-tug.vx)*PLOW;tug.vy+=(vy-tug.vy)*PLOW;
+        b.vx+=(vx-b.vx)*SHOVE;b.vy+=(vy-b.vy)*SHOVE;
+        // Spin it away from the side it was struck on.
+        float side=(b.x-tug.x)*vy-(b.y-tug.y)*vx;
+        b.spin=Physics.clamp(b.spin+Math.signum(side)*Math.min(3,Physics.length(vx,vy)*.03f),-4,4);
+        return impact;
     }
     /** Speech above skippers who are complaining. */
     void callouts(Game g,Painter p){
