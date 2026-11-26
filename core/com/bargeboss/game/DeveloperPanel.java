@@ -24,6 +24,7 @@ public final class DeveloperPanel {
         if(y>=218 && y<218+rows(count)*rowH){int index=(int)((y-218)/rowH)*cols+(cols==2 && x>left+350?1:0);return index<count?JOBS+index:-1;}
         return y>=444 && g.activeGame().tutorial!=null?1:-1;
     }
+    boolean feedbackPrimary(Game g,float x,float y){int action=hit(g,x,y);return open && (action==2 && !environment || action==3 && environment);}
     Layout.Box feedbackBox(Game g,float x,float y){
         if(!enabled(g) || hit(g,x,y)<0)return null;
         if(!open)return new Layout.Box(12,BUTTON_Y,160,36);

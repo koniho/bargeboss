@@ -6,7 +6,8 @@ final class MenuFeedback {
     private int owner=-1,releaseId;
     private float releaseX,releaseY,releaseAlpha;
     private double age,wait,accumulator;
-    private boolean pending,dispatching,chevron;
+    private boolean pending,dispatching;
+    private float[] outline;
     int revision;
     boolean busy(){return pending;}
     void cancel(){owner=-1;pending=false;box=null;age=accumulator=0;revision++;}
@@ -15,7 +16,7 @@ final class MenuFeedback {
         if(owner!=-1 || pending)return;
         Layout.Box target=target(g,x,y);
         if(target==null)return;
-        box=target;owner=id;age=0;chevron=g.dialogue.active;revision++;
+        box=target;owner=id;age=0;outline=shape(g,target,x,y);revision++;
     }
     void move(int id,float x,float y){if(id==owner && box!=null && !box.contains(x,y))cancel();}
     boolean release(int id,float x,float y){
@@ -47,12 +48,34 @@ final class MenuFeedback {
     }
     void draw(Painter p){
         if(box==null)return;
-        Layout.Box b=box;float a=alpha();
-        int color=((int)(a*255)<<24)|(PilotGlass.AMBER&0xffffff);
-        float cut=chevron?14:6;
-        p.poly(new float[]{b.x+cut,b.y,b.x+b.w-cut,b.y,b.x+b.w,b.y+b.h/2,
-                b.x+b.w-cut,b.y+b.h,b.x+cut,b.y+b.h,b.x,b.y+b.h/2},color);
+        float strength=alpha()/.32f;
+        // Saturated accent at the edge, with enough transparent fill to preserve labels.
+        int fill=((int)(strength*100)<<24)|(PilotGlass.AMBER&0xffffff);
+        int edge=((int)(strength*255)<<24)|(PilotGlass.AMBER&0xffffff);
+        PilotGlass.plate(p,outline,fill,edge,2);
     }
+    private static float[] shape(Game g,Layout.Box b,float x,float y){
+        if(g.developerPanel.feedbackBox(g,x,y)!=null)return PilotGlass.buttonShape(b.x,b.y,b.w,b.h,g.developerPanel.feedbackPrimary(g,x,y));
+        if(g.waveControls.feedbackBox(g,x,y)!=null)return rectangle(b);
+        if(g.dialogue.ready()){int choice=g.dialogue.hit(g,x,y);if(choice>=0)return PilotGlass.replyShape(b,choice%2==0);}
+        if(g.mode==Game.CHALLENGES)for(Layout.Box card:Layout.CHALLENGE_CARDS)
+            if(g.controlBox(card).contains(x,y))return PilotGlass.panelShape(b.x,b.y,b.w,b.h);
+        if(g.mode==Game.SETTINGS && !g.controlBox(Layout.SETTINGS_BACK).contains(x,y))return rectangle(b);
+        boolean primary=false;
+        switch(g.mode){
+            case Game.TITLE:case Game.HELP:primary=g.controlBox(Layout.START).contains(x,y);break;
+            case Game.CHALLENGES:primary=g.controlBox(Layout.CHALLENGE_START).contains(x,y)
+                    || g.trainingSelected && g.controlBox(Layout.TRAINING_HARBOR).contains(x,y);break;
+            case Game.SETTINGS:primary=true;break;
+            case Game.PAUSE:primary=g.controlBox(Layout.RESUME).contains(x,y);break;
+            case Game.FINISH:
+                boolean next=Challenges.nextStage(g.challengeId)>=0 && g.career.unlocked(Challenges.nextStage(g.challengeId));
+                primary=g.controlBox(Layout.NEXT_CHALLENGE).contains(x,y) || !next && g.controlBox(Layout.AGAIN).contains(x,y);break;
+            default:primary=g.tutorial!=null && g.tutorial.lesson==Tutorial.DONE;
+        }
+        return PilotGlass.buttonShape(b.x,b.y,b.w,b.h,primary);
+    }
+    private static float[] rectangle(Layout.Box b){return new float[]{b.x,b.y,b.x+b.w,b.y,b.x+b.w,b.y+b.h,b.x,b.y+b.h};}
     private static Layout.Box target(Game g,float x,float y){
         Layout.Box dev=g.developerPanel.feedbackBox(g,x,y);if(dev!=null)return dev;
         Layout.Box weather=g.waveControls.feedbackBox(g,x,y);if(weather!=null)return weather;

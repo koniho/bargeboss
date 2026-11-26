@@ -10,10 +10,23 @@ public final class PilotGlass {
         p.poly(q,fill);
         for(int i=0;i<q.length;i+=2){int j=(i+2)%q.length;p.line(q[i],q[i+1],q[j],q[j+1],stroke,edge);}
     }
+    static float[] panelShape(float x,float y,float w,float h){
+        float cut=Math.min(18,Math.min(w,h)*.22f);
+        return new float[]{x+cut,y,x+w,y,x+w,y+h-cut,x+w-cut,y+h,x,y+h,x,y+cut};
+    }
+    static float[] buttonShape(float x,float y,float w,float h,boolean primary){
+        float cut=Math.min(14,Math.min(w,h)*.22f);
+        return primary?new float[]{x+cut,y,x+w,y,x+w,y+h-cut-3,x+w-cut,y+h-3,x,y+h-3,x,y+cut}
+                :new float[]{x,y,x+w-cut,y,x+w,y+cut,x+w,y+h,x,y+h};
+    }
+    static float[] replyShape(Layout.Box b,boolean left){
+        float rear=left?b.x:b.x+b.w,tip=left?b.x+b.w:b.x,shoulder=tip+(left?-14:14);
+        return new float[]{rear,b.y,shoulder,b.y,tip,b.y+b.h/2,shoulder,b.y+b.h,rear,b.y+b.h};
+    }
     /** Quiet container with one structural red rail; it is not a button. */
     public static void panel(Painter p,float x,float y,float w,float h,int fill){
         float cut=Math.min(18,Math.min(w,h)*.22f);
-        float[] q={x+cut,y,x+w,y,x+w,y+h-cut,x+w-cut,y+h,x,y+h,x,y+cut};
+        float[] q=panelShape(x,y,w,h);
         p.poly(q,fill);
         p.line(x+cut,y+.7f,x+w-1,y+.7f,.8f,LINE);
         if(h>12)p.line(x+1,y+cut+2,x+1,y+h-4,2,0xbba92d37);
@@ -25,10 +38,10 @@ public final class PilotGlass {
         float cut=Math.min(14,Math.min(w,h)*.22f);
         if(primary){
             p.poly(new float[]{x+cut,y+3,x+w,y+3,x+w,y+h-cut,x+w-cut,y+h,x,y+h,x,y+cut},0xff775529);
-            p.poly(new float[]{x+cut,y,x+w,y,x+w,y+h-cut-3,x+w-cut,y+h-3,x,y+h-3,x,y+cut},AMBER);
+            p.poly(buttonShape(x,y,w,h,true),AMBER);
             p.line(x+cut+1,y+1,x+w-2,y+1,1,0x99fff0ce);
         }else{
-            p.poly(new float[]{x,y,x+w-cut,y,x+w,y+cut,x+w,y+h,x,y+h},0xc8101c30);
+            p.poly(buttonShape(x,y,w,h,false),0xc8101c30);
             p.line(x+12,y+h-1,x+w-12,y+h-1,1,0x807e8590);
             p.line(x+1,y+8,x+1,y+h-8,2,0xbba92d37);
         }

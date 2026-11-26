@@ -113,3 +113,10 @@ per-frame textures for this feedback.
 New discrete menu controls must register their actual screen-space hit bounds
 with `MenuFeedback.target` (or their panel's `feedbackBox`). Keep action routing
 in the original shared input handler; the feedback layer only defers its release.
+
+Pulse silhouettes reuse `PilotGlass.panelShape`, `buttonShape` and `replyShape`:
+harbor cards clip their top-left/bottom-right corners, secondary buttons clip the
+top-right, and replies retain their inward-pointing single chevron. Rectangular
+selectors remain rectangular. Do not approximate all targets with one hexagon.
+The pulse peaks at the exact accent yellow (#ffc52f) along its 2 px edge, with a
+stronger translucent yellow fill. Both fade together without restarting on release.

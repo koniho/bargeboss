@@ -58,8 +58,7 @@ public final class Dialogue {
             Layout.Box b=choiceBox(g,i);boolean selected=result==i || pressed==i;
             Painter glass=new OpacityPainter(p,alpha*(result>=0 && result!=i?.35f:1));
             boolean left=i%2==0;
-            float rear=left?b.x:b.x+b.w,tip=left?b.x+b.w:b.x,shoulder=tip+(left?-14:14);
-            float[] q={rear,b.y,shoulder,b.y,tip,b.y+b.h/2,shoulder,b.y+b.h,rear,b.y+b.h};
+            float[] q=PilotGlass.replyShape(b,left);
             PilotGlass.plate(glass,q,selected?PilotGlass.AMBER:PilotGlass.FILL,selected?0xffad7730:PilotGlass.LINE,1.5f);
             int ink=PilotGlass.buttonText(selected);
             glass.circle(b.x+32,b.y+25,14,selected?PilotGlass.NAVY:0xff26334a);

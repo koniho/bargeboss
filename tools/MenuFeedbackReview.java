@@ -16,6 +16,7 @@ public final class MenuFeedbackReview {
         Layout.Box b=g.controlBox(Layout.CHALLENGES);save(g,"title-before");
         g.pointerDown(1,b.centerX(),b.centerY());g.pointerUp(1,b.centerX(),b.centerY());save(g,"title-pulse");
         for(int i=0;i<8;i++)g.advance(1.0/60);save(g,"locations-after");
+        b=g.controlBox(Layout.CHALLENGE_CARDS[1]);g.pointerDown(4,b.centerX(),b.centerY());save(g,"harbor-card-pulse");g.pointerCancel(4);
         g.openSettings();b=g.controlBox(Layout.SOUND_MUTE);g.pointerDown(2,b.centerX(),b.centerY());save(g,"settings-pulse");
         g.reset();g.dialogue.show(g,"HARBOR CONTROL","READY TO GO?","SELECT YOUR REPLY.","READY, CAPTAIN.","GIVE ME A MOMENT.");
         for(int i=0;i<100;i++)g.dialogue.step();b=g.dialogue.choiceBox(g,1);
