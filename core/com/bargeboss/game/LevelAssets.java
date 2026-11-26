@@ -20,7 +20,7 @@ public final class LevelAssets {
     private static final Plan MENU=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);
     public static Plan menu(){return MENU;}
     private static final Plan TUTORIAL=new Plan(SpriteAtlas.FIREWORKS,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TEACHER_TUG,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);
-    private static final Plan MONTROSE=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT,SpriteAtlas.BARGE);
+    private static final Plan MONTROSE=new Plan(2,false,SpriteAtlas.TUG,SpriteAtlas.YACHT,SpriteAtlas.BARGE,SpriteAtlas.FIREWORKS);
     private static final Plan[] CHALLENGES=new Plan[Challenges.COUNT];
     static {
         for(int id=0;id<CHALLENGES.length;id++) {

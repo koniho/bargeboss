@@ -18,7 +18,8 @@ public final class DeveloperPanel {
             if(y>=218 && y<434)return 30+(int)((y-218)/36)*2+(x>left+350?1:0);
             return y>=444?(x<left+350?50:51):-1;
         }
-        if(y>=218 && y<426){int row=(int)((y-218)/52);return row<jobs(g).length?20+row:-1;}
+        int count=jobs(g).length,cols=columns(count);float rowH=rowHeight(count);
+        if(y>=218 && y<218+rows(count)*rowH){int index=(int)((y-218)/rowH)*cols+(cols==2 && x>left+350?1:0);return index<count?20+index:-1;}
         return y>=444 && g.activeGame().tutorial!=null?1:-1;
     }
     Layout.Box feedbackBox(Game g,float x,float y){
@@ -29,8 +30,19 @@ public final class DeveloperPanel {
         if(action==2 || action==3)return new Layout.Box(left+(action==2?16:356),158,328,44);
         if(action>=30 && action<42)return new Layout.Box(left+((action%2)==0?16:630),218+((action-30)/2)*36,54,32);
         if(action>=50)return new Layout.Box(left+(action==50?16:356),448,328,40);
-        return new Layout.Box(left+16,action==1?448:218+(action-20)*52,668,action==1?40:46);
+        if(action==1)return new Layout.Box(left+16,448,668,40);
+        return jobBox(left,action-20,jobs(g).length);
     }
+    /** Long job lists (Montrose) use two columns of shorter rows so every job fits the panel. */
+    private static int columns(int count){return count>4?2:1;}
+    private static float rowHeight(int count){return count>4?41:52;}
+    private static int rows(int count){return (count+columns(count)-1)/columns(count);}
+    private static Layout.Box jobBox(float left,int index,int count){
+        int cols=columns(count);float rowH=rowHeight(count),w=cols==2?328:668;
+        return new Layout.Box(left+16+(index%cols)*340,218+(index/cols)*rowH,w,rowH-6);
+    }
+    /** Screen centre of job button `index` (tooling and tests tap through it). */
+    static float[] jobCenter(Game g,int index){Layout.Box b=jobBox((g.layout.width-700)/2,index,new DeveloperPanel().jobs(g).length);return new float[]{b.centerX(),b.centerY()};}
     private int[] jobs(Game g){return g.activeGame().tutorial!=null?new int[0]:Challenges.locationJobs(g.activeGame().challengeId);}
     boolean down(Game g,int id,float x,float y){
         if(!enabled(g))return false;int action=hit(g,x,y);
@@ -77,7 +89,7 @@ public final class DeveloperPanel {
             button(p,x+16,448,328,40,"TEST FLASH",false);button(p,x+356,448,328,40,"RESET WEATHER / TIME",false);return;
         }
         int[] jobs=jobs(g);
-        for(int i=0;i<jobs.length;i++)button(p,x+16,218+i*52,668,46,title(jobs[i]),false);
+        for(int i=0;i<jobs.length;i++){Layout.Box b=jobBox(x,i,jobs.length);button(p,b.x,b.y,b.w,b.h,title(jobs[i]),false);}
         if(g.activeGame().tutorial!=null)button(p,x+16,448,668,40,"RESTART TUTORIAL",false);
     }
     static String title(int id){

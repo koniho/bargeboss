@@ -47,6 +47,9 @@ public final class Game {
     /** Created only when the Chicago River stage resets; other stages never load its survey. */
     public ChicagoMission chicago;
     public MontroseHarbor mission=new MontroseHarbor();
+    /** The current post-storm Montrose arcade job, or null. */
+    MontroseJob job;
+    MontroseArcade arcade=new MontroseArcade();
     public MontroseHaulout haulout=new MontroseHaulout();
     public MontroseRescue rescue=new MontroseRescue();
     public CalumetVoyage voyage=new CalumetVoyage();
@@ -196,7 +199,7 @@ public final class Game {
     public boolean correctOrder(Body b) { return true; }
     public int goalProgress() { return calumetStage()?voyage.progress(this):lockStage()?lock.clearedCount(this):delivered; }
     public boolean goalComplete() { return tutorial==null && (calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
-    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || lockStage() && lock.failed(); }
+    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || job!=null && montroseStage() && job.failed(this) || lockStage() && lock.failed(); }
     public String goalStatus() {
         if(calumetStage())return voyage.status();
         if(indianaStage())return "TOW STEEL PAST HICK TOWER / SOUTH FORK MILL";
@@ -497,7 +500,7 @@ public final class Game {
         if(calumetStage()){feeders=new Feeder[0];voyage.setup(this);spawnIndex=quota();}
         else if(indianaStage()){feeders=new Feeder[0];IndianaHarbor.setup(this);spawnIndex=quota();}
         else if(chicagoStage()){feeders=new Feeder[0];chicago=new ChicagoMission();ChicagoRiver.setup(this);spawnIndex=quota();}
-        else if(montroseStage()){MontroseBeaconArt.prepare();MontroseTravelLift.prepare();feeders=new Feeder[0];mission.setup(this);spawnIndex=quota();}
+        else if(montroseStage()){MontroseBeaconArt.prepare();MontroseTravelLift.prepare();feeders=new Feeder[0];job=null;arcade=new MontroseArcade();mission.setup(this);spawnIndex=quota();}
         else {feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;}
         // Stage-entry geometry, ground, models and bridges, after setup has placed the tug.
         if(level()!=null)level().prepare(this);
@@ -1068,7 +1071,7 @@ public final class Game {
             }
         }
         tow.prune(this);
-        if(montroseStage()){mission.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
+        if(montroseStage()){arcade.step(this);mission.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
         if(tutorial!=null) tutorial.update(this);
         else {
             if(calumetStage())voyage.step(this);
@@ -1091,8 +1094,18 @@ public final class Game {
     private void advanceMontroseJob(){
         if(montroseComplete || delivered<quota() || goalFailed())return;
         if(challengeId==Challenges.RAFT_RESCUE && rescue.radio.pendingThanks())return;
-        int before=career.rank();career.record(challengeId,Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull),score-montroseJobScore);rankPromoted|=career.rank()>before;
-        if(challengeId==Challenges.SWIMMER_RESCUE){montroseComplete=true;return;}
+        int jobStars=Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull);
+        arcade.complete(this,challengeId,jobStars,score-montroseJobScore);
+        int before=career.rank();career.record(challengeId,jobStars,score-montroseJobScore);rankPromoted|=career.rank()>before;
+        int nextJob=MontroseJob.next(challengeId);
+        if(challengeId==Challenges.SWIMMER_RESCUE || MontroseJob.is(challengeId)){
+            if(nextJob<0){montroseComplete=true;return;}
+            // Job props leave with the job; hulls from earlier jobs (retained at the end) stay berthed.
+            tow.detachBody(this,tug);for(int i=0;i<6;i++)if(cargo[i]!=null){tow.detachBody(this,cargo[i]);cargo[i]=null;}
+            if(challengeId==Challenges.SWIMMER_RESCUE)weather.reset();
+            challengeId=nextJob;delivered=0;job=MontroseJob.create(nextJob);job.setup(this);
+            montroseJobScore=score;cancelInputs();MontroseDockmaster.dispatch(this);tell(goalStatus());return;
+        }
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;
             challengeId=Challenges.RAFT_RESCUE;rescue=new MontroseRescue();rescue.setupContinuation(this);rescue.touring=true;weather.evening=true;
@@ -1183,7 +1196,7 @@ public final class Game {
             if(f.load!=null) feederContact(f.load);
         }
         traffic();
-        if(montroseStage()){harborTraffic.step(this,splashes);damage(harborTraffic.collide(this,splashes));}
+        if(montroseStage()){harborTraffic.step(this,splashes);damage(harborTraffic.collide(this,splashes));if(job!=null)job.motion(this);}
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }
         int currentContact=contact==null?-1:contact.id;

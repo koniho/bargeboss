@@ -18,7 +18,7 @@ public final class DeveloperPanelTest {
             int[] jobs=Challenges.locationJobs(Challenges.menuId(area));
             for(int row=0;row<jobs.length;row++){
                 if(!root.developerPanel.open)ReplayInput.tap(root,40,DeveloperPanel.BUTTON_Y+16);
-                ReplayInput.tap(root,left+40,240+row*52);
+                float[] at=DeveloperPanel.jobCenter(root,row);ReplayInput.tap(root,at[0],at[1]);
                 Game g=root.activeGame();check(g!=root && g.challengeId==jobs[row],"exact job starts");
                 check(!root.developerPanel.open && g.tutorial==null,"picker closed, playable mission");
                 if(Challenges.calumet(jobs[row])){

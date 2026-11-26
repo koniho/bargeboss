@@ -18,6 +18,7 @@ public final class Towline {
     public boolean canAttach(Game g,Body b,Body parent) {
         if(g.haulout.inLift(b) || g.haulout.inLift(parent))return false;
         if(MontroseRescue.cruisers(g) && (g.rescue.rafted || b!=null && b.deliveryRecorded))return false;
+        if(g.job!=null && b!=null && !g.job.towable(b))return false;
         if(b==null || parent==null || b==parent || b.id<=0 || !b.active || b.lineAttached && !b.deliveryRecorded || incoming(b)!=null || count()>=CAPACITY)return false;
         if(parent!=g.tug && (parent.id<=0 || !parent.active || parent.lineAttached))return false;
         for(Body cursor=parent;cursor!=null;) {if(cursor==b)return false;Towline l=incoming(cursor);cursor=l==null?null:l.leader;}

@@ -25,6 +25,30 @@ public final class MontroseDockmaster {
                 title="PEOPLE IN THE WATER";
                 detail="STORM RESCUE. TOW THE RESCUE BARGE. SEARCH OFF THE BEACH.";
                 reply="COPY. SEARCHLIGHT ON. BRINGING RINGS AND THE RESCUE BARGE.";break;
+            case Challenges.WAKE_PATROL:
+                title="GOOD MORNING. WE'VE GOT HOOLIGANS";
+                detail="SIX SPEEDERS IN THE NO-WAKE ZONE. BUMP 'EM AND I'LL MAIL THE TICKETS.";
+                reply="COPY. TIME TO WRITE SOME TICKETS.";break;
+            case Challenges.LOOSE_BOATS:
+                title="SQUALL JUST BLEW THROUGH";
+                detail="FOUR BOATS SNAPPED THEIR LINES AND THEY'RE DRIFTING. GET THEM HOME.";
+                reply="COPY. ROUNDING UP STRAYS.";break;
+            case Challenges.WATER_TAXI:
+                title="PARTY AT THE INLET PIER";
+                detail="GUESTS ARE WAVING FROM THE DOCKS. THREE SEATS. TWO AND A HALF MINUTES.";
+                reply="COPY. TAXI'S OPEN.";break;
+            case Challenges.SANDBAR:
+                title="YACHT ON THE BAR";
+                detail="SHE'S HARD AGROUND OFF THE SOUTH SHORE. HAUL HER FREE, BRING HER TO SERVICE.";
+                reply="COPY. BRINGING THE BIG LINE.";break;
+            case Challenges.REGATTA:
+                title="REGATTA COMMITTEE CALLING";
+                detail="PROVE THE COURSE BEFORE THE RACE. TEN GATES. CLOCK STARTS NOW.";
+                reply="COPY. FULL THROTTLE.";break;
+            case Challenges.FIREWORKS_NIGHT:
+                title="LAST JOB OF THE DAY. THE BIG ONE";
+                detail="FIREWORKS BARGE TO THE SHOW MARK BEFORE SHOWTIME. THEN LIGHT IT UP.";
+                reply="COPY. LET'S GIVE THEM A SHOW.";break;
             default:return;
         }
         g.dialogue.showFrom(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",title,detail,reply);

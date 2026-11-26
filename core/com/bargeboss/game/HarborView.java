@@ -95,6 +95,7 @@ public final class HarborView {
             if(target!=null){boolean tow=g.rescue.towed[target.berth];destination(g,canvas,tow?g.dockX(target.berth):target.x,tow?g.dockY(target.berth):target.y,g.rescue.rafted?"RELEASE RAFT LINE":tow?"DOCK "+MontroseRescue.slip(target.berth):"ATTACH TOWLINE");}return;
         }
         if(g.montroseArrival.active())return;
+        if(g.job!=null && g.montroseStage()){if(g.ropeDragging || g.ropePhase!=0)return;g.job.objective(g,canvas);return;}
         if(MontroseHaulout.active(g)){Body boat=g.cargo[0];boolean towed=g.haulout.towed;boolean lift=!g.haulout.lowered();destination(g,canvas,lift||towed?MontroseHaulout.X:boat.x,lift?MontroseHaulout.Y:towed?MontroseHaulout.APPROACH_Y:boat.y,!g.haulout.lowered()?"RADIO TRAVELIFT":towed?"HAULOUT / PUSH BOAT IN":"AIN'T BROKE / STAR DOCK S");return;}
         if(g.montroseStage()){Body yacht=g.cargo[0];boolean attached=g.mission.wasTowed;destination(g,canvas,attached?MontroseHarbor.SLIP_X:yacht.x,attached?MontroseHarbor.SLIP_Y:yacht.y,attached?"YACHT SLIP":"ATTACH TOWLINE");return;}
         if(g.chicagoStage()){
@@ -160,7 +161,7 @@ public final class HarborView {
         if(x>map.x-60 && x<map.x+map.w+60 && y>map.y-30)y=Math.min(y,map.y-30);
         return Math.min(y,g.layout.height-92);
     }
-    private static void destination(Game g,Painter canvas,float wx,float wy,String label) {
+    static void destination(Game g,Painter canvas,float wx,float wy,String label) {
         RiverCamera c=g.layout.camera;
         float x=c.screenX(wx,wy),y=c.screenY(wx,wy);
         if(x<32 || x>g.layout.width-32 || y<80 || y>g.layout.height-70) {

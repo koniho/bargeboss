@@ -28,7 +28,7 @@ final class LevelAssetsTest {
                 continue;
             }
             if(Challenges.kind(id)==Challenges.MONTROSE){
-                check(plan.rotationFrames()==832,"Montrose prepares complete tug and yacht families");
+                check(plan.rotationFrames()==1280,"Montrose prepares complete tug, yacht and fireworks-deck families");
                 check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");
                 check(includes(plan,SpriteAtlas.BARGE) && !includes(plan,SpriteAtlas.BULK),"Marina prepares rescue hull but excludes industrial cargo");continue;
             }

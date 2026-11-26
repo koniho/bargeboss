@@ -23,7 +23,7 @@ public final class MontroseTest {
         if(log)System.out.println(g.status()+" yacht="+b.x+","+b.y+" angle="+b.angle+" speed="+b.speed());
         check(b.deliveryRecorded && g.challengeId==Challenges.SWIMMER_RESCUE && g.mode==Game.PLAY,"Public-input yacht tow continues to next harbor job");
         check(g.hull==100 && b.active && b.unloadingTicks==0,"Safe delivery retains yacht without cargo unloading");
-        check(g.career.bestStars(Challenges.MONTROSE)==3 && g.score==1200,"Yacht goal rewards once");
+        check(g.career.bestStars(Challenges.MONTROSE)==3 && g.score==1200+g.arcade.bannerBonus,"Yacht goal rewards once (plus any quick-job bonus)");
         return g;
     }
     public static void run(){

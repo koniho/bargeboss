@@ -22,9 +22,11 @@ public final class Renderer {
         WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
-        HullDamage.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);
+        HullDamage.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);if(g.montroseStage())g.arcade.overlay(g,p);if(g.job!=null && g.montroseStage())g.job.overlay(g,p);
         g.layout=live;
         HarborView.objective(g,p);
+        if(g.job!=null && g.montroseStage())g.job.hud(g,p);
+        if(g.montroseStage())g.arcade.draw(g,p);
         FeederView.callouts(g,p);
         g.abilities.drawScreenFlash(g,p);
         ScreenView.hud(g,p);
@@ -42,6 +44,7 @@ public final class Renderer {
     }
     static void river(Game g,Painter p) {
         HarborView.draw(g,p);
+        if(g.job!=null && g.montroseStage())g.job.water(g,((RiverPainter)p).canvas());
         DockView.shadows(g,((RiverPainter)p).canvas());
         BridgeLayers bridgeLayers=new BridgeLayers(g,((RiverPainter)p).canvas());
         NavigationLights.reflections(g,((RiverPainter)p).canvas());
@@ -51,7 +54,7 @@ public final class Renderer {
             if(g.trafficWarning()) SoftCue.caption(p,"CROSS TRAFFIC INBOUND",300,372,10,VisualStyle.GOLD);
         }
         FeederView.draw(g,p);
-        Body[] ordered=new Body[g.cargo.length+6+g.harborTraffic.craft.length]; int count=0;
+        Body[] ordered=new Body[g.cargo.length+6+g.harborTraffic.craft.length+(g.job==null?0:g.job.bodies().length)]; int count=0;
         for(Body b:g.cargo) if(b!=null && b.active) ordered[count++]=b;
         ordered[count++]=g.tug;
         if(g.tutorial==null) for(Feeder f:g.feeders) if(f.phase!=Feeder.IDLE) {
@@ -59,6 +62,7 @@ public final class Renderer {
         }
         if(g.trafficActive()) ordered[count++]=g.trafficBoat;
         for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active && HarborTrafficView.visible(g,c.body))ordered[count++]=c.body;
+        if(g.job!=null)for(Body b:g.job.bodies())if(b!=null && b.active && HarborTrafficView.visible(g,b))ordered[count++]=b;
         for(int i=1;i<count;i++) { Body b=ordered[i]; int j=i-1;
             while(j>=0 && g.layout.camera.screenY(ordered[j].x,ordered[j].y)>g.layout.camera.screenY(b.x,b.y)) { ordered[j+1]=ordered[j];j--; } ordered[j+1]=b;
         }

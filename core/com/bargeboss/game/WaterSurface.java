@@ -128,6 +128,7 @@ public final class WaterSurface {
         }
         if(g.trafficActive()) floatBoat(g,g.trafficBoat);
         for(HarborTraffic.Craft c:g.harborTraffic.craft)if(c.body.active)floatBoat(g,c.body);
+        if(g.job!=null)for(Body b:g.job.bodies())if(b!=null && b.active)floatBoat(g,b);
     }
     private void floatBoat(Game g,Body b) {
         foam.emit(g,b);

@@ -165,7 +165,7 @@ public final class Parity implements Painter {
             }
             if(g.rescue.state[person]!=4)throw new IllegalStateException("Swimmer did not board");
         }
-        g.step();if(!g.goalComplete())throw new IllegalStateException("Swimmer replay did not finish");
+        g.step();if(g.challengeId!=Challenges.WAKE_PATROL || g.job==null)throw new IllegalStateException("Swimmer replay did not hand off to the next Montrose job");
         p.add(g.score);p.add(g.earnedStars);Renderer.draw(g,p);
     }
     private static void feeders(Parity p) {

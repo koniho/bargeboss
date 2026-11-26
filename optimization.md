@@ -6961,3 +6961,21 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Canonical replay 5adaee69:2:1350 (was de315fad). Bisected: with `HarborTraffic.active` false the
   replay returns to de315fad with or without the empty slips, so the only cause is the new traffic
   in the replayed Montrose haulout job (drawn hulls and their wakes). Deliveries and score unchanged.
+
+## Six new Montrose jobs and swimmer strikes
+
+- Swimmer strikes no longer fail the rescue: the swimmer thrashes, flickers and vanishes with a yell
+  (`swimmer-yell-v1.wav`, `tools/generate_yell_audio.py`) and leaves the quota. Replay unchanged.
+- `MontroseJob` + WAKE_PATROL, LOOSE_BOATS, WATER_TAXI, SANDBAR, REGATTA, FIREWORKS_NIGHT (Challenges ids
+  10-15, append-only). The Montrose day now runs swimmer rescue -> the six jobs -> finish.
+- Canonical replay 53c5a10e:2:1350 (was 5adaee69). Bisected in a scratch copy: with the swimmer
+  hand-off disabled, the Montrose location job list back to four and the catalog back to ten levels,
+  the replay returns exactly to 5adaee69. So the causes are (1) the replayed swimmer rescue now hands
+  off to Wake Patrol instead of the finish screen, (2) the Montrose location lists ten jobs, and (3)
+  the catalog's sixteen career slots (save string, star totals). Job code, renderer hooks, the
+  two-column developer job picker and the fireworks-deck preload are hash-neutral.
+- Montrose arcade layer (`MontroseArcade`): near-miss skims with combos, quick-job par bonus and a
+  JOB COMPLETE banner on every Montrose job. Canonical replay 7370ec74:2:1350 (was 53c5a10e).
+  Bisected: with `MontroseArcade.step` and the bonus/banner in `complete` disabled the replay returns
+  exactly to 53c5a10e; the cause is the quick-job bonus added to the replayed haulout and swimmer job
+  scores and the banner drawn at those hand-offs.

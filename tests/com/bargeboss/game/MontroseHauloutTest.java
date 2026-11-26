@@ -23,7 +23,7 @@ public final class MontroseHauloutTest {
         check(boat.deliveryRecorded && g.haulout.lowered() && g.haulout.pushed && g.haulout.towed && g.haulout.warping,"Public radio, tow, release and physical push complete crew handoff");
         check(g.challengeId==Challenges.RAFT_RESCUE && g.rescue.touring && g.tug==tug && g.hull==100,"Safe haulout continues voyage without relocating tug");
         check(g.cargo[g.cargo.length-1]==boat && boat.active && boat.awaitingPickup,"Crew secures and retains disabled boat");
-        check(g.career.bestStars(Challenges.HAULOUT)==3 && g.score==1200,"Dedicated save slot and once-only haulout reward");
+        check(g.career.bestStars(Challenges.HAULOUT)==3 && g.score==1200+g.arcade.bannerBonus,"Dedicated save slot and once-only haulout reward (plus any quick-job bonus)");
         check(g.cargo[0].awaitingPickup,"Raft waits beyond the horn during exploration");
         check(g.dialogue.dockmasterConversation() && g.dialogue.content().title.contains("KNOW THE AREA"),"Next mission calls out over radio");
         return g;

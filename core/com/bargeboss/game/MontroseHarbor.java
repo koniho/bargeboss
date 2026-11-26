@@ -300,6 +300,7 @@ public final class MontroseHarbor {
     /** Painter's even-odd native cutout requires nonoverlapping holes. Dock junctions and
      * raised receivers overlap, so retain their union as disjoint convex pieces before fanning. */
     public void setup(Game g){
+        if(MontroseJob.is(g.challengeId)){g.job=MontroseJob.create(g.challengeId);g.job.setup(g);return;}
         if(MontroseHaulout.active(g)){g.haulout.setup(g);return;}
         if(MontroseRescue.active(g)){g.rescue.setup(g);return;}
         g.tug.x=mapX(453);g.tug.y=mapY(1340);g.tug.angle=-(float)Math.PI/2;
@@ -307,6 +308,7 @@ public final class MontroseHarbor {
         g.layout=Layout.focused(g.layout.width,g.layout.height,g.tug.x,g.tug.y+55,Game.TRANSIT_ZOOM*ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }
     public String status(Game g){
+        if(g.job!=null && MontroseJob.is(g.challengeId))return g.job.status(g);
         if(MontroseHaulout.active(g))return g.haulout.status();
         if(MontroseRescue.active(g))return g.rescue.status(g);
         if(!wasTowed)return "DRAG FROM YACHT TO TUG / RELEASE TO LINK";
@@ -319,6 +321,7 @@ public final class MontroseHarbor {
     boolean warping;
     public void step(Game g){
         lineCrew.step();
+        if(g.job!=null && MontroseJob.is(g.challengeId)){g.job.step(g);return;}
         if(MontroseHaulout.active(g)){g.haulout.step(g);return;}
         if(MontroseRescue.active(g)){g.rescue.step(g);return;}
         Body b=g.cargo[0];if(b==null || !b.active || b.deliveryRecorded)return;
