@@ -209,22 +209,40 @@ public final class MooringView {
                     x-dx/length*(radius+12),y-dy/length*(radius+12),1.5f,0xaae8c581);
         }
     }
+    /** Catch: a hot flash, two snapping rings, a spray of spark rays, a popping star and a caption. */
     private static void hit(Game g,Painter p) {
-        float t=Physics.clamp(g.ropeTicks/(float)Game.ROPE_HIT_TICKS,0,1);
-        float x=g.ropeEndX,y=g.ropeEndY,radius=10+32*t;
-        int alpha=(int)(220*(1-t));
-        ControlView.ring(p,x,y,radius,1,(alpha<<24)|0x9bffe0,3*(1-t)+1);
-        for(int i=0;i<8;i++) {
-            double a=i*Math.PI/4;
-            float xx=x+(float)StrictMath.cos(a)*radius,yy=y+(float)StrictMath.sin(a)*radius;
-            float arm=4*(1-t)+1;
-            int color=(alpha<<24)|(i%2==0?0xffe38d:0xc5fff0);
-            p.line(xx-arm,yy,xx+arm,yy,2,color); p.line(xx,yy-arm,xx,yy+arm,2,color);
+        float t=Physics.clamp(g.ropeTicks/(float)Game.ROPE_HIT_TICKS,0,1),ease=1-(1-t)*(1-t)*(1-t);
+        boolean vessel=g.ropeToTug && g.ropeTowTarget!=null && g.ropeTowTarget.active;
+        float x=vessel?g.ropeTowTarget.x:g.ropeEndX,y=vessel?g.ropeTowTarget.y:g.ropeEndY;
+        int alpha=(int)(235*(1-t));
+        ControlView.ring(p,x,y,10+46*ease,1,(alpha<<24)|0x9bffe0,4*(1-t)+1);
+        if(t>.08f){float u=(t-.08f)/.92f,e=1-(1-u)*(1-u);ControlView.ring(p,x,y,8+30*e,1,((int)(200*(1-u))<<24)|0xffd329,3*(1-u)+1);}
+        if(!(p instanceof RiverPainter))return;
+        RiverPainter river=(RiverPainter)p;RiverCamera c=river.camera;Painter canvas=river.canvas();
+        float sx=c.screenX(x,y),sy=c.screenY(x,y)-(vessel?10:GroundArt.LAND_RISE)*c.scale,s=c.scale;
+        if(g.ropeTicks<8){
+            float f=1-g.ropeTicks/8f;
+            canvas.material(sx,sy,80*s,0,0,64*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfffff1c4,f*f*.9f));
+            canvas.material(sx,sy,30*s,0,0,26*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,f));
         }
-        if(t<.5f) {
-            float size=14*(1-t*2);
-            p.poly(new float[]{x,y-size,x+3,y-3,x+size,y,x+3,y+3,x,y+size,x-3,y+3,x-size,y,x-3,y-3},HIGHLIGHT);
+        // Spark rays: fast out, shrinking, alternating gold and mint.
+        for(int i=0;i<10;i++){
+            float a=(float)(i*Math.PI/5+.31f),inner=(8+40*ease)*s,outer=inner+(16*(1-t)+2)*s;
+            float ca=(float)StrictMath.cos(a),sa=(float)StrictMath.sin(a)*.72f;
+            int color=((int)(255*(1-t))<<24)|(i%2==0?0xffe38d:0x9bffe0);
+            canvas.line(sx+ca*inner,sy+sa*inner,sx+ca*outer,sy+sa*outer,(2.6f*(1-t)+1)*s,color);
         }
+        if(t<.5f){
+            // Star pops past full size, then shrinks away.
+            float pop=t<.15f?t/.15f*1.35f:1.35f-(t-.15f)/.35f*1.35f,size=16*pop*s,k=size*.22f;
+            canvas.poly(new float[]{sx,sy-size,sx+k,sy-k,sx+size,sy,sx+k,sy+k,sx,sy+size,sx-k,sy+k,sx-size,sy,sx-k,sy-k},HIGHLIGHT);
+        }
+        // Caption pops in with overshoot, floats up and fades.
+        int age=g.ropeTicks;float scale=age<4?.6f+age*.25f:age<7?1.6f-(age-4)*.2f:1;
+        float size=Math.min(26,Math.max(14,16*s))*scale,cy=sy-(30+t*22)*s;int text=(int)(255*Physics.clamp((1-t)*1.6f,0,1));
+        String word=vessel?"HOOKED!":"TIED!";
+        Lettering.center(canvas,word,sx+1.5f,cy+1.5f,size,(text*3/4<<24)|0x0b1620);
+        Lettering.center(canvas,word,sx,cy,size,(text<<24)|0xffd329);
     }
     private static void snapRings(Painter p,float startX,float startY,float endX,float endY,float t) {
         int alpha=(int)(200*(1-t)*(1-t));

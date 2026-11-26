@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Bounded fixed-step one-shot bus. Radio has priority over contact chatter. */
 public final class SoundEffects {
-    public static final int COUNT=13,VOICES=5,FIREWORK_LAUNCH=9,FIREWORK_BURST=10,BUMP=2,THUD=3,CRUNCH=4,TUG_THUD=5,SPLASH_SMALL=6,SPLASH_LARGE=7,COMPLETE=8;
+    public static final int COUNT=15,LASSO_WHOOSH=13,LASSO_HIT=14,VOICES=5,FIREWORK_LAUNCH=9,FIREWORK_BURST=10,BUMP=2,THUD=3,CRUNCH=4,TUG_THUD=5,SPLASH_SMALL=6,SPLASH_LARGE=7,COMPLETE=8;
     private int sequence,cue,age=1000,cooldown,pendingComplete,impactAge=1000,fireworkBursts;
     void step(){
         if(age<1000)age++;if(impactAge<1000)impactAge++;if(cooldown>0)cooldown--;
@@ -24,11 +24,15 @@ public final class SoundEffects {
         if(cue<2 && age<54 || cue>=BUMP && cue<=TUG_THUD && age<6)return;
         emit(FIREWORK_LAUNCH);impactAge=0;
     }
+    /** Lasso throw and catch: immediate player feedback; only a fresh radio chirp is protected. */
+    void lassoThrow(){if(cue<2 && age<12)return;emit(LASSO_WHOOSH);}
+    void lassoHit(){if(cue<2 && age<12)return;emit(LASSO_HIT);}
     void fireworkBurst(){
         if(cue<2 && age<54 || cue>=BUMP && cue<=TUG_THUD && age<6)return;
         emit(FIREWORK_BURST+fireworkBursts++%3);impactAge=0;
     }
-    public static boolean fireworkCue(int value){return value>=FIREWORK_LAUNCH && value<COUNT;}
+    public static boolean fireworkCue(int value){return value>=FIREWORK_LAUNCH && value<=FIREWORK_BURST+2;}
+    public static boolean lassoCue(int value){return value==LASSO_WHOOSH || value==LASSO_HIT;}
     /** Firework tails overlap each other; radio/contact cues remain exclusive. */
     public static boolean interrupts(int incoming,int playing){return incoming==playing || !fireworkCue(incoming) || !fireworkCue(playing);}
     public static float ambienceGain(Game root){SoundEffects s=root.activeGame().sounds;return s.cue<2 && s.age<54?.25f:1;}
@@ -45,8 +49,8 @@ public final class SoundEffects {
     public static int sequence(Game root){return root.activeGame().sounds.sequence;}
     public static int cue(Game root){return root.activeGame().sounds.cue;}
     /** Drop stale contact events instead of replaying a late bump after host recovery. */
-    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && gain(root)>0 && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD || fireworkCue(g.sounds.cue)?6:30);}
+    public static boolean audible(Game root){Game g=root.activeGame();return g.mode==Game.PLAY && gain(root)>0 && g.sounds.age<(g.sounds.cue>=BUMP && g.sounds.cue<=TUG_THUD || fireworkCue(g.sounds.cue) || lassoCue(g.sounds.cue)?6:30);}
     public static String asset(int cue){
-        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-thunk-light-v1.wav","audio/collision-thunk-medium-v1.wav","audio/collision-thunk-heavy-v1.wav","audio/collision-thunk-medium-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav"}[cue];
+        return new String[]{"audio/radio-receive-recorded-v1.wav","audio/radio-reply-recorded-v1.wav","audio/collision-thunk-light-v1.wav","audio/collision-thunk-medium-v1.wav","audio/collision-thunk-heavy-v1.wav","audio/collision-thunk-medium-v1.wav","audio/water-splash-small-v1.wav","audio/water-splash-large-v1.wav","audio/step-clear-kenney-v1.wav","audio/firework-launch-recorded-v2.wav","audio/firework-burst-a-v1.wav","audio/firework-burst-b-v1.wav","audio/firework-burst-c-v1.wav","audio/lasso-whoosh-v1.wav","audio/lasso-hit-v1.wav"}[cue];
     }
 }

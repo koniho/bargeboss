@@ -6698,3 +6698,22 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Developer fixture `sink-demo` (Montrose two-cruiser tow, last-hit cruiser, tug at 20%); checked live on
   the iOS simulator (`--ios-live-scene=sink-demo`). Note: `ProfileScenarioTest` already fails on
   `barge-tow` ("fixture not reached") at 26eddee, before this change.
+
+## 2026-11-25: Whip lasso, whoosh and catch Foley, juiced catch
+
+- `RopeFlight` (world flight): wind-up coil (16% of the throw, tip 7% behind the hull), overshooting
+  snap to the target (ease-out-back, ~4% past at t 0.8, exact at landing), and a travelling S-wave
+  (16% of reach, ≤ 38 units, sideways plus a vertical component) that runs hand→tip and dies as the
+  loop lands. Miss: slack spring-back wobble. Low fast arc (0.55× the preview height). Throw timing
+  (18/18/24 ticks) and gameplay unchanged; the aiming preview (`LassoPath`) is unchanged.
+- Tip: loop flares open and spins fast; whip crack flash with radial cracks as the wave arrives.
+- Catch: hot flash, mint and gold snapping rings, ten spark rays, popping star, "HOOKED!" (vessel) or
+  "TIED!" (bollard) caption with overshoot pop; 0.38 punch shake along the throw.
+- Sound: `SoundEffects.LASSO_WHOOSH` on release and `LASSO_HIT` on catch (immediate 6-tick window;
+  only a fresh radio chirp is protected). Original synthesized assets from
+  `tools/generate_lasso_audio.py` (lint 10/10). `fireworkCue` now bounds the firework slots
+  explicitly (9..12) so new cues stay exclusive.
+- Canonical replay 3f51f7ac:2:1350 (was 9748df6b): rope draw, catch effects, shake and the hashed
+  tutorial audio sequence. Bisected: restoring RopeFlight/TowView/MooringView/Game/SoundEffects
+  reproduces 9748df6b exactly. `LassoFeedbackTest` now asserts the whip (tip on the throw line,
+  mid-throw wave, wind-up/overshoot/exact landing) instead of the old preview-arc identity.

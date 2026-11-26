@@ -824,7 +824,7 @@ public final class Game {
             if(b!=null && ropePhase==0) {
                 ropeTowTarget=towTargetBody(b,x,y);
                 ropeToTug=towAiming || ropeTowTarget!=null;
-                ropeBody=b; ropePhase=1; ropeTicks=0;
+                ropeBody=b; ropePhase=1; ropeTicks=0; sounds.lassoThrow();
                 ropeTargeted=ropeToTug?ropeTowTarget!=null && canTowAtRelease(b,ropeTowTarget):overTiePoint(b,x,y) && ropeWithinReach(b);
                 ropeEndX=ropeToTug?(ropeTargeted?ropeTowTarget.x:x):aimX(b,x,y);
                 ropeEndY=ropeToTug?(ropeTargeted?ropeTowTarget.y:y):aimY(b,x,y);
@@ -1053,7 +1053,9 @@ public final class Game {
                 if(ropeToTug) tow.attach(this,b,ropeTowTarget);
                 else if(b==tug)slipMooring.attach(this);
                 else { tow.detachBody(this,b); Mooring.attach(b); }
-                ropePhase=3;ropeTicks=0;haptic(HAPTIC_CONTACT);
+                ropePhase=3;ropeTicks=0;haptic(HAPTIC_CONTACT);sounds.lassoHit();
+                RiverCamera camera=layout.camera;float dx=ropeEndX-ropeStartX,dy=ropeEndY-ropeStartY;
+                splashes.shake.hit(.38f,camera.screenX(dx,dy)-camera.screenX(0,0),camera.screenY(dx,dy)-camera.screenY(0,0),true);
             } else { ropePhase=2; ropeTicks=0; }
         } else if((ropePhase==2 && ropeTicks>=ROPE_RETURN_TICKS)
                 || (ropePhase==3 && ropeTicks>=ROPE_HIT_TICKS)) {

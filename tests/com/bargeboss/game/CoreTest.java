@@ -211,7 +211,7 @@ public final class CoreTest {
         // come from cached unit-space tiles (draw commands only; repeat calls are identical).
         // Bisected: routing the non-union view mask back to per-frame buildShore restores
         // f74bb9ae exactly; the spread spatial hash keys do not change output.
-        check(Parity.signature().equals("9748df6b:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        check(Parity.signature().equals("3f51f7ac:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

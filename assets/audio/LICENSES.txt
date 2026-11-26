@@ -103,3 +103,8 @@ Source, hash and reproducible processing: docs/audio/reitanna-thunks-v1.md and
 
 Public build soundtrack
 None. Public builds ship no soundtrack and create no music player.
+
+Lasso Foley v1 (2026-11-25)
+lasso-whoosh-v1.wav, lasso-hit-v1.wav: original deterministic synthesis for this
+project (seeded filtered noise, damped modes, plucked-string twang); no sampled
+recordings. Reproducible: tools/generate_lasso_audio.py.

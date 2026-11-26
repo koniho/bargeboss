@@ -49,13 +49,18 @@ public final class LassoFeedbackTest {
                     && Math.abs(capture.rope[1]-(g.ropeOriginY()-RopeAttachment.height(b)-WaterSurface.lift(g,b)))<.002f,
                     "tether stays on the moving barge's deck edge");
             if(tick>=5 && tick<=15) check(Math.abs(capture.rope[61]-(capture.rope[1]+capture.rope[127])*.5f)>1,"paid-out rope bends over the arc rather than a straight chord");
-            RiverCamera camera=g.layout.camera;TowView.Segments flight=new TowView.Segments(g);
+            // World flight is a whip: the tip runs along the throw line on RopeFlight.tip (wind-up, overshoot),
+            // and a travelling wave bows the line sideways mid-throw.
+            TowView.Segments flight=new TowView.Segments(g);
             int tip=flight.flightTip+1;
-            LassoPath.sample(g.ropeStartX,g.ropeStartY,g.ropeEndX,g.ropeEndY,g.ropeStartHeight,fraction,true,point);
-            check(Math.abs(camera.screenX(flight.x[tip],flight.y[tip])-camera.screenX(point[0],point[1]))<.003f
-                    && Math.abs(camera.screenY(flight.x[tip],flight.y[tip])-flight.height[tip]*camera.scale-camera.screenY(point[0],point[1]))<.003f,"depth-sorted flight preserves the same isometric arc");
+            float endRise=GroundArt.LAND_RISE,ex=g.ropeEndX-RiverCamera.riseX(endRise)-g.ropeStartX,ey=g.ropeEndY-RiverCamera.riseY(endRise)-g.ropeStartY,along=RopeFlight.tip(t);
+            check(Math.abs(flight.x[tip]-(g.ropeStartX+ex*along))<.01f && Math.abs(flight.y[tip]-(g.ropeStartY+ey*along))<.01f,"whip tip follows the throw line");
+            if(tick>=4 && tick<=11){float reach=Physics.length(ex,ey),off=0;
+                for(int k=flight.flightTip-30;k<=flight.flightTip;k++)off=Math.max(off,Math.abs(((flight.x[k]-g.ropeStartX)*ey-(flight.y[k]-g.ropeStartY)*ex)/reach));
+                check(off>1.5f,"a travelling wave bows the line sideways mid-throw");}
             check(g.ropeTicks==tick,"drawing either projection never advances the throw");
         }
+        check(Math.abs(RopeFlight.tip(1)-1)<1e-6f && RopeFlight.tip(.8f)>1.02f && RopeFlight.tip(.08f)<0,"whip winds up behind the hull, overshoots past the target and lands exactly on it");
         float localX=g.ropeLocalX,localY=g.ropeLocalY;
         b.x+=12;b.y-=7;b.angle+=.4f;
         check(Math.abs(g.ropeOriginX()-(b.x+localX*(float)StrictMath.cos(b.angle)-localY*(float)StrictMath.sin(b.angle)))<.001f,

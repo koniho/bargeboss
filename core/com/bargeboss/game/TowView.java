@@ -124,8 +124,19 @@ public final class TowView {
             }
             if(i==flightTip) {
                 float t=Physics.clamp(game.ropeTicks/(float)(game.ropePhase==2?Game.ROPE_RETURN_TICKS:Game.ROPE_FLIGHT_TICKS),0,1),eased=1-(1-t)*(1-t);
-                float radius=8+14*(game.ropePhase==2?1-eased:eased);
-                MooringView.lasso(p,ex,ey,radius,radius*.72f,.3f*(float)StrictMath.sin(game.ropeTicks*.34),color);
+                // The loop flares open as the whip snaps, spinning fast, then settles as it lands.
+                float open=game.ropePhase==2?1-eased:Physics.clamp(RopeFlight.tip(t),0,1.15f);
+                float radius=7+15*open+5*RopeFlight.crack(game);
+                MooringView.lasso(p,ex,ey,radius,radius*.66f,game.ropeTicks*.55f,color);
+                float crack=RopeFlight.crack(game);
+                if(crack>0){
+                    // Whip crack at the tip: a white flash with short radial cracks.
+                    Painter screen=river?((RiverPainter)p).canvas():p;float s=river?((RiverPainter)p).camera.scale:1;
+                    float tx=river?((RiverPainter)p).camera.screenX(ex,ey):ex,ty=river?((RiverPainter)p).camera.screenY(ex,ey):ey;
+                    screen.material(tx,ty,46*s*crack,0,0,38*s*crack,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,.85f*crack));
+                    for(int k=0;k<6;k++){float a=k*1.0472f+.4f,r0=6*s,r1=(6+14*crack)*s;float ca=(float)StrictMath.cos(a),sa=(float)StrictMath.sin(a)*.7f;
+                        screen.line(tx+ca*r0,ty+sa*r0,tx+ca*r1,ty+sa*r1,1.6f*s,SoftCue.alpha(0xfffff6d8,crack));}
+                }
             }
             } finally {if(clip.length>0)canvas.popClip();}
         }

@@ -13,7 +13,7 @@ public final class FireAudioVisualTest {
         check(g.abilities.screenFlashTicks()==0 && !SoundEffects.audible(g),"flash decays and delayed burst events expire");
         for(int i=0;i<6;i++){g.sounds.fireworkBurst();check(SoundEffects.cue(g)==SoundEffects.FIREWORK_BURST+(i+1)%3,"burst variants cycle deterministically");}
         for(int incoming=0;incoming<SoundEffects.COUNT;incoming++)for(int playing=0;playing<SoundEffects.COUNT;playing++)
-            check(SoundEffects.interrupts(incoming,playing)==(incoming==playing || incoming<9 || playing<9),"bounded shared overlap priority");
+            check(SoundEffects.interrupts(incoming,playing)==(incoming==playing || incoming<9 || incoming>12 || playing<9 || playing>12),"only distinct firework tails overlap; lasso and contact cues stay exclusive");
         FireworksLesson f=g.tutorial.fireworks;g.tug.x=FireworksLesson.X-100;g.tug.y=FireworksLesson.Y;
         check(EngineAudio.gain(g,EngineAudio.FIRE)==0 && EngineAudio.gain(g,EngineAudio.SIZZLE)==0,"no imaginary fire audio");
         f.ignite();
