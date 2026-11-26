@@ -391,7 +391,7 @@ static NSUInteger BBLessonMask(BBTutorialLesson lesson) {return (NSUInteger)1<<l
     app.launchArguments=@[@"--reset-progress-for-ui-tests"]; [app launch];
     XCUIElement *stage=app.otherElements[@"river-stage"];
     XCTAssertTrue([stage waitForExistenceWithTimeout:10]);
-    // First Start: pick a captain (Weslie, centre card), then START TRAINING enters the first tutorial.
+    // First Start: pick a captain (Wesley, centre card), then START TRAINING enters the first tutorial.
     [self tapTitle:stage x:770 y:362]; [self waitFor:@"Captains;" on:stage];
     [self tapMenu:stage x:480 y:300]; [self tapMenu:stage x:770 y:544];
     [self waitFor:BBLessonToken(BBLessonMove) on:stage];

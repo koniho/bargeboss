@@ -40,7 +40,7 @@ public final class GameSettings {
     public void resetWeather(){rainLevel=lightningLevel=fogLevel=0;weatherFlashTick=-1000000;}
     private int captain=-1;
     private boolean tutorialDone;
-    /** Chosen player captain (PlayerPortrait.BRITTNEY..DOT), or -1 before the intro choice. */
+    /** Chosen player captain (PlayerPortrait.WHITNEY..DOT), or -1 before the intro choice. */
     public int captain(){return captain;}
     public boolean captainChosen(){return captain>=0;}
     public void setCaptain(int next){if(next>=0 && next<PlayerPortrait.COUNT && next!=captain){captain=next;version++;}}

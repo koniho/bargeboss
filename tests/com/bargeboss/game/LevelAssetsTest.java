@@ -15,7 +15,7 @@ final class LevelAssetsTest {
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
             check(scenery.length==(Challenges.kind(id)==Challenges.MONTROSE?11:0),"Level prepares its permanent scenery family");
             check(preparation.length==plan.rotationAtlases().length+scenery.length+PlayerPortrait.COUNT+3,"Complete preparation includes scenery, rotations, captain portraits, cyclic foam, splashes and ripples");
-            for(int c=0;c<PlayerPortrait.COUNT;c++)check(preparation[plan.rotationAtlases().length+scenery.length+c]==SpriteAtlas.BRITTNEY_PORTRAIT+c,"Every stage prepares the always-visible captain portraits");
+            for(int c=0;c<PlayerPortrait.COUNT;c++)check(preparation[plan.rotationAtlases().length+scenery.length+c]==SpriteAtlas.WHITNEY_PORTRAIT+c,"Every stage prepares the always-visible captain portraits");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
             for(int receiver:scenery){int atlas=SpotlightArt.source(receiver);check(Challenges.kind(id)==Challenges.MONTROSE?(atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.ALEX_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");}
             Game game=new Game();game.challengeId=id;game.reset();

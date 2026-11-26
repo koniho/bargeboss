@@ -6857,3 +6857,20 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Canonical replay 569d9fda:2:1350 (was ae32a7f8). Gameplay change confined to practice-tutorial play:
   with every Parity section that runs the practice tutorial (tutorial, radio, responsive, joystick,
   slipTether) disabled, old and new trees hash identically (2bd6de79). Score/deliveries unchanged.
+## Player-captain portraits from user sheets, Whitney/Wesley rename (2026-11-26)
+
+- Platform: shared assets only (no renderer, cache or draw-call change). All three captain sheets
+  are replaced by user-supplied ink-and-cel character art processed with
+  `tools/extract_sheet_portraits.py` and packed by `PackGavinPortrait` into the same 576x384,
+  192 px cell, six-frame layout (atlas ids 92-94 and texture sizes unchanged). The procedural
+  `tools/PaintPlayerPortraits.java` and its sources were removed. Brittney/Weslie renamed to
+  Whitney/Wesley; saved captain indices 0/1/2 unchanged.
+- Registration: all 18 frames rest on row 182; frame bases differ by at most 0.5 px in X, now
+  recorded in `PortraitRegistration` (checked by `PortraitRegistrationReview`).
+- Canonical replay 208cda20:2:1350 (was ae32a7f8:2:1350). Bisected: the new pixels plus the new
+  X offsets under the old asset file names and old HUD labels reproduce ae32a7f8 exactly. Only the
+  hashed atlas file names (`portrait-captain-whitney-v1`, `-wesley-v1`, `-dot-v2`) and the HUD
+  name label text move it (old files with new labels: b32cd182). Deliveries 2, score 1350.
+
+- Rebased onto da80790 (lesson reorder + mooring ball, 569d9fda): combined canonical replay 144a8cff:2:1350;
+  the portrait part is filename/name text only (bisected on its branch), score/deliveries unchanged.

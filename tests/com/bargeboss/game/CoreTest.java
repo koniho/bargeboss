@@ -220,7 +220,11 @@ public final class CoreTest {
         // remaining tutorial diff is only the hashed DONE id (21->22) on the final tick, the lesson
         // progress-bar fraction and the BBG3 save string. worldTouch/channelTop widening is neutral.
         // Delivered/score (2:1350) never change; the practice-yard replay plays identically.
-        check(Parity.signature().equals("569d9fda:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
+        // Captain portraits from user sheets plus the Whitney/Wesley rename. Bisected against
+        // ae32a7f8: new pixels and PortraitRegistration X offsets under the old file names and
+        // HUD labels reproduce ae32a7f8 exactly; the hashed atlas file names and the HUD name
+        // label text are the only inputs that move (old files + new labels: b32cd182).
+        check(Parity.signature().equals("144a8cff:2:1350"),"canonical replay changed; review parity before updating baseline: "+Parity.signature());
         System.out.println(assertions+" assertions passed; bounded player delivered "+g.delivered+", score "+g.score+", hull "+g.hull);
         System.out.println("Replay signature: "+Parity.signature());
     }

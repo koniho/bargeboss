@@ -42,7 +42,7 @@ final class CaptainTest {
         check(root.activeGame()==root && root.mode==Game.PLAY && root.tutorial==null,"later Starts keep the direct harbor behaviour");
 
         // Deliberately leaving the first tutorial also spends first-start routing.
-        Game quitter=new Game();quitter.settings.setCaptain(PlayerPortrait.WESLIE);
+        Game quitter=new Game();quitter.settings.setCaptain(PlayerPortrait.WESLEY);
         ReplayInput.tap(quitter,Layout.START);
         check(quitter.activeGame()!=quitter && quitter.activeGame().tutorial!=null,"captain already chosen: first Start goes straight to the tutorial");
         quitter.activeGame().pause();ReplayInput.tap(quitter,Layout.TITLE_SCREEN);
@@ -52,29 +52,29 @@ final class CaptainTest {
 
         // Existing careers with earned stars never get routed into the tutorial.
         Career career=new Career();career.record(0,1,100);
-        Game veteran=new Game();veteran.restoreProgress(career.save());veteran.settings.setCaptain(PlayerPortrait.BRITTNEY);
+        Game veteran=new Game();veteran.restoreProgress(career.save());veteran.settings.setCaptain(PlayerPortrait.WHITNEY);
         check(!veteran.firstVoyage(),"earned stars count as an experienced captain");
         ReplayInput.tap(veteran,Layout.START);
         check(veteran.activeGame()==veteran && veteran.mode==Game.PLAY,"veteran Start enters the harbor directly");
         // A veteran without a captain still picks one once, then sails as before.
         Game upgrade=new Game();upgrade.restoreProgress(career.save());
         ReplayInput.tap(upgrade,Layout.START);check(upgrade.mode==Game.CAPTAINS,"upgrading players pick a captain once");
-        card(upgrade,PlayerPortrait.WESLIE);ReplayInput.tap(upgrade,Layout.CAPTAIN_CONFIRM);
-        check(upgrade.activeGame()==upgrade && upgrade.mode==Game.PLAY && upgrade.settings.captain()==PlayerPortrait.WESLIE,"after picking, a veteran sails straight to the harbor");
+        card(upgrade,PlayerPortrait.WESLEY);ReplayInput.tap(upgrade,Layout.CAPTAIN_CONFIRM);
+        check(upgrade.activeGame()==upgrade && upgrade.mode==Game.PLAY && upgrade.settings.captain()==PlayerPortrait.WESLEY,"after picking, a veteran sails straight to the harbor");
         // The training-harbor menu route is unchanged.
         Game training=ReplayInput.veteran(new Game());ReplayInput.tap(training,Layout.LEARN);
         check(training.activeGame()!=training && training.activeGame().tutorial!=null,"Learn still enters practice directly");
     }
 
     private static void persistence(){
-        Game g=new Game();g.settings.setCaptain(PlayerPortrait.WESLIE);
+        Game g=new Game();g.settings.setCaptain(PlayerPortrait.WESLEY);
         String save=g.saveProgress();
         check(save.startsWith("BBG4\n") && save.endsWith("\n0,1\n0"),"captain and tutorial state are saved: "+save);
         Game restored=new Game();restored.restoreProgress(save);
-        check(restored.settings.captain()==PlayerPortrait.WESLIE && !restored.settings.tutorialDone(),"captain restores without the tutorial flag");
+        check(restored.settings.captain()==PlayerPortrait.WESLEY && !restored.settings.tutorialDone(),"captain restores without the tutorial flag");
         g.settings.completeTutorial();restored=new Game();restored.restoreProgress(g.saveProgress());
-        check(restored.settings.captain()==PlayerPortrait.WESLIE && restored.settings.tutorialDone() && restored.saveProgress().equals(g.saveProgress()),"both flags round-trip exactly");
-        int version=g.progressVersion();g.settings.setCaptain(PlayerPortrait.WESLIE);g.settings.completeTutorial();
+        check(restored.settings.captain()==PlayerPortrait.WESLEY && restored.settings.tutorialDone() && restored.saveProgress().equals(g.saveProgress()),"both flags round-trip exactly");
+        int version=g.progressVersion();g.settings.setCaptain(PlayerPortrait.WESLEY);g.settings.completeTutorial();
         check(g.progressVersion()==version,"unchanged values do not dirty progress");
         Career career=new Career();
         Game legacy=new Game();legacy.restoreProgress("BBG2\n"+career.save()+"\n2\n80,0,70,1");
@@ -100,11 +100,11 @@ final class CaptainTest {
                 check(captain.x>=other.x+other.w || other.x>=captain.x+captain.w || captain.y>=other.y+other.h || other.y>=captain.y+captain.h,"title captain button has its own touch region");
         }
         ReplayInput.tap(g,Layout.CAPTAIN);
-        check(g.mode==Game.CAPTAINS && !g.captainContinuesStart && g.captainChoice==PlayerPortrait.BRITTNEY,"title opens the picker on the current captain");
+        check(g.mode==Game.CAPTAINS && !g.captainContinuesStart && g.captainChoice==PlayerPortrait.WHITNEY,"title opens the picker on the current captain");
         card(g,PlayerPortrait.DOT);ReplayInput.tap(g,Layout.BACK);
-        check(g.mode==Game.TITLE && g.settings.captain()==PlayerPortrait.BRITTNEY,"back leaves the captain unchanged");
-        ReplayInput.tap(g,Layout.CAPTAIN);card(g,PlayerPortrait.WESLIE);ReplayInput.tap(g,Layout.CAPTAIN_CONFIRM);
-        check(g.mode==Game.TITLE && g.activeGame()==g && g.settings.captain()==PlayerPortrait.WESLIE,"changing captain returns to the title without starting");
+        check(g.mode==Game.TITLE && g.settings.captain()==PlayerPortrait.WHITNEY,"back leaves the captain unchanged");
+        ReplayInput.tap(g,Layout.CAPTAIN);card(g,PlayerPortrait.WESLEY);ReplayInput.tap(g,Layout.CAPTAIN_CONFIRM);
+        check(g.mode==Game.TITLE && g.activeGame()==g && g.settings.captain()==PlayerPortrait.WESLEY,"changing captain returns to the title without starting");
         ReplayInput.tap(g,Layout.CAPTAIN);g.back();
         check(g.mode==Game.TITLE,"host Back leaves the picker");
         for(int i=0;i<PlayerPortrait.COUNT;i++){
@@ -145,7 +145,7 @@ final class CaptainTest {
         steps(g,53);check(face.line(g)==null && face.state(g)!=PlayerPortrait.TALK,"no reply while the call is still incoming");
         steps(g,2);
         check(face.line(g)!=null && face.state(g)==PlayerPortrait.TALK,"captain acknowledges a finished call");
-        check(face.line(g).equals(PlayerPortrait.ACKS[PlayerPortrait.BRITTNEY][0]),"lines come from the chosen captain's voice");
+        check(face.line(g).equals(PlayerPortrait.ACKS[PlayerPortrait.WHITNEY][0]),"lines come from the chosen captain's voice");
         steps(g,PlayerPortrait.ACK_TICKS);check(face.line(g)==null && face.state(g)==PlayerPortrait.IDLE,"acknowledgement is short");
         g.radio.receiveBridge();steps(g,60);
         check(face.line(g)==null,"acknowledgements are rate limited");

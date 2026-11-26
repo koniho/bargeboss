@@ -15,7 +15,7 @@ public final class ReplayInput {
         g.dialogue.close(g);g.mission.setup(g);return g;
     }
     /** Returning player: captain chosen and first tutorial spent, so title Start enters the harbor. */
-    public static Game veteran(Game g){g.settings.setCaptain(PlayerPortrait.BRITTNEY);g.settings.completeTutorial();return g;}
+    public static Game veteran(Game g){g.settings.setCaptain(PlayerPortrait.WHITNEY);g.settings.completeTutorial();return g;}
     public static void tap(Game g,float x,float y) { g.pointerDown(0,x,y); g.pointerUp(0,x,y); finishMenu(g); }
     static void finishMenu(Game root){
         for(int i=0;i<12 && (root.menuFeedback.busy() || root.activeGame().menuFeedback.busy());i++){

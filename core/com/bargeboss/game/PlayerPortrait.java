@@ -8,19 +8,19 @@ package com.bargeboss.game;
  * into gameplay; drawing reads it without mutating anything and allocates nothing per frame.
  */
 public final class PlayerPortrait {
-    public static final int BRITTNEY=0,WESLIE=1,DOT=2,COUNT=3;
+    public static final int WHITNEY=0,WESLEY=1,DOT=2,COUNT=3;
     /** Face states in priority order: an impact reaction always shows over speech. */
     public static final int IDLE=0,TALK=1,WINCE=2,MAD=3;
     /** Atlas frames: neutral, small speech, open speech, blink, mad, wince. */
     static final int NEUTRAL=0,SMALL=1,OPEN=2,BLINK=3,ANGRY=4,FLINCH=5;
     static final int MAD_TICKS=54,WINCE_TICKS=40,ACK_TICKS=78,ACK_GAP=7*60,BLINK_PERIOD=233,BLINK_TICKS=7;
-    static final String[] NAMES={"BRITTNEY","WESLIE","DOT"};
+    static final String[] NAMES={"WHITNEY","WESLEY","DOT"};
     static final String[] TAGLINES={"THE WAVER","THE CLOSER","THE LUNCH LADY"};
     static final String[][] STORIES={
-        {"Brittney spent ten years crossing Chicago's bridges, waving at every tug below. Not one ever waved back.",
+        {"Whitney spent ten years crossing Chicago's bridges, waving at every tug below. Not one ever waved back.",
          "So she is getting her own tug and will wave at everyone. Sunglasses stay on, day or night: she says the river looks cooler that way."},
-        {"Weslie sold yachts for twenty years and could talk anyone into teak decking. Secretly, he always wanted the scrappy little tug that pushed them around.",
-         "He has a grin for every situation, a blazer for every weather, and believes every barge is a friend he has not towed yet."},
+        {"Wesley sold yachts for twenty years and could talk anyone into teak decking. Secretly, he always wanted the scrappy little tug that pushed them around.",
+         "He has a grin for every situation, a life vest for any weather, and believes every barge is a friend he has not towed yet."},
         {"Dot ran the busiest school cafeteria in Calumet for forty years, then retired and found the quiet unbearable.",
          "Barges, she says, are easier to herd than third graders, and none of them complain about the meatloaf. She knits on her coffee breaks."}};
     static final String[][] ACKS={
@@ -38,8 +38,8 @@ public final class PlayerPortrait {
     private int seenSequence;
     private boolean ackPending;
 
-    static int atlas(int captain){return SpriteAtlas.BRITTNEY_PORTRAIT+valid(captain);}
-    static int valid(int captain){return captain<0 || captain>=COUNT?BRITTNEY:captain;}
+    static int atlas(int captain){return SpriteAtlas.WHITNEY_PORTRAIT+valid(captain);}
+    static int valid(int captain){return captain<0 || captain>=COUNT?WHITNEY:captain;}
     public static String name(int captain){return NAMES[valid(captain)];}
 
     void reset(){madTicks=winceTicks=ackTicks=0;ackLine=-1;ackPending=false;sinceAck=ACK_GAP;}
