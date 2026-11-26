@@ -29,7 +29,7 @@ public final class RacingBoatReview {
   DialogueReview.capture(g,"aint-broke-lift-raised");
   g=ReplayInput.montroseJob(Challenges.RAFT_RESCUE);g.configureCanvas(1333,750);g.rescue.distress(g);g.dialogue.close(g);
   g.layout=Layout.focused(1333,750,MontroseRescue.RAFT_X-100,MontroseRescue.RAFT_Y+30,2.4f,666,410);
-  DialogueReview.capture(g,"montrose-storm-before");g.montroseWeather.eveningTicks=1800;g.montroseWeather.stormTicks=600;g.montroseWeather.towTicks=3600;
+  DialogueReview.capture(g,"montrose-storm-before");g.weather.eveningTicks=1800;g.weather.stormTicks=600;g.weather.towTicks=3600;
   DialogueReview.capture(g,"montrose-storm-after");
   System.out.println("32 racing poses: identical color/normal/material coverage and clear gutters");
  }

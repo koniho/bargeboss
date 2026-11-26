@@ -114,7 +114,7 @@ public final class ProfileScenario {
             root.challengeId=Challenges.MONTROSE;root.reset();root.montroseArrival.clear();root.challengeId=Challenges.RAFT_RESCUE;
             for(int i=0;i<root.cargo.length;i++)root.cargo[i]=null;root.rescue.setup(root);root.rescue.distress(root);
             if(name.equals("montrose-storm-return")){root.dialogue.close(root);root.rescue.rafted=false;
-                root.montroseWeather.eveningTicks=MontroseWeather.EVENING_TICKS;root.montroseWeather.stormTicks=MontroseWeather.STORM_TICKS;root.montroseWeather.towTicks=MontroseWeather.TOW_TICKS;
+                root.weather.eveningTicks=StageWeather.EVENING_TICKS;root.weather.stormTicks=StageWeather.STORM_TICKS;root.weather.towTicks=StageWeather.TOW_TICKS;
                 root.tow.attach(root,root.cargo[0],root.tug);}
             root.layout=Layout.focused(width,height,MontroseRescue.RAFT_X-70,MontroseRescue.RAFT_Y+20,2.4f,width*.5f,height*.55f);return;
         }
