@@ -222,7 +222,7 @@ public final class ScreenView {
     public static void finish(Game g,Painter p) {
         p=menu(g,p);overlay(p,82,454);
         boolean complete=g.goalComplete() && g.hull>0;
-        heading(p,g.hull<=0?"TUG OUT OF SERVICE":g.cargoSunk?"VESSEL SUNK":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,840,PAPER);
+        heading(p,g.hull<=0?"GAME OVER / TUG DESTROYED":g.cargoSunk?"VESSEL SUNK":complete?"HARBOR COMPLETE":"TRY AGAIN, CAPTAIN",60,110,28,840,PAPER);
         text(p,g.challengeTitle(),60,151,12,MUTED);
         captainBadge(p,190,250,1.2f,g.career.stripes());
         headingCenter(p,g.career.rankTitle(),190,328,17,260,GOLD);

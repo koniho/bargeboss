@@ -43,7 +43,7 @@ final class MontroseArcade {
         int slot=-1,free=-1;
         for(int i=0;i<TRACKED;i++){if(near[i]==b){slot=i;break;}if(near[i]==null && free<0)free=i;}
         float gap=Physics.length(b.x-g.tug.x,b.y-g.tug.y)-(b.half+b.radius+g.tug.half+g.tug.radius)*.75f;
-        boolean close=b.active && b.sinkTicks<=0 && !b.awaitingPickup && gap<SKIM && Math.max(g.tug.speed(),b.speed())>MIN_SPEED;
+        boolean close=!g.dying() && b.active && b.sinkTicks<=0 && !b.awaitingPickup && gap<SKIM && Math.max(g.tug.speed(),b.speed())>MIN_SPEED;
         if(slot<0){if(!close || free<0)return;slot=free;near[slot]=b;touched[slot]=false;closest[slot]=gap;}
         if(Physics.touching(g.tug,b,1))touched[slot]=true;
         closest[slot]=Math.min(closest[slot],gap);

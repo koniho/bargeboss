@@ -86,7 +86,7 @@ public final class CareerTest {
         check(game.mode==Game.PLAY && game.arenaStage() && game.arena!=null,"selected location launches (the last card is the Thousand Islands arena)");
         game.background();ReplayInput.tap(game,Layout.RESTART);
         check(game.arenaStage() && game.ticks==0,"restart preserves location");
-        Game failed=new Game();failed.reset();failed.hull=0;failed.step();
+        Game failed=new Game();failed.reset();failed.hull=0;for(int t=0;t<=TugDeath.TICKS+1;t++)failed.step();
         check(failed.mode==Game.FINISH && failed.career.totalStars()==0,"wreck earns no reward");
     }
 }

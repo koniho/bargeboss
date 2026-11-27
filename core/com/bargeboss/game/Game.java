@@ -60,6 +60,9 @@ public final class Game {
     public int mode=TITLE, ticks, score, delivered, lost, hull=100, selected=-1, combo;
     public int visualTicks;
     public int celebrationTicks, celebrationPoints, impactTicks,damageFlashTicks;
+    /** Ticks since the tug's hull ran out (0 while it is alive); see TugDeath. */
+    public int deathTicks;
+    public boolean dying(){return deathTicks>0;}
     /** Tick the tug's hull last changed (drives the transient health bar). */
     public int hullDamagedTick=-1000;
     public float celebrationX,celebrationY,impactX,impactY;
@@ -517,7 +520,7 @@ public final class Game {
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;hullDamagedTick=-1000;portrait.reset();
         damageCooldown=0; accumulator=0; selected=-1;
-        tug=new Body(0,-1,330,650,(float)Math.PI);
+        tug=new Body(0,-1,330,650,(float)Math.PI);deathTicks=0;
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
         feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
         if(calumetStage()){feeders=new Feeder[0];voyage.setup(this);spawnIndex=quota();}
@@ -1049,7 +1052,7 @@ public final class Game {
             if(impactTicks>0) impactTicks--;
             return;
         }
-        ticks++;if(damageFlashTicks>0) damageFlashTicks--; if(celebrationTicks>0) celebrationTicks--; if(impactTicks>0) impactTicks--;
+        ticks++;if(deathTicks>0)TugDeath.step(this);if(damageFlashTicks>0) damageFlashTicks--; if(celebrationTicks>0) celebrationTicks--; if(impactTicks>0) impactTicks--;
         if(noticeTicks>0) noticeTicks--; if(damageCooldown>0) damageCooldown--;
         if(hapticCooldown>0) hapticCooldown--; if(contactCooldown>0) contactCooldown--;
         if(pointer) {
@@ -1103,7 +1106,8 @@ public final class Game {
             if(calumetStage())voyage.step(this);
             else if(montroseStage())advanceMontroseJob();
             if(ticks>=nextFeedTick && spawn()) nextFeedTick=ticks+feedInterval();
-            if(goalComplete() || goalFailed()) {
+            if(hull<=0 && deathTicks<TugDeath.TICKS){if(deathTicks==0)TugDeath.start(this);}
+            else if(goalComplete() || goalFailed()) {
                 mode=FINISH; overview.cancelTouch(); cancel();
                 if(goalComplete() && !goalFailed()) {
                     if(lockStage()) {score+=1200;delivered=quota();haptic(HAPTIC_SUCCESS);}
@@ -1298,7 +1302,7 @@ public final class Game {
     private void navigate(float x,float y,float topSpeed,boolean astern) { navigate(x,y,topSpeed,astern,true); }
     private void navigate(float x,float y,float topSpeed,boolean astern,boolean hullThrust) {
         float dx=x-tug.x, dy=y-tug.y, distance=Physics.length(dx,dy);
-        if(distance<1) { tug.vx*=.93f; tug.vy*=.93f; return; }
+        if(distance<1 || deathTicks>0) { tug.vx*=.93f; tug.vy*=.93f; return; }
         float desired=(float)StrictMath.atan2(dy,dx)+(astern?(float)Math.PI:0), error=Physics.angle(desired-tug.angle);
         tug.spin+=Physics.clamp(error*6-tug.spin*3,-7,7)*Physics.DT;
         float load=tow.loadMass(tug);

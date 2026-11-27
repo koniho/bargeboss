@@ -23,7 +23,7 @@ public final class Renderer {
         WeatherView.draw(g,p);
         ControlView.draw(g,new RiverPainter(p,g.layout.camera));
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
-        HullDamage.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);if(g.montroseStage())g.arcade.overlay(g,p);if(g.job!=null && g.montroseStage())g.job.overlay(g,p);
+        HullDamage.effects(g,p);TugDeath.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);if(g.montroseStage())g.arcade.overlay(g,p);if(g.job!=null && g.montroseStage())g.job.overlay(g,p);
         g.layout=live;
         HarborView.objective(g,p);
         if(g.job!=null && g.montroseStage())g.job.hud(g,p);
@@ -34,6 +34,7 @@ public final class Renderer {
         ScreenView.hud(g,p);
         PlayerPortrait.draw(g,p);
         if(!g.conversation())AssistView.draw(g,p);
+        TugDeath.overlay(g,p);
         if(g.mode==Game.HELP) ScreenView.help(g,p);
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);

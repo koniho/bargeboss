@@ -129,7 +129,7 @@ final class HullDamage {
             if(t>=SINK){b.active=false;b.sunk=true;}
         }
     }
-    private static void shake(Game g,float power){
+    static void shake(Game g,float power){
         RiverCamera c=g.layout.camera;g.splashes.shake.hit(power,c.screenX(1,-1)-c.screenX(0,0),c.screenY(1,-1)-c.screenY(0,0),true);
     }
     static float progress(Body b){return b.sinkTicks<=0?0:Math.min(1,b.sinkTicks/(float)SINK);}
@@ -156,7 +156,8 @@ final class HullDamage {
     /** Seed offset so marina wrecks never share debris patterns with mission vessels. */
     static final int MOORED_SEED=100000;
     /** One sinking or sunk hull's effects at sink tick t; half and radius are its hull extents. */
-    private static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t){
+    static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t){wreck(g,p,c,bx,by,half,radius,seed,craft,t,true);}
+    static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t,boolean caption){
         {
             float sx=c.screenX(bx,by),sy=c.screenY(bx,by),s=c.scale,hull=half+radius;
             float pad=(hull+160)*s;
@@ -203,7 +204,7 @@ final class HullDamage {
                 }
             }
             // Arcade caption: SUNK! pops in, floats up and fades.
-            if(t>=PLUNGE-10){
+            if(caption && t>=PLUNGE-10){
                 int a=t-(PLUNGE-10);float u=Physics.clamp(a/34f,0,1),pop=a<6?1.5f-a/12f:1;
                 float size=Math.min(34,Math.max(18,22*s))*pop,y=sy-(46+u*30)*s;
                 int alpha=Math.round(255*(1-Physics.clamp((a-18)/16f,0,1)));
@@ -213,7 +214,7 @@ final class HullDamage {
         }
     }
     /** One blast `age` ticks old (none before 0): scale 1 is the opening explosion. */
-    private static void explosion(Painter p,RiverCamera c,float bx,float by,float hull,int seed,boolean craft,int age,int salt,float scale,float sx,float sy,float zs){
+    static void explosion(Painter p,RiverCamera c,float bx,float by,float hull,int seed,boolean craft,int age,int salt,float scale,float sx,float sy,float zs){
         if(age<0 || age>=70)return;
         float s=c.scale,sec=age/60f;
         if(age<16){
