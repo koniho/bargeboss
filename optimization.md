@@ -7173,3 +7173,17 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   4. GAME OVER: darkening, pulsing red glow, letters dropping in one by one; tap to continue.
 - Visuals are pure functions of deathTicks (no extra state). Input, towing and near-miss scoring
   stop. TugDeathTest covers start, ignored taps, skip to results, and a clean retry.
+
+## Montrose day: beach jobs, no teleports, performance debriefs
+
+- Job order follows the tug (MontroseJob.ORDER): the storm rescue ends off the beach, so Water Taxi
+  (beach shuttle to an offshore party raft), Sandbar (yacht on the bar off the beach, towed to a deep
+  anchorage) and the Regatta (down the beach, round the breakwater head, home to the harbor mouth) come
+  first, then Wake Patrol, Loose Boats, Fireworks Night and Deep Freeze in the marina. All new targets
+  were probed for open water and clearance (>=120 on every regatta leg).
+- Follow-on jobs no longer move the tug or camera (MontroseJob.start skips while Game.jobContinuing);
+  only a job launched on its own is placed. Regatta's clock starts at gate one; job clocks pause while
+  the dockmaster talks.
+- Gavin debriefs every finished Montrose job before the next dispatch (Dialogue.interject queues the
+  dispatch behind it): three tiers by stars per job, a hull remark and the time taken.
+- STATE hash unchanged; DRAW baseline updated for the new dialogue.

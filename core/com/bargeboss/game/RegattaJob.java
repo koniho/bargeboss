@@ -1,25 +1,26 @@
 package com.bargeboss.game;
 
-/** REGATTA RUN: the harbor regatta needs its course proven before the racers go. Thread ten gates in
- * order, from the north docks out through the inlet and across the lake, against the clock. Each gate
- * adds time; the leftover seconds pay out at the finish. Traffic does not get out of your way. */
+/** REGATTA RUN: the regatta needs its course proven before the racers go. Thread ten gates in order:
+ * down Montrose Beach past the swimmers, round the breakwater head, and back down the lakefront to the
+ * harbor mouth. The clock starts at gate one; each gate adds time and the leftover seconds pay out. */
 final class RegattaJob extends MontroseJob {
     /** Gate centres in course order (all on verified traffic lanes) and their half-width. */
-    static final float[] GATES={1442,-666,746,-474,300,-300,-82,-30,-80,400,146,630,900,1000,1800,1000,2750,300,3100,800};
+    static final float[] GATES={0,-3760,500,-3360,1000,-3010,1520,-2730,2150,-2520,2250,-3150,2550,-3980,3150,-3250,3120,-1700,2350,450};
     static final float HALF=70;
-    static final int START_SECONDS=40,GATE_SECONDS=7;
+    static final int START_SECONDS=45,GATE_SECONDS=9;
     int next;
 
     void setup(Game g){
         limit=START_SECONDS*60;
-        start(g,1736,-942,(float)StrictMath.atan2(GATES[1]-(-942),GATES[0]-1736));
+        start(g,-200,-4000,(float)StrictMath.atan2(GATES[1]-(-4000),GATES[0]-(-200)));
     }
     int gates(){return GATES.length/2;}
     void objective(Game g,Painter canvas){if(next<gates())arrow(g,canvas,GATES[next*2],GATES[next*2+1],"GATE "+(next+1));}
-    String status(Game g){return next>=gates()?"COURSE PROVEN!":"GATE "+(next+1)+" OF "+gates()+" / THREAD THE BUOYS";}
+    String status(Game g){return next>=gates()?"COURSE PROVEN!":next==0?"HEAD TO GATE 1 / THE CLOCK STARTS THERE":"GATE "+(next+1)+" OF "+gates()+" / THREAD THE BUOYS";}
     boolean failed(Game g){return next<gates() && ticks>=limit;}
     void step(Game g){
         super.step(g);
+        if(next==0)ticks=0;
         if(next>=gates() || ticks>=limit)return;
         float x=GATES[next*2],y=GATES[next*2+1];
         if(Physics.length(g.tug.x-x,g.tug.y-y)>HALF)return;

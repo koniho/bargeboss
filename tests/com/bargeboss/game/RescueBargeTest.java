@@ -28,7 +28,7 @@ public final class RescueBargeTest {
   check(floating && climbing && r.state[0]==4 && g.delivered==1,"Ring flotation, return, ladder climb and aboard credit occur in sequence");
   ticks(g,150);check(g.delivered==1 && g.score==100,"Aboard reward happens once");
   for(int i=1;i<20;i++){r.x[i]=b.x;r.y[i]=b.y-100;r.found[i]=true;fling(g,r.x[i]+12,r.y[i]);for(int t=0;t<1600 && r.state[i]!=4;t++)ticks(g,1);check(r.state[i]==4,"Every survivor can board");}
-  check(g.delivered==20,"all twenty aboard");g.step();check(g.challengeId==Challenges.WAKE_PATROL && g.career.bestStars(Challenges.SWIMMER_RESCUE)>0,"Only all twenty aboard completes rescue and starts the next job");
+  check(g.delivered==20,"all twenty aboard");g.step();check(g.challengeId==Challenges.WATER_TAXI && g.career.bestStars(Challenges.SWIMMER_RESCUE)>0,"Only all twenty aboard completes rescue and starts the next job");
   g=scene();r=g.rescue;r.barge.towed=true;fling(g,b.x+190,b.y+40);ticks(g,RescueBarge.FLIGHT+10);check(r.state[0]==0,"Miss does not home in or rescue distant swimmer");
   g=scene();r=g.rescue;g.tug.x=r.x[0];g.tug.y=r.y[0];g.rescue.step(g);
   check(r.state[0]==5 && !g.goalFailed() && g.lost==1,"Impact starts visible injury instead of instant failure");

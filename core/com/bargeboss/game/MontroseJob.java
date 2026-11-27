@@ -24,15 +24,20 @@ abstract class MontroseJob {
             default:return new FireworksNightJob();
         }
     }
+    /** The Montrose day after the storm rescue, ordered by where the tug already is: the beach jobs
+     * first (the rescue ends off the beach), a regatta run back to the harbor mouth, then the marina. */
+    static final int[] ORDER={Challenges.SWIMMER_RESCUE,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,
+        Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.FIREWORKS_NIGHT,Challenges.DEEP_FREEZE};
     /** The job after this one in the Montrose day; -1 ends the location. */
-    static int next(int id){return id==Challenges.SWIMMER_RESCUE?Challenges.WAKE_PATROL:is(id) && id<Challenges.DEEP_FREEZE?id+1:-1;}
+    static int next(int id){for(int i=0;i<ORDER.length-1;i++)if(ORDER[i]==id)return ORDER[i+1];return -1;}
 
     abstract void setup(Game g);
     abstract String status(Game g);
     /** The off-screen arrow to whatever the player should head for next. */
     abstract void objective(Game g,Painter canvas);
     static void arrow(Game g,Painter canvas,float x,float y,String label){HarborView.destination(g,canvas,x,y,label);}
-    void step(Game g){ticks++;for(int i=0;i<popAge.length;i++)if(popAge[i]>0)popAge[i]++;}
+    /** The job clock pauses while the dockmaster is talking. */
+    void step(Game g){if(!g.conversation())ticks++;for(int i=0;i<popAge.length;i++)if(popAge[i]>0)popAge[i]++;}
     void motion(Game g){}
     /** Hulls this job owns outside the cargo slots (drawn, floated and collided like traffic). */
     Body[] bodies(){return NONE;}
@@ -93,8 +98,10 @@ abstract class MontroseJob {
         }
         return hit;
     }
-    /** Places the tug and frames it for a fresh job. */
+    /** Places the tug and frames it for a job started on its own (developer panel or a direct launch).
+     * A job that follows another in the Montrose day starts wherever the tug already is. */
     static void start(Game g,float x,float y,float angle){
+        if(g.jobContinuing)return;
         g.tug.x=x;g.tug.y=y;g.tug.angle=angle;g.tug.vx=g.tug.vy=g.tug.spin=0;
         g.layout=Layout.focused(g.layout.width,g.layout.height,x,y,Game.TRANSIT_ZOOM*MontroseHarbor.ZOOM_MULTIPLIER,g.layout.width*.5f,g.layout.height*.52f);
     }

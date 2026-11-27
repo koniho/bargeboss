@@ -1,10 +1,10 @@
 package com.bargeboss.game;
 
-/** SANDBAR: a big yacht ran hard aground on the bar off the south shore. Lasso it and haul: the tug's
- * line tension rocks it loose (watch the meter), then it pops free in a burst of sand and spray. Tow it
- * home to the harbor service dock through the lake traffic. */
+/** SANDBAR: a big yacht cut the corner and ran hard aground on the sandbar off Montrose Beach. Lasso it
+ * and haul: the tug's line tension rocks it loose (watch the meter), then it pops free in a burst of sand
+ * and spray. Tow it out to the deep-water anchorage, clear of the swimmers. */
 final class SandbarJob extends MontroseJob {
-    static final float BAR_X=1350,BAR_Y=700,BAR_ANGLE=.15f,DOCK_X=-60,DOCK_Y=-100,DOCK_REACH=115;
+    static final float BAR_X=1200,BAR_Y=-2780,BAR_ANGLE=.6f,DOCK_X=1750,DOCK_Y=-3750,DOCK_REACH=115;
     /** Tension-seconds of hauling needed to break the hull free. */
     static final float BREAKOUT=330;
     Body yacht;boolean stuck=true;float progress;int popTicks,warp;
@@ -12,16 +12,16 @@ final class SandbarJob extends MontroseJob {
     void setup(Game g){
         yacht=new Body(g.nextId++,2,BAR_X,BAR_Y,BAR_ANGLE,true);
         yacht.awaitingPickup=true;yacht.tiedX=yacht.x;yacht.tiedY=yacht.y;yacht.tiedAngle=yacht.angle;g.cargo[0]=yacht;
-        start(g,820,860,0);
+        start(g,1500,-3150,(float)Math.PI*.8f);
     }
     void objective(Game g,Painter canvas){
         if(yacht.deliveryRecorded)return;
-        if(stuck)arrow(g,canvas,yacht.x,yacht.y,"YACHT AGROUND");else arrow(g,canvas,DOCK_X,DOCK_Y,"SERVICE DOCK");
+        if(stuck)arrow(g,canvas,yacht.x,yacht.y,"YACHT AGROUND");else arrow(g,canvas,DOCK_X,DOCK_Y,"DEEP ANCHORAGE");
     }
     String status(Game g){
         boolean towed=g.tow.connected(yacht,g.tug);
         if(stuck)return towed?"HAUL AWAY FROM THE BAR / "+Math.round(100*progress/BREAKOUT)+"% FREE":"YACHT AGROUND / LASSO IT FROM THE TUG";
-        return "TOW IT INTO THE SERVICE DOCK RING / THE CREW TAKES IT";
+        return "TOW HER OUT TO THE DEEP ANCHORAGE RING / CLEAR OF THE SWIMMERS";
     }
     void step(Game g){
         super.step(g);
@@ -38,17 +38,17 @@ final class SandbarJob extends MontroseJob {
             if(progress>=BREAKOUT){
                 stuck=false;yacht.awaitingPickup=false;popTicks=50;
                 RiverCamera c=g.layout.camera;g.splashes.shake.hit(.9f,c.screenX(1,1)-c.screenX(0,0),c.screenY(1,1)-c.screenY(0,0),true);
-                g.haptic(Game.HAPTIC_IMPACT);pop(yacht.x,yacht.y,"POPPED FREE!");g.tell("SHE'S FREE! TOW HER HOME");
+                g.haptic(Game.HAPTIC_IMPACT);pop(yacht.x,yacht.y,"POPPED FREE!");g.tell("SHE'S FREE! TOW HER OUT TO DEEP WATER");
                 for(int k=-1;k<=1;k++)g.smoke.shore(yacht.x+k*20,yacht.y,4,.4f);
             }
             return;
         }
         if(warp>0){
             float t=Math.min(1,++warp/70f);yacht.x+=(DOCK_X-yacht.x)*.06f;yacht.y+=(DOCK_Y-yacht.y)*.06f;yacht.vx=yacht.vy=0;
-            if(t>=1){secure(yacht,yacht.x,yacht.y,yacht.angle);score(g,DOCK_X,DOCK_Y,2500+yacht.health*10,"YACHT SAFE AT THE SERVICE DOCK");}
+            if(t>=1){secure(yacht,yacht.x,yacht.y,yacht.angle);score(g,DOCK_X,DOCK_Y,2500+yacht.health*10,"YACHT SAFE AT ANCHOR");}
             return;
         }
-        if(Physics.length(yacht.x-DOCK_X,yacht.y-DOCK_Y)<DOCK_REACH && yacht.speed()<35){warp=1;g.tow.detachBody(g,yacht);g.tell("SERVICE CREW TAKING HER IN");}
+        if(Physics.length(yacht.x-DOCK_X,yacht.y-DOCK_Y)<DOCK_REACH && yacht.speed()<35){warp=1;g.tow.detachBody(g,yacht);g.tell("DROPPING THE HOOK");}
     }
     void motion(Game g){
         if(!stuck || yacht.deliveryRecorded)return;
@@ -57,6 +57,11 @@ final class SandbarJob extends MontroseJob {
     boolean towable(Body b){return b!=yacht || !yacht.deliveryRecorded && warp==0;}
     void water(Game g,Painter p){
         if(yacht.deliveryRecorded)return;
+        // The shoal itself: pale sand showing through the shallows, with a line of breaking foam.
+        {RiverCamera c=g.layout.camera;float sx=c.screenX(BAR_X,BAR_Y),sy=c.screenY(BAR_X,BAR_Y),r=150*c.scale;
+            float surf=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.05f);
+            p.material(sx,sy,r*2.8f,0,0,r*1.2f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffc8ac74,.55f));
+            p.material(sx,sy,r*1.7f,0,0,r*.7f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffeedcae,.45f+.1f*surf));}
         if(stuck){
             // Churned sand around the hull, growing as it works loose.
             ring(g,p,BAR_X,BAR_Y,70,0xffe0c27a,.6f+.4f*progress/BREAKOUT);

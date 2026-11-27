@@ -25,7 +25,8 @@ public final class MontroseHauloutTest {
         check(g.cargo[g.cargo.length-1]==boat && boat.active && boat.awaitingPickup,"Crew secures and retains disabled boat");
         check(g.career.bestStars(Challenges.HAULOUT)==3 && g.score==1200+g.arcade.bannerBonus,"Dedicated save slot and once-only haulout reward (plus any quick-job bonus)");
         check(g.cargo[0].awaitingPickup,"Raft waits beyond the horn during exploration");
-        check(g.dialogue.dockmasterConversation() && g.dialogue.content().title.contains("KNOW THE AREA"),"Next mission calls out over radio");
+        check(g.dialogue.dockmasterConversation() && g.dialogue.content().title.contains("HAULOUT"),"Gavin debriefs the haulout first");
+        g.dialogue.close(g);check(g.dialogue.showQueued(g) && g.dialogue.content().title.contains("KNOW THE AREA"),"Next mission calls out over radio");
         return g;
     }
     public static void run(){

@@ -23,6 +23,19 @@ public final class Dialogue {
         panel.step(content());if(transmitter==RadioAudio.CREW)g.radio.receiveCrew(g.cargo[1]);else if(transmitter==RadioAudio.DOCKMASTER)g.radio.receiveDockmaster();else if(transmitter==RadioAudio.BRIDGE)g.radio.receiveBridge();else g.radio.transmit(RadioAudio.TEACHER);
     }
     public void close(Game g){active=false;cancel();g.cancelInputs();}
+    /** A message waiting behind the current one (set by interject). */
+    private int queuedKind=-1;private String queuedSpeaker,queuedTitle,queuedDetail;private String[] queuedChoices;
+    /** Shows this message now; whatever was showing waits and returns once it is answered. */
+    void interject(Game g,int transmitter,String speaker,String prompt,String detail,String... answers){
+        if(active){queuedKind=speakerKind;queuedSpeaker=this.speaker;queuedTitle=title;queuedDetail=first;queuedChoices=choices;}
+        showFrom(g,transmitter,speaker,prompt,detail,answers);
+    }
+    /** Brings back the message an interjection displaced, if any. */
+    boolean showQueued(Game g){
+        if(queuedKind<0)return false;int kind=queuedKind;queuedKind=-1;
+        showFrom(g,kind,queuedSpeaker,queuedTitle,queuedDetail,queuedChoices);return true;
+    }
+    void clearQueue(){queuedKind=-1;}
     public void cancel(){pointer=pressed=-1;}
     public int count(){return choices.length;}
     public int result(){return result;}

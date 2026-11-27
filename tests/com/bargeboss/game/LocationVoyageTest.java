@@ -60,10 +60,11 @@ public final class LocationVoyageTest {
         check(a && b && c && yacht.active,"all delivered watercraft survive later Montrose job");
         check(g.rescue.x[0]!=0 && g.delivered==0,"new job initializes only its swimmer objectives and counter");
         for(int i=0;i<MontroseRescue.PEOPLE;i++)g.rescue.state[i]=4;g.delivered=20;g.step();
-        check(g.challengeId==Challenges.WAKE_PATROL && !g.montroseComplete && g.mode==Game.PLAY,"swimmer rescue continues into the new day's jobs");
+        check(g.challengeId==Challenges.WATER_TAXI && !g.montroseComplete && g.mode==Game.PLAY,"swimmer rescue continues into the new day's jobs, starting at the beach");
+        check(g.dialogue.active && g.dialogue.dockmasterConversation(),"the dockmaster debriefs the finished job");
         a=b=c=false;for(Body boat:g.cargo){a|=boat==first;b|=boat==second;c|=boat==yacht;}
         check(a && b && c,"delivered watercraft stay berthed through the new day");
-        for(int job=Challenges.WAKE_PATROL;job<=Challenges.DEEP_FREEZE;job++){check(g.challengeId==job && g.mode==Game.PLAY,"job "+job+" is live before the finale");g.dialogue.close(g);g.delivered=g.quota();g.step();}
+        for(int k=1;k<MontroseJob.ORDER.length;k++){int job=MontroseJob.ORDER[k];check(g.challengeId==job && g.mode==Game.PLAY,"job "+job+" is live before the finale");g.dialogue.close(g);g.dialogue.clearQueue();g.delivered=g.quota();g.step();}
         check(g.montroseComplete && g.mode==Game.FINISH,"only final Montrose job reaches finish screen");
         check(g.career.bestStars(4)==3 && g.career.bestStars(6)==3 && g.career.bestStars(7)==3,"each legacy Montrose reward keeps its existing save slot");
     }

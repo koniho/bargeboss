@@ -508,7 +508,7 @@ public final class Game {
         if(challengeId==Challenges.MONTROSE)challengeId=Challenges.HAULOUT;
         if(developerStart>=0){challengeId=developerStart;developerStart=-1;}
         weather.reset();if(Challenges.stageEntry(challengeId)==Challenges.MONTROSE){stageLighting=LightingProfile.DUSK;nextLighting=LightingProfile.DUSK.id;}
-        dialogue.close(this);practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
+        dialogue.close(this);dialogue.clearQueue();practice=null; tutorial=null; tow=new Towline(); towReleases=0; towAimBody=ropeTowTarget=null; ropeToTug=towAiming=false; pushing=false; ropeDragging=false; reversing=false; manualSteering=false; control=IDLE;
         mapPointer=-1; hapticPending=hapticCooldown=contactCooldown=0; contactId=-1;
         joystick.resetGuide();
         overview.reset();
@@ -1044,7 +1044,7 @@ public final class Game {
             montroseArrival.step(this);water.step(this);mooredFleet.step(this);harborTraffic.step(this,splashes);smoke.step(this);buildingFades.step(this);return;
         }
         if(montroseStage())rescue.radioStep(this);
-        if(dialogue.dockmasterConversation() && dialogue.result()>=0)dialogue.close(this);joystick.step(this);splashes.step(this);HullDamage.step(this);
+        if(dialogue.dockmasterConversation() && dialogue.result()>=0){dialogue.close(this);dialogue.showQueued(this);}joystick.step(this);splashes.step(this);HullDamage.step(this);
         if(tutorial!=null){tutorial.fireworks.step(this);tutorial.feedback.step(this);tutorial.instructionPanel.step(TutorialView.instructionContent(this));}
         if(tutorial!=null && tutorial.entering){
             tutorial.update(this);buoys.step(this);water.step(this);smoke.step(this);buildingFades.step(this);updateCamera();return;
@@ -1132,14 +1132,15 @@ public final class Game {
         int jobStars=arcadeJob?job.stars(this):Challenges.stars(challengeId,delivered==0?0:delivered+Challenges.quota(challengeId)-quota(),lost,hull);
         arcade.complete(this,challengeId,jobStars,score-montroseJobScore);
         int before=career.rank();career.record(challengeId,jobStars,score-montroseJobScore);rankPromoted|=career.rank()>before;
-        int nextJob=MontroseJob.next(challengeId);
+        int nextJob=MontroseJob.next(challengeId);int finishedJob=challengeId,finishedSecs=finishedSeconds();
         if(challengeId==Challenges.SWIMMER_RESCUE || MontroseJob.is(challengeId)){
             if(nextJob<0){montroseComplete=true;return;}
             // Job props leave with the job; hulls from earlier jobs (retained at the end) stay berthed.
             tow.detachBody(this,tug);for(int i=0;i<6;i++)if(cargo[i]!=null){tow.detachBody(this,cargo[i]);cargo[i]=null;}
             if(challengeId==Challenges.SWIMMER_RESCUE)weather.reset();
-            challengeId=nextJob;delivered=0;job=MontroseJob.create(nextJob);job.setup(this);
-            montroseJobScore=score;cancelInputs();MontroseDockmaster.dispatch(this);tell(goalStatus());return;
+            int finished=challengeId,seconds=finishedSeconds();
+            challengeId=nextJob;delivered=0;job=MontroseJob.create(nextJob);jobContinuing=true;job.setup(this);jobContinuing=false;
+            montroseJobScore=score;jobStartTick=ticks;cancelInputs();MontroseDockmaster.dispatch(this);MontroseDockmaster.debrief(this,finished,jobStars,seconds);tell(goalStatus());return;
         }
         if(challengeId==Challenges.HAULOUT){
             Body boat=cargo[0];cargo[0]=null;cargo[cargo.length-1]=boat;
@@ -1154,8 +1155,13 @@ public final class Game {
             if(slot<=1)throw new IllegalStateException("No retained yacht slot");cargo[slot]=yacht;challengeId=Challenges.SWIMMER_RESCUE;
             rescue=new MontroseRescue();rescue.setupContinuation(this);
         }
-        delivered=0;montroseJobScore=score;cancelInputs();MontroseDockmaster.dispatch(this);tell(goalStatus());
+        delivered=0;montroseJobScore=score;jobStartTick=ticks;cancelInputs();MontroseDockmaster.dispatch(this);MontroseDockmaster.debrief(this,finishedJob,jobStars,finishedSecs);tell(goalStatus());
     }
+    /** Set while a follow-on Montrose job is set up, so it starts wherever the tug already is. */
+    boolean jobContinuing;
+    /** Seconds the job just finished took (Montrose arcade jobs track their own clock). */
+    private int finishedSeconds(){return job!=null && MontroseJob.is(challengeId)?job.ticks/60:(ticks-jobStartTick)/60;}
+    private int jobStartTick;
     /** Rope flight, catch and recoil are real-time events, independent of 2x boat motion. */
     private void updateRope() {
         if(ropePhase==0 || ropeBody==null) return;

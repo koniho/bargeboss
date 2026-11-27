@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** FIREWORKS NIGHT: the finale. Tow the fireworks barge from the inner harbor out through the inlet to
  * the show mark on the lake before showtime; it anchors on station. Then tap the barge and fire three
- * volleys for the crowd on the beach. Dusk falls as the job runs. */
+ * volleys for the crowd on the lakefront. Dusk falls as the job runs. */
 final class FireworksNightJob extends MontroseJob {
     static final float PICKUP_X=590,PICKUP_Y=-600,MARK_X=1000,MARK_Y=920,MARK_REACH=125;
     static final int VOLLEYS=3,SHOWTIME=150*60;
@@ -38,7 +38,7 @@ final class FireworksNightJob extends MontroseJob {
         // Every launch from the anchored barge is a volley for the crowd.
         while(launchesAtStation<g.abilities.launches && g.delivered<VOLLEYS){
             launchesAtStation++;
-            score(g,barge.x,barge.y,g.delivered+1==VOLLEYS?1500:600,g.delivered+1==VOLLEYS?"GRAND FINALE! THE BEACH GOES WILD":"OOOH! AAAH!");
+            score(g,barge.x,barge.y,g.delivered+1==VOLLEYS?1500:600,g.delivered+1==VOLLEYS?"GRAND FINALE! THE LAKEFRONT GOES WILD":"OOOH! AAAH!");
         }
     }
     boolean towable(Body b){return b!=barge || !onStation;}

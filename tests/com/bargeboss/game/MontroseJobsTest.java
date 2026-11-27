@@ -61,7 +61,8 @@ public final class MontroseJobsTest {
         g=job(Challenges.REGATTA);RegattaJob race=(RegattaJob)g.job;
         for(int i=0;i<race.gates();i++){at(g,RegattaJob.GATES[i*2],RegattaJob.GATES[i*2+1]);frames(g,60);}
         check(g.delivered==race.gates() && race.next==race.gates() && !g.goalFailed(),"threading every gate in order finishes the course");
-        g=job(Challenges.REGATTA);frames(g,RegattaJob.START_SECONDS*60);check(g.goalFailed(),"the regatta clock runs out without gates");
+        g=job(Challenges.REGATTA);frames(g,RegattaJob.START_SECONDS*60+120);check(!g.goalFailed(),"the regatta clock waits for gate one");
+        at(g,RegattaJob.GATES[0],RegattaJob.GATES[1]);frames(g,(RegattaJob.START_SECONDS+RegattaJob.GATE_SECONDS)*60+60);check(g.goalFailed(),"the regatta clock runs out after gate one");
 
         g=job(Challenges.FIREWORKS_NIGHT);FireworksNightJob show=(FireworksNightJob)g.job;
         check(g.weather.evening,"fireworks night brings on the dusk");
@@ -90,15 +91,24 @@ public final class MontroseJobsTest {
         check(g.job.done(g) && !g.goalFailed() && g.job.stars(g)==2,"six boats saved by the freeze earn two stars");
         Parity.frame(g);
         // The whole Montrose day hands off job to job and ends after the fireworks.
-        g=job(Challenges.WAKE_PATROL);int[] order={Challenges.WAKE_PATROL,Challenges.LOOSE_BOATS,Challenges.WATER_TAXI,Challenges.SANDBAR,Challenges.REGATTA,Challenges.FIREWORKS_NIGHT,Challenges.DEEP_FREEZE};
+        g=job(Challenges.WATER_TAXI);int[] order=java.util.Arrays.copyOfRange(MontroseJob.ORDER,1,MontroseJob.ORDER.length);
         for(int k=0;k<order.length;k++){
             check(g.challengeId==order[k] && g.job!=null,"montrose day reaches job "+order[k]);
-            g.delivered=g.quota();g.step();g.dialogue.close(g);
+            float tx=g.tug.x,ty=g.tug.y;
+            g.delivered=g.quota();g.step();
+            if(k<order.length-1)check(Physics.length(g.tug.x-tx,g.tug.y-ty)<10,"job "+order[k]+" hands off without moving the tug");
+            g.dialogue.close(g);g.dialogue.clearQueue();
             if(k<order.length-1){check(g.challengeId==order[k+1] && g.delivered==0,"job "+order[k]+" hands off to "+order[k+1]);Parity.frame(g);}
         }
         check(g.montroseComplete && g.career.bestStars(Challenges.DEEP_FREEZE)>0,"finishing the deep freeze completes Montrose and records stars");
+        // Gavin's debrief depends on how the job went, and the next dispatch follows it.
+        String[] heard=new String[2];
+        for(int stars=3,k=0;stars>=2;stars--,k++){g=job(Challenges.WATER_TAXI);g.dialogue.close(g);MontroseDockmaster.dispatch(g);MontroseDockmaster.debrief(g,Challenges.WATER_TAXI,stars==3?3:1,95);
+            check(g.dialogue.active,"debrief shows");heard[k]=g.dialogue.content().title;
+            g.dialogue.close(g);check(g.dialogue.showQueued(g) && g.dialogue.active,"the next dispatch follows the debrief");}
+        check(!heard[0].equals(heard[1]),"a great job and a rough one get different debriefs");
         g=ReplayInput.montroseJob(Challenges.SWIMMER_RESCUE);g.mode=Game.PLAY;g.delivered=g.quota();g.step();
-        check(g.challengeId==Challenges.WAKE_PATROL && !g.montroseComplete && g.job!=null,"the swimmer rescue leads into the new day's jobs");
+        check(g.challengeId==Challenges.WATER_TAXI && !g.montroseComplete && g.job!=null,"the swimmer rescue leads into the new day's jobs");
         // Arcade layer: a clean high-speed skim past traffic pays out; finishing under par pays a quick-job bonus and shows the banner.
         g=job(Challenges.REGATTA);HarborTraffic.Craft craft=g.harborTraffic.craft[0];Body boat=craft.body;
         int before=g.score;float side=boat.radius+g.tug.radius+g.tug.half+4;
