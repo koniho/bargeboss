@@ -7485,3 +7485,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   Actual renderer ready and triggered frames reviewed at 0.9/2.1 zoom. Native
   before capture completed on the now-unlocked phone; final after capture follows
   the upstream weather merge and rebuild.
+- Merged origin/main 03fb9eb1 (standard blizzard gusts) cleanly; the merged full
+  checks and Android build passed. Shared ready/triggered previews confirm muted
+  water-teal chevrons and cyan-only event highlighting.
+- Fresh pre-change Canvas capture completed while the phone was unlocked:
+  360 frames after 120 warmup, ready fixture at zoom 0.9, interval median/p95
+  16.572/17.955 ms and draw 6.947/8.690 ms. Before the final APK installation,
+  wireless debugging disconnected entirely (no devices or mDNS services). The
+  install and after captures therefore did not run; no new native timing claim.
+  User asked to reconnect. Saved original display timeout is 300000 ms in
+  out/phone-screen-timeout-before.txt; restore on reconnection. iOS is unverified.
