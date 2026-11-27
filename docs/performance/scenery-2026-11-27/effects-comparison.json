@@ -1,0 +1,446 @@
+{
+  "baseline_commit": "a0de8d94",
+  "effects_commit": "25d84813",
+  "merged_commit": "f2a6a096",
+  "runs": {
+    "before-confirmed": {
+      "splash-impact": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6654,
+          "p95": 19.1732,
+          "max": 24.9953
+        },
+        "draw_ms": {
+          "median": 7.2527,
+          "p95": 8.7647,
+          "max": 10.6115
+        },
+        "advance_ms": {
+          "median": 0.0047,
+          "p95": 0.0183,
+          "max": 0.0332
+        },
+        "source_mib": {
+          "median": 192.2458,
+          "p95": 192.2458,
+          "max": 192.2458
+        },
+        "frame_mib": {
+          "median": 92.2915,
+          "p95": 92.2915,
+          "max": 92.2915
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-cottage-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6688,
+          "p95": 17.3087,
+          "max": 25.0925
+        },
+        "draw_ms": {
+          "median": 5.1128,
+          "p95": 6.956,
+          "max": 8.0363
+        },
+        "advance_ms": {
+          "median": 0.0036,
+          "p95": 0.0076,
+          "max": 0.0288
+        },
+        "source_mib": {
+          "median": 152.671,
+          "p95": 152.671,
+          "max": 152.671
+        },
+        "frame_mib": {
+          "median": 129.171,
+          "p95": 129.171,
+          "max": 129.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-channel-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.629,
+          "p95": 18.0148,
+          "max": 25.1343
+        },
+        "draw_ms": {
+          "median": 7.864,
+          "p95": 8.85,
+          "max": 9.9198
+        },
+        "advance_ms": {
+          "median": 0.0054,
+          "p95": 0.0192,
+          "max": 0.0522
+        },
+        "source_mib": {
+          "median": 152.671,
+          "p95": 152.671,
+          "max": 152.671
+        },
+        "frame_mib": {
+          "median": 129.171,
+          "p95": 129.171,
+          "max": 129.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      }
+    },
+    "after-premerge": {
+      "splash-impact": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6612,
+          "p95": 17.9824,
+          "max": 24.6866
+        },
+        "draw_ms": {
+          "median": 7.4115,
+          "p95": 8.7998,
+          "max": 12.9131
+        },
+        "advance_ms": {
+          "median": 0.0046,
+          "p95": 0.0178,
+          "max": 0.0231
+        },
+        "source_mib": {
+          "median": 192.2458,
+          "p95": 192.2458,
+          "max": 192.2458
+        },
+        "frame_mib": {
+          "median": 92.2915,
+          "p95": 92.2915,
+          "max": 92.2915
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-cottage-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6487,
+          "p95": 16.9999,
+          "max": 24.7815
+        },
+        "draw_ms": {
+          "median": 5.0147,
+          "p95": 6.8846,
+          "max": 7.8382
+        },
+        "advance_ms": {
+          "median": 0.0033,
+          "p95": 0.0082,
+          "max": 0.0329
+        },
+        "source_mib": {
+          "median": 152.671,
+          "p95": 152.671,
+          "max": 152.671
+        },
+        "frame_mib": {
+          "median": 129.171,
+          "p95": 129.171,
+          "max": 129.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-channel-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6464,
+          "p95": 23.3518,
+          "max": 25.4447
+        },
+        "draw_ms": {
+          "median": 6.8872,
+          "p95": 8.8868,
+          "max": 11.1735
+        },
+        "advance_ms": {
+          "median": 0.0085,
+          "p95": 0.0196,
+          "max": 0.0548
+        },
+        "source_mib": {
+          "median": 152.671,
+          "p95": 152.671,
+          "max": 152.671
+        },
+        "frame_mib": {
+          "median": 129.171,
+          "p95": 129.171,
+          "max": 129.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      }
+    },
+    "after-merged": {
+      "splash-impact": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6684,
+          "p95": 17.7459,
+          "max": 25.6967
+        },
+        "draw_ms": {
+          "median": 7.4353,
+          "p95": 8.6439,
+          "max": 9.6196
+        },
+        "advance_ms": {
+          "median": 0.0049,
+          "p95": 0.0168,
+          "max": 0.0752
+        },
+        "source_mib": {
+          "median": 196.2458,
+          "p95": 196.2458,
+          "max": 196.2458
+        },
+        "frame_mib": {
+          "median": 96.2915,
+          "p95": 96.2915,
+          "max": 96.2915
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-cottage-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6634,
+          "p95": 17.1603,
+          "max": 25.2628
+        },
+        "draw_ms": {
+          "median": 5.287,
+          "p95": 6.7651,
+          "max": 9.0982
+        },
+        "advance_ms": {
+          "median": 0.0034,
+          "p95": 0.0078,
+          "max": 0.0217
+        },
+        "source_mib": {
+          "median": 156.671,
+          "p95": 156.671,
+          "max": 156.671
+        },
+        "frame_mib": {
+          "median": 133.171,
+          "p95": 133.171,
+          "max": 133.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      },
+      "islands-channel-study": {
+        "samples": 360,
+        "interval_ms": {
+          "median": 16.6651,
+          "p95": 19.5808,
+          "max": 26.124
+        },
+        "draw_ms": {
+          "median": 7.713,
+          "p95": 8.9782,
+          "max": 12.4424
+        },
+        "advance_ms": {
+          "median": 0.0062,
+          "p95": 0.0164,
+          "max": 0.0275
+        },
+        "source_mib": {
+          "median": 156.671,
+          "p95": 156.671,
+          "max": 156.671
+        },
+        "frame_mib": {
+          "median": 133.171,
+          "p95": 133.171,
+          "max": 133.171
+        },
+        "frame_evictions": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "cache_builds": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "vulkan": {
+          "median": 1.0,
+          "p95": 1.0,
+          "max": 1.0
+        },
+        "affines": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        }
+      }
+    }
+  },
+  "paired_state_fields_identical": true
+}

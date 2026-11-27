@@ -7,6 +7,7 @@ public final class SceneryProfileTest {
    Game a=new Game(),b=new Game();ProfileScenario.prepare(a,scene,1320,600);ProfileScenario.prepare(b,scene,1320,600);
    if(a.tug.x!=b.tug.x || a.tug.y!=b.tug.y || a.layout.camera.scale!=b.layout.camera.scale)throw new AssertionError("Non-repeatable study: "+scene);
    int tick=a.visualTicks;ProfileScenario.replayTick(a);if(a.visualTicks!=tick+1)throw new AssertionError("Study replay skips shared ticks");
+   if(scene.equals("montrose-boost-review")){for(int k=0;k<35;k++)ProfileScenario.replayTick(a);if(a.developerPanel.open || a.transit.boostTicks<=0)throw new AssertionError("Boost replay must remain in gameplay");}
    if(scene.equals("islands-lift-study")){
     float old=a.arena.footbridges[1].spanPoint(0)[2];
     for(int k=1;k<60;k++){ProfileScenario.replayTick(a);float z=a.arena.footbridges[1].spanPoint(0)[2];if(z<old || a.arena.open[1]<1 && z==old)throw new AssertionError("Fixture fails to exercise continuous lift tick "+k);old=z;}

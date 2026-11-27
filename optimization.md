@@ -7360,3 +7360,36 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   installed APK did not recognize study scene IDs, and old CSVs were initially
   still present. Fresh capture deletes each remote CSV first and requires a new
   completed file. Explicitly reinstalling saved baseline before comparison.
+
+### Effects native validation and main merge — 2026-11-27
+- Merged `origin/main` at `759acbea` into the scenery branch (`f2a6a096`). Resolved
+  LevelAssets/LevelAssetsTest by retaining island-only ground/woodland and main's
+  all-stage flame preparation. Main's shared FireArt and tug-fire changes remain.
+- Full merged `./check.sh` and Android Vulkan APK build pass. Nine developer
+  fixture replays pass. Native boost replay exposed the generic work gesture
+  opening the developer panel; its review now advances shared simulation without
+  that gesture, with a regression check for active boost and closed developer UI.
+  Only the developer fixture changed after the full build: recompiled it, reran
+  its tests, rebuilt dex, aligned/signed/verified the APK using the existing key.
+- Fresh known-baseline, effects-only and merged captures each contain 120 warmup
+  + 360 sample frames. Paired ticks, camera scale, tug position, heading and speed
+  are identical. Evidence: `docs/performance/scenery-2026-11-27/effects-comparison.json`.
+  Baseline→merged interval median/p95 ms:
+  impact 16.665/19.173→16.668/17.746;
+  cottage 16.669/17.309→16.663/17.160;
+  channel 16.629/18.015→16.665/19.581.
+  Draw medians: 7.253→7.435, 5.113→5.287, 7.864→7.713 ms respectively.
+  Effects-only channel p95 varied to 23.352 despite lower median draw time;
+  transient scheduling tails remain, so these are not universal 60-FPS claims.
+- Effects/ripples add zero retained texture bytes. Main's flame preparation adds
+  exactly 4 MiB source and frame storage to these scenarios. No sample frame
+  evictions or terrain cache builds in any of the three matched runs.
+- Native screenshots reviewed for island ripples, entrance-base alignment,
+  collision and the sinking plunge. The 138-frame moving sink capture (after its
+  first 20 startup frames) has interval median/p95 16.685/25.232 ms, draw
+  9.836/16.858 ms; this is a short motion review, not a warmed before/after claim.
+  Shared phase exports cover initial flash, settling, plunge and fade.
+- Android native pixels and gameplay were exercised. iOS Metal/Core Graphics
+  parity remains unvalidated here because the J2ObjC toolchain is unavailable.
+- Corrected boost replay was rebuilt, installed and visually confirmed on the
+  phone: active boost, prop wash and spray are visible with no developer panel.

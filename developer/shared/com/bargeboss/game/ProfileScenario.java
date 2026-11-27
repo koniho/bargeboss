@@ -28,7 +28,7 @@ public final class ProfileScenario {
             root.configureCanvas(width,height);root.selectChallenge(Challenges.MONTROSE);root.reset();root.montroseArrival.clear();root.dialogue.close(root);root.changeLighting(2);
             float x=MontroseHarbor.mapX(453),y=MontroseHarbor.mapY(1274),zoom=1.6f;
             if(name.equals("montrose-boost-review")){int k=3;x=MontroseTransit.BUOYS[k*2];y=MontroseTransit.BUOYS[k*2+1];root.tug.x=x;root.tug.y=y;root.tug.vx=90;root.tug.angle=0;root.step();zoom=2.1f;}
-            root.layout=Layout.focused(width,height,x,y,zoom,width*.5f,height*.58f);return;
+            root.layout=Layout.focused(width,height,x,y,zoom,width*.5f,height*.58f);RECEIVERS.put(root,Boolean.TRUE);return;
         }
         if(name.equals("damage-sink-review") || name.equals("damage-impact-review")){
             root.configureCanvas(width,height);root.resetPracticeYard();for(Feeder f:root.feeders){f.phase=Feeder.IDLE;f.load=null;}
