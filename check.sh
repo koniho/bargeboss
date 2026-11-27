@@ -44,6 +44,10 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.OverviewMapPixe
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/ShoreOcclusionPixelTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.ShoreOcclusionPixelTest terrain
 
+# Registered painted island ground must occlude actual boats at every heading.
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/IslandShorePixelTest.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.IslandShorePixelTest
+
 # Packed equipment must remain pixel-identical to its source/effect sheets.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/PackBargeFrames.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PackBargeFrames --check

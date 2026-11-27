@@ -12,6 +12,7 @@ final class MontroseBeach {
     private static final ArticulatedModel[] BUILDINGS={building(0,140,58,29),building(1,66,45,24),building(2,74,35,18)};
     private static final ArticulatedModel.Pose[] POSES={BUILDINGS[0].pose(0),BUILDINGS[1].pose(0),BUILDINGS[2].pose(0)};
     private MontroseBeach(){}
+    static void prepare(){}
     private static float[] world(float[] p){float[] q=p.clone();for(int i=0;i<q.length;i+=2){q[i]=MontroseHarbor.mapX(q[i]);q[i+1]=MontroseHarbor.mapY(q[i+1]);}return q;}
     static boolean sandy(float x,float y){return PolygonWater.contains(SAND,x,y);}
     /** The crescent's land side is south of its ordered shoreline; the horn is outside sand. */
@@ -77,18 +78,68 @@ final class MontroseBeach {
             }
         }
     }
+    /** Retained masonry, standing-seam roofs and sheltered terraces. All geometry is built once. */
     private static ArticulatedModel building(int id,float width,float depth,float height){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();float[] at=PLACES[id];
         int root=b.node("montrose-beach-building-"+id,-1,MontroseHarbor.mapX(at[0]),MontroseHarbor.mapY(at[1]),MontroseHarbor.LAND_RISE/ArticulatedModel.Z_SCALE,-.35f,0);
-        b.box(root,0,0,height*.5f,width,depth,height,0xff757d78,SurfaceMaterial.CONCRETE);
-        b.box(root,0,0,height+2,width+10,depth+10,4,0xff35474f);
-        b.box(root,0,-depth*.5f-1,height*.5f,width-12,2,height*.44f,0xff273f49);
-        if(id==0){
-            // Low navy canopy on posts and a warm, restrained band of windows.
-            b.box(root,0,-depth*.5f-18,height-2,width+20,34,3,0xff344953);
-            for(int i=-2;i<=2;i++){b.box(root,i*29,-depth*.5f-30,(height-3)*.5f,2.5f,2.5f,height-3,0xff526267);b.box(root,i*25,depth*.5f+.8f,height*.55f,15,1.5f,9,0xff776346,SurfaceMaterial.EMISSIVE);}
+        int stone=0xffa19b88,trim=0xffb7b3a1,metal=0xff667a7b;
+        b.box(root,0,0,height*.5f,width,depth,height,stone,SurfaceMaterial.CONCRETE);
+        b.box(root,0,0,2,width+2,depth+2,4,0xff636d68,SurfaceMaterial.CONCRETE);
+        b.box(root,0,0,height-1,width+2,depth+2,2,trim);
+        // Low pitched copper-grey roof, with a clear ridge and overhanging cream fascia.
+        float hw=width*.5f+5,hd=depth*.5f+5,rise=id==0?11:8,z=height+1;
+        b.polygon(root,0xff53676b,-hw,-hd,z,hw,-hd,z,hw,0,z+rise,-hw,0,z+rise);
+        b.polygon(root,0xff758384,-hw,0,z+rise,hw,0,z+rise,hw,hd,z,-hw,hd,z);
+        b.polygon(root,trim,-hw,-hd,z,-hw,0,z+rise,-hw,hd,z);
+        b.polygon(root,trim,hw,hd,z,hw,0,z+rise,hw,-hd,z);
+        b.beam(root,-hw,0,z+rise,hw,0,z+rise,1.2f,metal);
+        for(int side=-1;side<=1;side+=2){
+            b.box(root,0,side*hd,z-1,width+10,1.2f,2.2f,trim);
+            for(float x=-hw+9;x<hw;x+=12)
+                b.polygon(root,0xff84908d,x-.22f,0,z+rise+.15f,x+.22f,0,z+rise+.15f,x+.22f,side*hd,z+.15f,x-.22f,side*hd,z+.15f);
         }
-        return b.build();
+        // Recessed glazing, masonry piers, continuous sills. Warm panes are localized emissive faces.
+        int bays=id==0?5:3;float spacing=(width-12)/bays,wy=depth*.5f+.12f;
+        for(int j=0;j<bays;j++){
+            float x=(j-(bays-1)*.5f)*spacing,ww=spacing-6;
+            facade(b,root,x,wy,height*.53f,ww,height*.43f,id==1?0xff526267:0xff96774e);
+            b.box(root,x,wy+.6f,height*.29f,ww+2,2,1.4f,trim);
+        }
+        // West entrance remains visible in the fixed camera; timber door and pale stone surround.
+        float wx=-width*.5f-.15f;
+        b.polygon(root,0xff293f47,wx,-7,height-4,wx,7,height-4,wx,7,3,wx,-7,3);
+        b.box(root,wx-.3f,0,height-3,1.4f,18,2,trim);
+        for(int side=-1;side<=1;side+=2)b.box(root,wx-.3f,side*8,height*.5f,1.5f,2,height-4,trim);
+        b.box(root,wx-.6f,0,height*.5f,.7f,.7f,height-6,metal);
+        b.box(root,wx-.3f,-3.8f,height*.57f,.3f,4.8f,height*.4f,0xff8c7852,SurfaceMaterial.EMISSIVE);
+        b.box(root,wx-.3f,3.8f,height*.57f,.3f,4.8f,height*.4f,0xff8c7852,SurfaceMaterial.EMISSIVE);
+        // Timber patio pergola, not another broad solid roof hiding the restaurant.
+        if(id==0){
+            float py=depth*.5f+17;
+            b.box(root,0,py,1,width+10,30,2,0xff9b9984,SurfaceMaterial.CONCRETE);
+            for(int i=-2;i<=2;i++)b.box(root,i*29,py+11,(height-3)*.5f,2.2f,2.2f,height-3,0xff85938a);
+            b.box(root,0,py+11,height-3,width+8,2,2,0xff8c998e);
+            for(float x=-width*.5f;x<=width*.5f;x+=12)b.box(root,x,py,height-2,1.3f,30,1.8f,0xff798a82);
+            for(int i=-1;i<=1;i++){
+                float x=i*38;b.box(root,x,py,7,17,9,1.5f,0xff9b8c70,SurfaceMaterial.WOOD);
+                b.box(root,x,py,4,2,2,6,0xff45575a);
+                for(int side=-1;side<=1;side+=2)b.box(root,x,py+side*8,4,18,3,1.8f,0xff7b8270,SurfaceMaterial.WOOD);
+            }
+        }else if(id==2){
+            // Beach concession: striped shallow awning and a serving counter.
+            for(int i=0;i<7;i++)b.box(root,(i-3)*8,depth*.5f+5,height-3,8,12,1.4f,i%2==0?0xff91a19a:0xff45646c);
+            b.box(root,0,depth*.5f+2,height*.3f,width-10,5,1.8f,trim);
+        }
+        // Roof vent/chimney adds a recognizable silhouette without a forest of tiny faces.
+        b.box(root,width*.3f,-depth*.12f,height+rise+2,7,6,9,0xff858a7e,SurfaceMaterial.CONCRETE);
+        b.box(root,width*.3f,-depth*.12f,height+rise+7,9,8,1.5f,0xff394c55);
+        ArticulatedModel model=b.build();model.prepare(model.pose(0));return model;
+    }
+    private static void facade(ArticulatedModel.Builder b,int root,float x,float y,float z,float w,float h,int glass){
+        b.polygon(root,0xff243840,x-w*.5f-1,y,z+h*.5f+1,x+w*.5f+1,y,z+h*.5f+1,x+w*.5f+1,y,z-h*.5f-1,x-w*.5f-1,y,z-h*.5f-1);
+        b.materialPolygon(root,glass,SurfaceMaterial.EMISSIVE,x-w*.5f,y+.08f,z+h*.5f,x+w*.5f,y+.08f,z+h*.5f,x+w*.5f,y+.08f,z-h*.5f,x-w*.5f,y+.08f,z-h*.5f);
+        b.box(root,x,y+.2f,z,1,.6f,h,0xffa1a595);
+        b.box(root,x,y+.2f,z+h*.15f,w,.6f,.8f,0xffa1a595);
     }
     static void lights(SceneryLighting out){
         for(int i=-2;i<=2;i++){float[] a=POSES[0].point(0,i*25,58*.5f+1.6f,29*.55f);out.add(a[0],a[1],a[2],65,.12f,0xffffc36d);}

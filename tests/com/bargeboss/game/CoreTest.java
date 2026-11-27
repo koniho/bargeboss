@@ -162,6 +162,7 @@ public final class CoreTest {
         MontroseEntranceShoreTest.run();
         MontroseWaterIndexTest.run();
         MontroseBeachTest.run();
+        IslandSceneryTest.run();
         MontroseBeaconTest.run();
         CalumetMapTest.run();
         IndianaHarborTest.run();

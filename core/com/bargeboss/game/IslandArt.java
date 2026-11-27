@@ -1,76 +1,100 @@
 package com.bargeboss.game;
 
-/** Thousand Islands land: wooded riverbanks around the arena and granite islets with pines and the odd
- * summer cottage. Rough outlines are deterministic per island; colours are muted to sit with the water. */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+/** Retained granite shelves, moss, white-pine groves and summer cottages. World geometry is fixed;
+ * only projection and shared lighting run while drawing. No raster preparation or pose tables. */
 final class IslandArt {
-    private IslandArt(){}
-    static final int GRANITE=0xff8b7c72,GRANITE_DARK=0xff5f544e,MOSS=0xff3d5634,MOSS_LIGHT=0xff4b6a3f,PINE=0xff24392a,PINE_LIGHT=0xff2f4a35,TRUNK=0xff3b2a1e,BANK=0xff3a5131;
     static final float RIM=4,TOP=9;
+    private static final int GRANITE=0xff8d9590,BANK=0xff586753;
+    private static final Island[] ISLANDS=new Island[ArenaCourse.Islands.ISLES.length];
+    private static final Prop[] PROPS;
+    private static final class Prop {
+        final float x,y,size;final int frame;final ArticulatedModel cottage;
+        Prop(float x,float y,float size,int frame,ArticulatedModel cottage){this.x=x;this.y=y;this.size=size;this.frame=frame;this.cottage=cottage;}
+    }
+    private static final class Island {
+        final float x,y,r;final int frame;
+        Island(int id,float[] at,ArrayList<Prop> props){
+            x=at[0];y=at[1];r=at[2];frame=id%4;
+            boolean house=id%3==1;float hx=x-r*.2f,hy=y+r*.15f;
+            if(house)props.add(new Prop(hx,hy,85,-1,IslandCottage.build(id,hx,hy)));
+            int trees=6+(int)(r/22);
+            for(int k=0;k<trees;k++){
+                double a=rand(id,k+200)*6.283185;float d=r*.68f*(float)StrictMath.sqrt(rand(id,k+300));
+                float tx=x+(float)StrictMath.cos(a)*d,ty=y+(float)StrictMath.sin(a)*d;
+                // Keep the cottage's porch and front approach readable, including foliage footprints.
+                if(house && Math.abs(tx-hx)<49 && ty>hy-24 && ty<hy+68)continue;
+                int frame=k%6;props.add(new Prop(tx,ty,frame==4?45:64+rand(id,k+400)*34,frame,null));
+            }
+        }
+    }
+    static {
+        ArrayList<Prop> props=new ArrayList<Prop>();
+        for(int i=0;i<ISLANDS.length;i++)ISLANDS[i]=new Island(i,ArenaCourse.Islands.ISLES[i],props);
+        float e=ArenaCourse.Islands.SHORE,w=ArenaCourse.Islands.W,h=ArenaCourse.Islands.H;
+        float[][] edges={{e,e,w-e,e,0,-1},{e,h-e,w-e,h-e,0,1},{e,e,e,h-e,-1,0},{w-e,e,w-e,h-e,1,0}};
+        for(int j=0;j<edges.length;j++){float[] ed=edges[j];float len=Physics.length(ed[2]-ed[0],ed[3]-ed[1]);
+            for(int k=0;k<len/48;k++)for(int row=0;row<2;row++){
+                float t=24+k*48+row*23,off=20+row*42+rand(j,k)*14;
+                float x=ed[0]+(ed[2]-ed[0])*t/len+ed[4]*off,y=ed[1]+(ed[3]-ed[1])*t/len+ed[5]*off;
+                props.add(new Prop(x,y,64+rand(k,j+40)*30,(k+j+row)%6,null));
+            }
+        }
+        Collections.sort(props,new Comparator<Prop>(){public int compare(Prop a,Prop b){return Float.compare(a.y-a.x,b.y-b.x);}});
+        PROPS=props.toArray(new Prop[props.size()]);
+    }
+    private IslandArt(){}
+    static void prepare(){}
     private static float rand(int i,int k){int h=(i*7919+k*104729)*0x45d9f3b;h^=h>>>16;h*=0x45d9f3b;h^=h>>>16;return (h&65535)/65535f;}
     static void draw(Game g,Painter p,RiverCamera c,ArenaCourse.Islands course,float[] view){
         shores(p,c,course,view);
-        for(int i=0;i<ArenaCourse.Islands.ISLES.length;i++){
-            float[] s=ArenaCourse.Islands.ISLES[i];
-            if(s[0]+s[2]<view[0]-60 || s[0]-s[2]>view[2]+60 || s[1]+s[2]<view[1]-60 || s[1]-s[2]>view[3]+60)continue;
-            isle(g,p,c,i,s[0],s[1],s[2]);
+        for(Island s:ISLANDS){if(s.x+s.r<view[0]-60 || s.x-s.r>view[2]+60 || s.y+s.r<view[1]-60 || s.y-s.r>view[3]+60)continue;float size=s.r*2*384/360;p.sprite(SpriteAtlas.ISLAND_GROUND,s.frame,c.screenX(s.x,s.y),c.screenY(s.x,s.y)-5*c.scale,size*c.scale,size*2/3*c.scale,0,1);}
+    }
+    /** Merge upright scenery with vessels by ground contact, not the top of a tall tree. */
+    static void props(Game g,Painter p,float from,float to){
+        RiverCamera c=g.layout.camera;
+        for(Prop a:PROPS){float depth=c.screenY(a.x,a.y);if(depth<=from)continue;if(depth>to)break;
+            float x=c.screenX(a.x,a.y),y=depth-TOP*c.scale,pad=a.size*c.scale;
+            if(x+pad<0 || x-pad>g.layout.width || y<0 || y-pad>g.layout.height)continue;
+            if(a.cottage!=null)a.cottage.draw(g,p,a.cottage.pose(0));
+            else if(a.frame==6)p.sprite(SpriteAtlas.MARINA,6,x,y,a.size*c.scale,a.size*c.scale,0,1);
+            else IslandWoodland.draw(p,c,a.frame,a.x,a.y,TOP,a.size);
         }
     }
-    private static float sx(RiverCamera c,float x,float y){return c.screenX(x,y);}
-    private static float sy(RiverCamera c,float x,float y,float z){return c.screenY(x,y)-z*c.scale;}
-    private static float[] outline(RiverCamera c,int i,float cx,float cy,float r,float z,int salt){
-        int n=16;float[] xy=new float[n*2];
-        for(int k=0;k<n;k++){double a=k*Math.PI*2/n;float rr=r*(.9f+.16f*rand(i,k+salt));float x=cx+(float)Math.cos(a)*rr,y=cy+(float)Math.sin(a)*rr;xy[k*2]=sx(c,x,y);xy[k*2+1]=sy(c,x,y,z);}
-        return xy;
-    }
-    private static void isle(Game g,Painter p,RiverCamera c,int i,float cx,float cy,float r){
-        // Granite skirt at the waterline, then the mossy top.
-        p.poly(outline(c,i,cx,cy,r+2,0,0),GRANITE_DARK);
-        p.poly(outline(c,i,cx,cy,r,RIM,0),GRANITE);
-        p.poly(outline(c,i,cx,cy,r*.8f,TOP,40),MOSS);
-        p.poly(outline(c,i,cx+r*.15f,cy-r*.1f,r*.45f,TOP+.5f,80),MOSS_LIGHT);
-        // A summer cottage on every third island.
-        if(i%3==1)cottage(p,c,cx-r*.2f,cy+r*.15f,i);
-        // Pines: tall dark cones, back to front.
-        int trees=3+(int)(r/40);
-        float[][] at=new float[trees][];
-        for(int k=0;k<trees;k++){float a=rand(i,k+200)*6.283f,d=r*.65f*(float)Math.sqrt(rand(i,k+300));at[k]=new float[]{cx+(float)Math.cos(a)*d,cy+(float)Math.sin(a)*d,18+rand(i,k+400)*16};}
-        for(int k=1;k<trees;k++){float[] v=at[k];int j=k-1;while(j>=0 && c.screenY(at[j][0],at[j][1])>c.screenY(v[0],v[1])){at[j+1]=at[j];j--;}at[j+1]=v;}
-        for(float[] t:at)pine(p,c,t[0],t[1],t[2]);
-    }
-    static void pine(Painter p,RiverCamera c,float x,float y,float h){
-        float bx=sx(c,x,y),by=sy(c,x,y,TOP),s=c.scale;
-        p.line(bx,by,bx,by-h*.35f*s,1.6f*s,TRUNK);
-        for(int layer=0;layer<3;layer++){
-            float base=by-h*(.2f+layer*.22f)*s,w=(7-layer*1.8f)*s*(h/26),top=base-h*.42f*s;
-            p.poly(new float[]{bx-w,base,bx+w,base,bx,top},layer%2==0?PINE:PINE_LIGHT);
+    /** Same registered opaque contours as the painted plates. Foreground land cuts hulls/ropes;
+     * a conservative one-pixel inset avoids clipping the water at antialiased rocky edges. */
+    static float[] shore(RiverCamera c,float left,float top,float right,float bottom,float depth){
+        ArrayList<float[]> pieces=new ArrayList<float[]>();int count=0;
+        for(Island a:ISLANDS){
+            if(a.x+a.r*1.1f<left || a.x-a.r*1.1f>right || a.y+a.r*1.1f<top || a.y-a.r*1.1f>bottom)continue;
+            float[] q=IslandGroundContours.POINTS[a.frame];float size=a.r*2*384/360*c.scale,cx=c.screenX(a.x,a.y),cy=c.screenY(a.x,a.y)-5*c.scale;
+            for(int k=0;k<q.length;k+=2){int next=(k+2)%q.length;
+                float[] tri={cx,cy,cx+(q[k]-.5f)*size,cy+(q[k+1]-.5f)*size*2/3,cx+(q[next]-.5f)*size,cy+(q[next+1]-.5f)*size*2/3};
+                tri=ShoreOcclusion.below(tri,depth-TOP*c.scale);if(tri.length<6)continue;pieces.add(tri);count+=(tri.length/2-2)*6;
+            }
         }
+        float e=ArenaCourse.Islands.SHORE,w=ArenaCourse.Islands.W,h=ArenaCourse.Islands.H;
+        float[][] banks={{left,top,right,Math.min(bottom,e)},{left,Math.max(top,h-e),right,bottom},{left,Math.max(top,e),Math.min(right,e),Math.min(bottom,h-e)},{Math.max(left,w-e),Math.max(top,e),right,Math.min(bottom,h-e)}};
+        for(float[] r:banks){if(r[0]>=r[2] || r[1]>=r[3])continue;
+            float rise=TOP*c.scale;float[] q={c.screenX(r[0],r[1]),c.screenY(r[0],r[1])-rise,c.screenX(r[2],r[1]),c.screenY(r[2],r[1])-rise,c.screenX(r[2],r[3]),c.screenY(r[2],r[3])-rise,c.screenX(r[0],r[3]),c.screenY(r[0],r[3])-rise};
+            q=ShoreOcclusion.below(q,depth-rise);if(q.length<6)continue;pieces.add(q);count+=(q.length/2-2)*6;
+        }
+        float[] result=new float[count];int at=0;
+        for(float[] q:pieces)for(int k=2;k<q.length-2;k+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[k];result[at++]=q[k+1];result[at++]=q[k+2];result[at++]=q[k+3];}
+        return result;
     }
-    private static void cottage(Painter p,RiverCamera c,float x,float y,int i){
-        float w=16,d=11,wall=9,roof=7;int body=i%2==0?0xffd9d2c3:0xffb04a3a,roofColor=i%2==0?0xff4a3a32:0xff2f3a44;
-        float z0=TOP,z1=TOP+wall;
-        // Front (south) and west walls, then the roof ridge.
-        p.convexQuad(sx(c,x-w,y+d),sy(c,x-w,y+d,z0),sx(c,x+w,y+d),sy(c,x+w,y+d,z0),sx(c,x+w,y+d),sy(c,x+w,y+d,z1),sx(c,x-w,y+d),sy(c,x-w,y+d,z1),body);
-        p.convexQuad(sx(c,x-w,y-d),sy(c,x-w,y-d,z0),sx(c,x-w,y+d),sy(c,x-w,y+d,z0),sx(c,x-w,y+d),sy(c,x-w,y+d,z1),sx(c,x-w,y-d),sy(c,x-w,y-d,z1),0xff9c958a);
-        p.convexQuad(sx(c,x-w,y+d),sy(c,x-w,y+d,z1),sx(c,x+w,y+d),sy(c,x+w,y+d,z1),sx(c,x+w,y),sy(c,x+w,y,z1+roof),sx(c,x-w,y),sy(c,x-w,y,z1+roof),roofColor);
-        p.convexQuad(sx(c,x-w,y-d),sy(c,x-w,y-d,z1),sx(c,x-w,y),sy(c,x-w,y,z1+roof),sx(c,x+w,y),sy(c,x+w,y,z1+roof),sx(c,x+w,y-d),sy(c,x+w,y-d,z1),roofColor);
-        p.material(sx(c,x,y+d),sy(c,x,y+d,z0+4),6*c.scale,0,0,5*c.scale,EffectMaterial.GLOW,0,1,0x99ffd38a);
-    }
-    /** Wooded riverbanks around the arena: granite edge, mossy bank, and pines along the visible edges. */
     private static void shores(Painter p,RiverCamera c,ArenaCourse.Islands course,float[] view){
         float w=course.w,h=course.h,e=ArenaCourse.Islands.SHORE,far=3000;
         float[][] banks={{-far,-far,w+far,e},{-far,h-e,w+far,h+far},{-far,e,e,h-e},{w-e,e,w+far,h-e}};
         for(float[] r:banks){
             if(r[2]<view[0]-60 || r[0]>view[2]+60 || r[3]<view[1]-60 || r[1]>view[3]+60)continue;
             float l=Math.max(r[0],view[0]-100),t=Math.max(r[1],view[1]-100),rr=Math.min(r[2],view[2]+100),b=Math.min(r[3],view[3]+100);
-            p.convexQuad(sx(c,l,t),sy(c,l,t,TOP),sx(c,rr,t),sy(c,rr,t,TOP),sx(c,rr,b),sy(c,rr,b,TOP),sx(c,l,b),sy(c,l,b,TOP),BANK);
+            p.convexQuad(c.screenX(l,t),c.screenY(l,t)-TOP*c.scale,c.screenX(rr,t),c.screenY(rr,t)-TOP*c.scale,c.screenX(rr,b),c.screenY(rr,b)-TOP*c.scale,c.screenX(l,b),c.screenY(l,b)-TOP*c.scale,p.lighting().scenery(BANK));
         }
-        // Granite lip along the water edge, and a row of pines just inland.
-        float[][] edges={{e,e,w-e,e,0,-1},{e,h-e,w-e,h-e,0,1},{e,e,e,h-e,-1,0},{w-e,e,w-e,h-e,1,0}};
-        for(float[] ed:edges){
-            p.line(sx(c,ed[0],ed[1]),sy(c,ed[0],ed[1],RIM),sx(c,ed[2],ed[3]),sy(c,ed[2],ed[3],RIM),4*c.scale,GRANITE);
-            float len=Physics.length(ed[2]-ed[0],ed[3]-ed[1]);
-            for(float t=40;t<len;t+=70){float x=ed[0]+(ed[2]-ed[0])*t/len+ed[4]*30,y=ed[1]+(ed[3]-ed[1])*t/len+ed[5]*30;
-                if(x<view[0]-40 || x>view[2]+40 || y<view[1]-40 || y>view[3]+40)continue;pine(p,c,x,y,20+rand((int)x,(int)y)*14);}
-        }
+        float[][] edges={{e,e,w-e,e},{e,h-e,w-e,h-e},{e,e,e,h-e},{w-e,e,w-e,h-e}};
+        for(float[] ed:edges)p.line(c.screenX(ed[0],ed[1]),c.screenY(ed[0],ed[1])-RIM*c.scale,c.screenX(ed[2],ed[3]),c.screenY(ed[2],ed[3])-RIM*c.scale,4*c.scale,p.lighting().scenery(GRANITE));
     }
 }

@@ -2,7 +2,7 @@ package com.bargeboss.game;
 
 /** Debug-only fixtures reached through real tutorial input; no alternate gameplay implementation. */
 public final class ProfileScenario {
-    public static final String[] NAMES={"training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-police","montrose-police-radio","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina","towing-challenge","towing-challenge-wide","tutorial-six-fires"};
+    public static final String[] NAMES={"montrose-pavilion-study","montrose-concession-study","islands-cottage-study","islands-channel-study","islands-lift-study","training-spotlight","montrose-tow-one","montrose-tow-two","sink-demo","montrose-chas","montrose-storm-return","montrose-racer","montrose-police","montrose-police-radio","montrose-arrival","land-bridge-lit","land-workers-lit","montrose-moorings-lit","montrose-swimmers-lit","montrose-moorings-day","montrose-moorings-dusk","montrose-bimini-day","montrose-bimini-dusk","montrose-bimini-night","montrose-dock-i","montrose-dispatch","montrose-haulout","montrose-lift-lowering","montrose-lift-carry","montrose-lift-water","tutorial-fireworks","tutorial-firefight","seawall-audio","barge-abilities","instructor-teach","instructor-call","instructor-choice","tutorial-yard","calumet-offload","calumet-bridge","calumet-skyway","indiana-bridges","calumet-inlet","calumet-basin","shared-slip-wide","montrose-raft","montrose-swimmers","tutorial-entrance","canal-radio","canal-operator","canal-opening","canal-follow","canal-milestone","seawall-corner","buoy-complete","tow-tight-circle","indiana-harbor","indiana-hick","chicago-start","chicago-downtown","chicago-wolf","splash-impact","basin-entry","canal-entry","canal-middle","barge-arrival","barge-push","harbor-close","barge-tow","barge-bridge","montrose-inlet","montrose-lights","montrose-docks","montrose-overview","montrose-green-shore","montrose-beach","montrose-beacon","montrose-marina","towing-challenge","towing-challenge-wide","tutorial-six-fires"};
     private static final java.util.WeakHashMap<Game,Boolean> RECEIVERS=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> CIRCLES=new java.util.WeakHashMap<Game,Boolean>();
     private static final java.util.WeakHashMap<Game,Boolean> MARINA_TOWS=new java.util.WeakHashMap<Game,Boolean>();
@@ -24,6 +24,20 @@ public final class ProfileScenario {
         g.changeCamera(Layout.focused(width,height,c.worldX(x,y),c.worldY(x,y),zoom,x,y));
     }
     public static void prepare(Game root,String name,float width,float height) {
+        if(name.endsWith("-study")){
+            boolean islands=name.startsWith("islands-");root.configureCanvas(width,height);
+            root.selectChallenge(islands?Challenges.ISLAND_TAG:Challenges.MONTROSE);root.reset();root.dialogue.close(root);
+            float x,y,zoom;
+            if(islands){boolean cottage=name.equals("islands-cottage-study");x=cottage?2200:1090;y=cottage?330:840;zoom=cottage?2.1f:1.15f;
+                root.tug.x=x-140;root.tug.y=y+160;
+                if(name.equals("islands-lift-study")){root.tug.x=root.arena.course.gateX(1);root.tug.y=root.arena.course.gateY(1)+65;}
+            }else{root.montroseArrival.clear();boolean pavilion=name.equals("montrose-pavilion-study");
+                x=MontroseHarbor.mapX(pavilion?1080:1280);y=MontroseHarbor.mapY(pavilion?-545:-465);zoom=pavilion?2.2f:2.8f;
+                root.tug.x=x+150;root.tug.y=y-180;
+            }
+            root.changeLighting(2);root.visualTicks=120;root.layout=Layout.focused(width,height,x,y,zoom,width*.5f,height*.57f);return;
+        }
+
         boolean valid=false;for(String n:NAMES)if(n.equals(name))valid=true;
         if(!valid)throw new IllegalArgumentException("Unknown profile scene: "+name);
         if(name.equals("sink-demo")){

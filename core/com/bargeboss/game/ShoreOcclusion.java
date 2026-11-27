@@ -29,7 +29,8 @@ public final class ShoreOcclusion {
         return region(g,c,l-pad,t-pad,r+pad,b+pad,Float.NEGATIVE_INFINITY,union);
     }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
-        if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES || g.arenaStage())return EMPTY;
+        if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
+        if(g.arenaStage())return g.arena!=null && g.arena.course instanceof ArenaCourse.Islands?IslandArt.shore(c,left,top,right,bottom,depth):EMPTY;
         SurveyLevel level=g.level();
         if(level!=null)return level.geometry().shore(c,left,top,right,bottom,depth,union);
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
@@ -70,7 +71,7 @@ public final class ShoreOcclusion {
         }
         out.add(new float[]{l,t,r,b});
     }
-    private static float[] below(float[] q,float limit) {
+    static float[] below(float[] q,float limit) {
         if(limit==Float.NEGATIVE_INFINITY)return q;
         float[] result=new float[q.length+4];int n=0;
         float ax=q[q.length-2],ay=q[q.length-1];boolean inside=ay>=limit;

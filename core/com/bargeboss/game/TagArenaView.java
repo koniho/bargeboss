@@ -30,11 +30,13 @@ final class TagArenaView {
         Body[] order=new Body[a.npcs.length+1];int n=0;order[n++]=g.tug;for(Body b:a.npcs)if(b.active)order[n++]=b;
         for(int i=1;i<n;i++){Body b=order[i];int j=i-1;while(j>=0 && c.screenY(order[j].x,order[j].y)>c.screenY(b.x,b.y)){order[j+1]=order[j];j--;}order[j+1]=b;}
         RiverPainter river=new RiverPainter(canvas,c);
-        for(int i=0;i<n;i++){if(order[i]==g.tug)VesselView.draw(g,river,g.tug,true);else VesselView.draw(g,river,order[i],false);}
+        float sceneryDepth=Float.NEGATIVE_INFINITY;
+        for(int i=0;i<n;i++){float depth=c.screenY(order[i].x,order[i].y);if(islands)IslandArt.props(g,canvas,sceneryDepth,depth);sceneryDepth=depth;if(order[i]==g.tug)VesselView.draw(g,river,g.tug,true);else VesselView.draw(g,river,order[i],false);}
+        if(islands)IslandArt.props(g,canvas,sceneryDepth,Float.POSITIVE_INFINITY);
         // Lasso flight and tow lines.
         TowView.Segments rope=new TowView.Segments(g);for(int i=0;i<rope.count;i++)rope.draw(river,i);
         // Lift bridges over the boats.
-        for(int k=0;k<a.course.gates();k++)if(a.course.bridge[k])bridge(canvas,c,a.course,k,a.open[k],islands);
+        for(int k=0;k<a.course.gates();k++)if(a.course.bridge[k]){if(islands)a.footbridges[k].draw(g,canvas,a.open[k]);else bridge(canvas,c,a.course,k,a.open[k],false);}
         markers(g,canvas,c,a);
     }
     private static float sx(RiverCamera c,float x,float y){return c.screenX(x,y);}

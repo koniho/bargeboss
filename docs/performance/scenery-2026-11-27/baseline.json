@@ -1,0 +1,261 @@
+{
+  "device": "Pixel 11 Pro / Android Vulkan",
+  "base_commit": "839fa0a2",
+  "warmup_frames": 120,
+  "sample_frames": 360,
+  "after_status": "Pending: installed APK, phone display off/keyguard restricted; no after timings claimed",
+  "scenes": {
+    "islands-channel-study-freeze.csv": {
+      "interval_ms": {
+        "median": 16.6618,
+        "p95": 17.8276,
+        "max": 32.0632
+      },
+      "draw_ms": {
+        "median": 7.4337,
+        "p95": 8.6597,
+        "max": 9.937
+      },
+      "advance_ms": {
+        "median": 0.0024,
+        "p95": 0.0101,
+        "max": 0.0164
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 7.1398,
+        "p95": 7.1398,
+        "max": 7.1398
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "islands-channel-study-replay.csv": {
+      "interval_ms": {
+        "median": 16.6495,
+        "p95": 18.2234,
+        "max": 34.3976
+      },
+      "draw_ms": {
+        "median": 6.4519,
+        "p95": 9.8611,
+        "max": 23.4963
+      },
+      "advance_ms": {
+        "median": 2.0316,
+        "p95": 2.993,
+        "max": 3.4307
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 8.8895,
+        "p95": 10.3891,
+        "max": 10.6391
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "islands-cottage-study-freeze.csv": {
+      "interval_ms": {
+        "median": 16.6396,
+        "p95": 17.4504,
+        "max": 19.2
+      },
+      "draw_ms": {
+        "median": 5.2605,
+        "p95": 6.5243,
+        "max": 7.658
+      },
+      "advance_ms": {
+        "median": 0.0034,
+        "p95": 0.0092,
+        "max": 0.0124
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 3.3905,
+        "p95": 3.3905,
+        "max": 3.3905
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "montrose-concession-study-freeze.csv": {
+      "interval_ms": {
+        "median": 16.6306,
+        "p95": 17.5823,
+        "max": 19.1498
+      },
+      "draw_ms": {
+        "median": 5.0037,
+        "p95": 6.6095,
+        "max": 8.6427
+      },
+      "advance_ms": {
+        "median": 0.0034,
+        "p95": 0.0108,
+        "max": 0.0562
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7917,
+        "p95": 159.7917,
+        "max": 159.7917
+      },
+      "texture_mib": {
+        "median": 0.0625,
+        "p95": 0.0625,
+        "max": 0.0625
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "montrose-concession-study-replay.csv": {
+      "interval_ms": {
+        "median": 16.6709,
+        "p95": 17.9966,
+        "max": 19.0404
+      },
+      "draw_ms": {
+        "median": 5.3876,
+        "p95": 6.8677,
+        "max": 7.8818
+      },
+      "advance_ms": {
+        "median": 1.1704,
+        "p95": 1.4848,
+        "max": 1.9213
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7917,
+        "p95": 159.7917,
+        "max": 159.7917
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "montrose-pavilion-study-freeze.csv": {
+      "interval_ms": {
+        "median": 16.659,
+        "p95": 17.5951,
+        "max": 19.5525
+      },
+      "draw_ms": {
+        "median": 5.2067,
+        "p95": 6.4277,
+        "max": 7.9683
+      },
+      "advance_ms": {
+        "median": 0.0036,
+        "p95": 0.0092,
+        "max": 0.0131
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    }
+  }
+}

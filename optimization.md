@@ -7245,3 +7245,49 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   cheers, breakwater-head landmark, low-hull warning, re-entry reminder, and rotating chatter every
   20 s (a tease from the last debrief tier, a job tip, local color).
 - STATE hash unchanged; DRAW baseline updated for the markers.
+
+## 2026-11-27 — Montrose / Thousand Islands scenery worktree
+
+- Branch `codex/montrose-islands-scenery`, based on `839fa0a2`; isolated under
+  `.worktrees/montrose-islands-scenery`. Main and its unrelated work are untouched.
+- Visual audit: Montrose's beach buildings were blank slabs; island land was a
+  flat polygon stack with triangle trees and box cottages; footbridges were bare
+  planks. Replaced these with pitched standing-seam roofs, divided warm windows,
+  entrance trim, pergola/picnic furniture and concession awnings; painted granite,
+  moss and white-pine/cedar cutouts; clapboard cottages; open-railed lift spans.
+  Dusk grading, existing collision circles, routes, gate timing and clearances
+  remain shared and unchanged. Upright island props now merge with vessels by
+  ground depth. Registered opaque ground contours cut foreground hull/rope pixels.
+- Runtime budget: six 256x256 tree frames plus four 384x256 ground frames total
+  exactly 3,145,728 decoded source bytes (3 MiB). Only island manifests prepare
+  them; Montrose has no new bitmap requirement. Host frame/reference copies can
+  add storage beyond those source bytes; these are not GPU-residency measurements.
+  No new raster cache, whole-map texture, per-frame bitmap generation or pose table.
+  Static models/placements prepare at stage entry. Moving spans reuse prepared
+  topology and continuously translate it on shared gate updates.
+- Validation: full `./check.sh` (through the Android build), Android APK build,
+  1,497 island manifest/rigid-travel/mask-budget assertions, 733,920 independent
+  painted-island hull-occlusion probes, and the 4,891,434-probe all-heading Montrose
+  production hull/cargo regression passed. Actual Java2D renderer reviewed at four
+  fixed cameras, plus closed/quarter/half/three-quarter/open bridge states.
+  `SceneryProfileTest` passes all five new cameras and active opening updates.
+  The broader existing `ProfileScenarioTest` reaches the new scenes successfully
+  but later fails in the existing police fixture's `ReplayInput.marinaTow` null
+  target; this developer-harness issue is separate from the passing full check.
+- Native baseline: Pixel 11 Pro, Vulkan, 120 warmup + 360 complete sample frames
+  per case. Captures in ignored `out/scenery-before`; summary committed at
+  `docs/performance/scenery-2026-11-27/baseline.json`. Frame interval median/p95 ms:
+  pavilion 16.66/17.60; concession 16.63/17.58; cottage 16.64/17.45; island channel
+  16.66/17.83; moving channel 16.65/18.22; moving Montrose 16.67/18.00.
+- Native after comparison is **pending**, not a performance pass. The checked APK
+  was installed with the existing debug key and launch accepted. Wireless adb
+  disconnected twice; direct reconnection succeeded, but the phone subsequently
+  reported display OFF, keyguard showing/input restricted, and black screenshots.
+  The game process exists but the after capture did not produce a CSV. Asked the
+  user to unlock; no keyguard security settings were changed. Keep the baseline
+  APK and six CSVs to repeat the exact same workloads before claiming no regression.
+- Phone review art copied to Pictures/BargeBoss and MediaStore verified: woodland
+  18369, granite 18370, pavilion review 18371, island-channel review 18372.
+  Canonical painted sources and prompts are committed; preview exports stay ignored.
+- iOS parity attempted; this worktree lacks `ios/vendor/j2objc-3.1/dist/j2objc`.
+  No iOS native raster, touch/lifecycle or performance equivalence claim is made.

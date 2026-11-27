@@ -5,11 +5,11 @@ package com.bargeboss.game;
 public final class LevelAssets {
     public static final class Plan {
         private final int[] rotations;
-        private final boolean marina,geometryScenery,swimmers,instructor;
+        private final boolean marina,geometryScenery,swimmers,instructor,woodland;
         private Plan(int... sources){this(false,sources);}
         private Plan(boolean geometry,int... sources){this(0,geometry,sources);}
-        private Plan(int rescue,boolean geometry,int... sources){swimmers=rescue==2;geometryScenery=geometry;rotations=SpriteAtlas.rotationAtlases(sources);boolean yacht=false,teacher=false;for(int source:sources){if(source==SpriteAtlas.YACHT)yacht=true;if(source==SpriteAtlas.TEACHER_TUG)teacher=true;}instructor=teacher;marina=yacht||rescue>0;}
-        public int[] sceneryAtlases(){return SpotlightArt.prepare(baseSceneryAtlases());}
+        private Plan(int rescue,boolean geometry,int... sources){swimmers=rescue==2;woodland=rescue==3;geometryScenery=geometry;rotations=SpriteAtlas.rotationAtlases(sources);boolean yacht=false,teacher=false;for(int source:sources){if(source==SpriteAtlas.YACHT)yacht=true;if(source==SpriteAtlas.TEACHER_TUG)teacher=true;}instructor=teacher;marina=yacht||rescue>0;}
+        public int[] sceneryAtlases(){int[] base=baseSceneryAtlases();if(woodland){int[] all=new int[base.length+2];System.arraycopy(base,0,all,0,base.length);all[base.length]=SpriteAtlas.ISLAND_WOODLAND;all[base.length+1]=SpriteAtlas.ISLAND_GROUND;base=all;}return SpotlightArt.prepare(base);}
         private int[] baseSceneryAtlases(){if(instructor)return new int[]{SpriteAtlas.TUTORIAL_SCENERY,SpriteAtlas.STATIC_HARBOR,SpriteAtlas.CHIMNEYS,SpriteAtlas.LAND_MARKER,SpriteAtlas.FLAME,SpriteAtlas.SHORE_BOLLARDS,SpriteAtlas.SHORE_LOADING,SpriteAtlas.SHORE_TRUCKS,SpriteAtlas.FACTORY,SpriteAtlas.INSTRUCTOR_PORTRAIT,SpriteAtlas.BRIDGE_OPERATOR_STEEL,SpriteAtlas.BRIDGE_OPERATOR_NIGHT};return geometryScenery?new int[0]:marina?new int[]{SpriteAtlas.POLICE_PORTRAIT,SpriteAtlas.POLICE_SHADOW,SpriteAtlas.RACING_SHADOW,SpriteAtlas.CHAS_PORTRAIT,SpriteAtlas.ALEX_PORTRAIT,SpriteAtlas.GAVIN_PORTRAIT,SpriteAtlas.MARINA,SpriteAtlas.MOORED_BIMINI,SpriteAtlas.MOORED_BOATS,SpriteAtlas.MOORED_NORMALS,SpriteAtlas.STATIC_HARBOR}:new int[]{SpriteAtlas.SHORE_BOLLARDS,SpriteAtlas.SHORE_LOADING,SpriteAtlas.SHORE_TRUCKS,SpriteAtlas.FACTORY};}
         public int[] preparationAtlases(){int[] scenery=sceneryAtlases(),all=new int[rotations.length+scenery.length+3+PlayerPortrait.COUNT];System.arraycopy(rotations,0,all,0,rotations.length);System.arraycopy(scenery,0,all,rotations.length,scenery.length);for(int i=0;i<PlayerPortrait.COUNT;i++)all[rotations.length+scenery.length+i]=PlayerPortrait.atlas(i);all[all.length-3]=SpriteAtlas.FOAM;all[all.length-2]=SpriteAtlas.SPLASH;all[all.length-1]=SpriteAtlas.RIPPLES;return all;}
         public StaticLayer[] residentLayers(){return instructor?new StaticLayer[]{SteamPuff.LAYER}:marina?MarinaPedestals.residentLayers():new StaticLayer[0];}
@@ -29,7 +29,7 @@ public final class LevelAssets {
             if(id==Challenges.CHICAGO){CHALLENGES[id]=new Plan(true,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);continue;}
             if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=MONTROSE;continue;}
             // Tag circuit: tug plus the marina boat sprites its neon NPCs are drawn with.
-            if(Challenges.kind(id)==Challenges.BOAT_TAG || Challenges.kind(id)==Challenges.ISLAND_TAG){CHALLENGES[id]=new Plan(1,false,SpriteAtlas.TUG);continue;}
+            if(Challenges.kind(id)==Challenges.BOAT_TAG || Challenges.kind(id)==Challenges.ISLAND_TAG){CHALLENGES[id]=new Plan(Challenges.kind(id)==Challenges.ISLAND_TAG?3:1,false,SpriteAtlas.TUG);continue;}
             if(Challenges.calumet(id)){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {

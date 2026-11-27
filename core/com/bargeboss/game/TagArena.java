@@ -27,6 +27,7 @@ final class TagArena {
 
     static final int TAG=0,CHASE=1;
     final int mode;final ArenaCourse course;
+    final IslandFootbridge[] footbridges;
     final float[] open;final int[] clear,openTicks;
     Body[] npcs=new Body[0];
     int[] goal=new int[0],immune=new int[0],held=new int[0],shoutTicks=new int[0],shoutCooldown=new int[0];
@@ -50,7 +51,7 @@ final class TagArena {
     private int seed;
 
     TagArena(int mode,int seed){this(mode,seed,new ArenaCourse.Loop());}
-    TagArena(int mode,int seed,ArenaCourse course){this.mode=mode;this.course=course;this.seed=seed*1103515245+12345;int n=course.gates();open=new float[n];clear=new int[n];openTicks=new int[n];}
+    TagArena(int mode,int seed,ArenaCourse course){this.mode=mode;this.course=course;this.seed=seed*1103515245+12345;int n=course.gates();open=new float[n];clear=new int[n];openTicks=new int[n];footbridges=course instanceof ArenaCourse.Islands?new IslandFootbridge[n]:new IslandFootbridge[0];for(int k=0;k<footbridges.length;k++)footbridges[k]=new IslandFootbridge(course,k);if(footbridges.length>0)IslandArt.prepare();}
     int random(int n){seed=seed*1103515245+12345;return Math.floorMod(seed>>>8,n);}
 
     void setup(Game g){
@@ -99,6 +100,7 @@ final class TagArena {
             if(near){clear[k]=0;openTicks[k]=Math.min(OPEN_TICKS,openTicks[k]+1);}
             else if(++clear[k]>HOLD_TICKS)openTicks[k]=Math.max(0,openTicks[k]-1);
             open[k]=openTicks[k]/(float)OPEN_TICKS;
+            if(footbridges.length>0)footbridges[k].update(open[k]);
         }
     }
     /** Walls, islands and closed gates for one hull; returns the hardest inward impact speed. */

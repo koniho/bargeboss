@@ -530,7 +530,7 @@ public final class Game {
         else if(indianaStage()){feeders=new Feeder[0];IndianaHarbor.setup(this);spawnIndex=quota();}
         else if(chicagoStage()){feeders=new Feeder[0];chicago=new ChicagoMission();ChicagoRiver.setup(this);spawnIndex=quota();}
         else if(arenaStage()){feeders=new Feeder[0];startArenaRound(challengeId);spawnIndex=quota();}
-        else if(montroseStage()){MontroseBeaconArt.prepare();MontroseTravelLift.prepare();feeders=new Feeder[0];job=null;arcade=new MontroseArcade();mission.setup(this);spawnIndex=quota();}
+        else if(montroseStage()){MontroseBeaconArt.prepare();MontroseBeach.prepare();MontroseTravelLift.prepare();feeders=new Feeder[0];job=null;arcade=new MontroseArcade();mission.setup(this);spawnIndex=quota();}
         else {feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;}
         // Stage-entry geometry, ground, models and bridges, after setup has placed the tug.
         if(level()!=null)level().prepare(this);
