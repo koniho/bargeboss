@@ -8,6 +8,9 @@ public final class DeveloperPanel {
     /** Closed DEV PANEL button sits below the always-visible captain portrait. */
     static final float BUTTON_Y=PlayerPortrait.BOTTOM+8;
     private boolean environment;
+    /** Weather/time rows: waves, direction, rain, lightning, fog, blizzard, time; they end above the 444 buttons. */
+    private static final int ENV_ROWS=7,ENV_ROW=32;
+    private static final String[] BLIZZARD={"OFF","LIGHT","HEAVY","WHITEOUT"};
     private int pointer=-1,pressed=-1;
     private boolean enabled(Game g){return g.settings.developerTools && (g.activeGame().mode==Game.PLAY || g.activeGame().mode==Game.PAUSE);}
     private int hit(Game g,float x,float y){
@@ -17,7 +20,7 @@ public final class DeveloperPanel {
         if(y<150)return x>left+600?0:-1;
         if(y>=158 && y<=202)return x<left+350?2:3;
         if(environment){
-            if(y>=218 && y<434)return 30+(int)((y-218)/36)*2+(x>left+350?1:0);
+            if(y>=218 && y<218+ENV_ROWS*ENV_ROW)return 30+(int)((y-218)/ENV_ROW)*2+(x>left+350?1:0);
             return y>=444?(x<left+350?50:51):-1;
         }
         int count=jobs(g).length,cols=columns(count);float rowH=rowHeight(count);
@@ -32,7 +35,7 @@ public final class DeveloperPanel {
         if(action==0)return new Layout.Box(left+600,108,88,36);
         if(action==2 || action==3)return new Layout.Box(left+(action==2?16:356),158,328,44);
         if(action>=JOBS)return jobBox(left,action-JOBS,jobs(g).length);
-        if(action>=30 && action<42)return new Layout.Box(left+((action%2)==0?16:630),218+((action-30)/2)*36,54,32);
+        if(action>=30 && action<30+ENV_ROWS*2)return new Layout.Box(left+((action%2)==0?16:630),218+((action-30)/2)*ENV_ROW,54,ENV_ROW-4);
         if(action>=50)return new Layout.Box(left+(action==50?16:356),448,328,40);
         return new Layout.Box(left+16,448,668,40);
     }
@@ -63,7 +66,7 @@ public final class DeveloperPanel {
         else if(action>=JOBS){int mission=jobs(g)[action-JOBS];open=false;g.startDeveloperMission(mission);}
         else if(action>=30){
             Game active=g.activeGame();
-            int[] actions={1,2,3,4,7,8,9,10,12,13,14,15};
+            int[] actions={1,2,3,4,7,8,9,10,12,13,16,17,14,15};
             WaveControls.adjust(active,action==50?11:action==51?5:actions[action-30]);
         }
         else if(action==1){open=false;g.startTutorial();}
@@ -83,11 +86,11 @@ public final class DeveloperPanel {
         button(p,x+356,158,328,44,"WEATHER / TIME",environment);
         if(environment){
             Game a=g.activeGame();
-            String[] labels={"WAVES "+a.settings.waveIntensity()+"X","DIRECTION "+a.settings.waveBearing()+" DEG","RAIN "+a.settings.rainLevel(),"LIGHTNING "+a.settings.lightningLevel(),"FOG "+a.settings.fogLevel(),"TIME "+a.lighting().name};
+            String[] labels={"WAVES "+a.settings.waveIntensity()+"X","DIRECTION "+a.settings.waveBearing()+" DEG","RAIN "+a.settings.rainLevel(),"LIGHTNING "+a.settings.lightningLevel(),"FOG "+a.settings.fogLevel(),"BLIZZARD "+BLIZZARD[a.settings.blizzardLevel()],"TIME "+a.lighting().name};
             for(int i=0;i<labels.length;i++){
-                float y=218+i*36;button(p,x+16,y,54,32,"-",false);
-                Lettering.center(p,labels[i],x+350,y+10,13,PilotGlass.TEXT);
-                button(p,x+630,y,54,32,"+",false);
+                float y=218+i*ENV_ROW;button(p,x+16,y,54,ENV_ROW-4,"-",false);
+                Lettering.center(p,labels[i],x+350,y+8,13,PilotGlass.TEXT);
+                button(p,x+630,y,54,ENV_ROW-4,"+",false);
             }
             button(p,x+16,448,328,40,"TEST FLASH",false);button(p,x+356,448,328,40,"RESET WEATHER / TIME",false);return;
         }

@@ -113,7 +113,7 @@ final class DeepFreezeJob extends MontroseJob {
     private static void hold(Body b,float x,float y,float angle){b.x=b.tiedX=x;b.y=b.tiedY=y;b.angle=b.tiedAngle=angle;b.vx=b.vy=b.spin=0;b.awaitingPickup=true;}
 
     void motion(Game g){
-        StageWeather w=g.weather;float gust=w.gust(g.visualTicks),angle=w.windAngle(g.visualTicks);
+        StageWeather w=g.weather;float gust=w.gust(g,g.visualTicks),angle=w.windAngle(g.visualTicks);
         float push=gust*7,fx=(float)StrictMath.cos(angle)*push*Physics.DT,fy=(float)StrictMath.sin(angle)*push*Physics.DT;
         // Gusts shove the tug and every boat not tied or held; slush drags at the tug as the ice closes.
         g.tug.vx+=fx*.6f;g.tug.vy+=fy*.6f;

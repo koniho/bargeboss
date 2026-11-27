@@ -32,13 +32,14 @@ public final class WaveControls {
         }cancel();return true;
     }
     static void adjust(Game g,int action){
-            if(action>=1 && action<=13 && action!=6)g.weather.manualWeather=true;
+            if(action>=1 && action<=13 && action!=6 || action==16 || action==17)g.weather.manualWeather=true;
             if(action==1 || action==2)g.settings.adjustWaves(action==1?-1:1);
             if(action==3 || action==4)g.settings.turnWaves(action==3?-1:1);
             if(action==5){g.settings.resetWaves();g.settings.resetWeather();g.changeLighting(LightingProfile.DUSK.id);}
             if(action==7 || action==8)g.settings.adjustRain(action==7?-1:1);
             if(action==9 || action==10)g.settings.adjustLightning(action==9?-1:1);
             if(action==12 || action==13)g.settings.adjustFog(action==12?-1:1);
+            if(action==16 || action==17)g.settings.adjustBlizzard(action==16?-1:1);
             if(action==14 || action==15)g.changeLighting(Math.floorMod(g.lighting().id+(action==14?-1:1),4));
             if(action==11)g.settings.weatherFlashTick=g.visualTicks;
     }

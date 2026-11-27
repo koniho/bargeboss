@@ -45,7 +45,7 @@ public final class WeatherView {
     /** Blizzard: wind-driven snow in three depth layers, gust streaks, and a breathing whiteout veil.
      * Screen-space and stateless (stable flake identities from the fixed noise table). */
     static void snow(Game g,Painter p){
-        StageWeather w=g.weather;float b=w.blizzard,gust=w.gust(g.visualTicks);
+        StageWeather w=g.weather;float b=w.blizzard(g),gust=w.gust(g,g.visualTicks);
         float width=g.layout.width,height=g.layout.height,angle=w.windAngle(g.visualTicks);
         float wx=(float)StrictMath.cos(angle),wy=(float)StrictMath.sin(angle);
         // Screen drift: down the screen plus the wind's screen-space push.
@@ -69,7 +69,7 @@ public final class WeatherView {
     }
     public static void draw(Game g,Painter p){
         float rain=g.weather.rain(g);float flash=flash(g);
-        if(g.weather.blizzard>0)snow(g,p);
+        if(g.weather.blizzard(g)>0)snow(g,p);
         if(rain==0 && flash==0 && g.weather.fog(g)==0)return;
         lowFog(g,p);
         float width=g.layout.width,height=g.layout.height;
