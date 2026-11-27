@@ -7291,3 +7291,28 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   Canonical painted sources and prompts are committed; preview exports stay ignored.
 - iOS parity attempted; this worktree lacks `ios/vendor/j2objc-3.1/dist/j2objc`.
   No iOS native raster, touch/lifecycle or performance equivalence claim is made.
+
+### Scenery native follow-up — phone unlocked
+
+- Supersedes the pending native comparison above. The installed update rendered
+  correctly on Pixel 11 Pro Vulkan; reviewed native pavilion, concession, cottage,
+  island channel and raised bridge views. Completed 360-sample captures at all six
+  matched fixed/replay scenes, then reinstalled the baseline and update for a
+  back-to-back repeat. Tick, camera zoom, tug XY, heading and speed match exactly
+  in every paired row; scenery did not change replay behavior.
+- Median end-to-end frame intervals stay approximately 16.6–16.8 ms in both builds.
+  Draw-time median changes in the repeated views range from -0.53 to +0.86 ms.
+  Slow-frame tails vary: the first new channel replay p95 was 25.13 ms versus an
+  earlier 18.22 ms baseline, but the immediate repeated baseline/update measured
+  24.92/24.47 ms. Do not attribute that initial difference solely to the artwork.
+- The fixed channel also had a noisy short repeat (18.24/22.93 ms p95), so ran
+  1,200-sample captures: updated first 19.61 ms, baseline 18.02 ms, updated final
+  18.93 ms. Final median was 16.662 versus 16.649 ms; final p95 added 0.913 ms.
+  This is a small measurable cost, with no material median frame-rate regression
+  observed in these workloads. It is not proof of universal 60 FPS or zero jank.
+- Island source-cache storage rises exactly 3 MiB to 152.671 MiB; frame cache
+  remains 129.171 MiB. No measured sample frame-cache evictions or static-layer
+  builds. These are CPU/reference counters, not measured GPU residency.
+- Full results, including every initial and repeated run, are retained in
+  `docs/performance/scenery-2026-11-27/comparison.json`; raw CSVs/screenshots remain
+  in ignored `out/scenery-*`. No production code changed during this validation.

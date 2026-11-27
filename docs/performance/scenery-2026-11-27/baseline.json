@@ -3,7 +3,7 @@
   "base_commit": "839fa0a2",
   "warmup_frames": 120,
   "sample_frames": 360,
-  "after_status": "Pending: installed APK, phone display off/keyguard restricted; no after timings claimed",
+  "after_status": "Completed; see comparison.json for original, repeated and longer matched runs",
   "scenes": {
     "islands-channel-study-freeze.csv": {
       "interval_ms": {

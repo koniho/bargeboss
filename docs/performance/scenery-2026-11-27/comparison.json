@@ -1,0 +1,1346 @@
+{
+  "scenery-before": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6618,
+        "p95": 17.8276,
+        "max": 32.0632
+      },
+      "draw_ms": {
+        "median": 7.4337,
+        "p95": 8.6597,
+        "max": 9.937
+      },
+      "advance_ms": {
+        "median": 0.0024,
+        "p95": 0.0101,
+        "max": 0.0164
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 7.1398,
+        "p95": 7.1398,
+        "max": 7.1398
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 3
+    },
+    "islands-channel-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6495,
+        "p95": 18.2234,
+        "max": 34.3976
+      },
+      "draw_ms": {
+        "median": 6.4519,
+        "p95": 9.8611,
+        "max": 23.4963
+      },
+      "advance_ms": {
+        "median": 2.0316,
+        "p95": 2.993,
+        "max": 3.4307
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 8.8895,
+        "p95": 10.3891,
+        "max": 10.6391
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 10
+    },
+    "islands-cottage-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6396,
+        "p95": 17.4504,
+        "max": 19.2
+      },
+      "draw_ms": {
+        "median": 5.2605,
+        "p95": 6.5243,
+        "max": 7.658
+      },
+      "advance_ms": {
+        "median": 0.0034,
+        "p95": 0.0092,
+        "max": 0.0124
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 3.3905,
+        "p95": 3.3905,
+        "max": 3.3905
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "montrose-concession-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6306,
+        "p95": 17.5823,
+        "max": 19.1498
+      },
+      "draw_ms": {
+        "median": 5.0037,
+        "p95": 6.6095,
+        "max": 8.6427
+      },
+      "advance_ms": {
+        "median": 0.0034,
+        "p95": 0.0108,
+        "max": 0.0562
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7917,
+        "p95": 159.7917,
+        "max": 159.7917
+      },
+      "texture_mib": {
+        "median": 0.0625,
+        "p95": 0.0625,
+        "max": 0.0625
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "montrose-concession-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6709,
+        "p95": 17.9966,
+        "max": 19.0404
+      },
+      "draw_ms": {
+        "median": 5.3876,
+        "p95": 6.8677,
+        "max": 7.8818
+      },
+      "advance_ms": {
+        "median": 1.1704,
+        "p95": 1.4848,
+        "max": 1.9213
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7917,
+        "p95": 159.7917,
+        "max": 159.7917
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "montrose-pavilion-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.659,
+        "p95": 17.5951,
+        "max": 19.5525
+      },
+      "draw_ms": {
+        "median": 5.2067,
+        "p95": 6.4277,
+        "max": 7.9683
+      },
+      "advance_ms": {
+        "median": 0.0036,
+        "p95": 0.0092,
+        "max": 0.0131
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    }
+  },
+  "scenery-after": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6489,
+        "p95": 18.263,
+        "max": 25.0759
+      },
+      "draw_ms": {
+        "median": 7.9386,
+        "p95": 9.03,
+        "max": 13.5343
+      },
+      "advance_ms": {
+        "median": 0.0036,
+        "p95": 0.0188,
+        "max": 0.0406
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 10.1398,
+        "p95": 10.1398,
+        "max": 10.1398
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    },
+    "islands-channel-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6275,
+        "p95": 25.1309,
+        "max": 43.0059
+      },
+      "draw_ms": {
+        "median": 6.7069,
+        "p95": 9.9078,
+        "max": 30.6573
+      },
+      "advance_ms": {
+        "median": 2.2506,
+        "p95": 3.2228,
+        "max": 4.4331
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 11.5145,
+        "p95": 13.0141,
+        "max": 13.2641
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 20
+    },
+    "islands-cottage-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6303,
+        "p95": 17.5403,
+        "max": 24.9194
+      },
+      "draw_ms": {
+        "median": 5.6876,
+        "p95": 6.7496,
+        "max": 7.7938
+      },
+      "advance_ms": {
+        "median": 0.0051,
+        "p95": 0.0152,
+        "max": 0.0249
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 5.2655,
+        "p95": 5.2655,
+        "max": 5.2655
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "islands-lift-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6756,
+        "p95": 25.7576,
+        "max": 39.6015
+      },
+      "draw_ms": {
+        "median": 6.151,
+        "p95": 8.7918,
+        "max": 33.8559
+      },
+      "advance_ms": {
+        "median": 2.3726,
+        "p95": 3.4761,
+        "max": 8.0137
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 11.0145,
+        "p95": 11.5145,
+        "max": 12.5141
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 25
+    },
+    "montrose-concession-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6664,
+        "p95": 18.825,
+        "max": 25.0619
+      },
+      "draw_ms": {
+        "median": 5.4422,
+        "p95": 6.9276,
+        "max": 7.9241
+      },
+      "advance_ms": {
+        "median": 0.0055,
+        "p95": 0.0186,
+        "max": 0.08
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7292,
+        "p95": 159.7292,
+        "max": 159.7292
+      },
+      "texture_mib": {
+        "median": 0.0625,
+        "p95": 0.0625,
+        "max": 0.0625
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    },
+    "montrose-concession-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6974,
+        "p95": 19.0511,
+        "max": 25.1787
+      },
+      "draw_ms": {
+        "median": 5.0232,
+        "p95": 6.5947,
+        "max": 7.9316
+      },
+      "advance_ms": {
+        "median": 1.1904,
+        "p95": 1.4822,
+        "max": 1.9372
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 2
+    },
+    "montrose-pavilion-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6545,
+        "p95": 19.9014,
+        "max": 25.2239
+      },
+      "draw_ms": {
+        "median": 5.5437,
+        "p95": 6.9091,
+        "max": 9.4603
+      },
+      "advance_ms": {
+        "median": 0.0051,
+        "p95": 0.0209,
+        "max": 0.0594
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 2
+    }
+  },
+  "scenery-before-repeat": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6461,
+        "p95": 18.2416,
+        "max": 24.7591
+      },
+      "draw_ms": {
+        "median": 7.3302,
+        "p95": 8.403,
+        "max": 9.0501
+      },
+      "advance_ms": {
+        "median": 0.0037,
+        "p95": 0.0185,
+        "max": 0.0438
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 7.1398,
+        "p95": 7.1398,
+        "max": 7.1398
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "islands-channel-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.7908,
+        "p95": 24.9155,
+        "max": 37.6629
+      },
+      "draw_ms": {
+        "median": 5.9195,
+        "p95": 9.1584,
+        "max": 28.6285
+      },
+      "advance_ms": {
+        "median": 1.9401,
+        "p95": 2.6895,
+        "max": 3.2058
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 8.8895,
+        "p95": 10.3891,
+        "max": 10.6391
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 17
+    },
+    "islands-cottage-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6327,
+        "p95": 17.5574,
+        "max": 19.1313
+      },
+      "draw_ms": {
+        "median": 5.2964,
+        "p95": 6.5619,
+        "max": 9.631
+      },
+      "advance_ms": {
+        "median": 0.0053,
+        "p95": 0.0172,
+        "max": 0.0238
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 3.3905,
+        "p95": 3.3905,
+        "max": 3.3905
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "montrose-concession-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.642,
+        "p95": 17.8928,
+        "max": 25.3507
+      },
+      "draw_ms": {
+        "median": 5.2352,
+        "p95": 6.7085,
+        "max": 7.662
+      },
+      "advance_ms": {
+        "median": 0.0051,
+        "p95": 0.013,
+        "max": 0.0524
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7292,
+        "p95": 159.7292,
+        "max": 159.7292
+      },
+      "texture_mib": {
+        "median": 0.0625,
+        "p95": 0.0625,
+        "max": 0.0625
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 2
+    },
+    "montrose-concession-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6848,
+        "p95": 19.3196,
+        "max": 25.1013
+      },
+      "draw_ms": {
+        "median": 5.0038,
+        "p95": 6.2638,
+        "max": 7.5656
+      },
+      "advance_ms": {
+        "median": 1.175,
+        "p95": 1.5407,
+        "max": 2.0527
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    },
+    "montrose-pavilion-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6421,
+        "p95": 17.9128,
+        "max": 25.1689
+      },
+      "draw_ms": {
+        "median": 5.2178,
+        "p95": 6.664,
+        "max": 7.5978
+      },
+      "advance_ms": {
+        "median": 0.0047,
+        "p95": 0.0196,
+        "max": 0.0468
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    }
+  },
+  "scenery-after-repeat": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6377,
+        "p95": 22.9263,
+        "max": 25.6548
+      },
+      "draw_ms": {
+        "median": 7.6785,
+        "p95": 9.0467,
+        "max": 13.2767
+      },
+      "advance_ms": {
+        "median": 0.0053,
+        "p95": 0.0191,
+        "max": 0.0422
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 10.1398,
+        "p95": 10.1398,
+        "max": 10.1398
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 3
+    },
+    "islands-channel-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6798,
+        "p95": 24.4665,
+        "max": 36.8802
+      },
+      "draw_ms": {
+        "median": 6.7764,
+        "p95": 9.8772,
+        "max": 28.9386
+      },
+      "advance_ms": {
+        "median": 2.2792,
+        "p95": 3.3324,
+        "max": 3.9641
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 11.5145,
+        "p95": 13.0141,
+        "max": 13.2641
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 14
+    },
+    "islands-cottage-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6552,
+        "p95": 17.396,
+        "max": 24.8548
+      },
+      "draw_ms": {
+        "median": 5.6201,
+        "p95": 6.8896,
+        "max": 8.8303
+      },
+      "advance_ms": {
+        "median": 0.004,
+        "p95": 0.0118,
+        "max": 0.0549
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "texture_mib": {
+        "median": 5.2655,
+        "p95": 5.2655,
+        "max": 5.2655
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    },
+    "montrose-concession-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6556,
+        "p95": 17.0861,
+        "max": 25.2186
+      },
+      "draw_ms": {
+        "median": 4.7086,
+        "p95": 6.6635,
+        "max": 8.3159
+      },
+      "advance_ms": {
+        "median": 0.0032,
+        "p95": 0.0063,
+        "max": 0.0287
+      },
+      "source_mib": {
+        "median": 230.6761,
+        "p95": 230.6761,
+        "max": 230.6761
+      },
+      "frame_mib": {
+        "median": 159.7292,
+        "p95": 159.7292,
+        "max": 159.7292
+      },
+      "texture_mib": {
+        "median": 0.0625,
+        "p95": 0.0625,
+        "max": 0.0625
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    },
+    "montrose-concession-study-replay.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6962,
+        "p95": 18.337,
+        "max": 25.3184
+      },
+      "draw_ms": {
+        "median": 5.1558,
+        "p95": 6.2047,
+        "max": 7.7141
+      },
+      "advance_ms": {
+        "median": 1.2108,
+        "p95": 1.526,
+        "max": 2.1775
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 1
+    },
+    "montrose-pavilion-study-freeze.csv": {
+      "samples": 360,
+      "interval_ms": {
+        "median": 16.6326,
+        "p95": 17.4966,
+        "max": 20.1118
+      },
+      "draw_ms": {
+        "median": 5.7793,
+        "p95": 7.3662,
+        "max": 8.4461
+      },
+      "advance_ms": {
+        "median": 0.0044,
+        "p95": 0.0177,
+        "max": 0.0292
+      },
+      "source_mib": {
+        "median": 229.6761,
+        "p95": 229.6761,
+        "max": 229.6761
+      },
+      "frame_mib": {
+        "median": 159.6667,
+        "p95": 159.6667,
+        "max": 159.6667
+      },
+      "texture_mib": {
+        "median": 3.3896,
+        "p95": 3.3896,
+        "max": 3.3896
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "cache_builds": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "vulkan": {
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "interval_over_25_ms": 0
+    }
+  },
+  "scenery-channel-long-after-first": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 1200,
+      "interval_ms": {
+        "median": 16.6486,
+        "p95": 19.6075,
+        "max": 25.7521
+      },
+      "draw_ms": {
+        "median": 7.3418,
+        "p95": 8.6281,
+        "max": 13.4782
+      },
+      "advance_ms": {
+        "median": 0.0041,
+        "p95": 0.0203,
+        "max": 0.0409
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    }
+  },
+  "scenery-channel-long-after": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 1200,
+      "interval_ms": {
+        "median": 16.662,
+        "p95": 18.9297,
+        "max": 25.2853
+      },
+      "draw_ms": {
+        "median": 7.3277,
+        "p95": 8.5426,
+        "max": 12.4766
+      },
+      "advance_ms": {
+        "median": 0.0047,
+        "p95": 0.02,
+        "max": 0.0564
+      },
+      "source_mib": {
+        "median": 152.671,
+        "p95": 152.671,
+        "max": 152.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    }
+  },
+  "scenery-channel-long-before": {
+    "islands-channel-study-freeze.csv": {
+      "samples": 1200,
+      "interval_ms": {
+        "median": 16.6488,
+        "p95": 18.0168,
+        "max": 25.2338
+      },
+      "draw_ms": {
+        "median": 6.8769,
+        "p95": 8.102,
+        "max": 11.6661
+      },
+      "advance_ms": {
+        "median": 0.0042,
+        "p95": 0.0183,
+        "max": 0.0578
+      },
+      "source_mib": {
+        "median": 149.671,
+        "p95": 149.671,
+        "max": 149.671
+      },
+      "frame_mib": {
+        "median": 129.171,
+        "p95": 129.171,
+        "max": 129.171
+      },
+      "frame_evictions": {
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    }
+  },
+  "validation": {
+    "device": "Pixel 11 Pro",
+    "backend": "Android Vulkan",
+    "matched_replay_state": "Exact tick, zoom, tug XY, heading and speed equality in all paired rows",
+    "conclusion": "No material median frame-rate regression observed. Added scenery has a measurable sub-millisecond typical draw cost; frame-interval tails vary between runs. Long channel run p95 increased 0.913 ms; median changed 0.013 ms. Not a universal 60 FPS guarantee."
+  }
+}
