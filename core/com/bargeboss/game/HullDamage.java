@@ -155,6 +155,42 @@ final class HullDamage {
     }
     /** Seed offset so marina wrecks never share debris patterns with mission vessels. */
     static final int MOORED_SEED=100000;
+    /** Water effects finish before hulls: expanding wakes never bleach an adjacent vessel. */
+    static void water(Game g,Painter p){
+        RiverCamera c=g.layout.camera;
+        for(Body b:g.cargo)if(b!=null && b.sinkTicks>0 && (b.active || b.sunk))wreckWater(g,p,c,b.x,b.y,b.half,b.radius,b.id,b.sinkTicks);
+        for(HarborTraffic.Craft craft:g.harborTraffic.craft){Body b=craft.body;if(b.sinkTicks>0 && (b.active || b.sunk))wreckWater(g,p,c,b.x,b.y,b.half,b.radius,b.id,b.sinkTicks);}
+        if(g.montroseStage())for(MooredFleet.FloatBoat m:g.mooredFleet.boats)if(m.sinkTicks>0 && m.sinkTicks<SINK+SLICK)
+            wreckWater(g,p,c,m.x,m.y,m.berth.length*.5f,m.berth.width*.5f,MOORED_SEED+m.berth.frame+(int)m.berth.x,m.sinkTicks);
+        TugDeath.water(g,p);
+    }
+    static void wreckWater(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,int t){
+        if(t<=0 || t>=SINK+SLICK)return;
+        float sx=c.screenX(bx,by),sy=c.screenY(bx,by),s=c.scale,hull=half+radius,reach=hull*5.2f;
+        if(sx+reach*s<0 || sx-reach*s>g.layout.width || sy+reach*s<0 || sy-reach*s>g.layout.height)return;
+        p.pushClipOutside(ShoreOcclusion.region(g,c,bx-reach,by-reach,bx+reach,by+reach,Float.NEGATIVE_INFINITY,p.supportsUnionClips()));
+        try{
+            // Lingering oil slick: a dark sheen with a faint rainbow rim, spreading and thinning.
+            float slick=Physics.clamp((t-PLUNGE)/40f,0,1)*(1-Physics.clamp((t-SINK-SLICK+80)/80f,0,1));
+            if(slick>0){
+                float r=hull*(1.1f+.9f*Physics.clamp((t-PLUNGE)/(float)(SLICK),0,1))*s;
+                p.material(sx,sy,r*2.6f,0,0,r*2.6f*RiverCamera.DEPTH,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff05080c,.55f*slick));
+                p.material(sx-r*.17f,sy,r*1.7f,0,r*.2f,r*.85f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff698a80,.12f*slick));
+                p.material(sx+r*.22f,sy-r*.08f,r*1.1f,0,-r*.2f,r*.55f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff826d96,.1f*slick));
+            }
+            // Rings: a wave every 24 ticks while going down, a big one at the plunge.
+            for(int k=0;k<7;k++){
+                int age=t-k*24;if(age<0 || age>=60 || k*24>PLUNGE)continue;
+                float u=age/60f,r=hull*(.8f+(1-(1-u)*(1-u))*2.2f)*s;
+                p.spriteAffine(SpriteAtlas.RIPPLES,Math.floorMod(seed+k,4),sx,sy,r*2.15f,0,0,r*1.85f*RiverCamera.DEPTH,(1-u)*(1-u)*.42f);
+            }
+            int plunge=t-PLUNGE;
+            if(plunge>=0 && plunge<70){
+                float u=plunge/70f,r=hull*(1+(1-(1-u)*(1-u))*3.6f)*s;
+                p.spriteAffine(SpriteAtlas.RIPPLES,Math.floorMod(seed+3,4),sx,sy,r*2.1f,0,0,r*2*RiverCamera.DEPTH,(1-u)*(1-u)*.65f);
+            }
+        }finally{p.popClip();}
+    }
     /** One sinking or sunk hull's effects at sink tick t; half and radius are its hull extents. */
     static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t){wreck(g,p,c,bx,by,half,radius,seed,craft,t,true);}
     static void wreck(Game g,Painter p,RiverCamera c,float bx,float by,float half,float radius,int seed,boolean craft,int t,boolean caption){
@@ -163,25 +199,7 @@ final class HullDamage {
             float pad=(hull+160)*s;
             if(sx<-pad || sx>g.layout.width+pad || sy<-pad || sy>g.layout.height+pad)return;
             float zs=ArticulatedModel.Z_SCALE*s;
-            // Lingering oil slick: a dark sheen with a faint rainbow rim, spreading and thinning.
-            float slick=Physics.clamp((t-PLUNGE)/40f,0,1)*(1-Physics.clamp((t-SINK-SLICK+80)/80f,0,1));
-            if(slick>0){
-                float r=hull*(1.1f+.9f*Physics.clamp((t-PLUNGE)/(float)(SLICK),0,1))*s;
-                p.material(sx,sy,r*2.6f,0,0,r*2.6f*RiverCamera.DEPTH,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff05080c,.55f*slick));
-                p.material(sx,sy,r*2.2f,0,0,r*2.2f*RiverCamera.DEPTH,EffectMaterial.RING,.06f,1,SoftCue.alpha(0xff8fd0c8,.22f*slick));
-                p.material(sx,sy,r*1.7f,0,0,r*1.7f*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(0xffc49be0,.16f*slick));
-            }
-            // Rings: a wave every 24 ticks while going down, a big one at the plunge.
-            for(int k=0;k<7;k++){
-                int age=t-k*24;if(age<0 || age>=60 || k*24>PLUNGE)continue;
-                float u=age/60f,r=hull*(.8f+(1-(1-u)*(1-u))*2.2f)*s;
-                p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.035f,1,SoftCue.alpha(0xffeaf7ff,(1-u)*(1-u)*.6f));
-            }
             int plunge=t-PLUNGE;
-            if(plunge>=0 && plunge<70){
-                float u=plunge/70f,r=hull*(1+(1-(1-u)*(1-u))*3.6f)*s;
-                p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(0xffffffff,(1-u)*(1-u)*.8f));
-            }
             // Air boiling up around the settling hull (and over the wreck for a while after).
             float boil=t<SINK?1:1-Physics.clamp((t-SINK)/120f,0,1);
             if(boil>0)for(int k=0;k<12;k++){
@@ -217,11 +235,19 @@ final class HullDamage {
     static void explosion(Painter p,RiverCamera c,float bx,float by,float hull,int seed,boolean craft,int age,int salt,float scale,float sx,float sy,float zs){
         if(age<0 || age>=70)return;
         float s=c.scale,sec=age/60f;
-        if(age<16){
-            float f=1-age/16f,size=hull*4.6f*scale*s*(1.25f-.25f*f);
+        if(age<12){
+            float f=1-age/12f,size=hull*2.6f*scale*s*(1.25f-.25f*f);
             p.material(sx,sy-10*s,size,0,0,size*.75f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffff8a2b,f*.95f));
             p.material(sx,sy-12*s,size*.55f,0,0,size*.42f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffe6a8,f));
             if(age<5)p.material(sx,sy-12*s,size*.25f,0,0,size*.2f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,1-age/5f));
+        }
+        // Brief broken amber rays release the initial impact into the longer ballistic debris.
+        if(age<18){float u=age/18f,fade=(1-u)*(1-u);
+            for(int k=0;k<6;k++){float a=k*1.0471976f+seed*.17f,dx=(float)StrictMath.cos(a),dy=(float)StrictMath.sin(a)*.68f;
+                float inner=hull*(.35f+u*.9f)*scale*s,outer=inner+hull*.55f*(1-u)*scale*s;
+                p.line(sx+dx*inner,sy-10*s+dy*inner,sx+dx*outer,sy-10*s+dy*outer,2.4f*s,SoftCue.alpha(0xffffb65f,fade*.8f));
+                p.line(sx+dx*inner,sy-10*s+dy*inner,sx+dx*outer,sy-10*s+dy*outer,.9f*s,SoftCue.alpha(0xffffefd0,fade));
+            }
         }
         int pieces=scale>=1?14:5;
         for(int k=0;k<pieces;k++){
@@ -234,17 +260,17 @@ final class HullDamage {
                 float vx=(float)StrictMath.cos(a)*speed,vy=(float)StrictMath.sin(a)*speed,dz=vz-96*sec,dt=.04f;
                 float tx=c.screenX(x-vx*dt,y-vy*dt),ty=c.screenY(x-vx*dt,y-vy*dt)-(z-dz*dt)*zs;
                 float fade=1-age/70f;
-                p.line(tx,ty,px,py,2.6f*s,SoftCue.alpha(0xffff7a2b,fade));
-                p.line(tx,ty,px,py,1.1f*s,SoftCue.alpha(0xffffefb0,fade));
+                p.line(tx,ty,px,py,1.8f*s,SoftCue.alpha(0xffff9b53,fade));
+                p.line(tx,ty,px,py,.65f*s,SoftCue.alpha(0xffffefb0,fade));
             }else{
                 // Tumbling plank or plate in the hull's colours.
                 float spin=age*(.25f+rand(seed,k,salt*3+4)*.35f)+k,len=(1.6f+rand(seed,k,salt*3+5)*2.6f)*s,w=(.7f+rand(seed,k,salt*3+6)*.9f)*s;
                 float cx=(float)StrictMath.cos(spin),cy=(float)StrictMath.sin(spin),fade=Physics.clamp((70-age)/20f,0,1);
                 // The vessel's own materials: fibreglass and trim for pleasure craft, rusted plate and timber for barges.
                 int[] palette=craft?CRAFT_DEBRIS:BARGE_DEBRIS;int color=palette[k%palette.length];
-                float ex=len+.8f*s,ew=w+.8f*s;
-                p.convexQuad(px-cx*ex-cy*ew,py-cy*ex+cx*ew,px+cx*ex-cy*ew,py+cy*ex+cx*ew,px+cx*ex+cy*ew,py+cy*ex-cx*ew,px-cx*ex+cy*ew,py-cy*ex-cx*ew,SoftCue.alpha(0xff120c0a,.75f*fade));
-                p.convexQuad(px-cx*len-cy*w,py-cy*len+cx*w,px+cx*len-cy*w,py+cy*len+cx*w,px+cx*len+cy*w,py+cy*len-cx*w,px-cx*len+cy*w,py-cy*len-cx*w,SoftCue.alpha(color,fade));
+                float ex=len+.25f*s,ew=w+.25f*s;
+                p.convexQuad(px-cx*ex-cy*ew,py-cy*ex+cx*ew,px+cx*ex-cy*ew,py+cy*ex+cx*ew,px+cx*ex+cy*ew,py+cy*ex-cx*ew,px-cx*ex+cy*ew,py-cy*ex-cx*ew,SoftCue.alpha(0xff493f37,.8f*fade));
+                p.convexQuad(px-cx*len-cy*w,py-cy*len+cx*w,px+cx*len-cy*w,py+cy*len+cx*w,px+cx*len+cy*w,py+cy*len-cx*w,px-cx*len+cy*w,py-cy*len-cx*w,SoftCue.alpha(p.lighting().scenery(color),fade));
             }
         }
     }

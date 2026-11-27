@@ -128,20 +128,14 @@ final class MontroseTransit {
                 float ux=c.screenX(x+dx,y+dy)-sx,uy=c.screenY(x+dx,y+dy)-sy,ul=Math.max(.001f,Physics.length(ux,uy));ux/=ul;uy/=ul;
                 float w=5*s;p.line(cx-ux*w+uy*w,cy-uy*w-ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));p.line(cx-ux*w-uy*w,cy-uy*w+ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));
             }
-            if(flash>0 && flashBuoy==i){float u=1-flash/40f,r=(REACH*.5f+u*55)*s;p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.035f,1,SoftCue.alpha(0xff9ff4ff,(1-u)*(1-u)*.7f));}
-        }
-        // Bow spray in open water at speed; boosting throws a bigger plume.
-        Body t=g.tug;float speed=t.speed();
-        if(open && speed>55){
-            float k=Math.min(1,(speed-55)/50f)*(boostTicks>0?1.5f:1),ca=(float)StrictMath.cos(t.angle),sa=(float)StrictMath.sin(t.angle);
-            for(int j=0;j<6;j++){
-                int age=(g.visualTicks*2+j*7)%24;float u=age/24f,side=(j%2==0?1:-1);
-                float bx=t.x+ca*(t.half+4)-sa*side*(6+u*18),by=t.y+sa*(t.half+4)+ca*side*(6+u*18);
-                float px=c.screenX(bx-ca*u*20,by-sa*u*20),py=c.screenY(bx-ca*u*20,by-sa*u*20)-(4+u*10)*s*k,size=(4+u*7)*s*k;
-                p.spriteAffine(SpriteAtlas.SPLASH,j%4,px,py,size*1.4f,0,0,size,(1-u)*.75f*Math.min(1,k));
+            if(flash>0 && flashBuoy==i){float u=1-flash/40f,r=(REACH*.5f+u*55)*s;
+                p.spriteAffine(SpriteAtlas.RIPPLES,i%4,sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,(1-u)*(1-u)*.35f);
+                SoftCue.burst(new RiverPainter(p,c),x,y,REACH*.45f,u,SoftCue.YELLOW);
             }
         }
+        if(open)TransitEffects.bow(g,p,boostTicks>0);
     }
+
     /** Screen layer: boost bar and combo, and the travel radio. */
     void hud(Game g,Painter p){
         if(!active(g))return;

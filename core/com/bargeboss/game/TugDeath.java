@@ -69,6 +69,10 @@ final class TugDeath {
     }
     private static void glow(Painter p,float x,float y,float r,int color,float alpha){if(alpha>0.003f)p.material(x,y,r*2,0,0,r*2*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(color,Math.min(1,alpha)));}
 
+    static void water(Game g,Painter p){
+        if(!g.dying() || g.deathTicks<BLAST)return;Body b=g.tug;
+        HullDamage.wreckWater(g,p,g.layout.camera,b.x,b.y,b.half,b.radius,SEED,wreckTicks(g.deathTicks));
+    }
     /** World layer. */
     static void effects(Game g,Painter p){
         if(!g.dying())return;

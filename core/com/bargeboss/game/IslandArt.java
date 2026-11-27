@@ -50,8 +50,24 @@ final class IslandArt {
     static void prepare(){}
     private static float rand(int i,int k){int h=(i*7919+k*104729)*0x45d9f3b;h^=h>>>16;h*=0x45d9f3b;h^=h>>>16;return (h&65535)/65535f;}
     static void draw(Game g,Painter p,RiverCamera c,ArenaCourse.Islands course,float[] view){
-        shores(p,c,course,view);
+        ripples(g,p,c,view);shores(p,c,course,view);
         for(Island s:ISLANDS){if(s.x+s.r<view[0]-60 || s.x-s.r>view[2]+60 || s.y+s.r<view[1]-60 || s.y-s.r>view[3]+60)continue;float size=s.r*2*384/360;p.sprite(SpriteAtlas.ISLAND_GROUND,s.frame,c.screenX(s.x,s.y),c.screenY(s.x,s.y)-5*c.scale,size*c.scale,size*2/3*c.scale,0,1);}
+    }
+    /** Two slow, broken water rings beneath the opaque ground plates. Uses retained vessel
+     * stamps; no per-island particle state, clipping masks or additional texture storage. */
+    static void ripples(Game g,Painter p,RiverCamera c,float[] view){
+        if(g.settings.waterDetail<1 || (g.renderExclusions&RenderExclusions.AMBIENT_WATER)!=0)return;
+        for(int id=0;id<ISLANDS.length;id++){
+            Island a=ISLANDS[id];float reach=a.r*1.65f;
+            if(a.x+reach<view[0] || a.x-reach>view[2] || a.y+reach<view[1] || a.y-reach>view[3])continue;
+            float detail=SceneDetail.fade(a.r*c.scale,16,50);if(detail<=0)continue;
+            int cycles=a.r*c.scale<45?1:2;
+            for(int k=0;k<cycles;k++){
+                float phase=Math.floorMod(g.visualTicks+id*53+k*150,300)/300f;
+                float fade=(float)StrictMath.sin(phase*StrictMath.PI),size=a.r*(2.5f+phase*.45f)*c.scale;
+                p.spriteAffine(SpriteAtlas.RIPPLES,(id+k)%4,c.screenX(a.x,a.y),c.screenY(a.x,a.y),size,0,0,size*2/3,.16f*fade*fade*detail);
+            }
+        }
     }
     /** Merge upright scenery with vessels by ground contact, not the top of a tall tree. */
     static void props(Game g,Painter p,float from,float to){

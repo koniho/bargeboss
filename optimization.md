@@ -7339,3 +7339,24 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   Source/frame memory unchanged; no sample cache builds or frame evictions.
   Evidence: `docs/performance/scenery-2026-11-27/shoreline-followup.json`.
   Native iOS remains unvalidated because the translation toolchain is absent.
+
+### Island ripples and effect styling — shared validation, 2026-11-27
+- Reused retained vessel ripple stamps for two slow, independently phased island
+  shore fronts, with view culling, zoom/detail fade and the water-detail toggle.
+  Ground plates cover their inland pixels; no new atlas or particle pool.
+- Boost now has six ballistic directional spray packets and two restrained prop
+  wash lanes; marker catches use the established gold success rays and painted foam.
+  Collision shockwaves and sinking fronts use broken painted rings. Tightened
+  flashes and debris outlines; the oil sheen has soft irregular color patches.
+- Split sinking water fronts/slicks into the pre-vessel water pass and clipped
+  them to solid shores. The same path covers sinking NPCs, marina boats and tug.
+  Airborne spray/debris remain in the effect pass. Gameplay timing is unchanged.
+- Full check and Android build passed. Added 225 budget, deterministic phase,
+  culling, detail-toggle and water/air separation checks. Montrose shoreline:
+  4,037,082 all-heading production hull/cargo pixel assertions passed again.
+  Nine developer scenery/effects fixture replays pass; shared renderer frames
+  cover impact, boost, sinking and plunge phases in `out/effects-after`.
+- Native comparisons are in progress. Discarded preliminary island captures:
+  installed APK did not recognize study scene IDs, and old CSVs were initially
+  still present. Fresh capture deletes each remote CSV first and requires a new
+  completed file. Explicitly reinstalling saved baseline before comparison.

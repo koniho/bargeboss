@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Study cameras remain reproducible and the lift fixture exercises the real gate simulation. */
 public final class SceneryProfileTest {
  public static void main(String[] args){
-  for(String scene:new String[]{"montrose-pavilion-study","montrose-concession-study","islands-cottage-study","islands-channel-study","islands-lift-study"}){
+  for(String scene:new String[]{"montrose-pavilion-study","montrose-concession-study","islands-cottage-study","islands-channel-study","islands-lift-study","montrose-markers-review","montrose-boost-review","damage-sink-review","damage-impact-review"}){
    Game a=new Game(),b=new Game();ProfileScenario.prepare(a,scene,1320,600);ProfileScenario.prepare(b,scene,1320,600);
    if(a.tug.x!=b.tug.x || a.tug.y!=b.tug.y || a.layout.camera.scale!=b.layout.camera.scale)throw new AssertionError("Non-repeatable study: "+scene);
    int tick=a.visualTicks;ProfileScenario.replayTick(a);if(a.visualTicks!=tick+1)throw new AssertionError("Study replay skips shared ticks");
@@ -13,6 +13,6 @@ public final class SceneryProfileTest {
     if(!a.arena.passable(1))throw new AssertionError("Bridge never opened");
    }
   }
-  System.out.println("Five scenery study cameras/replays and every active opening lift update passed");
+  System.out.println("Nine scenery/effects cameras/replays and every active opening lift update passed");
  }
 }

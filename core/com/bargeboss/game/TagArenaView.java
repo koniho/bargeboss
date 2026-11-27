@@ -14,7 +14,7 @@ final class TagArenaView {
         RiverCamera c=g.layout.camera;TagArena a=g.arena;
         canvas.rect(0,0,g.layout.width,g.layout.height,g.lighting().water);
         if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0){WaterTexture.draw(g,canvas,g.lighting().water);WaveView.surface(g,canvas);}
-        g.water.draw(g,new RiverPainter(canvas,c));
+        g.water.draw(g,new RiverPainter(canvas,c));HullDamage.water(g,canvas);
         float[] view=SurveyGround.visible(g);
         boolean islands=a.course instanceof ArenaCourse.Islands;
         if(islands)IslandArt.draw(g,canvas,c,(ArenaCourse.Islands)a.course,view);

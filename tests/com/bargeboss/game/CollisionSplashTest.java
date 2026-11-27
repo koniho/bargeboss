@@ -103,7 +103,7 @@ public final class CollisionSplashTest {
         public void line(float x,float y,float xx,float yy,float w,int c){other++;if((c&0xffffff)==0xff742b)sparks++;}public void poly(float[] p,int c){other++;}
         public void sprite(int a,int f,float x,float y,float w,float h,float r,float alpha){other++;}
         public void spriteBlend(int a,int f,int ff,float x,float y,float w,float h,float r,float mix,float alpha){other++;}
-        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){check(a==SpriteAtlas.SPLASH && f>=0 && f<4,"splash uses a registered impact stamp");stamps++;}
+        public void spriteAffine(int a,int f,float x,float y,float ax,float ay,float bx,float by,float alpha){check((a==SpriteAtlas.SPLASH || a==SpriteAtlas.RIPPLES) && f>=0 && f<4,"splash uses a registered impact stamp");stamps++;}
     }
     public static void main(String[] args){run();}
 }

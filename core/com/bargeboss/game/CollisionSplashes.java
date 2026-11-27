@@ -83,16 +83,15 @@ public final class CollisionSplashes {
             canvas.pushClipOutside(ShoreOcclusion.region(g,c,xx-length-width,yy-length-width,xx+length+width,yy+length+width,Float.NEGATIVE_INFINITY));
             try{
                 p.spriteAffine(SpriteAtlas.SPLASH,i%4,xx,yy,dx*length,dy*length,-dy*width,dx*width,alpha*.55f);
-                // Shock ring: a foam circle racing out across the water, faster and wider for harder hits.
+                // Broken foam fronts share the same painted texture as vessel displacement.
+                // Their asymmetric footprint follows the impact direction instead of a perfect halo.
                 if(age[i]<RING && power[i]>=.2f){
-                    float r=RING,u=age[i]/r,ease=1-(1-u)*(1-u),radius=(8+power[i]*30)*(.25f+ease*1.4f)*c.scale;
-                    float ox=c.screenX(originX[i],originY[i]),oy=c.screenY(originX[i],originY[i]);
-                    canvas.material(ox,oy,radius*2,0,0,radius*2*RiverCamera.DEPTH,EffectMaterial.RING,.03f+.03f*(1-u),1,
-                        SoftCue.alpha(0xffeaf7ff,(1-u)*(1-u)*(.35f+.5f*power[i])));
+                    float u=age[i]/(float)RING,ease=1-(1-u)*(1-u),radius=(8+power[i]*30)*(.25f+ease*1.4f);
+                    WavePatch.sprite(g,p,SpriteAtlas.RIPPLES,i%4,originX[i],originY[i],
+                        dx*radius*2.2f,dy*radius*2.2f,-dy*radius*1.75f,dx*radius*1.75f,(1-u)*(1-u)*(.24f+.35f*power[i]));
                     if(power[i]>=.5f && age[i]>=3){
-                        float u2=(age[i]-3)/r,radius2=(6+power[i]*22)*(.25f+(1-(1-u2)*(1-u2))*1.5f)*c.scale;
-                        canvas.material(ox,oy,radius2*2,0,0,radius2*2*RiverCamera.DEPTH,EffectMaterial.RING,.025f,1,
-                            SoftCue.alpha(0xffeaf7ff,(1-u2)*(1-u2)*.4f*power[i]));
+                        float u2=(age[i]-3)/(float)RING,r2=(6+power[i]*22)*(.25f+(1-(1-u2)*(1-u2))*1.5f);
+                        WavePatch.sprite(g,p,SpriteAtlas.RIPPLES,(i+1)%4,originX[i],originY[i],dx*r2*2,dy*r2*2,-dy*r2*1.6f,dx*r2*1.6f,(1-u2)*(1-u2)*.22f*power[i]);
                     }
                 }
             }
@@ -131,8 +130,8 @@ public final class CollisionSplashes {
             // Contact flash: a hot white bloom at hull height for the first frames of a real hit.
             if(j%STAMPS==0 && age[i]<FLASH && power[i]>=.25f){
                 float f=1-age[i]/(float)FLASH,ox=c.screenX(originX[i],originY[i]),oy=c.screenY(originX[i],originY[i])-6*c.scale;
-                float size=(26+54*power[i])*(1.25f-.25f*f)*c.scale;
-                canvas.material(ox,oy,size,0,0,size*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfffff4dc,f*f*(.45f+.5f*power[i])));
+                float size=(18+34*power[i])*(1.25f-.25f*f)*c.scale;
+                canvas.material(ox,oy,size,0,0,size*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfffff4dc,f*f*(.35f+.4f*power[i])));
                 if(power[i]>=.55f)canvas.material(ox,oy,size*.38f,0,0,size*.3f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffffffff,f*f));
             }
             // Detached hot streaks only for substantial incoming impacts (>=45.5 units/s).
