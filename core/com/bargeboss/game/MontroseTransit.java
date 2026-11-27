@@ -3,14 +3,14 @@ package com.bargeboss.game;
 /** Making the run between the marina and the beach a ride, not a commute:
  *  - Open water: outside the marina's no-wake zone a free-running tug (nothing on the towline) runs
  *    30% faster, throwing bow spray.
- *  - Boost lane: a line of marker buoys from the harbor mouth, up the outer breakwater and round its
+ *  - Boost lane: a line of energy pickups from the harbor mouth, up the outer breakwater and round its
  *    head to the beach. Pass close at speed for a short boost; back-to-back markers build a combo.
  *    Markers re-arm, and they work in either direction.
  *  - Travel radio: Gavin chats while you're out in open water (nonblocking, like the police radio):
  *    reactions to the lane and landmarks, hints about the job at hand, gossip about the last one.
  * Fixed-step and deterministic; drawing never changes state. */
 final class MontroseTransit {
-    /** Marker buoys along the route, harbor mouth to beach (all open water outside the no-wake zone). */
+    /** Boost pickups along the route, harbor mouth to beach (all open water outside the no-wake zone). */
     static final float[] BUOYS={250,860,670,876,1089,892,1507,868,1922,803,2301,666,2609,380,2822,33,2955,-365,3041,-775,
         3104,-1190,3130,-1609,3144,-2028,3142,-2448,3128,-2868,3064,-3279,2938,-3680,2621,-3893,2225,-3969,1837,-3807,1462,-3620};
     static final float OPEN_WATER=1.3f,BOOST=1.35f,REACH=48,MIN_SPEED=45;
@@ -80,7 +80,7 @@ final class MontroseTransit {
             case Challenges.REGATTA:return new String[]{"GATES FIRST, SIGHTSEEING LATER","THE COMMITTEE IS WATCHING THE CLOCK. SO AM I.",who};
             case Challenges.FIREWORKS_NIGHT:return new String[]{"THE LAKEFRONT IS FILLING UP","EVERYONE'S WAITING ON THAT BARGE. NO PRESSURE.",who};
             case Challenges.DEEP_FREEZE:return new String[]{"YOU SHOULDN'T BE OUT HERE","THE ICE IS COMING. GET THOSE BOATS TO THE LIFT.",who};
-            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. THE MARKER BUOYS GIVE YOU A KICK IF YOU PASS CLOSE.",who};
+            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. COLLECT THE LIGHTNING PICKUPS FOR A BURST OF SPEED.",who};
         }
     }
     /** Rotating chatter: a tease about the last job, a hint for this one, then local color. */
@@ -108,7 +108,7 @@ final class MontroseTransit {
         return color[(lineIndex/4)%color.length];
     }
 
-    /** Rendering-only IDs: negative IDs are boost floats, navigation/physics IDs stay intact. */
+    /** Rendering-only IDs: negative IDs are boost pickups, navigation/physics IDs stay intact. */
     int[] orderedMarks(Game g){
         int[] navigation=NavigationLights.ordered(g);
         if(!g.montroseStage() || g.tutorial!=null)return navigation;
@@ -128,35 +128,18 @@ final class MontroseTransit {
     }
     void drawMark(Game g,Painter p,int id){
         if(id>=0){NavigationLights.draw(g,p,id);return;}
-        int i=-id-1;float power=spent[i]==0?.65f+.35f*NavigationLights.flash(g.visualTicks,i*17):.08f;
-        BuoyArt.draw(g,p,BUOYS[i*2],BUOYS[i*2+1],32,BuoyArt.YELLOW,NavigationLights.YELLOW,power,i);
+        BoostPickupArt.draw(g,p,-id-1);
     }
 
-    /** Water layer: buoy shadows, open route cues and bow spray. */
+    /** Water layer: energy orbits, pickup bursts and bow spray. */
     void water(Game g,Painter p){
         if(!g.montroseStage() || g.tutorial!=null)return;
-        RiverCamera c=g.layout.camera;float s=c.scale;
+        RiverCamera c=g.layout.camera;
         for(int i=0;i<spent.length;i++){
-            float x=BUOYS[i*2],y=BUOYS[i*2+1],sx=c.screenX(x,y),sy=c.screenY(x,y);
+            float x=BUOYS[i*2],y=BUOYS[i*2+1];
             if(!markVisible(g,i))continue;
-            boolean ready=spent[i]==0;
-            BuoyArt.shadows(g,p,x,y,32,BuoyArt.YELLOW);
             p.pushClipOutside(ShoreOcclusion.region(g,c,x-140,y-140,x+140,y+140,Float.NEGATIVE_INFINITY,p.supportsUnionClips()));
-            try{
-                // Lane direction toward the beach, for the chevron.
-                int n=Math.min(spent.length-1,i+1),m=Math.max(0,i-1);float dx=BUOYS[n*2]-BUOYS[m*2],dy=BUOYS[n*2+1]-BUOYS[m*2+1],d=Math.max(1,Physics.length(dx,dy));dx/=d;dy/=d;
-                float pulse=.75f+.25f*(float)StrictMath.sin(g.visualTicks*.15f+i*.7f);
-                int col=ready?0xff2fe6ff:0xff4a6670;
-                if(ready)p.material(sx,sy,REACH*2.2f*s,0,0,REACH*2.2f*s*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(col,.35f*pulse));
-                if(ready)for(int k=0;k<2;k++){
-                    float along=(14+k*9)*s+((g.visualTicks*.6f)%9)*s,cx=c.screenX(x+dx*along/s,y+dy*along/s),cy=c.screenY(x+dx*along/s,y+dy*along/s);
-                    float ux=c.screenX(x+dx,y+dy)-sx,uy=c.screenY(x+dx,y+dy)-sy,ul=Math.max(.001f,Physics.length(ux,uy));ux/=ul;uy/=ul;
-                    float w=5*s;p.line(cx-ux*w+uy*w,cy-uy*w-ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));p.line(cx-ux*w-uy*w,cy-uy*w+ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));
-                }
-                if(flash>0 && flashBuoy==i){float u=1-flash/40f,r=(REACH*.5f+u*55)*s;
-                    p.spriteAffine(SpriteAtlas.RIPPLES,i%4,sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,(1-u)*(1-u)*.35f);
-                    SoftCue.burst(new RiverPainter(p,c),x,y,REACH*.45f,u,SoftCue.YELLOW);
-                }
+            try{BoostPickupArt.water(g,p,i);
             }finally{p.popClip();}
         }
         if(open)TransitEffects.bow(g,p,boostTicks>0);

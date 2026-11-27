@@ -7415,3 +7415,28 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   16.618/17.535 ms after; draw median/p95 5.879/7.337 vs 5.717/7.088 ms.
   No significant regression in this measured scene; this is not a claim about
   every level or renderer. Evidence: docs/performance/scenery-2026-11-27/boost-polish.json.
+
+### 2026-11-27 — arcade lightning powerups (supersedes ordinary boost buoy art)
+- User rejected ordinary buoy identity and the basic ring. BoostPickupArt now
+  draws a hovering beveled gold lightning core, open cyan frame, four rising
+  sparks and three tapered comet ribbons over painted water ripples. Shared
+  ribbon endpoints remove translucent joint beads. Collection collapses the
+  core in 12 ticks and emits eight sparklets over 40 ticks; a dim 24-mark circuit
+  displays the real re-arm fraction. Navigation buoys and gameplay remain intact.
+- No new textures/caches/emitters. Ready effects have bounded submissions (under
+  100 polygons, under 100 strokes, one ripple stamp per pickup). Upright glyphs
+  retain ground-depth sorting and shore cutouts; water effects remain below hulls.
+- Full check.sh/build-android.sh passed: 26,425 effect/phase/clip/budget assertions.
+  Ten scenery fixtures passed, including an uncollected-powerup fixture. Actual
+  desktop renderer reviewed ready/catch/spent/recharging at zoom 0.9 and 2.1.
+  A final radio-copy correction was recompiled/re-dexed/signed and its transit
+  test passed before native installation.
+- Android Canvas on Pixel 11 Pro: matched pickup freeze scene, zoom 2.1, 120 warmup
+  + 360 measured frames. Interval median/p95 16.623/17.194 ms before versus
+  16.632/17.334 ms after; draw 5.728/6.939 versus 5.738/7.239 ms. New ready fixture
+  with three visible pickups, zoom 0.9: interval 16.611/17.079, draw 6.771/7.672 ms.
+  No significant regression in the matched capture. Ready timing is an absolute
+  sample, not a before/after comparison. Native screenshot reviewed; early ADB
+  transport failure was recovered before successful installation/captures.
+  Evidence: docs/performance/scenery-2026-11-27/arcade-powerup.json.
+- iOS pixels/performance remain unverified because J2ObjC is unavailable here.
