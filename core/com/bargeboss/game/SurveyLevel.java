@@ -65,6 +65,10 @@ abstract class SurveyLevel {
     /** Landmark ids in painter order; levels with presorted landmarks may override. */
     int[] orderedLandmarks(Game g){int n=landmarkCount(g);int[] ids=new int[n];for(int i=0;i<n;i++)ids[i]=i;return ids;}
     void lights(Game g,SceneryLighting out){}
+    /** Level effects on the water surface (reflections), beneath shore walls. */
+    void water(Game g,Painter world){}
+    /** Level effects on the ground layer (fire wash, smoke), beneath vessels and buildings. */
+    void ground(Game g,Painter p){}
     /** Stage-entry preparation: geometry, ground, rigid models and bridges, never in a draw. */
     void prepare(Game g){geometry();ground().prepare(minX(),minY(),maxX(),maxY(),g.tug.x,g.tug.y);shoreline();LocationBridges.prepare(bridges());}
 
@@ -132,6 +136,8 @@ abstract class SurveyLevel {
         boolean landmarkBox(Game g,int i,float[] out){return ChicagoView.box(g,i,out);}
         int[] orderedLandmarks(Game g){return ChicagoView.ordered(g);}
         void lights(Game g,SceneryLighting out){ChicagoView.lights(g,out);}
+        void water(Game g,Painter world){g.chicago.fire.reflection(g,world);}
+        void ground(Game g,Painter p){g.chicago.fire.ground(g,p);}
         void prepare(Game g){super.prepare(g);ChicagoView.prepare();}
     }
 }

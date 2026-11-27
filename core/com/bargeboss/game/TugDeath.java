@@ -15,7 +15,7 @@ final class TugDeath {
     private static final int[] PRE_POPS={18,38,54,68,80};
     private static final int[] CHAIN={150,205,262,318,372};
     private static final int[] BLASTS={0,5,10,17};
-    private static final int SEED=777,DEBRIS=26,FLAMES=7,EMBERS=22;
+    private static final int SEED=777,DEBRIS=26,FLAMES=3,EMBERS=22;
     private static final String TITLE="GAME OVER";
     private TugDeath(){}
 
@@ -98,11 +98,10 @@ final class TugDeath {
         }
         // Flames along the deck, growing in act 1, roaring through act 3, drowned at the plunge.
         float fire=t<BLAST?Math.min(1,t/(float)BLAST)*.7f:1-Physics.clamp((t-(SUNK-40))/40f,0,1);
+        // The shared woodpile fire (FireArt), planted along the deck and riding it down.
         if(fire>0)for(int k=0;k<FLAMES;k++){
-            float along=((k+.5f)/FLAMES-.5f)*b.half*1.6f,x=b.x+ca*along,y=b.y+sa*along;
-            float f=flicker(t,k),lift=(6+8*f)*zs*(1-sinking*.7f),r=(9+7*f)*s*(.6f+.6f*fire);
-            float fx=c.screenX(x,y),fy=c.screenY(x,y)-lift;
-            glow(p,fx,fy,r*2.2f,0xffff5a1a,.55f*fire);glow(p,fx,fy-r*.4f,r*1.2f,0xffffa040,.8f*fire*f);glow(p,fx,fy-r*.7f,r*.55f,0xfffff0b0,.9f*fire*f);
+            float along=((k+.5f)/FLAMES-.5f)*b.half*1.5f,x=b.x+ca*along,y=b.y+sa*along;
+            FireArt.burn(g,p,x,y,12*ArticulatedModel.Z_SCALE*(1-sinking*.7f),.3f,fire,Math.min(1,fire*1.5f),SEED+k,FlameArt.INSTANCES,6);
         }
         // Embers drifting up out of the fire.
         if(fire>0)for(int k=0;k<EMBERS;k++){
@@ -133,7 +132,7 @@ final class TugDeath {
                 p.material(sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,EffectMaterial.RING,.035f,1,SoftCue.alpha(k==0?0xffffe6b8:0xffffffff,(1-u)*(1-u)*.85f));
             }
             if(a<50)glow(p,sx,sy,hull*7*s,0xffffa040,(1-a/50f)*.9f);
-            debris(p,c,b,a,s,zs);
+            debris(g,p,c,b,a,s,zs);
             // Chain of secondary explosions as the fire reaches fuel and stores.
             for(int i=0;i<CHAIN.length;i++){
                 float off=(rand(i,9)-.5f)*b.half*1.2f;
@@ -146,13 +145,12 @@ final class TugDeath {
             float fade=Math.min(1,burn/30f)*(1-Physics.clamp((burn-140)/120f,0,1));
             for(int k=0;k<9;k++){
                 float ang=rand(k,10)*6.283f,dist=(rand(k,11)*.9f+.2f)*hull*(1+burn/200f),x=b.x+(float)StrictMath.cos(ang)*dist,y=b.y+(float)StrictMath.sin(ang)*dist;
-                float f=flicker(t,k+20),r=(6+5*f)*s,fx=c.screenX(x,y),fy=c.screenY(x,y)-4*f*zs;
-                glow(p,fx,fy,r*2,0xffff5a1a,.5f*fade);glow(p,fx,fy-r*.3f,r,0xffffc060,.8f*fade*f);
+                FireArt.burn(g,p,x,y,2,.16f,.75f,fade,SEED+20+k,3,0);
             }
         }
     }
     /** Hull pieces thrown high; they splash down, float and burn out. */
-    private static void debris(Painter p,RiverCamera c,Body b,int a,float s,float zs){
+    private static void debris(Game g,Painter p,RiverCamera c,Body b,int a,float s,float zs){
         for(int k=0;k<DEBRIS;k++){
             float ang=rand(k,12)*6.283f,v=60+rand(k,13)*120,vz=90+rand(k,14)*150,grav=110;
             float flight=2*vz/grav,sec=a/60f,fs=Math.min(sec,flight);
@@ -167,9 +165,9 @@ final class TugDeath {
             int color=k%3==0?0xff7a2a1a:k%3==1?0xff2a2a2e:0xff9a6a3a;
             p.convexQuad(px-cx*len-cy*w,py-cy*len+cx*w,px+cx*len-cy*w,py+cy*len+cx*w,px+cx*len+cy*w,py+cy*len-cx*w,px-cx*len+cy*w,py-cy*len-cx*w,SoftCue.alpha(color,fade));
             // Most pieces burn: a trail while flying, a small fire once floating.
-            if(k%4!=3){float f=flicker(a,k+40),burnOut=landed?1-Physics.clamp(since/(3+rand(k,18)*4),0,1):1;
-                glow(p,px,py-(landed?3*s:0),(landed?6:5)*s*(.7f+.4f*f),0xffff7a2a,.75f*burnOut*fade);
-                glow(p,px,py-(landed?4*s:0),2.4f*s,0xffffe0a0,.9f*burnOut*fade*f);}
+            if(k%4!=3){float burnOut=landed?1-Physics.clamp(since/(3+rand(k,18)*4),0,1):1;
+                if(landed)FireArt.burn(g,p,x,y,1,.09f,.6f,burnOut*fade,SEED+40+k,2,0);
+                else{float f=flicker(a,k+40);glow(p,px,py,5*s*(.7f+.4f*f),0xffff7a2a,.75f*fade);glow(p,px,py,2.4f*s,0xffffe0a0,.9f*fade*f);}}
         }
     }
 

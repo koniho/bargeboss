@@ -41,7 +41,7 @@ final class FireworksLesson {
     private final int[] pileHeat=new int[PILES],pileSteam=new int[PILES],pileSizzle=new int[PILES];
     /** Ring of "water was landing" flags per pile, indexed by smoke tick, so each smoke puff
      * keeps the colour it was born with: soot while dry, steam while being cooled. */
-    static final int SMOKE_LIFE=256,SMOKE_PUFFS=20;
+    static final int SMOKE_LIFE=FireArt.SMOKE_LIFE,SMOKE_PUFFS=FireArt.SMOKE_PUFFS;
     private final boolean[][] wetAt=new boolean[PILES][SMOKE_LIFE];
     int smokeTicks;
     int heat(int pile){return heat==0?0:pileHeat[pile];}
@@ -97,12 +97,7 @@ final class FireworksLesson {
     float depth(Game g,int pile){return g.layout.camera.screenY(x(pile),y(pile));}
     /** Flickering intensity in 0..1: full heat burns brightest, a cooled pile fades through
      * its steam tail to zero. Shared by the red wash and the smoke column density. */
-    float intensity(Game g,int pile){
-        int h=heat(pile);
-        if(h>0){float flame=.86f+.09f*(float)StrictMath.sin(g.visualTicks*.13+pile*1.7)+.05f*(float)StrictMath.sin(g.visualTicks*.057+pile);
-            return flame*(.18f+.82f*h/(float)PILE_HEAT);}
-        return .18f*pileSteam[pile]/(float)STEAM_TICKS;
-    }
+    float intensity(Game g,int pile){return FireArt.intensity(g,heat(pile)/(float)PILE_HEAT,pileSteam[pile]/(float)STEAM_TICKS,pile);}
     InstructionPanel.Content content(Game g){
         boolean fire=g.tutorial.lesson>=Tutorial.FIRE_TOW;
         boolean collect=g.tutorial.lesson==Tutorial.FIRE_TOW;
@@ -120,21 +115,11 @@ final class FireworksLesson {
      * intensity: at most three screen-sized quads of fill, and quads entirely off screen are skipped. */
     void wash(Game g,Painter p){
         if(!ignited)return;
-        RiverCamera c=g.layout.camera;float scale=c.scale;
         for(int group=0;group<GROUPS;group++){
             int a=group*2,b=a+1;float ea=intensity(g,a),eb=intensity(g,b),e=ea+eb;if(e<=.003f)continue;
-            float wx=(x(a)*ea+x(b)*eb)/e,wy=(y(a)*ea+y(b)*eb)/e;
-            float sx=c.screenX(wx,wy),sy=c.screenY(wx,wy)-GroundArt.LAND_RISE*scale;
-            float w=WASH_WIDTH*scale,h=WASH_HEIGHT*scale;
-            if(sx+w*.5f<0 || sx-w*.5f>g.layout.width || sy+h*.5f<0 || sy-h*.5f>g.layout.height)continue;
-            p.material(sx,sy-40*scale,w,0,0,h,EffectMaterial.GLOW,0,e,SoftCue.alpha(washColor(g,ea>=eb?a:b),WASH_ALPHA));
+            FireArt.wash(g,p,(x(a)*ea+x(b)*eb)/e,(y(a)*ea+y(b)*eb)/e,GroundArt.LAND_RISE,e,FireArt.washColor(g,ea>=eb?a:b));
         }
     }
-    static final float WASH_WIDTH=1450,WASH_HEIGHT=980,WASH_ALPHA=.3f;
-    /** Mostly deep red with a slow amber breath from the shared flame palette. */
-    static int washColor(Game g,int pile){int f=FireLight.color(g,pile);
-        int green=Math.round(40+((f>>8&255)-82)*.25f),blue=Math.round(20+((f&255)-23)*.1f);
-        return 0xffff0000|Math.max(0,Math.min(255,green))<<8|Math.max(0,Math.min(255,blue));}
     /** Analytic smoke column: a fixed set of puffs per fire, each reborn every SMOKE_LIFE ticks,
      * drifting downwind as it rises. No particles are stored; dark soot while dry, pale steam
      * for puffs born while water was landing, and nothing once the steam tail ends. */
@@ -145,24 +130,7 @@ final class FireworksLesson {
         for(int pile=0;pile<PILES;pile++)smoke(g,p,pile);
     }
     void smoke(Game g,Painter p,int pile){
-        float e=intensity(g,pile);if(e<=.003f)return;
-        boolean out=heat(pile)==0;
-        RiverCamera c=g.layout.camera;float scale=c.scale;
-        float density=out?1:.45f+.55f*Math.min(1,e/.9f);
-        for(int i=0;i<SMOKE_PUFFS;i++){
-            int age=(smokeTicks+i*SMOKE_LIFE/SMOKE_PUFFS+pile*37)&(SMOKE_LIFE-1);
-            float t=age/(float)SMOKE_LIFE;
-            boolean wet=out || wetAt[pile][(smokeTicks-age)&(SMOKE_LIFE-1)];
-            float curl=(float)StrictMath.sin(age*.031+i*2.1+pile);
-            // Wind carries the plume north-west in world space, matching vessel exhaust drift.
-            float wx=x(pile)+((i%3)-1)*6-t*(70+curl*14),wy=y(pile)-t*(130+curl*10);
-            float px=c.screenX(wx,wy),py=c.screenY(wx,wy)-(GroundArt.LAND_RISE+38+t*t*70+age*.8f)*scale;
-            float radius=(18+t*72)*scale*(.75f+.25f*density);
-            float fade=Physics.clamp(age/14f,0,1)*(1-t)*(1-t);
-            if(px+radius<0 || px-radius>g.layout.width || py+radius<0 || py-radius>g.layout.height)continue;
-            if(wet)SteamPuff.draw(p,px,py,radius*.9f,fade*(out?pileSteam[pile]/(float)STEAM_TICKS:.75f));
-            else p.smokePuff(px,py,radius,t,SoftCue.alpha(0xff000000|SmokePuff.SOOT,fade*.78f*density));
-        }
+        FireArt.plume(g,p,x(pile),y(pile),GroundArt.LAND_RISE,intensity(g,pile),heat(pile)==0,pileSteam[pile]/(float)STEAM_TICKS,smokeTicks,wetAt[pile],pile);
     }
     void draw(Game g,Painter p,int pile){
         float X=x(pile),Y=y(pile);int heat=heat(pile),steam=pileSteam[pile];
@@ -180,22 +148,8 @@ final class FireworksLesson {
             }return;
         }
         if(!onScreen)return;
-        if(heat>0){
-            float strength=.35f+.65f*heat/PILE_HEAT;
-            int fireColor=FireLight.color(g,pile);
-            // The wide wash is drawn beneath vessels; one hot core glow sits on the flames.
-            p.material(sx,sy-18*scale,210*scale,0,0,130*scale,EffectMaterial.GLOW,0,FireLight.energy(g,pile),SoftCue.alpha(fireColor,.8f));
-            FlameArt.draw(g,p,pile);
-            for(int i=0;i<20;i++){
-                float age=(g.visualTicks*1.4f+i*17+pile*23)%120,t=age/120;
-                float x=sx+((i%7-3)*8+age*.16f*(float)StrictMath.sin(i+pile))*scale,y=sy-age*.8f*scale;
-                p.line(x,y,x-2*scale,y+5*scale,1.8f*scale,SoftCue.alpha(i%2==0?0xffffd329:0xffff692b,(1-t)*strength));
-            }
-        }
+        FireArt.burn(g,p,X,Y,GroundArt.LAND_RISE,heat/(float)PILE_HEAT,pile);
         contactSteam.draw(g,p,pile);
-        if(heat==0 && steam>0){
-            float t=1-steam/(float)STEAM_TICKS;
-            for(int i=0;i<4;i++)SteamPuff.draw(p,sx+(i-1.5f)*13*scale-t*22*scale,sy-(8+t*45)*scale,(12+t*15)*scale,(1-t)*.8f);
-        }
+        if(heat==0 && steam>0)FireArt.steamTail(g,p,X,Y,GroundArt.LAND_RISE,1-steam/(float)STEAM_TICKS);
     }
 }

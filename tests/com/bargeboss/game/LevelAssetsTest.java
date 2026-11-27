@@ -15,8 +15,9 @@ final class LevelAssetsTest {
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
             boolean marina=Challenges.kind(id)==Challenges.MONTROSE || Challenges.kind(id)==Challenges.BOAT_TAG || Challenges.kind(id)==Challenges.ISLAND_TAG;
             check(scenery.length==(marina?13:0)+(Challenges.kind(id)==Challenges.ISLAND_TAG?2:0),"Level prepares its permanent scenery family");
-            check(preparation.length==plan.rotationAtlases().length+scenery.length+PlayerPortrait.COUNT+3,"Complete preparation includes scenery, rotations, captain portraits, cyclic foam, splashes and ripples");
+            check(preparation.length==plan.rotationAtlases().length+scenery.length+PlayerPortrait.COUNT+4,"Complete preparation includes scenery, rotations, captain portraits, shared flames, cyclic foam, splashes and ripples");
             for(int c=0;c<PlayerPortrait.COUNT;c++)check(preparation[plan.rotationAtlases().length+scenery.length+c]==SpriteAtlas.WHITNEY_PORTRAIT+c,"Every stage prepares the always-visible captain portraits");
+            check(preparation[preparation.length-4]==SpriteAtlas.FLAME,"Every stage prepares shared flames for burning vessels");
             check(preparation[preparation.length-3]==SpriteAtlas.FOAM,"Cyclic foam is prepared before active draws");
             for(int receiver:scenery){int atlas=SpotlightArt.source(receiver);check(marina?((Challenges.kind(id)==Challenges.ISLAND_TAG && (atlas==SpriteAtlas.ISLAND_GROUND||atlas==SpriteAtlas.ISLAND_WOODLAND))||atlas==SpriteAtlas.POLICE_PORTRAIT||atlas==SpriteAtlas.POLICE_SHADOW||atlas==SpriteAtlas.RACING_SHADOW||atlas==SpriteAtlas.CHAS_PORTRAIT||atlas==SpriteAtlas.ALEX_PORTRAIT||atlas==SpriteAtlas.GAVIN_PORTRAIT||atlas==SpriteAtlas.MOORED_BIMINI||atlas==SpriteAtlas.MARINA||atlas==SpriteAtlas.MOORED_BOATS||atlas==SpriteAtlas.MOORED_NORMALS||atlas==SpriteAtlas.STATIC_HARBOR):atlas==SpriteAtlas.SHORE_BOLLARDS||atlas==SpriteAtlas.SHORE_LOADING||atlas==SpriteAtlas.SHORE_TRUCKS||atlas==SpriteAtlas.STEELWORKS||atlas==SpriteAtlas.FACTORY,"Scenery stays level-specific");}
             Game game=new Game();game.challengeId=id;game.reset();
