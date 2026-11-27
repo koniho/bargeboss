@@ -7232,3 +7232,16 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   logs remain untracked in `out/police-m3-*`. Desktop/shared review passed;
   iOS parity was attempted but this checkout lacks `ios/vendor/j2objc-3.1/dist`.
   No iOS native raster or device performance claim is made.
+
+## Harbor-to-beach transit: open water, boost markers, travel radio
+
+- Outside the marina's no-wake zone a free-running tug runs 30% faster with bow spray (towing keeps
+  its pace, so loaded tows stay controllable).
+- 21 marker buoys (probed: open water, full clearance, outside no-wake) run from the harbor mouth up the
+  outer breakwater and round its head to the beach. Passing within 48 at speed gives a 1.35x boost for
+  100 ticks and 25 x combo points; markers re-arm after 12 s and work both ways; they show on the
+  overview map.
+- MontroseTransit's nonblocking radio (the PoliceRadio pattern): open-water greeting per job, lane
+  cheers, breakwater-head landmark, low-hull warning, re-entry reminder, and rotating chatter every
+  20 s (a tease from the last debrief tier, a job tip, local color).
+- STATE hash unchanged; DRAW baseline updated for the markers.

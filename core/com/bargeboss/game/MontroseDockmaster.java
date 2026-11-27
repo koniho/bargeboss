@@ -63,6 +63,7 @@ public final class MontroseDockmaster {
     public static void debrief(Game g,int job,int stars,int seconds){
         String[] lines=lines(job,Math.max(0,Math.min(3,stars)));
         if(lines==null)return;
+        g.transit.lastJob=job;g.transit.lastTier=stars>=3?0:stars==2?1:2;
         String detail=lines[1]+" "+hullRemark(g.hull,stars)+" "+clock(seconds);
         g.dialogue.interject(g,RadioAudio.DOCKMASTER,"GAVIN / MONTROSE DOCKMASTER",lines[0],detail.trim(),lines[2]);
     }

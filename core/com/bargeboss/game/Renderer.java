@@ -27,7 +27,7 @@ public final class Renderer {
         g.layout=live;
         if(!g.dying())HarborView.objective(g,p);
         if(g.job!=null && g.montroseStage())g.job.hud(g,p);
-        if(g.montroseStage())g.arcade.draw(g,p);
+        if(g.montroseStage()){g.arcade.draw(g,p);g.transit.hud(g,p);}
         if(g.arenaStage())TagArenaView.hud(g,p);
         FeederView.callouts(g,p);
         g.abilities.drawScreenFlash(g,p);
@@ -48,6 +48,7 @@ public final class Renderer {
     static void river(Game g,Painter p) {
         HarborView.draw(g,p);
         if(g.job!=null && g.montroseStage())g.job.water(g,((RiverPainter)p).canvas());
+        if(g.montroseStage())g.transit.water(g,((RiverPainter)p).canvas());
         DockView.shadows(g,((RiverPainter)p).canvas());
         BridgeLayers bridgeLayers=new BridgeLayers(g,((RiverPainter)p).canvas());
         NavigationLights.reflections(g,((RiverPainter)p).canvas());

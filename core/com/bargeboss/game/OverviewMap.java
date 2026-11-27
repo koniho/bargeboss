@@ -113,6 +113,7 @@ public final class OverviewMap {
             local.line(mapX(g,b.x-b.dx*b.left,b.y-b.dy*b.left),mapY(g,b.x-b.dx*b.left,b.y-b.dy*b.left),
                     mapX(g,b.x+b.dx*b.right,b.y+b.dy*b.right),mapY(g,b.x+b.dx*b.right,b.y+b.dy*b.right),1,ink);
         }
+        if(g.montroseStage() && g.tutorial==null)for(int k=0;k<MontroseTransit.count();k++){float bx=MontroseTransit.BUOYS[k*2],by=MontroseTransit.BUOYS[k*2+1];local.circle(mapX(g,bx,by),mapY(g,bx,by),1.1f,g.transit.spent[k]==0?0xcc2fe6ff:0x554a6670);}
         if(g.arenaStage() && g.arena!=null){
             TagArena a=g.arena;
             if(a.mode==TagArena.CHASE)for(int k=0;k<a.penX.length;k++)target(g,local,a.penX[k],a.penY[k],TARGET);

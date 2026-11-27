@@ -96,6 +96,8 @@ public final class Game {
     public final SoundEffects sounds=new SoundEffects();
     public final EngineHaptics engineHaptics=new EngineHaptics();
     public final RadioAudio radio=new RadioAudio(sounds);
+    /** Open-water speed, boost markers and travel radio between the marina and the beach. */
+    final MontroseTransit transit=new MontroseTransit();
     public Body teacherBoat(){return tutorial==null || tutorial.arrival==null?null:tutorial.arrival.teacher;}
     public boolean conversation(){return montroseArrival.active() || dialogue.active || MontroseHaulout.active(this) && haulout.radio.waiting() || tutorial!=null && (tutorial.entering || tutorial.instructorRadio.phase!=0);}
     public static final int HAPTIC_TICK=1, HAPTIC_CONTACT=2, HAPTIC_IMPACT=3, HAPTIC_SUCCESS=4;
@@ -521,7 +523,7 @@ public final class Game {
         visualTicks=0; visualAccumulator=0; ropePhase=ropeTicks=0; ropeBody=null;ropeTowTarget=null; ropeTargeted=false;
         celebrationTicks=impactTicks=damageFlashTicks=0;hullDamagedTick=-1000;portrait.reset();
         damageCooldown=0; accumulator=0; selected=-1;
-        tug=new Body(0,-1,330,650,(float)Math.PI);deathTicks=0;
+        tug=new Body(0,-1,330,650,(float)Math.PI);deathTicks=0;transit.reset();
         for(int i=0;i<cargo.length;i++) cargo[i]=null;
         feeders=new Feeder[]{new Feeder(260),new Feeder(360)};
         if(calumetStage()){feeders=new Feeder[0];voyage.setup(this);spawnIndex=quota();}
@@ -1103,7 +1105,7 @@ public final class Game {
         }
         tow.prune(this);
         if(arenaStage() && arena!=null){arena.step(this,splashes);advanceArena();}
-        if(montroseStage()){arcade.step(this);mission.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
+        if(montroseStage()){arcade.step(this);mission.step(this);transit.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
         if(tutorial!=null) tutorial.update(this);
         else {
             if(calumetStage())voyage.step(this);
@@ -1315,7 +1317,7 @@ public final class Game {
         float desired=(float)StrictMath.atan2(dy,dx)+(astern?(float)Math.PI:0), error=Physics.angle(desired-tug.angle);
         tug.spin+=Physics.clamp(error*6-tug.spin*3,-7,7)*Physics.DT;
         float load=tow.loadMass(tug);
-        float nitro=arenaStage() && arena!=null && arena.nitro>0?1.45f:1;
+        float nitro=(arenaStage() && arena!=null && arena.nitro>0?1.45f:1)*(montroseStage()?transit.speedFactor(this):1);
         float speed=Math.min(topSpeed*nitro*tow.speedFactor(tug),(float)StrictMath.sqrt(distance*100)*nitro);
         speed*=Math.max(.1f,1-Math.abs(error)*.45f);
         // Manual gestures steer toward the pointer but drive along the actual keel.
