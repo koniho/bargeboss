@@ -1242,6 +1242,7 @@ public final class Game {
         // Smashing through traffic hard enough to wreck the boat costs the tug a hard hit too.
         if(arenaStage() && arena!=null)arena.motion(this,splashes);
         if(montroseStage()){harborTraffic.step(this,splashes);{float smash=harborTraffic.collide(this,splashes);if(smash>=HullDamage.SMASH_SPEED)hit(HullDamage.percent(smash,HullDamage.TUG_HP));}if(job!=null)job.motion(this);}
+        weather.wind(this);
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }
         int currentContact=contact==null?-1:contact.id;
