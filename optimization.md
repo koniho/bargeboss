@@ -7471,3 +7471,17 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   iOS remains unverified because the J2ObjC toolchain is unavailable.
 - Source artwork copied to Pictures/BargeBoss/BargeBoss-boost-canister-v1-design.png;
   MediaStore entry 18380 verified. No cloud-backup setting changed.
+
+### 2026-11-27 — water-colored boost chevrons
+- User explicitly simplified the art to water-themed chevrons, glowing cyan only
+  when triggered. Replaced the canister/foam with three muted teal polygons aligned
+  to the local route. During the existing 40-tick pickup flash, eighteen bounded
+  strokes highlight those same shapes in cyan; spent marks disappear until re-arm.
+- All pickup rendering stays in the shore-clipped water pass below vessels. Removed
+  the upright marker sorting adapter, canister runtime PNG/atlas/manifest entry,
+  and its offline export/check tool. Archived art source remains documentation only.
+  No new textures, caches or simulation changes. Idle cost: three polygons per mark.
+- Full check.sh/build-android.sh passed, including 22,277 effect/clip/budget checks.
+  Actual renderer ready and triggered frames reviewed at 0.9/2.1 zoom. Native
+  before capture completed on the now-unlocked phone; final after capture follows
+  the upstream weather merge and rebuild.

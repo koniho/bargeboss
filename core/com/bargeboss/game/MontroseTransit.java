@@ -80,7 +80,7 @@ final class MontroseTransit {
             case Challenges.REGATTA:return new String[]{"GATES FIRST, SIGHTSEEING LATER","THE COMMITTEE IS WATCHING THE CLOCK. SO AM I.",who};
             case Challenges.FIREWORKS_NIGHT:return new String[]{"THE LAKEFRONT IS FILLING UP","EVERYONE'S WAITING ON THAT BARGE. NO PRESSURE.",who};
             case Challenges.DEEP_FREEZE:return new String[]{"YOU SHOULDN'T BE OUT HERE","THE ICE IS COMING. GET THOSE BOATS TO THE LIFT.",who};
-            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. COLLECT THE GOLD BOOST CANISTERS FOR A BURST OF SPEED.",who};
+            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. CROSS THE WATER CHEVRONS FOR A BURST OF SPEED.",who};
         }
     }
     /** Rotating chatter: a tease about the last job, a hint for this one, then local color. */
@@ -108,30 +108,11 @@ final class MontroseTransit {
         return color[(lineIndex/4)%color.length];
     }
 
-    /** Rendering-only IDs: negative IDs are boost pickups, navigation/physics IDs stay intact. */
-    int[] orderedMarks(Game g){
-        int[] navigation=NavigationLights.ordered(g);
-        if(!g.montroseStage() || g.tutorial!=null)return navigation;
-        int[] pending=new int[navigation.length+count()];int n=navigation.length;
-        System.arraycopy(navigation,0,pending,0,n);
-        for(int i=0;i<count();i++)if(markVisible(g,i)){
-            int id=-i-1,at=n++;float depth=markDepth(g,id);
-            while(at>0 && markDepth(g,pending[at-1])>depth){pending[at]=pending[at-1];at--;}
-            pending[at]=id;
-        }
-        return java.util.Arrays.copyOf(pending,n);
-    }
-    float markDepth(Game g,int id){return id>=0?NavigationLights.depth(g,id):g.layout.camera.screenY(BUOYS[(-id-1)*2],BUOYS[(-id-1)*2+1]);}
     private boolean markVisible(Game g,int i){
         RiverCamera c=g.layout.camera;float sx=c.screenX(BUOYS[i*2],BUOYS[i*2+1]),sy=c.screenY(BUOYS[i*2],BUOYS[i*2+1]),pad=80*c.scale;
         return sx>=-pad && sx<=g.layout.width+pad && sy>=-pad && sy<=g.layout.height+pad;
     }
-    void drawMark(Game g,Painter p,int id){
-        if(id>=0){NavigationLights.draw(g,p,id);return;}
-        BoostPickupArt.draw(g,p,-id-1);
-    }
-
-    /** Water layer: energy orbits, pickup bursts and bow spray. */
+    /** Water layer: boost chevrons and bow spray. */
     void water(Game g,Painter p){
         if(!g.montroseStage() || g.tutorial!=null)return;
         RiverCamera c=g.layout.camera;

@@ -1,5 +1,8 @@
 # Painted boost canister v1
 
+Archived: superseded by `boost-water-chevrons-v1.md`. The runtime sprite and
+export tool described below have been removed; the source is retained as design history.
+
 Supersedes the rejected holographic lightning/frame design in
 `boost-energy-pickup-v1.md`. The user approved compact painted canisters, warm
 highlights and foam spirals to fit the harbor's existing painted material style.
