@@ -35,19 +35,21 @@ final class EffectsStyleTest {
         int navigationCount=NavigationLights.count(g);g.layout=Layout.focused(960,600,MontroseTransit.BUOYS[6],MontroseTransit.BUOYS[7],2,480,300);
         int[] marks=g.transit.orderedMarks(g);float previous=-Float.MAX_VALUE;int boostMarks=0;
         for(int mark:marks){float depth=g.transit.markDepth(g,mark);check(depth>=previous,"Powerups share ground-depth ordering with navigation marks");previous=depth;
-            if(mark<0){boostMarks++;Capture buoy=new Capture();g.transit.drawMark(g,buoy,mark);check(buoy.polys>0 && buoy.buoys==0 && buoy.clips==0,"Arcade core restores shore clipping and never draws a normal buoy");}}
+            if(mark<0){boostMarks++;Capture buoy=new Capture();g.transit.drawMark(g,buoy,mark);check(buoy.stamps==2 && buoy.buoys==0 && buoy.clips==0,"Painted canister restores shore clipping and never draws a normal buoy");}}
         check(boostMarks>0 && NavigationLights.count(g)==navigationCount,"Rendering boost floats preserves navigation collision IDs");
         int remaining=g.transit.boostTicks;Capture lane=new Capture();g.transit.water(g,lane);check(lane.clips==0 && g.transit.boostTicks==remaining,"Route water cues restore clips without advancing boost");
+        boolean prepared=false;for(int atlas:LevelAssets.challenge(Challenges.MONTROSE).preparationAtlases())if(atlas==SpriteAtlas.BOOST_CANISTER)prepared=true;
+        check(prepared && SpriteAtlas.count(SpriteAtlas.BOOST_CANISTER)==1 && SpriteAtlas.columns(SpriteAtlas.BOOST_CANISTER)==1 && SpriteAtlas.rows(SpriteAtlas.BOOST_CANISTER)==1,"Single canister frame is prepared before entering Montrose");
         g.transit.flash=0;g.transit.spent[3]=0;
         Capture ready=new Capture(),repeat=new Capture();BoostPickupArt.water(g,ready,3);BoostPickupArt.draw(g,ready,3);
         BoostPickupArt.water(g,repeat,3);BoostPickupArt.draw(g,repeat,3);
-        check(ready.hash==repeat.hash && ready.rings==0 && ready.buoys==0,"Deterministic arcade glyph and open orbit, no generic buoy/ring");
-        check(ready.lines<100 && ready.polys<100 && ready.stamps<=1,"Ready powerup has a fixed submission budget");
+        check(ready.hash==repeat.hash && ready.rings==0 && ready.buoys==0,"Deterministic painted canister and foam, no generic buoy/ring");
+        check(ready.lines<100 && ready.polys<100 && ready.stamps<=13,"Ready powerup has a fixed submission budget");
         for(int phase:new int[]{0,6,12,20,39}){g.transit.spent[3]=720;g.transit.flashBuoy=3;g.transit.flash=40-phase;
             Capture pickup=new Capture();BoostPickupArt.water(g,pickup,3);BoostPickupArt.draw(g,pickup,3);
-            check(pickup.clips==0 && pickup.stamps<=1 && pickup.lines<40 && pickup.polys<40,"Pickup contraction and burst stay bounded through lifetime");}
+            check(pickup.clips==0 && pickup.stamps<=3 && pickup.lines<40 && pickup.polys<40,"Pickup fade and burst stay bounded through lifetime");}
         g.transit.flash=0;Capture empty=new Capture();BoostPickupArt.draw(g,empty,3);check(empty.polys==0 && empty.stamps==0,"Collected powerup disappears until rearmed");
-        g.transit.spent[3]=0;Capture rearmed=new Capture();BoostPickupArt.draw(g,rearmed,3);check(rearmed.polys>0,"Powerup returns when gameplay re-arms it");
+        g.transit.spent[3]=0;Capture rearmed=new Capture();BoostPickupArt.draw(g,rearmed,3);check(rearmed.stamps==2,"Powerup returns when gameplay re-arms it");
         float x=g.tug.x,y=g.tug.y;g.layout=Layout.focused(960,600,x,y,1,480,300);
         for(int phase:new int[]{4,40,126,138,160,260}){
             Capture water=new Capture(),air=new Capture();HullDamage.wreckWater(g,water,g.layout.camera,x,y,24,12,7,phase);HullDamage.wreck(g,air,g.layout.camera,x,y,24,12,7,false,phase);

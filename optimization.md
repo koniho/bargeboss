@@ -7447,3 +7447,27 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Merged origin/main f28975a9 (standard blizzard weather) cleanly. The merged
   full check.sh and Android build passed; no changes to pickup geometry or timing
   were required by the merge.
+
+### 2026-11-27 — painted boost canisters (replaces rejected neon powerups)
+- User rejected the oversized glyph/frame as out of place and approved compact
+  painted canisters, warm highlights and foam spirals. Generated a weathered
+  ochre/navy canister with painted cream speed chevrons. Canonical RGBA source and
+  prompt are tracked under docs/art-prompts; the runtime frame is 192x288 (216 KiB
+  decoded), with a registered (0.5, 0.95) base pivot and 16x24 world-unit size.
+- Removed overhead glyphs, cyan brackets, energy ribbons and recharge circuit.
+  Ten quiet foam stamps form broken slow spirals; one local contact ripple and
+  wet collar seam anchor the canister. Physical wave heave/roll uses shared ticks.
+  Collection fades the canister with five small warm sparkles and an expanding
+  ripple. Gameplay pickup radius, cooldown and speed remain unchanged.
+- Single frame is prepared only for Montrose, outside active draws. Asset check
+  verifies bounded dimensions, alpha, silhouette coverage and clear gutters.
+  Full check.sh/build-android.sh passed, including 22,361 effect/clip/budget checks.
+  Level preparation expectations updated for the added Montrose-only frame.
+  Actual shared-renderer ready/catch/spent/recharging frames reviewed at 0.9/2.1.
+- APK installed successfully. Native visual/performance checks are pending an
+  unlock: phone reports keyguard showing and Dozing; screenshot is black and no
+  frames were exported. Stalled baseline capture was cancelled rather than
+  treating it as valid evidence. No native performance claim for this revision.
+  iOS remains unverified because the J2ObjC toolchain is unavailable.
+- Source artwork copied to Pictures/BargeBoss/BargeBoss-boost-canister-v1-design.png;
+  MediaStore entry 18380 verified. No cloud-backup setting changed.

@@ -80,7 +80,7 @@ final class MontroseTransit {
             case Challenges.REGATTA:return new String[]{"GATES FIRST, SIGHTSEEING LATER","THE COMMITTEE IS WATCHING THE CLOCK. SO AM I.",who};
             case Challenges.FIREWORKS_NIGHT:return new String[]{"THE LAKEFRONT IS FILLING UP","EVERYONE'S WAITING ON THAT BARGE. NO PRESSURE.",who};
             case Challenges.DEEP_FREEZE:return new String[]{"YOU SHOULDN'T BE OUT HERE","THE ICE IS COMING. GET THOSE BOATS TO THE LIFT.",who};
-            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. COLLECT THE LIGHTNING PICKUPS FOR A BURST OF SPEED.",who};
+            default:return new String[]{"OPEN WATER. NO-WAKE RULES DON'T APPLY","OPEN HER UP. COLLECT THE GOLD BOOST CANISTERS FOR A BURST OF SPEED.",who};
         }
     }
     /** Rotating chatter: a tease about the last job, a hint for this one, then local color. */
