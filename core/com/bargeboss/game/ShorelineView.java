@@ -31,6 +31,7 @@ public final class ShorelineView {
     }
     private static Segment[] marina(){ArrayList<Segment> out=new ArrayList<Segment>();float[] coast=MontroseHarbor.COAST;float u=0;
         for(int i=0;i<coast.length-2;i+=2){float x=(coast[i]+coast[i+2])*.5f,y=(coast[i+1]+coast[i+3])*.5f;
+            if(MontroseBeach.beachEdge(coast[i],coast[i+1],coast[i+2],coast[i+3]))continue;
             u=edge(out,coast[i],coast[i+1],coast[i+2],coast[i+3],u,MontroseShoreArt.riseAt(x,y),true);}
         // DOCK_EDGES already excludes internal seams between overlapping deck pieces.
         for(float[] e:MontroseShoreArt.DOCK_EDGES)u=edge(out,e[0],e[1],e[2],e[3],u,MontroseHarbor.DOCK_RISE,true);

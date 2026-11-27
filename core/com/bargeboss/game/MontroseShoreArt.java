@@ -95,12 +95,17 @@ public final class MontroseShoreArt {
     }
     static float[] quad(float[] step){return new float[]{step[0],step[1],step[2],step[3],step[4],step[5],step[6],step[7]};}
     static boolean terraced(float x,float y){for(int i=0;i<STEP_FOOTPRINTS.length;i++)if(overlaps(STEP_BOUNDS[i],x,y,x,y) && PolygonWater.contains(STEP_FOOTPRINTS[i],x,y))return true;return false;}
-    static float riseAt(float x,float y){for(int i=0;i<STEPS.length;i++)if(overlaps(STEP_BOUNDS[i],x,y,x,y) && PolygonWater.contains(STEP_FOOTPRINTS[i],x,y))return STEPS[i][8];return MontroseHarbor.LAND_RISE;}
+    static float riseAt(float x,float y){for(int i=0;i<STEPS.length;i++)if(overlaps(STEP_BOUNDS[i],x,y,x,y) && PolygonWater.contains(STEP_FOOTPRINTS[i],x,y))return STEPS[i][8];return MontroseBeachShore.riseAt(x,y);}
     static float[][] topFootprints(){return STEP_FOOTPRINTS;}
     private static float[][] footprints(){float[][] q=new float[STEPS.length][];for(int i=0;i<q.length;i++)q[i]=quad(STEPS[i]);return q;}
     private static float[][] landTops(){ArrayList<float[]> out=new ArrayList<float[]>();
         for(float[] land:MontroseHarbor.LAND_TRIANGLES){ArrayList<float[]> pieces=new ArrayList<float[]>();pieces.add(land);
             for(float[] s:STEPS){float[] q=quad(s),box=PolygonWater.bounds(q);ArrayList<float[]> next=new ArrayList<float[]>();
+                for(float[] piece:pieces){if(PolygonWater.overlaps(PolygonWater.bounds(piece),box))PolygonWater.subtract(piece,q,next);else next.add(piece);}pieces=next;}
+            for(float[] footprint:MontroseBeachShore.FOOTPRINTS){
+                // Subpixel overlap at the dry join prevents cracks from independently clipped floats.
+                float[] q=footprint.clone();for(int k=4;k<8;k+=2){int outer=k==4?2:0;float dx=q[outer]-q[k],dy=q[outer+1]-q[k+1],length=Physics.length(dx,dy);q[k]+=dx/length*.1f;q[k+1]+=dy/length*.1f;}
+                float[] box=PolygonWater.bounds(q);ArrayList<float[]> next=new ArrayList<float[]>();
                 for(float[] piece:pieces){if(PolygonWater.overlaps(PolygonWater.bounds(piece),box))PolygonWater.subtract(piece,q,next);else next.add(piece);}pieces=next;}
             out.addAll(pieces);
         }

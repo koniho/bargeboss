@@ -21,6 +21,11 @@ final class MontroseBeaconArt {
     static void prepare(){}
     static float x(int id){return MontroseHarbor.mapX(MAP[id][0]);}
     static float y(int id){return MontroseHarbor.mapY(MAP[id][1]);}
+    static float yaw(int id){
+        if(id==HORN)return 0;
+        float[] d=MontroseHarbor.DOCK_LINES[MontroseHarbor.DOCK_LINES.length-2+id];
+        return (float)StrictMath.atan2(d[3]-d[1],d[2]-d[0]);
+    }
     static float rise(int id){return id==HORN?MontroseHarbor.LAND_RISE:MontroseHarbor.DOCK_RISE;}
     static int color(int id){return id==EAST?NavigationLights.RED:NavigationLights.GREEN;}
     static float power(int ticks){return NavigationLights.flash(ticks,0,180);}
@@ -35,7 +40,7 @@ final class MontroseBeaconArt {
         return px+pad>=0 && px-pad<=g.layout.width && py+pad>=0 && py-pad<=g.layout.height;}
     private static ArticulatedModel build(int id){
         ArticulatedModel.Builder b=new ArticulatedModel.Builder();
-        int n=b.node(id==HORN?"wilson-avenue-beacon":"montrose-inlet-"+id,-1,x(id),y(id),rise(id)/ArticulatedModel.Z_SCALE,0,0);
+        int n=b.node(id==HORN?"wilson-avenue-beacon":"montrose-inlet-"+id,-1,x(id),y(id),rise(id)/ArticulatedModel.Z_SCALE,yaw(id),0);
         int steel=0xff75504d,white=0xffa2aba6,band=id==WEST?0xff397262:0xff99594e;
         if(id==HORN){
             // Weathered red equipment cabinet and anti-climb apron below four tapered legs.
@@ -88,7 +93,8 @@ final class MontroseBeaconArt {
     static void ground(Game g,Painter p,int id){
         RiverCamera c=g.layout.camera;Painter world=new RiverPainter(ScreenView.offset(p,0,-rise(id)*c.scale),c);
         float x=x(id),y=y(id),r=id==HORN?10:8;
-        world.poly(new float[]{x-r,y-r,x+r,y-r,x+r,y+r,x-r,y+r},0x240b171e);
+        float[] q={-r,-r,r,-r,r,r,-r,r};float co=(float)StrictMath.cos(yaw(id)),si=(float)StrictMath.sin(yaw(id));
+        for(int i=0;i<q.length;i+=2){float a=q[i],b=q[i+1];q[i]=x+a*co-b*si;q[i+1]=y+a*si+b*co;}world.poly(q,0x240b171e);
     }
     static void reflection(Game g,Painter canvas){
         if(!visible(g,HORN))return;float power=power(g.visualTicks);if(power<=0)return;

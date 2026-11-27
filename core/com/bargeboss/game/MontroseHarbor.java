@@ -285,9 +285,11 @@ public final class MontroseHarbor {
     private static float[] buildShore(RiverCamera c,float l,float t,float r,float b,float depth,boolean union){
         float[] land=projected(MontroseShoreArt.LAND_TOPS,c,l,t,r,b,depth,LAND_RISE),dock=projected(DOCKS,c,l,t,r,b,depth,DOCK_RISE),steps=MontroseShoreArt.stepMask(c,l,t,r,b,depth),access=MontroseShoreArt.accessMask(c,l,t,r,b,depth);
         java.util.ArrayList<float[]> faces=new java.util.ArrayList<float[]>();int count=land.length+dock.length+steps.length+access.length;
+        float[] beach=MontroseBeachShore.mask(c,l,t,r,b,depth);count+=beach.length;
         for(float[] face:SHORE_FACES){
                 if(face[7]>r || face[9]<l || face[8]>b || face[10]<t)continue;
                 float ax=face[0],ay=face[1],bx=face[2],by=face[3],rise=face[4],dx=face[5],dy=face[6];
+                if(rise==LAND_RISE && MontroseBeach.beachEdge(ax,ay,bx,by))continue;
                 if(rise==LAND_RISE){float len=Physics.length(dx,dy),nx=-dy/len,ny=dx/len;if(openWater((ax+bx)*.5f+nx*2,(ay+by)*.5f+ny*2)){nx=-nx;ny=-ny;}
                     if(MontroseShoreArt.terraced((ax+bx)*.5f+nx*2,(ay+by)*.5f+ny*2))continue;}
 
@@ -313,6 +315,7 @@ public final class MontroseHarbor {
                 faces.add(q);count+=12;
         }
         float[] result=new float[count];System.arraycopy(land,0,result,0,land.length);System.arraycopy(dock,0,result,land.length,dock.length);System.arraycopy(steps,0,result,land.length+dock.length,steps.length);System.arraycopy(access,0,result,land.length+dock.length+steps.length,access.length);int at=land.length+dock.length+steps.length+access.length;
+        System.arraycopy(beach,0,result,at,beach.length);at+=beach.length;
         for(float[] q:faces)for(int i=2;i<q.length-2;i+=2){result[at++]=q[0];result[at++]=q[1];result[at++]=q[i];result[at++]=q[i+1];result[at++]=q[i+2];result[at++]=q[i+3];}
         if(!union)return ClipUnion.disjoint(result);
         // Nonzero winding includes overlapping receivers without re-triangulating their union.

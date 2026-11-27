@@ -43,7 +43,12 @@ public final class ShoreOcclusionPixelTest {
             p.rect(2,2,4,4,0xffff00ff);graphics.dispose();check(image.getRGB(3,3)==0xffff00ff,"clip stack restores after a vessel");
             float rise=(g.montroseStage()?MontroseHarbor.LAND_RISE:GroundArt.LAND_RISE)*scale,depth=c.screenY(x,y);
             for(int py=20;py<380;py+=3)for(int px=8;px<376;px+=3) {
+                rise=(g.montroseStage()?MontroseHarbor.LAND_RISE:GroundArt.LAND_RISE)*scale;
                 float wx=c.worldX(px+.5f,py+.5f+rise),wy=c.worldY(px+.5f,py+.5f+rise);
+                if(g.montroseStage() && (bank==0 || bank==3) && !args[0].equals("montrose-haulout")){
+                    // Invert the real sloped surface, rather than assuming an elevated wall.
+                    for(int iteration=0;iteration<24;iteration++){rise=(MontroseHarbor.openWater(wx,wy)?0:MontroseBeachShore.riseAt(wx,wy))*scale;wx=c.worldX(px+.5f,py+.5f+rise);wy=c.worldY(px+.5f,py+.5f+rise);}
+                }
                 boolean land=land(g,wx,wy);
                 // Ignore one-pixel antialias boundary and the sprite's ground-depth plane.
                 boolean dryInterior=land && land(g,wx-2,wy) && land(g,wx+2,wy)

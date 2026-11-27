@@ -21,6 +21,8 @@ public final class MontroseBeaconTest {
         for(int t=0;t<180;t++)check(MontroseBeaconArt.power(t)==MontroseBeaconArt.power(t+180),"All nominal Montrose lights repeat every three seconds");
         check(MontroseBeaconArt.power(15)==1 && MontroseBeaconArt.power(135)==0,"Horn retains true dark interval at old two-second flash time");
         for(int id=0;id<3;id++){
+            if(id<2){float[] d=MontroseHarbor.DOCK_LINES[MontroseHarbor.DOCK_LINES.length-2+id];
+                float yaw=MontroseBeaconArt.yaw(id);check(Math.abs((d[2]-d[0])*StrictMath.sin(yaw)-(d[3]-d[1])*StrictMath.cos(yaw))<.001f,"Foundation axes follow the supporting dock");}
             float x=MontroseBeaconArt.x(id),y=MontroseBeaconArt.y(id);float[] lamp=MontroseBeaconArt.lamp(id);
             check(lamp[0]==x && lamp[1]==y,"Lens remains registered to structure root");
             check(Math.abs(lamp[2]*ArticulatedModel.Z_SCALE-MontroseBeaconArt.rise(id)-76*ArticulatedModel.Z_SCALE)<.001f,"Lens and model use exactly one height transform");

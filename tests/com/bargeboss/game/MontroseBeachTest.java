@@ -30,6 +30,12 @@ public final class MontroseBeachTest {
             else if(MontroseHarbor.planY(coast[i+1])<-600){horn++;check(!beach,"Both horn edges and hooked tip retain hard-bank seawall");}
         }
         check(horn>10 && sand>10,"Seawall transition covers the full horn and beach");
+        for(float[] q:MontroseBeachShore.FOOTPRINTS){
+            float ax=(q[0]+q[2])*.5f,ay=(q[1]+q[3])*.5f,bx=(q[4]+q[6])*.5f,by=(q[5]+q[7])*.5f;
+            float previous=0;for(int step=1;step<10;step++){float f=step/10f,xx=ax+(bx-ax)*f,yy=ay+(by-ay)*f;
+                check(!MontroseHarbor.openWater(xx,yy),"Sand slope stays within surveyed land");
+                float height=MontroseBeachShore.riseAt(xx,yy);check(height>previous && height<MontroseHarbor.LAND_RISE,"Beach rises continuously from water to dry sand");previous=height;}
+        }
         // Every new coast vertex must be included in the triangulated land/water area.
         double sum=0;for(float[] tri:MontroseHarbor.WATER_TRIANGLES)sum+=Math.abs(PolygonWater.area(tri));
         check(Math.abs(sum-Math.abs(PolygonWater.area(MontroseHarbor.WATER_POLYGON)))<128,"Expanded coast triangulates without lost/overlapping area");

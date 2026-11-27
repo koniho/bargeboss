@@ -7316,3 +7316,26 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Full results, including every initial and repeated run, are retained in
   `docs/performance/scenery-2026-11-27/comparison.json`; raw CSVs/screenshots remain
   in ignored `out/scenery-*`. No production code changed during this validation.
+
+### Montrose shoreline follow-up — 2026-11-27
+- Entrance beacon bases and contact patches now derive yaw from their supporting
+  dock centerlines; navigation anchors and red/green identities stay fixed.
+- Removed beach wall drawing and vertical wetness/light receivers. Prepared sand
+  triangles rise from the unchanged surveyed water edge to the dry park surface.
+  Ground cutouts and vessel masks use the same slopes; a 0.1-world-unit overlap
+  at the dry join prevents floating-point clip cracks. No new texture assets.
+- Full `./check.sh` and Android build passed. All-heading Montrose regression:
+  4,037,082 production hull/cargo pixel assertions; probes now invert the sloped
+  beach surface instead of assuming a vertical bank. Slope samples remain dry
+  and rise monotonically; beacon tests verify dock alignment.
+- Installed/launched on development phone and reviewed native beach pixels;
+  both rotated entrance markers reviewed in shared desktop inlet capture.
+  Existing native `montrose-inlet` fixture centers on boats, so a closer marker
+  camera is still needed for native marker-specific inspection.
+- Matched Vulkan 120-warmup/360-sample captures: beach interval median
+  16.651→16.656 ms, p95 21.906→23.477; draw median 6.604→6.687 ms.
+  Inlet interval median 16.656→16.656, p95 22.302→22.787; draw median
+  7.205→7.509 ms. Short-run tails remain noisy; no median frame-rate loss observed.
+  Source/frame memory unchanged; no sample cache builds or frame evictions.
+  Evidence: `docs/performance/scenery-2026-11-27/shoreline-followup.json`.
+  Native iOS remains unvalidated because the translation toolchain is absent.

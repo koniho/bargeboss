@@ -45,7 +45,8 @@ public final class MontroseView {
             float[] water=MontroseHarbor.projected(MontroseHarbor.WATER_TRIANGLES,raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55,Float.NEGATIVE_INFINITY);
             float[] steps=MontroseHarbor.projected(MontroseShoreArt.topFootprints(),raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55,Float.NEGATIVE_INFINITY);
             float[] rocks=MontroseEntranceShore.terrainCut(raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55);
-            waterClip=new float[water.length+steps.length+rocks.length];System.arraycopy(water,0,waterClip,0,water.length);System.arraycopy(steps,0,waterClip,water.length,steps.length);System.arraycopy(rocks,0,waterClip,water.length+steps.length,rocks.length);
+            float[] beach=MontroseBeachShore.cut(raised(camera,MontroseHarbor.LAND_RISE),col*256-55,row*256-55,(col+1)*256+55,(row+1)*256+55);
+            waterClip=new float[water.length+steps.length+rocks.length+beach.length];System.arraycopy(beach,0,waterClip,water.length+steps.length+rocks.length,beach.length);System.arraycopy(water,0,waterClip,0,water.length);System.arraycopy(steps,0,waterClip,water.length,steps.length);System.arraycopy(rocks,0,waterClip,water.length+steps.length,rocks.length);
             float[] bounds=groundBounds(camera,col,row);left=bounds[0];top=bounds[1];w=bounds[2];h=bounds[3];}
         public int key(){return 830000+(col+8)*64+row+24;}
         public float width(){return w;}
@@ -137,8 +138,8 @@ public final class MontroseView {
                 if(Math.abs(v)<.001f){if(o<min || o>=max){end=-1;break;}}else{float aa=(min-o)/v,bb=(max-o)/v;start=Math.max(start,Math.min(aa,bb));end=Math.min(end,Math.max(aa,bb));}}
             if(end<=start)continue;
             if(MontroseShoreArt.terraced((ax+bx)*.5f-nx*2,(ay+by)*.5f-ny*2))continue;
-            boolean beach=MontroseBeach.beachEdge(ax,ay,bx,by);
-            MontroseShoreArt.wall(p,c,ax+dx*start,ay+dy*start,ax+dx*end,ay+dy*end,0,MontroseHarbor.LAND_RISE,beach?SurfaceMaterial.CONCRETE:SurfaceMaterial.CORRUGATED,beach?0xff777163:0xff59605e,beach?.08f:.35f);
+            if(MontroseBeach.beachEdge(ax,ay,bx,by))continue;
+            MontroseShoreArt.wall(p,c,ax+dx*start,ay+dy*start,ax+dx*end,ay+dy*end,0,MontroseHarbor.LAND_RISE,SurfaceMaterial.CORRUGATED,0xff59605e,.35f);
 
         }
     }
@@ -182,7 +183,8 @@ public final class MontroseView {
         RiverCamera land=raised(c,MontroseHarbor.LAND_RISE);
         MontroseShoreArt.docks(g,canvas);MontroseEntranceShore.pier(g,canvas);
         float[] terraceCut=MontroseShoreArt.terraceCut(land),rockCut=MontroseEntranceShore.wholeTerrainCut(land);
-        float[] stepCut=new float[terraceCut.length+rockCut.length];System.arraycopy(terraceCut,0,stepCut,0,terraceCut.length);System.arraycopy(rockCut,0,stepCut,terraceCut.length,rockCut.length);
+        float[] beachCut=MontroseBeachShore.wholeCut(land);
+        float[] stepCut=new float[terraceCut.length+rockCut.length+beachCut.length];System.arraycopy(beachCut,0,stepCut,terraceCut.length+rockCut.length,beachCut.length);System.arraycopy(terraceCut,0,stepCut,0,terraceCut.length);System.arraycopy(rockCut,0,stepCut,terraceCut.length,rockCut.length);
         canvas.pushClipOutside(stepCut);try{new RiverPainter(canvas,land).poly(MontroseHarbor.LAND_POLYGON,canvas.lighting().scenery(0xff273b2b));}finally{canvas.popClip();}
         float minX=Float.MAX_VALUE,minY=minX,maxX=-minX,maxY=-minX;
         for(int corner=0;corner<4;corner++){float x=c.worldX(corner%2*g.layout.width,corner/2*g.layout.height),y=c.worldY(corner%2*g.layout.width,corner/2*g.layout.height);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
@@ -194,7 +196,7 @@ public final class MontroseView {
             StaticLayer raster=GROUND_LEVELS[tier][tile];float display=c.scale/GROUND_DENSITY[tier];
             if(canvas.preparesLayers())canvas.prepareLayer(raster,display);canvas.layer(raster,x,y,display,1);
         }
-        MontroseShoreArt.terraces(g,canvas);MontroseEntranceShore.substrate(g,canvas);MontroseEntranceShore.rocks(g,canvas);MontroseShoreArt.promenade(g,canvas);MontroseTravelLift.apron(g,canvas);MontroseShoreArt.access(g,canvas);MontroseEntranceShore.steps(g,canvas);MontroseShoreArt.gates(g,canvas);
+        MontroseBeachShore.draw(g,canvas);MontroseShoreArt.terraces(g,canvas);MontroseEntranceShore.substrate(g,canvas);MontroseEntranceShore.rocks(g,canvas);MontroseShoreArt.promenade(g,canvas);MontroseTravelLift.apron(g,canvas);MontroseShoreArt.access(g,canvas);MontroseEntranceShore.steps(g,canvas);MontroseShoreArt.gates(g,canvas);
         g.weather.background(g,canvas);
         VesselShoreLight.draw(g,canvas);
         // Every ground receiver finishes before any upright park sprite; a later
