@@ -1,0 +1,54 @@
+{
+  "before": {
+    "renderer": "canvas",
+    "samples": 360,
+    "reuse_commands": false,
+    "minimal": false,
+    "exclude": 0,
+    "interval_ms": {
+      "median": 16.643971,
+      "p95": 17.144296
+    },
+    "draw_ms": {
+      "median": 5.8792314999999995,
+      "p95": 7.336902
+    },
+    "presentation_ms": {
+      "count": 358,
+      "median": 16.6539975,
+      "p95": 16.670625,
+      "mean": 16.65366329888268
+    },
+    "texture_counters": {
+      "cache_builds": "0.0",
+      "cache_evictions": "0.0",
+      "frame_evictions": "0.0"
+    }
+  },
+  "after": {
+    "renderer": "canvas",
+    "samples": 360,
+    "reuse_commands": false,
+    "minimal": false,
+    "exclude": 0,
+    "interval_ms": {
+      "median": 16.6184325,
+      "p95": 17.534999
+    },
+    "draw_ms": {
+      "median": 5.7171745000000005,
+      "p95": 7.08776
+    },
+    "presentation_ms": {
+      "count": 360,
+      "median": 16.648802,
+      "p95": 16.677161,
+      "mean": 15.402768538888889
+    },
+    "texture_counters": {
+      "cache_builds": "0.0",
+      "cache_evictions": "0.0",
+      "frame_evictions": "0.0"
+    }
+  }
+}

@@ -15,9 +15,12 @@ final class TransitEffects {
                 for(int side=-1;side<=1;side+=2){
                     float x=t.x-ca*(t.half+24)-sa*side*7,y=t.y-sa*(t.half+24)+ca*side*7;
                     WavePatch.sprite(g,water,SpriteAtlas.FOAM,side<0?2:3,x,y,ca*75,sa*75,-sa*19,ca*19,.32f*fade);
-                    // Thin reflected cyan accents follow the prop wash, leaving the hull open.
-                    float endX=x-ca*28,endY=y-sa*28;
-                    water.line(x,y,endX,endY,1.1f,SoftCue.alpha(SoftCue.CYAN,.35f*fade));
+                    // Broken water-bright seams taper into the textured wash, never solid rails.
+                    for(int j=0;j<3;j++){
+                        float u=Math.floorMod(g.visualTicks+j*9,28)/28f;
+                        float cx=x-ca*u*45,cy=y-sa*u*45,alpha=(1-u)*fade;
+                        water.line(cx,cy,cx-ca*(5+u*7),cy-sa*(5+u*7),2.2f*(1-u)+.4f,SoftCue.alpha(0xffc9f5ee,.45f*alpha));
+                    }
                 }
             }
             for(int j=0;j<6;j++){

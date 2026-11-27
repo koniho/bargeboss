@@ -32,6 +32,12 @@ final class EffectsStyleTest {
         g.settings.waterDetail=0;Capture low=new Capture();IslandArt.ripples(g,low,g.layout.camera,view);check(low.stamps==0,"Water detail toggle removes ambient ripple cost");
         g.selectChallenge(Challenges.MONTROSE);g.reset();g.montroseArrival.clear();g.tug.x=1300;g.tug.y=1000;g.tug.vx=90;g.tug.angle=0;g.transit.boostTicks=80;
         Capture boost=new Capture();TransitEffects.bow(g,boost,true);check(boost.stamps<=8 && boost.spray==6 && boost.clips==0,"Boost has six spray packets, two prop lanes and restored clips");
+        int navigationCount=NavigationLights.count(g);g.layout=Layout.focused(960,600,MontroseTransit.BUOYS[6],MontroseTransit.BUOYS[7],2,480,300);
+        int[] marks=g.transit.orderedMarks(g);float previous=-Float.MAX_VALUE;int boostMarks=0;
+        for(int mark:marks){float depth=g.transit.markDepth(g,mark);check(depth>=previous,"Painted boost floats share ground-depth ordering with navigation marks");previous=depth;
+            if(mark<0){boostMarks++;Capture buoy=new Capture();g.transit.drawMark(g,buoy,mark);check(buoy.stamps>0 && buoy.clips==0,"Painted boost buoy restores its shore and immersion clips");}}
+        check(boostMarks>0 && NavigationLights.count(g)==navigationCount,"Rendering boost floats preserves navigation collision IDs");
+        int remaining=g.transit.boostTicks;Capture lane=new Capture();g.transit.water(g,lane);check(lane.clips==0 && g.transit.boostTicks==remaining,"Route water cues restore clips without advancing boost");
         float x=g.tug.x,y=g.tug.y;g.layout=Layout.focused(960,600,x,y,1,480,300);
         for(int phase:new int[]{4,40,126,138,160,260}){
             Capture water=new Capture(),air=new Capture();HullDamage.wreckWater(g,water,g.layout.camera,x,y,24,12,7,phase);HullDamage.wreck(g,air,g.layout.camera,x,y,24,12,7,false,phase);

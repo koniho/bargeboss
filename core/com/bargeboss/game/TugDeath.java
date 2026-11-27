@@ -193,16 +193,16 @@ final class TugDeath {
         p.rect(0,cy-62*band,w,124*band,SoftCue.alpha(0xff2a0406,.75f*fade));
         p.rect(0,cy-62*band,w,2,SoftCue.alpha(0xffff4a3a,.8f*band));p.rect(0,cy+62*band-2,w,2,SoftCue.alpha(0xffff4a3a,.8f*band));
         // Letters drop in one at a time with a bounce.
-        float size=Math.min(100,w*.095f),total=Lettering.width(TITLE,size),x=w*.5f-total*.5f;
+        float size=Math.min(100,w*.095f),total=Lettering.headingWidth(TITLE,size),x=w*.5f-total*.5f;
         for(int i=0;i<TITLE.length();i++){
-            String ch=TITLE.substring(i,i+1);float cw=Lettering.width(ch,size);
+            String ch=TITLE.substring(i,i+1);float cw=Lettering.headingWidth(ch,size)+size*.055f;
             int la=o-30-i*LETTERS;
             if(la>=0 && ch.charAt(0)!=' '){
                 float u=Math.min(1,la/14f),drop=u<1?-(1-u)*(1-u)*h*.45f:(float)(StrictMath.abs(StrictMath.sin((la-14)*.45f))*StrictMath.exp(-(la-14)*.18f))*-14;
                 int alpha=Math.round(255*Math.min(1,la/6f));float ly=cy-size*.55f+drop;
-                Lettering.draw(p,ch,x+5,ly+5,size,(alpha*3/4<<24)|0x0a0103);
-                Lettering.draw(p,ch,x,ly,size,(alpha<<24)|0xff4a3a);
-                if(la>=14 && la<26)Lettering.draw(p,ch,x,ly,size,(Math.round(255*(1-(la-14)/12f))<<24)|0xffe0c8);
+                Lettering.heading(p,ch,x+5,ly+5,size,(alpha*3/4<<24)|0x0a0103);
+                Lettering.heading(p,ch,x,ly,size,(alpha<<24)|0xff4a3a);
+                if(la>=14 && la<26)Lettering.heading(p,ch,x,ly,size,(Math.round(255*(1-(la-14)/12f))<<24)|0xffe0c8);
             }
             x+=cw;
         }

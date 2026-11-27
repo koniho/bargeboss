@@ -7393,3 +7393,25 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   parity remains unvalidated here because the J2ObjC toolchain is unavailable.
 - Corrected boost replay was rebuilt, installed and visually confirmed on the
   phone: active boost, prop wash and spray are visible with no developer panel.
+
+### 2026-11-27 — painted boost floats, wake accents and game-over lettering
+- Shared Java: replaced the primitive boost circles with the existing registered
+  yellow buoy art, wave heave/roll, lanterns, waterline contact and shadows. A
+  rendering-only merged marker order keeps them correctly behind/in front of
+  vessels without changing navigation IDs or collision/boost rules. Water cues
+  now clip against shore. Reused existing atlases; no new source assets.
+- Boost foam now carries six short traveling water-bright seams instead of two
+  solid cyan rails. HUD uses the industrial plate and arcade heading font.
+  GAME OVER uses the same arcade heading glyphs, with correct per-letter advances;
+  its drop/bounce timing remains unchanged.
+- Full check.sh passed through build-android.sh, including 284 effect budget,
+  phase, culling and marker-depth assertions. Actual shared-renderer exports
+  reviewed boost phases and GAME OVER at ticks 440/480/540. Android APK built,
+  installed and native boost pixels reviewed. Initial standalone check was
+  interrupted by the build's clean of its shared output; the subsequent complete
+  build/check passed. iOS native validation remains unavailable (J2ObjC absent).
+- Matched Android Canvas freeze fixture montrose-boost-review, zoom 2.1, 120 warmup
+  plus 360 measured frames: interval median/p95 16.644/17.144 ms before and
+  16.618/17.535 ms after; draw median/p95 5.879/7.337 vs 5.717/7.088 ms.
+  No significant regression in this measured scene; this is not a claim about
+  every level or renderer. Evidence: docs/performance/scenery-2026-11-27/boost-polish.json.

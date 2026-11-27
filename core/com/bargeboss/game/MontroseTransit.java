@@ -108,30 +108,56 @@ final class MontroseTransit {
         return color[(lineIndex/4)%color.length];
     }
 
-    /** Water layer: marker buoys and the tug's bow spray at speed. */
+    /** Rendering-only IDs: negative IDs are boost floats, navigation/physics IDs stay intact. */
+    int[] orderedMarks(Game g){
+        int[] navigation=NavigationLights.ordered(g);
+        if(!g.montroseStage() || g.tutorial!=null)return navigation;
+        int[] pending=new int[navigation.length+count()];int n=navigation.length;
+        System.arraycopy(navigation,0,pending,0,n);
+        for(int i=0;i<count();i++)if(markVisible(g,i)){
+            int id=-i-1,at=n++;float depth=markDepth(g,id);
+            while(at>0 && markDepth(g,pending[at-1])>depth){pending[at]=pending[at-1];at--;}
+            pending[at]=id;
+        }
+        return java.util.Arrays.copyOf(pending,n);
+    }
+    float markDepth(Game g,int id){return id>=0?NavigationLights.depth(g,id):g.layout.camera.screenY(BUOYS[(-id-1)*2],BUOYS[(-id-1)*2+1]);}
+    private boolean markVisible(Game g,int i){
+        RiverCamera c=g.layout.camera;float sx=c.screenX(BUOYS[i*2],BUOYS[i*2+1]),sy=c.screenY(BUOYS[i*2],BUOYS[i*2+1]),pad=80*c.scale;
+        return sx>=-pad && sx<=g.layout.width+pad && sy>=-pad && sy<=g.layout.height+pad;
+    }
+    void drawMark(Game g,Painter p,int id){
+        if(id>=0){NavigationLights.draw(g,p,id);return;}
+        int i=-id-1;float power=spent[i]==0?.65f+.35f*NavigationLights.flash(g.visualTicks,i*17):.08f;
+        BuoyArt.draw(g,p,BUOYS[i*2],BUOYS[i*2+1],32,BuoyArt.YELLOW,NavigationLights.YELLOW,power,i);
+    }
+
+    /** Water layer: buoy shadows, open route cues and bow spray. */
     void water(Game g,Painter p){
         if(!g.montroseStage() || g.tutorial!=null)return;
         RiverCamera c=g.layout.camera;float s=c.scale;
         for(int i=0;i<spent.length;i++){
             float x=BUOYS[i*2],y=BUOYS[i*2+1],sx=c.screenX(x,y),sy=c.screenY(x,y);
-            if(sx<-80 || sx>g.layout.width+80 || sy<-80 || sy>g.layout.height+80)continue;
-            boolean ready=spent[i]==0;float bob=(float)StrictMath.sin(g.visualTicks*.08f+i)*1.5f*s;
-            // Lane direction toward the beach, for the chevron.
-            int n=Math.min(spent.length-1,i+1),m=Math.max(0,i-1);float dx=BUOYS[n*2]-BUOYS[m*2],dy=BUOYS[n*2+1]-BUOYS[m*2+1],d=Math.max(1,Physics.length(dx,dy));dx/=d;dy/=d;
-            float pulse=.75f+.25f*(float)StrictMath.sin(g.visualTicks*.15f+i*.7f);
-            int col=ready?0xff2fe6ff:0xff4a6670;
-            if(ready)p.material(sx,sy,REACH*2.2f*s,0,0,REACH*2.2f*s*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(col,.35f*pulse));
-            p.material(sx,sy-6*s+bob,26*s,0,0,26*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(col,ready?.55f*pulse:.15f));
-            p.circle(sx,sy-4*s+bob,5*s,ready?0xffff8a2b:0xff6a4a3a);p.circle(sx,sy-10*s+bob,2.4f*s,ready?0xffffffff:0xff8a8a8a);
-            if(ready)for(int k=0;k<2;k++){
-                float along=(14+k*9)*s+((g.visualTicks*.6f)%9)*s,cx=c.screenX(x+dx*along/s,y+dy*along/s),cy=c.screenY(x+dx*along/s,y+dy*along/s);
-                float ux=c.screenX(x+dx,y+dy)-sx,uy=c.screenY(x+dx,y+dy)-sy,ul=Math.max(.001f,Physics.length(ux,uy));ux/=ul;uy/=ul;
-                float w=5*s;p.line(cx-ux*w+uy*w,cy-uy*w-ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));p.line(cx-ux*w-uy*w,cy-uy*w+ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));
-            }
-            if(flash>0 && flashBuoy==i){float u=1-flash/40f,r=(REACH*.5f+u*55)*s;
-                p.spriteAffine(SpriteAtlas.RIPPLES,i%4,sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,(1-u)*(1-u)*.35f);
-                SoftCue.burst(new RiverPainter(p,c),x,y,REACH*.45f,u,SoftCue.YELLOW);
-            }
+            if(!markVisible(g,i))continue;
+            boolean ready=spent[i]==0;
+            BuoyArt.shadows(g,p,x,y,32,BuoyArt.YELLOW);
+            p.pushClipOutside(ShoreOcclusion.region(g,c,x-140,y-140,x+140,y+140,Float.NEGATIVE_INFINITY,p.supportsUnionClips()));
+            try{
+                // Lane direction toward the beach, for the chevron.
+                int n=Math.min(spent.length-1,i+1),m=Math.max(0,i-1);float dx=BUOYS[n*2]-BUOYS[m*2],dy=BUOYS[n*2+1]-BUOYS[m*2+1],d=Math.max(1,Physics.length(dx,dy));dx/=d;dy/=d;
+                float pulse=.75f+.25f*(float)StrictMath.sin(g.visualTicks*.15f+i*.7f);
+                int col=ready?0xff2fe6ff:0xff4a6670;
+                if(ready)p.material(sx,sy,REACH*2.2f*s,0,0,REACH*2.2f*s*RiverCamera.DEPTH,EffectMaterial.RING,.05f,1,SoftCue.alpha(col,.35f*pulse));
+                if(ready)for(int k=0;k<2;k++){
+                    float along=(14+k*9)*s+((g.visualTicks*.6f)%9)*s,cx=c.screenX(x+dx*along/s,y+dy*along/s),cy=c.screenY(x+dx*along/s,y+dy*along/s);
+                    float ux=c.screenX(x+dx,y+dy)-sx,uy=c.screenY(x+dx,y+dy)-sy,ul=Math.max(.001f,Physics.length(ux,uy));ux/=ul;uy/=ul;
+                    float w=5*s;p.line(cx-ux*w+uy*w,cy-uy*w-ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));p.line(cx-ux*w-uy*w,cy-uy*w+ux*w,cx,cy,2*s,SoftCue.alpha(col,.7f));
+                }
+                if(flash>0 && flashBuoy==i){float u=1-flash/40f,r=(REACH*.5f+u*55)*s;
+                    p.spriteAffine(SpriteAtlas.RIPPLES,i%4,sx,sy,r*2,0,0,r*2*RiverCamera.DEPTH,(1-u)*(1-u)*.35f);
+                    SoftCue.burst(new RiverPainter(p,c),x,y,REACH*.45f,u,SoftCue.YELLOW);
+                }
+            }finally{p.popClip();}
         }
         if(open)TransitEffects.bow(g,p,boostTicks>0);
     }
@@ -141,8 +167,12 @@ final class MontroseTransit {
         if(!active(g))return;
         if(boostTicks>0 || combo>1){
             float x=g.layout.width*.5f,y=g.layout.height-70,w=160,f=boostTicks/(float)BOOST_TICKS;
-            p.rect(x-w*.5f-2,y-2,w+4,10,0xd0050a10);p.rect(x-w*.5f,y,w*f,6,0xff2fe6ff);
-            Lettering.center(p,combo>1?"BOOST x"+combo:"BOOST",x,y-20,15,0xff2fe6ff);
+            PilotGlass.panel(p,x-w*.5f-14,y-29,w+28,44,PilotGlass.FILL);
+            Lettering.centerHeading(p,combo>1?"BOOST x"+combo:"BOOST",x,y-24,16,PilotGlass.TEXT);
+            p.rect(x-w*.5f,y,w,5,PilotGlass.TRACK);
+            if(f>0){p.rect(x-w*.5f,y,w*f,5,SoftCue.CYAN);
+                p.rect(x-w*.5f,y,w*f,1,0xdffff0ce);
+                p.material(x-w*.5f+w*f,y+2,16,0,0,10,EffectMaterial.GLOW,0,1,0x802fe6ff);}
         }
         if(serial>0 && !g.dialogue.active)panel.draw(g,p);
     }
