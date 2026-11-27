@@ -3,7 +3,8 @@ package com.bargeboss.game;
 /** Navy Pier fire: sparks from the Centennial Wheel set the timber pavilions on the pier's
  * south edge alight. The wheel stands 72 m back from the wall, beyond monitor reach, so it
  * only smokes; the pavilions face the harbor within reach. Only simulated monitor droplets
- * reduce heat; render code reads this state and never advances it. */
+ * reduce heat; render code reads this state and never advances it. The fires look exactly like
+ * the tutorial woodpiles: FireArt flames, embers, red wash, reflection and smoke column. */
 final class ChicagoFire {
     static final int PILES=3,PILE_HEAT=420,HEAT=PILES*PILE_HEAT,STEAM_TICKS=180;
     private static final float U=ChicagoSurvey.UNITS_PER_METRE;
@@ -16,9 +17,11 @@ final class ChicagoFire {
     static final float HIT_RADIUS=26,HIT_HEIGHT=20;
     private final int[] heat=new int[PILES],steam=new int[PILES],sizzle=new int[PILES];
     final FireSteam contactSteam=new FireSteam(PILES);
-    int total;
+    /** Smoke-tick ring of "water was landing" per pile, so plume puffs keep their birth colour. */
+    private final boolean[][] wetAt=new boolean[PILES][FireArt.SMOKE_LIFE];
+    int total,smokeTicks;
     boolean ignited;
-    void reset(){contactSteam.reset();for(int i=0;i<PILES;i++){heat[i]=steam[i]=sizzle[i]=0;}total=0;ignited=false;}
+    void reset(){contactSteam.reset();for(int i=0;i<PILES;i++){heat[i]=steam[i]=sizzle[i]=0;for(int j=0;j<FireArt.SMOKE_LIFE;j++)wetAt[i][j]=false;}total=smokeTicks=0;ignited=false;}
     void ignite(){ignited=true;total=HEAT;for(int i=0;i<PILES;i++)heat[i]=PILE_HEAT;}
     static float x(int pile){return AT[pile][0];}
     static float y(int pile){return AT[pile][1];}
@@ -44,7 +47,9 @@ final class ChicagoFire {
     boolean out(){return ignited && total==0;}
     int remaining(){int n=0;for(int h:heat)if(h>0)n++;return n;}
     float progress(){return ignited?1-total/(float)HEAT:0;}
-    void step(Game g){contactSteam.step();for(int i=0;i<PILES;i++){if(steam[i]>0)steam[i]--;if(sizzle[i]>0)sizzle[i]--;}}
+    void step(Game g){contactSteam.step();smokeTicks++;
+        for(int i=0;i<PILES;i++){if(steam[i]>0)steam[i]--;if(sizzle[i]>0)sizzle[i]--;wetAt[i][smokeTicks&(FireArt.SMOKE_LIFE-1)]=sizzle[i]>0;
+            if(heat[i]>0)FlameArt.emit(g,x(i),y(i),base(i),FireArt.strength(fraction(i)),i,1);}}
     /** Droplet test in shared world/model units; true consumes the droplet. */
     boolean hit(float x,float y,float z,float floor){
         if(!ignited || total==0)return false;
@@ -56,36 +61,36 @@ final class ChicagoFire {
         }
         return false;
     }
-    float energy(Game g,int pile){if(heat[pile]<=0)return 0;
-        float flame=.77f+.14f*(float)StrictMath.sin(g.visualTicks*.19+pile)+.09f*(float)StrictMath.sin(g.visualTicks*.071+1.3+pile);
-        return flame*(.3f+.7f*heat[pile]/(float)PILE_HEAT);
-    }
+    private float fraction(int pile){return heat[pile]/(float)PILE_HEAT;}
+    /** Sprite-unit height of the pavilion floor the flames stand on. */
+    private static float base(int pile){return GroundArt.LAND_RISE+RISE[pile]*ArticulatedModel.Z_SCALE;}
+    float energy(Game g,int pile){return FireArt.energy(g,fraction(pile),pile);}
+    float intensity(Game g,int pile){return FireArt.intensity(g,fraction(pile),steam[pile]/(float)STEAM_TICKS,pile);}
     float depth(Game g,int pile){return g.layout.camera.screenY(x(pile),y(pile));}
     void lights(Game g,SceneryLighting out){for(int i=0;i<PILES;i++){float e=energy(g,i);
         if(e>0)out.add(x(i),y(i),GroundArt.LAND_RISE/ArticulatedModel.Z_SCALE+RISE[i]+20,240,1.2f*e,FireLight.color(g,i));}}
-    /** Smoke from the wheel's scorched lower south gondolas while the pier burns. */
+    /** Smoke from the wheel's scorched lower south gondolas while the pier burns: the same soot,
+     * drifting downwind with the pavilion plumes. */
     void wheelSmoke(Game g,Painter p,float sx,float sy){if(!ignited || total==0)return;float scale=g.layout.camera.scale,strength=total/(float)HEAT;
         for(int i=0;i<9;i++){float age=(g.visualTicks*.5f+i*23)%240,t=age/240;
-            p.smokePuff(sx+(t*90+(i%3)*8)*scale,sy-age*1.2f*scale,(14+t*44)*scale,t,SoftCue.alpha(0xff2b2a2e,(1-t)*.45f*strength));}}
+            p.smokePuff(sx-(t*90+(i%3)*8)*scale,sy-age*1.2f*scale,(14+t*44)*scale,t,SoftCue.alpha(0xff000000|SmokePuff.SOOT,(1-t)*.45f*strength));}}
+    /** Water layer: each fire's reflection on the harbor. */
+    void reflection(Game g,Painter world){for(int i=0;i<PILES;i++)FireArt.reflection(g,world,x(i),y(i),energy(g,i),FireLight.color(g,i),431+i);}
+    /** Ground layer, beneath vessels and buildings: one shared red wash and the smoke columns. */
+    void ground(Game g,Painter p){
+        if(!ignited)return;
+        float e=0,wx=0,wy=0;int hottest=0;
+        for(int i=0;i<PILES;i++){float k=intensity(g,i);e+=k;wx+=x(i)*k;wy+=y(i)*k;if(k>intensity(g,hottest))hottest=i;}
+        if(e>.003f)FireArt.wash(g,p,wx/e,wy/e,GroundArt.LAND_RISE,e,FireArt.washColor(g,hottest));
+        for(int i=0;i<PILES;i++)FireArt.plume(g,p,x(i),y(i),base(i),intensity(g,i),heat[i]==0,steam[i]/(float)STEAM_TICKS,smokeTicks,wetAt[i],i);
+    }
     void draw(Game g,Painter p,int pile){
         RiverCamera c=g.layout.camera;float scale=c.scale,X=x(pile),Y=y(pile);
-        float sx=c.screenX(X,Y),sy=c.screenY(X,Y)-(GroundArt.LAND_RISE+RISE[pile]*ArticulatedModel.Z_SCALE)*scale;
+        float sx=c.screenX(X,Y),sy=c.screenY(X,Y)-base(pile)*scale;
         if(sx<-220*scale || sx>g.layout.width+220*scale || sy<-260*scale || sy>g.layout.height+220*scale)return;
         Models.PAVILION.drawSolid(g,p,X,Y,GroundArt.LAND_RISE,0,0,0);
-        int h=heat[pile];
-        if(h>0){float strength=.35f+.65f*h/PILE_HEAT,e=energy(g,pile);int color=FireLight.color(g,pile);
-            p.material(sx,sy-26*scale,230*scale,0,0,180*scale,EffectMaterial.GLOW,0,e,SoftCue.alpha(color,.55f));
-            p.material(sx,sy,120*scale,0,0,70*scale,EffectMaterial.GLOW,0,e,SoftCue.alpha(color,.85f));
-            for(int i=0;i<18;i++){float age=(g.visualTicks*1.5f+i*19+pile*37)%110,t=age/110;
-                float x=sx+((i%6-2.5f)*7+age*.18f*(float)StrictMath.sin(i+pile))*scale,y=sy-age*.75f*scale;
-                p.line(x,y,x-2*scale,y+6*scale,(2.4f-t)*scale,SoftCue.alpha(i%3==0?0xffffed9a:i%2==0?0xffffb52e:0xffff5217,(1-t)*strength));
-            }
-            // Dark plume drifts east off the pier over the harbor.
-            for(int i=0;i<7;i++){float age=(g.visualTicks*.6f+i*29+pile*13)%200,t=age/200;
-                p.smokePuff(sx+(t*70+(i%3)*6)*scale,sy-(40+age*1.1f)*scale,(10+t*34)*scale,t,SoftCue.alpha(0xff2b2a2e,(1-t)*.55f*strength));}
-        }
+        FireArt.burn(g,p,X,Y,base(pile),fraction(pile),pile);
         contactSteam.draw(g,p,pile,RISE[pile]*ArticulatedModel.Z_SCALE);
-        if(h==0 && steam[pile]>0){float t=1-steam[pile]/(float)STEAM_TICKS;
-            for(int i=0;i<4;i++)SteamPuff.draw(p,sx+(i-1.5f)*12*scale-t*20*scale,sy-(6+t*50)*scale,(12+t*16)*scale,(1-t)*.8f);}
+        if(heat[pile]==0 && steam[pile]>0)FireArt.steamTail(g,p,X,Y,base(pile),1-steam[pile]/(float)STEAM_TICKS);
     }
 }
