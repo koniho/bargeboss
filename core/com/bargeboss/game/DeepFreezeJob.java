@@ -126,24 +126,40 @@ final class DeepFreezeJob extends MontroseJob {
     }
     void water(Game g,Painter p){
         RiverCamera c=g.layout.camera;float f=g.weather.freeze;
-        // Ice: a world-anchored field of soft frost patches; cells freeze one by one and merge into a sheet.
+        // Ice: a world-anchored field of soft frost floes. Each cell's floe sits anywhere in its cell, at its
+        // own angle, size and stretch, so no lattice shows; a coarse noise field makes the freeze creep in
+        // drifts (sheltered patches first) rather than cell by cell, until the floes merge into a sheet.
         if(f>0){
             float[] v=SurveyGround.visible(g);float cell=60;
-            int c0=(int)StrictMath.floor(v[0]/cell)-1,c1=(int)StrictMath.floor(v[2]/cell)+1,r0=(int)StrictMath.floor(v[1]/cell)-1,r1=(int)StrictMath.floor(v[3]/cell)+1;
+            int c0=(int)StrictMath.floor(v[0]/cell)-2,c1=(int)StrictMath.floor(v[2]/cell)+2,r0=(int)StrictMath.floor(v[1]/cell)-2,r1=(int)StrictMath.floor(v[3]/cell)+2;
             float qx=RiverCamera.Q*c.scale,qy=RiverCamera.Q*RiverCamera.DEPTH*c.scale;
             for(int col=c0;col<=c1;col++)for(int row=r0;row<=r1;row++){
-                int h=(col*7919+row*104729)*0x45d9f3b;h^=h>>>16;float seed=(h&1023)/1023f;
-                float grown=Physics.clamp((f*1.3f-seed)*3,0,1);if(grown<=0)continue;
-                float x=(col+.5f)*cell+((h>>>10)&15)-8,y=(row+.5f)*cell+((h>>>15)&15)-8;
+                int h=iceHash(col,row,1);float seed=.45f*(h&1023)/1023f+.55f*drift(col,row);
+                float grown=Physics.clamp((f*1.35f-seed)*2.6f,0,1);if(grown<=0)continue;
+                int k=iceHash(col,row,2);
+                float x=(col+(k&1023)/1023f)*cell,y=(row+((k>>>10)&1023)/1023f)*cell;
                 if(!MontroseHarbor.contains(x,y))continue;
-                float r=cell*(.6f+.55f*grown),stretch=.7f+.6f*((h>>>20)&15)/15f,sx=c.screenX(x,y),sy=c.screenY(x,y);
-                p.material(sx,sy,qx*r*2*stretch,-qy*r*2*stretch,qx*r*1.7f,qy*r*1.7f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffdcebf5,.42f*grown));
-                // A brighter, smaller core gives each floe a crisp centre.
-                p.material(sx,sy,qx*r*.9f,-qy*r*.9f*stretch,qx*r*.8f,qy*r*.8f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfff6fbff,.3f*grown));
+                float size=.35f+1.05f*((k>>>20)&255)/255f,r=cell*size*(.55f+.6f*grown);
+                float stretch=1+.8f*((h>>>10)&255)/255f,angle=((h>>>18)&1023)*(float)(StrictMath.PI/1024);
+                float ux=(float)StrictMath.cos(angle),uy=(float)StrictMath.sin(angle);
+                // World axes (long u, short v) projected to screen.
+                float ax=qx*(ux+uy)*r*stretch,ay=qy*(uy-ux)*r*stretch,bx=qx*(ux-uy)*r,by=qy*(ux+uy)*r;
+                float sx=c.screenX(x,y),sy=c.screenY(x,y),alpha=(.26f+.22f*((k>>>28)&15)/15f)*grown;
+                p.material(sx,sy,ax*1.6f,ay*1.6f,bx*1.6f,by*1.6f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffdcebf5,alpha));
+                // Only some floes get a brighter, off-centre crust, so highlights don't repeat.
+                if(((h>>>28)&3)==0)p.material(sx+ax*.09f,sy+ay*.09f,ax*.7f,ay*.7f,bx*.6f,by*.6f,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xfff6fbff,.28f*grown));
             }
         }
         if(!frozen)ring(g,p,RING_X,RING_Y,REACH*.7f,phase==READY?0xff6dffb0:0xffff6f5a,phase==READY?1:.6f);
         for(Body b:boats)if(b!=null && b.active && !b.deliveryRecorded && b!=lifting && !g.tow.connected(b,g.tug))ring(g,p,b.x,b.y,32,0xff8fd0ff,.6f);
+    }
+    private static int iceHash(int col,int row,int salt){int h=(col*7919+row*104729+salt*15485863)*0x45d9f3b;h^=h>>>16;h*=0x45d9f3b;return h^(h>>>16);}
+    /** Smooth 0..1 value noise over ~5-cell blocks: where the ice forms early. */
+    private static float drift(int col,int row){
+        int bc=Math.floorDiv(col,5),br=Math.floorDiv(row,5);float fx=(col-bc*5)/5f,fy=(row-br*5)/5f;
+        fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+        float a=(iceHash(bc,br,3)&1023)/1023f,b=(iceHash(bc+1,br,3)&1023)/1023f,c=(iceHash(bc,br+1,3)&1023)/1023f,d=(iceHash(bc+1,br+1,3)&1023)/1023f;
+        return a+(b-a)*fx+(c-a)*fy+(a-b-c+d)*fx*fy;
     }
     void hud(Game g,Painter p){
         super.hud(g,p);
