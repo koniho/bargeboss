@@ -66,7 +66,7 @@ public final class OverviewMap {
         p.line(thumb-2,y-4,thumb-2,y+4,1,PilotGlass.NAVY);
         p.line(thumb+2,y-4,thumb+2,y+4,1,PilotGlass.NAVY);
     }
-    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && !g.arenaStage() && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
     /** Survey charts are built on first use by their own level, never for other stages. */
     static Chart chart(Game g){SurveyLevel level=g.level();return level!=null?level.chart():CHARTS[g.montroseStage()?1:0];}

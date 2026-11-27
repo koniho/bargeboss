@@ -28,6 +28,8 @@ public final class LevelAssets {
             // Engine 2 fire barge: hull, deck monitors and the cargo family its berth selects.
             if(id==Challenges.CHICAGO){CHALLENGES[id]=new Plan(true,SpriteAtlas.FIRE_BARGE,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.BULK);continue;}
             if(Challenges.kind(id)==Challenges.MONTROSE){CHALLENGES[id]=MONTROSE;continue;}
+            // Tag circuit: tug plus the marina boat sprites its neon NPCs are drawn with.
+            if(Challenges.kind(id)==Challenges.BOAT_TAG){CHALLENGES[id]=new Plan(1,false,SpriteAtlas.TUG);continue;}
             if(Challenges.calumet(id)){CHALLENGES[id]=new Plan(true,SpriteAtlas.TUG,SpriteAtlas.BARGE,SpriteAtlas.STEEL,SpriteAtlas.BULK,SpriteAtlas.CONTAINER);continue;}
             int[] sources=new int[2+Challenges.quota(id)];sources[0]=SpriteAtlas.TUG;sources[1]=SpriteAtlas.BARGE;
             for(int load=0;load<Challenges.quota(id);load++) {

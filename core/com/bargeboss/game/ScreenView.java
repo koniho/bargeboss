@@ -260,14 +260,14 @@ public final class ScreenView {
             PilotGlass.panel(p,b.x,b.y,b.w,b.h,selected?0xf0202e43:0xe0101c30);
             if(selected)p.rect(b.x+18,b.y,70,3,GOLD);
             int location=Challenges.locationIndex(id);
-            text(p,location==0?"RIVER WORK":location==1?"MARINA RESCUE":location==2?"INDUSTRIAL CANAL":"DOWNTOWN RIVER",b.x+20,b.y+22,10,GOLD);
+            text(p,location==0?"RIVER WORK":location==1?"MARINA RESCUE":location==2?"INDUSTRIAL CANAL":location==3?"DOWNTOWN RIVER":"PLAY ROUND",b.x+20,b.y+22,10,GOLD);
             String name=Challenges.locationTitle(id);
             heading(p,name,b.x+20,b.y+49,23,220,PAPER);
             int[] jobs=Challenges.locationJobs(id);int completed=0;for(int job:jobs)if(g.career.bestStars(job)>0)completed++;
             text(p,""+jobs.length,b.x+20,b.y+93,40,open?GOLD:MUTED);
-            text(p,jobs.length==1?"CONNECTED JOB":"CONNECTED JOBS",b.x+62,b.y+105,12,PAPER);
-            text(p,"ONE CONTINUOUS WATERWAY",b.x+62,b.y+126,8,MUTED);
-            text(p,location==0?"LAKE ENTRANCE TO BASIN FIVE":location==1?"TOW, UNRAFT AND RESCUE":location==2?"HARBOR AND STEELWORKS":"NAVY PIER TO WOLF POINT",b.x+20,b.y+168,10,PAPER);
+            text(p,location==4?"ROUNDS":jobs.length==1?"CONNECTED JOB":"CONNECTED JOBS",b.x+62,b.y+105,12,PAPER);
+            text(p,location==4?"TAG, THEN CHASE":"ONE CONTINUOUS WATERWAY",b.x+62,b.y+126,8,MUTED);
+            text(p,location==0?"LAKE ENTRANCE TO BASIN FIVE":location==1?"TOW, UNRAFT AND RESCUE":location==2?"HARBOR AND STEELWORKS":location==3?"NAVY PIER TO WOLF POINT":"LOOP CANAL / BRIDGES / LOCK",b.x+20,b.y+168,10,PAPER);
             text(p,completed+" / "+jobs.length+" JOBS COMPLETED",b.x+20,b.y+194,10,MUTED);
             p.rect(b.x+20,b.y+218,220,3,PilotGlass.TRACK);
             if(completed>0)p.rect(b.x+20,b.y+218,220f*completed/jobs.length,3,GOLD);

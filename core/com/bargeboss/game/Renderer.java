@@ -16,6 +16,7 @@ public final class Renderer {
         try {g.layout=g.splashes.shaken(g);WorldArrows.begin(g);SceneryLighting.begin(g);
         SurveyLevel level=g.level();
         if(level!=null)SurveyLevelView.draw(g,p,level);
+        else if(g.arenaStage())TagArenaView.draw(g,p);
         else if(g.montroseStage())MontroseView.draw(g,p);
         else TrainingChannelView.draw(g,p);
         g.smoke.draw(p,g.layout.camera,g.layout.width,g.layout.height);
@@ -27,6 +28,7 @@ public final class Renderer {
         HarborView.objective(g,p);
         if(g.job!=null && g.montroseStage())g.job.hud(g,p);
         if(g.montroseStage())g.arcade.draw(g,p);
+        if(g.arenaStage())TagArenaView.hud(g,p);
         FeederView.callouts(g,p);
         g.abilities.drawScreenFlash(g,p);
         ScreenView.hud(g,p);

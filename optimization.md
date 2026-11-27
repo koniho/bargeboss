@@ -7100,3 +7100,19 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Neon underglow moved from the job's water pass into CruiserView's ripple layer (same shore clip
   and depth order), as a keel-aligned ellipse that brightens with speed.
 - Play-through: all seven jobs complete. Hashes unchanged (no damage or glow in the replay).
+
+## Tag circuit: Boat Tag and Boat Chase
+
+- New location TAG CIRCUIT (Challenges BOAT_TAG=17, BOAT_CHASE=18; a fifth menu card): a loop canal
+  around two islands with a shortcut, two vertical-lift bridges on the loop and a two-gate lock in the
+  shortcut (TagArena / TagArenaView, training-yard style concrete, steel walls, seams, bollards).
+  Every bridge and gate opens over exactly one second (integer ticks) when any boat comes within 170,
+  blocks while shut, and closes after two clear seconds.
+- Boat Tag: random field (3-5 neon NPCs, random start and first IT); touch to tag, two-second
+  no-tag-backs, new IT held a second; IT at the horn loses. A win rolls straight into Boat Chase:
+  catch every NPC (4-6) in 2:30. NPCs route on a 9-node centreline graph, flee the threat, queue at
+  shut gates, and burn fuel fleeing flat out (empty tank: 2 s sputter at 55% speed).
+- Balance from bots using joystick input: Chase 6/6 wins in 49-96 s; Tag 3/6 wins (IT prefers the
+  tug at 60% of its real distance; 0.5 was 1/6, 0.75 matched no preference at 6/6).
+- Gameplay hash 386f26af (was 9af0f0af): bisected to the two new career slots only (catalog back to
+  17 levels and 4 locations returns exactly to 9af0f0af / 19b19c23). Draw hash unchanged.

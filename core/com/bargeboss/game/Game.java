@@ -139,7 +139,7 @@ public final class Game {
     public int challengeId,earnedStars,challengePage;
     public boolean rankPromoted;
     public Game() { reset(); mode=TITLE; }
-    public int quota() { return calumetStage()?voyage.quota():MontroseRescue.swimmers(this)?Challenges.quota(challengeId)-rescue.struck():Challenges.quota(challengeId); }
+    public int quota() { return arenaStage() && arena!=null?(arena.mode==TagArena.CHASE?arena.npcs.length:1):calumetStage()?voyage.quota():MontroseRescue.swimmers(this)?Challenges.quota(challengeId)-rescue.struck():Challenges.quota(challengeId); }
     public int shiftTicks() { return calumetStage()?6000*60:Challenges.shiftTicks(challengeId); }
     /** One title rule for every stage's HUD and finish screen: LOCATION / JOB (job omitted when it is the location). */
     public String challengeTitle() {
@@ -153,6 +153,20 @@ public final class Game {
     public boolean indianaStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.INDIANA;}
     public boolean montroseStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.MONTROSE;}
     public boolean chicagoStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.CHICAGO;}
+    /** The tag circuit (Boat Tag / Boat Chase): its own loop canal, bridges and lock. */
+    public boolean arenaStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.BOAT_TAG;}
+    TagArena arena;private int arenaGames;
+    /** A fresh random field on the tag circuit: Boat Tag, or the Boat Chase round that follows a win. */
+    void startArenaRound(int id){
+        challengeId=id;delivered=0;arena=new TagArena(id==Challenges.BOAT_CHASE?TagArena.CHASE:TagArena.TAG,++arenaGames*7919+career.totalStars());arena.setup(this);
+        layout=Layout.focused(layout.width,layout.height,tug.x,tug.y,1.5f,layout.width*.5f,layout.height*.55f);
+    }
+    /** Boat Tag won: record it and roll straight into the Chase round. */
+    private void advanceArena(){
+        if(challengeId!=Challenges.BOAT_TAG || arena==null || !arena.finished || !arena.won)return;
+        int before=career.rank();career.record(challengeId,arena.stars(),score);rankPromoted|=career.rank()>before;
+        startArenaRound(Challenges.BOAT_CHASE);cancelInputs();tell("ROUND 2: CHASE! CATCH EVERY BOAT");
+    }
     /** Surveyed polygon harbors sharing geographic water, shore and bridge machinery. */
     /** Surveyed geographic level for this stage, or null (training canal, Montrose). The only
      * place that maps a stage to its geography; shared code dispatches through it. */
@@ -198,11 +212,12 @@ public final class Game {
     }
     public boolean correctOrder(Body b) { return true; }
     public int goalProgress() { return calumetStage()?voyage.progress(this):lockStage()?lock.clearedCount(this):delivered; }
-    public boolean goalComplete() { return tutorial==null && (calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
-    public boolean goalFailed() { return hull<=0 || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || job!=null && montroseStage() && job.failed(this) || lockStage() && lock.failed(); }
+    public boolean goalComplete() { return tutorial==null && (arenaStage()?arena!=null && arena.finished && arena.won && challengeId==Challenges.BOAT_CHASE:calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
+    public boolean goalFailed() { return hull<=0 || arenaStage() && arena!=null && arena.finished && !arena.won || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || job!=null && montroseStage() && job.failed(this) || lockStage() && lock.failed(); }
     public String goalStatus() {
         if(calumetStage())return voyage.status();
         if(indianaStage())return "TOW STEEL PAST HICK TOWER / SOUTH FORK MILL";
+        if(arenaStage() && arena!=null)return arena.status(this);
         if(chicagoStage())return chicago.status(this);
         if(montroseStage())return mission.status(this);
         if(lockStage())return lock.signal();
@@ -263,7 +278,7 @@ public final class Game {
     public boolean trainingChannel() { return tutorial!=null && tutorial.lesson==Tutorial.CHANNEL; }
     public boolean inWater(float x,float y) {
         SurveyLevel level=level();
-        return level!=null?level.contains(x,y):montroseStage()?MontroseHarbor.contains(x,y):TrainingChannel.contains(x,y);
+        return level!=null?level.contains(x,y):arenaStage()?TagArena.contains(x,y):montroseStage()?MontroseHarbor.contains(x,y):TrainingChannel.contains(x,y);
     }
     public static final float WORK_ZOOM=2.15f,DOCK_ZOOM=2.5f,TRANSIT_ZOOM=1.2f;
     public static final float PRACTICE_DRIVE_ZOOM=2.4f,PRACTICE_CANAL_ZOOM=1.65f;
@@ -366,6 +381,7 @@ public final class Game {
         if(steering)cameraZoomHoldTicks=90;else if(cameraZoomHoldTicks>0)cameraZoomHoldTicks--;
         Layout desired;
         if(tutorial!=null) desired=tutorialCamera();
+        else if(arenaStage())desired=Layout.focused(layout.width,layout.height,tug.x+tug.vx*.5f,tug.y+tug.vy*.5f,1.5f,layout.width*.5f,layout.height*.55f);
         else if(MontroseRescue.swimmers(this))desired=Layout.focused(layout.width,layout.height,tug.x,tug.y,rescue.closeCamera?3.6f:2.4f,layout.width*.5f,layout.height*.52f);
         else {
             // Distinct enter/leave thresholds avoid zoom pumping near a transit boundary.
@@ -500,6 +516,7 @@ public final class Game {
         if(calumetStage()){feeders=new Feeder[0];voyage.setup(this);spawnIndex=quota();}
         else if(indianaStage()){feeders=new Feeder[0];IndianaHarbor.setup(this);spawnIndex=quota();}
         else if(chicagoStage()){feeders=new Feeder[0];chicago=new ChicagoMission();ChicagoRiver.setup(this);spawnIndex=quota();}
+        else if(arenaStage()){feeders=new Feeder[0];startArenaRound(challengeId);spawnIndex=quota();}
         else if(montroseStage()){MontroseBeaconArt.prepare();MontroseTravelLift.prepare();feeders=new Feeder[0];job=null;arcade=new MontroseArcade();mission.setup(this);spawnIndex=quota();}
         else {feeders[0].request(feedBerth(0));feeders[1].request(feedBerth(1));spawnIndex=2;}
         // Stage-entry geometry, ground, models and bridges, after setup has placed the tug.
@@ -572,7 +589,7 @@ public final class Game {
         if(!(tutorial!=null && tutorial.entering) && Joystick.hit(this,x,y)) {
             beginDown(x,y,false);mapPointer=id;joystick.begin(this,x,y);haptic(HAPTIC_TICK);return;
         }
-        boolean river=liveRiverInput() && (surveyStage() || montroseStage() || layout.camera.contains(x,y));
+        boolean river=liveRiverInput() && (surveyStage() || montroseStage() || arenaStage() || layout.camera.contains(x,y));
         if(river && liveButton(x,y)) river=false;
         if(river) beginDown(layout.camera.worldX(x,y),layout.camera.worldY(x,y),true);
         else beginDown(x,y,false);
@@ -775,6 +792,7 @@ public final class Game {
     }
     private boolean worldTouch(float x,float y) {
         SurveyLevel level=level();if(level!=null)return level.inBounds(x,y);
+        if(arenaStage())return x>=-200 && x<=TagArena.W+200 && y>=-200 && y<=TagArena.H+200;
         if(montroseStage())return x>=MontroseHarbor.PLAY_BOUNDS[0] && x<=MontroseHarbor.PLAY_BOUNDS[2] && y>=MontroseHarbor.PLAY_BOUNDS[1] && y<=MontroseHarbor.PLAY_BOUNDS[5];
         return x>=(TrainingChannel.ENTRY_LEFT-40)
                 && x<=Math.max(CalumetMap.EAST,TrainingChannel.CHALLENGE_RIGHT+100)+40
@@ -1071,6 +1089,7 @@ public final class Game {
             }
         }
         tow.prune(this);
+        if(arenaStage() && arena!=null){arena.step(this,splashes);advanceArena();}
         if(montroseStage()){arcade.step(this);mission.step(this);if(!MontroseHaulout.active(this))haulout.step(this);}
         if(tutorial!=null) tutorial.update(this);
         else {
@@ -1081,7 +1100,7 @@ public final class Game {
                 mode=FINISH; overview.cancelTouch(); cancel();
                 if(goalComplete() && !goalFailed()) {
                     if(lockStage()) {score+=1200;delivered=quota();haptic(HAPTIC_SUCCESS);}
-                    earnedStars=job!=null && MontroseJob.is(challengeId)?job.stars(this):Challenges.stars(challengeId,goalProgress(),lost,hull);
+                    earnedStars=arenaStage() && arena!=null?arena.stars():job!=null && MontroseJob.is(challengeId)?job.stars(this):Challenges.stars(challengeId,goalProgress(),lost,hull);
                     int before=career.rank(); if(!calumetStage() && !montroseStage())career.record(challengeId,earnedStars,score);
                     rankPromoted|=career.rank()>before;
                 }
@@ -1173,7 +1192,7 @@ public final class Game {
         engineDemand=Math.max(engineDemand,Math.min(1,tow.pullLoad(tug)/180));
         SurveyLevel level=level();
         if(lockStage())lock.integrate(tug);else if(level!=null)level.integrate(this,tug);else Physics.integrate(tug);
-        if(level!=null){damage(level.collide(tug,splashes));damage(level.obstacles(this,tug,splashes));}else if(!montroseStage()){float hit=CalumetMap.collide(tug,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,tug,splashes));
+        if(level!=null){damage(level.collide(tug,splashes));damage(level.obstacles(this,tug,splashes));}else if(arenaStage())damage(arena.collide(tug,splashes));else if(!montroseStage()){float hit=CalumetMap.collide(tug,splashes);if(tutorial==null)damage(hit);}else damage(MontroseHarbor.collide(this,tug,splashes));
         damage(passages.collide(tug,splashes));
         if(hasBridge()) damage(bridge.collide(tug,splashes));
         if(lockStage()) damage(lock.collide(tug,splashes));
@@ -1199,6 +1218,7 @@ public final class Game {
         }
         traffic();
         // Smashing through traffic hard enough to wreck the boat costs the tug a hard hit too.
+        if(arenaStage() && arena!=null)arena.motion(this,splashes);
         if(montroseStage()){harborTraffic.step(this,splashes);{float smash=harborTraffic.collide(this,splashes);if(smash>=HullDamage.SMASH_SPEED)hit(HullDamage.percent(smash,HullDamage.TUG_HP));}if(job!=null)job.motion(this);}
         Body contact=null;
         for(Body b:cargo) if(b!=null && b.active && Physics.touching(tug,b,3)) { contact=b; break; }

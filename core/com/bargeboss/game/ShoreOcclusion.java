@@ -20,6 +20,7 @@ public final class ShoreOcclusion {
     /** Full-depth mask over the whole view (water surface, wave crests), padded by pad world
      * units. Survey levels reuse cached unit-space tiles; other stages fall back to region(). */
     public static float[] view(Game g,RiverCamera c,float pad,boolean union){
+        if(g.arenaStage())return EMPTY;
         float p=pad*c.scale,w=g.layout.width,h=g.layout.height;
         SurveyLevel level=g.level();
         if(level!=null && g.mode!=Game.TITLE && g.mode!=Game.CHALLENGES)return level.geometry().viewShore(c,-p,-p,w+p,h+p,union);
@@ -28,7 +29,7 @@ public final class ShoreOcclusion {
         return region(g,c,l-pad,t-pad,r+pad,b+pad,Float.NEGATIVE_INFINITY,union);
     }
     public static float[] region(Game g,RiverCamera c,float left,float top,float right,float bottom,float depth,boolean union){
-        if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES)return EMPTY;
+        if(g.mode==Game.TITLE || g.mode==Game.CHALLENGES || g.arenaStage())return EMPTY;
         SurveyLevel level=g.level();
         if(level!=null)return level.geometry().shore(c,left,top,right,bottom,depth,union);
         if(g.montroseStage())return MontroseHarbor.shore(c,left,top,right,bottom,depth,union);
