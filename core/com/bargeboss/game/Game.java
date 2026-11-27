@@ -61,7 +61,7 @@ public final class Game {
     public int visualTicks;
     public int celebrationTicks, celebrationPoints, impactTicks,damageFlashTicks;
     /** Ticks since the tug's hull ran out (0 while it is alive); see TugDeath. */
-    public int deathTicks;
+    public int deathTicks;float deathZoom=1;
     public boolean dying(){return deathTicks>0;}
     /** Tick the tug's hull last changed (drives the transient health bar). */
     public int hullDamagedTick=-1000;
@@ -405,6 +405,7 @@ public final class Game {
             }else cameraTransit=false;
             desired=workCamera(cameraTransit?TRANSIT_ZOOM:WORK_ZOOM,cameraTransit?0:1,false);
         }
+        if(deathTicks>0){desired=Layout.focused(layout.width,layout.height,tug.x,tug.y,TugDeath.zoom(this),layout.width*.5f,layout.height*.5f);cameraZoomHoldTicks=0;}
         float targetZoom=desired.camera.zoom;
         // Do not pull the view away while the player steers or immediately after a cast/release.
         // Keep panning and allow closer approach views, including swimmer rescue proximity.
@@ -572,6 +573,8 @@ public final class Game {
         if(developerPanel.down(this,id,x,y)){menuFeedback.down(this,id,x,y);return;}
         if(practice!=null) { practice.pointerDown(id,x,y); finishPractice(); return; }
         menuFeedback.down(this,id,x,y);
+        // The death cinematic swallows touches; once GAME OVER is up a tap skips to the results.
+        if(mode==PLAY && deathTicks>0){if(TugDeath.skippable(this))deathTicks=TugDeath.TICKS;return;}
         if(waveControls.down(this,id,x,y))return;
         if(mode==PLAY && conversation()){dialogue.down(this,id,x,y);return;}
         if(abilities.down(this,id,x,y))return;

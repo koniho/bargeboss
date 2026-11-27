@@ -7163,9 +7163,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 
 ## Tug death sequence
 
-- When the hull runs out the results screen waits 4 s (TugDeath.TICKS) for a death sequence: a big
-  blast with a white flash, glow and shockwave rings, then the shared wreck effects (two secondary
-  explosions, smoke, debris, plunge geyser, slick) while the tug's own sinkTicks sinks it through the
-  waterline. From 70 ticks the scene darkens under a punching GAME OVER stamp. Input, towing and
-  near-miss scoring stop during it. The results heading reads GAME OVER / TUG DESTROYED.
-- TugDeathTest covers start, sink, results screen and a clean retry.
+- When the hull runs out, an 11 s cinematic (TugDeath.TICKS=660) plays before the results screen,
+  while the camera pushes in and letterbox bars close (HUD, map and joystick hidden):
+  1. breach (1.5 s): spark fountains, deck fires catching, five small pops, red alarm edges;
+  2. blast: four staggered fireballs, white flash, rising fireball column cooling to smoke, three
+     shockwaves, 26 debris pieces thrown high that splash down and burn on the water;
+  3. burn and sink (5.5 s): flames and embers, five chain explosions, smoke column, the tug listing
+     through the waterline (its own sinkTicks, stretched), then fire spreading on the slick;
+  4. GAME OVER: darkening, pulsing red glow, letters dropping in one by one; tap to continue.
+- Visuals are pure functions of deathTicks (no extra state). Input, towing and near-miss scoring
+  stop. TugDeathTest covers start, ignored taps, skip to results, and a clean retry.

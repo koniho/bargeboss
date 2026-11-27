@@ -25,7 +25,7 @@ public final class Renderer {
         ArcadeView.effects(g,new RiverPainter(p,g.layout.camera));
         HullDamage.effects(g,p);TugDeath.effects(g,p);HealthBars.draw(g,p);g.harborTraffic.callouts(g,p);if(g.montroseStage())g.arcade.overlay(g,p);if(g.job!=null && g.montroseStage())g.job.overlay(g,p);
         g.layout=live;
-        HarborView.objective(g,p);
+        if(!g.dying())HarborView.objective(g,p);
         if(g.job!=null && g.montroseStage())g.job.hud(g,p);
         if(g.montroseStage())g.arcade.draw(g,p);
         if(g.arenaStage())TagArenaView.hud(g,p);
@@ -39,7 +39,7 @@ public final class Renderer {
         else if(g.mode==Game.PAUSE) ScreenView.pause(g,p);
         else if(g.mode==Game.FINISH) ScreenView.finish(g,p);
         else if(g.tutorial!=null && !g.dialogue.active) TutorialView.draw(g,p);
-        if(!g.conversation()){Joystick.draw(g,p);g.abilities.drawMap(g,p);}
+        if(!g.conversation() && !g.dying()){Joystick.draw(g,p);g.abilities.drawMap(g,p);}
         TowRelease.draw(g,p);g.abilities.drawUI(g,p);
         if(g.mode==Game.PLAY){g.rescue.radio.draw(g,p);if(MontroseHaulout.active(g))g.haulout.radio.draw(g,p);g.dialogue.draw(g,p);}
         g.waveControls.draw(g,p);
