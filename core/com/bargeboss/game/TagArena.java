@@ -228,7 +228,7 @@ final class TagArena {
     int secondsLeft(){return Math.max(0,(limit-ticks+59)/60);}
     int stars(){
         if(!won)return 0;
-        if(mode==CHASE){int s=ticks/60;return s<70?3:s<110?2:1;}
+        if(mode==CHASE){int s=ticks/60;boolean open=course instanceof ArenaCourse.Islands;return s<(open?45:70)?3:s<(open?80:110)?2:1;}
         int it=playerItTicks/60;return it<10?3:it<35?2:1;
     }
     String status(Game g){

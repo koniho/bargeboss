@@ -7132,3 +7132,5 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Gameplay hash e7575caf (was 386f26af): bisected to the two new career slots only. Draw 19b19c23 ->
   18b07146: hull ripples now follow the full wave strength (storms/swell) instead of only the
   settings slider, so storm ripples on Montrose are slightly rougher (intended).
+- Island Chase bot runs: 6/6 won in 33-82 s, so the islands' chase stars are tighter (3 under 45 s,
+  2 under 80 s; the circuit keeps 70/110).
