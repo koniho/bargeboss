@@ -129,7 +129,7 @@ public final class BakeMooredBoats {
             }
         }
         base.dispose();norm.dispose();ImageIO.write(sheet,"png",new File("assets/sprites/montrose-moored-boats-v1.png"));ImageIO.write(normal,"png",new File("assets/sprites/montrose-moored-normals-v1.png"));
-        RacingBoatBake.main(new String[0]);InstallRacingBoat.main(new String[0]);
+        RacingBoatBake.main(new String[0]);InstallRacingBoat.main(new String[0]);PoliceBoatBake.main(new String[0]);
         System.out.println("Baked 192 depth-tested sprite poses and registered normal/canvas layers");
     }
 }

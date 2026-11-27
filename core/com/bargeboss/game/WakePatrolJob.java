@@ -38,6 +38,7 @@ final class WakePatrolJob extends MontroseJob {
     static final float POLICE_X=-130,POLICE_Y=-95,RING_X=-240,RING_Y=-100,RING_REACH=95,SLOT_Y=-85,SLOT_ANGLE=-(float)Math.PI/2;
     static final float[] SLOT_X={-300,-276,-252,-228,-204,-180};
     static final int WARP=70;
+    final PoliceRadio radio=new PoliceRadio();
     Body police;final boolean[] impounded=new boolean[SPEEDERS];final int[] warp=new int[SPEEDERS];
     final float[] fromX=new float[SPEEDERS],fromY=new float[SPEEDERS],fromAngle=new float[SPEEDERS];int slotsUsed;final int[] slot=new int[SPEEDERS];
     /** Abrasive custom paint jobs, one per speeder: hot pink, lime, blaze orange, cyan, acid yellow, violet. */
@@ -61,7 +62,7 @@ final class WakePatrolJob extends MontroseJob {
             Body b=new Body(g.nextId++,-1,SPOTS[s*2],SPOTS[s*2+1],i*1.1f,false,true,i%3==0);
             b.traffic=true;b.hullKind=i%3==0?HarborTraffic.RACER:i%6;b.neon=NEON[i];speeders[i]=b;shoutCooldown[i]=40+i*70;
         }
-        police=new Body(g.nextId++,-1,POLICE_X,POLICE_Y,(float)Math.PI,false,true);police.traffic=true;police.hullKind=1;
+        police=new Body(g.nextId++,-1,POLICE_X,POLICE_Y,(float)Math.PI,false,true);police.traffic=true;police.hullKind=PoliceBoatModel.KIND;
         police.awaitingPickup=true;police.tiedX=police.x;police.tiedY=police.y;police.tiedAngle=police.angle;
         start(g,-60,320,-(float)Math.PI/2);
     }
@@ -92,13 +93,13 @@ final class WakePatrolJob extends MontroseJob {
         shout[i]=lines[random(lines.length)];shoutTicks[i]=120;shoutCooldown[i]=180+random(200);
     }
     void step(Game g){
-        super.step(g);
+        super.step(g);radio.step(g);
         for(int i=0;i<SPEEDERS;i++){
             if(shoutTicks[i]>0)shoutTicks[i]--;if(shoutCooldown[i]>0)shoutCooldown[i]--;
             Body b=speeders[i];if(!b.active)continue;
             // Hooligan chatter: taunts while loose, panic when the tug closes in.
             if(!ticketed[i]){float d=Physics.length(b.x-g.tug.x,b.y-g.tug.y);yell(i,d<ALERT?CHASED:TAUNTS,false);}
-            else if(!impounded[i] && warp[i]==0 && g.tow.connected(b,g.tug))yell(i,TOWED,false);
+            else if(!impounded[i] && warp[i]==0 && g.tow.connected(b,g.tug)){radio.lassoed(i);yell(i,TOWED,false);}
             if(!ticketed[i]){
                 if(!Physics.touching(g.tug,b,4))continue;
                 // Ticket: engine cut, the speeder sits dead in the water (a cargo slot, so it can be lassoed).
@@ -121,7 +122,7 @@ final class WakePatrolJob extends MontroseJob {
             }
             if(!b.awaitingPickup && Physics.length(b.x-RING_X,b.y-RING_Y)<RING_REACH && b.speed()<35){
                 warp[i]=1;slot[i]=slotsUsed++;fromX[i]=b.x;fromY[i]=b.y;fromAngle[i]=b.angle;g.tow.detachBody(g,b);
-                g.tell("POLICE: WE'LL TAKE IT FROM HERE");g.radio.receiveDockmaster();
+                radio.delivered(i);
             }
         }
     }
@@ -154,6 +155,7 @@ final class WakePatrolJob extends MontroseJob {
         collide(g,bodies(),g.splashes);
     }
     void water(Game g,Painter p){
+        PoliceBoatArt.water(g,p,police);
         boolean towing=false;
         for(int i=0;i<SPEEDERS;i++){
             Body b=speeders[i];if(!b.active)continue;
@@ -174,13 +176,9 @@ final class WakePatrolJob extends MontroseJob {
         Lettering.center(p,text,bx,y+5,size,SoftCue.alpha(b.neon!=0?darken(b.neon):0xff101014,a));
     }
     private static int darken(int c){int r=((c>>16)&255)*55/100,gg=((c>>8)&255)*55/100,bb=(c&255)*55/100;return 0xff000000|(r<<16)|(gg<<8)|bb;}
+    boolean done(Game g){return super.done(g) && !radio.busy();}
+    void hud(Game g,Painter p){super.hud(g,p);radio.draw(g,p);}
     void overlay(Game g,Painter p){
-        // Police light bar: alternating red and blue strobes over the police boat.
-        RiverCamera c=g.layout.camera;float sx=c.screenX(POLICE_X,POLICE_Y),sy=c.screenY(POLICE_X,POLICE_Y)-30*ArticulatedModel.Z_SCALE*c.scale;
-        boolean red=(g.visualTicks/8)%2==0;float s=c.scale;
-        p.material(sx-5*s,sy,22*s,0,0,16*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xffff3040,red?.95f:.25f));
-        p.material(sx+5*s,sy,22*s,0,0,16*s,EffectMaterial.GLOW,0,1,SoftCue.alpha(0xff3a7bff,red?.25f:.95f));
-        Lettering.center(p,"POLICE",sx,sy-14*s,Physics.clamp(9*s,10,14),0xffcfe3ff);
         for(int i=0;i<SPEEDERS;i++)if(shoutTicks[i]>0 && speeders[i].active)bubble(g,p,speeders[i],shout[i],120-shoutTicks[i],shoutTicks[i]);
         super.overlay(g,p);
     }

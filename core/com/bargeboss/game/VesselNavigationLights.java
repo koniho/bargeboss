@@ -21,7 +21,7 @@ public final class VesselNavigationLights {
         return underway?fixture>=PORT && fixture<=STERN:fixture==ANCHOR;
     }
     static int sourceCount(Body b){return b.cruiser?6:count(b.berth<0);}
-    static float height(Body b,int fixture){return b.racing?(fixture==ANCHOR?9.6f:fixture==STERN?5.4f:5.8f):b.cruiser?(fixture==ANCHOR?12:fixture==STERN?4.5f:9.8f):b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture);}
+    static float height(Body b,int fixture){if(b.hullKind==PoliceBoatModel.KIND)return PoliceBoatModel.LIGHTS[fixture==ANCHOR?3:fixture==STERN?2:fixture==STARBOARD?1:0][2];return b.racing?(fixture==ANCHOR?9.6f:fixture==STERN?5.4f:5.8f):b.cruiser?(fixture==ANCHOR?12:fixture==STERN?4.5f:9.8f):b.yacht?(fixture==STERN?12.1f:15.4f):height(fixture);}
     /** One eased pulse per second (60/min), with a dark interval; fixed-step clock only. */
     public static float specialPulse(int ticks){
         int t=Math.floorMod(ticks,60);
@@ -58,8 +58,8 @@ public final class VesselNavigationLights {
     }
     public static String id(int fixture){return fixture==ANCHOR?"anchor-all-round":fixture==PORT?"nav-port":fixture==STARBOARD?"nav-starboard":fixture==STERN?"nav-stern":fixture==SPECIAL?"nav-special-flasher":"nav-masthead";}
     public static int color(int fixture){return fixture==PORT?RED:fixture==STARBOARD?GREEN:fixture==SPECIAL?YELLOW:WHITE;}
-    public static float localX(Body b,int fixture){if(b.racing)return fixture==STERN?-25:fixture==ANCHOR?-20:4;if(b.cruiser){float length=b.berth%2==0?39:44;return length*(fixture==STERN?-.46f:fixture==ANCHOR?.08f:.14f);}if(b.yacht)return fixture==STERN?-52.8f:26.4f;return fixture==STERN?-(b.half+b.radius*.65f):fixture==MAST?0:b.half+b.radius*.12f;}
-    public static float localY(Body b,int fixture){if(b.racing)return fixture==PORT?-5.2f:fixture==STARBOARD?5.2f:0;if(b.cruiser)return fixture==PORT?-5.8f:fixture==STARBOARD?5.8f:0;if(b.yacht)return fixture==PORT?-9.9f:fixture==STARBOARD?9.9f:0;return fixture==PORT?-b.radius*.65f:fixture==STARBOARD?b.radius*.65f:0;}
+    public static float localX(Body b,int fixture){if(b.hullKind==PoliceBoatModel.KIND)return PoliceBoatModel.LIGHTS[fixture==ANCHOR?3:fixture==STERN?2:fixture==STARBOARD?1:0][0];if(b.racing)return fixture==STERN?-25:fixture==ANCHOR?-20:4;if(b.cruiser){float length=b.berth%2==0?39:44;return length*(fixture==STERN?-.46f:fixture==ANCHOR?.08f:.14f);}if(b.yacht)return fixture==STERN?-52.8f:26.4f;return fixture==STERN?-(b.half+b.radius*.65f):fixture==MAST?0:b.half+b.radius*.12f;}
+    public static float localY(Body b,int fixture){if(b.hullKind==PoliceBoatModel.KIND)return PoliceBoatModel.LIGHTS[fixture==ANCHOR?3:fixture==STERN?2:fixture==STARBOARD?1:0][1];if(b.racing)return fixture==PORT?-5.2f:fixture==STARBOARD?5.2f:0;if(b.cruiser)return fixture==PORT?-5.8f:fixture==STARBOARD?5.8f:0;if(b.yacht)return fixture==PORT?-9.9f:fixture==STARBOARD?9.9f:0;return fixture==PORT?-b.radius*.65f:fixture==STARBOARD?b.radius*.65f:0;}
     public static float height(int fixture){return fixture==MAST?28:6;}
     public static float worldX(Body b,int fixture){return worldX(b,fixture,1);}
     private static float worldX(Body b,int fixture,int end){float c=(float)StrictMath.cos(b.angle),s=(float)StrictMath.sin(b.angle);return b.x+end*(localX(b,fixture)*c-localY(b,fixture)*s);}

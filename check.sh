@@ -7,6 +7,7 @@ find core tests -name '*.java' | sort > build/check/sources.txt
 javac -Xlint:-options --release 8 -encoding UTF-8 -d build/check @build/check/sources.txt
 java -cp build/check com.bargeboss.game.CoreTest
 java -cp build/check com.bargeboss.game.MooredBoatsTest
+java -cp build/check com.bargeboss.game.PoliceBoatTest
 
 # Asset contract is host-only; native game remains pure shared Java.
 javac -Xlint:-options --release 8 -d build/check tools/FlameAssetCheck.java
@@ -26,6 +27,10 @@ java -Djava.awt.headless=true -cp build/check com.bargeboss.game.RacingBoatRevie
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.BiminiReview
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/VertexShadePixelTest.java
 java -Djava.awt.headless=true -cp build/check com.bargeboss.game.VertexShadePixelTest
+
+javac -Xlint:-options --release 8 -cp build/check -d build/check tools/BakeMooredBoats.java tools/RacingBoatBake.java tools/PoliceBoatBake.java tools/PoliceBoatReview.java
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PoliceBoatBake --check
+java -Djava.awt.headless=true -cp build/check com.bargeboss.game.PoliceBoatReview
 
 # Fixed Indiana shore modules must stay dry and within the geometry budget.
 javac -Xlint:-options --release 8 -cp build/check -d build/check tools/IndianaShoreTilesTest.java

@@ -13,11 +13,11 @@ public final class InstallRacingBoat {
   File root=new File("docs/art-studies/aint-broke");
   BufferedImage old=ImageIO.read(new File("assets/sprites/montrose-moored-boats-v1.png")),on=ImageIO.read(new File("assets/sprites/montrose-moored-normals-v1.png"));
   BufferedImage color=ImageIO.read(new File(root,"racing-color-v1.png")),norm=ImageIO.read(new File(root,"racing-normal-v1.png"));
-  BufferedImage out=new BufferedImage(2048,128*56,BufferedImage.TYPE_INT_ARGB),normal=new BufferedImage(2048,128*14,BufferedImage.TYPE_INT_ARGB);
+  BufferedImage out=new BufferedImage(2048,128*MooredBoats.ROWS,BufferedImage.TYPE_INT_ARGB),normal=new BufferedImage(2048,128*(MooredBoats.BASE_FRAMES/16),BufferedImage.TYPE_INT_ARGB);
   Graphics2D g=out.createGraphics(),n=normal.createGraphics();int oldCount=old.getHeight()/128/4*16;
   for(int f=0;f<192;f++){
    n.drawImage(on.getSubimage(f%16*128,f/16*128,128,128),f%16*128,f/16*128,null);
-   for(int layer=0;layer<4;layer++){int src=layer*oldCount+f,dst=layer*224+f;g.drawImage(old.getSubimage(src%16*128,src/16*128,128,128),dst%16*128,dst/16*128,null);}
+   for(int layer=0;layer<4;layer++){int src=layer*oldCount+f,dst=layer*MooredBoats.BASE_FRAMES+f;g.drawImage(old.getSubimage(src%16*128,src/16*128,128,128),dst%16*128,dst/16*128,null);}
   }
   for(int pose=0;pose<32;pose++){
    int f=192+pose;BufferedImage cell=color.getSubimage(pose%8*128,pose/8*128,128,128);
@@ -25,8 +25,13 @@ public final class InstallRacingBoat {
    for(int layer=0;layer<4;layer++){
     BufferedImage band=new BufferedImage(128,128,BufferedImage.TYPE_INT_ARGB);
     for(int y=0;y<128;y++)for(int x=0;x<128;x++){int c=cell.getRGB(x,y),v=Math.min(255,((c>>16&255)+(c>>8&255)+(c&255))*2);band.setRGB(x,y,layer==0?c:(c&0xff000000)|v<<(24-layer*8));}
-    int dst=layer*224+f;g.drawImage(band,dst%16*128,dst/16*128,null);
+    int dst=layer*MooredBoats.BASE_FRAMES+f;g.drawImage(band,dst%16*128,dst/16*128,null);
    }
+  }
+  // Preserve appended mission families when rebuilding the racer.
+  for(int f=224;f<Math.min(oldCount,MooredBoats.BASE_FRAMES);f++){
+   n.drawImage(on.getSubimage(f%16*128,f/16*128,128,128),f%16*128,f/16*128,null);
+   for(int layer=0;layer<4;layer++){int src=layer*oldCount+f,dst=layer*MooredBoats.BASE_FRAMES+f;g.drawImage(old.getSubimage(src%16*128,src/16*128,128,128),dst%16*128,dst/16*128,null);}
   }g.dispose();n.dispose();
   save(out,new File("assets/sprites/montrose-moored-boats-v1.png"));save(normal,new File("assets/sprites/montrose-moored-normals-v1.png"));
   // Source-alpha shadow layers share the waterline pivot and contain no painted light.

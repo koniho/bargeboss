@@ -10,6 +10,7 @@ final class SpeakerPortrait {
         return 0;
     }
     static int atlas(Game g,String header){
+        if(header.startsWith("POLICE CAPTAIN /"))return SpriteAtlas.POLICE_PORTRAIT;
         if(g.montroseStage() && header.startsWith("ALEX /"))return SpriteAtlas.ALEX_PORTRAIT;
         if(g.montroseStage() && (g.dialogue.crewConversation() || header.startsWith("CHAS /")))return SpriteAtlas.CHAS_PORTRAIT;
         if(g.mode==Game.PLAY && g.montroseStage() && g.dialogue.dockmasterConversation())return SpriteAtlas.GAVIN_PORTRAIT;
@@ -31,7 +32,7 @@ final class SpeakerPortrait {
         int portrait=atlas(g,header);
         boolean talking=portrait==SpriteAtlas.INSTRUCTOR_PORTRAIT?
                 g.radio.transmitter()==RadioAudio.TEACHER && g.radio.transmitting(g,g.teacherBoat()):
-                g.radio.transmitter()==((portrait==SpriteAtlas.CHAS_PORTRAIT || portrait==SpriteAtlas.ALEX_PORTRAIT)?RadioAudio.CREW:portrait==SpriteAtlas.GAVIN_PORTRAIT?RadioAudio.DOCKMASTER:RadioAudio.BRIDGE) && g.radio.progress()<1;
+                g.radio.transmitter()==(portrait==SpriteAtlas.POLICE_PORTRAIT?RadioAudio.POLICE:(portrait==SpriteAtlas.CHAS_PORTRAIT || portrait==SpriteAtlas.ALEX_PORTRAIT)?RadioAudio.CREW:portrait==SpriteAtlas.GAVIN_PORTRAIT?RadioAudio.DOCKMASTER:RadioAudio.BRIDGE) && g.radio.progress()<1;
         float progress=g.radio.progress();
         float size=100,cx=panelX+488,cy=panelY+62;
         Painter ink=new OpacityPainter(p,panelOpen);

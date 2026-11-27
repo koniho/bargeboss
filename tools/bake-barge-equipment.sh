@@ -4,7 +4,7 @@ cd "$(dirname "$0")/.."
 mkdir -p build/barge-equipment
 find core -name '*.java' | sort > build/barge-equipment/sources.txt
 javac -Xlint:-options --release 8 -d build/barge-equipment @build/barge-equipment/sources.txt \
-  tools/BargePoseGuide.java tools/TugPoseGuide.java tools/YachtPoseGuide.java tools/BakeMooredBoats.java \
+  tools/BargePoseGuide.java tools/TugPoseGuide.java tools/YachtPoseGuide.java tools/BakeMooredBoats.java tools/RacingBoatBake.java tools/InstallRacingBoat.java tools/PoliceBoatBake.java \
   tools/materials/WatercraftMesh.java tools/materials/WatercraftModels.java tools/materials/BakeWatercraftMaterials.java \
   tools/BakeBargeEquipment.java tools/GenerateShadowMasks.java tools/GenerateSurfaceLighting.java tools/BargeEquipmentAssetCheck.java tools/PackBargeFrames.java
 java -Djava.awt.headless=true -cp build/barge-equipment com.bargeboss.game.BakeBargeEquipment

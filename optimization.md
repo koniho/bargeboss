@@ -7187,3 +7187,48 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Gavin debriefs every finished Montrose job before the next dispatch (Dialogue.interject queues the
   dispatch behind it): three tiers by stars per job, a hull remark and the time taken.
 - STATE hash unchanged; DRAW baseline updated for the new dialogue.
+
+## 2026-11-27: M3 police boat, rotating searchlights and captain radio
+
+- Replaced only Wake Patrol's cruiser assignment with a dedicated Chicago M3
+  model based on the two supplied photos. Appended 32 rigid color/normal poses,
+  explicit authored material maps and fresh shadow frame packs; preserved the
+  civilian/racing cells. Model-space navigation/strobe anchors follow heading
+  and heave. The existing marina diffuse receiver is retained; this is not a
+  rollout of the experimental roughness/material shader or cast self-shadows.
+- Extracted the player's bounded searchlight mesh into `SpotlightBeam`. Red and
+  blue police beams use the same soft angular edges, shore marching, water pool
+  and descending volume. Rotation is continuous over 240 simulation ticks, with
+  opposite beam phases. Two beams submit 320 shaded triangles, no raster cache
+  construction. Beam pools/volumes do not add colored illumination to land or
+  neighboring vessel material receivers.
+- Added a six-frame painted police captain portrait and distinct radio identity.
+  Real tow connection and impound intake enqueue one call each per speeder.
+  Nonmodal calls have a 12-event bound; final dispatch waits for acknowledgements.
+  Fixed/retested panel reopening after a previous transmission expires.
+- Validation: full `check.sh` through the Android build passed; dedicated tests
+  cover event edges, duplicate suppression, queue draining, portrait rendering,
+  input availability, deterministic rotation and wrap. M3 bake freshness,
+  coverage, gutters and opposite roof-light rejection passed for 32 headings.
+  Full Montrose shoreline pixel regression now includes M3: 4,891,434 assertions.
+  Portrait shoulder registration passed. Gameplay replay state remains
+  `e7575caf:2:1350`; advisory draw trace is `97e6c5a8` after atlas/render changes.
+- Android Vulkan debug/profile APK installed using the existing debug key and
+  launched on the connected phone. Inspected native portrait/boat and live beam
+  screenshots. Review sheets copied to Pictures/BargeBoss and both MediaStore
+  entries verified. Frozen radio fixture: 60 samples after 30 warmup frames,
+  interval median/p95 16.615/17.656 ms, draw 8.295/9.147 ms. Live fixture: 360
+  samples after 120 warmup, interval median/p95 16.676/18.246 ms (max 20.082), draw
+  6.060/8.835 ms, advance 2.732/3.375 ms. Frozen/live camera zoom differs, so these
+  are separate observations, not a performance comparison. No pre-change A/B or
+  GPU-timer capture was taken; these runs do not establish universal 60 FPS.
+- Native live cropped-frame cache peaked at 159.976 MiB with no measured sample
+  evictions; source cache reported 229.676 MiB and referenced texture storage
+  peaked at 11.397 MiB. Those are reported CPU/reference counters, not GPU
+  residency. No new runtime cache was added; fleet-wide source storage remains
+  a separate memory concern. New potential cropped color/light/normal cells total
+  10 MiB, shadows 4 MiB, portrait about .844 MiB.
+- Summary: `docs/performance/police-m3-2026-11-27/summary.json`. Raw captures and
+  logs remain untracked in `out/police-m3-*`. Desktop/shared review passed;
+  iOS parity was attempted but this checkout lacks `ios/vendor/j2objc-3.1/dist`.
+  No iOS native raster or device performance claim is made.

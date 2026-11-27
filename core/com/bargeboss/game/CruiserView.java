@@ -7,7 +7,7 @@ final class CruiserView {
         if(river==null)return;
         RiverCamera c=river.camera;Painter p=river.canvas();float rise=g.haulout.vesselRise(b),heave=rise>0?rise:WaterSurface.lift(g,b)-HullDamage.sinkDepth(b);
         float[] water=ShoreOcclusion.vessel(g,c,b,true);p.pushClipOutside(water);
-        try{if(rise<=0){if(b.racing)RacingBoatArt.shadow(g,p,b,c);if(b.neon!=0)underglow(g,p,b,c,heave);VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,b.hullKind>=0?MooredBoats.length(b.hullKind):b.racing?56:38,b.hullKind>=0?MooredBoats.width(b.hullKind):b.racing?14:16,b.speed(),false);}}finally{p.popClip();}
+        try{if(rise<=0){if(b.racing || b.hullKind==PoliceBoatModel.KIND)RacingBoatArt.shadow(g,p,b,c);if(b.neon!=0)underglow(g,p,b,c,heave);VesselNavigationLights.reflections(g,world,b,false);VesselRipples.draw(g,world,b.id,b.x,b.y,b.angle,b.hullKind>=0?MooredBoats.length(b.hullKind):b.racing?56:38,b.hullKind>=0?MooredBoats.width(b.hullKind):b.racing?14:16,b.speed(),false);}}finally{p.popClip();}
         float heading=b.angle*32/(2*(float)Math.PI),whole=(float)StrictMath.floor(heading),mix=heading-whole;
         int base=(b.hullKind>=0?b.hullKind:b.racing?6:b.berth%2)*32,a=base+Math.floorMod((int)whole,32),next=base+Math.floorMod((int)whole+1,32);
         float x=c.screenX(b.x,b.y),y=c.screenY(b.x,b.y)-heave*c.scale,size=MooredBoats.CELL_WORLD*c.scale;
@@ -28,6 +28,7 @@ final class CruiserView {
             if(mix>.001f){p.normalSprite(frameB,x,y,size,size,0,0,46,140,b.neon,alpha*mix*wobble);p.normalSprite(frameB,x,y,size,size,-30,30,14,90,b.neon,alpha*mix*.8f);}
         }
         VesselNavigationLights.draw(g,world,b,false,heave,true);
+        if(b.hullKind==PoliceBoatModel.KIND)PoliceBoatArt.strobes(g,p,b,c,heave);
     }
     /** Neon underglow on the water, in the hull's own ripple layer (same shore clip and depth order):
      * an ellipse along the keel in world space, projected, brightening with speed. */

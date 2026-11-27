@@ -44,6 +44,6 @@ public final class NormalBoatReview {
         float near=BoatSurfaceLight.response(0xff808000,.5f,.7f,0,0,13,90);
         float far=BoatSurfaceLight.response(0xff808000,.5f+24*RiverCamera.Q/96,.7f-24*RiverCamera.Q*RiverCamera.DEPTH/96,0,0,13,90);
         if(near<far*1.5f)throw new AssertionError("surface distance ignored");
-        System.out.println(checks+" packed surface-height checks and 224 exact silhouette registrations passed");
+        System.out.println(checks+" packed surface-height checks and "+MooredBoats.BASE_FRAMES+" exact silhouette registrations passed");
     }
 }
