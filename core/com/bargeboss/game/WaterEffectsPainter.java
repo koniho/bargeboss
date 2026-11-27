@@ -30,7 +30,7 @@ public final class WaterEffectsPainter implements Painter {
     public static boolean contains(Game g,float x,float y) {
         SurveyLevel level=g.level();
         if(level!=null)return level.contains(x,y);
-        if(g.arenaStage())return TagArena.contains(x,y);
+        if(g.arenaStage())return g.arena!=null && g.arena.course.contains(x,y);
         if(g.montroseStage())return MontroseHarbor.contains(x,y);
         return CalumetMap.contains(x,y);
     }

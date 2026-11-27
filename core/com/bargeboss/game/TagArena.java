@@ -26,8 +26,8 @@ final class TagArena {
     static final int[][] LINKS={{1,7},{0,2},{1,3},{2,4,8},{3,5},{4,6},{5,7},{6,0,8},{7,3}};
 
     static final int TAG=0,CHASE=1;
-    final int mode;
-    final float[] open=new float[GATES];final int[] clear=new int[GATES],openTicks=new int[GATES];
+    final int mode;final ArenaCourse course;
+    final float[] open;final int[] clear,openTicks;
     Body[] npcs=new Body[0];
     int[] goal=new int[0],immune=new int[0],held=new int[0],shoutTicks=new int[0],shoutCooldown=new int[0];
     boolean[] caught=new boolean[0];String[] shout=new String[0];
@@ -39,33 +39,34 @@ final class TagArena {
     int it;int ticks,limit,playerItTicks,tags;boolean finished,won;
     private int seed;
 
-    TagArena(int mode,int seed){this.mode=mode;this.seed=seed*1103515245+12345;}
+    TagArena(int mode,int seed){this(mode,seed,new ArenaCourse.Loop());}
+    TagArena(int mode,int seed,ArenaCourse course){this.mode=mode;this.course=course;this.seed=seed*1103515245+12345;int n=course.gates();open=new float[n];clear=new int[n];openTicks=new int[n];}
     int random(int n){seed=seed*1103515245+12345;return Math.floorMod(seed>>>8,n);}
 
     void setup(Game g){
         int count=mode==CHASE?4+random(3):3+random(3);
         npcs=new Body[count];goal=new int[count];immune=new int[count];held=new int[count];caught=new boolean[count];
         shout=new String[count];shoutTicks=new int[count];shoutCooldown=new int[count];fuel=new float[count];sputter=new int[count];java.util.Arrays.fill(fuel,1);
-        int startNode=random(NODE_X.length);
+        float[] nx=course.nodeX,ny=course.nodeY;int nodes=nx.length,startNode=random(nodes);
         for(int i=0;i<count;i++){
-            int node=(startNode+2+i*2)%NODE_X.length;
-            Body b=new Body(g.nextId++,-1,NODE_X[node]+random(40)-20,NODE_Y[node]+random(40)-20,random(628)/100f,false,true,i%3==0);
+            int node=(startNode+Math.max(2,nodes/(count+1))*(i+1))%nodes;
+            Body b=new Body(g.nextId++,-1,nx[node]+random(40)-20,ny[node]+random(40)-20,random(628)/100f,false,true,i%3==0);
             b.traffic=true;b.hullKind=i%3==0?HarborTraffic.RACER:(i*5+1)%6;b.neon=WakePatrolJob.NEON[i%WakePatrolJob.NEON.length];
-            npcs[i]=b;goal[i]=LINKS[node][random(LINKS[node].length)];shoutCooldown[i]=60+random(200);
+            int[] out=course.links[node];npcs[i]=b;goal[i]=out.length==0?node:out[random(out.length)];shoutCooldown[i]=60+random(200);
         }
-        g.tug.x=NODE_X[startNode];g.tug.y=NODE_Y[startNode];g.tug.angle=0;g.tug.vx=g.tug.vy=g.tug.spin=0;
+        g.tug.x=nx[startNode];g.tug.y=ny[startNode];g.tug.angle=0;g.tug.vx=g.tug.vy=g.tug.spin=0;
         limit=(mode==CHASE?150:120)*60;
         it=mode==CHASE?-1:random(4)==0?-1:random(count);
         if(it>=0)held[it]=60;
-        for(int k=0;k<GATES;k++){open[k]=0;openTicks[k]=0;}
+        for(int k=0;k<open.length;k++){open[k]=0;openTicks[k]=0;}
     }
     static boolean contains(float x,float y){for(float[] r:WATER)if(x>=r[0] && x<=r[2] && y>=r[1] && y<=r[3])return true;return false;}
     boolean passable(int gate){return open[gate]>=.8f;}
 
     /** Bridges and gates: any boat near opens them over OPEN_TICKS; they close after HOLD_TICKS clear. */
     void stepGates(Game g){
-        for(int k=0;k<GATES;k++){
-            float cx=GATE_X[k],cy=(GATE_Y0[k]+GATE_Y1[k])*.5f;
+        for(int k=0;k<open.length;k++){
+            float cx=course.gateX(k),cy=course.gateY(k);
             boolean near=Physics.length(g.tug.x-cx,g.tug.y-cy)<TRIGGER;
             for(Body b:npcs)if(b.active && Physics.length(b.x-cx,b.y-cy)<TRIGGER)near=true;
             if(near){clear[k]=0;openTicks[k]=Math.min(OPEN_TICKS,openTicks[k]+1);}
@@ -78,47 +79,19 @@ final class TagArena {
         float impact=0;
         for(int disc=0;disc<3;disc++){
             float x=b.discX(disc),y=b.discY(disc),r=b.radius;
-            // Outer wall.
-            impact=Math.max(impact,push(b,splashes,x,y,Math.max(0,r-x),0,1,0));
-            impact=Math.max(impact,push(b,splashes,x,y,Math.max(0,x+r-W),0,-1,0));
-            impact=Math.max(impact,push(b,splashes,x,y,Math.max(0,r-y),0,0,1));
-            impact=Math.max(impact,push(b,splashes,x,y,Math.max(0,y+r-H),0,0,-1));
-            // Islands: push the disc out of each rectangle along the shallowest axis.
-            for(float[] s:ISLANDS){
-                float qx=Physics.clamp(x,s[0],s[2]),qy=Physics.clamp(y,s[1],s[3]),dx=x-qx,dy=y-qy,d=Physics.length(dx,dy);
-                boolean inside=x>s[0] && x<s[2] && y>s[1] && y<s[3];
-                if(!inside && d>=r)continue;
-                float nx,ny,depth;
-                if(inside){float l=x-s[0],rr=s[2]-x,t=y-s[1],bb=s[3]-y,m=Math.min(Math.min(l,rr),Math.min(t,bb));
-                    nx=m==l?-1:m==rr?1:0;ny=m==t?-1:m==bb?1:0;if(nx!=0)ny=0;depth=m+r;}
-                else{nx=dx/Math.max(.001f,d);ny=dy/Math.max(.001f,d);depth=r-d;}
-                impact=Math.max(impact,push(b,splashes,x,y,depth,0,nx,ny));
-            }
-            // Closed gates are walls across the channel (a thin slab at GATE_X).
-            for(int k=0;k<GATES;k++){
-                if(passable(k) || y<GATE_Y0[k]-r || y>GATE_Y1[k]+r)continue;
-                float dx=x-GATE_X[k];if(Math.abs(dx)>=r+4)continue;
-                float n=dx>=0?1:-1;impact=Math.max(impact,push(b,splashes,x,y,r+4-Math.abs(dx),0,n,0));
-            }
+            impact=Math.max(impact,course.walls(b,splashes,x,y,r));
+            for(int k=0;k<open.length;k++)if(!passable(k))impact=Math.max(impact,course.gateWall(b,splashes,k,b.discX(disc),b.discY(disc),r));
         }
         return impact;
     }
-    private static float push(Body b,CollisionSplashes splashes,float x,float y,float depth,float unused,float nx,float ny){
-        if(depth<=0)return 0;
-        b.x+=nx*depth;b.y+=ny*depth;
-        float inward=b.vx*nx+b.vy*ny,impact=0;
-        if(inward<0){impact=-inward;b.vx-=inward*nx*1.08f;b.vy-=inward*ny*1.08f;}
-        b.spin*=.94f;
-        if(splashes!=null)Physics.wallSplash(splashes,b,x-nx*b.radius,y-ny*b.radius,nx,ny,x,y);
-        return impact;
-    }
     /** Nearest node to a point. */
-    static int node(float x,float y){int best=0;float d=Float.MAX_VALUE;for(int i=0;i<NODE_X.length;i++){float e=Physics.length(x-NODE_X[i],y-NODE_Y[i]);if(e<d){d=e;best=i;}}return best;}
+    int node(float x,float y){float[] nx=course.nodeX,ny=course.nodeY;int best=0;float d=Float.MAX_VALUE;for(int i=0;i<nx.length;i++){float e=Physics.length(x-nx[i],y-ny[i]);if(e<d){d=e;best=i;}}return best;}
     /** First hop from node a toward node b (breadth-first over the node graph). */
-    static int nextHop(int a,int b){
+    int nextHop(int a,int b){
         if(a==b)return b;
-        int[] from=new int[NODE_X.length];java.util.Arrays.fill(from,-1);from[a]=a;int[] queue=new int[NODE_X.length];int head=0,tail=0;queue[tail++]=a;
-        while(head<tail){int n=queue[head++];if(n==b)break;for(int m:LINKS[n])if(from[m]<0){from[m]=n;queue[tail++]=m;}}
+        int n0=course.nodeX.length;int[] from=new int[n0];java.util.Arrays.fill(from,-1);from[a]=a;int[] queue=new int[n0];int head=0,tail=0;queue[tail++]=a;
+        while(head<tail){int n=queue[head++];if(n==b)break;for(int m:course.links[n])if(from[m]<0){from[m]=n;queue[tail++]=m;}}
+        if(from[b]<0)return a;
         int step=b;while(from[step]!=a && from[step]>=0)step=from[step];
         return step;
     }
@@ -127,6 +100,8 @@ final class TagArena {
     void step(Game g,CollisionSplashes splashes){
         if(finished)return;
         ticks++;
+        // The swell pushes the NPC boats just as it pushes the tug.
+        for(Body b:npcs)if(b.active)g.water.affect(g,b);
         for(int i=0;i<npcs.length;i++){if(sputter[i]>0)sputter[i]--;if(immune[i]>0)immune[i]--;if(held[i]>0)held[i]--;if(shoutTicks[i]>0)shoutTicks[i]--;if(shoutCooldown[i]>0)shoutCooldown[i]--;}
         if(mode==TAG && it<0)playerItTicks++;
         if(mode==TAG)tagRules(g);else chaseRules(g);
@@ -194,15 +169,15 @@ final class TagArena {
             // Everybody wants to tag the tug: it counts as 60% of its real distance away.
             if(immuneTug<=0){prey=g.tug;best=Physics.length(g.tug.x-b.x,g.tug.y-b.y)*.6f;}
             for(int k=0;k<npcs.length;k++)if(k!=i && immune[k]<=0 && npcs[k].active){float d=Physics.length(npcs[k].x-b.x,npcs[k].y-b.y);if(d<best){best=d;prey=npcs[k];}}
-            if(prey==null){tx=NODE_X[goal[i]];ty=NODE_Y[goal[i]];}
+            if(prey==null){tx=course.nodeX[goal[i]];ty=course.nodeY[goal[i]];}
             else if(lineClear(b.x,b.y,prey.x,prey.y)){tx=prey.x+prey.vx*.4f;ty=prey.y+prey.vy*.4f;}
-            else{int hop=nextHop(node(b.x,b.y),node(prey.x,prey.y));goal[i]=hop;tx=NODE_X[hop];ty=NODE_Y[hop];}
+            else{int hop=nextHop(node(b.x,b.y),node(prey.x,prey.y));goal[i]=hop;tx=course.nodeX[hop];ty=course.nodeY[hop];}
         }else{
             // Roam the loop; when the threat is close, run for the neighbouring node farthest from it.
-            if(Physics.length(NODE_X[goal[i]]-b.x,NODE_Y[goal[i]]-b.y)<70){
-                int at=goal[i],pick=LINKS[at][random(LINKS[at].length)];
+            if(Physics.length(course.nodeX[goal[i]]-b.x,course.nodeY[goal[i]]-b.y)<70){
+                int at=goal[i],pick=course.links[at][random(course.links[at].length)];
                 float danger=Physics.length(threat.x-b.x,threat.y-b.y);
-                if(danger<500){float far=-1;for(int m:LINKS[at]){float d=Physics.length(NODE_X[m]-threat.x,NODE_Y[m]-threat.y);if(d>far){far=d;pick=m;}}}
+                if(danger<500){float far=-1;for(int m:course.links[at]){float d=Physics.length(course.nodeX[m]-threat.x,course.nodeY[m]-threat.y);if(d>far){far=d;pick=m;}}}
                 goal[i]=pick;
             }
             float danger=Physics.length(threat.x-b.x,threat.y-b.y);
@@ -211,18 +186,18 @@ final class TagArena {
             else fuel[i]=Math.min(1,fuel[i]+1f/FUEL_REFILL);
             if(danger<260){
                 // Too close: turn tail if the current goal leads toward the threat.
-                float gx=NODE_X[goal[i]]-b.x,gy=NODE_Y[goal[i]]-b.y,ax=threat.x-b.x,ay=threat.y-b.y;
-                if(gx*ax+gy*ay>0){int at=node(b.x,b.y);float far=-1;for(int m:LINKS[at]){float d=Physics.length(NODE_X[m]-threat.x,NODE_Y[m]-threat.y);if(d>far){far=d;goal[i]=m;}}}
+                float gx=course.nodeX[goal[i]]-b.x,gy=course.nodeY[goal[i]]-b.y,ax=threat.x-b.x,ay=threat.y-b.y;
+                if(gx*ax+gy*ay>0){int at=node(b.x,b.y);float far=-1;for(int m:course.links[at]){float d=Physics.length(course.nodeX[m]-threat.x,course.nodeY[m]-threat.y);if(d>far){far=d;goal[i]=m;}}}
                 yell(i,mode==CHASE?RUN:CLOSE,false);
             }else yell(i,mode==CHASE?TAUNT:IDLE,false);
-            tx=NODE_X[goal[i]];ty=NODE_Y[goal[i]];
+            tx=course.nodeX[goal[i]];ty=course.nodeY[goal[i]];
         }
         if(sputter[i]>0)speed*=SPUTTER;
         // Wait for a closed bridge or gate ahead to finish opening.
-        for(int k=0;k<GATES;k++){
+        for(int k=0;k<open.length;k++){
             if(passable(k))continue;
-            float dx=GATE_X[k]-b.x;if(Math.abs(dx)>90 || b.y<GATE_Y0[k] || b.y>GATE_Y1[k])continue;
-            if(Math.signum(dx)==Math.signum(tx-b.x))speed=Math.min(speed,Math.max(0,(Math.abs(dx)-30)*.6f));
+            float d=Physics.length(course.gateX(k)-b.x,course.gateY(k)-b.y);
+            if(d<110 && course.crosses(k,b.x,b.y,b.x+(tx-b.x)*2,b.y+(ty-b.y)*2))speed=Math.min(speed,Math.max(0,(d-40)*.6f));
         }
         float desired=(float)StrictMath.atan2(ty-b.y,tx-b.x),error=Physics.angle(desired-b.angle);
         b.spin+=Physics.clamp(error*5-b.spin*2.4f,-8,8)*Physics.DT;
@@ -233,9 +208,8 @@ final class TagArena {
     }
     /** Straight water between two points with no closed gate across it. */
     boolean lineClear(float ax,float ay,float bx,float by){
-        float len=Physics.length(bx-ax,by-ay);
-        for(float t=0;t<=len;t+=20){float x=ax+(bx-ax)*t/len,y=ay+(by-ay)*t/len;if(!contains(x,y))return false;}
-        for(int k=0;k<GATES;k++)if(!passable(k) && (ax-GATE_X[k])*(bx-GATE_X[k])<0){float t=(GATE_X[k]-ax)/(bx-ax),y=ay+(by-ay)*t;if(y>=GATE_Y0[k] && y<=GATE_Y1[k])return false;}
+        if(!course.water(ax,ay,bx,by,20))return false;
+        for(int k=0;k<open.length;k++)if(!passable(k) && course.crosses(k,ax,ay,bx,by))return false;
         return true;
     }
     static final String[] IDLE={"CAN'T TAG ME!","NA NA NA!","OVER HERE!","TOO SLOW!"};

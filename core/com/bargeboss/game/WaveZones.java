@@ -34,6 +34,8 @@ final class WaveZones {
     /** The active stage's exposure at a world point. */
     static float at(Game g,float x,float y){
         if(g.montroseStage())return SeaWaves.exposure(x,y);
+        // Arenas: the open St. Lawrence takes the full swell; the walled tag circuit far less.
+        if(g.arenaStage())return g.arena!=null && g.arena.course instanceof ArenaCourse.Islands?1:.35f;
         SurveyLevel level=g.level();
         if(level!=null)return level.waveExposure(x,y);
         if(g.lockStage())return .3f;

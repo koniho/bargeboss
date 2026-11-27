@@ -15,12 +15,15 @@ final class TagArenaView {
         canvas.rect(0,0,g.layout.width,g.layout.height,g.lighting().water);
         if((g.renderExclusions&RenderExclusions.AMBIENT_WATER)==0){WaterTexture.draw(g,canvas,g.lighting().water);WaveView.surface(g,canvas);}
         g.water.draw(g,new RiverPainter(canvas,c));
-        // Land: outer banks, then the islands.
         float[] view=SurveyGround.visible(g);
-        for(float[] r:FRAME)block(canvas,c,r,false,view);
-        for(float[] r:TagArena.ISLANDS)block(canvas,c,r,true,view);
-        // Lock chamber copings across the shortcut and the gate leaves.
-        for(int k=TagArena.LOCK_W;k<=TagArena.LOCK_E;k++)gate(canvas,c,k,a.open[k]);
+        boolean islands=a.course instanceof ArenaCourse.Islands;
+        if(islands)IslandArt.draw(g,canvas,c,(ArenaCourse.Islands)a.course,view);
+        else{
+            // Land: outer banks, then the islands; lock chamber gate leaves.
+            for(float[] r:FRAME)block(canvas,c,r,false,view);
+            for(float[] r:TagArena.ISLANDS)block(canvas,c,r,true,view);
+            for(int k=TagArena.LOCK_W;k<=TagArena.LOCK_E;k++)gate(canvas,c,k,a.open[k]);
+        }
         WeatherView.scenery(g,canvas);
         // Boats, nearest last.
         Body[] order=new Body[a.npcs.length+1];int n=0;order[n++]=g.tug;for(Body b:a.npcs)if(b.active)order[n++]=b;
@@ -28,7 +31,7 @@ final class TagArenaView {
         RiverPainter river=new RiverPainter(canvas,c);
         for(int i=0;i<n;i++){if(order[i]==g.tug)VesselView.draw(g,river,g.tug,true);else VesselView.draw(g,river,order[i],false);}
         // Lift bridges over the boats.
-        for(int k=TagArena.BRIDGE_N;k<=TagArena.BRIDGE_S;k++)bridge(canvas,c,k,a.open[k]);
+        for(int k=0;k<a.course.gates();k++)if(a.course.bridge[k])bridge(canvas,c,a.course,k,a.open[k],islands);
         markers(g,canvas,c,a);
     }
     private static float sx(RiverCamera c,float x,float y){return c.screenX(x,y);}
@@ -68,21 +71,32 @@ final class TagArenaView {
         int light=open>=.8f?0xff4cff7a:open>0?0xffffc52f:0xffff4040;
         p.material(sx(c,x,y0-8),sy(c,x,y0-8,RISE+10),10*c.scale,0,0,10*c.scale,EffectMaterial.GLOW,0,1,light);
     }
-    /** Vertical-lift bridge: two towers and a deck that rises from BRIDGE_LOW to BRIDGE_HIGH as it opens. */
-    private static void bridge(Painter p,RiverCamera c,int k,float open){
-        float x=TagArena.GATE_X[k],y0=TagArena.GATE_Y0[k]-10,y1=TagArena.GATE_Y1[k]+10,h=BRIDGE_LOW+(BRIDGE_HIGH-BRIDGE_LOW)*(open*open*(3-2*open)),half=16;
-        // Deck shadow on the water, sliding away as the deck rises.
+    /** Vertical-lift bridge along a gate segment: towers at both ends and a deck that rises as it opens.
+     * Footbridges (islands) are narrower and lower, in timber. */
+    private static void bridge(Painter p,RiverCamera c,ArenaCourse course,int k,float open,boolean foot){
+        float ax=course.ax[k],ay=course.ay[k],bx=course.bx[k],by=course.by[k],len=Physics.length(bx-ax,by-ay);
+        float ux=(bx-ax)/len,uy=(by-ay)/len,nx=-uy,ny=ux,half=foot?9:16,low=foot?8:BRIDGE_LOW,high=foot?46:BRIDGE_HIGH;
+        float e=open*open*(3-2*open),h=low+(high-low)*e;
+        // Extend past the channel onto the banks.
+        ax-=ux*10;ay-=uy*10;bx+=ux*10;by+=uy*10;
         float off=h*.5f;
-        p.convexQuad(sx(c,x-half+off,y0),sy(c,x-half+off,y0,0),sx(c,x-half+off,y1),sy(c,x-half+off,y1,0),sx(c,x+half+off,y1),sy(c,x+half+off,y1,0),sx(c,x+half+off,y0),sy(c,x+half+off,y0,0),0x40000000);
+        p.convexQuad(sx(c,ax+nx*half+off,ay+ny*half),sy(c,ax+nx*half+off,ay+ny*half,0),sx(c,bx+nx*half+off,by+ny*half),sy(c,bx+nx*half+off,by+ny*half,0),
+                sx(c,bx-nx*half+off,by-ny*half),sy(c,bx-nx*half+off,by-ny*half,0),sx(c,ax-nx*half+off,ay-ny*half),sy(c,ax-nx*half+off,ay-ny*half,0),0x40000000);
+        int post=foot?0xff6a4e33:STEEL;float top=high+(foot?8:14);
         for(int end=0;end<2;end++){
-            float ty=end==0?y0:y1;
-            for(float dx=-half;dx<=half;dx+=half*2)p.line(sx(c,x+dx,ty),sy(c,x+dx,ty,0),sx(c,x+dx,ty),sy(c,x+dx,ty,BRIDGE_HIGH+14),3*c.scale,STEEL);
-            p.line(sx(c,x-half,ty),sy(c,x-half,ty,BRIDGE_HIGH+14),sx(c,x+half,ty),sy(c,x+half,ty,BRIDGE_HIGH+14),3*c.scale,STEEL);
+            float ex=end==0?ax:bx,ey=end==0?ay:by;
+            for(int side=-1;side<=1;side+=2)p.line(sx(c,ex+nx*half*side,ey+ny*half*side),sy(c,ex+nx*half*side,ey+ny*half*side,0),sx(c,ex+nx*half*side,ey+ny*half*side),sy(c,ex+nx*half*side,ey+ny*half*side,top),(foot?2.2f:3)*c.scale,post);
+            p.line(sx(c,ex+nx*half,ey+ny*half),sy(c,ex+nx*half,ey+ny*half,top),sx(c,ex-nx*half,ey-ny*half),sy(c,ex-nx*half,ey-ny*half,top),(foot?2.2f:3)*c.scale,post);
         }
-        p.convexQuad(sx(c,x-half,y0),sy(c,x-half,y0,h),sx(c,x-half,y1),sy(c,x-half,y1,h),sx(c,x+half,y1),sy(c,x+half,y1,h),sx(c,x+half,y0),sy(c,x+half,y0,h),DECK);
-        p.convexQuad(sx(c,x-half,y1),sy(c,x-half,y1,h),sx(c,x+half,y1),sy(c,x+half,y1,h),sx(c,x+half,y1),sy(c,x+half,y1,h-4),sx(c,x-half,y1),sy(c,x-half,y1,h-4),0xff6a5d46);
+        int deck=foot?0xffa07850:DECK,lip=foot?0xff7a5a3a:0xff6a5d46;
+        p.convexQuad(sx(c,ax+nx*half,ay+ny*half),sy(c,ax+nx*half,ay+ny*half,h),sx(c,bx+nx*half,by+ny*half),sy(c,bx+nx*half,by+ny*half,h),
+                sx(c,bx-nx*half,by-ny*half),sy(c,bx-nx*half,by-ny*half,h),sx(c,ax-nx*half,ay-ny*half),sy(c,ax-nx*half,ay-ny*half,h),deck);
+        // Front lip on whichever long edge faces the camera.
+        float lx=ny>0?nx:-nx,ly=ny>0?ny:-ny;
+        p.convexQuad(sx(c,ax+lx*half,ay+ly*half),sy(c,ax+lx*half,ay+ly*half,h),sx(c,bx+lx*half,by+ly*half),sy(c,bx+lx*half,by+ly*half,h),
+                sx(c,bx+lx*half,by+ly*half),sy(c,bx+lx*half,by+ly*half,h-3),sx(c,ax+lx*half,ay+ly*half),sy(c,ax+lx*half,ay+ly*half,h-3),lip);
         int light=open>=.8f?0xff4cff7a:open>0?0xffffc52f:0xffff4040;
-        for(int end=0;end<2;end++){float ty=end==0?y0:y1;p.material(sx(c,x,ty),sy(c,x,ty,BRIDGE_HIGH+18),12*c.scale,0,0,12*c.scale,EffectMaterial.GLOW,0,1,light);}
+        for(int end=0;end<2;end++){float ex=end==0?ax:bx,ey=end==0?ay:by;p.material(sx(c,ex,ey),sy(c,ex,ey,top+4),10*c.scale,0,0,10*c.scale,EffectMaterial.GLOW,0,1,light);}
     }
     private static void markers(Game g,Painter p,RiverCamera c,TagArena a){
         for(int i=0;i<a.npcs.length;i++){

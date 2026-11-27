@@ -23,7 +23,7 @@ public final class WaveView {
         // Every location uses this pass, including training and low water detail.
         g.spotlight.water(g,canvas);
         if(g.settings.waterDetail<2)return;
-        RiverCamera c=g.layout.camera;boolean montrose=g.montroseStage();
+        RiverCamera c=g.layout.camera;boolean montrose=SeaWaves.openSea(g);
         // Hosts that expand batches should not pay to collect and reorder them first.
         WaterBatchPainter batch=canvas.prefersPolygonBatches()?new WaterBatchPainter(canvas,g.layout.width,g.layout.height):null;
         WaterEffectsPainter p=new WaterEffectsPainter(g,new RiverPainter(batch==null?canvas:batch,c));
@@ -61,7 +61,7 @@ public final class WaveView {
             // Stable spatial thinning keeps ambient water lively without competing
             // with the vessel wakes. Never base this on time or camera position.
             // Storm chop thins fewer crest cells: Montrose by lake exposure, sheltered water only above the default sea.
-            float rough=montrose?g.weather.waves(g)*SeaWaves.exposure((col+.5f)*38,(row+.5f)*30):Math.max(0,g.weather.waves(g)-1)*1.2f*WaveZones.at(g,(col+.5f)*38,(row+.5f)*30);
+            float rough=montrose?g.weather.waves(g)*SeaWaves.exposure(g,(col+.5f)*38,(row+.5f)*30):Math.max(0,g.weather.waves(g)-1)*1.2f*WaveZones.at(g,(col+.5f)*38,(row+.5f)*30);
             if(noise(seed+41)<Math.max(.1f,.45f-rough*.12f))continue;
             float x=0,y=0;
             if(!montrose){
@@ -80,7 +80,7 @@ public final class WaveView {
             float phase=tick*(.016f+noise(seed+11)*.009f)+noise(seed)*6.283f;
             float life=.5f+.5f*(float)StrictMath.sin(phase),fade=life*life;
             if(montrose){
-                rough=g.weather.waves(g)*SeaWaves.exposure(x,y);
+                rough=g.weather.waves(g)*SeaWaves.exposure(g,x,y);
                 float waveLife=.5f+.5f*Physics.clamp(surface.height(x,y)/Math.max(.1f,3.2f*rough),-1,1);
                 life+=(waveLife-life)*Physics.clamp(rough,0,1);
                 fade=life*life;detail*=1+rough*.25f;

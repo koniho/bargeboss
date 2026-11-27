@@ -41,6 +41,23 @@ public final class TagArenaTest {
         for(int i=0;i<a.npcs.length;i++){Body b=a.npcs[i];b.angle=0;g.tug.x=b.x-b.half-g.tug.half+2;g.tug.y=b.y;g.tug.angle=0;a.step(g,g.splashes);check(a.caught[i],"touching boat "+i+" catches it");}
         check(a.finished && a.won && g.delivered==a.npcs.length,"catching every boat wins the chase");g.step();check(g.goalComplete() && g.mode==Game.FINISH,"winning the chase finishes the circuit");
         g=game(Challenges.BOAT_CHASE);g.arena.ticks=g.arena.limit-1;g.step();check(g.goalFailed(),"time running out fails the chase");
+        // Thousand Islands: routes stay on water, footbridges open in a second, a heavy random swell, NPCs stay afloat.
+        g=game(Challenges.ISLAND_TAG);a=g.arena;ArenaCourse.Islands isles=(ArenaCourse.Islands)a.course;
+        check(isles.nodeX.length>40,"the islands get a dense route graph ("+isles.nodeX.length+")");
+        for(int i=0;i<isles.nodeX.length;i++){check(isles.contains(isles.nodeX[i],isles.nodeY[i]),"island route node "+i+" is on the water");
+            for(int j:isles.links[i])check(isles.water(isles.nodeX[i],isles.nodeY[i],isles.nodeX[j],isles.nodeY[j],10),"island route "+i+"-"+j+" stays on the water");}
+        check(g.weather.swell>1 && g.weather.waves(g)>2 && SeaWaves.openSea(g),"island rounds roll a heavy swell on the open-sea wave model");
+        for(Body b:a.npcs)b.active=false;g.tug.x=-3000;
+        for(int t=0;t<5;t++)a.stepGates(g);check(!a.passable(0),"footbridges stay down with nobody near");
+        g.tug.x=isles.gateX(0)+60;g.tug.y=isles.gateY(0)+60;for(int t=0;t<TagArena.OPEN_TICKS;t++)a.stepGates(g);
+        check(a.passable(0),"a footbridge lifts within a second of a boat approaching");
+        java.util.HashSet<Long> bearings=new java.util.HashSet<Long>();
+        for(int r=0;r<6;r++){g.startArenaRound(Challenges.ISLAND_TAG);bearings.add(Math.round(g.weather.swellCos*100)*1000+Math.round(g.weather.swellSin*100));}
+        check(bearings.size()>1,"each round picks its own swell direction");
+        g=game(Challenges.ISLAND_CHASE);a=g.arena;
+        for(int t=0;t<60*40;t++){g.step();if(a.finished)break;}
+        for(Body b:a.npcs)check(a.course.contains(b.x,b.y),"island NPC stays on the water through the swell at "+(int)b.x+","+(int)b.y);
+        g=game(Challenges.ISLAND_TAG);a=g.arena;a.ticks=a.limit-1;a.it=0;g.step();check(g.challengeId==Challenges.ISLAND_CHASE && g.arena.course instanceof ArenaCourse.Islands,"winning island tag rolls into island chase");
         System.out.println("Tag circuit geometry, one-second bridges and gates, NPCs, tag passing and chase passed");
     }
     public static void main(String[] a){run();}

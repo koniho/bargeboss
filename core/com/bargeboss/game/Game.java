@@ -154,18 +154,22 @@ public final class Game {
     public boolean montroseStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.MONTROSE;}
     public boolean chicagoStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.CHICAGO;}
     /** The tag circuit (Boat Tag / Boat Chase): its own loop canal, bridges and lock. */
-    public boolean arenaStage() {return tutorial==null && Challenges.kind(challengeId)==Challenges.BOAT_TAG;}
+    public boolean arenaStage() {int kind=Challenges.kind(challengeId);return tutorial==null && (kind==Challenges.BOAT_TAG || kind==Challenges.ISLAND_TAG);}
+    static boolean chaseRound(int id){return id==Challenges.BOAT_CHASE || id==Challenges.ISLAND_CHASE;}
     TagArena arena;private int arenaGames;
     /** A fresh random field on the tag circuit: Boat Tag, or the Boat Chase round that follows a win. */
     void startArenaRound(int id){
-        challengeId=id;delivered=0;arena=new TagArena(id==Challenges.BOAT_CHASE?TagArena.CHASE:TagArena.TAG,++arenaGames*7919+career.totalStars());arena.setup(this);
+        challengeId=id;delivered=0;ArenaCourse course=Challenges.kind(id)==Challenges.ISLAND_TAG?new ArenaCourse.Islands():new ArenaCourse.Loop();
+        arena=new TagArena(chaseRound(id)?TagArena.CHASE:TagArena.TAG,++arenaGames*7919+career.totalStars(),course);arena.setup(this);
+        // Thousand Islands rounds roll a huge swell from a random bearing.
+        weather.reset();if(course instanceof ArenaCourse.Islands)weather.swell(3.2f,arena.random(24)*15);
         layout=Layout.focused(layout.width,layout.height,tug.x,tug.y,1.5f,layout.width*.5f,layout.height*.55f);
     }
     /** Boat Tag won: record it and roll straight into the Chase round. */
     private void advanceArena(){
-        if(challengeId!=Challenges.BOAT_TAG || arena==null || !arena.finished || !arena.won)return;
+        if(chaseRound(challengeId) || arena==null || !arena.finished || !arena.won)return;
         int before=career.rank();career.record(challengeId,arena.stars(),score);rankPromoted|=career.rank()>before;
-        startArenaRound(Challenges.BOAT_CHASE);cancelInputs();tell("ROUND 2: CHASE! CATCH EVERY BOAT");
+        startArenaRound(challengeId==Challenges.ISLAND_TAG?Challenges.ISLAND_CHASE:Challenges.BOAT_CHASE);cancelInputs();tell("ROUND 2: CHASE! CATCH EVERY BOAT");
     }
     /** Surveyed polygon harbors sharing geographic water, shore and bridge machinery. */
     /** Surveyed geographic level for this stage, or null (training canal, Montrose). The only
@@ -195,7 +199,7 @@ public final class Game {
         }
         return null;
     }
-    public boolean berthEnabled(int berth) { return calumetStage()?voyage.berthEnabled(berth):MontroseRescue.cruisers(this)?berth>=0 && berth<2:indianaStage()?berth==0:chicagoStage()?false:montroseStage()?berth==2:tutorial!=null?berth==2:!lockStage() && (orderStage() || berth==2 || berth==1); }
+    public boolean berthEnabled(int berth) { return arenaStage()?false:calumetStage()?voyage.berthEnabled(berth):MontroseRescue.cruisers(this)?berth>=0 && berth<2:indianaStage()?berth==0:chicagoStage()?false:montroseStage()?berth==2:tutorial!=null?berth==2:!lockStage() && (orderStage() || berth==2 || berth==1); }
     public char berthLetter(int berth) { return tutorial!=null?'A':orderStage()?(berth==2?'A':berth==0?'B':'C'):berth==1?'B':'A'; }
     public float dockY(int berth) { if(MontroseHaulout.active(this))return MontroseHaulout.Y;return calumetStage()?voyage.dockY(voyage.destination(berth)):MontroseRescue.cruisers(this)?MontroseRescue.berth(berth).y:indianaStage()?IndianaHarbor.DOCK_Y:chicagoStage()?chicago.targetY(this):montroseStage()?MontroseHarbor.SLIP_Y:orderStage()?PhysicalBerths.dockY(challengeId,berth):Challenges.kind(challengeId)==Challenges.TWO_BANKS && tutorial==null && berth==2?290:DOCK_Y[berth]; }
     public float channelTop() { SurveyLevel level=level();return level!=null?level.minY():montroseStage()?MontroseHarbor.PLAY_BOUNDS[1]:TrainingChannel.CHALLENGE_TOP; }
@@ -212,7 +216,7 @@ public final class Game {
     }
     public boolean correctOrder(Body b) { return true; }
     public int goalProgress() { return calumetStage()?voyage.progress(this):lockStage()?lock.clearedCount(this):delivered; }
-    public boolean goalComplete() { return tutorial==null && (arenaStage()?arena!=null && arena.finished && arena.won && challengeId==Challenges.BOAT_CHASE:calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
+    public boolean goalComplete() { return tutorial==null && (arenaStage()?arena!=null && arena.finished && arena.won && chaseRound(challengeId):calumetStage()?voyage.complete:montroseStage()?montroseComplete:chicagoStage()?chicago.complete():lockStage()?lock.complete():delivered>=quota()); }
     public boolean goalFailed() { return hull<=0 || arenaStage() && arena!=null && arena.finished && !arena.won || cargoSunk || MontroseRescue.swimmers(this) && (rescue.failed || quota()<=0) || job!=null && montroseStage() && job.failed(this) || lockStage() && lock.failed(); }
     public String goalStatus() {
         if(calumetStage())return voyage.status();
@@ -278,7 +282,7 @@ public final class Game {
     public boolean trainingChannel() { return tutorial!=null && tutorial.lesson==Tutorial.CHANNEL; }
     public boolean inWater(float x,float y) {
         SurveyLevel level=level();
-        return level!=null?level.contains(x,y):arenaStage()?TagArena.contains(x,y):montroseStage()?MontroseHarbor.contains(x,y):TrainingChannel.contains(x,y);
+        return level!=null?level.contains(x,y):arenaStage()?arena!=null && arena.course.contains(x,y):montroseStage()?MontroseHarbor.contains(x,y):TrainingChannel.contains(x,y);
     }
     public static final float WORK_ZOOM=2.15f,DOCK_ZOOM=2.5f,TRANSIT_ZOOM=1.2f;
     public static final float PRACTICE_DRIVE_ZOOM=2.4f,PRACTICE_CANAL_ZOOM=1.65f;
@@ -792,7 +796,7 @@ public final class Game {
     }
     private boolean worldTouch(float x,float y) {
         SurveyLevel level=level();if(level!=null)return level.inBounds(x,y);
-        if(arenaStage())return x>=-200 && x<=TagArena.W+200 && y>=-200 && y<=TagArena.H+200;
+        if(arenaStage())return arena!=null && x>=-200 && x<=arena.course.w+200 && y>=-200 && y<=arena.course.h+200;
         if(montroseStage())return x>=MontroseHarbor.PLAY_BOUNDS[0] && x<=MontroseHarbor.PLAY_BOUNDS[2] && y>=MontroseHarbor.PLAY_BOUNDS[1] && y<=MontroseHarbor.PLAY_BOUNDS[5];
         return x>=(TrainingChannel.ENTRY_LEFT-40)
                 && x<=Math.max(CalumetMap.EAST,TrainingChannel.CHALLENGE_RIGHT+100)+40

@@ -13,7 +13,7 @@ final class LevelAssetsTest {
         for(int id=0;id<Challenges.COUNT;id++) {
             LevelAssets.Plan plan=LevelAssets.challenge(id);
             int[] scenery=plan.sceneryAtlases(),preparation=plan.preparationAtlases();
-            boolean marina=Challenges.kind(id)==Challenges.MONTROSE || Challenges.kind(id)==Challenges.BOAT_TAG;
+            boolean marina=Challenges.kind(id)==Challenges.MONTROSE || Challenges.kind(id)==Challenges.BOAT_TAG || Challenges.kind(id)==Challenges.ISLAND_TAG;
             check(scenery.length==(marina?11:0),"Level prepares its permanent scenery family");
             check(preparation.length==plan.rotationAtlases().length+scenery.length+PlayerPortrait.COUNT+3,"Complete preparation includes scenery, rotations, captain portraits, cyclic foam, splashes and ripples");
             for(int c=0;c<PlayerPortrait.COUNT;c++)check(preparation[plan.rotationAtlases().length+scenery.length+c]==SpriteAtlas.WHITNEY_PORTRAIT+c,"Every stage prepares the always-visible captain portraits");
@@ -28,7 +28,7 @@ final class LevelAssetsTest {
                 if(id==Challenges.SWIMMER_RESCUE)check(java.util.Arrays.stream(preparation).noneMatch(a -> a==SpriteAtlas.SWIMMERS),"3D swimmers need no legacy atlas");
                 continue;
             }
-            if(Challenges.kind(id)==Challenges.BOAT_TAG){check(includes(plan,SpriteAtlas.TUG) && !includes(plan,SpriteAtlas.BULK),"Tag circuit prepares the tug and the marina boat sprites, no cargo");continue;}
+            if(Challenges.kind(id)==Challenges.BOAT_TAG || Challenges.kind(id)==Challenges.ISLAND_TAG){check(includes(plan,SpriteAtlas.TUG) && !includes(plan,SpriteAtlas.BULK),"Tag circuit prepares the tug and the marina boat sprites, no cargo");continue;}
             if(Challenges.kind(id)==Challenges.MONTROSE){
                 check(plan.rotationFrames()==1280,"Montrose prepares complete tug, yacht and fireworks-deck families");
                 check(includes(plan,SpriteAtlas.YACHT) && includes(plan,SpriteAtlas.YACHT_GOLD) && includes(plan,SpriteAtlas.YACHT_MINT) && includes(plan,ShadowArt.forSource(SpriteAtlas.YACHT)) && includes(plan,SurfaceLightArt.forSource(SpriteAtlas.YACHT)),"Yacht hull and every effect prepared");

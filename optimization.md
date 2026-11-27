@@ -7116,3 +7116,19 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   tug at 60% of its real distance; 0.5 was 1/6, 0.75 matched no preference at 6/6).
 - Gameplay hash 386f26af (was 9af0f0af): bisected to the two new career slots only (catalog back to
   17 levels and 4 locations returns exactly to 9af0f0af / 19b19c23). Draw hash unchanged.
+
+## Thousand Islands arena and random heavy swell
+
+- ArenaCourse abstracts arena geometry (water, walls, gate segments, route graph); TagArena runs Tag/
+  Chase on any course. ArenaCourse.Loop wraps the tag circuit unchanged; ArenaCourse.Islands is the
+  St. Lawrence: 15 granite islets (circle collision, rough outlines, pines, cottages via IslandArt),
+  wooded banks, three timber footbridges (segment gates, one-second lift), and a 126-node route graph
+  generated from a 140-unit water grid linked where hull-clear.
+- New location THOUSAND ISLANDS (ISLAND_TAG=19 / ISLAND_CHASE=20; Tag rolls into Chase).
+- Heavy swell: StageWeather.swell (x3.2) with a random bearing per island round overrides the
+  player's wave direction; SeaWaves.openSea extends Montrose's directional swell model and drawn
+  crests to the islands (full exposure); the walled circuit gets 0.35 exposure. NPCs feel the waves.
+- Arenas disable dock berths (the training crane/bollard no longer appears there).
+- Gameplay hash e7575caf (was 386f26af): bisected to the two new career slots only. Draw 19b19c23 ->
+  18b07146: hull ripples now follow the full wave strength (storms/swell) instead of only the
+  settings slider, so storm ripples on Montrose are slightly rougher (intended).

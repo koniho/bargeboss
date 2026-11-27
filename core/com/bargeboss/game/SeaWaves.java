@@ -9,6 +9,10 @@ public final class SeaWaves {
     private static final float[] AMPLITUDE={2.4f,.8f};
     static float smooth(float a,float b,float x){float t=(x-a)/(b-a);if(t<=0)return 0;if(t>=1)return 1;return t*t*(3-2*t);}
     /** Authored exposure, not a bathymetric/refraction simulation. Narrow entrance admits chop. */
+    /** Open-sea wave model (directional swell and drawn crests): Montrose, and the Thousand Islands arena. */
+    static boolean openSea(Game g){return g.montroseStage() || g.arenaStage() && g.arena!=null && g.arena.course instanceof ArenaCourse.Islands;}
+    /** Swell exposure at a point: Montrose's geography, or the fully exposed open river of the islands. */
+    static float exposure(Game g,float x,float y){return g.montroseStage()?exposure(x,y):1;}
     public static float exposure(float x,float y){
         float mx=MontroseHarbor.planX(x),my=MontroseHarbor.planY(y);
         float lake=Math.max(smooth(1100,1420,my),smooth(1650,2050,mx));
@@ -23,13 +27,13 @@ public final class SeaWaves {
         float waves=g.weather.waves(g);if(waves==1)return 1;
         return Math.max(0,1+(waves-1)*WaveZones.at(g,x,y));
     }
-    static float directionX(Game g,int wave){return (float)(DX[wave]*g.settings.waveCos-DY[wave]*g.settings.waveSin);}
-    static float directionY(Game g,int wave){return (float)(DX[wave]*g.settings.waveSin+DY[wave]*g.settings.waveCos);}
+    static float directionX(Game g,int wave){double c=g.weather.swell>0?g.weather.swellCos:g.settings.waveCos,s=g.weather.swell>0?g.weather.swellSin:g.settings.waveSin;return (float)(DX[wave]*c-DY[wave]*s);}
+    static float directionY(Game g,int wave){double c=g.weather.swell>0?g.weather.swellCos:g.settings.waveCos,s=g.weather.swell>0?g.weather.swellSin:g.settings.waveSin;return (float)(DX[wave]*s+DY[wave]*c);}
     static float bend(float v,int wave){return 10*(float)StrictMath.sin(v*.012+wave*1.7)+5*(float)StrictMath.sin(v*.027+wave);}
     static float bendSlope(float v,int wave){return .12f*(float)StrictMath.cos(v*.012+wave*1.7)+.135f*(float)StrictMath.cos(v*.027+wave);}
     /** Paired orbital components share phase/cosine work; identical to value components 3 and 4. */
     static void montroseDisplacement(Game g,float x,float y,float tick,float[] result){
-        float e=exposure(x,y)*g.weather.waves(g),sx=0,sy=0;
+        float e=exposure(g,x,y)*g.weather.waves(g),sx=0,sy=0;
         if(e!=0)for(int i=0;i<2;i++){
             float dx=directionX(g,i),dy=directionY(g,i),v=-dy*x+dx*y;
             float phase=K[i]*(dx*x+dy*y-bend(v,i))-OMEGA[i]*tick*Physics.DT;
@@ -40,14 +44,14 @@ public final class SeaWaves {
     }
     /** Per-draw constants; samples retain scalar physics arithmetic and StrictMath. */
     static final class Surface {
-        final float intensity;
+        final float intensity;final boolean montrose;
         final float[] dx=new float[2],dy=new float[2],time=new float[2];
         Surface(Game g,float tick){
-            intensity=g.weather.waves(g);
+            intensity=g.weather.waves(g);montrose=g.montroseStage();
             for(int i=0;i<2;i++){dx[i]=directionX(g,i);dy[i]=directionY(g,i);time[i]=OMEGA[i]*tick*Physics.DT;}
         }
         float height(float x,float y){
-            float e=exposure(x,y)*intensity;if(e==0)return 0;
+            float e=(montrose?exposure(x,y):1)*intensity;if(e==0)return 0;
             float sum=0;
             for(int i=0;i<2;i++){
                 float v=-dy[i]*x+dx[i]*y;
@@ -57,7 +61,7 @@ public final class SeaWaves {
             return sum;
         }
         void displacement(float x,float y,float[] result){
-            float e=exposure(x,y)*intensity,sx=0,sy=0;
+            float e=(montrose?exposure(x,y):1)*intensity,sx=0,sy=0;
             if(e!=0)for(int i=0;i<2;i++){
                 float v=-dy[i]*x+dx[i]*y;
                 float phase=K[i]*(dx[i]*x+dy[i]*y-bend(v,i))-time[i];
@@ -68,8 +72,8 @@ public final class SeaWaves {
         }
     }
     static float value(Game g,float x,float y,float tick,int component){
-        boolean montrose=g.montroseStage();
-        float exposure=montrose?exposure(x,y)*g.weather.waves(g):sheltered(g,x,y);
+        boolean montrose=openSea(g);
+        float exposure=montrose?exposure(g,x,y)*g.weather.waves(g):sheltered(g,x,y);
         if(exposure==0)return 0;
         float sum=0;
         for(int i=0;i<2;i++){
@@ -94,8 +98,8 @@ public final class SeaWaves {
     }
     /** Paired flow: preserve scalar component arithmetic while sharing phase and slope. */
     static void flow(Game g,float x,float y,float tick,float[] out){
-        boolean montrose=g.montroseStage();
-        float exposure=montrose?exposure(x,y)*g.weather.waves(g):sheltered(g,x,y);
+        boolean montrose=openSea(g);
+        float exposure=montrose?exposure(g,x,y)*g.weather.waves(g):sheltered(g,x,y);
         float sx=0,sy=0;
         if(exposure!=0)for(int i=0;i<2;i++){
             float dx,dy,k,omega,amplitude;
@@ -113,7 +117,7 @@ public final class SeaWaves {
     }
     /** View-bounded crest strips use exactly the phase used by value(). Shared shore clip is active. */
     static void draw(Game g,Painter p){
-        if(!g.montroseStage() || !(p instanceof RiverPainter))return;
+        if(!openSea(g) || !(p instanceof RiverPainter))return;
         RiverCamera c=((RiverPainter)p).camera;
         if(g.weather.waves(g)==0)return;
         for(int wave=0;wave<2;wave++){
@@ -143,7 +147,7 @@ public final class SeaWaves {
                         float mid=v+segment*.5f,at=u+bend(mid,wave);
                         float x=dx*at-dy*mid,y=dy*at+dx*mid;
                         if(!MontroseHarbor.contains(x,y))continue;
-                        float e=exposure(x,y);if(e==0)continue;
+                        float e=exposure(g,x,y);if(e==0)continue;
                         float broken=smooth(.05f,.8f,(float)(StrictMath.sin(mid*.065+crest*1.7)*.7+StrictMath.sin(mid*.137+crest*.8)*.3));
                         if(broken<.03f)continue;
                         float curve=bend(v+segment,wave)-bend(v,wave);

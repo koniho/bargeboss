@@ -9,7 +9,7 @@ public final class CareerTest {
         System.out.println(assertions+" challenge, rank and progress persistence assertions passed");
     }
     private static void challengeRules() {
-        check(Challenges.COUNT==19 && Challenges.quota(0)==2 && Challenges.quota(Challenges.CHICAGO)==1,"first level has two opposite-bank deliveries; the fire call is one job");
+        check(Challenges.COUNT==21 && Challenges.quota(0)==2 && Challenges.quota(Challenges.CHICAGO)==1,"first level has two opposite-bank deliveries; the fire call is one job");
         check(Challenges.quota(1)==3 && Challenges.quota(2)==2 && Challenges.quota(3)==3,"shared slip and deep channel use three loads; lock passage uses two");
         check(Challenges.stars(0,1,0,100)==0 && Challenges.stars(0,2,0,0)==0,"incomplete goal or wreck earns no stars");
         check(Challenges.stars(0,2,1,79)==1 && Challenges.stars(0,2,0,79)==2
@@ -83,7 +83,7 @@ public final class CareerTest {
             check(game.challengeId==Challenges.menuId(card),"cards select locations, not jobs");
         }
         ReplayInput.tap(game,Layout.CHALLENGE_START);
-        check(game.mode==Game.PLAY && game.arenaStage() && game.arena!=null,"selected location launches (the last card is the tag circuit)");
+        check(game.mode==Game.PLAY && game.arenaStage() && game.arena!=null,"selected location launches (the last card is the Thousand Islands arena)");
         game.background();ReplayInput.tap(game,Layout.RESTART);
         check(game.arenaStage() && game.ticks==0,"restart preserves location");
         Game failed=new Game();failed.reset();failed.hull=0;failed.step();

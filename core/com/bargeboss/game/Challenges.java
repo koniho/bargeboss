@@ -3,7 +3,7 @@ package com.bargeboss.game;
 /** Append-only level catalog. Existing IDs stay stable in saved careers. */
 public final class Challenges {
     public static final int TWO_BANKS=0,SHARED_SLIP=1,LOCK=2,DEEP_CHANNEL=3,MONTROSE=4,INDIANA=5,RAFT_RESCUE=6,SWIMMER_RESCUE=7,HAULOUT=8,CHICAGO=9,
-            WAKE_PATROL=10,LOOSE_BOATS=11,WATER_TAXI=12,SANDBAR=13,REGATTA=14,FIREWORKS_NIGHT=15,DEEP_FREEZE=16,BOAT_TAG=17,BOAT_CHASE=18,PAGE_SIZE=3;
+            WAKE_PATROL=10,LOOSE_BOATS=11,WATER_TAXI=12,SANDBAR=13,REGATTA=14,FIREWORKS_NIGHT=15,DEEP_FREEZE=16,BOAT_TAG=17,BOAT_CHASE=18,ISLAND_TAG=19,ISLAND_CHASE=20,PAGE_SIZE=3;
     private static final class Definition {
         final int kind,quota,replaySeconds;
         final String title,description,summary,cardGoal,cardHint;
@@ -51,7 +51,11 @@ public final class Challenges {
         new Definition(BOAT_TAG,1,180,"BOAT TAG","A LOOP CANAL OF LIFT BRIDGES AND A LOCK. DON'T BE IT WHEN THE HORN GOES.",
                 "TAG / 2:00","TOUCH TO TAG / NO TAG-BACKS","BRIDGES AND GATES OPEN AS BOATS NEAR"),
         new Definition(BOAT_TAG,4,240,"BOAT CHASE","YOU'RE THE CHASER. CATCH EVERY BOAT ON THE CIRCUIT BEFORE TIME RUNS OUT.",
-                "CHASE / 2:30","CATCH THEM ALL","CUT THROUGH THE LOCK TO HEAD THEM OFF")
+                "CHASE / 2:30","CATCH THEM ALL","CUT THROUGH THE LOCK TO HEAD THEM OFF"),
+        new Definition(ISLAND_TAG,1,180,"ISLAND TAG","TAG AMONG THE THOUSAND ISLANDS. FOOTBRIDGES LIFT AS BOATS NEAR. DON'T BE IT AT THE HORN.",
+                "ISLAND TAG / 2:00","TOUCH TO TAG / NO TAG-BACKS","SLIP BETWEEN THE ISLANDS"),
+        new Definition(ISLAND_TAG,4,240,"ISLAND CHASE","CATCH EVERY BOAT HIDING AMONG THE THOUSAND ISLANDS BEFORE TIME RUNS OUT.",
+                "ISLAND CHASE / 2:30","CATCH THEM ALL","CORNER THEM AGAINST THE ROCKS")
     };
     public static final int COUNT=LEVELS.length;
     // Hot scene queries need only primitive metadata. Object-array reads retain /
@@ -59,7 +63,7 @@ public final class Challenges {
     private static final int[] KINDS=kinds();
     private static int[] kinds(){int[] out=new int[COUNT];for(int i=0;i<COUNT;i++)out[i]=LEVELS[i].kind;return out;}
     private Challenges() {}
-    public static boolean standalone(int id) {return id==HAULOUT || id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id==CHICAGO || id>=WAKE_PATROL && id<=DEEP_FREEZE || id==BOAT_TAG || id==BOAT_CHASE;}
+    public static boolean standalone(int id) {return id==HAULOUT || id==MONTROSE || id==INDIANA || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id==CHICAGO || id>=WAKE_PATROL && id<=DEEP_FREEZE || id==BOAT_TAG || id==BOAT_CHASE || id==ISLAND_TAG || id==ISLAND_CHASE;}
     public static boolean valid(int id) { return id>=0 && id<COUNT; }
     private static Definition level(int id) { return LEVELS[valid(id)?id:0]; }
     public static int kind(int id) { return KINDS[valid(id)?id:0]; }
@@ -76,16 +80,16 @@ public final class Challenges {
         return kind==SHARED_SLIP || kind==DEEP_CHANNEL?new int[]{2,0,1}[index]:index==0?2:1;
     }
     public static int quota(int id) { return level(id).quota; }
-    public static final int LOCATION_COUNT=5;
+    public static final int LOCATION_COUNT=6;
     public static boolean calumet(int id){return id>=0 && id<=DEEP_CHANNEL;}
-    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==HAULOUT || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id>=WAKE_PATROL && id<=DEEP_FREEZE?MONTROSE:id==BOAT_CHASE?BOAT_TAG:id;}
-    public static int menuId(int slot){return slot==0?TWO_BANKS:slot==1?MONTROSE:slot==2?INDIANA:slot==3?CHICAGO:slot==4?BOAT_TAG:-1;}
+    public static int stageEntry(int id){return calumet(id)?TWO_BANKS:id==HAULOUT || id==RAFT_RESCUE || id==SWIMMER_RESCUE || id>=WAKE_PATROL && id<=DEEP_FREEZE?MONTROSE:id==BOAT_CHASE?BOAT_TAG:id==ISLAND_CHASE?ISLAND_TAG:id;}
+    public static int menuId(int slot){return slot==0?TWO_BANKS:slot==1?MONTROSE:slot==2?INDIANA:slot==3?CHICAGO:slot==4?BOAT_TAG:slot==5?ISLAND_TAG:-1;}
     /** Selector index of a location entry; -1 for a job that is not an entry. */
     public static int locationIndex(int id){int entry=stageEntry(id);for(int i=0;i<LOCATION_COUNT;i++)if(menuId(i)==entry)return i;return -1;}
-    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{8,4,6,7,10,11,12,13,14,15,16}:stageEntry(id)==CHICAGO?new int[]{CHICAGO}:stageEntry(id)==BOAT_TAG?new int[]{BOAT_TAG,BOAT_CHASE}:new int[]{5};}
+    public static int[] locationJobs(int id){return calumet(id)?new int[]{0,1,2,3}:stageEntry(id)==MONTROSE?new int[]{8,4,6,7,10,11,12,13,14,15,16}:stageEntry(id)==CHICAGO?new int[]{CHICAGO}:stageEntry(id)==BOAT_TAG?new int[]{BOAT_TAG,BOAT_CHASE}:stageEntry(id)==ISLAND_TAG?new int[]{ISLAND_TAG,ISLAND_CHASE}:new int[]{5};}
     public static int nextStage(int id){int entry=stageEntry(id);return entry==TWO_BANKS?MONTROSE:entry==MONTROSE?INDIANA:entry==INDIANA?CHICAGO:-1;}
-    public static String locationTitle(int id){return calumet(id)?"CALUMET RIVER":stageEntry(id)==MONTROSE?"MONTROSE HARBOR":stageEntry(id)==CHICAGO?"CHICAGO RIVER":stageEntry(id)==BOAT_TAG?"TAG CIRCUIT":"INDIANA HARBOR";}
-    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"ELEVEN JOBS / RESCUES / CHASES / FIREWORKS / BLIZZARD":stageEntry(id)==CHICAGO?"NAVY PIER TO WOLF POINT / HARBOR LOCK FIRE CALL":stageEntry(id)==BOAT_TAG?"LOOP CANAL / LIFT BRIDGES / LOCK / TAG AND CHASE":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
+    public static String locationTitle(int id){return calumet(id)?"CALUMET RIVER":stageEntry(id)==MONTROSE?"MONTROSE HARBOR":stageEntry(id)==CHICAGO?"CHICAGO RIVER":stageEntry(id)==BOAT_TAG?"TAG CIRCUIT":stageEntry(id)==ISLAND_TAG?"THOUSAND ISLANDS":"INDIANA HARBOR";}
+    public static String locationDescription(int id){return calumet(id)?"LAKE MICHIGAN TO TURNING BASIN FIVE / FOUR CONTIGUOUS JOBS":stageEntry(id)==MONTROSE?"ELEVEN JOBS / RESCUES / CHASES / FIREWORKS / BLIZZARD":stageEntry(id)==CHICAGO?"NAVY PIER TO WOLF POINT / HARBOR LOCK FIRE CALL":stageEntry(id)==BOAT_TAG?"LOOP CANAL / LIFT BRIDGES / LOCK / TAG AND CHASE":stageEntry(id)==ISLAND_TAG?"ST. LAWRENCE ISLANDS / FOOTBRIDGES / TAG AND CHASE":"OUTER HARBOR TO SOUTH MILL / STEEL TOW";}
     public static int pageCount() { return (LOCATION_COUNT+PAGE_SIZE-1)/PAGE_SIZE; }
     public static int pageFor(int id) { return Math.max(0,locationIndex(id))/PAGE_SIZE; }
     public static int maxStars() { return COUNT*3; }

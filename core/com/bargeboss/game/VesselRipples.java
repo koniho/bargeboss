@@ -13,7 +13,7 @@ public final class VesselRipples {
         float foam=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED)/10,0,1);
         float moving=moored?0:Physics.clamp((speed-1)/7,0,1);
         float cruise=moored?0:Physics.clamp((speed-WaterFoam.SHED_SPEED*.4f)/(WaterFoam.SHED_SPEED*.6f),0,1);
-        float rough=g.montroseStage()?g.settings.waveIntensity()*SeaWaves.exposure(x,y):0;
+        float rough=SeaWaves.openSea(g)?g.weather.waves(g)*SeaWaves.exposure(g,x,y):0;
         spread+=rough*5;
         int cycles=rough>1.4f?3:2;
         for(int i=0;i<cycles;i++){
