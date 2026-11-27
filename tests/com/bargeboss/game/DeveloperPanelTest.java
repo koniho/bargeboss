@@ -37,6 +37,9 @@ public final class DeveloperPanelTest {
         Game active=root.activeGame();int ticks=active.ticks;Body tug=active.tug;
         ReplayInput.tap(root,790,410);check(active.lighting()==LightingProfile.NIGHT,"embedded time control");
         ReplayInput.tap(root,790,302);check(active.settings.rainLevel()==1,"embedded rain control");
+        ReplayInput.tap(root,790,392);ReplayInput.tap(root,790,392);check(active.settings.blizzardLevel()==2 && active.weather.blizzard(active)>.6f && active.weather.blizzard==0,"embedded blizzard control snows on any stage without the Deep Freeze mission");
+        check(active.weather.fog(active)>1 && active.weather.gust(active,0)>0,"a standard blizzard brings whiteout fog and gusts");
+        ReplayInput.tap(root,(root.layout.width-700)/2+40,392);check(active.settings.blizzardLevel()==1,"blizzard eases from the panel");
         root.advance(1);check(active.ticks==ticks && active.tug==tug,"environment changes preserve frozen mission");
         root.back();root.startDeveloperMission(Challenges.INDIANA);
         check(root.activeGame().lighting()==LightingProfile.NIGHT,"mission jump preserves selected live time");

@@ -29,7 +29,7 @@ public final class GameSettings {
     public void adjustWaves(int change){waveLevel=Math.max(0,Math.min(12,waveLevel+change));}
     public void turnWaves(int steps){waveDirection=Math.floorMod(waveDirection+steps,24);double a=waveBearing()*StrictMath.PI/180;waveCos=StrictMath.cos(a);waveSin=StrictMath.sin(a);}
     public void resetWaves(){waveLevel=4;waveDirection=0;waveCos=1;waveSin=0;}
-    private int rainLevel,lightningLevel,fogLevel;
+    private int rainLevel,lightningLevel,fogLevel,blizzardLevel;
     int weatherFlashTick=-1000000;
     public int fogLevel(){return fogLevel;}
     public void adjustFog(int change){fogLevel=Math.max(0,Math.min(3,fogLevel+change));}
@@ -37,7 +37,10 @@ public final class GameSettings {
     public int lightningLevel(){return lightningLevel;}
     public void adjustRain(int change){rainLevel=Math.max(0,Math.min(3,rainLevel+change));}
     public void adjustLightning(int change){lightningLevel=Math.max(0,Math.min(2,lightningLevel+change));}
-    public void resetWeather(){rainLevel=lightningLevel=fogLevel=0;weatherFlashTick=-1000000;}
+    /** Standard blizzard: 0 off, 1 light snow, 2 heavy, 3 whiteout. */
+    public int blizzardLevel(){return blizzardLevel;}
+    public void adjustBlizzard(int change){blizzardLevel=Math.max(0,Math.min(3,blizzardLevel+change));}
+    public void resetWeather(){rainLevel=lightningLevel=fogLevel=blizzardLevel=0;weatherFlashTick=-1000000;}
     private int captain=-1;
     private boolean tutorialDone;
     /** Chosen player captain (PlayerPortrait.WHITNEY..DOT), or -1 before the intro choice. */
