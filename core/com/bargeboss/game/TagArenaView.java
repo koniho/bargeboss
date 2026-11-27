@@ -129,8 +129,7 @@ final class TagArenaView {
     private static void powerUps(Game g,Painter p,RiverCamera c,TagArena a){
         for(int k=0;k<a.powerLive.length;k++){
             if(!a.powerLive[k])continue;
-            int type=a.powerType[k];int col=type==TagArena.NITRO?0xffff6a00:type==TagArena.MEGA?0xff00f0ff:type==TagArena.SHIELD?0xff9dff00:0xffa0d8ff;
-            String label=type==TagArena.NITRO?"N":type==TagArena.MEGA?"L":type==TagArena.SHIELD?"S":"F";
+            int col=0xffff6a00;String label="N";
             float bob=4+3*(float)StrictMath.sin(g.visualTicks*.12f+k*2),x=sx(c,a.powerX[k],a.powerY[k]),y=sy(c,a.powerX[k],a.powerY[k],bob+6),r=9*c.scale;
             p.material(x,sy(c,a.powerX[k],a.powerY[k],0),r*4,0,0,r*2,EffectMaterial.GLOW,0,1,SoftCue.alpha(col,.45f));
             p.circle(x,y,r,col);p.circle(x,y,r*.7f,0xff101418);
@@ -167,8 +166,6 @@ final class TagArenaView {
         // Active power-ups.
         float py=104;
         if(a.nitro>0){Lettering.center(p,"NITRO "+((a.nitro+59)/60),x,py,14,0xffff6a00);py+=18;}
-        if(a.mega>0){Lettering.center(p,"MEGA LASSO "+((a.mega+59)/60),x,py,14,0xff00f0ff);py+=18;}
-        if(a.shield>0){Lettering.center(p,"SHIELD "+((a.shield+59)/60),x,py,14,0xff9dff00);py+=18;}
         if(a.mode==TagArena.CHASE && a.combo>1 && a.comboTicks>0)Lettering.center(p,"COMBO x"+a.combo,x,py,16,0xffff6fd8);
         if(a.mode==TagArena.TAG && a.it<0){float pulse=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.25f);Lettering.center(p,"YOU'RE IT!",g.layout.width*.5f,90,22,SoftCue.alpha(0xffff4a3a,.6f+.4f*pulse));}
     }

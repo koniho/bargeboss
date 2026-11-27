@@ -55,8 +55,8 @@ public final class TagArenaTest {
         check(g.tow.connected(itBoat,g.tug) && a.it==0,"the roped IT boat is held off");a.step(g,g.splashes);
         check(!g.tow.connected(itBoat,g.tug) && a.angry>0,"the line snaps and IT comes back angry");
         // Power-ups: touching a buoy applies it.
-        g=game(Challenges.BOAT_TAG);a=g.arena;for(int k=0;k<3;k++){a.powerLive[k]=true;a.powerType[k]=k;a.powerX[k]=g.tug.x;a.powerY[k]=g.tug.y;}
-        a.step(g,g.splashes);check(a.nitro>0 && a.mega>0 && a.shield>0 && a.reach()>1,"nitro, mega lasso and shield apply on pickup");
+        g=game(Challenges.BOAT_TAG);a=g.arena;a.powerLive[0]=true;a.powerType[0]=TagArena.NITRO;a.powerX[0]=g.tug.x;a.powerY[0]=g.tug.y;
+        a.step(g,g.splashes);check(a.nitro>0 && !a.powerLive[0],"nitro applies on pickup");
         g=game(Challenges.BOAT_CHASE);g.arena.ticks=g.arena.limit-1;g.step();check(g.goalFailed(),"time running out fails the chase");
         // Thousand Islands: routes stay on water, footbridges open in a second, a heavy random swell, NPCs stay afloat.
         g=game(Challenges.ISLAND_TAG);a=g.arena;ArenaCourse.Islands isles=(ArenaCourse.Islands)a.course;

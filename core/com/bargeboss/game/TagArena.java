@@ -41,9 +41,9 @@ final class TagArena {
     /** TAG: how long the tug has held a boat on its line (it snaps after HOLD_SNAP); an angry IT runs faster. */
     int holdTicks,angry;static final int HOLD_SNAP=300;
     /** Power-up buoys and the tug's active power-ups (ticks left). */
-    static final int NITRO=0,MEGA=1,SHIELD=2,FREEZE=3,POWER_SPAWN=540;
+    static final int NITRO=0,POWER_SPAWN=540;
     float[] powerX=new float[3],powerY=new float[3];int[] powerType=new int[3];boolean[] powerLive=new boolean[3];int powerTimer=240;
-    int nitro,mega,shield;
+    int nitro;
     static final int FUEL_BURN=270,FUEL_REFILL=10*60,SPUTTER_TICKS=150;static final float SPUTTER=.45f;
     /** TAG: index of IT (-1 = the tug, else an NPC). */
     int it;int ticks,limit,playerItTicks,tags;boolean finished,won;
@@ -129,7 +129,7 @@ final class TagArena {
         ticks++;
         // The swell pushes the NPC boats just as it pushes the tug.
         for(Body b:npcs)if(b.active)g.water.affect(g,b);
-        if(nitro>0)nitro--;if(mega>0)mega--;if(shield>0)shield--;if(angry>0)angry--;if(comboTicks>0 && --comboTicks==0)combo=0;
+        if(nitro>0)nitro--;if(angry>0)angry--;if(comboTicks>0 && --comboTicks==0)combo=0;
         powerUps(g);
         for(int i=0;i<npcs.length;i++){if(stunned[i]>0)stunned[i]--;if(sputter[i]>0)sputter[i]--;if(immune[i]>0)immune[i]--;if(held[i]>0)held[i]--;if(shoutTicks[i]>0)shoutTicks[i]--;if(shoutCooldown[i]>0)shoutCooldown[i]--;}
         if(mode==TAG && it<0)playerItTicks++;
@@ -158,8 +158,8 @@ final class TagArena {
         }
         if(g.tow.count()==0)holdTicks=0;
         if(it>=0 && held[it]>0)return;
-        // IT tags whoever it touches (not the boat that just tagged it; never a shielded tug).
-        if(it>=0 && immuneTug<=0 && shield<=0 && !towed(g,it) && Physics.touching(itBody,g.tug,3)){pass(g,-1);return;}
+        // IT tags whoever it touches (not the boat that just tagged it).
+        if(it>=0 && immuneTug<=0 && !towed(g,it) && Physics.touching(itBody,g.tug,3)){pass(g,-1);return;}
         for(int i=0;i<npcs.length;i++){
             if(i==it || immune[i]>0 || !npcs[i].active)continue;
             if(Physics.touching(itBody,npcs[i],3)){pass(g,i);return;}
@@ -199,20 +199,15 @@ final class TagArena {
     private void powerUps(Game g){
         if(--powerTimer<=0){powerTimer=POWER_SPAWN;
             for(int k=0;k<powerLive.length;k++)if(!powerLive[k]){int n=random(course.nodeX.length);powerX[k]=course.nodeX[n];powerY[k]=course.nodeY[n];
-                powerType[k]=mode==CHASE?(random(3)==0?FREEZE:random(2)==0?NITRO:MEGA):random(3);powerLive[k]=true;break;}}
+                powerType[k]=NITRO;powerLive[k]=true;break;}}
         for(int k=0;k<powerLive.length;k++){
             if(!powerLive[k] || Physics.length(g.tug.x-powerX[k],g.tug.y-powerY[k])>34)continue;
             powerLive[k]=false;g.haptic(Game.HAPTIC_SUCCESS);g.sounds.complete();
-            switch(powerType[k]){
-                case NITRO:nitro=240;g.tell("NITRO!");break;
-                case MEGA:mega=600;g.tell("MEGA LASSO! THROW FROM FARTHER");break;
-                case SHIELD:shield=360;g.tell("SHIELD! CAN'T BE TAGGED");break;
-                default:for(int i=0;i<npcs.length;i++)if(!corralled[i])stunned[i]=150;g.tell("FREEZE! EVERY BOAT STUNNED");
-            }
+            nitro=240;g.tell("NITRO!");
         }
     }
-    /** Lasso reach multiplier: arena throws carry 30% farther; the mega lasso doubles them. */
-    float reach(){return mega>0?2f:1.3f;}
+    /** Lasso reach multiplier: arena throws carry 30% farther. */
+    float reach(){return 1.3f;}
     /** NPC pilots, motion, walls, gates and hull contacts; called once per physics sub-step. */
     /** NPC steering (Game integrates and collides the hulls as cargo); called once per physics sub-step. */
     void motion(Game g,CollisionSplashes splashes){
@@ -241,7 +236,7 @@ final class TagArena {
             // Hunt the nearest boat that may be tagged.
             Body prey=null;float best=Float.MAX_VALUE;
             // Everybody wants to tag the tug: it counts as 60% of its real distance away.
-            if(immuneTug<=0 && shield<=0){prey=g.tug;best=Physics.length(g.tug.x-b.x,g.tug.y-b.y)*.6f;}
+            if(immuneTug<=0){prey=g.tug;best=Physics.length(g.tug.x-b.x,g.tug.y-b.y)*.6f;}
             for(int k=0;k<npcs.length;k++)if(k!=i && immune[k]<=0 && npcs[k].active){float d=Physics.length(npcs[k].x-b.x,npcs[k].y-b.y);if(d<best){best=d;prey=npcs[k];}}
             if(prey==null){tx=course.nodeX[goal[i]];ty=course.nodeY[goal[i]];}
             else if(lineClear(b.x,b.y,prey.x,prey.y)){tx=prey.x+prey.vx*.4f;ty=prey.y+prey.vy*.4f;}
