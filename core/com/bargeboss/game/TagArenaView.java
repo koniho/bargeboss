@@ -24,12 +24,15 @@ final class TagArenaView {
             for(float[] r:TagArena.ISLANDS)block(canvas,c,r,true,view);
             for(int k=TagArena.LOCK_W;k<=TagArena.LOCK_E;k++)gate(canvas,c,k,a.open[k]);
         }
+        corral(g,canvas,c,a);powerUps(g,canvas,c,a);
         WeatherView.scenery(g,canvas);
         // Boats, nearest last.
         Body[] order=new Body[a.npcs.length+1];int n=0;order[n++]=g.tug;for(Body b:a.npcs)if(b.active)order[n++]=b;
         for(int i=1;i<n;i++){Body b=order[i];int j=i-1;while(j>=0 && c.screenY(order[j].x,order[j].y)>c.screenY(b.x,b.y)){order[j+1]=order[j];j--;}order[j+1]=b;}
         RiverPainter river=new RiverPainter(canvas,c);
         for(int i=0;i<n;i++){if(order[i]==g.tug)VesselView.draw(g,river,g.tug,true);else VesselView.draw(g,river,order[i],false);}
+        // Lasso flight and tow lines.
+        TowView.Segments rope=new TowView.Segments(g);for(int i=0;i<rope.count;i++)rope.draw(river,i);
         // Lift bridges over the boats.
         for(int k=0;k<a.course.gates();k++)if(a.course.bridge[k])bridge(canvas,c,a.course,k,a.open[k],islands);
         markers(g,canvas,c,a);
@@ -102,10 +105,42 @@ final class TagArenaView {
         for(int i=0;i<a.npcs.length;i++){
             Body b=a.npcs[i];if(!b.active)continue;
             if(a.mode==TagArena.TAG && a.it==i)itMarker(g,p,c,b);
-            if(a.mode==TagArena.CHASE && a.caught[i]){float x=sx(c,b.x,b.y),y=sy(c,b.x,b.y,30);Lettering.center(p,"CAUGHT",x,y-6*c.scale,Physics.clamp(9*c.scale,10,14),0xffb8c4cc);}
+            if(a.stunned[i]>0)dizzy(g,p,c,b,a.stunned[i]);
+            if(a.mode==TagArena.TAG && a.towed(g,i)){float x=sx(c,b.x,b.y),y=sy(c,b.x,b.y,40);float f=1-a.holdTicks/(float)TagArena.HOLD_SNAP;
+                p.rect(x-22,y-4,44,6,0xe6050a10);p.rect(x-21,y-3,42*f,4,f<.3f?0xffff5a4a:0xffffd166);}
             if(a.shoutTicks[i]>0)bubble(g,p,c,b,a.shout[i],110-a.shoutTicks[i],a.shoutTicks[i]);
         }
         if(a.mode==TagArena.TAG && a.it<0)itMarker(g,p,c,g.tug);
+    }
+    /** Corral: a ring of orange floats with a label (chase only). */
+    private static void corral(Game g,Painter p,RiverCamera c,TagArena a){
+        if(a.mode!=TagArena.CHASE)return;
+        Body towed=null;for(int i=0;i<a.npcs.length;i++)if(a.towed(g,i))towed=a.npcs[i];
+        int target=towed==null?-1:a.nearestPen(towed.x,towed.y);
+        for(int pen=0;pen<a.penX.length;pen++){
+            float px=a.penX[pen],py=a.penY[pen];
+            for(int k=0;k<16;k++){double t=k*Math.PI/8;float x=px+(float)Math.cos(t)*TagArena.CORRAL_REACH*.8f,y=py+(float)Math.sin(t)*TagArena.CORRAL_REACH*.8f;
+                float bob=(float)StrictMath.sin(g.visualTicks*.08f+k)*1.2f;p.circle(sx(c,x,y),sy(c,x,y,2+bob),3.2f*c.scale,0xffff8a2b);p.circle(sx(c,x,y),sy(c,x,y,3+bob),1.6f*c.scale,0xffffd8a8);}
+            if(pen==target)MontroseJob.ring(g,p,px,py,TagArena.CORRAL_REACH*.6f,0xff6dffb0,1);
+            Lettering.center(p,"CORRAL",sx(c,px,py),sy(c,px,py,40),Physics.clamp(11*c.scale,11,16),pen==target?0xff6dffb0:0xffffb070);
+        }
+    }
+    /** Power-up buoys: bobbing glowing orbs with their letter. */
+    private static void powerUps(Game g,Painter p,RiverCamera c,TagArena a){
+        for(int k=0;k<a.powerLive.length;k++){
+            if(!a.powerLive[k])continue;
+            int type=a.powerType[k];int col=type==TagArena.NITRO?0xffff6a00:type==TagArena.MEGA?0xff00f0ff:type==TagArena.SHIELD?0xff9dff00:0xffa0d8ff;
+            String label=type==TagArena.NITRO?"N":type==TagArena.MEGA?"L":type==TagArena.SHIELD?"S":"F";
+            float bob=4+3*(float)StrictMath.sin(g.visualTicks*.12f+k*2),x=sx(c,a.powerX[k],a.powerY[k]),y=sy(c,a.powerX[k],a.powerY[k],bob+6),r=9*c.scale;
+            p.material(x,sy(c,a.powerX[k],a.powerY[k],0),r*4,0,0,r*2,EffectMaterial.GLOW,0,1,SoftCue.alpha(col,.45f));
+            p.circle(x,y,r,col);p.circle(x,y,r*.7f,0xff101418);
+            Lettering.center(p,label,x,y-r*.55f,Math.max(10,r*1.1f),col);
+        }
+    }
+    /** Stunned boat: stars circling over the hull. */
+    private static void dizzy(Game g,Painter p,RiverCamera c,Body b,int left){
+        float x=sx(c,b.x,b.y),y=sy(c,b.x,b.y,32),r=10*c.scale;
+        for(int k=0;k<3;k++){double t=g.visualTicks*.18+k*2.094;ScreenView.star(p,x+(float)Math.cos(t)*r,y+(float)Math.sin(t)*r*.45f,3.5f*c.scale,SoftCue.alpha(0xffffe27a,Math.min(1,left/20f)));}
     }
     private static void itMarker(Game g,Painter p,RiverCamera c,Body b){
         float x=sx(c,b.x,b.y),y=sy(c,b.x,b.y,0),pulse=.6f+.4f*(float)StrictMath.sin(g.visualTicks*.3f),r=(b.half+b.radius)*1.8f*c.scale;
@@ -129,6 +164,12 @@ final class TagArenaView {
         int left=a.secondsLeft();String text=left/60+":"+(left%60<10?"0":"")+left%60;boolean hurry=left<=10;
         float x=g.layout.width-84,y=66,size=hurry?26+4*(.5f+.5f*(float)StrictMath.sin(g.visualTicks*.3f)):24;
         Lettering.center(p,text,x+1.5f,y+1.5f,size,0xcc0a1016);Lettering.center(p,text,x,y,size,hurry?0xffff5a4a:0xffffe27a);
+        // Active power-ups.
+        float py=104;
+        if(a.nitro>0){Lettering.center(p,"NITRO "+((a.nitro+59)/60),x,py,14,0xffff6a00);py+=18;}
+        if(a.mega>0){Lettering.center(p,"MEGA LASSO "+((a.mega+59)/60),x,py,14,0xff00f0ff);py+=18;}
+        if(a.shield>0){Lettering.center(p,"SHIELD "+((a.shield+59)/60),x,py,14,0xff9dff00);py+=18;}
+        if(a.mode==TagArena.CHASE && a.combo>1 && a.comboTicks>0)Lettering.center(p,"COMBO x"+a.combo,x,py,16,0xffff6fd8);
         if(a.mode==TagArena.TAG && a.it<0){float pulse=.5f+.5f*(float)StrictMath.sin(g.visualTicks*.25f);Lettering.center(p,"YOU'RE IT!",g.layout.width*.5f,90,22,SoftCue.alpha(0xffff4a3a,.6f+.4f*pulse));}
     }
 }

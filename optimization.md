@@ -7134,3 +7134,20 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   settings slider, so storm ripples on Montrose are slightly rougher (intended).
 - Island Chase bot runs: 6/6 won in 33-82 s, so the islands' chase stars are tighter (3 under 45 s,
   2 under 80 s; the circuit keeps 70/110).
+
+## Lasso and towing in Tag and Chase; power-ups
+
+- Arena NPCs live in the cargo slots so the shared lasso and tow line work on them (Game integrates
+  and collides them; the arena only steers). Arena ropes reach 30% farther (mega lasso: x2), get
+  extra slack before parting so long catches reel in, and may sweep over land (only a shut gate cuts
+  them).
+- Chase: ram (any bump >= 8) to stun (dizzy stars); lasso; the roped boat fights the line; tow it into
+  the nearest corral (4 pens on the circuit, 2 on the islands) to bank it; back-to-back catches build a
+  combo. Corralled boats leave the collision world so pens never wall off a channel. 3-5 boats, 3:00.
+- Tag: when IT, a lasso on any boat tags it with a yank; when not, lassoing IT holds it off (hold bar)
+  until the line snaps after 5 s and IT comes back angry and faster.
+- Power-up buoys every 9 s: Nitro (x1.45 drive), Mega Lasso, Shield (untaggable) in Tag; Freeze (all
+  stunned) in Chase.
+- Fixed a crash: touching a berthless hull (arena NPC) looked up dock berth -1.
+- Corral bot with real input (ram, drag-to-tug lasso, tow led hop by hop): circuit 2/4 wins (95-98 s),
+  islands 4/4 (55-85 s); chase stars rescaled (circuit 100/140 s, islands 65/100 s). Hashes unchanged.

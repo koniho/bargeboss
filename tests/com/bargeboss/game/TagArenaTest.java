@@ -36,10 +36,27 @@ public final class TagArenaTest {
         check(a.it==1,"the tug passes IT by touching another boat");
         a.ticks=a.limit-1;g.step();check(g.challengeId==Challenges.BOAT_CHASE && g.arena.mode==TagArena.CHASE && !g.goalFailed() && g.career.bestStars(Challenges.BOAT_TAG)>0,"not IT at the horn wins tag and rolls into the chase round");
         g=game(Challenges.BOAT_TAG);g.arena.it=-1;g.arena.ticks=g.arena.limit-1;g.step();check(g.goalFailed(),"IT at the horn loses");
-        // Chase: catch every boat.
+        // Chase: ram to stun, lasso, tow into the corral; every boat corralled wins.
         g=game(Challenges.BOAT_CHASE);a=g.arena;check(a.mode==TagArena.CHASE && g.quota()==a.npcs.length,"chase asks for every boat");
-        for(int i=0;i<a.npcs.length;i++){Body b=a.npcs[i];b.angle=0;g.tug.x=b.x-b.half-g.tug.half+2;g.tug.y=b.y;g.tug.angle=0;a.step(g,g.splashes);check(a.caught[i],"touching boat "+i+" catches it");}
-        check(a.finished && a.won && g.delivered==a.npcs.length,"catching every boat wins the chase");g.step();check(g.goalComplete() && g.mode==Game.FINISH,"winning the chase finishes the circuit");
+        for(int i=0;i<a.npcs.length;i++)check(g.cargo[i]==a.npcs[i],"NPC "+i+" sits in a cargo slot so the lasso works on it");
+        for(int i=0;i<a.npcs.length;i++){Body b=a.npcs[i];b.angle=0;b.vx=b.vy=0;g.tug.x=b.x-b.half-g.tug.half+2;g.tug.y=b.y;g.tug.angle=0;g.tug.vx=60;g.tug.vy=0;a.step(g,g.splashes);
+            check(a.stunned[i]>0 && !a.corralled[i],"ramming boat "+i+" stuns it but does not catch it");
+            g.tug.vx=0;check(g.tow.attach(g,b,g.tug),"a stunned boat takes the lasso");
+            int pen=i%a.penX.length;b.x=a.penX[pen]+5;b.y=a.penY[pen];b.vx=b.vy=0;g.tug.x=a.penX[pen]+(pen==3?-90:90);g.tug.y=a.penY[pen]+(pen==3?-40:40);a.step(g,g.splashes);
+            check(a.corralled[i] && g.delivered==i+1 && !g.tow.connected(b,g.tug) && b.awaitingPickup && g.cargo[i]==null,"towing boat "+i+" into the corral banks it and parks it out of the way");}
+        check(a.finished && a.won && g.delivered==a.npcs.length && a.combo>1,"corralling every boat wins the chase with a combo");g.step();check(g.goalComplete() && g.mode==Game.FINISH,"winning the chase finishes the circuit");
+        // Tag with the lasso: when the tug is IT, roping a boat tags it; when not, roping IT holds it until the line snaps.
+        g=game(Challenges.BOAT_TAG);a=g.arena;a.it=-1;Body roped=a.npcs[1];g.tug.x=roped.x-80;g.tug.y=roped.y;a.immune[1]=0;
+        check(g.tow.attach(g,roped,g.tug),"the tug ropes a boat");a.step(g,g.splashes);
+        check(a.it==1 && !g.tow.connected(roped,g.tug),"a lasso tag passes IT and lets the line go");
+        g=game(Challenges.BOAT_TAG);a=g.arena;a.it=0;a.held[0]=0;Body itBoat=a.npcs[0];g.tug.x=itBoat.x-90;g.tug.y=itBoat.y;
+        check(g.tow.attach(g,itBoat,g.tug),"the tug ropes the IT boat");
+        for(int t=0;t<TagArena.HOLD_SNAP-1;t++){a.step(g,g.splashes);if(!g.tow.connected(itBoat,g.tug))break;}
+        check(g.tow.connected(itBoat,g.tug) && a.it==0,"the roped IT boat is held off");a.step(g,g.splashes);
+        check(!g.tow.connected(itBoat,g.tug) && a.angry>0,"the line snaps and IT comes back angry");
+        // Power-ups: touching a buoy applies it.
+        g=game(Challenges.BOAT_TAG);a=g.arena;for(int k=0;k<3;k++){a.powerLive[k]=true;a.powerType[k]=k;a.powerX[k]=g.tug.x;a.powerY[k]=g.tug.y;}
+        a.step(g,g.splashes);check(a.nitro>0 && a.mega>0 && a.shield>0 && a.reach()>1,"nitro, mega lasso and shield apply on pickup");
         g=game(Challenges.BOAT_CHASE);g.arena.ticks=g.arena.limit-1;g.step();check(g.goalFailed(),"time running out fails the chase");
         // Thousand Islands: routes stay on water, footbridges open in a second, a heavy random swell, NPCs stay afloat.
         g=game(Challenges.ISLAND_TAG);a=g.arena;ArenaCourse.Islands isles=(ArenaCourse.Islands)a.course;

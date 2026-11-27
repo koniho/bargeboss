@@ -159,6 +159,7 @@ public final class Game {
     TagArena arena;private int arenaGames;
     /** A fresh random field on the tag circuit: Boat Tag, or the Boat Chase round that follows a win. */
     void startArenaRound(int id){
+        tow.release(this);for(int i=0;i<cargo.length;i++)cargo[i]=null;
         challengeId=id;delivered=0;ArenaCourse course=Challenges.kind(id)==Challenges.ISLAND_TAG?new ArenaCourse.Islands():new ArenaCourse.Loop();
         arena=new TagArena(chaseRound(id)?TagArena.CHASE:TagArena.TAG,++arenaGames*7919+career.totalStars(),course);arena.setup(this);
         // Thousand Islands rounds roll a huge swell from a random bearing.
@@ -189,6 +190,8 @@ public final class Game {
     /** Fireworks barges tied to the practice mooring ball in the last lesson. */
     boolean ballHull(Body b){return tutorial!=null && tutorial.mooring.owns(this,b);}
     public Body berthBlocker(int berth,Body incoming) {
+        // Hulls without a berth (arena NPCs, traffic) have nothing to be blocked from.
+        if(berth<0 || berth>2 || arenaStage())return null;
         if(challengeHull(incoming))return tutorial.challenge.blocker(this,incoming);
         if(calumetStage())return voyage.blocker(this,incoming==null?voyage.destination(berth):incoming.destination,incoming);
         float x=dockX(berth),y=dockY(berth),half=dockHalfWidth();
@@ -762,7 +765,7 @@ public final class Game {
     }
     public boolean towTarget(Body b,float x,float y){return towTargetBody(b,x,y)!=null;}
     private boolean canTowAtRelease(Body b,Body parent) {
-        return tow.canAttach(this,b,parent) && Physics.length(parent.x-b.x,parent.y-b.y)<=(parent==tug?170:220)
+        return tow.canAttach(this,b,parent) && Physics.length(parent.x-b.x,parent.y-b.y)<=(parent==tug?170:220)*(arenaStage() && arena!=null?arena.reach():1)
                 && Towline.clear(this,b.x,b.y,parent.x,parent.y);
     }
     public void releaseTow(){releaseTow(tow.primary());}
@@ -1200,7 +1203,7 @@ public final class Game {
         damage(passages.collide(tug,splashes));
         if(hasBridge()) damage(bridge.collide(tug,splashes));
         if(lockStage()) damage(lock.collide(tug,splashes));
-        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else if(level!=null)level.integrate(this,b);else Physics.integrate(b); if(level!=null){cargoDamage(level.collide(b,splashes));cargoDamage(level.obstacles(this,b,splashes));}else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)cargoDamage(hit);}else cargoDamage(MontroseHarbor.collide(this,b,splashes));cargoDamage(passages.collide(b,splashes));if(hasBridge()) cargoDamage(bridge.collide(b,splashes));if(lockStage()) cargoDamage(lock.collide(b,splashes)); }
+        for(Body b:cargo) if(b!=null && b.active && !b.lineAttached && !b.awaitingPickup) { if(lockStage())lock.integrate(b);else if(level!=null)level.integrate(this,b);else Physics.integrate(b); if(level!=null){cargoDamage(level.collide(b,splashes));cargoDamage(level.obstacles(this,b,splashes));}else if(arenaStage()){if(arena!=null)arena.collide(b,splashes);}else if(!montroseStage()){float hit=CalumetMap.collide(b,splashes);if(tutorial==null)cargoDamage(hit);}else cargoDamage(MontroseHarbor.collide(this,b,splashes));cargoDamage(passages.collide(b,splashes));if(hasBridge()) cargoDamage(bridge.collide(b,splashes));if(lockStage()) cargoDamage(lock.collide(b,splashes)); }
         for(int iteration=0;iteration<3;iteration++) {
             for(int i=0;i<cargo.length;i++) {
                 Body a=cargo[i]; if(a==null || !a.active || haulout.inLift(a)) continue;
@@ -1299,7 +1302,8 @@ public final class Game {
         float desired=(float)StrictMath.atan2(dy,dx)+(astern?(float)Math.PI:0), error=Physics.angle(desired-tug.angle);
         tug.spin+=Physics.clamp(error*6-tug.spin*3,-7,7)*Physics.DT;
         float load=tow.loadMass(tug);
-        float speed=Math.min(topSpeed*tow.speedFactor(tug),(float)StrictMath.sqrt(distance*100));
+        float nitro=arenaStage() && arena!=null && arena.nitro>0?1.45f:1;
+        float speed=Math.min(topSpeed*nitro*tow.speedFactor(tug),(float)StrictMath.sqrt(distance*100)*nitro);
         speed*=Math.max(.1f,1-Math.abs(error)*.45f);
         // Manual gestures steer toward the pointer but drive along the actual keel.
         // Otherwise dragging behind a turning tug could translate astern despite
@@ -1308,7 +1312,7 @@ public final class Game {
         float thrustX=hullThrust?sign*(float)StrictMath.cos(tug.angle):dx/distance;
         float thrustY=hullThrust?sign*(float)StrictMath.sin(tug.angle):dy/distance;
         float dvx=thrustX*speed-tug.vx, dvy=thrustY*speed-tug.vy;
-        float force=Physics.length(dvx,dvy), maxChange=82*Physics.DT/(1+.05f*load);
+        float force=Physics.length(dvx,dvy), maxChange=82*nitro*Physics.DT/(1+.05f*load);
         engineDemand=Physics.clamp(.15f+.4f*speed/95+.45f*Math.min(1,force/maxChange),0,1);
         if(force>maxChange) { dvx*=maxChange/force; dvy*=maxChange/force; }
         tug.vx+=dvx; tug.vy+=dvy;

@@ -39,6 +39,7 @@ public final class Towline {
         if(g.passages!=null && g.passages.blocksLine(x,y,xx,yy))return false;
         if(g.hasBridge() && !g.bridge.passable() && g.bridge.crosses(x,y,xx,yy))return false;
         SurveyLevel level=g.level();if(level!=null)return level.clear(g,x,y,xx,yy);
+        if(g.arenaStage())return g.arena!=null && g.arena.ropeClear(x,y,xx,yy);
         if(g.montroseStage())return MontroseHarbor.clear(x,y,xx,yy);
         if(g.lockStage() && g.lock.blocksLine(x,y,xx,yy))return false;
         if(!g.montroseStage()) {
@@ -85,7 +86,8 @@ public final class Towline {
         if(!b.active || b.lineAttached || b.awaitingPickup || t==null || !t.active || t.lineAttached && t!=g.tug || t.awaitingPickup){releaseOne(g);return;}
         float ax=cargoX(),ay=cargoY(),bx=tugX(t),by=tugY(t);
         float dx=bx-ax,dy=by-ay,distance=Physics.length(dx,dy);
-        if(distance>length+100 || !clear(g,ax,ay,bx,by)) {
+        // Arena lassos land from farther away: extra slack lets the line reel a long catch in instead of parting.
+        if(distance>length+(g.arenaStage()?240:100) || !clear(g,ax,ay,bx,by)) {
             releaseOne(g);g.tell("TOWLINE RELEASED / GET CLOSER AND RECONNECT");return;
         }
         tension=0;
