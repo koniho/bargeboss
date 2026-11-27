@@ -7440,3 +7440,10 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   transport failure was recovered before successful installation/captures.
   Evidence: docs/performance/scenery-2026-11-27/arcade-powerup.json.
 - iOS pixels/performance remain unverified because J2ObjC is unavailable here.
+- Vulkan ready fixture also reviewed on device: 360 warmed frames, UI interval
+  median/p95 16.666/18.757 ms; compositor presentation median/p95 16.657/16.697 ms.
+  Faceted bolt, open brackets, orbit ribbons and transparent water centers render
+  correctly in both Android backends. This Vulkan sample has no matched baseline.
+- Merged origin/main f28975a9 (standard blizzard weather) cleanly. The merged
+  full check.sh and Android build passed; no changes to pickup geometry or timing
+  were required by the merge.

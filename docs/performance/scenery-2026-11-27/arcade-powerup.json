@@ -76,5 +76,26 @@
       "cache_evictions": "0.0",
       "frame_evictions": "0.0"
     }
+  },
+  "ready_vulkan": {
+    "renderer": "vulkan",
+    "samples": 360,
+    "reuse_commands": false,
+    "minimal": false,
+    "exclude": 0,
+    "interval_ms": {
+      "median": 16.665789500000002,
+      "p95": 18.757239
+    },
+    "draw_ms": {
+      "median": 6.8643485,
+      "p95": 8.702535
+    },
+    "presentation_ms": {
+      "count": 358,
+      "median": 16.656862,
+      "p95": 16.697187,
+      "mean": 16.67922047206704
+    }
   }
 }
