@@ -7151,3 +7151,12 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
 - Fixed a crash: touching a berthless hull (arena NPC) looked up dock berth -1.
 - Corral bot with real input (ram, drag-to-tug lasso, tow led hop by hop): circuit 2/4 wins (95-98 s),
   islands 4/4 (55-85 s); chase stars rescaled (circuit 100/140 s, islands 65/100 s). Hashes unchanged.
+
+## Same HUD on every stage (overview map on the arenas)
+
+- OverviewMap no longer excludes the arenas: upright charts for the tag circuit (channels, islands)
+  and the Thousand Islands (river, islets), with corral pens, power-ups, the IT boat and corralled
+  boats marked. Chart orientation is a per-chart flag (upright) instead of a Montrose check.
+- HudConsistencyTest renders every job of every location (21 stages) and proves the overview map,
+  chart zoom, developer panel button, objective ribbon and joystick all draw, so a new stage cannot
+  silently drop a HUD element again. Hashes unchanged.

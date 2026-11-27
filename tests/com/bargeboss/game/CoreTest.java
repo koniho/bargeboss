@@ -122,7 +122,7 @@ public final class CoreTest {
         TowTrainTest.run();
         TutorialTowCourseTest.run();
         TutorialTowBridgesTest.run();TutorialEquipmentTimingTest.run();BargeAbilitiesTest.run();
-        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();HarborTrafficTest.run();MontroseJobsTest.run();TagArenaTest.run();PracticeMooringTest.run();WeatherCoverageTest.run();InstructorIdleWakeTest.run();
+        AbilityPanelTest.run();HoseImpactTest.run();HullDamageTest.run();HarborTrafficTest.run();MontroseJobsTest.run();TagArenaTest.run();HudConsistencyTest.run();PracticeMooringTest.run();WeatherCoverageTest.run();InstructorIdleWakeTest.run();
         FireworksLessonTest.run();
         FireWashTest.run();
         FireRescueRadioTest.run();

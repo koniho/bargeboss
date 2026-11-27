@@ -5,6 +5,8 @@ public final class OverviewMap {
     static final float WIDTH=184,HEIGHT=184,EDGE=.5f;
     static final int PLAYER=0xffffcf29,TARGET=0xffffa957,CARGO=0xff77c8cf;
     private static final Chart[] CHARTS={new Chart(0),new Chart(1)};
+    /** Arena charts (tag circuit, Thousand Islands), built on first use. */
+    private static Chart loopChart,islandChart;
     // Never shrink below the full chart fit; preserve the world's aspect ratio.
     static final float MIN_ZOOM=1,MAX_ZOOM=4;
     private static final float[] OUTSIDE=outside();
@@ -37,12 +39,12 @@ public final class OverviewMap {
         if(span<=view+.001f)return 0;
         return Physics.clamp(view*.5f-player,view-span,0);
     }
-    static float offsetX(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.stage==1?g.tug.x-c.minX:g.tug.y-c.minY)*scale,(c.stage==1?c.maxX-c.minX:c.maxY-c.minY)*scale,WIDTH-2*EDGE);}
-    static float offsetY(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.stage==1?g.tug.y-c.minY:c.maxX-g.tug.x)*scale,(c.stage==1?c.maxY-c.minY:c.maxX-c.minX)*scale,HEIGHT-2*EDGE);}
-    static float mapX(Game g,float axis){Chart c=chart(g);return EDGE+(axis-(c.stage==1?c.minX:c.minY))*c.scale*g.overview.zoom()+offsetX(g);}
-    static float mapY(Game g,float axis){Chart c=chart(g);return EDGE+(c.stage==1?axis-c.minY:c.maxX-axis)*c.scale*g.overview.zoom()+offsetY(g);}
-    static float mapX(Game g,float wx,float wy){return mapX(g,g.montroseStage()?wx:wy);}
-    static float mapY(Game g,float wx,float wy){return mapY(g,g.montroseStage()?wy:wx);}
+    static float offsetX(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.upright?g.tug.x-c.minX:g.tug.y-c.minY)*scale,(c.upright?c.maxX-c.minX:c.maxY-c.minY)*scale,WIDTH-2*EDGE);}
+    static float offsetY(Game g){Chart c=chart(g);float scale=c.scale*g.overview.zoom();return offset((c.upright?g.tug.y-c.minY:c.maxX-g.tug.x)*scale,(c.upright?c.maxY-c.minY:c.maxX-c.minX)*scale,HEIGHT-2*EDGE);}
+    static float mapX(Game g,float axis){Chart c=chart(g);return EDGE+(axis-(c.upright?c.minX:c.minY))*c.scale*g.overview.zoom()+offsetX(g);}
+    static float mapY(Game g,float axis){Chart c=chart(g);return EDGE+(c.upright?axis-c.minY:c.maxX-axis)*c.scale*g.overview.zoom()+offsetY(g);}
+    static float mapX(Game g,float wx,float wy){return mapX(g,chart(g).upright?wx:wy);}
+    static float mapY(Game g,float wx,float wy){return mapY(g,chart(g).upright?wy:wx);}
     // Four disjoint rectangles, with consistent triangle winding, work on every
     // host's existing exclusion clip (including Metal's stencil implementation).
     private static float[] outside(){
@@ -66,10 +68,17 @@ public final class OverviewMap {
         p.line(thumb-2,y-4,thumb-2,y+4,1,PilotGlass.NAVY);
         p.line(thumb+2,y-4,thumb+2,y+4,1,PilotGlass.NAVY);
     }
-    public static boolean visible(Game g){return g.mode==Game.PLAY && !g.arenaStage() && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
+    public static boolean visible(Game g){return g.mode==Game.PLAY && (g.tutorial==null || g.tutorial.lesson>=Tutorial.MAP && g.tutorial.lesson<Tutorial.DONE);}
     public static Layout.Box bounds(Game g){return new Layout.Box(g.settings.joystickSide()==GameSettings.RIGHT?18:g.layout.width-WIDTH-18,g.layout.height-48-8-HEIGHT,WIDTH,HEIGHT);}
     /** Survey charts are built on first use by their own level, never for other stages. */
-    static Chart chart(Game g){SurveyLevel level=g.level();return level!=null?level.chart():CHARTS[g.montroseStage()?1:0];}
+    static Chart chart(Game g){
+        SurveyLevel level=g.level();if(level!=null)return level.chart();
+        if(g.arenaStage() && g.arena!=null){
+            if(g.arena.course instanceof ArenaCourse.Islands){if(islandChart==null)islandChart=new Chart(3);return islandChart;}
+            if(loopChart==null)loopChart=new Chart(2);return loopChart;
+        }
+        return CHARTS[g.montroseStage()?1:0];
+    }
     static float pulse(int tick){return .65f+.35f*(float)StrictMath.sin(tick*StrictMath.PI/60);}
     public static void draw(Game g,Painter p){
         if(!visible(g))return;
@@ -104,6 +113,13 @@ public final class OverviewMap {
             local.line(mapX(g,b.x-b.dx*b.left,b.y-b.dy*b.left),mapY(g,b.x-b.dx*b.left,b.y-b.dy*b.left),
                     mapX(g,b.x+b.dx*b.right,b.y+b.dy*b.right),mapY(g,b.x+b.dx*b.right,b.y+b.dy*b.right),1,ink);
         }
+        if(g.arenaStage() && g.arena!=null){
+            TagArena a=g.arena;
+            if(a.mode==TagArena.CHASE)for(int k=0;k<a.penX.length;k++)target(g,local,a.penX[k],a.penY[k],TARGET);
+            for(int k=0;k<a.powerLive.length;k++)if(a.powerLive[k])local.circle(mapX(g,a.powerX[k],a.powerY[k]),mapY(g,a.powerX[k],a.powerY[k]),1.6f,0xff00f0ff);
+            if(a.mode==TagArena.TAG && a.it>=0){Body it=a.npcs[a.it];local.circle(mapX(g,it.x,it.y),mapY(g,it.x,it.y),3.2f,0xffff4a3a);}
+            if(a.mode==TagArena.CHASE)for(int i=0;i<a.npcs.length;i++)if(a.corralled[i]){Body b=a.npcs[i];local.rect(mapX(g,b.x,b.y)-1.2f,mapY(g,b.x,b.y)-1.2f,2.4f,2.4f,0x8896c5ce);}
+        }
         float x=mapX(g,g.tug.x,g.tug.y),y=mapY(g,g.tug.x,g.tug.y),pulse=pulse(g.visualTicks);
         local.circle(x,y,6+2*pulse,SoftCue.alpha(PLAYER,.12f+.12f*pulse));
         SoftCue.ring(local,x,y,4+2*pulse,1,SoftCue.alpha(PLAYER,.4f+.35f*pulse),1);
@@ -114,31 +130,34 @@ public final class OverviewMap {
     private static void target(Game g,Painter p,float wx,float wy,int color){float x=mapX(g,wx,wy),y=mapY(g,wx,wy);int ink=SoftCue.alpha(color,.8f);p.line(x,y-3,x+3,y,1,ink);p.line(x+3,y,x,y+3,1,ink);p.line(x,y+3,x-3,y,1,ink);p.line(x-3,y,x,y-3,1,ink);}
     static final class Chart extends StaticLayer {
         final int stage;final float minX,maxX,minY,maxY,scale;final SurveyLevel survey;
+        /** Upright charts keep world x across and y down (Montrose, arenas); others are rotated. */
+        final boolean upright;final boolean arena;
         final float[][] water,docks;
         final float[] navigableHoles,boundary;
         Chart(int stage){this(stage,null);}
         /** Geographic level chart; stage 10+id keeps layer keys unique per level. */
         Chart(SurveyLevel level){this(10+level.id,level);}
         private Chart(int stage,SurveyLevel survey){
-            this.stage=stage;this.survey=survey;
-            float[][] extent=stage==1?new float[][]{MontroseHarbor.COAST}:survey!=null?new float[][]{survey.coast()}:new float[][]{TrainingChannel.WATER_BOUNDARY};
+            this.stage=stage;this.survey=survey;upright=stage>=1 && stage<=3;arena=stage==2 || stage==3;
+            ArenaCourse course=stage==2?new ArenaCourse.Loop():stage==3?new ArenaCourse.Islands():null;
+            float[][] extent=arena?arenaWater(course):stage==1?new float[][]{MontroseHarbor.COAST}:survey!=null?new float[][]{survey.coast()}:new float[][]{TrainingChannel.WATER_BOUNDARY};
             // The tutorial includes its authored scenery margin; geographic levels retain play bounds.
-            float[] bounds=stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):
+            float[] bounds=arena?new float[]{-60,-60,course.w+60,course.h+60}:stage==1?PolygonWater.bounds(MontroseHarbor.PLAY_BOUNDS):
                     survey!=null?new float[]{survey.minX(),survey.minY(),survey.maxX(),survey.maxY()}:
                     TrainingScenery.bounds();
             minX=bounds[0];minY=bounds[1];maxX=bounds[2];maxY=bounds[3];
             scale=Math.min((WIDTH-2*EDGE)/(maxY-minY),(HEIGHT-2*EDGE)/(maxX-minX));
-            boundary=stage==1?new float[]{x(minX),y(minY),x(maxX),y(minY),x(maxX),y(maxY),x(minX),y(maxY)}
+            boundary=upright?new float[]{x(minX),y(minY),x(maxX),y(minY),x(maxX),y(maxY),x(minX),y(maxY)}
                     :new float[]{x(minY),y(maxX),x(maxY),y(maxX),x(maxY),y(minX),x(minY),y(minX)};
             water=project(stage==1?new float[][]{MontroseHarbor.COAST}:extent);
-            docks=project(stage==1?MontroseHarbor.DOCKS:new float[0][]);
-            navigableHoles=navigableClip();
+            docks=project(stage==1?MontroseHarbor.DOCKS:arena?arenaLand(course):new float[0][]);
+            navigableHoles=arena?new float[0]:navigableClip();
         }
-        float x(float worldY){return EDGE+(worldY-(stage==1?minX:minY))*scale;}
-        float y(float worldX){return EDGE+(stage==1?worldX-minY:maxX-worldX)*scale;}
+        float x(float worldY){return EDGE+(worldY-(upright?minX:minY))*scale;}
+        float y(float worldX){return EDGE+(upright?worldX-minY:maxX-worldX)*scale;}
         private float[][] project(float[][] shapes){float[][] result=new float[shapes.length][];
             float[] clip=boundary;
-            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+(stage==1?0:1)]);b[i+1]=y(a[i+(stage==1?1:0)]);}result[j]=PolygonWater.clip(b,clip);}
+            for(int j=0;j<shapes.length;j++){float[] a=shapes[j],b=new float[a.length];for(int i=0;i<a.length;i+=2){b[i]=x(a[i+(upright?0:1)]);b[i+1]=y(a[i+(upright?1:0)]);}result[j]=PolygonWater.clip(b,clip);}
             return result;
         }
         /** Collect convex navigable pieces once, including the marina's dock cutouts. */
@@ -170,7 +189,30 @@ public final class OverviewMap {
             return triangles;
         }
         public int key(){return 0x6d000a00+stage;}public float width(){return WIDTH;}public float height(){return HEIGHT;}public boolean backgroundSafe(){return true;}
+        /** Arena water as polygons: the circuit's channels, or the open river inside its banks. */
+        private static float[][] arenaWater(ArenaCourse c){
+            if(c instanceof ArenaCourse.Islands){float e=ArenaCourse.Islands.SHORE;return new float[][]{{e,e,c.w-e,e,c.w-e,c.h-e,e,c.h-e}};}
+            float[][] out=new float[TagArena.WATER.length][];
+            for(int i=0;i<out.length;i++){float[] r=TagArena.WATER[i];out[i]=new float[]{r[0],r[1],r[2],r[1],r[2],r[3],r[0],r[3]};}
+            return out;
+        }
+        /** Arena land inside the water: the circuit's islands, or each granite islet. */
+        private static float[][] arenaLand(ArenaCourse c){
+            if(c instanceof ArenaCourse.Islands){float[][] isles=ArenaCourse.Islands.ISLES,out=new float[isles.length][];
+                for(int i=0;i<isles.length;i++){out[i]=new float[24];for(int k=0;k<12;k++){double t=k*Math.PI/6;out[i][k*2]=isles[i][0]+(float)Math.cos(t)*isles[i][2];out[i][k*2+1]=isles[i][1]+(float)Math.sin(t)*isles[i][2];}}
+                return out;}
+            float[][] out=new float[TagArena.ISLANDS.length][];
+            for(int i=0;i<out.length;i++){float[] r=TagArena.ISLANDS[i];out[i]=new float[]{r[0],r[1],r[2],r[1],r[2],r[3],r[0],r[3]};}
+            return out;
+        }
         public void paint(Painter p){
+            if(arena){
+                // Land backing, water polygons, then the islands drawn back over as land.
+                p.poly(boundary,0x5096c5ce);
+                for(float[] a:water)if(a.length>=6){p.poly(a,0xff0a1a24);outline(p,a,true,0xff96c5ce,1);}
+                for(float[] a:docks)if(a.length>=6){p.poly(a,0x9096c5ce);outline(p,a,true,0xff96c5ce,.8f);}
+                return;
+            }
             // Dark, faint water backing; the stronger cyan overlay distinguishes land/docks.
             p.poly(boundary,0x30061119);
             p.pushClipOutside(navigableHoles);
