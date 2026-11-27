@@ -18,6 +18,19 @@ final class StageWeather {
  /** Blizzard in effect: the mission's or the standard weather setting's, whichever is heavier. */
  float blizzard(Game g){return Math.max(blizzard,g.settings.blizzardLevel()/3f);}
  float gust(Game g,int tick){float blizzard=blizzard(g);if(blizzard<=0)return 0;float a=.5f+.5f*(float)StrictMath.sin(tick*.013f),b=.5f+.5f*(float)StrictMath.sin(tick*.041f+1.3f);return blizzard*(.35f+.65f*a*a*(.6f+.4f*b));}
+ /** Peak wind shove (world units/s^2 at full gust) on free hulls; the tug, under power, takes WIND_TUG of it. */
+ static final float WIND=7,WIND_TUG=.6f;
+ /** The standard blizzard's gusts shove the tug, free cargo (towed, drifting or loose, never tied up or
+  * anchored) and arena boats, on any stage. A mission that brings its own blizzard (Deep Freeze) applies
+  * its own wind and slush instead, so hulls are never pushed twice. */
+ void wind(Game g){
+  if(g.settings.blizzardLevel()==0 || blizzard>0)return;
+  float gust=gust(g,g.visualTicks),angle=windAngle(g.visualTicks),push=gust*WIND*Physics.DT;
+  float fx=(float)StrictMath.cos(angle)*push,fy=(float)StrictMath.sin(angle)*push;
+  g.tug.vx+=fx*WIND_TUG;g.tug.vy+=fy*WIND_TUG;
+  for(Body b:g.cargo)if(b!=null && b.active && !b.deliveryRecorded && !b.lineAttached && !b.awaitingPickup && !g.haulout.inLift(b)){b.vx+=fx;b.vy+=fy;}
+  if(g.arenaStage() && g.arena!=null)for(Body b:g.arena.npcs)if(b!=null && b.active){b.vx+=fx;b.vy+=fy;}
+ }
  /** Wind direction (radians): a slowly veering north-westerly. */
  float windAngle(int tick){return 2.4f+.5f*(float)StrictMath.sin(tick*.0021f);}
  void step(Game g){

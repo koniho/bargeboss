@@ -16,7 +16,15 @@ public final class StageWeatherTest {
   check(g.weather.fog(g)==2 && g.weather.waves(g)==2 && g.weather.rain(g)==3,"Return tow reaches double waves/fog and heavy rain");
   int phase=g.weather.towTicks;g.mode=Game.PAUSE;for(int i=0;i<60;i++)g.advance(1f/60);check(g.weather.towTicks==phase,"Pause freezes weather progression");
   WaveControls.adjust(g,5);check(g.weather.fog(g)==0 && g.weather.waves(g)==1 && g.weather.night()==0,"Developer reset overrides scripted weather");
-  System.out.println("Dusk entry, continuous evening and tow-driven double waves/fog, bounded rain and pause tests passed");
+  // A standard blizzard's gusts shove the tug and loose hulls on any stage, downwind.
+  Game calm=new Game();calm.challengeId=Challenges.INDIANA;calm.reset();Game wind=new Game();wind.challengeId=Challenges.INDIANA;wind.reset();
+  wind.settings.adjustBlizzard(3);
+  for(int i=0;i<240;i++){calm.visualTicks=wind.visualTicks=i;calm.weather.wind(calm);wind.weather.wind(wind);}
+  float a=wind.weather.windAngle(239),dx=wind.tug.vx-calm.tug.vx,dy=wind.tug.vy-calm.tug.vy;
+  check(dx*(float)StrictMath.cos(a)+dy*(float)StrictMath.sin(a)>5,"whiteout gusts push the tug downwind");
+  Game deep=new Game();deep.challengeId=Challenges.INDIANA;deep.reset();deep.settings.adjustBlizzard(3);deep.weather.blizzard=.5f;float vx=deep.tug.vx;deep.weather.wind(deep);
+  check(deep.tug.vx==vx,"a mission blizzard owns its own wind, never doubled");
+  System.out.println("Dusk entry, continuous evening and tow-driven double waves/fog, bounded rain and pause, blizzard wind tests passed");
  }
  public static void main(String[] args){run();}
 }
