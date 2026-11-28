@@ -7495,3 +7495,13 @@ Android phone, profile build, live 360 frames (FPS; interval p50 / p95 ms; frame
   install and after captures therefore did not run; no new native timing claim.
   User asked to reconnect. Saved original display timeout is 300000 ms in
   out/phone-screen-timeout-before.txt; restore on reconnection. iOS is unverified.
+
+### 2026-11-27 — main merge and device installation completed
+- Merged origin/main eb731d6f (irregular Deep Freeze ice layout) cleanly into
+  codex/montrose-islands-scenery. Full check.sh/Android build passed.
+- Installed the merged APK with the existing debug key via authorized wireless
+  ADB; installation succeeded and MainActivity cold-launched successfully.
+- Restored the previously saved display timeout to 300000 ms and verified the
+  restoration. This closes the pending installation/timeout work from the
+  disconnected chevron round. No additional native performance capture in this
+  install-only round; the recorded profiling limits still apply.
